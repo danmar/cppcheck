@@ -2860,9 +2860,7 @@ void CheckOther::checkFuncArgNamesDifferent()
 void CheckOther::funcArgNamesDifferent(const std::string & functionName, size_t index,
                                        const Token* declaration, const Token* definition)
 {
-    std::list<const Token *> tokens;
-    tokens.push_back(declaration);
-    tokens.push_back(definition);
+    std::list<const Token *> tokens = { declaration,definition };
     reportError(tokens, Severity::style, "funcArgNamesDifferent",
                 "$symbol:" + functionName + "\n"
                 "Function '$symbol' argument " + MathLib::toString(index + 1) + " names different: declaration '" +
@@ -2875,9 +2873,10 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
                                        const std::vector<const Token *> & declarations,
                                        const std::vector<const Token *> & definitions)
 {
-    std::list<const Token *> tokens;
-    tokens.push_back(declarations.size() ? declarations[0] ? declarations[0] : declaration : nullptr);
-    tokens.push_back(definitions.size() ? definitions[0] ? definitions[0] : definition : nullptr);
+    std::list<const Token *> tokens = {
+        declarations.size() ? declarations[0] ? declarations[0] : declaration : nullptr,
+        definitions.size() ? definitions[0] ? definitions[0] : definition : nullptr
+    };
     std::string msg = "$symbol:" + functionName + "\nFunction '$symbol' argument order different: declaration '";
     for (std::size_t i = 0; i < declarations.size(); ++i) {
         if (i != 0)

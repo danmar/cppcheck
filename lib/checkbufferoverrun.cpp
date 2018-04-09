@@ -718,8 +718,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const st
 
         // memset, memcmp, memcpy, strncpy, fgets..
         if (declarationId == 0 && Token::Match(tok, "%name% ( !!)")) {
-            std::list<const Token *> callstack;
-            callstack.push_back(tok);
+            std::list<const Token *> callstack(1, tok);
             const Token* tok2 = tok->tokAt(2);
             if (Token::Match(tok2, (varnames + " ,").c_str()))
                 checkFunctionParameter(*tok, 1, arrayInfo, callstack);
@@ -1194,9 +1193,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     if (index < (isAddressOf(tok) ? elements + 1U : elements))
                         continue;
 
-                    std::list<const Token *> callstack;
-                    callstack.push_back(it->tokvalue);
-                    callstack.push_back(tok);
+                    std::list<const Token *> callstack = { it->tokvalue, tok };
 
                     std::vector<MathLib::bigint> indexes2(indexes.size());
                     for (unsigned int i = 0; i < indexes.size(); ++i)
@@ -1370,9 +1367,7 @@ void CheckBufferOverrun::checkStructVariable()
                 if (scope->nestedIn->isClassOrStruct())
                     continue;
 
-                std::vector<const std::string*> varname;
-                varname.push_back(NULL);
-                varname.push_back(&arrayInfo.varname());
+                std::vector<const std::string*> varname = { nullptr, &arrayInfo.varname() };
 
                 // search the function and it's parameters
                 for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next()) {
@@ -2106,8 +2101,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
             fileLoc.setfile(it->second.fileName);
             fileLoc.line = it->second.linenr;
 
-            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-            locationList.push_back(fileLoc);
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList(1, fileLoc);
 
             std::ostringstream ostr;
             ostr << "Array " << it->first << '[' << sz->second << "] accessed at index " << it->second.index << " which is out of bounds";

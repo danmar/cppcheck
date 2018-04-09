@@ -67,9 +67,7 @@ void CheckStl::iteratorsError(const Token *tok, const std::string &container1, c
 void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, const std::string &itername, bool inconclusive)
 {
     if (erased) {
-        std::list<const Token*> callstack;
-        callstack.push_back(deref);
-        callstack.push_back(erased);
+        std::list<const Token*> callstack = { deref, erased };
         reportError(callstack, Severity::error, "eraseDereference",
                     "$symbol:" + itername + "\n"
                     "Iterator '$symbol' used after element has been erased.\n"
@@ -1028,9 +1026,7 @@ void CheckStl::missingComparison()
 
 void CheckStl::missingComparisonError(const Token *incrementToken1, const Token *incrementToken2)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(incrementToken1);
-    callstack.push_back(incrementToken2);
+    std::list<const Token*> callstack = { incrementToken1,incrementToken2 };
 
     std::ostringstream errmsg;
     errmsg << "Missing bounds check for extra iterator increment in loop.\n"

@@ -206,10 +206,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
 
 void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result)
 {
-    std::list<const Token *> locations;
-    locations.push_back(tok1);
-    locations.push_back(tok2);
-
+    std::list<const Token *> locations = { tok1, tok2 };
     reportError(locations,
                 Severity::style,
                 "assignIfError",
@@ -219,9 +216,7 @@ void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const s
 
 void CheckCondition::mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2)
 {
-    std::list<const Token *> locations;
-    locations.push_back(tok1);
-    locations.push_back(tok2);
+    std::list<const Token *> locations = { tok1, tok2 };
 
     std::ostringstream msg;
     msg << "Mismatching bitmasks. Result is always 0 ("
@@ -687,9 +682,10 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
-    ErrorPath errorPath;
-    errorPath.push_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.push_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
+    ErrorPath errorPath = {
+        ErrorPathItem(tok1, "outer condition: " + s1),
+        ErrorPathItem(tok2, "opposite inner condition: " + s2)
+    };
     const std::string msg("Opposite inner 'if' condition leads to a dead code block.\n"
                           "Opposite inner 'if' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
@@ -699,9 +695,10 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
-    ErrorPath errorPath;
-    errorPath.push_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.push_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
+    ErrorPath errorPath = {
+        ErrorPathItem(tok1, "outer condition: " + s1),
+        ErrorPathItem(tok2, "identical inner condition: " + s2)
+    };
     const std::string msg("Identical inner 'if' condition is always true.\n"
                           "Identical inner 'if' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, false);
@@ -710,9 +707,10 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)
 {
     const std::string cond(cond1 ? cond1->expressionString() : "x");
-    ErrorPath errorPath;
-    errorPath.push_back(ErrorPathItem(cond1, "first condition"));
-    errorPath.push_back(ErrorPathItem(cond2, "second condition"));
+    ErrorPath errorPath = {
+        ErrorPathItem(cond1, "first condition"),
+        ErrorPathItem(cond2, "second condition")
+    };
     reportError(errorPath, Severity::warning, "identicalConditionAfterEarlyExit", "Identical condition '" + cond + "', second condition is always false", CWE398, false);
 }
 

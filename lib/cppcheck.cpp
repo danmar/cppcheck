@@ -166,8 +166,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
             if (err) {
                 const ErrorLogger::ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
-                std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-                callstack.push_back(loc1);
+                std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
 
                 ErrorLogger::ErrorMessage errmsg(callstack,
                                                  "",
@@ -476,8 +475,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 
     if (_settings.isEnabled(Settings::INFORMATION)) {
         const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
-        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        callstack.push_back(loc1);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
 
         ErrorLogger::ErrorMessage errmsg(callstack,
                                          emptyString,

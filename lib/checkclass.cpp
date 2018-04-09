@@ -1159,9 +1159,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
 void CheckClass::mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok)
 {
-    std::list<const Token *> toks;
-    toks.push_back(tok);
-    toks.push_back(classTok);
+    std::list<const Token *> toks = { tok, classTok };
     reportError(toks, Severity::warning, "mallocOnClassWarning",
                 "$symbol:" + memfunc +"\n"
                 "Memory for class instance allocated with $symbol(), but class provides constructors.\n"
@@ -1171,9 +1169,7 @@ void CheckClass::mallocOnClassWarning(const Token* tok, const std::string &memfu
 
 void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname)
 {
-    std::list<const Token *> toks;
-    toks.push_back(tok);
-    toks.push_back(classTok);
+    std::list<const Token *> toks = { tok, classTok };
     reportError(toks, Severity::error, "mallocOnClassError",
                 "$symbol:" + memfunc +"\n"
                 "$symbol:" + classname +"\n"
@@ -2146,9 +2142,7 @@ void CheckClass::initializerListOrder()
 
 void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname)
 {
-    std::list<const Token *> toks;
-    toks.push_back(tok1);
-    toks.push_back(tok2);
+    std::list<const Token *> toks = { tok1, tok2 };
     reportError(toks, Severity::style, "initializerList",
                 "$symbol:" + classname + "::" + varname +"\n"
                 "Member variable '$symbol' is in the wrong place in the initializer list.\n"
@@ -2210,8 +2204,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
         const std::list<const Token *> & virtualFunctionCalls = getVirtualFunctionCalls(*scope->function, virtualFunctionCallsMap);
         for (std::list<const Token *>::const_iterator it = virtualFunctionCalls.begin(); it != virtualFunctionCalls.end(); ++it) {
             const Token * callToken = *it;
-            std::list<const Token *> callstack;
-            callstack.push_back(callToken);
+            std::list<const Token *> callstack(1, callToken);
             getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, callToken, callstack);
             if (callstack.empty())
                 continue;
@@ -2398,9 +2391,7 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
         const std::string &derivedname, const std::string &basename,
         const std::string &variablename, bool derivedIsStruct, bool baseIsStruct)
 {
-    std::list<const Token *> toks;
-    toks.push_back(tok1);
-    toks.push_back(tok2);
+    std::list<const Token *> toks = { tok1, tok2 };
 
     const std::string symbols = "$symbol:" + derivedname + "\n$symbol:" + variablename + "\n$symbol:" + basename;
 
