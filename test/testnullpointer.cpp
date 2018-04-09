@@ -1363,21 +1363,15 @@ private:
     }
 
     void nullpointer31() { // #8482
-        check("typedef struct\n"
+        check("struct F\n"
               "{\n"
               "    int x;\n"
-              "} F;\n"
+              "};\n"
               " \n"
               "static void foo(F* f)\n"
               "{\n"
-              "    if( f )\n"
-              "    {\n"
-              "    }\n"
-              "    else\n"
-              "    {\n"
-              "        return;\n"
-              "    }\n"
-              " \n"
+              "    if( f ) {}\n"
+              "    else { return; }\n"
               "    (void)f->x;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
