@@ -2925,16 +2925,16 @@ private:
     }
 
     void symboldatabase63() {
-	{
+        {
             GET_SYMBOL_DB("template class T<int> ; void foo() { }");
             ASSERT(db != nullptr);
             ASSERT(db && db->scopeList.size() == 2);
-	}
-	{
+        }
+        {
             GET_SYMBOL_DB("template struct T<int> ; void foo() { }");
             ASSERT(db != nullptr);
             ASSERT(db && db->scopeList.size() == 2);
-	}
+        }
     }
 
     void enum1() {

@@ -2586,9 +2586,9 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                     }
 
                     std::list<ValueFlow::Value> * values = nullptr;
-                    if(!dead_if && check_if)
+                    if (!dead_if && check_if)
                         values = &true_values;
-                    else if(!dead_else && check_else)
+                    else if (!dead_else && check_else)
                         values = &false_values;
 
                     if (values) {
