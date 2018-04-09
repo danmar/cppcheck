@@ -514,7 +514,7 @@ private:
         ASSERT_EQUALS(true, Suppressions::matchglob("*y*", "xyz"));
         ASSERT_EQUALS(true, Suppressions::matchglob("*y*", "yz"));
         ASSERT_EQUALS(false, Suppressions::matchglob("*y*", "abc"));
-        ASSERT_EQUALS(false, Suppressions::matchglob("*", "x/y/z"));
+        ASSERT_EQUALS(true, Suppressions::matchglob("*", "x/y/z"));
         ASSERT_EQUALS(true, Suppressions::matchglob("*/y/z", "x/y/z"));
 
         ASSERT_EQUALS(false, Suppressions::matchglob("?", "xyz"));

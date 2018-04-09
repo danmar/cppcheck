@@ -278,17 +278,17 @@ bool Suppressions::matchglob(const std::string &pattern, const std::string &name
             switch (*p) {
             case '*':
                 // Step forward until we match the next character after *
-                while (*n != '\0' && *n != p[1] && *n != '\\' && *n != '/') {
+                while (*n != '\0' && *n != p[1]) {
                     n++;
                 }
-                if (*n != '\0' && *n != '/') {
+                if (*n != '\0') {
                     // If this isn't the last possibility, save it for later
                     backtrack.push(std::make_pair(p, n));
                 }
                 break;
             case '?':
                 // Any character matches unless we're at the end of the name
-                if (*n != '\0' && *n != '\\' && *n != '/') {
+                if (*n != '\0') {
                     n++;
                 } else {
                     matching = false;
