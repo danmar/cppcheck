@@ -124,7 +124,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     else if (Token::Match(tok2, "%name% ["))
                         continue;
                     // skip template
-                    else if (Token::simpleMatch(tok->previous(), "template class") &&
+                    else if (Token::Match(tok->previous(), "template class|struct") &&
                              Token::simpleMatch(tok2->previous(), "> ;")) {
                         tok = tok2;
                         continue;
