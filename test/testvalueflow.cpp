@@ -1812,6 +1812,19 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
+        code = "void f(int x) {\n"
+               "    if (x != 123) { }\n"
+               "    else { throw ""; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+        code = "void f(int x) {\n"
+               "    if (x == 123) { }\n"
+               "    else { throw ""; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
 
         code = "void f(int x) {\n"
                "    if (x < 123) { }\n"
@@ -1824,6 +1837,42 @@ private:
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x < 123) { }\n"
+               "    else { throw \"\"; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 122));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x > 123) { }\n"
+               "    else { a = x; }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x > 123) { throw \"\"; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x > 123) { }\n"
+               "    else { throw \"\"; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x < 123) { return; }\n"
+               "    else { return; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
 
         // if (var)
         code = "void f(int x) {\n"
