@@ -1977,7 +1977,7 @@ namespace simplecpp {
         if (unc)
             path = '/' + path;
 
-        return realFilename(path);
+        return path.find_first_of("*?") == std::string::npos ? realFilename(path) : path;
     }
 }
 
