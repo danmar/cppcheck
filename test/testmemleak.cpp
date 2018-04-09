@@ -404,8 +404,7 @@ private:
 
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings2, nullptr);
-        std::list<const Token *> callstack;
-        callstack.push_back(0);
+        std::list<const Token *> callstack(1, nullptr);
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
         Token *tokens = checkMemoryLeak.getcode(start, callstack, varId, allocType, deallocType, classfunc, 1);
@@ -6041,8 +6040,7 @@ private:
         errout.str("");
 
         std::istringstream istr(code);
-        std::vector<std::string> files;
-        files.push_back("test.cpp");
+        std::vector<std::string> files(1, "test.cpp");
         const simplecpp::TokenList tokens1(istr, files, files[0]);
 
         // Preprocess...

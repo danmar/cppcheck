@@ -134,33 +134,25 @@ private:
     }
 
     void twomasklongerpath1() const {
-        std::vector<std::string> masks;
-        masks.push_back("src/");
-        masks.push_back("module/");
+        std::vector<std::string> masks = { "src/", "module/" };
         PathMatch match(masks);
         ASSERT(!match.match("project/"));
     }
 
     void twomasklongerpath2() const {
-        std::vector<std::string> masks;
-        masks.push_back("src/");
-        masks.push_back("module/");
+        std::vector<std::string> masks = { "src/", "module/" };
         PathMatch match(masks);
         ASSERT(match.match("project/src/"));
     }
 
     void twomasklongerpath3() const {
-        std::vector<std::string> masks;
-        masks.push_back("src/");
-        masks.push_back("module/");
+        std::vector<std::string> masks = { "src/", "module/" };
         PathMatch match(masks);
         ASSERT(match.match("project/module/"));
     }
 
     void twomasklongerpath4() const {
-        std::vector<std::string> masks;
-        masks.push_back("src/");
-        masks.push_back("module/");
+        std::vector<std::string> masks = { "src/", "module/" };
         PathMatch match(masks);
         ASSERT(match.match("project/src/module/"));
     }

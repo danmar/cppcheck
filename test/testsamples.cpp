@@ -105,14 +105,15 @@ private:
     void runConsoleCodePageTranslationOnWindows() const {
         REDIRECT;
 
-        std::vector<std::string> msgs;
-        msgs.push_back("ASCII");     // first entry should be using only ASCII
-        msgs.push_back("kääk");
-        msgs.push_back("Português");
-//      msgs.push_back("日本語");
-//      msgs.push_back("한국어");
-//      msgs.push_back("Русский");
-//      msgs.push_back("中文");
+        std::vector<std::string> msgs = {
+            "ASCII",     // first entry should be using only ASCII
+            "kääk",
+            "Português"
+            //      "日本語",
+            //      "한국어",
+            //      "Русский",
+            //      "中文",
+        };
 
         Settings set1;
         Settings setXML;

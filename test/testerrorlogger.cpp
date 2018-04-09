@@ -120,9 +120,7 @@ private:
     }
 
     void ErrorMessageConstructLocations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -142,9 +140,7 @@ private:
     }
 
     void ErrorMessageVerboseLocations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -175,9 +171,7 @@ private:
 
     void CustomFormatLocations() const {
         // Check that first location from location stack is used in template
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -202,9 +196,7 @@ private:
     }
 
     void ToXmlV2Locations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "    <cppcheck version=\"";

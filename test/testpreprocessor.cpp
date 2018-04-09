@@ -2210,13 +2210,12 @@ private:
     void validateCfg() {
         Preprocessor preprocessor(settings0, this);
 
-        std::list<simplecpp::MacroUsage> macroUsageList;
         std::vector<std::string> files(1, "test.c");
         simplecpp::MacroUsage macroUsage(files);
         macroUsage.useLocation.fileIndex = 0;
         macroUsage.useLocation.line = 1;
         macroUsage.macroName = "X";
-        macroUsageList.push_back(macroUsage);
+        std::list<simplecpp::MacroUsage> macroUsageList(1, macroUsage);
 
         ASSERT_EQUALS(true, preprocessor.validateCfg("", macroUsageList));
         ASSERT_EQUALS(false, preprocessor.validateCfg("X",macroUsageList));

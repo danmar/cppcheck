@@ -136,8 +136,7 @@ private:
         settings.inconclusive = false;
 
         // Raw tokens..
-        std::vector<std::string> files;
-        files.push_back("test.cpp");
+        std::vector<std::string> files(1, "test.cpp");
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, files[0]);
 
