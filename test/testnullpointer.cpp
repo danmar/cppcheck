@@ -81,6 +81,7 @@ private:
         TEST_CASE(nullpointer27); // #6568
         TEST_CASE(nullpointer28); // #6491
         TEST_CASE(nullpointer30); // #6392
+        TEST_CASE(nullpointer31); // #8482
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1359,6 +1360,27 @@ private:
               "  }\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (warning, inconclusive) Either the condition 'if(values)' is redundant or there is possible null pointer dereference: values.\n", errout.str());
+    }
+
+    void nullpointer31() { // #8482
+        check("typedef struct\n"
+              "{\n"
+              "    int x;\n"
+              "} F;\n"
+              " \n"
+              "static void foo(F* f)\n"
+              "{\n"
+              "    if( f )\n"
+              "    {\n"
+              "    }\n"
+              "    else\n"
+              "    {\n"
+              "        return;\n"
+              "    }\n"
+              " \n"
+              "    (void)f->x;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

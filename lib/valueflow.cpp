@@ -2573,9 +2573,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         continue;
                     }
 
-                    std::list<ValueFlow::Value> * values = nullptr;
-                    if (check_else || !isReturnScope(after))
-                        values = &false_values;
+                    bool dead_if = isReturnScope(after);
+                    bool dead_else = false;
 
                     if (Token::simpleMatch(after, "} else {")) {
                         after = after->linkAt(2);
@@ -2584,9 +2583,14 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                                 bailout(tokenlist, errorLogger, after, "possible noreturn scope");
                             continue;
                         }
-                        if (check_if || !isReturnScope(after))
-                            values = &true_values;
+                        dead_else = isReturnScope(after);
                     }
+
+                    std::list<ValueFlow::Value> * values = nullptr;
+                    if(!dead_if && check_if)
+                        values = &true_values;
+                    else if(!dead_else && check_else)
+                        values = &false_values;
 
                     if (values) {
                         // TODO: constValue could be true if there are no assignments in the conditional blocks and
