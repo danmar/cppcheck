@@ -70,8 +70,7 @@ Preprocessor::~Preprocessor()
 
 static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_settings)
 {
-    std::list<std::string> suppressionIDs;
-
+    std::list<Suppressions::Suppression> inlineSuppressions;
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->comment) {
             std::istringstream iss(tok->str.substr(2));
@@ -79,13 +78,23 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_se
             iss >> word;
             if (word != "cppcheck-suppress")
                 continue;
-            iss >> word;
-            if (iss)
-                suppressionIDs.push_back(word);
+
+            Suppressions::Suppression s;
+            iss >> s.errorId;
+            if (!iss)
+                continue;
+            while (iss) {
+                iss >> word;
+                if (!iss)
+                    break;
+                if (word.compare(0,11,"symbolName=")==0)
+                    s.symbolName = word.substr(11);
+            }
+            inlineSuppressions.push_back(s);
             continue;
         }
 
-        if (suppressionIDs.empty())
+        if (inlineSuppressions.empty())
             continue;
 
         // Relative filename
@@ -98,12 +107,15 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_se
                 }
             }
         }
+        relativeFilename = Path::simplifyPath(relativeFilename);
 
         // Add the suppressions.
-        for (const std::string &errorId : suppressionIDs) {
-            _settings.nomsg.addSuppression(Suppressions::Suppression(errorId, relativeFilename, tok->location.line));
+        for (Suppressions::Suppression &suppr : inlineSuppressions) {
+            suppr.fileName = relativeFilename;
+            suppr.lineNumber = tok->location.line;
+            _settings.nomsg.addSuppression(suppr);
         }
-        suppressionIDs.clear();
+        inlineSuppressions.clear();
     }
 }
 

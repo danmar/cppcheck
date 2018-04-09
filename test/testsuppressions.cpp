@@ -47,6 +47,8 @@ private:
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
 
+        TEST_CASE(inlinesuppress_symbolname);
+
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
         TEST_CASE(globalsuppress_unusedFunction); // #4946
         TEST_CASE(suppressionWithRelativePaths); // #4733
@@ -393,6 +395,26 @@ private:
 
         const Suppressions::Suppression s2("abc", "include/1.h");
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
+    }
+
+    void inlinesuppress_symbolname() {
+        Suppressions suppressions;
+
+        checkSuppression("void f() {\n"
+                         "    int a;\n"
+                         "    /* cppcheck-suppress uninitvar symbolName=a */\n"
+                         "    a++;\n"
+                         "}\n",
+                         "");
+        ASSERT_EQUALS("", errout.str());
+
+        checkSuppression("void f() {\n"
+                         "    int a,b;\n"
+                         "    /* cppcheck-suppress uninitvar symbolName=b */\n"
+                         "    a++; b++;\n"
+                         "}\n",
+                         "");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
