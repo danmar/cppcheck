@@ -81,7 +81,6 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         bool external(files[i].compare(0,10,"externals/") == 0);
         fout << objfile(files[i]) << ": " << files[i];
         std::vector<std::string> depfiles;
-        depfiles.push_back("lib/cxx11emu.h");
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
@@ -281,14 +280,13 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -include lib/cxx11emu.h -DNDEBUG -Wall -Wno-sign-compare");
+        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare");
     } else {
         // TODO: add more compiler warnings.
         // -Wlogical-op       : doesn't work on older GCC
         // -Wsign-conversion  : too many warnings
         // -Wunreachable-code : some GCC versions report lots of warnings
         makeConditionalVariable(fout, "CXXFLAGS",
-                                "-include lib/cxx11emu.h "
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
