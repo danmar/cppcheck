@@ -11,7 +11,7 @@
 #
 # The MISRA standard documents may be obtained from https://www.misra.org.uk
 #
-# Total number of rules: 153
+# Total number of rules: 143
 
 import cppcheckdata
 import sys
