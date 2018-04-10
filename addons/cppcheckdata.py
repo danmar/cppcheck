@@ -471,6 +471,7 @@ class Configuration:
         self.functions = []
         self.variables = []
         self.valueflow = []
+        arguments = []
 
         for element in confignode:
             if element.tag == 'directivelist':
@@ -497,7 +498,11 @@ class Configuration:
                                 self.functions.append(Function(function))
             if element.tag == 'variables':
                 for variable in element:
-                    self.variables.append(Variable(variable))
+                    var = Variable(variable)
+                    if var.nameToken:
+                        self.variables.append(var)
+                    else:
+                        arguments.append(var)
             if element.tag == 'valueflow':
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
@@ -511,6 +516,8 @@ class Configuration:
             IdMap[function.Id] = function
         for variable in self.variables:
             IdMap[variable.Id] = variable
+        for variable in arguments:
+            IdMap[variable.Id] = variable
         for values in self.valueflow:
             IdMap[values.Id] = values.values
 
@@ -521,6 +528,8 @@ class Configuration:
         for function in self.functions:
             function.setId(IdMap)
         for variable in self.variables:
+            variable.setId(IdMap)
+        for variable in arguments:
             variable.setId(IdMap)
 
 

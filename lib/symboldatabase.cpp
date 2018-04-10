@@ -2973,6 +2973,9 @@ void SymbolDatabase::printOut(const char *title) const
 void SymbolDatabase::printXml(std::ostream &out) const
 {
     out << std::setiosflags(std::ios::boolalpha);
+
+    std::set<const Variable *> variables;
+
     // Scopes..
     out << "  <scopes>" << std::endl;
     for (std::list<Scope>::const_iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
@@ -3004,6 +3007,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         for (unsigned int argnr = 0; argnr < function->argCount(); ++argnr) {
                             const Variable *arg = function->getArgumentVar(argnr);
                             out << "          <arg nr=\"" << argnr+1 << "\" variable=\"" << arg << "\"/>" << std::endl;
+                            variables.insert(arg);
                         }
                         out << "        </function>" << std::endl;
                     }
@@ -3022,9 +3026,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
     out << "  </scopes>" << std::endl;
 
     // Variables..
+    for (const Variable *var : _variableList)
+        variables.insert(var);
     out << "  <variables>" << std::endl;
-    for (unsigned int i = 1U; i < _variableList.size(); i++) {
-        const Variable *var = _variableList[i];
+    for (const Variable *var : variables) {
         if (!var)
             continue;
         out << "    <var id=\""   << var << '\"';
