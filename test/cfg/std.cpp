@@ -3019,6 +3019,17 @@ void uninivar_istream_read(std::istream &f)
     f.read(buffer, size);
 }
 
+void uninitvar_string_compare(std::string &teststr, std::wstring &testwstr)
+{
+    char *pStrUninit;
+    // cppcheck-suppress uninitvar
+    (void)teststr.compare(pStrUninit);
+
+    wchar_t *pWStrUninit;
+    // cppcheck-suppress uninitvar
+    (void)testwstr.compare(pWStrUninit);
+}
+
 void invalidFunctionArgBool_abs(bool b, double x, double y)
 {
     // cppcheck-suppress invalidFunctionArgBool
@@ -3035,6 +3046,14 @@ void ignoredReturnValue_abs(int i)
     std::abs(i);
     // cppcheck-suppress ignoredReturnValue
     std::abs(-199);
+}
+
+void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwstr)
+{
+    // cppcheck-suppress ignoredReturnValue
+    teststr.compare("test");
+    // cppcheck-suppress ignoredReturnValue
+    testwstr.compare(L"wtest");
 }
 
 void nullPointer_ifstream_read(std::ifstream &f)
