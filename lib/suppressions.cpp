@@ -92,6 +92,8 @@ std::string Suppressions::parseXmlFile(const char *filename)
                     s.lineNumber = std::atoi(text);
                 else if (std::strcmp(e2->Name(), "symbolName") == 0)
                     s.symbolName = text;
+                else
+                    return std::string("Unknown suppression element '") + e2->Name() + "'";
             }
             const std::string err = addSuppression(s);
             if (!err.empty())
