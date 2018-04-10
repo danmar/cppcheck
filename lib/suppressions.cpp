@@ -77,28 +77,32 @@ std::string Suppressions::parseXmlFile(const char *filename)
     tinyxml2::XMLError error = doc.LoadFile(filename);
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         return "File not found";
+    if (error != tinyxml2::XML_SUCCESS)
+        return "Failed to parse XML file";
 
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     for (const tinyxml2::XMLElement * e = rootnode->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(), "suppress") == 0) {
-            Suppression s;
-            for (const tinyxml2::XMLElement * e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
-                const char *text = e2->GetText() ? e2->GetText() : "";
-                if (std::strcmp(e2->Name(), "id") == 0)
-                    s.errorId = text;
-                else if (std::strcmp(e2->Name(), "fileName") == 0)
-                    s.fileName = text;
-                else if (std::strcmp(e2->Name(), "lineNumber") == 0)
-                    s.lineNumber = std::atoi(text);
-                else if (std::strcmp(e2->Name(), "symbolName") == 0)
-                    s.symbolName = text;
-                else
-                    return std::string("Unknown suppression element '") + e2->Name() + "'";
-            }
-            const std::string err = addSuppression(s);
-            if (!err.empty())
-                return err;
+        if (std::strcmp(e->Name(), "suppress") != 0)
+            return "Invalid suppression xml file format, expected <suppress> element but got a <" + std::string(e->Name()) + '>';
+
+        Suppression s;
+        for (const tinyxml2::XMLElement * e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
+            const char *text = e2->GetText() ? e2->GetText() : "";
+            if (std::strcmp(e2->Name(), "id") == 0)
+                s.errorId = text;
+            else if (std::strcmp(e2->Name(), "fileName") == 0)
+                s.fileName = text;
+            else if (std::strcmp(e2->Name(), "lineNumber") == 0)
+                s.lineNumber = std::atoi(text);
+            else if (std::strcmp(e2->Name(), "symbolName") == 0)
+                s.symbolName = text;
+            else
+                return "Unknown suppression element <" + std::string(e2->Name()) + ">, expected <id>/<fileName>/<lineNumber>/<symbolName>";
         }
+
+        const std::string err = addSuppression(s);
+        if (!err.empty())
+            return err;
     }
 
     return "";
