@@ -74,6 +74,14 @@ public:
                 return symbolName < other.symbolName;
         };
 
+        /**
+         * Parse inline suppression in comment
+         * @param comment the full comment text
+         * @param errorMessage output parameter for error message (wrong suppression attribute)
+         * @return true if it is a inline comment.
+         */
+        bool parseComment(std::string comment, std::string *errorMessage);
+
         bool isSuppressed(const ErrorMessage &errmsg) const;
 
         bool isMatch(const ErrorMessage &errmsg);

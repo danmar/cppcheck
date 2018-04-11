@@ -67,30 +67,27 @@ Preprocessor::~Preprocessor()
         delete it->second;
 }
 
+namespace {
+    struct BadInlineSuppression {
+        BadInlineSuppression(const simplecpp::Location &l, const std::string &msg) : location(l), errmsg(msg) {}
+        simplecpp::Location location;
+        std::string errmsg;
+    };
+}
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_settings)
+static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_settings, std::list<BadInlineSuppression> *bad)
 {
     std::list<Suppressions::Suppression> inlineSuppressions;
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (tok->comment) {
-            std::istringstream iss(tok->str.substr(2));
-            std::string word;
-            iss >> word;
-            if (word != "cppcheck-suppress")
-                continue;
-
             Suppressions::Suppression s;
-            iss >> s.errorId;
-            if (!iss)
+            std::string errmsg;
+            if (!s.parseComment(tok->str, &errmsg))
                 continue;
-            while (iss) {
-                iss >> word;
-                if (!iss)
-                    break;
-                if (word.compare(0,11,"symbolName=")==0)
-                    s.symbolName = word.substr(11);
-            }
-            inlineSuppressions.push_back(s);
+            if (!errmsg.empty())
+                bad->push_back(BadInlineSuppression(tok->location, errmsg));
+            if (!s.errorId.empty())
+                inlineSuppressions.push_back(s);
             continue;
         }
 
@@ -123,10 +120,14 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
 {
     if (!_settings.inlineSuppressions)
         return;
-    ::inlineSuppressions(tokens, _settings);
+    std::list<BadInlineSuppression> err;
+    ::inlineSuppressions(tokens, _settings, &err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
         if (it->second)
-            ::inlineSuppressions(*it->second, _settings);
+            ::inlineSuppressions(*it->second, _settings, &err);
+    }
+    for (const BadInlineSuppression &bad : err) {
+        error(bad.location.file(), bad.location.line, bad.errmsg);
     }
 }
 

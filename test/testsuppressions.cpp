@@ -47,6 +47,7 @@ private:
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
 
+        TEST_CASE(inlinesuppress);
         TEST_CASE(inlinesuppress_symbolname);
 
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
@@ -395,6 +396,20 @@ private:
 
         const Suppressions::Suppression s2("abc", "include/1.h");
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
+    }
+
+    void inlinesuppress() {
+        Suppressions::Suppression s;
+        std::string errmsg;
+        ASSERT_EQUALS(false, s.parseComment("/* some text */", &errmsg));
+        ASSERT_EQUALS(false, s.parseComment("/* cppcheck-suppress */", &errmsg));
+
+        errmsg.clear();
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id */", &errmsg));
+        ASSERT_EQUALS("", errmsg);
+
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id some text */", &errmsg));
+        ASSERT_EQUALS("Bad suppression attribute 'some'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym", errmsg);
     }
 
     void inlinesuppress_symbolname() {

@@ -176,6 +176,40 @@ void Suppressions::ErrorMessage::setFileName(const std::string &s)
     _fileName = Path::simplifyPath(s);
 }
 
+bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)
+{
+    if (comment.size() < 2)
+        return false;
+
+    if (comment.find(";") != std::string::npos)
+        comment.erase(comment.find(";"));
+
+    if (comment.find("//", 2) != std::string::npos)
+        comment.erase(comment.find("//",2));
+
+    if (comment.compare(comment.size() - 2, 2, "*/") == 0)
+        comment.erase(comment.size() - 2, 2);
+
+    std::istringstream iss(comment.substr(2));
+    std::string word;
+    iss >> word;
+    if (word != "cppcheck-suppress")
+        return false;
+    iss >> errorId;
+    if (!iss)
+        return false;
+    while (iss) {
+        iss >> word;
+        if (!iss)
+            break;
+        if (word.compare(0,11,"symbolName=")==0)
+            symbolName = word.substr(11);
+        else if (errorMessage && errorMessage->empty())
+            *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
+    }
+    return true;
+}
+
 bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
 {
     if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
