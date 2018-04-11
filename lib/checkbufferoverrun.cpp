@@ -103,14 +103,14 @@ void CheckBufferOverrun::arrayIndexOutOfBoundsError(const Token *tok, const Arra
                 std::string nr;
                 if (index.size() > 1U)
                     nr = "(" + MathLib::toString(i + 1) + getOrdinalText(i + 1) + " array index) ";
-                errorPath.push_back(ErrorPathItem(it->first, nr + info));
+                errorPath.emplace_back(it->first, nr + info);
             }
         }
-        errorPath.push_back(ErrorPathItem(tok,"Array index out of bounds"));
+        errorPath.emplace_back(tok,"Array index out of bounds");
     } else {
-        errorPath.push_back(ErrorPathItem(tok, "Array index out of bounds"));
+        errorPath.emplace_back(tok, "Array index out of bounds");
         if (condition)
-            errorPath.push_back(ErrorPathItem(condition, "Assuming that condition '" + condition->expressionString() + "' is not redundant"));
+            errorPath.emplace_back(condition, "Assuming that condition '" + condition->expressionString() + "' is not redundant");
     }
 
     if (condition != nullptr) {

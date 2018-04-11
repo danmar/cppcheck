@@ -1069,16 +1069,16 @@ void CheckStl::string_c_str()
         for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
             for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
                 if (c_strFuncParam.erase(func->tokenDef->str()) != 0) { // Check if function with this name was already found
-                    c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), 0)); // Disable, because there are overloads. TODO: Handle overloads
+                    c_strFuncParam.emplace(func->tokenDef->str(), 0); // Disable, because there are overloads. TODO: Handle overloads
                     continue;
                 }
 
                 unsigned int numpar = 0;
-                c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar)); // Insert function as dummy, to indicate that there is at least one function with that name
+                c_strFuncParam.emplace(func->tokenDef->str(), numpar); // Insert function as dummy, to indicate that there is at least one function with that name
                 for (std::list<Variable>::const_iterator var = func->argumentList.cbegin(); var != func->argumentList.cend(); ++var) {
                     numpar++;
                     if (var->isStlStringType() && (!var->isReference() || var->isConst()))
-                        c_strFuncParam.insert(std::make_pair(func->tokenDef->str(), numpar));
+                        c_strFuncParam.emplace(func->tokenDef->str(), numpar);
                 }
             }
         }

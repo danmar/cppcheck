@@ -247,7 +247,7 @@ void Variables::addVar(const Variable *var,
 {
     if (var->declarationId() > 0) {
         _varAddedInScope.back().insert(var->declarationId());
-        _varUsage.insert(std::make_pair(var->declarationId(), VariableUsage(var, type, false, write_, false)));
+        _varUsage.emplace(var->declarationId(), VariableUsage(var, type, false, write_, false));
     }
 }
 
@@ -382,8 +382,8 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
 
 void Variables::enterScope()
 {
-    _varAddedInScope.push_back(std::set<unsigned int>());
-    _varReadInScope.push_back(std::set<unsigned int>());
+    _varAddedInScope.emplace_back();
+    _varReadInScope.emplace_back();
 }
 
 void Variables::leaveScope(bool insideLoop)

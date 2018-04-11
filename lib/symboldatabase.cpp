@@ -67,7 +67,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 {
     // create global scope
-    scopeList.push_back(Scope(this, nullptr, nullptr));
+    scopeList.emplace_back(this, nullptr, nullptr);
 
     // pointer to current scope
     Scope *scope = &scopeList.back();
@@ -169,7 +169,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope = new_scope;
                 tok = tok2;
             } else {
-                scopeList.push_back(Scope(this, tok, scope));
+                scopeList.emplace_back(this, tok, scope);
                 new_scope = &scopeList.back();
 
                 if (tok->str() == "class")
@@ -181,7 +181,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 if (new_scope->isClassOrStructOrUnion() || new_scope->type == Scope::eEnum) {
                     Type* new_type = findType(tok->next(), scope);
                     if (!new_type) {
-                        typeList.push_back(Type(new_scope->classDef, new_scope, scope));
+                        typeList.emplace_back(new_scope->classDef, new_scope, scope);
                         new_type = &typeList.back();
                         scope->definedTypesMap[new_type->name()] = new_type;
                     } else
@@ -232,7 +232,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                  Token::Match(tok, "namespace %name% %type% (") &&
                  tok->tokAt(2)->isUpperCaseName() &&
                  Token::simpleMatch(tok->linkAt(3), ") {")) {
-            scopeList.push_back(Scope(this, tok, scope));
+            scopeList.emplace_back(this, tok, scope);
 
             Scope *new_scope = &scopeList.back();
             access[new_scope] = Public;
@@ -260,7 +260,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                  tok->strAt(-1) != "friend") {
             if (!findType(tok->next(), scope)) {
                 // fill typeList..
-                typeList.push_back(Type(tok, nullptr, scope));
+                typeList.emplace_back(tok, nullptr, scope);
                 Type* new_type = &typeList.back();
                 scope->definedTypesMap[new_type->name()] = new_type;
             }
@@ -291,7 +291,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         else if (_tokenizer->isCPP() && Token::Match(tok, "using %name% =")) {
             if (tok->strAt(-1) != ">" && !findType(tok->next(), scope)) {
                 // fill typeList..
-                typeList.push_back(Type(tok, nullptr, scope));
+                typeList.emplace_back(tok, nullptr, scope);
                 Type* new_type = &typeList.back();
                 scope->definedTypesMap[new_type->name()] = new_type;
             }
@@ -305,7 +305,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         // unnamed struct and union
         else if (Token::Match(tok, "struct|union {") &&
                  Token::Match(tok->next()->link(), "} *|&| %name% ;|[")) {
-            scopeList.push_back(Scope(this, tok, scope));
+            scopeList.emplace_back(this, tok, scope);
 
             Scope *new_scope = &scopeList.back();
             access[new_scope] = Public;
@@ -317,7 +317,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 varNameTok = varNameTok->next();
             }
 
-            typeList.push_back(Type(tok, new_scope, scope));
+            typeList.emplace_back(tok, new_scope, scope);
             {
                 Type* new_type = &typeList.back();
                 new_scope->definedType = new_type;
@@ -348,7 +348,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         else if ((Token::Match(tok, "struct|union {") &&
                   Token::simpleMatch(tok->next()->link(), "} ;")) ||
                  Token::simpleMatch(tok, "namespace {")) {
-            scopeList.push_back(Scope(this, tok, scope));
+            scopeList.emplace_back(this, tok, scope);
 
             Scope *new_scope = &scopeList.back();
             access[new_scope] = Public;
@@ -358,7 +358,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             new_scope->classStart = tok2;
             new_scope->classEnd = tok2->link();
 
-            typeList.push_back(Type(tok, new_scope, scope));
+            typeList.emplace_back(tok, new_scope, scope);
             {
                 Type* new_type = &typeList.back();
                 new_scope->definedType = new_type;
@@ -380,7 +380,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
         // forward declared enum
         else if (Token::Match(tok, "enum class| %name% ;") || Token::Match(tok, "enum class| %name% : %name% ;")) {
-            typeList.push_back(Type(tok, nullptr, scope));
+            typeList.emplace_back(tok, nullptr, scope);
             Type* new_type = &typeList.back();
             scope->definedTypesMap[new_type->name()] = new_type;
             tok = tok->tokAt(2);
@@ -801,11 +801,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             if (Token::Match(tok, "else|try|do {")) {
                 const Token* tok1 = tok->next();
                 if (tok->str() == "else")
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eElse, tok1));
+                    scopeList.emplace_back(this, tok, scope, Scope::eElse, tok1);
                 else if (tok->str() == "do")
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eDo, tok1));
+                    scopeList.emplace_back(this, tok, scope, Scope::eDo, tok1);
                 else //if (tok->str() == "try")
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eTry, tok1));
+                    scopeList.emplace_back(this, tok, scope, Scope::eTry, tok1);
 
                 tok = tok1;
                 scope->nestedList.push_back(&scopeList.back());
@@ -813,15 +813,15 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             } else if (Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 const Token *scopeStartTok = tok->next()->link()->next();
                 if (tok->str() == "if")
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eIf, scopeStartTok));
+                    scopeList.emplace_back(this, tok, scope, Scope::eIf, scopeStartTok);
                 else if (tok->str() == "for") {
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eFor, scopeStartTok));
+                    scopeList.emplace_back(this, tok, scope, Scope::eFor, scopeStartTok);
                 } else if (tok->str() == "while")
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eWhile, scopeStartTok));
+                    scopeList.emplace_back(this, tok, scope, Scope::eWhile, scopeStartTok);
                 else if (tok->str() == "catch") {
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eCatch, scopeStartTok));
+                    scopeList.emplace_back(this, tok, scope, Scope::eCatch, scopeStartTok);
                 } else // if (tok->str() == "switch")
-                    scopeList.push_back(Scope(this, tok, scope, Scope::eSwitch, scopeStartTok));
+                    scopeList.emplace_back(this, tok, scope, Scope::eSwitch, scopeStartTok);
 
                 scope->nestedList.push_back(&scopeList.back());
                 scope = &scopeList.back();
@@ -841,11 +841,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         tok2 = nullptr; // No lambda
 
                     if (tok2 && tok2->str() == ")" && tok2->link()->strAt(-1) == "]") {
-                        scopeList.push_back(Scope(this, tok2->link()->linkAt(-1), scope, Scope::eLambda, tok));
+                        scopeList.emplace_back(this, tok2->link()->linkAt(-1), scope, Scope::eLambda, tok);
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
                     } else if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
-                        scopeList.push_back(Scope(this, tok, scope, Scope::eUnconditional, tok));
+                        scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
                     } else {
@@ -2288,7 +2288,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
 void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
 {
     const Token *tok1 = *tok;
-    scopeList.push_back(Scope(this, tok1, *scope));
+    scopeList.emplace_back(this, tok1, *scope);
     Scope *newScope = &scopeList.back();
 
     // find start of function '{'
@@ -3163,7 +3163,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         while (Token::Match(startTok, "enum|struct|const"))
             startTok = startTok->next();
 
-        argumentList.push_back(Variable(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library));
+        argumentList.emplace_back(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library);
 
         if (tok->str() == ")") {
             // check for a variadic function

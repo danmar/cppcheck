@@ -993,9 +993,9 @@ public:
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
                      const Scope *scope_, const Library* lib) {
-        varlist.push_back(Variable(token_, start_, end_, varlist.size(),
-                                   access_,
-                                   type_, scope_, lib));
+        varlist.emplace_back(token_, start_, end_, varlist.size(),
+                             access_,
+                             type_, scope_, lib);
     }
 
     /** @brief initialize varlist */
@@ -1008,7 +1008,7 @@ public:
 
         const Function * back = &functionList.back();
 
-        functionMap.insert(make_pair(back->tokenDef->str(), back));
+        functionMap.emplace(back->tokenDef->str(), back);
     }
 
     bool hasDefaultConstructor() const;

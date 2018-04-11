@@ -90,7 +90,7 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
 
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "error") == 0)
-            errors->push_back(ErrorLogger::ErrorMessage(e));
+            errors->emplace_back(e);
     }
 
     return true;

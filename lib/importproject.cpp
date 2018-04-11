@@ -481,7 +481,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
         } else if (std::strcmp(node->Name(),"PropertyGroup")==0) {
             importPropertyGroup(node, variables, includePath, nullptr);
         } else if (std::strcmp(node->Name(),"ItemDefinitionGroup")==0) {
-            itemDefinitionGroupList.push_back(ItemDefinitionGroup(node, additionalIncludeDirectories));
+            itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         }
     }
 }
@@ -512,7 +512,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
                         const ProjectConfiguration p(cfg);
                         if (p.platform != ProjectConfiguration::Unknown)
-                            projectConfigurationList.push_back(ProjectConfiguration(cfg));
+                            projectConfigurationList.emplace_back(cfg);
                     }
                 }
             } else {
@@ -525,7 +525,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 }
             }
         } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
-            itemDefinitionGroupList.push_back(ItemDefinitionGroup(node, additionalIncludeDirectories));
+            itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
             importPropertyGroup(node, &variables, &includePath, &useOfMfc);
         } else if (std::strcmp(node->Name(), "ImportGroup") == 0) {

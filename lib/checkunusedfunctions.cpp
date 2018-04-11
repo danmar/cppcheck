@@ -68,7 +68,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (tokenizer.isCPP() && func->retDef->str() == "template")
             continue;
 
-        _functionDecl.push_back(FunctionDecl(func));
+        _functionDecl.emplace_back(func);
 
         FunctionUsage &usage = _functions[func->name()];
 

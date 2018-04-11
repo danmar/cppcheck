@@ -424,13 +424,11 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
 
 std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &tokens) const
 {
-    std::set<std::string> ret;
-    ret.insert("");
+    std::set<std::string> ret = { "" };
     if (!tokens.cfront())
         return ret;
 
-    std::set<std::string> defined;
-    defined.insert("__cplusplus");
+    std::set<std::string> defined = { "__cplusplus" };
 
     ::getConfigs(tokens, defined, _settings.userDefines, _settings.userUndefs, ret);
 

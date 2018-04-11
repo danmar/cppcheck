@@ -2602,7 +2602,7 @@ void Tokenizer::setVarIdPass1()
                 variableId.swap(scopeInfo.top());
                 scopeInfo.pop();
             } else if (tok->str() == "{")
-                scopeStack.push(VarIdScopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/false, _varId));
+                scopeStack.emplace(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/false, _varId);
         } else if (!initlist && tok->str()=="(") {
             const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
@@ -2638,7 +2638,7 @@ void Tokenizer::setVarIdPass1()
                             scopeInfo.push(variableId);
                     }
                     initlist = false;
-                    scopeStack.push(VarIdScopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), _varId));
+                    scopeStack.emplace(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), _varId);
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
@@ -3004,9 +3004,9 @@ void Tokenizer::setVarIdPass2()
             if (!tok->next())
                 syntaxError(tok);
             if (Token::Match(tok, "%name% ("))
-                allMemberFunctions.push_back(Member(scope, usingnamespaces, tok1));
+                allMemberFunctions.emplace_back(scope, usingnamespaces, tok1);
             else
-                allMemberVars.push_back(Member(scope, usingnamespaces, tok1));
+                allMemberVars.emplace_back(scope, usingnamespaces, tok1);
         }
     }
 
@@ -3055,7 +3055,7 @@ void Tokenizer::setVarIdPass2()
 
         // What member variables are there in this class?
         for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
-            scopeInfo.push_back(ScopeInfo2((*it)->str(), tokStart->link()));
+            scopeInfo.emplace_back((*it)->str(), tokStart->link());
 
         for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
             // skip parentheses..
@@ -9945,7 +9945,7 @@ void Tokenizer::printUnknownTypes() const
                 }
             }
 
-            unknowns.insert(std::pair<std::string, const Token *>(name, nameTok));
+            unknowns.emplace(name, nameTok);
         }
     }
 

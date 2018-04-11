@@ -1098,7 +1098,7 @@ static void valueFlowReverse(TokenList *tokenlist,
             if (inc != 0) {
                 val.intvalue += inc;
                 const std::string info(tok2->str() + " is " + std::string(inc==1 ? "decremented" : "incremented") + ", before this " + (inc==1?"decrement":"increment") + " the value is " + val.infoString());
-                val.errorPath.push_back(ErrorPathItem(tok2, info));
+                val.errorPath.emplace_back(tok2, info);
             }
 
             // compound assignment
@@ -1124,7 +1124,7 @@ static void valueFlowReverse(TokenList *tokenlist,
                 }
 
                 const std::string info("Compound assignment '" + assignToken->str() + "', before assignment value is " + val.infoString());
-                val.errorPath.push_back(ErrorPathItem(tok2, info));
+                val.errorPath.emplace_back(tok2, info);
             }
 
             // bailout: variable is used in rhs in assignment to itself
@@ -1971,7 +1971,7 @@ static bool valueFlowForward(Token * const               startToken,
                         it = values.erase(it);
                     } else {
                         const std::string info("Compound assignment '" + assign + "', assigned value is " + it->infoString());
-                        it->errorPath.push_back(ErrorPathItem(tok2, info));
+                        it->errorPath.emplace_back(tok2, info);
 
                         ++it;
                     }
@@ -2080,7 +2080,7 @@ static bool valueFlowForward(Token * const               startToken,
                     if (pre)
                         setTokenValue(op, *it, settings);
                     const std::string info(tok2->str() + " is " + std::string(inc ? "incremented" : "decremented") + "', new value is " + it->infoString());
-                    it->errorPath.push_back(ErrorPathItem(tok2, info));
+                    it->errorPath.emplace_back(tok2, info);
                 }
             }
 
@@ -2231,7 +2231,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::MOVED;
                 value.moveKind = ValueFlow::Value::NonMovedVariable;
-                value.errorPath.push_back(ErrorPathItem(tok, "Calling " + tok->next()->expressionString() + " makes " + tok->str() + " 'non-moved'"));
+                value.errorPath.emplace_back(tok, "Calling " + tok->next()->expressionString() + " makes " + tok->str() + " 'non-moved'");
                 value.setKnown();
                 std::list<ValueFlow::Value> values;
                 values.push_back(value);
@@ -2269,9 +2269,9 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             value.valueType = ValueFlow::Value::MOVED;
             value.moveKind = moveKind;
             if (moveKind == ValueFlow::Value::MovedVariable)
-                value.errorPath.push_back(ErrorPathItem(tok, "Calling std::move(" + varTok->str() + ")"));
+                value.errorPath.emplace_back(tok, "Calling std::move(" + varTok->str() + ")");
             else // if (moveKind == ValueFlow::Value::ForwardedVariable)
-                value.errorPath.push_back(ErrorPathItem(tok, "Calling std::forward(" + varTok->str() + ")"));
+                value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
             value.setKnown();
             std::list<ValueFlow::Value> values;
             values.push_back(value);
@@ -2319,7 +2319,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             std::list<ValueFlow::Value> values = tok->astOperand2()->values();
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
                 const std::string info = "Assignment '" + tok->expressionString() + "', assigned value is " + it->infoString();
-                it->errorPath.push_back(ErrorPathItem(tok->astOperand2(), info));
+                it->errorPath.emplace_back(tok->astOperand2(), info);
             }
             const bool constValue = tok->astOperand2()->isNumber();
 
@@ -2441,21 +2441,21 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
             std::list<ValueFlow::Value> false_values;
             // TODO: We should add all known values
             if (numtok) {
-                false_values.push_back(ValueFlow::Value(tok, numtok->values().front().intvalue));
-                true_values.push_back(ValueFlow::Value(tok, numtok->values().front().intvalue));
+                false_values.emplace_back(tok, numtok->values().front().intvalue);
+                true_values.emplace_back(tok, numtok->values().front().intvalue);
             } else if (lowertok) {
                 long long v = lowertok->values().front().intvalue;
-                true_values.push_back(ValueFlow::Value(tok, v+1));
-                false_values.push_back(ValueFlow::Value(tok, v));
+                true_values.emplace_back(tok, v+1);
+                false_values.emplace_back(tok, v);
 
             } else if (uppertok) {
                 long long v = uppertok->values().front().intvalue;
-                true_values.push_back(ValueFlow::Value(tok, v-1));
-                false_values.push_back(ValueFlow::Value(tok, v));
+                true_values.emplace_back(tok, v-1);
+                false_values.emplace_back(tok, v);
 
             } else {
-                true_values.push_back(ValueFlow::Value(tok, 0LL));
-                false_values.push_back(ValueFlow::Value(tok, 0LL));
+                true_values.emplace_back(tok, 0LL);
+                false_values.emplace_back(tok, 0LL);
 
             }
 
@@ -2965,8 +2965,8 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, con
         endToken = fortok->scope()->classEnd;
 
     std::list<ValueFlow::Value> values;
-    values.push_back(ValueFlow::Value(num));
-    values.back().errorPath.push_back(ErrorPathItem(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString()));
+    values.emplace_back(num);
+    values.back().errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString());
 
     valueFlowForward(fortok->linkAt(1)->linkAt(1)->next(),
                      endToken,
@@ -3067,10 +3067,10 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
             }
             if (Token::Match(tok, "case %num% :")) {
                 std::list<ValueFlow::Value> values;
-                values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
+                values.emplace_back(MathLib::toLongNumber(tok->next()->str()));
                 values.back().condition = tok;
                 const std::string info("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
-                values.back().errorPath.push_back(ErrorPathItem(tok, info));
+                values.back().errorPath.emplace_back(tok, info);
                 bool known = false;
                 if ((Token::simpleMatch(tok->previous(), "{") || Token::simpleMatch(tok->tokAt(-2), "break ;")) && !Token::Match(tok->tokAt(3), ";| case"))
                     known = true;
@@ -3079,10 +3079,10 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
-                    values.push_back(ValueFlow::Value(MathLib::toLongNumber(tok->next()->str())));
+                    values.emplace_back(MathLib::toLongNumber(tok->next()->str()));
                     values.back().condition = tok;
                     const std::string info2("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
-                    values.back().errorPath.push_back(ErrorPathItem(tok, info2));
+                    values.back().errorPath.emplace_back(tok, info2);
                 }
                 for (std::list<ValueFlow::Value>::const_iterator val = values.begin(); val != values.end(); ++val) {
                     valueFlowReverse(tokenlist,
@@ -3196,8 +3196,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             // passing value(s) to function
             std::list<ValueFlow::Value> argvalues;
             if (Token::Match(argtok, "%comp%|%oror%|&&|!") && !argtok->hasKnownIntValue()) {
-                argvalues.push_back(ValueFlow::Value(0));
-                argvalues.push_back(ValueFlow::Value(1));
+                argvalues.emplace_back(0);
+                argvalues.emplace_back(1);
             } else {
                 argvalues = argtok->values();
             }
@@ -3209,15 +3209,15 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
                 const std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
 
-                it->errorPath.push_back(ErrorPathItem(argtok,
-                                                      "Calling function '" +
-                                                      calledFunction->name() +
-                                                      "', " +
-                                                      nr +
-                                                      " argument '" +
-                                                      argvar->name() +
-                                                      "' value is " +
-                                                      it->infoString()));
+                it->errorPath.emplace_back(argtok,
+                                           "Calling function '" +
+                                           calledFunction->name() +
+                                           "', " +
+                                           nr +
+                                           " argument '" +
+                                           argvar->name() +
+                                           "' value is " +
+                                           it->infoString());
             }
 
             // passed values are not "known"..
@@ -3382,7 +3382,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       defaultArg(false),
       valueKind(ValueKind::Possible)
 {
-    errorPath.push_back(ErrorPathItem(c, "Assuming that condition '" + c->expressionString() + "' is not redundant"));
+    errorPath.emplace_back(c, "Assuming that condition '" + c->expressionString() + "' is not redundant");
 }
 
 std::string ValueFlow::Value::infoString() const

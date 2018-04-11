@@ -354,9 +354,9 @@ void CheckOther::invalidPointerCast()
                 if (toType->isIntegral() && fromType->isIntegral())
                     continue;
                 std::string toStr = toType->isIntegral() ? "integer *" : toType->str();
-                toStr = toStr.substr(0, toStr.size()-2);
+                toStr.erase(toStr.size()-2);
                 std::string fromStr = fromType->isIntegral() ? "integer *" : fromType->str();
-                fromStr = fromStr.substr(0, fromStr.size() - 2);
+                fromStr.erase(fromStr.size() - 2);
 
                 invalidPointerCastError(tok, fromStr, toStr, toType->type == ValueType::Type::CHAR);
             }
@@ -1829,7 +1829,7 @@ void CheckOther::checkInvalidFree()
 
             // Keep track of which variables were assigned addresses to newly-allocated memory
             if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
-                allocatedVariables.insert(std::make_pair(tok->varId(), false));
+                allocatedVariables.emplace(tok->varId(), false);
             }
 
             // If a previously-allocated pointer is incremented or decremented, any subsequent

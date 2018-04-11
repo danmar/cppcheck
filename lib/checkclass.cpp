@@ -2115,13 +2115,13 @@ void CheckClass::initializerListOrder()
                         if (Token::Match(tok, "%name% (|{")) {
                             const Variable *var = scope->getVariable(tok->str());
                             if (var)
-                                vars.push_back(VarInfo(var, tok));
+                                vars.emplace_back(var, tok);
 
                             if (Token::Match(tok->tokAt(2), "%name% =")) {
                                 var = scope->getVariable(tok->strAt(2));
 
                                 if (var)
-                                    vars.push_back(VarInfo(var, tok->tokAt(2)));
+                                    vars.emplace_back(var, tok->tokAt(2));
                             }
                             tok = tok->next()->link()->next();
                         } else
@@ -2303,7 +2303,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
     ErrorPath errorPath;
     int lineNumber = 1;
     for (std::list<const Token *>::const_iterator it = tokStack.begin(); it != tokStack.end(); ++it)
-        errorPath.push_back(ErrorPathItem(*it, "Calling " + (*it)->str()));
+        errorPath.emplace_back(*it, "Calling " + (*it)->str());
     if (!errorPath.empty()) {
         lineNumber = errorPath.front().first->linenr();
         errorPath.back().second = funcname + " is a virtual method";
@@ -2337,7 +2337,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
 
     ErrorPath errorPath;
     for (std::list<const Token *>::const_iterator it = tokStack.begin(); it != tokStack.end(); ++it)
-        errorPath.push_back(ErrorPathItem(*it, "Calling " + (*it)->str()));
+        errorPath.emplace_back(*it, "Calling " + (*it)->str());
     if (!errorPath.empty())
         errorPath.back().second = purefuncname + " is a pure virtual method without body";
 

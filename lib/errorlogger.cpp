@@ -89,7 +89,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
         if (!(*it))
             continue;
 
-        _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(*it, list));
+        _callStack.emplace_back(*it, list);
     }
 
     if (list && !list->getFiles().empty())
@@ -108,7 +108,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
         if (!(*it))
             continue;
 
-        _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(*it, list));
+        _callStack.emplace_back(*it, list);
     }
 
     if (list && !list->getFiles().empty())
@@ -127,7 +127,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenL
 
         // --errorlist can provide null values here
         if (tok)
-            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(tok, info, tokenList));
+            _callStack.emplace_back(tok, info, tokenList);
     }
 
     if (tokenList && !tokenList->getFiles().empty())
@@ -170,7 +170,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
             const char *file = strfile ? strfile : unknown;
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? std::atoi(strline) : 0;
-            _callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(file, info, line));
+            _callStack.emplace_back(file, info, line);
         }
     }
 }
@@ -537,7 +537,7 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         if (!i->fileName.empty())
-            callStack.push_back(ErrorLogger::ErrorMessage::FileLocation(i->fileName, i->lineNumber));
+            callStack.emplace_back(i->fileName, i->lineNumber);
         reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->errorId, "unmatchedSuppression", false));
     }
 }
