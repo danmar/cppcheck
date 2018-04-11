@@ -79,7 +79,7 @@ const char * CppCheck::extraVersion()
 
 unsigned int CppCheck::check(const std::string &path)
 {
-    std::ifstream fin(path.c_str());
+    std::ifstream fin(path);
     return processFile(Path::simplifyPath(path), emptyString, fin);
 }
 
@@ -101,7 +101,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     if (fs.platformType != Settings::Unspecified) {
         temp._settings.platform(fs.platformType);
     }
-    std::ifstream fin(fs.filename.c_str());
+    std::ifstream fin(fs.filename);
     return temp.processFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
 }
 
@@ -196,7 +196,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         std::ofstream fdump;
         if (_settings.dump) {
             const std::string dumpfile(_settings.dumpFile.empty() ? (filename + ".dump") : _settings.dumpFile);
-            fdump.open(dumpfile.c_str());
+            fdump.open(dumpfile);
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
                 fdump << "<dumps>" << std::endl;
@@ -806,7 +806,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 
     // Load all analyzer info data..
     const std::string filesTxt(buildDir + "/files.txt");
-    std::ifstream fin(filesTxt.c_str());
+    std::ifstream fin(filesTxt);
     std::string filesTxtLine;
     while (std::getline(fin, filesTxtLine)) {
         const std::string::size_type firstColon = filesTxtLine.find(':');

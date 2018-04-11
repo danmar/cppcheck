@@ -52,7 +52,7 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     if (FileList == "-") { // read from stdin
         Files = &std::cin;
     } else {
-        Infile.open(FileList.c_str());
+        Infile.open(FileList);
         Files = &Infile;
     }
     if (Files && *Files) {
@@ -68,7 +68,7 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
 static void AddInclPathsToList(const std::string& FileList, std::list<std::string>* PathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
-    std::ifstream Files(FileList.c_str());
+    std::ifstream Files(FileList);
     if (Files) {
         std::string PathName;
         while (std::getline(Files, PathName)) { // next line
@@ -189,7 +189,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 // exitcode-suppressions=filename.txt
                 std::string filename = 24 + argv[i];
 
-                std::ifstream f(filename.c_str());
+                std::ifstream f(filename);
                 if (!f.is_open()) {
                     PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
                     return false;
@@ -204,7 +204,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // Filter errors
             else if (std::strncmp(argv[i], "--suppressions-list=", 20) == 0) {
                 std::string filename = argv[i]+20;
-                std::ifstream f(filename.c_str());
+                std::ifstream f(filename);
                 if (!f.is_open()) {
                     std::string message("cppcheck: Couldn't open the file: \"");
                     message += filename;

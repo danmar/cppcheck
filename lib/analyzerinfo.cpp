@@ -48,7 +48,7 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
     std::map<std::string, unsigned int> fileCount;
 
     const std::string filesTxt(buildDir + "/files.txt");
-    std::ofstream fout(filesTxt.c_str());
+    std::ofstream fout(filesTxt);
     for (std::list<std::string>::const_iterator f = sourcefiles.begin(); f != sourcefiles.end(); ++f) {
         const std::string afile = getFilename(*f);
         if (fileCount.find(afile) == fileCount.end())
@@ -99,7 +99,7 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
 std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
 {
     const std::string files(buildDir + "/files.txt");
-    std::ifstream fin(files.c_str());
+    std::ifstream fin(files);
     if (fin.is_open()) {
         std::string line;
         const std::string endsWith(':' + cfg + ':' + sourcefile);
