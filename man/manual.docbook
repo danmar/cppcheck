@@ -816,7 +816,7 @@ Rule text
     these.</para>
 
     <section>
-      <title>Suppressing a certain error type</title>
+      <title>Plain text suppressions</title>
 
       <para>You can suppress certain types of errors. The format for such a
       suppression is one of:</para>
@@ -870,6 +870,25 @@ uninitvar</programlisting>
     </section>
 
     <section>
+      <title>XML suppressions</title>
+
+      <para>You can specify suppressions in a XML file. Example file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;suppressions&gt;
+  &lt;suppression&gt;
+    &lt;id&gt;uninitvar&lt;/id&gt;
+    &lt;fileName&gt;src/file1.c&lt;/fileName&gt;
+    &lt;lineNumber&gt;10&lt;/lineNumber&gt;
+    &lt;symbolName&gt;var&lt;/symbolName&gt;
+  &lt;/suppression&gt;
+&lt;/suppressions&gt;</programlisting>
+
+      <para>The xml format is extensible and may be extended with further
+      attributes in the future.</para>
+    </section>
+
+    <section>
       <title>Inline suppressions</title>
 
       <para>Suppressions can also be added directly in the code by adding
@@ -902,6 +921,17 @@ Checking test.c...
       No error is reported when invoking cppcheck this way:</para>
 
       <programlisting>cppcheck --inline-suppr test.c</programlisting>
+
+      <para>you can specify that the inline suppression only applies to a
+      specific symbol:</para>
+
+      <programlisting>// cppcheck-suppress arrayIndexOutOfBounds symbolName=arr</programlisting>
+
+      <para> You can write comments for the suppress, however is recommended
+      to use ; or // to specify where they start:</para>
+
+      <programlisting>// cppcheck-suppress arrayIndexOutOfBounds ; some comment
+// cppcheck-suppress arrayIndexOutOfBounds // some comment</programlisting>
     </section>
   </chapter>
 
