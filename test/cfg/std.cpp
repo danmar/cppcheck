@@ -3267,7 +3267,18 @@ void stdstring()
 
 void stdvector()
 {
+    int uninit;
     std::vector<int> v;
     // cppcheck-suppress ignoredReturnValue
     v.size();
+    // cppcheck-suppress uninitvar
+    v.push_back(uninit);
+
+    // no warning is expected for pop_back()
+    v.push_back(42);
+    v.pop_back();
+
+    v.push_back(42);
+    // cppcheck-suppress ignoredReturnValue
+    v.back();
 }
