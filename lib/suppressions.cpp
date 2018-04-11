@@ -274,6 +274,23 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
     return false;
 }
 
+void Suppressions::dump(std::ostream & out)
+{
+	out << "  <suppressions>" << std::endl;
+	for (std::list<Suppression>::const_iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+		const Suppression &suppression = *it;
+		out << "    <suppression";
+		out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
+		if (!suppression.fileName.empty()) 
+			out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
+		out << " lineNumber=\"" << suppression.lineNumber << '"';
+		if (!suppression.symbolName.empty())
+			out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
+		out << " />" << std::endl;
+	}
+	out << "  </suppressions>" << std::endl;
+}
+
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
