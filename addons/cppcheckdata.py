@@ -437,30 +437,29 @@ class ValueFlow:
         self.values = []
         for value in element:
             self.values.append(ValueFlow.Value(value))
-            
+
 class Suppression:
     """
     Suppression class
     This class contains a suppression entry to suppress a warning.
-    
+
     Attributes
       errorId     The id string of the error to suppress, can be a wildcard
       fileName    The name of the file to suppress warnings for, can include wildcards
       lineNumber  The number of the line to suppress warnings from, can be 0 to represent any line
       symbolName  The name of the symbol to match warnings for, can include wildcards
     """
-    
+
     errorId = None
     fileName = None
     lineNumber = None
     symbolName = None
-    
+
     def __init__(self, element):
         self.errorId = element.get('errorId')
         self.fileName = element.get('fileName')
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
-
 
 class Configuration:
     """
