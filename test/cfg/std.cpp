@@ -3056,6 +3056,12 @@ void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwst
     testwstr.compare(L"wtest");
 }
 
+void ignoredReturnValue_make_pair()
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::make_pair(1, 2);
+}
+
 void nullPointer_ifstream_read(std::ifstream &f)
 {
     // cppcheck-suppress nullPointer
