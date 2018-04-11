@@ -438,7 +438,7 @@ class ValueFlow:
         for value in element:
             self.values.append(ValueFlow.Value(value))
             
-class Suppression
+class Suppression:
     """
     Suppression class
     This class contains a suppression entry to suppress a warning.
