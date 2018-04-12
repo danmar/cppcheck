@@ -1791,6 +1791,9 @@ const Token * Variable::declEndToken() const
 
 void Variable::evaluate(const Library* lib)
 {
+    unsigned int pointer = 0;
+    _constness = 0;
+
     if (_name)
         setFlag(fIsArray, arrayDimensions(lib));
 
@@ -1809,11 +1812,13 @@ void Variable::evaluate(const Library* lib)
             setFlag(fIsVolatile, true);
         else if (tok->str() == "mutable")
             setFlag(fIsMutable, true);
-        else if (tok->str() == "const")
+        else if (tok->str() == "const") {
             setFlag(fIsConst, true);
-        else if (tok->str() == "*") {
+            _constness |= 1 << pointer;
+        } else if (tok->str() == "*") {
             setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
+            ++pointer;
         } else if (tok->str() == "&") {
             if (isReference())
                 setFlag(fIsRValueRef, true);
@@ -3045,6 +3050,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isPointer=\""      << var->isPointer() << '\"';
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
+        out << " constness=\""      << var->constness() << '\"';
         out << " access=\""         << accessControlToString(var->_access) << '\"';
         out << "/>" << std::endl;
     }

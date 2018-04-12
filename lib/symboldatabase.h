@@ -229,6 +229,7 @@ public:
           _index(index_),
           _access(access_),
           _flags(0),
+          _constness(0),
           _type(type_),
           _scope(scope_) {
         evaluate(lib);
@@ -599,6 +600,10 @@ public:
 
     void setFlags(const ValueType &valuetype);
 
+    unsigned int constness() const {
+        return _constness;
+    }
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;
@@ -628,6 +633,9 @@ private:
 
     /** @brief flags */
     unsigned int _flags;
+
+    /** @brief constness (same encoding as ValueType::constness) */
+    unsigned int _constness;
 
     /** @brief pointer to user defined type info (for known types) */
     const Type *_type;
