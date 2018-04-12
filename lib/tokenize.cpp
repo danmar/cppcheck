@@ -9541,13 +9541,13 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
         if (match!=apis.end()) {
             tok->str(ansi ? match->second.mbcs : match->second.unicode);
             tok->originalName(match->first);
-        } else if (Token::Match(tok, "_T ( %char%|%str% )")) {
+        } else if (Token::Match(tok, "_T|_TEXT|TEXT ( %char%|%str% )")) {
             tok->deleteNext();
             tok->deleteThis();
             tok->deleteNext();
             if (!ansi)
                 tok->isLong(true);
-            while (Token::Match(tok->next(), "_T ( %char%|%str% )")) {
+            while (Token::Match(tok->next(), "_T|_TEXT|TEXT ( %char%|%str% )")) {
                 tok->next()->deleteNext();
                 tok->next()->deleteThis();
                 tok->next()->deleteNext();
