@@ -158,10 +158,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     enableCheckButtons(true);
 
     mUI.mActionPrint->setShortcut(QKeySequence::Print);
-    mUI.mActionPrint->setEnabled(false);
-    mUI.mActionPrintPreview->setEnabled(false);
-    mUI.mActionClearResults->setEnabled(false);
-    mUI.mActionSave->setEnabled(false);
+    enableResultsButtons();
     enableProjectOpenActions(true);
     enableProjectActions(false);
 
@@ -962,12 +959,7 @@ void MainWindow::analysisDone()
         }
     }
 
-    if (mUI.mResults->hasResults()) {
-        mUI.mActionClearResults->setEnabled(true);
-        mUI.mActionSave->setEnabled(true);
-        mUI.mActionPrint->setEnabled(true);
-        mUI.mActionPrintPreview->setEnabled(true);
-    }
+    enableResultsButtons();
 
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
         if (mRecentProjectActs[i] != nullptr)
@@ -1086,10 +1078,7 @@ void MainWindow::reAnalyze(bool all)
 void MainWindow::clearResults()
 {
     mUI.mResults->clear(true);
-    mUI.mActionClearResults->setEnabled(false);
-    mUI.mActionSave->setEnabled(false);
-    mUI.mActionPrint->setEnabled(false);
-    mUI.mActionPrintPreview->setEnabled(false);
+    enableResultsButtons();
 }
 
 void MainWindow::openResults()
@@ -1136,6 +1125,7 @@ void MainWindow::loadResults(const QString selectedFile)
     mUI.mActionReanalyzeAll->setEnabled(false);
     mUI.mResults->readErrorsXml(selectedFile);
     setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
+    formatAndSetTitle(selectedFile);
 }
 
 void MainWindow::loadResults(const QString selectedFile, const QString sourceDirectory)
@@ -1158,6 +1148,15 @@ void MainWindow::enableCheckButtons(bool enable)
     }
 
     mUI.mActionAnalyzeDirectory->setEnabled(enable);
+}
+
+void MainWindow::enableResultsButtons()
+{
+    bool enabled = mUI.mResults->hasResults();
+    mUI.mActionClearResults->setEnabled(enabled);
+    mUI.mActionSave->setEnabled(enabled);
+    mUI.mActionPrint->setEnabled(enabled);
+    mUI.mActionPrintPreview->setEnabled(enabled);
 }
 
 void MainWindow::showStyle(bool checked)
@@ -1442,6 +1441,7 @@ bool MainWindow::loadLastResults()
     mUI.mResults->readErrorsXml(lastResults);
     mUI.mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
     mUI.mActionViewStats->setEnabled(true);
+    enableResultsButtons();
     return true;
 }
 

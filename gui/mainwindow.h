@@ -255,6 +255,9 @@ private:
     /** @brief Helper function to enable/disable all check,recheck buttons */
     void enableCheckButtons(bool enable);
 
+    /** @brief Helper function to enable/disable results buttons (clear,save,print) */
+    void enableResultsButtons();
+
     /**
      * @brief Select files/or directory to analyze.
      * Helper function to open a dialog to ask user to select files or
