@@ -113,14 +113,15 @@ def exp05(data):
                     continue
                 if not argvar.isPointer:
                     continue
+                if (argvar.constness % 2) == 1: # data is const
+                    continue
                 argtok = arguments[argnr - 1]
                 if not argtok.valueType:
                     continue
                 if argtok.valueType.pointer == 0:
                     continue
-                const1 = argvar.isConst
                 const2 = arguments[argnr - 1].valueType.constness
-                if (const1 % 2) < (const2 % 2):
+                if (const2 % 2) == 1:
                     reportError(token, 'style', "Attempt to cast away const", 'cert-EXP05-C')
 
 

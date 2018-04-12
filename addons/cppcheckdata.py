@@ -351,6 +351,7 @@ class Variable:
         isPointer       Is this variable a pointer
         isReference     Is this variable a reference
         isStatic        Is this variable static?
+        constness       Variable constness (same encoding as ValueType::constness)
     """
 
     Id = None
@@ -369,6 +370,7 @@ class Variable:
     isPointer = False
     isReference = False
     isStatic = False
+    constness = 0
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -387,6 +389,9 @@ class Variable:
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
+        self.constness = element.get('constness')
+        if self.constness:
+            self.constness = int(self.constness)
 
     def setId(self, IdMap):
         self.nameToken = IdMap[self.nameTokenId]
