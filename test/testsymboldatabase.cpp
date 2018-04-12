@@ -275,6 +275,7 @@ private:
         TEST_CASE(symboldatabase61);
         TEST_CASE(symboldatabase62);
         TEST_CASE(symboldatabase63);
+        TEST_CASE(symboldatabase64);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2937,6 +2938,36 @@ private:
         }
     }
 
+    void symboldatabase64() {
+        {
+            GET_SYMBOL_DB("template <typename A> class Fred { struct impl; };\n"
+                          "template <typename A> struct Fred<A>::impl { };");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 3);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+        }
+        {
+            GET_SYMBOL_DB("class Map<String,Entry>::Entry* e;");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 1);
+            ASSERT(db && db->getVariableListSize() == 2);
+        }
+        {
+            GET_SYMBOL_DB("template class boost::token_iterator_generator<boost::offset_separator>::type; void foo() { }");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 2);
+        }
+        {
+            GET_SYMBOL_DB("void foo() {\n"
+                          "    return class Arm_relocate_functions<big_endian>::thumb32_branch_offset(upper_insn, lower_insn);\n"
+                          "}");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 2);
+        }
+    }
+
     void enum1() {
         GET_SYMBOL_DB("enum BOOL { FALSE, TRUE }; enum BOOL b;");
 
@@ -4090,7 +4121,6 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "copy ( * f ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
-
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

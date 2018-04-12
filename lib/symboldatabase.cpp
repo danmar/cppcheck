@@ -101,8 +101,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok2 = tok2->tokAt(2);
 
             // skip over template args
-            if (tok2 && tok2->str() == "<" && tok2->link())
+            while (tok2 && tok2->str() == "<" && tok2->link()) {
                 tok2 = tok2->link()->next();
+                while (Token::Match(tok2, ":: %name%"))
+                    tok2 = tok2->tokAt(2);
+            }
 
             // make sure we have valid code
             if (!Token::Match(tok2, "{|:")) {
@@ -124,9 +127,15 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     else if (Token::Match(tok2, "%name% ["))
                         continue;
                     // skip template
-                    else if (Token::Match(tok->previous(), "template class|struct") &&
-                             Token::simpleMatch(tok2->previous(), "> ;")) {
+                    else if (Token::simpleMatch(tok2, ";") &&
+                             Token::Match(tok->previous(), "template|> class|struct")) {
                         tok = tok2;
+                        continue;
+                    }
+                    // skip constructor
+                    else if (Token::simpleMatch(tok2, "(") &&
+                             Token::simpleMatch(tok2->link(), ") ;")) {
+                        tok = tok2->link()->next();
                         continue;
                     } else
                         throw InternalError(tok2, "SymbolDatabase bailout; unhandled code", InternalError::SYNTAX);
@@ -283,8 +292,13 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = tok->tokAt(3);
 
             // skip over qualification
-            while (Token::Match(tok, "%type% ::"))
-                tok = tok->tokAt(2);
+            while (Token::Match(tok, "%type% ::") ||
+                   (Token::Match(tok, "%type% <") && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::")) {
+                if (tok->strAt(1) == "::")
+                    tok = tok->tokAt(2);
+                else
+                    tok = tok->linkAt(1)->tokAt(2);
+            }
         }
 
         // using type alias
@@ -2391,8 +2405,12 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
             }
 
             // handle derived base classes
-            while (Token::Match(tok2, "%name% ::")) {
-                tok2 = tok2->tokAt(2);
+            while (Token::Match(tok2, "%name% ::") ||
+                   (Token::Match(tok2, "%name% <") && tok2->linkAt(1) && tok2->linkAt(1)->strAt(1) == "::")) {
+                if (tok2->strAt(1) == "::")
+                    tok2 = tok2->tokAt(2);
+                else
+                    tok2 = tok2->linkAt(1)->tokAt(2);
             }
             if (!tok2)
                 return nullptr;
@@ -3330,8 +3348,13 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     // skip over qualification if present
     if (nameTok && nameTok->str() == "::")
         nameTok = nameTok->next();
-    while (Token::Match(nameTok, "%type% ::"))
-        nameTok = nameTok->tokAt(2);
+    while (Token::Match(nameTok, "%type% ::") ||
+           (Token::Match(nameTok, "%type% <") && nameTok->linkAt(1) &&  nameTok->linkAt(1)->strAt(1) == "::")) {
+        if (nameTok->next()->str() == "::")
+            nameTok = nameTok->tokAt(2);
+        else
+            nameTok = nameTok->linkAt(1)->tokAt(2);
+    }
     if (nameTok && ((type == Scope::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
 
         className = nameTok->str();
@@ -3559,8 +3582,12 @@ static const Token* skipScopeIdentifiers(const Token* tok)
     if (tok && tok->str() == "::") {
         tok = tok->next();
     }
-    while (Token::Match(tok, "%type% ::")) {
-        tok = tok->tokAt(2);
+    while (Token::Match(tok, "%name% ::") ||
+           (Token::Match(tok, "%name% <") && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::")) {
+        if (tok->strAt(1) == "::")
+            tok = tok->tokAt(2);
+        else
+            tok = tok->linkAt(1)->tokAt(2);
     }
 
     return tok;
@@ -4535,6 +4562,9 @@ const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope
         if (tok->strAt(1) == "::") {
             scope = scope->findRecordInNestedList(tok->str());
             tok = tok->tokAt(2);
+        } else if (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::") {
+            scope = scope->findRecordInNestedList(tok->str());
+            tok = tok->linkAt(1)->tokAt(2);
         } else
             return scope->findRecordInNestedList(tok->str());
     }
@@ -4578,6 +4608,17 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                 scope = start_scope;
                 tok = startTok;
             }
+        } else if (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::") {
+            scope = scope->findRecordInNestedList(tok->str());
+            if (scope) {
+                tok = tok->linkAt(1)->tokAt(2);
+            } else {
+                start_scope = start_scope->nestedIn;
+                if (!start_scope)
+                    break;
+                scope = start_scope;
+                tok = startTok;
+            }
         } else {
             const Type * type = scope->findType(tok->str());
             if (type)
@@ -4600,6 +4641,17 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                     scope = scope->findRecordInNestedList(tok->str());
                     if (scope) {
                         tok = tok->tokAt(2);
+                    } else {
+                        start_scope = start_scope->nestedIn;
+                        if (!start_scope)
+                            break;
+                        scope = start_scope;
+                        tok = startTok;
+                    }
+                } else if (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::") {
+                    scope = scope->findRecordInNestedList(tok->str());
+                    if (scope) {
+                        tok = tok->linkAt(1)->tokAt(2);
                     } else {
                         start_scope = start_scope->nestedIn;
                         if (!start_scope)
@@ -4653,6 +4705,18 @@ const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope 
             scope = scope->findRecordInNestedList(tok->str());
             if (scope) {
                 tok = tok->tokAt(2);
+            } else {
+                startScope = startScope->nestedIn;
+                if (!startScope)
+                    break;
+                scope = startScope;
+                tok = startTok;
+            }
+        } else if (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::") {
+            hasPath = true;
+            scope = scope->findRecordInNestedList(tok->str());
+            if (scope) {
+                tok = tok->linkAt(1)->tokAt(2);
             } else {
                 startScope = startScope->nestedIn;
                 if (!startScope)
