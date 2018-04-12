@@ -229,5 +229,28 @@ bool ApplicationList::findDefaultWindowsEditor()
     if (!qtCreatorRegistry.isEmpty() && checkAndAddApplication(qtCreatorPath, "Qt Creator", "-client (file):(line)")) {
         foundOne = true;
     }
+
+    const QString regPathUEdit32 = "HKEY_CLASSES_ROOT\\Applications\\Uedit32.exe\\shell\\open\\Command";
+    const QSettings registryUEdit32(regPathUEdit32, QSettings::NativeFormat);
+    const QString uedit32Registry = registryUEdit32.value("Default", QString()).toString();
+    if (!uedit32Registry.isEmpty()) {
+        // Extract path to executable and make sure there is no single quotation mark at the beginning
+        const QString uedit32Path = uedit32Registry.left(uedit32Registry.indexOf(".exe") + 4).replace("\"", "");
+        if (checkAndAddApplication(uedit32Path, "UltraEdit 32", "(file)/(line)")) {
+            foundOne = true;
+        }
+    }
+
+    const QString regPathUEdit64 = "HKEY_CLASSES_ROOT\\Applications\\uedit64.exe\\shell\\open\\Command";
+    const QSettings registryUEdit64(regPathUEdit64, QSettings::NativeFormat);
+    const QString uedit64Registry = registryUEdit64.value("Default", QString()).toString();
+    if (!uedit64Registry.isEmpty()) {
+        // Extract path to executable and make sure there is no single quotation mark at the beginning
+        const QString uedit64Path = uedit64Registry.left(uedit64Registry.indexOf(".exe") + 4).replace("\"", "");
+        if (checkAndAddApplication(uedit64Path, "UltraEdit 64", "(file)/(line)")) {
+            foundOne = true;
+        }
+    }
+
     return foundOne;
 }
