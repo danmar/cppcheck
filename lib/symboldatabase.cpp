@@ -3005,6 +3005,12 @@ void SymbolDatabase::printXml(std::ostream &out) const
                 out << "      <functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
                     out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
+                    if (function->nestedIn->definedType) {
+                        if (function->isVirtual())
+                            out << " isVirtual=\"true\"";
+                        else if (function->isImplicitlyVirtual())
+                            out << " isImplicitlyVirtual=\"true\"";
+                    }
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {

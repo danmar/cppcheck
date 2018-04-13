@@ -316,11 +316,18 @@ class Function:
     tokenDef = None
     tokenDefId = None
     name = None
+    isVirtual = None
+    isImplicitlyVirtual = None
 
     def __init__(self, element):
         self.Id = element.get('id')
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
+        isVirtual = element.get('isVirtual')
+        self.isVirtual = (isVirtual and isVirtual == 'true')
+        isImplicitlyVirtual = element.get('isImplicitlyVirtual')
+        self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
+
         self.argument = {}
         self.argumentId = {}
         for arg in element:
