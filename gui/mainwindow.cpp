@@ -293,6 +293,9 @@ void MainWindow::loadSettings()
     const bool stdPosix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
     mUI.mActionPosix->setChecked(stdPosix);
 
+    const bool checkLibrary = mSettings->value(SETTINGS_CHECK_LIBRARY, false).toBool();
+    mUI.mActionCheckLibrary->setChecked(checkLibrary);
+
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
     mUI.mActionToolBarMain->setChecked(showMainToolbar);
@@ -362,6 +365,8 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
     mSettings->setValue(SETTINGS_STD_C11, mUI.mActionC11->isChecked());
     mSettings->setValue(SETTINGS_STD_POSIX, mUI.mActionPosix->isChecked());
+
+    mSettings->setValue(SETTINGS_CHECK_LIBRARY, mUI.mActionCheckLibrary->isChecked());
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
@@ -900,6 +905,7 @@ Settings MainWindow::getCppcheckSettings()
         result.standards.cpp = Standards::CPP14;
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
     result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
+    result.checkLibrary = mSettings->value(SETTINGS_CHECK_LIBRARY, false).toBool();
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
 
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
@@ -945,6 +951,7 @@ void MainWindow::analysisDone()
     mCppStandardActions->setEnabled(true);
     mSelectLanguageActions->setEnabled(true);
     mUI.mActionPosix->setEnabled(true);
+    mUI.mActionCheckLibrary->setEnabled(true);
     if (mScratchPad)
         mScratchPad->setEnabled(true);
     mUI.mActionViewStats->setEnabled(true);
@@ -984,6 +991,7 @@ void MainWindow::checkLockDownUI()
     mCppStandardActions->setEnabled(false);
     mSelectLanguageActions->setEnabled(false);
     mUI.mActionPosix->setEnabled(false);
+    mUI.mActionCheckLibrary->setEnabled(false);
     if (mScratchPad)
         mScratchPad->setEnabled(false);
 
