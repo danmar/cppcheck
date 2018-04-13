@@ -859,13 +859,13 @@ void ResultsTree::copy()
             continue;
         QString inconclusive = data["inconclusive"].toBool() ? ",inconclusive" : "";
         text += '[' + data["file"].toString() + ':' + QString::number(data["line"].toInt())
-           + "] ("
-           + QString::fromStdString(Severity::toString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data["severity"].toInt()))) + inconclusive
-           + ") "
-           + data["message"].toString()
-           + " ["
-           + data["id"].toString()
-           + "]\n";
+                + "] ("
+                + QString::fromStdString(Severity::toString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data["severity"].toInt()))) + inconclusive
+                + ") "
+                + data["message"].toString()
+                + " ["
+                + data["id"].toString()
+                + "]\n";
     }
 
     QClipboard *clipboard = QApplication::clipboard();
