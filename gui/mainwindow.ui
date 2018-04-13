@@ -150,6 +150,8 @@
     <addaction name="mActionAnalyzeDirectory"/>
     <addaction name="mActionReanalyzeModified"/>
     <addaction name="mActionReanalyzeAll"/>
+    <addaction name="mActionCheckLibrary"/>
+    <addaction name="mActionCheckConfiguration"/>
     <addaction name="mActionStop"/>
     <addaction name="separator"/>
     <addaction name="menuC_standard"/>
@@ -791,6 +793,22 @@
    </property>
    <property name="text">
     <string>C++14</string>
+   </property>
+  </action>
+  <action name="mActionCheckLibrary">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Reanalyze and check library</string>
+   </property>
+  </action>
+  <action name="mActionCheckConfiguration">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Check configuration (defines, includes)</string>
    </property>
   </action>
  </widget>
