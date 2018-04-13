@@ -156,6 +156,8 @@
     <addaction name="menuCpp_standard"/>
     <addaction name="mActionPosix"/>
     <addaction name="separator"/>
+    <addaction name="mActionCheckLibrary"/>
+    <addaction name="separator"/>
     <addaction name="mActionAutoDetectLanguage"/>
     <addaction name="mActionEnforceCpp"/>
     <addaction name="mActionEnforceC"/>
@@ -791,6 +793,14 @@
    </property>
    <property name="text">
     <string>C++14</string>
+   </property>
+  </action>
+  <action name="mActionCheckLibrary">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Check library</string>
    </property>
   </action>
  </widget>
