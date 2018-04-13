@@ -604,7 +604,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                     this, SLOT(context(int)));
         }
 
-        // Add menuitems to copy full path/filename to clipboard
+        // Add popup menuitems
         if (mContextItem) {
             if (mApplications->getApplicationCount() > 0) {
                 menu.addSeparator();
@@ -612,22 +612,13 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
             //Create an action for the application
             QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
-            QAction *copyfilename           = new QAction(tr("Copy filename"), &menu);
-            QAction *copypath               = new QAction(tr("Copy full path"), &menu);
-            QAction *copymessage            = new QAction(tr("Copy message"), &menu);
-            QAction *copymessageid          = new QAction(tr("Copy message id"), &menu);
-            QAction *copylinenr             = new QAction(tr("Copy line nr"), &menu);
+            QAction *copy                   = new QAction(tr("Copy"), &menu);
             QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
             QAction *suppress               = new QAction(tr("Suppress selected id(s)"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
             if (multipleSelection) {
-                copyfilename->setDisabled(true);
-                copypath->setDisabled(true);
-                copymessage->setDisabled(true);
-                copymessageid->setDisabled(true);
-                copylinenr->setDisabled(true);
                 hideallid->setDisabled(true);
                 opencontainingfolder->setDisabled(true);
             }
@@ -638,11 +629,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
             menu.addAction(recheckSelectedFiles);
             menu.addSeparator();
-            menu.addAction(copyfilename);
-            menu.addAction(copypath);
-            menu.addAction(copymessage);
-            menu.addAction(copymessageid);
-            menu.addAction(copylinenr);
+            menu.addAction(copy);
             menu.addSeparator();
             menu.addAction(hide);
             menu.addAction(hideallid);
@@ -651,11 +638,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(opencontainingfolder);
 
             connect(recheckSelectedFiles, SIGNAL(triggered()), this, SLOT(recheckSelectedFiles()));
-            connect(copyfilename, SIGNAL(triggered()), this, SLOT(copyFilename()));
-            connect(copypath, SIGNAL(triggered()), this, SLOT(copyFullPath()));
-            connect(copymessage, SIGNAL(triggered()), this, SLOT(copyMessage()));
-            connect(copymessageid, SIGNAL(triggered()), this, SLOT(copyMessageId()));
-            connect(copylinenr, SIGNAL(triggered()), this, SLOT(copyLineNr()));
+            connect(copy, SIGNAL(triggered()), this, SLOT(copy()));
             connect(hide, SIGNAL(triggered()), this, SLOT(hideResult()));
             connect(hideallid, SIGNAL(triggered()), this, SLOT(hideAllIdResult()));
             connect(suppress, SIGNAL(triggered()), this, SLOT(suppressSelectedIds()));
@@ -858,69 +841,35 @@ QString ResultsTree::askFileDir(const QString &file)
     return mCheckPath;
 }
 
-void ResultsTree::copyFilename()
+void ResultsTree::copy()
 {
-    copyPathToClipboard(mContextItem, false);
-}
-
-void ResultsTree::copyFullPath()
-{
-    copyPathToClipboard(mContextItem, true);
-}
-
-void ResultsTree::copyMessage()
-{
-    if (!mContextItem)
+    if (!mSelectionModel)
         return;
 
-    // Make sure we are working with the first column
-    if (mContextItem->column() != 0)
-        mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
-
-    QVariantMap data = mContextItem->data().toMap();
-
-    QString message;
-    if (data["inconclusive"].toBool()) {
-        message = tr("[Inconclusive]");
-        message += " ";
+    QModelIndexList selectedRows = mSelectionModel->selectedRows();
+    QString text;
+    foreach (QModelIndex index, selectedRows) {
+        QStandardItem *item = mModel.itemFromIndex(index);
+        if (!item->parent())
+            continue;
+        if (item->parent()->parent())
+            item = item->parent();
+        QVariantMap data = item->data().toMap();
+        if (!data.contains("id"))
+            continue;
+        QString inconclusive = data["inconclusive"].toBool() ? ",inconclusive" : "";
+        text += '[' + data["file"].toString() + ':' + QString::number(data["line"].toInt())
+           + "] ("
+           + QString::fromStdString(Severity::toString(ShowTypes::ShowTypeToSeverity((ShowTypes::ShowType)data["severity"].toInt()))) + inconclusive
+           + ") "
+           + data["message"].toString()
+           + " ["
+           + data["id"].toString()
+           + "]\n";
     }
-    message += data["message"].toString();
 
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(message);
-}
-
-void ResultsTree::copyMessageId()
-{
-    if (!mContextItem)
-        return;
-
-    // Make sure we are working with the first column
-    if (mContextItem->column() != 0)
-        mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
-    QVariantMap data = mContextItem->data().toMap();
-
-    QString messageId = data["id"].toString();
-
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(messageId);
-}
-
-void ResultsTree::copyLineNr()
-{
-    if (!mContextItem)
-        return;
-
-    // Make sure we are working with the first column
-    if (mContextItem->column() != 0)
-        mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
-
-    QVariantMap data = mContextItem->data().toMap();
-
-    QString linenr = data["line"].toString();
-
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(linenr);
+    clipboard->setText(text);
 }
 
 void ResultsTree::hideResult()
@@ -1097,12 +1046,6 @@ void ResultsTree::context(int application)
 void ResultsTree::quickStartApplication(const QModelIndex &index)
 {
     startApplication(mModel.itemFromIndex(index));
-}
-
-void ResultsTree::copyPathToClipboard(QStandardItem *target, bool fullPath)
-{
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(getFilePath(target, fullPath));
 }
 
 QString ResultsTree::getFilePath(QStandardItem *target, bool fullPath)

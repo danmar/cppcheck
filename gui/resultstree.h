@@ -252,34 +252,9 @@ protected slots:
     void context(int application);
 
     /**
-    * @brief Slot for context menu item to copy filename to clipboard
-    *
+    * @brief Slot for context menu item to copy selection to clipboard
     */
-    void copyFilename();
-
-    /**
-    * @brief Slot for context menu item to copy full path to clipboard
-    *
-    */
-    void copyFullPath();
-
-    /**
-    * @brief Slot for context menu item to the current error message to clipboard
-    *
-    */
-    void copyMessage();
-
-    /**
-    * @brief Slot for context menu item to the current error message Id to clipboard
-    *
-    */
-    void copyMessageId();
-
-    /**
-    * @brief Slot for context menu item to copy the current error line nr to clipboard
-    *
-    */
-    void copyLineNr();
+    void copy();
 
     /**
     * @brief Slot for context menu item to hide the current error message
