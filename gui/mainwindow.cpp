@@ -114,6 +114,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     connect(mUI.mActionReanalyzeModified, &QAction::triggered, this, &MainWindow::reAnalyzeModified);
     connect(mUI.mActionReanalyzeAll, &QAction::triggered, this, &MainWindow::reAnalyzeAll);
+    connect(mUI.mActionCheckLibrary, &QAction::triggered, this, &MainWindow::checkLibrary);
+    connect(mUI.mActionCheckConfiguration, &QAction::triggered, this, &MainWindow::checkConfiguration);
 
     connect(mUI.mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
     connect(mUI.mActionSave, &QAction::triggered, this, &MainWindow::save);
@@ -384,7 +386,7 @@ void MainWindow::saveSettings() const
     mUI.mResults->saveSettings(mSettings);
 }
 
-void MainWindow::doAnalyzeProject(ImportProject p)
+void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
 {
     clearResults();
 
@@ -442,6 +444,8 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
+    checkSettings.checkLibrary = checkLibrary;
+    checkSettings.checkConfiguration = checkConfiguration;
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
@@ -462,7 +466,7 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     mThread->check(checkSettings);
 }
 
-void MainWindow::doAnalyzeFiles(const QStringList &files)
+void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrary, const bool checkConfiguration)
 {
     if (files.isEmpty()) {
         return;
@@ -495,7 +499,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
     mUI.mResults->checkingStarted(fileNames.count());
 
     mThread->setFiles(fileNames);
-    if (mProjectFile)
+    if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
@@ -505,6 +509,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
 
     mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
+    checkSettings.checkLibrary = checkLibrary;
+    checkSettings.checkConfiguration = checkConfiguration;
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
@@ -1022,6 +1028,18 @@ void MainWindow::reAnalyzeAll()
         reAnalyze(true);
 }
 
+void MainWindow::checkLibrary()
+{
+    if (mProjectFile)
+        analyzeProject(mProjectFile, true);
+}
+
+void MainWindow::checkConfiguration()
+{
+    if (mProjectFile)
+        analyzeProject(mProjectFile, false, true);
+}
+
 void MainWindow::reAnalyzeSelected(QStringList files)
 {
     if (files.empty())
@@ -1078,6 +1096,7 @@ void MainWindow::reAnalyze(bool all)
 void MainWindow::clearResults()
 {
     mUI.mResults->clear(true);
+    Q_ASSERT(false == mUI.mResults->hasResults());
     enableResultsButtons();
 }
 
@@ -1445,7 +1464,7 @@ bool MainWindow::loadLastResults()
     return true;
 }
 
-void MainWindow::analyzeProject(const ProjectFile *projectFile)
+void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool checkLibrary, const bool checkConfiguration)
 {
     Settings::terminate(false);
 
@@ -1500,7 +1519,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
             msg.exec();
             return;
         }
-        doAnalyzeProject(p);
+        doAnalyzeProject(p, checkLibrary, checkConfiguration);
         return;
     }
 
@@ -1522,7 +1541,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
             paths[i] = QDir::cleanPath(path);
         }
     }
-    doAnalyzeFiles(paths);
+    doAnalyzeFiles(paths, checkLibrary, checkConfiguration);
 }
 
 void MainWindow::newProjectFile()
@@ -1617,6 +1636,8 @@ void MainWindow::enableProjectActions(bool enable)
 {
     mUI.mActionCloseProjectFile->setEnabled(enable);
     mUI.mActionEditProjectFile->setEnabled(enable);
+    mUI.mActionCheckLibrary->setEnabled(enable);
+    mUI.mActionCheckConfiguration->setEnabled(enable);
 }
 
 void MainWindow::enableProjectOpenActions(bool enable)
