@@ -32,8 +32,6 @@
 #include "checkthread.h"
 #include "projectfile.h"
 #include "library.h"
-#include "cppcheck.h"
-#include "errorlogger.h"
 #include "platforms.h"
 
 /** Platforms shown in the platform combobox */
@@ -638,22 +636,7 @@ void ProjectFileDialog::moveIncludePathDown()
 
 void ProjectFileDialog::addSuppression()
 {
-    class QErrorLogger : public ErrorLogger {
-    public:
-        virtual void reportOut(const std::string &/*outmsg*/) {}
-        virtual void reportErr(const ErrorLogger::ErrorMessage &msg) {
-            errorIds << QString::fromStdString(msg._id);
-        }
-        QStringList errorIds;
-    };
-
-    QErrorLogger errorLogger;
-    CppCheck cppcheck(errorLogger,false);
-    cppcheck.getErrorMessages();
-    errorLogger.errorIds.sort();
-
     NewSuppressionDialog dlg;
-    dlg.setErrorIds(errorLogger.errorIds);
     if (dlg.exec() == QDialog::Accepted) {
         setSuppressions(mSuppressions << dlg.getSuppression());
     }

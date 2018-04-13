@@ -15,7 +15,6 @@ public:
     explicit NewSuppressionDialog(QWidget *parent = 0);
     ~NewSuppressionDialog();
 
-    void setErrorIds(const QStringList &errorIds);
     Suppressions::Suppression getSuppression() const;
 
 private:
