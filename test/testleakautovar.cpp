@@ -1175,6 +1175,18 @@ private:
               "    char *cPtr = new (buf) char[100];\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int[1];\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int[]> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
     }
 
     void return1() {
