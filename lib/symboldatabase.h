@@ -1016,7 +1016,7 @@ public:
 
         const Function * back = &functionList.back();
 
-        functionMap[back->tokenDef->str()] = back;
+        functionMap.emplace(back->tokenDef->str(), back);
     }
 
     bool hasDefaultConstructor() const;
