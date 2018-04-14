@@ -918,6 +918,21 @@ private:
               "    delete i;\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        // Check for use-after-free FP
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x{i};\n"
+              "    *x = 123;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int[1];\n"
+              "    std::unique_ptr<int[]> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
     }
 
     void exit1() {

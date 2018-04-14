@@ -550,7 +550,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // Check smart pointer
-        else if (Token::Match(ftok, "%type% < %type%") && (ftok->str() == "auto_ptr" || ftok->str() == "unique_ptr" || ftok->str() == "shared_ptr")) {
+        else if (Token::Match(ftok, "auto_ptr|unique_ptr|shared_ptr < %type%")) {
 
             const Token * endToken = ftok->linkAt(1);
             // TODO: Check deallocator
