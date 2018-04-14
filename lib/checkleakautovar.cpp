@@ -548,6 +548,21 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         else if (Token::Match(tok, "continue|break ;")) {
             varInfo->clear();
         }
+
+        // Check smart pointer
+        else if (Token::Match(ftok, "%type% < %type%") && (ftok->str() == "auto_ptr" || ftok->str() == "unique_ptr" || ftok->str() == "shared_ptr")) {
+
+            const Token * endToken = ftok->linkAt(1);
+            // TODO: Check deallocator
+            bool arrayDelete = false;
+            if(Token::findsimplematch(ftok->tokAt(1), "[ ]", endToken))
+                arrayDelete = true;
+            if(!Token::Match(endToken, "> %var% {|( %var%"))
+                continue;
+            const Token * vtok = endToken->tokAt(3);
+            const VarInfo::AllocInfo allocation(arrayDelete ? -2 : -1, VarInfo::DEALLOC);
+            changeAllocStatus(varInfo, allocation, vtok, vtok);
+        }
     }
 }
 

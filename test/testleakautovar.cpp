@@ -72,6 +72,7 @@ private:
         TEST_CASE(doublefree5); // #5522
         TEST_CASE(doublefree6); // #7685
         TEST_CASE(doublefree7);
+        TEST_CASE(doublefree8);
 
         // exit
         TEST_CASE(exit1);
@@ -887,6 +888,36 @@ private:
               "        delete[] p;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree8() {
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x{i};\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x{i};\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
     }
 
     void exit1() {
