@@ -247,7 +247,7 @@ void Variables::addVar(const Variable *var,
 {
     if (var->declarationId() > 0) {
         _varAddedInScope.back().insert(var->declarationId());
-        _varUsage.emplace(var->declarationId(), VariableUsage(var, type, false, write_, false));
+        _varUsage.insert(std::make_pair(var->declarationId(), VariableUsage(var, type, false, write_, false)));
     }
 }
 
