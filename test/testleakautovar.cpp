@@ -1223,6 +1223,22 @@ private:
               "    std::unique_ptr<FILE, deleter> fp{f};\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("int * create();\n"
+              "void destroy(int * x);\n"
+              "void f() {\n"
+              "    int x * = create()\n"
+              "    std::unique_ptr<int, decltype(&destroy)> xp{x, &destroy()};\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int * create();\n"
+              "void destroy(int * x);\n"
+              "void f() {\n"
+              "    int x * = create()\n"
+              "    std::unique_ptr<int, decltype(&destroy)> xp(x, &destroy());\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void return1() {
