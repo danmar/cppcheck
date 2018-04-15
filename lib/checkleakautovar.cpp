@@ -48,6 +48,11 @@ namespace {
 
 static const CWE CWE672(672U);
 static const CWE CWE415(415U);
+
+// Hardcoded allocation types (not from library)
+static const int NEW_ARRAY = -2;
+static const int NEW = -1;
+
 //---------------------------------------------------------------------------
 
 void VarInfo::print()
@@ -306,7 +311,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
                 const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
                 VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
-                varAlloc.type = arrayNew ? -2 : -1;
+                varAlloc.type = arrayNew ? NEW_ARRAY : NEW;
                 varAlloc.status = VarInfo::ALLOC;
             }
 
@@ -337,7 +342,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();
                         const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
                         VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
-                        varAlloc.type = arrayNew ? -2 : -1;
+                        varAlloc.type = arrayNew ? NEW_ARRAY : NEW;
                         varAlloc.status = VarInfo::ALLOC;
                     }
                 }
@@ -534,7 +539,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 tok = tok->tokAt(2);
             const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
             if (!isnull && tok->varId() && tok->strAt(1) != "[") {
-                const VarInfo::AllocInfo allocation(arrayDelete ? -2 : -1, VarInfo::DEALLOC);
+                const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC);
                 changeAllocStatus(varInfo, allocation, tok, tok);
             }
         }

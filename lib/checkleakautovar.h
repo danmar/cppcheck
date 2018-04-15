@@ -41,6 +41,10 @@ public:
     enum AllocStatus { DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
     struct AllocInfo {
         AllocStatus status;
+        /** Allocation type. If it is a positive value then it corresponds to
+         * a Library allocation id. A negative value is a builtin
+         * checkleakautovar allocation type.
+         */
         int type;
         AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC) : status(status_), type(type_) {}
     };

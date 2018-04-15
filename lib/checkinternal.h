@@ -57,6 +57,7 @@ public:
         checkInternal.checkRedundantNextPrevious();
         checkInternal.checkExtraWhitespace();
         checkInternal.checkRedundantTokCheck();
+        checkInternal.checkStlUsage();
     }
 
     /** @brief %Check if a simple pattern is used inside Token::Match or Token::findmatch */
@@ -79,6 +80,9 @@ public:
 
     /** @brief %Check if there is a redundant check for none-nullness of parameter before Match functions, such as (tok && Token::Match(tok, "foo")) */
     void checkRedundantTokCheck();
+
+    /** @brief Try to avoid some new functions that are not fully supported in Linux */
+    void checkStlUsage();
 private:
     void multiComparePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void simplePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);

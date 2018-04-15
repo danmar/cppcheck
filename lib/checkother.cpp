@@ -1829,7 +1829,7 @@ void CheckOther::checkInvalidFree()
 
             // Keep track of which variables were assigned addresses to newly-allocated memory
             if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
-                allocatedVariables.emplace(tok->varId(), false);
+                allocatedVariables.insert(std::make_pair(tok->varId(), false));
             }
 
             // If a previously-allocated pointer is incremented or decremented, any subsequent

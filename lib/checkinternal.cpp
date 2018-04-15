@@ -347,6 +347,19 @@ void CheckInternal::checkExtraWhitespace()
     }
 }
 
+void CheckInternal::checkStlUsage()
+{
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, ". emplace ("))
+                reportError(tok, Severity::error, "internalStlUsage", "The 'emplace' function shall be avoided for now. 'emplace_back' is fine");
+            //if (Token::simpleMatch(tok, ". back ( )") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container && Token::simpleMatch(tok->astOperand1()->valueType()->container, "std :: string"))
+            //  reportError(tok, Severity::error, "internalStlUsage", "The 'std::string::back()' function shall be avoided for now.");
+        }
+    }
+}
+
 void CheckInternal::multiComparePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::error, "multiComparePatternError",
