@@ -559,12 +559,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 
             const Token * endToken = ftok->linkAt(1);
+            if(!Token::Match(endToken, "> %var% {|( %var%"))
+                continue;
 
             bool arrayDelete = false;
             if(Token::findsimplematch(ftok->tokAt(1), "[ ]", endToken))
                 arrayDelete = true;
-            if(!Token::Match(endToken, "> %var% {|( %var%"))
-                continue;
             
             // Check deleter
             const Token * deleterToken = nullptr;
