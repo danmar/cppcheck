@@ -67,6 +67,9 @@ void VarInfo::print()
 
         std::string status;
         switch (it->second.status) {
+        case OWNED:
+            status = "owned";
+            break;
         case DEALLOC:
             status = "dealloc";
             break;
@@ -597,7 +600,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             const Token * vtok = endToken->tokAt(3);
-            const VarInfo::AllocInfo allocation(af ? af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::DEALLOC);
+            const VarInfo::AllocInfo allocation(af ? af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::OWNED);
             changeAllocStatus(varInfo, allocation, vtok, vtok);
         }
     }
@@ -614,7 +617,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
             possibleUsage[arg->varId()] = tok->str();
             if (var->second.status == VarInfo::DEALLOC && arg->previous()->str() == "&")
                 varInfo->erase(arg->varId());
-        } else if (var->second.status == VarInfo::DEALLOC) {
+        } else if (var->second.status == VarInfo::DEALLOC || var->second.status == VarInfo::OWNED) {
             doubleFreeError(tok, arg->str(), allocation.type);
         } else if (var->second.type != allocation.type) {
             // mismatching allocation and deallocation
@@ -622,7 +625,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
             varInfo->erase(arg->varId());
         } else {
             // deallocation
-            var->second.status = VarInfo::DEALLOC;
+            var->second.status = allocation.status;
             var->second.type = allocation.type;
         }
     } else if (allocation.status != VarInfo::NOALLOC) {

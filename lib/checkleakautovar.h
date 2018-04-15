@@ -38,7 +38,7 @@ class Tokenizer;
 
 class CPPCHECKLIB VarInfo {
 public:
-    enum AllocStatus { DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
+    enum AllocStatus { OWNED = -2, DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
     struct AllocInfo {
         AllocStatus status;
         /** Allocation type. If it is a positive value then it corresponds to

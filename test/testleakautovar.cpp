@@ -902,6 +902,13 @@ private:
 
         check("void f() {\n"
               "    int * i = new int;\n"
+              "    delete i;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
               "    std::unique_ptr<int> x{i};\n"
               "    delete i;\n"
               "}\n", true);
@@ -925,7 +932,7 @@ private:
         check("void f() {\n"
               "    int * i = new int;\n"
               "    std::shared_ptr<int> x{i};\n"
-              "    *x = 123;\n"
+              "    *i = 123;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
