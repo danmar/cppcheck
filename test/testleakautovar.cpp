@@ -1201,6 +1201,12 @@ private:
     void smartPointerDeleter() {
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE> fp{f};\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
               "    std::unique_ptr<FILE, decltype(&fclose)> fp{f, &fclose};\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
