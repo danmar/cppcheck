@@ -197,7 +197,7 @@ public:
      * @return length of C-string.
      *
      * Should be called for %%str%% tokens only.
-     *
+     *@
      * @param tok token with C-string
      **/
     static std::size_t getStrLength(const Token *tok);

@@ -557,15 +557,47 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // Check smart pointer
         else if (Token::Match(ftok, "auto_ptr|unique_ptr|shared_ptr < %type%")) {
 
+
             const Token * endToken = ftok->linkAt(1);
-            // TODO: Check deallocator
+
             bool arrayDelete = false;
             if(Token::findsimplematch(ftok->tokAt(1), "[ ]", endToken))
                 arrayDelete = true;
             if(!Token::Match(endToken, "> %var% {|( %var%"))
                 continue;
+            
+            // Check deleter
+            const Token * deleterToken = nullptr;
+            const Token * endDeleterToken = nullptr;
+            const Library::AllocFunc* af = nullptr;
+            if(Token::Match(ftok, "unique_ptr < %type% ,")) {
+                deleterToken = ftok->tokAt(4);
+                endDeleterToken = endToken;
+            } else if(Token::Match(endToken, "> %var% {|( %var% ,")) {
+                deleterToken = endToken->tokAt(5);
+                endDeleterToken = endToken->linkAt(2);
+            }
+            if(deleterToken) {
+                // Check if its a pointer to a function
+                const Token * dtok = Token::findmatch(deleterToken, "& %name%", endDeleterToken);
+                if (dtok) {
+                    af = _settings->library.dealloc(dtok->tokAt(1));
+                } else {
+                    // If the deleter is a class, check if class calls the dealloc function
+                    dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken);
+                    if (dtok && dtok->type()) {
+                        const Scope * tscope = dtok->type()->classScope;
+                        for (const Token *tok2 = tscope->classStart; tok2 != tscope->classEnd; tok2 = tok2->next()) {
+                            af = _settings->library.dealloc(tok2);
+                            if (af) 
+                                break;
+                        }
+                    }
+                }
+            }
+
             const Token * vtok = endToken->tokAt(3);
-            const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC);
+            const VarInfo::AllocInfo allocation(af ? af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::DEALLOC);
             changeAllocStatus(varInfo, allocation, vtok, vtok);
         }
     }

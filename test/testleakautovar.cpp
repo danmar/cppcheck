@@ -105,6 +105,8 @@ private:
 
         // mismatching allocation/deallocation
         TEST_CASE(mismatchAllocDealloc);
+        
+        TEST_CASE(smartPointerDeleter);
 
         // Execution reaches a 'return'
         TEST_CASE(return1);
@@ -1187,6 +1189,27 @@ private:
               "    std::unique_ptr<int[]> x(i);\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
+    }
+
+    void smartPointerDeleter() {
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE, decltype(&fclose)> fp{f, &fclose};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, &fclose};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct deleter { void operator()(FILE* f) { fclose(f); }};\n"
+              "void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE, deleter> fp{f};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void return1() {
