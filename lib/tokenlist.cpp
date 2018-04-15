@@ -599,7 +599,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::simpleMatch(tok, "} ,")) {
+            if (Token::Match(tok, "} ,|:")) {
                 tok = tok->next();
             }
         } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
