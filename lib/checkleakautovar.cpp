@@ -565,7 +565,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if(!Token::Match(endToken, "> %var% {|( %var%"))
                 continue;
             const Token * vtok = endToken->tokAt(3);
-            const VarInfo::AllocInfo allocation(arrayDelete ? -2 : -1, VarInfo::DEALLOC);
+            const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC);
             changeAllocStatus(varInfo, allocation, vtok, vtok);
         }
     }
