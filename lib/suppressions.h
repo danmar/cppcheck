@@ -72,6 +72,7 @@ public:
                 return fileName < other.fileName;
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
+            return false;
         };
 
         /**
