@@ -42,6 +42,12 @@ def check(data):
         elif tok1 == ']' and tok2 == '=' and tok3 == '{':
             arrayInit = True
         elif arrayInit and (tok1 in [',', '{']) and tok2.startswith('"') and tok3.startswith('"'):
+            if tok1 == '{':
+                i2 = i + 1
+                while i2 < len(data.rawTokens) and data.rawTokens[i2].str not in [',', '}']:
+                    i2 = i2 + 1
+                if i2 >= len(data.rawTokens) or data.rawTokens[i2].str != ',':
+                    continue
             reportError(data.rawTokens[i], 'style', 'string concatenation', 'stringConcatInArrayInit')
 
 for arg in sys.argv[1:]:
