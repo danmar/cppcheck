@@ -32,9 +32,8 @@ def isStringLiteral(tokenString):
     return tokenString.startswith('"')
 
 # check data
-def check(data):
+def stringConcatInArrayInit(rawTokens):
     arrayInit = False
-    rawTokens = data.rawTokens
     for i in range(len(rawTokens)):
         if i < 2:
             continue
@@ -54,7 +53,16 @@ def check(data):
                     continue
             if i + 2 < len(rawTokens) and isStringLiteral(rawTokens[i+1].str) and isStringLiteral(rawTokens[i+2].str):
                 continue
-            reportError(rawTokens[i], 'style', 'string concatenation', 'stringConcatInArrayInit')
+            reportError(rawTokens[i], 'style', 'String concatenation in array initialization, missing comma?', 'stringConcatInArrayInit')
+
+def implicitlyVirtual(data):
+    for cfg in data.configurations:
+        for function in cfg.functions:
+            if function.isImplicitlyVirtual is None:
+                continue
+            if not function.isImplicitlyVirtual:
+                continue
+            reportError(function.tokenDef, 'style', 'Function \'' + function.name + '\' overrides base class function but is not marked with \'virtual\' keyword.', 'implicitlyVirtual')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
@@ -68,10 +76,11 @@ for arg in sys.argv[1:]:
         for tok in data.rawTokens:
             if tok.str.startswith('//'):
                 for word in tok.str[2:].split(' '):
-                    if word == 'stringConcatInArrayInit':
+                    if word == 'stringConcatInArrayInit' or word == 'implicitlyVirtual':
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
 
-    check(data)
+    stringConcatInArrayInit(data.rawTokens)
+    implicitlyVirtual(data)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:

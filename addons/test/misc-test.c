@@ -16,3 +16,11 @@ const char *c[] = {
 	"b\n"
 	"b\n"
 };
+
+class base {
+    virtual void dostuff(int);	
+};
+
+class derived : base {
+	void dostuff(int); // implicitlyVirtual
+};
