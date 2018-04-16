@@ -28,6 +28,21 @@ def simpleMatch(token, pattern):
         token = token.next
     return True
 
+# Get function arguments
+def getArgumentsRecursive(tok, arguments):
+    if tok is None:
+        return
+    if tok.str == ',':
+        getArgumentsRecursive(tok.astOperand1, arguments)
+        getArgumentsRecursive(tok.astOperand2, arguments)
+    else:
+        arguments.append(tok);
+
+def getArguments(ftok):
+    arguments = []
+    getArgumentsRecursive(ftok.astOperand2, arguments)
+    return arguments
+
 def isStringLiteral(tokenString):
     return tokenString.startswith('"')
 
@@ -64,6 +79,32 @@ def implicitlyVirtual(data):
                 continue
             reportError(function.tokenDef, 'style', 'Function \'' + function.name + '\' overrides base class function but is not marked with \'virtual\' keyword.', 'implicitlyVirtual')
 
+def ellipsisStructArg(data):
+    for cfg in data.configurations:
+        for tok in cfg.tokenlist:
+            if tok.str != '(':
+                continue
+            if tok.astOperand1 is None or tok.astOperand2 is None:
+                continue
+            if tok.astOperand1.function is None:
+                continue
+            for argnr, argvar in tok.astOperand1.function.argument.items():
+                if argnr < 1:
+                    continue
+                if not simpleMatch(argvar.typeStartToken, '. . .'):
+                    continue
+                callArgs = getArguments(tok)
+                for i in range(argnr-1, len(callArgs)):
+                    valueType = callArgs[i].valueType
+                    if not valueType:
+                        continue
+                    if valueType.pointer > 0:
+                        continue
+                    if valueType.type != 'record':
+                        continue
+                    reportError(tok, 'style', 'Passing record to ellipsis function \'' + tok.astOperand1.function.name + '\'.', 'ellipsisStructArg')
+                break
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         continue
@@ -76,11 +117,12 @@ for arg in sys.argv[1:]:
         for tok in data.rawTokens:
             if tok.str.startswith('//'):
                 for word in tok.str[2:].split(' '):
-                    if word == 'stringConcatInArrayInit' or word == 'implicitlyVirtual':
+                    if word in ['stringConcatInArrayInit', 'implicitlyVirtual', 'ellipsisStructArg']:
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
 
     stringConcatInArrayInit(data.rawTokens)
     implicitlyVirtual(data)
+    ellipsisStructArg(data)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
