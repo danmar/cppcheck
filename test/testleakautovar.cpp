@@ -72,6 +72,7 @@ private:
         TEST_CASE(doublefree5); // #5522
         TEST_CASE(doublefree6); // #7685
         TEST_CASE(doublefree7);
+        TEST_CASE(doublefree8);
 
         // exit
         TEST_CASE(exit1);
@@ -104,6 +105,8 @@ private:
 
         // mismatching allocation/deallocation
         TEST_CASE(mismatchAllocDealloc);
+        
+        TEST_CASE(smartPointerDeleter);
 
         // Execution reaches a 'return'
         TEST_CASE(return1);
@@ -889,6 +892,58 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree8() {
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    delete i;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x{i};\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x{i};\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        // Check for use-after-free FP
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x{i};\n"
+              "    *i = 123;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int[1];\n"
+              "    std::unique_ptr<int[]> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1128,6 +1183,61 @@ private:
         check("void f() {\n"
               "    char *cPtr = new (buf) char[100];\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int[1];\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int[]> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
+    }
+
+    void smartPointerDeleter() {
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE> fp{f};\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE, decltype(&fclose)> fp{f, &fclose};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, &fclose};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct deleter { void operator()(FILE* f) { fclose(f); }};\n"
+              "void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE, deleter> fp{f};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int * create();\n"
+              "void destroy(int * x);\n"
+              "void f() {\n"
+              "    int x * = create()\n"
+              "    std::unique_ptr<int, decltype(&destroy)> xp{x, &destroy()};\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int * create();\n"
+              "void destroy(int * x);\n"
+              "void f() {\n"
+              "    int x * = create()\n"
+              "    std::unique_ptr<int, decltype(&destroy)> xp(x, &destroy());\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 

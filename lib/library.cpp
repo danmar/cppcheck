@@ -770,7 +770,7 @@ std::string Library::getFunctionName(const Token *ftok, bool *error) const
 
 std::string Library::getFunctionName(const Token *ftok) const
 {
-    if (!Token::Match(ftok, "%name% ("))
+    if (!Token::Match(ftok, "%name% (") && (ftok->strAt(-1) != "&" || ftok->previous()->astOperand2()))
         return "";
 
     // Lookup function name using AST..
