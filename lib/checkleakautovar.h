@@ -48,8 +48,7 @@ public:
         int type;
         AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC) : status(status_), type(type_) {}
 
-        bool managed() const
-        {
+        bool managed() const {
             return status < 0;
         }
     };

@@ -562,25 +562,25 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 
             const Token * endToken = ftok->linkAt(1);
-            if(!Token::Match(endToken, "> %var% {|( %var%"))
+            if (!Token::Match(endToken, "> %var% {|( %var%"))
                 continue;
 
             bool arrayDelete = false;
-            if(Token::findsimplematch(ftok->next(), "[ ]", endToken))
+            if (Token::findsimplematch(ftok->next(), "[ ]", endToken))
                 arrayDelete = true;
 
             // Check deleter
             const Token * deleterToken = nullptr;
             const Token * endDeleterToken = nullptr;
             const Library::AllocFunc* af = nullptr;
-            if(Token::Match(ftok, "unique_ptr < %type% ,")) {
+            if (Token::Match(ftok, "unique_ptr < %type% ,")) {
                 deleterToken = ftok->tokAt(4);
                 endDeleterToken = endToken;
-            } else if(Token::Match(endToken, "> %var% {|( %var% ,")) {
+            } else if (Token::Match(endToken, "> %var% {|( %var% ,")) {
                 deleterToken = endToken->tokAt(5);
                 endDeleterToken = endToken->linkAt(2);
             }
-            if(deleterToken) {
+            if (deleterToken) {
                 // Check if its a pointer to a function
                 const Token * dtok = Token::findmatch(deleterToken, "& %name%", endDeleterToken);
                 if (dtok) {
@@ -592,7 +592,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         const Scope * tscope = dtok->type()->classScope;
                         for (const Token *tok2 = tscope->classStart; tok2 != tscope->classEnd; tok2 = tok2->next()) {
                             af = _settings->library.dealloc(tok2);
-                            if (af) 
+                            if (af)
                                 break;
                         }
                     }

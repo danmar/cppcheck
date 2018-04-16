@@ -105,7 +105,7 @@ private:
 
         // mismatching allocation/deallocation
         TEST_CASE(mismatchAllocDealloc);
-        
+
         TEST_CASE(smartPointerDeleter);
 
         // Execution reaches a 'return'
