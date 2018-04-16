@@ -561,12 +561,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         else if (Token::Match(ftok, "auto_ptr|unique_ptr|shared_ptr < %type%")) {
 
 
-            const Token * endToken = ftok->linkAt(1);
-            if (!Token::Match(endToken, "> %var% {|( %var%"))
+            const Token * typeEndTok = ftok->linkAt(1);
+            if (!Token::Match(typeEndTok, "> %var% {|( %var%"))
                 continue;
 
             bool arrayDelete = false;
-            if (Token::findsimplematch(ftok->next(), "[ ]", endToken))
+            if (Token::findsimplematch(ftok->next(), "[ ]", typeEndTok))
                 arrayDelete = true;
 
             // Check deleter
@@ -575,10 +575,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             const Library::AllocFunc* af = nullptr;
             if (Token::Match(ftok, "unique_ptr < %type% ,")) {
                 deleterToken = ftok->tokAt(4);
-                endDeleterToken = endToken;
-            } else if (Token::Match(endToken, "> %var% {|( %var% ,")) {
-                deleterToken = endToken->tokAt(5);
-                endDeleterToken = endToken->linkAt(2);
+                endDeleterToken = typeEndTok;
+            } else if (Token::Match(typeEndTok, "> %var% {|( %var% ,")) {
+                deleterToken = typeEndTok->tokAt(5);
+                endDeleterToken = typeEndTok->linkAt(2);
             }
             if (deleterToken) {
                 // Check if its a pointer to a function
@@ -599,7 +599,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
             }
 
-            const Token * vtok = endToken->tokAt(3);
+            const Token * vtok = typeEndTok->tokAt(3);
             const VarInfo::AllocInfo allocation(af ? af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::OWNED);
             changeAllocStatus(varInfo, allocation, vtok, vtok);
         }
