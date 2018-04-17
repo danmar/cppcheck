@@ -1179,6 +1179,8 @@ namespace simplecpp {
                         ++par;
                     else if (rawtok->op == ')')
                         --par;
+                    else if (rawtok->op == '#' && !sameline(rawtok->previous, rawtok))
+                        throw Error(rawtok->location, "it is invalid to use a preprocessor directive as macro parameter");
                     rawtokens2.push_back(new Token(rawtok->str, rawtok1->location));
                     rawtok = rawtok->next;
                 }
@@ -2313,10 +2315,13 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
         }
 
         if (rawtok->op == '#' && !sameline(rawtok->previous, rawtok)) {
+            if (!sameline(rawtok, rawtok->next)) {
+                rawtok = rawtok->next;
+                continue;
+            }
             rawtok = rawtok->next;
-            if (!rawtok || !rawtok->name) {
-                if (rawtok)
-                    rawtok = gotoNextLine(rawtok);
+            if (!rawtok->name) {
+                rawtok = gotoNextLine(rawtok);
                 continue;
             }
 
