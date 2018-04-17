@@ -18,6 +18,7 @@
 
 #include "suppressions.h"
 
+#include "errorlogger.h"
 #include "mathlib.h"
 #include "path.h"
 
@@ -28,6 +29,8 @@
 #include <stack>
 #include <sstream>
 #include <utility>
+
+class ErrorLogger;
 
 static bool isValidGlobPattern(const std::string &pattern)
 {
