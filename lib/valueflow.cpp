@@ -1030,13 +1030,8 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
                     vars.erase(tok->variable());
                 else if (tokenList->isCPP() && Token::Match(tok->astParent()->tokAt(-2), "& %name% ="))
                     vars.erase(tok->variable());
-            } else if (tokenList->isCPP() && tok->astParent()->str() == ">>") {
-                const Token *lhs = tok->astParent();
-                while (Token::simpleMatch(lhs->astParent(), ">>"))
-                    lhs = lhs->astParent();
-                lhs = lhs->astOperand1();
-                if (!lhs || !lhs->valueType() || !lhs->valueType()->isIntegral())
-                    vars.erase(tok->variable());
+            } else if (isLikelyStreamRead(tokenList->isCPP(), tok->astParent())) {
+                vars.erase(tok->variable());
             } else if (Token::Match(tok->astParent(), "[(,]"))
                 vars.erase(tok->variable());
         }
