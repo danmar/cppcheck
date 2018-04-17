@@ -942,7 +942,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         if (isLikelyStreamRead(_tokenizer->isCPP(), vartok->previous()))
             return false;
 
-        if (_tokenizer->isCPP() && Token::Match(vartok->previous(), "<<")) {
+        if (_tokenizer->isCPP() && Token::simpleMatch(vartok->previous(), "<<")) {
             const Token* tok2 = vartok->previous();
 
             // Looks like stream operator, but could also initialize the variable. Check lhs.
