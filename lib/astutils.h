@@ -121,4 +121,11 @@ std::vector<const Token *> getArguments(const Token *ftok);
  */
 const Token *findLambdaEndToken(const Token *first);
 
+/**
+ * do we see a likely write of rhs through overloaded operator
+ *   s >> x;
+ *   a & x;
+ */
+bool isLikelyStreamRead(bool cpp, const Token *op);
+
 #endif // astutilsH

@@ -3067,6 +3067,14 @@ private:
                "}\n";
         values = tokenValues(code, "x +");
         ASSERT_EQUALS(true, values.empty());
+
+        // #8494 - overloaded operator &
+        code = "void f() {\n"
+               "    int x;\n"
+               "    a & x;\n"
+               "}";
+        values = tokenValues(code, "x ; }");
+        ASSERT_EQUALS(true, values.empty());
     }
 };
 

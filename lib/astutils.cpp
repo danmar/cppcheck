@@ -625,3 +625,26 @@ const Token *findLambdaEndToken(const Token *first)
         return tok->link();
     return nullptr;
 }
+
+bool isLikelyStreamRead(bool cpp, const Token *op)
+{
+    if (!cpp)
+        return false;
+
+    if (Token::Match(op, ">> %name% >>|;")) {
+        const Token *parent = op;
+        while (Token::simpleMatch(parent->astParent(), ">>"))
+            parent = parent->astParent();
+        if (parent->astParent())
+            return false;
+        if (!parent->astOperand1() || !parent->astOperand2())
+            return false;
+        return (!parent->astOperand1()->valueType() || !parent->astOperand1()->valueType()->isIntegral());
+    }
+
+    if (Token::Match(op, "& %name% ;") && !op->astParent() && op->astOperand1() && op->astOperand2() && (!op->astOperand1()->valueType() || !op->astOperand1()->valueType()->isIntegral()))
+        return true;
+
+    return false;
+}
+

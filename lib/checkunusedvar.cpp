@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkunusedvar.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -1127,6 +1128,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.use(tok->next()->varId(), tok); // use = read + write
         } else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]")) {
             variables.read(tok->varId(), tok);
+        } else if (isLikelyStreamRead(_tokenizer->isCPP(),tok->previous())) {
+            variables.use(tok->varId(), tok);
         }
 
         // function parameter

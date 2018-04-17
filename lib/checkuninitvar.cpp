@@ -885,7 +885,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc) const
 {
-    if (alloc == NO_ALLOC && ((Token::Match(vartok->previous(), "return|delete") && vartok->strAt(1) != "=") || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
+    if (alloc == NO_ALLOC && ((Token::Match(vartok->previous(), "return|delete %var% !!=")) || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
         return true;
 
     // Passing variable to typeof/__alignof__
@@ -893,7 +893,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         return false;
 
     // Accessing Rvalue member using "." or "->"
-    if (vartok->strAt(1) == "." && vartok->strAt(-1) != "&") {
+    if (Token::Match(vartok->previous(), "!!& %var% .")) {
         // Is struct member passed to function?
         if (!pointer && Token::Match(vartok->previous(), "[,(] %name% . %name%")) {
             // TODO: there are FN currently:
@@ -939,20 +939,21 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         if (_tokenizer->isCPP() && alloc == ARRAY && Token::Match(vartok->tokAt(-4), "& %var% =|( *"))
             return false;
 
-        if (_tokenizer->isCPP() && Token::Match(vartok->previous(), ">>|<<")) {
+        if (isLikelyStreamRead(_tokenizer->isCPP(), vartok->previous()))
+            return false;
+
+        if (_tokenizer->isCPP() && Token::Match(vartok->previous(), "<<")) {
             const Token* tok2 = vartok->previous();
-            if (Token::simpleMatch(tok2->astOperand1(), ">>"))
-                return false; // Looks like stream operator, initializes the variable
-            if (Token::simpleMatch(tok2, "<<")) {
-                // Looks like stream operator, but could also initialize the variable. Check lhs.
-                do {
-                    tok2 = tok2->astOperand1();
-                } while (Token::simpleMatch(tok2, "<<"));
-                if (tok2 && tok2->strAt(-1) == "::")
-                    tok2 = tok2->previous();
-                if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType() || tok2->isEnumType()))
-                    return true;
-            }
+
+            // Looks like stream operator, but could also initialize the variable. Check lhs.
+            do {
+                tok2 = tok2->astOperand1();
+            } while (Token::simpleMatch(tok2, "<<"));
+            if (tok2 && tok2->strAt(-1) == "::")
+                tok2 = tok2->previous();
+            if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType() || tok2->isEnumType()))
+                return true;
+
             const Variable *var = vartok->tokAt(-2)->variable();
             return (var && (var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType()));
         }

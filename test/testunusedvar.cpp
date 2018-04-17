@@ -1789,6 +1789,19 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is not assigned a value.\n"
                       "[test.cpp:2]: (style) Variable 'y' is not assigned a value.\n", errout.str());
+
+        // ticket #8494
+        functionVariableUsage("void f(C c) {\n"
+                              "  int x;\n"
+                              "  c & x;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(int c) {\n"
+                              "  int x;\n"
+                              "  c & x;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is not assigned a value.\n", errout.str());
     }
 
     void localvar33() { // ticket #2345

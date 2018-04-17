@@ -2012,16 +2012,10 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // bailout: possible assignment using >>
-            if (Token::Match(tok2->previous(), ">> %name% >>|;")) {
-                const Token *parent = tok2->previous();
-                do {
-                    parent = parent->astParent();
-                } while (Token::simpleMatch(parent, ">>"));
-                if (!parent) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok2, "Possible assignment of " + tok2->str() + " using >>");
-                    return false;
-                }
+            if (isLikelyStreamRead(tokenlist->isCPP(), tok2->previous())) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "Possible assignment of " + tok2->str() + " using " + tok2->strAt(-1));
+                return false;
             }
 
             // skip if variable is conditionally used in ?: expression
