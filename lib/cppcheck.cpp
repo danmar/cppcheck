@@ -225,9 +225,9 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1);
-		if (_settings.dump && fdump.is_open()) {
-			_settings.nomsg.dump(fdump);
-		}
+        if (_settings.dump && fdump.is_open()) {
+            _settings.nomsg.dump(fdump);
+        }
         tokens1.removeComments();
         preprocessor.removeComments();
 
