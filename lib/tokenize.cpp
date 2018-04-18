@@ -7917,22 +7917,21 @@ bool Tokenizer::isTwoNumber(const std::string &s)
 
 // ------------------------------------------------------
 // Simplify math functions.
-// It simplifies following functions: atol(), abs(), fabs()
-// labs(), llabs(), fmin(), fminl(), fminf(), fmax(), fmaxl()
-// fmaxf(), isgreater(), isgreaterequal(), isless()
-// islessgreater(), islessequal(), pow(), powf(), powl(),
-// div(),ldiv(),lldiv(), cbrt(), cbrtl(), cbtrf(), sqrt(),
+// It simplifies the following functions: atol(), fmin(),
+// fminl(), fminf(), fmax(), fmaxl(), fmaxf(), pow(),
+// powf(), powl(), cbrt(), cbrtl(), cbtrf(), sqrt(),
 // sqrtf(), sqrtl(), exp(), expf(), expl(), exp2(),
 // exp2f(), exp2l(), log2(), log2f(), log2l(), log1p(),
 // log1pf(), log1pl(), log10(), log10l(), log10f(),
-// log(),logf(),logl(),logb(),logbf(),logbl(), acosh()
+// log(), logf(), logl(), logb(), logbf(), logbl(), acosh()
 // acoshf(), acoshl(), acos(), acosf(), acosl(), cosh()
 // coshf(), coshf(), cos(), cosf(), cosl(), erfc(),
 // erfcf(), erfcl(), ilogb(), ilogbf(), ilogbf(), erf(),
 // erfl(), erff(), asin(), asinf(), asinf(), asinh(),
 // asinhf(), asinhl(), tan(), tanf(), tanl(), tanh(),
 // tanhf(), tanhl(), atan(), atanf(), atanl(), atanh(),
-// atanhf(), atanhl(), expm1(), expm1l(), expm1f(), fma()
+// atanhf(), atanhl(), expm1(), expm1l(), expm1f(), sin(),
+// sinf(), sinl(), sinh(), sinhf(), sinhl()
 // in the tokenlist.
 //
 // Reference:
