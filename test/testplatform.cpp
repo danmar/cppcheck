@@ -287,6 +287,7 @@ private:
         ASSERT(!readPlatform(platform, xmldata));
     }
 
+#if 0 // @TODO: Enable when Trac issue #8409 has been fixed
     void empty_elements() {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
@@ -321,6 +322,7 @@ private:
         ASSERT_EQUALS(4, platform.sizeof_long);
         ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
+#endif
 };
 
 REGISTER_TEST(TestPlatform)
