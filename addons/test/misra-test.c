@@ -153,8 +153,11 @@ void misra_14_2() {
   // TODO check more variants
 }
 
-void misra_14_4() {
+void misra_14_4(bool b) {
   if (x+4){} // 14.4
+  else {}
+
+  if (b) {}
   else {}
 }
 

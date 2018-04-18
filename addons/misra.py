@@ -214,7 +214,11 @@ def hasSideEffectsRecursive(expr):
 
 
 def isBoolExpression(expr):
-    return expr and expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1']
+    if not expr:
+        return False
+    if expr.valueType and expr.valueType.type == 'bool':
+        return True
+    return expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1']
 
 
 def isConstantExpression(expr):
