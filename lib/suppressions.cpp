@@ -280,13 +280,13 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
 void Suppressions::dump(std::ostream & out)
 {
     out << "  <suppressions>" << std::endl;
-    for (std::list<Suppression>::const_iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
-        const Suppression &suppression = *it;
+    for (const Suppression &suppression : _suppressions) {
         out << "    <suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
         if (!suppression.fileName.empty()) 
             out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
-        out << " lineNumber=\"" << suppression.lineNumber << '"';
+        if (suppression.lineNumber > 0)
+            out << " lineNumber=\"" << suppression.lineNumber << '"';
         if (!suppression.symbolName.empty())
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
         out << " />" << std::endl;
