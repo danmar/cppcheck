@@ -59,6 +59,7 @@
     <ClCompile Include="testother.cpp" />
     <ClCompile Include="testpath.cpp" />
     <ClCompile Include="testpathmatch.cpp" />
+    <ClCompile Include="testplatform.cpp" />
     <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
