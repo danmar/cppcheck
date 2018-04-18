@@ -536,9 +536,9 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     connect(&result, SIGNAL(error(const ErrorItem &)),
             mUI.mResults, SLOT(error(const ErrorItem &)));
     connect(&result, SIGNAL(log(const QString &)),
-            this, SLOT(log(const QString &)));
+            mUI.mResults, SLOT(log(const QString &)));
     connect(&result, SIGNAL(debugError(const ErrorItem &)),
-            this, SLOT(debugError(const ErrorItem &)));
+            mUI.mResults, SLOT(debugError(const ErrorItem &)));
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true);
