@@ -2196,7 +2196,7 @@ private:
         {
             const char code[] = "void f() {\n"
                                 "    int x;\n"
-                                "    i >> x;\n"
+                                "    if (i >> x) { }\n"
                                 "}";
             checkUninitVar(code, "test.cpp");
             ASSERT_EQUALS("", errout.str());
