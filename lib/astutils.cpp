@@ -544,8 +544,8 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         if (Token::Match(tok->previous(), "++|-- %name%"))
             return true;
 
-		if (isLikelyStreamRead(cpp, tok->previous()))
-			return true;
+        if (isLikelyStreamRead(cpp, tok->previous()))
+            return true;
 
         const Token *ftok = tok;
         while (ftok && !Token::Match(ftok, "[({[]"))
