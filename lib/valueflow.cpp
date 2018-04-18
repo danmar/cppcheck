@@ -1228,7 +1228,7 @@ static void valueFlowReverse(TokenList *tokenlist,
 
                 const Token *start = tok2;
                 const Token *end   = start->link();
-                if (isVariableChanged(start,end,varid,var->isGlobal(),settings)) {
+                if (isVariableChanged(start,end,varid,var->isGlobal(),settings, tokenlist->isCPP())) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " is assigned in loop. so valueflow analysis bailout when start of loop is reached.");
                     break;
@@ -1308,7 +1308,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
 
                 // Variable changed in 3rd for-expression
                 if (Token::simpleMatch(tok2->previous(), "for (")) {
-                    if (tok2->astOperand2() && tok2->astOperand2()->astOperand2() && isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid, var->isGlobal(), settings)) {
+                    if (tok2->astOperand2() && tok2->astOperand2()->astOperand2() && isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         varid = 0U;
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
@@ -1320,7 +1320,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
                     const Token * const start = tok2->link()->next();
                     const Token * const end   = start->link();
 
-                    if (isVariableChanged(start,end,varid,var->isGlobal(),settings)) {
+                    if (isVariableChanged(start,end,varid,var->isGlobal(),settings, tokenlist->isCPP())) {
                         varid = 0U;
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
@@ -1425,7 +1425,7 @@ static void handleKnownValuesInLoop(const Token                 *startToken,
     for (std::list<ValueFlow::Value>::iterator it = values->begin(); it != values->end(); ++it) {
         if (it->isKnown()) {
             if (!isChanged) {
-                if (!isVariableChanged(startToken, endToken, varid, globalvar, settings))
+                if (!isVariableChanged(startToken, endToken, varid, globalvar, settings, true))
                     break;
                 isChanged = true;
             }
@@ -1530,7 +1530,7 @@ static bool valueFlowForward(Token * const               startToken,
                         bailoutflag = true;
                         break;
                     }
-                    if (iselse && it->isPossible() && isVariableChanged(start1, start1->link(), varid, var->isGlobal(), settings))
+                    if (iselse && it->isPossible() && isVariableChanged(start1, start1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP()))
                         values.erase(it++);
                     else
                         ++it;
@@ -1546,7 +1546,7 @@ static bool valueFlowForward(Token * const               startToken,
             } else if (indentlevel <= 0 &&
                        Token::simpleMatch(tok2->link()->previous(), "else {") &&
                        !isReturnScope(tok2->link()->tokAt(-2)) &&
-                       isVariableChanged(tok2->link(), tok2, varid, var->isGlobal(), settings)) {
+                       isVariableChanged(tok2->link(), tok2, varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                 changeKnownToPossible(values);
             }
         }
@@ -1599,7 +1599,7 @@ static bool valueFlowForward(Token * const               startToken,
             if (Token::simpleMatch(end, "} while ("))
                 end = end->linkAt(2);
 
-            if (isVariableChanged(start, end, varid, var->isGlobal(), settings)) {
+            if (isVariableChanged(start, end, varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in do-while");
                 return false;
@@ -1611,7 +1611,7 @@ static bool valueFlowForward(Token * const               startToken,
         // conditional block of code that assigns variable..
         else if (!tok2->varId() && Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") {")) {
             // is variable changed in condition?
-            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings)) {
+            if (isVariableChanged(tok2->next(), tok2->next()->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
@@ -1674,7 +1674,7 @@ static bool valueFlowForward(Token * const               startToken,
                                  errorLogger,
                                  settings);
 
-                if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings)) {
+                if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                     removeValues(values, truevalues);
                     changeKnownToPossible(values);
                 }
@@ -1702,7 +1702,7 @@ static bool valueFlowForward(Token * const               startToken,
                                      errorLogger,
                                      settings);
 
-                    if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings)) {
+                    if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         removeValues(values, falsevalues);
                         changeKnownToPossible(values);
                     }
@@ -1723,7 +1723,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token * const start = tok2->linkAt(1)->next();
             Token * const end   = start->link();
             const bool varusage = (indentlevel >= 0 && constValue && number_of_if == 0U) ?
-                                  isVariableChanged(start,end,varid,var->isGlobal(),settings) :
+                                  isVariableChanged(start,end,varid,var->isGlobal(),settings, tokenlist->isCPP()) :
                                   (nullptr != Token::findmatch(start, "%varid%", end, varid));
             if (!read) {
                 read = bool(nullptr != Token::findmatch(tok2, "%varid% !!=", end, varid));
@@ -1792,7 +1792,7 @@ static bool valueFlowForward(Token * const               startToken,
                 return false;
             }
 
-            if (isVariableChanged(start, end, varid, var->isGlobal(), settings)) {
+            if (isVariableChanged(start, end, varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
@@ -1941,8 +1941,8 @@ static bool valueFlowForward(Token * const               startToken,
             }
             tok2 = tok2->next();
 
-            if (isVariableChanged(questionToken, questionToken->astOperand2(), varid, false, settings) &&
-                isVariableChanged(questionToken->astOperand2(), tok2, varid, false, settings)) {
+            if (isVariableChanged(questionToken, questionToken->astOperand2(), varid, false, settings, tokenlist->isCPP()) &&
+                isVariableChanged(questionToken->astOperand2(), tok2, varid, false, settings, tokenlist->isCPP())) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, assignment in condition");
                 return false;
@@ -2117,7 +2117,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token::simpleMatch(tok2->linkAt(1), "] (") &&
             Token::simpleMatch(tok2->linkAt(1)->linkAt(1), ") {")) {
             const Token *bodyStart = tok2->linkAt(1)->linkAt(1)->next();
-            if (isVariableChanged(bodyStart, bodyStart->link(), varid, var->isGlobal(), settings)) {
+            if (isVariableChanged(bodyStart, bodyStart->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "valueFlowForward, " + var->name() + " is changed in lambda function");
                 return false;
@@ -2486,7 +2486,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 // does condition reassign variable?
                 if (tok != top->astOperand2() &&
                     Token::Match(top->astOperand2(), "%oror%|&&") &&
-                    isVariableChanged(top, top->link(), varid, var->isGlobal(), settings)) {
+                    isVariableChanged(top, top->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok, "assignment in condition");
                     continue;
@@ -2540,7 +2540,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
 
                     valueFlowForward(startTokens[i]->next(), startTokens[i]->link(), var, varid, values, true, false, tokenlist, errorLogger, settings);
                     values.front().setPossible();
-                    if (isVariableChanged(startTokens[i], startTokens[i]->link(), varid, var->isGlobal(), settings)) {
+                    if (isVariableChanged(startTokens[i], startTokens[i]->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForward call
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, startTokens[i]->link(), "valueFlowAfterCondition: " + var->name() + " is changed in conditional block");
@@ -2854,7 +2854,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const unsigned int
     const Token * const bodyEnd = bodyStart->link();
 
     // Is variable modified inside for loop
-    if (isVariableChanged(bodyStart, bodyEnd, varid, globalvar, settings))
+    if (isVariableChanged(bodyStart, bodyEnd, varid, globalvar, settings, tokenlist->isCPP()))
         return;
 
     for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {

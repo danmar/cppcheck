@@ -168,7 +168,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 // is variable changed in loop?
                 const Token *bodyStart = tok2->linkAt(1)->next();
                 const Token *bodyEnd   = bodyStart ? bodyStart->link() : nullptr;
-                if (!bodyEnd || bodyEnd->str() != "}" || isVariableChanged(bodyStart, bodyEnd, varid, !islocal, _settings))
+                if (!bodyEnd || bodyEnd->str() != "}" || isVariableChanged(bodyStart, bodyEnd, varid, !islocal, _settings, _tokenizer->isCPP()))
                     continue;
             }
 
@@ -629,7 +629,7 @@ void CheckCondition::multiCondition2()
                 }
                 bool changed = false;
                 for (std::set<unsigned int>::const_iterator it = vars.begin(); it != vars.end(); ++it) {
-                    if (isVariableChanged(tok1, tok2, *it, nonlocal, _settings)) {
+                    if (isVariableChanged(tok1, tok2, *it, nonlocal, _settings, _tokenizer->isCPP())) {
                         changed = true;
                         break;
                     }

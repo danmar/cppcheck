@@ -528,7 +528,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings)
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
@@ -544,14 +544,8 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         if (Token::Match(tok->previous(), "++|-- %name%"))
             return true;
 
-        if (Token::simpleMatch(tok->previous(), ">>")) {
-            const Token *shr = tok->previous();
-            if (Token::simpleMatch(shr->astParent(), ">>"))
-                return true;
-            const Token *lhs = shr->astOperand1();
-            if (!lhs || !lhs->valueType() || !lhs->valueType()->isIntegral())
-                return true;
-        }
+		if (isLikelyStreamRead(cpp, tok->previous()))
+			return true;
 
         const Token *ftok = tok;
         while (ftok && !Token::Match(ftok, "[({[]"))
