@@ -3277,8 +3277,28 @@ void stdvector()
     std::vector<int> v;
     // cppcheck-suppress ignoredReturnValue
     v.size();
+    // cppcheck-suppress ignoredReturnValue
+    v.capacity();
+    // cppcheck-suppress uselessCallsEmpty
+    // cppcheck-suppress ignoredReturnValue
+    v.empty();
+    // cppcheck-suppress ignoredReturnValue
+    v.max_size();
     // cppcheck-suppress uninitvar
     v.push_back(uninit);
+    // cppcheck-suppress uninitvar
+    v.reserve(uninit);
+    // cppcheck-suppress invalidFunctionArg
+    v.reserve(-1);
+    // no warning is expected for capacity 0 as it simply has no effect
+    v.reserve(0);
+    // cppcheck-suppress uninitvar
+    v.resize(uninit);
+    // cppcheck-suppress invalidFunctionArg
+    v.resize(-1);
+
+    v.clear();
+    v.shrink_to_fit();
 
     // no warning is expected for pop_back()
     v.push_back(42);
@@ -3287,4 +3307,6 @@ void stdvector()
     v.push_back(42);
     // cppcheck-suppress ignoredReturnValue
     v.back();
+    // cppcheck-suppress ignoredReturnValue
+    v.front();
 }
