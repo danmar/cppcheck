@@ -82,6 +82,8 @@ private:
         ASSERT_EQUALS(false, Path::isAbsolute("foo.cpp"));
         ASSERT_EQUALS(false, Path::isAbsolute("C:foo.cpp"));
         ASSERT_EQUALS(false, Path::isAbsolute("C:foo\\bar.cpp"));
+        ASSERT_EQUALS(false, Path::isAbsolute("bar.cpp"));
+        TODO_ASSERT_EQUALS(true, false, Path::isAbsolute("\\"));
 #else
         ASSERT_EQUALS(true, Path::isAbsolute("/foo/bar"));
         ASSERT_EQUALS(true, Path::isAbsolute("/"));
@@ -91,7 +93,7 @@ private:
     }
 
     void getRelative() const {
-        std::vector<std::string> basePaths = {
+        const std::vector<std::string> basePaths = {
             "", // Don't crash with empty paths
             "C:/foo",
             "C:/bar/",
