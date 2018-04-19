@@ -5,6 +5,6 @@
     <message>
         <id>modernizeUseNullPtr</id>
         <severity>style</severity>
-        <summary>Prefer to use a 'nullptr' instead of initialize a pointer with 0.</summary>
+        <summary>Prefer to use a 'nullptr' instead of initializing a pointer with 0.</summary>
     </message>
 </rule>
