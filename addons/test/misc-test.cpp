@@ -33,6 +33,7 @@ class derived : base {
 // Pass struct to ellipsis function
 struct {int x;int y;} s;
 void ellipsis(int x, ...);
-void foo(void) {
+void foo(std::vector<std::string> v) {
     ellipsis(321, s); // ellipsisStructArg
+    ellipsis(321, v[0]); // ellipsisStructArg
 }

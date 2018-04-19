@@ -10,11 +10,14 @@ import cppcheckdata
 import sys
 import re
 
+DEBUG = ('-debug' in sys.argv)
 VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
 
 def reportError(token, severity, msg, id):
+    if id == 'debug' and DEBUG == False:
+        return
     if VERIFY:
         VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
@@ -86,6 +89,10 @@ def ellipsisStructArg(data):
                 continue
             if tok.astOperand1 is None or tok.astOperand2 is None:
                 continue
+            if tok.astOperand2.str != ',':
+                continue
+            if tok.scope.type in ['Global', 'Class']:
+                continue
             if tok.astOperand1.function is None:
                 continue
             for argnr, argvar in tok.astOperand1.function.argument.items():
@@ -96,17 +103,33 @@ def ellipsisStructArg(data):
                 callArgs = getArguments(tok)
                 for i in range(argnr-1, len(callArgs)):
                     valueType = callArgs[i].valueType
-                    if not valueType:
+                    if valueType is None:
+                        argStart = callArgs[i].previous
+                        while argStart.str != ',':
+                            if argStart.str == ')':
+                                argStart = argStart.link
+                            argStart = argStart.previous
+                        argEnd = callArgs[i]
+                        while argEnd.str != ',' and argEnd.str != ')':
+                            if argEnd.str == '(':
+                                argEnd = argEnd.link
+                            argEnd = argEnd.next
+                        expression = ''
+                        argStart = argStart.next
+                        while argStart != argEnd:
+                            expression = expression + argStart.str
+                            argStart = argStart.next
+                        reportError(tok, 'debug', 'Bailout, unknown argument type for argument \'' + expression + '\'.', 'debug')
                         continue
                     if valueType.pointer > 0:
                         continue
-                    if valueType.type != 'record':
+                    if valueType.type != 'record' and valueType.type != 'container':
                         continue
                     reportError(tok, 'style', 'Passing record to ellipsis function \'' + tok.astOperand1.function.name + '\'.', 'ellipsisStructArg')
                 break
 
 for arg in sys.argv[1:]:
-    if arg == '-verify':
+    if arg in ['-debug', '-verify']:
         continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
