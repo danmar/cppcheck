@@ -185,9 +185,7 @@ void CheckAutoVariables::assignFunctionArg()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // TODO: What happens if this is removed?
             if (tok->astParent())
@@ -228,9 +226,7 @@ void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             // Critical assignment
             if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
@@ -331,9 +327,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
             continue;
 
@@ -517,9 +511,7 @@ void CheckAutoVariables::returnReference()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
             continue;
 
