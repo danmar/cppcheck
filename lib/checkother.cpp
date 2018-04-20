@@ -1751,16 +1751,16 @@ void CheckOther::checkDuplicateBranch()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eIf)
+    for (const Scope & scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eIf)
             continue;
 
         // check all the code in the function for if (..) else
-        if (Token::simpleMatch(scope->classEnd, "} else {")) {
+        if (Token::simpleMatch(scope.classEnd, "} else {")) {
             // Make sure there are no macros (different macros might be expanded
             // to the same code)
             bool macro = false;
-            for (const Token *tok = scope->classStart; tok != scope->classEnd->linkAt(2); tok = tok->next()) {
+            for (const Token *tok = scope.classStart; tok != scope.classEnd->linkAt(2); tok = tok->next()) {
                 if (tok->isExpandedMacro()) {
                     macro = true;
                     break;
@@ -1770,17 +1770,17 @@ void CheckOther::checkDuplicateBranch()
                 continue;
 
             // save if branch code
-            std::string branch1 = scope->classStart->next()->stringifyList(scope->classEnd);
+            const std::string branch1 = scope.classStart->next()->stringifyList(scope.classEnd);
 
             if (branch1.empty())
                 continue;
 
             // save else branch code
-            const std::string branch2 = scope->classEnd->tokAt(3)->stringifyList(scope->classEnd->linkAt(2));
+            const std::string branch2 = scope.classEnd->tokAt(3)->stringifyList(scope.classEnd->linkAt(2));
 
             // check for duplicates
             if (branch1 == branch2)
-                duplicateBranchError(scope->classDef, scope->classEnd->next());
+                duplicateBranchError(scope.classDef, scope.classEnd->next());
         }
     }
 }
