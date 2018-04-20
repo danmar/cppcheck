@@ -284,7 +284,7 @@ private:
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
-        c.passedByValueError(nullptr,  "parametername", false);
+        c.passedByValueError(nullptr, "parametername", false);
         c.constStatementError(nullptr,  "type");
         c.signedCharArrayIndexError(nullptr);
         c.unknownSignCharArrayIndexError(nullptr);

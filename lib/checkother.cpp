@@ -1320,7 +1320,7 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
 }
 
 //---------------------------------------------------------------------------
-// Check for function parameters that should be passed by reference
+// Check for function parameters that should be passed by const reference
 //---------------------------------------------------------------------------
 static std::size_t estimateSize(const Type* type, const Settings* settings, const SymbolDatabase* symbolDatabase, std::size_t recursionDepth = 0)
 {
@@ -1350,6 +1350,63 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
         if (i->type && i->type->classScope)
             cumulatedSize += estimateSize(i->type, settings, symbolDatabase, recursionDepth+1);
     return cumulatedSize;
+}
+
+static bool canBeConst(const Variable *var)
+{
+    for (const Token* tok2 = var->scope()->classStart; tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
+        if (tok2->varId() == var->declarationId()) {
+            const Token* parent = tok2->astParent();
+            if (!parent)
+                ;
+            else if (parent->str() == "<<" || parent->str() == ">>") {
+                if (parent->str() == "<<" && parent->astOperand1() == tok2)
+                    return false;
+                else if (parent->str() == ">>" && parent->astOperand2() == tok2)
+                    return false;
+            } else if (parent->str() == "," || parent->str() == "(") { // function argument
+                const Token* tok3 = tok2->previous();
+                unsigned int argNr = 0;
+                while (tok3 && tok3->str() != "(") {
+                    if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
+                        tok3 = tok3->link();
+                    else if (tok3->link())
+                        break;
+                    else if (tok3->str() == ";")
+                        break;
+                    else if (tok3->str() == ",")
+                        argNr++;
+                    tok3 = tok3->previous();
+                }
+                if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
+                    return false;
+                else {
+                    const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
+                    if (!argVar|| (!argVar->isConst() && argVar->isReference()))
+                        return false;
+                }
+            } else if (parent->isConstOp())
+                ;
+            else if (parent->isAssignmentOp()) {
+                if (parent->astOperand1() == tok2)
+                    return false;
+                else if (parent->astOperand1()->str() == "&") {
+                    const Variable* assignedVar = parent->previous()->variable();
+                    if (!assignedVar || !assignedVar->isConst())
+                        return false;
+                }
+            } else if (Token::Match(tok2, "%var% . %name% (")) {
+                const Function* func = tok2->tokAt(2)->function();
+                if (func && (func->isConst() || func->isStatic()))
+                    ;
+                else
+                    return false;
+            } else
+                return false;
+        }
+    }
+
+    return true;
 }
 
 void CheckOther::checkPassByReference()
@@ -1387,70 +1444,18 @@ void CheckOther::checkPassByReference()
             continue;
 
         bool isConst = var->isConst();
-        if (!isConst) {
-            // Check if variable could be const
-            if (!var->scope() || var->scope()->function->isVirtual())
-                continue;
-
-            isConst = true;
-            for (const Token* tok2 = var->scope()->classStart; tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
-                if (tok2->varId() == var->declarationId()) {
-                    const Token* parent = tok2->astParent();
-                    if (!parent)
-                        ;
-                    else if (parent->str() == "<<" || parent->str() == ">>") {
-                        if (parent->str() == "<<" && parent->astOperand1() == tok2)
-                            isConst = false;
-                        else if (parent->str() == ">>" && parent->astOperand2() == tok2)
-                            isConst = false;
-                    } else if (parent->str() == "," || parent->str() == "(") { // function argument
-                        const Token* tok3 = tok2->previous();
-                        unsigned int argNr = 0;
-                        while (tok3 && tok3->str() != "(") {
-                            if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
-                                tok3 = tok3->link();
-                            else if (tok3->link())
-                                break;
-                            else if (tok3->str() == ";")
-                                break;
-                            else if (tok3->str() == ",")
-                                argNr++;
-                            tok3 = tok3->previous();
-                        }
-                        if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
-                            isConst = false;
-                        else {
-                            const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
-                            if (!argVar|| (!argVar->isConst() && argVar->isReference()))
-                                isConst = false;
-                        }
-                    } else if (parent->isConstOp())
-                        ;
-                    else if (parent->isAssignmentOp()) {
-                        if (parent->astOperand1() == tok2)
-                            isConst = false;
-                        else if (parent->astOperand1()->str() == "&") {
-                            const Variable* assignedVar = parent->previous()->variable();
-                            if (!assignedVar || !assignedVar->isConst())
-                                isConst = false;
-                        }
-                    } else if (Token::Match(tok2, "%var% . %name% (")) {
-                        const Function* func = tok2->tokAt(2)->function();
-                        if (func && (func->isConst() || func->isStatic()))
-                            ;
-                        else
-                            isConst = false;
-                    } else
-                        isConst = false;
-
-                    if (!isConst)
-                        break;
-                }
-            }
+        if (isConst) {
+            passedByValueError(tok, var->name(), inconclusive);
+            continue;
         }
 
-        if (isConst)
+        // Check if variable could be const
+        if (!var->scope() || var->scope()->function->isVirtual())
+            continue;
+
+        if (canBeConst(var)) {
             passedByValueError(tok, var->name(), inconclusive);
+        }
     }
 }
 
@@ -1458,9 +1463,9 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
 {
     reportError(tok, Severity::performance, "passedByValue",
                 "$symbol:" + parname + "\n"
-                "Function parameter '$symbol' should be passed by reference.\n"
+                "Function parameter '$symbol' should be passed by const reference.\n"
                 "Parameter '$symbol' is passed by value. It could be passed "
-                "as a (const) reference which is usually faster and recommended in C++.", CWE398, inconclusive);
+                "as a const reference which is usually faster and recommended in C++.", CWE398, inconclusive);
 }
 
 //---------------------------------------------------------------------------
