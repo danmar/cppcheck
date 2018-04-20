@@ -63,14 +63,6 @@ def stringConcatInArrayInit(rawTokens):
         elif tok1 == ']' and tok2 == '=' and tok3 == '{':
             arrayInit = True
         elif arrayInit and (tok1 in [',', '{']) and isStringLiteral(tok2) and isStringLiteral(tok3):
-            if tok1 == '{':
-                i2 = i + 1
-                while i2 < len(rawTokens) and rawTokens[i2].str not in [',', '}']:
-                    i2 = i2 + 1
-                if i2 >= len(rawTokens) or rawTokens[i2].str != ',':
-                    continue
-            if i + 2 < len(rawTokens) and isStringLiteral(rawTokens[i+1].str) and isStringLiteral(rawTokens[i+2].str):
-                continue
             reportError(rawTokens[i], 'style', 'String concatenation in array initialization, missing comma?', 'stringConcatInArrayInit')
 
 def implicitlyVirtual(data):

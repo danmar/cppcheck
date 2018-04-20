@@ -3,21 +3,8 @@
 
 
 // Warn about string concatenation in array initializers..
-const char *a[] = {"a" "b"};
+const char *a[] = {"a" "b"}; // stringConcatInArrayInit
 const char *b[] = {"a","b" "c"}; // stringConcatInArrayInit
-const char *c[] = {
-	"a\n"
-	"a\n"
-	"a\n"
-	"a\n"
-	"a\n"
-	,
-	"b\n"
-	"b\n"
-	"b\n"
-	"b\n"
-	"b\n"
-};
 
 
 // Function is implicitly virtual
