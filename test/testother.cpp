@@ -3929,7 +3929,6 @@ private:
         check("void f(bool a) { if( a == !(a) ) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
         
-        
         check("void f(bool a) { if( a != !(a) ) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
         
@@ -3944,6 +3943,9 @@ private:
         
         check("void f(bool a) { if( !(!a) != !(a) ) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        
+        check("void f(bool a) { a = !a; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateVarExpression() {

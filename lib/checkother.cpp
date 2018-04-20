@@ -1970,10 +1970,11 @@ void CheckOther::checkDuplicateExpression()
                             duplicateExpressionError(tok, tok, tok->str());
                         }
                     } 
-                } else if (styleEnabled && isOppositeCond(true, _tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), _settings->library, false)) {
-                    if (isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand1())) {
-                        oppositeExpressionError(tok, tok, tok->str());
-                    }
+                } else if (styleEnabled && 
+                    isOppositeCond(true, _tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), _settings->library, false) && 
+                    !Token::simpleMatch(tok, "=") &&
+                    isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand1())) {
+                    oppositeExpressionError(tok, tok, tok->str());
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(_tokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library, true) && isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
