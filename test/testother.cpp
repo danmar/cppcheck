@@ -131,6 +131,7 @@ private:
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
+        TEST_CASE(oppositeExpression);
         TEST_CASE(duplicateVarExpression);
 
         TEST_CASE(checkSignOfUnsignedVariable);
@@ -3916,6 +3917,33 @@ private:
               "\n"
               "static auto a = f<0>();");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void oppositeExpression() {
+        check("void f(bool a) { if(a && !a) {} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '&&'.\n", errout.str());
+
+        check("void f(bool a) { if(a != !a) {} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        
+        check("void f(bool a) { if( a == !(a) ) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        
+        
+        check("void f(bool a) { if( a != !(a) ) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        
+        check("void f(bool a) { if( !(a) == a ) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        
+        check("void f(bool a) { if( !(a) != a ) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        
+        check("void f(bool a) { if( !(!a) == !(a) ) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        
+        check("void f(bool a) { if( !(!a) != !(a) ) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
     }
 
     void duplicateVarExpression() {

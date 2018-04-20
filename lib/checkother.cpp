@@ -1969,6 +1969,10 @@ void CheckOther::checkDuplicateExpression()
                             }
                             duplicateExpressionError(tok, tok, tok->str());
                         }
+                    } 
+                } else if (styleEnabled && isOppositeCond(true, _tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), _settings->library, false)) {
+                    if (isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand1())) {
+                        oppositeExpressionError(tok, tok, tok->str());
                     }
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(_tokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), _settings->library, true) && isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand2()))
@@ -1996,6 +2000,16 @@ void CheckOther::checkDuplicateExpression()
             }
         }
     }
+}
+
+void CheckOther::oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op)
+{
+    const std::list<const Token *> toks = { tok2, tok1 };
+
+    reportError(toks, Severity::style, "oppositeExpression", "Opposite expression on both sides of \'" + op + "\'.\n"
+                "Finding the opposite expression on both sides of an operator is suspicious and might "
+                "indicate a cut and paste or logic error. Please examine this code carefully to "
+                "determine if it is correct.", CWE398, false);
 }
 
 void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op)

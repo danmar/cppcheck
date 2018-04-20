@@ -239,6 +239,7 @@ private:
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateAssignExpressionError(const Token *tok1, const Token *tok2);
+    void oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void duplicateValueTernaryError(const Token *tok);
     void duplicateExpressionTernaryError(const Token *tok);
@@ -298,6 +299,7 @@ private:
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
         c.duplicateBranchError(nullptr, nullptr);
+        c.oppositeExpressionError(nullptr, nullptr, "&&");
         c.duplicateExpressionError(nullptr, nullptr, "&&");
         c.duplicateValueTernaryError(nullptr);
         c.duplicateExpressionTernaryError(nullptr);
