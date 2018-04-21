@@ -74,6 +74,7 @@ private:
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
         TEST_CASE(tokenize34);  // #8031
         TEST_CASE(tokenize35);  // #8361
+        TEST_CASE(tokenize36);  // #8436
 
         TEST_CASE(validate);
 
@@ -848,6 +849,11 @@ private:
     void tokenize35() { // #8361
         tokenizeAndStringify("typedef int CRCWord; "
                              "template<typename T> ::CRCWord const Compute(T const t) { return 0; }");
+    }
+
+    void tokenize36() { // #8436
+        const char code[] = "int foo ( int i ) { return i ? * new int { 5 } : int { i ? 0 : 1 } ; }";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     void validate() {
