@@ -947,13 +947,13 @@ private:
     }
 
     void doublefree9() {
-      check("struct foo {\n"
-            "    int* get(int) { return new int(); }\n"
-            "};\n"
-            "void f(foo* b) {\n"
-            "    std::unique_ptr<int> x(b->get(0));\n"
-            "    std::unique_ptr<int> y(b->get(1));\n"
-            "}\n", true);
+        check("struct foo {\n"
+              "    int* get(int) { return new int(); }\n"
+              "};\n"
+              "void f(foo* b) {\n"
+              "    std::unique_ptr<int> x(b->get(0));\n"
+              "    std::unique_ptr<int> y(b->get(1));\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 
