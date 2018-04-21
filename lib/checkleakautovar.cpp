@@ -562,7 +562,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 
             const Token * typeEndTok = ftok->linkAt(1);
-            if (!Token::Match(typeEndTok, "> %var% {|( %var%"))
+            if (!Token::Match(typeEndTok, "> %var% {|( %var% ,|)|}"))
                 continue;
 
             bool arrayDelete = false;
