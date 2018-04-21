@@ -73,6 +73,8 @@ private:
         TEST_CASE(doublefree6); // #7685
         TEST_CASE(doublefree7);
         TEST_CASE(doublefree8);
+        TEST_CASE(doublefree9);
+
 
         // exit
         TEST_CASE(exit1);
@@ -942,6 +944,17 @@ private:
               "    delete i;\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+    }
+
+    void doublefree9() {
+      check("struct foo {\n"
+            "    int* get(int) { return new int(); }\n"
+            "};\n"
+            "void f(foo* b) {\n"
+            "    std::unique_ptr<int> x(b->get(0));\n"
+            "    std::unique_ptr<int> y(b->get(1));\n"
+            "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void exit1() {
