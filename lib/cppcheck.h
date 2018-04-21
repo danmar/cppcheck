@@ -149,13 +149,13 @@ private:
     void internalError(const std::string &filename, const std::string &msg);
 
     /**
-     * @brief Process one file.
+     * @brief Check a file using stream
      * @param filename file name
      * @param cfgname  cfg name
      * @param fileStream stream the file content can be read from
-     * @return amount of errors found
+     * @return number of errors found
      */
-    unsigned int processFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
+    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
 
     /**
      * @brief Check raw tokens
