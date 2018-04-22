@@ -559,7 +559,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             continue;
 
         // Variable getting value from stream?
-        if (Token::Match(ftok, ">>|& %name% ") && isLikelyStreamRead(true, ftok)) {
+        if (Token::Match(ftok, ">>|& %name%") && isLikelyStreamRead(true, ftok)) {
             assignVar(ftok->next()->varId(), scope, usage);
         }
 
