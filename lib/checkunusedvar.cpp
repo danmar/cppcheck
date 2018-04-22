@@ -1122,10 +1122,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             } else // addressof
                 variables.use(tok->next()->varId(), tok); // use = read + write
         } else if (Token::Match(tok, ">>|>>= %name%")) {
-            if (_tokenizer->isC() || (tok->previous()->variable() && tok->previous()->variable()->typeEndToken()->isStandardType() && tok->astOperand1() && tok->astOperand1()->str() != ">>"))
-                variables.read(tok->next()->varId(), tok);
-            else
+            if (isLikelyStreamRead(_tokenizer->isCPP(), tok))
                 variables.use(tok->next()->varId(), tok); // use = read + write
+            else
+                variables.read(tok->next()->varId(), tok);
         } else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]")) {
             variables.read(tok->varId(), tok);
         } else if (isLikelyStreamRead(_tokenizer->isCPP(),tok->previous())) {
