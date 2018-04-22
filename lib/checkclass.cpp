@@ -1984,7 +1984,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             // Streaming
             else if (end->strAt(1) == "<<" && tok1->strAt(-1) != "<<")
                 return false;
-            else if (tok1->strAt(-1) == ">>")
+            else if (isLikelyStreamRead(true, tok1->previous()))
                 return false;
 
             // ++/--
