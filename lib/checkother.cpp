@@ -1359,10 +1359,10 @@ static bool canBeConst(const Variable *var)
             const Token* parent = tok2->astParent();
             if (!parent)
                 ;
-            else if (parent->str() == "<<" || parent->str() == ">>") {
+            else if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
                 if (parent->str() == "<<" && parent->astOperand1() == tok2)
                     return false;
-                else if (parent->str() == ">>" && parent->astOperand2() == tok2)
+                if (parent->str() == ">>" && parent->astOperand2() == tok2)
                     return false;
             } else if (parent->str() == "," || parent->str() == "(") { // function argument
                 const Token* tok3 = tok2->previous();
