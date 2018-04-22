@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #include "checkclass.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -558,7 +559,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             continue;
 
         // Variable getting value from stream?
-        if (Token::Match(ftok, ">> %name%")) {
+        if (Token::Match(ftok, ">>|& %name% ") && isLikelyStreamRead(true, ftok)) {
             assignVar(ftok->next()->varId(), scope, usage);
         }
 
