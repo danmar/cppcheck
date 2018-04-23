@@ -836,10 +836,7 @@ void CheckClass::initializationListUsage()
     if (!_settings->isEnabled(Settings::PERFORMANCE))
         return;
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         // Check every constructor
         if (!scope->function || (!scope->function->isConstructor()))
             continue;
@@ -1020,9 +1017,7 @@ static const Scope* findFunctionOf(const Scope* scope)
 void CheckClass::checkMemset()
 {
     const bool printWarnings = _settings->isEnabled(Settings::WARNING);
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|memcpy|memmove (")) {
                 const Token* arg1 = tok->tokAt(2);
@@ -2161,8 +2156,7 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
 
 void CheckClass::checkSelfInitialization()
 {
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
-        const Scope* scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         const Function* function = scope->function;
         if (!function || !function->isConstructor())
             continue;
@@ -2193,10 +2187,8 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
 {
     if (! _settings->isEnabled(Settings::WARNING))
         return;
-    const std::size_t functions = symbolDatabase->functionScopes.size();
     std::map<const Function *, std::list<const Token *> > virtualFunctionCallsMap;
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody() ||
             !(scope->function->isConstructor() ||
               scope->function->isDestructor()))
