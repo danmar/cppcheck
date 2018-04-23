@@ -802,33 +802,33 @@ private:
     void templates() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--template", "{file}:{line},{severity},{id},{message}", "file.cpp"};
-        settings.outputFormat.clear();
+        settings.templateFormat.clear();
         ASSERT(defParser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS("{file}:{line},{severity},{id},{message}", settings.outputFormat);
+        ASSERT_EQUALS("{file}:{line},{severity},{id},{message}", settings.templateFormat);
     }
 
     void templatesGcc() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--template", "gcc", "file.cpp"};
-        settings.outputFormat.clear();
+        settings.templateFormat.clear();
         ASSERT(defParser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS("{file}:{line}: {severity}: {message}", settings.outputFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: warning: {message} [{id}]\\n{code}", settings.templateFormat);
     }
 
     void templatesVs() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--template", "vs", "file.cpp"};
-        settings.outputFormat.clear();
+        settings.templateFormat.clear();
         ASSERT(defParser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings.outputFormat);
+        ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings.templateFormat);
     }
 
     void templatesEdit() {
         REDIRECT;
         const char *argv[] = {"cppcheck", "--template", "edit", "file.cpp"};
-        settings.outputFormat.clear();
+        settings.templateFormat.clear();
         ASSERT(defParser.ParseFromArgs(4, argv));
-        ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings.outputFormat);
+        ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings.templateFormat);
     }
 
     void xml() {

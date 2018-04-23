@@ -538,23 +538,42 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             // Output formatter
             else if (std::strcmp(argv[i], "--template") == 0 ||
                      std::strncmp(argv[i], "--template=", 11) == 0) {
-                // "--template path/"
+                // "--template format"
                 if (argv[i][10] == '=')
-                    _settings->outputFormat = argv[i] + 11;
+                    _settings->templateFormat = argv[i] + 11;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
                     ++i;
-                    _settings->outputFormat = argv[i];
+                    _settings->templateFormat = argv[i];
                 } else {
                     PrintMessage("cppcheck: argument to '--template' is missing.");
                     return false;
                 }
 
-                if (_settings->outputFormat == "gcc")
-                    _settings->outputFormat = "{file}:{line}: {severity}: {message}";
-                else if (_settings->outputFormat == "vs")
-                    _settings->outputFormat = "{file}({line}): {severity}: {message}";
-                else if (_settings->outputFormat == "edit")
-                    _settings->outputFormat = "{file} +{line}: {severity}: {message}";
+                if (_settings->templateFormat == "gcc") {
+                    //_settings->templateFormat = "{file}:{line}: {severity}: {message}";
+                    _settings->templateFormat = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
+                    _settings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                } else if (_settings->templateFormat == "daca2") {
+                    _settings->templateFormat = "{file}:{line}:{column}: {inconclusive:inconclusive }{severity}: {message} [{id}]\\n{code}";
+                    _settings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                } else if (_settings->templateFormat == "vs")
+                    _settings->templateFormat = "{file}({line}): {severity}: {message}";
+                else if (_settings->templateFormat == "edit")
+                    _settings->templateFormat = "{file} +{line}: {severity}: {message}";
+            }
+
+            else if (std::strcmp(argv[i], "--template-location") == 0 ||
+                     std::strncmp(argv[i], "--template-location=", 20) == 0) {
+                // "--template-location format"
+                if (argv[i][19] == '=')
+                    _settings->templateLocation = argv[i] + 20;
+                else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    ++i;
+                    _settings->templateLocation = argv[i];
+                } else {
+                    PrintMessage("cppcheck: argument to '--template' is missing.");
+                    return false;
+                }
             }
 
             // Checking threads
@@ -1008,11 +1027,40 @@ void CmdLineParser::PrintHelp()
               "    --suppressions-list=<file>\n"
               "                         Suppress warnings listed in the file. Each suppression\n"
               "                         is in the same format as <spec> above.\n"
-              "    --template='<text>'  Format the error messages. E.g.\n"
+              "    --template='<text>'  Format the error messages. Available fields:\n"
+              "                           {file}              file name\n"
+              "                           {line}              line number\n"
+              "                           {column}            column number\n"
+              "                           {callstack}         show a callstack. Example:\n"
+              "                                                 [file.c:1] -> [file.c:100]\n"
+              "                           {inconlusive:text}  if warning is inconclusive, text\n"
+              "                                               is written\n"
+              "                           {severity}          severity\n"
+              "                           {message}           warning message\n"
+              "                           {id}                warning id\n"
+              "                           {code}              show the real code\n"
+              "                           \\t                 insert tab\n"
+              "                           \\n                 insert newline\n"
+              "                           \\r                 insert carriage return\n"
+              "                         Example formats:\n"
               "                         '{file}:{line},{severity},{id},{message}' or\n"
               "                         '{file}({line}):({severity}) {message}' or\n"
               "                         '{callstack} {message}'\n"
               "                         Pre-defined templates: gcc, vs, edit.\n"
+              "    --template-location='<text>'\n"
+              "                         Format error message location. If this is not provided\n"
+              "                         then no extra location info is shown.\n"
+              "                         Available fields:\n"
+              "                           {file}      file name\n"
+              "                           {line}      line number\n"
+              "                           {column}    column number\n"
+              "                           {info}      location info\n"
+              "                           {code}      show the real code\n"
+              "                           \\t         insert tab\n"
+              "                           \\n         insert newline\n"
+              "                           \\r         insert carriage return\n"
+              "                         Example format (gcc-like):\n"
+              "                         '{file}:{line}:{column}: note: {info}\\n{code}'\n"
               "    -v, --verbose        Output more detailed error information.\n"
               "    --version            Print out version number.\n"
               "    --xml                Write results in xml format to error stream (stderr).\n"

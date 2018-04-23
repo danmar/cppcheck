@@ -163,7 +163,7 @@ protected:
         ErrorPath errorPath;
         if (!value) {
             errorPath.emplace_back(errtok,bug);
-        } else if (_settings->verbose || _settings->xml || _settings->outputFormat == "daca2") {
+        } else if (_settings->verbose || _settings->xml || !_settings->templateLocation.empty()) {
             errorPath = value->errorPath;
             errorPath.emplace_back(errtok,bug);
         } else {
