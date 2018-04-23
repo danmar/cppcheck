@@ -92,10 +92,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 {
     Settings& settings = cppcheck->settings();
     CmdLineParser parser(&settings);
-    const bool success = parser.ParseFromArgs(argc, argv);
+    const bool success = parser.parseFromArgs(argc, argv);
 
     if (success) {
-        if (parser.GetShowVersion() && !parser.GetShowErrorMessages()) {
+        if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
             const char * const extraVersion = cppcheck->extraVersion();
             if (*extraVersion != 0)
                 std::cout << "Cppcheck " << cppcheck->version() << " ("
@@ -104,14 +104,14 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                 std::cout << "Cppcheck " << cppcheck->version() << std::endl;
         }
 
-        if (parser.GetShowErrorMessages()) {
+        if (parser.getShowErrorMessages()) {
             errorlist = true;
             std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
             cppcheck->getErrorMessages();
             std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
         }
 
-        if (parser.ExitAfterPrinting()) {
+        if (parser.exitAfterPrinting()) {
             settings.terminate();
             return true;
         }
@@ -138,9 +138,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Output a warning for the user if he tries to exclude headers
     bool warn = false;
-    const std::vector<std::string>& ignored = parser.GetIgnoredPaths();
-    for (std::vector<std::string>::const_iterator i = ignored.cbegin(); i != ignored.cend(); ++i) {
-        if (Path::isHeader(*i)) {
+    const std::vector<std::string>& ignored = parser.getIgnoredPaths();
+    for (const std::string &i : ignored) {
+        if (Path::isHeader(i)) {
             warn = true;
             break;
         }
@@ -150,7 +150,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
     }
 
-    const std::vector<std::string>& pathnames = parser.GetPathNames();
+    const std::vector<std::string>& pathnames = parser.getPathNames();
 
 #if defined(_WIN32)
     // For Windows we want case-insensitive path matching
@@ -1040,7 +1040,7 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     } else if (_settings->xml) {
         reportErr(msg.toXML());
     } else {
-        reportErr(msg.toString(_settings->verbose, _settings->outputFormat));
+        reportErr(msg.toString(_settings->verbose, _settings->templateFormat, _settings->templateLocation));
     }
 }
 

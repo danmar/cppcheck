@@ -444,15 +444,15 @@ static std::string readCode(const std::string &file, unsigned int linenr, unsign
     const std::string::size_type endPos = line.find_last_not_of("\r\n\t ");
     if (endPos + 1 < line.size())
         line.erase(endPos + 1);
-    return line + endl + std::string(column,' ') + '^';
+    return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
 }
 
-std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string &outputFormat) const
+std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
 {
     // Save this ErrorMessage in plain text.
 
     // No template is given
-    if (outputFormat.empty()) {
+    if (templateFormat.empty()) {
         std::ostringstream text;
         if (!_callStack.empty())
             text << callStackToString(_callStack) << ": ";
@@ -466,76 +466,77 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         return text.str();
     }
 
-    else if (outputFormat == "daca2") {
-        // This is a clang-like output format for daca2
-        std::ostringstream text;
-        if (_callStack.empty()) {
-            text << "nofile:0:0: ";
-        } else {
-            const ErrorLogger::ErrorMessage::FileLocation &loc = _callStack.back();
-            text << loc.getfile() << ':' << loc.line << ':' << loc.col << ": ";
+    // template is given. Reformat the output according to it
+    std::string result = templateFormat;
+    // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
+    // Substitution should be done first so messages from cppcheck never get translated.
+    findAndReplace(result, "\\b", "\b");
+    findAndReplace(result, "\\n", "\n");
+    findAndReplace(result, "\\r", "\r");
+    findAndReplace(result, "\\t", "\t");
+
+    findAndReplace(result, "{id}", _id);
+    if (result.find("{inconclusive:") != std::string::npos) {
+        const std::string::size_type pos1 = result.find("{inconclusive:");
+        const std::string::size_type pos2 = result.find("}", pos1+1);
+        const std::string replaceFrom = result.substr(pos1,pos2-pos1+1);
+        const std::string replaceWith = result.substr(pos1+14, pos2-pos1-14);
+        findAndReplace(result, replaceFrom, replaceWith);
+    }
+    findAndReplace(result, "{severity}", Severity::toString(_severity));
+    findAndReplace(result, "{message}", verbose ? _verboseMessage : _shortMessage);
+    findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
+    if (!_callStack.empty()) {
+        findAndReplace(result, "{file}", _callStack.back().getfile());
+        findAndReplace(result, "{line}", MathLib::toString(_callStack.back().line));
+        findAndReplace(result, "{column}", MathLib::toString(_callStack.back().col));
+        if (result.find("{code}") != std::string::npos) {
+            const std::string::size_type pos = result.find("\r");
+            const char *endl;
+            if (pos == std::string::npos)
+                endl = "\n";
+            else if (pos+1 < result.size() && result[pos+1] == '\n')
+                endl = "\r\n";
+            else
+                endl = "\r";
+            findAndReplace(result, "{code}", readCode(_callStack.back().getfile(), _callStack.back().line, _callStack.back().col, endl));
         }
-
-        if (_inconclusive)
-            text << "inconclusive ";
-        text << Severity::toString(_severity) << ": ";
-
-        text << (verbose ? _verboseMessage : _shortMessage)
-             << " [" << _id << ']';
-
-        if (_callStack.size() <= 1U)
-            return text.str();
-
-        for (std::list<FileLocation>::const_iterator loc = _callStack.begin(); loc != _callStack.end(); ++loc)
-            text << std::endl
-                 << loc->getfile()
-                 << ':'
-                 << loc->line
-                 << ':'
-                 << loc->col
-                 << ": note: "
-                 << (loc->getinfo().empty() ? _shortMessage : loc->getinfo());
-        return text.str();
+    } else {
+        findAndReplace(result, "{file}", "nofile");
+        findAndReplace(result, "{line}", "0");
+        findAndReplace(result, "{column}", "0");
+        findAndReplace(result, "{code}", emptyString);
     }
 
-    // template is given. Reformat the output according to it
-    else {
-        std::string result = outputFormat;
-        // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
-        // Substitution should be done first so messages from cppcheck never get translated.
-        findAndReplace(result, "\\b", "\b");
-        findAndReplace(result, "\\n", "\n");
-        findAndReplace(result, "\\r", "\r");
-        findAndReplace(result, "\\t", "\t");
+    if (!templateLocation.empty() && _callStack.size() >= 2U) {
+        for (const FileLocation &fileLocation : _callStack) {
+            std::string text = templateLocation;
 
-        findAndReplace(result, "{id}", _id);
-        findAndReplace(result, "{severity}", Severity::toString(_severity));
-        findAndReplace(result, "{message}", verbose ? _verboseMessage : _shortMessage);
-        findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
-        if (!_callStack.empty()) {
-            findAndReplace(result, "{file}", _callStack.back().getfile());
-            findAndReplace(result, "{line}", MathLib::toString(_callStack.back().line));
-            findAndReplace(result, "{column}", MathLib::toString(_callStack.back().col));
-            if (result.find("{code}") != std::string::npos) {
-                const std::string::size_type pos = result.find("\r");
+            findAndReplace(text, "\\b", "\b");
+            findAndReplace(text, "\\n", "\n");
+            findAndReplace(text, "\\r", "\r");
+            findAndReplace(text, "\\t", "\t");
+
+            findAndReplace(text, "{file}", fileLocation.getfile());
+            findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
+            findAndReplace(text, "{column}", MathLib::toString(fileLocation.col));
+            findAndReplace(text, "{info}", fileLocation.getinfo().empty() ? _shortMessage : fileLocation.getinfo());
+            if (text.find("{code}") != std::string::npos) {
+                const std::string::size_type pos = text.find("\r");
                 const char *endl;
                 if (pos == std::string::npos)
                     endl = "\n";
-                else if (pos+1 < result.size() && result[pos+1] == '\n')
+                else if (pos+1 < text.size() && text[pos+1] == '\n')
                     endl = "\r\n";
                 else
                     endl = "\r";
-                findAndReplace(result, "{code}", readCode(_callStack.back().getfile(), _callStack.back().line, _callStack.back().col, endl));
+                findAndReplace(text, "{code}", readCode(fileLocation.getfile(), fileLocation.line, fileLocation.col, endl));
             }
-        } else {
-            findAndReplace(result, "{file}", emptyString);
-            findAndReplace(result, "{line}", emptyString);
-            findAndReplace(result, "{column}", emptyString);
-            findAndReplace(result, "{code}", emptyString);
+            result += '\n' + text;
         }
-
-        return result;
     }
+
+    return result;
 }
 
 void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
