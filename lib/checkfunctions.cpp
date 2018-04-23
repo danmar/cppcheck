@@ -56,8 +56,7 @@ void CheckFunctions::checkProhibitedFunctions()
     const bool checkAlloca = _settings->isEnabled(Settings::WARNING) && ((_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11);
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
-        const Scope* scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
                 continue;
@@ -99,9 +98,7 @@ void CheckFunctions::checkProhibitedFunctions()
 void CheckFunctions::invalidFunctionUsage()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
@@ -178,9 +175,7 @@ void CheckFunctions::checkIgnoredReturnValue()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             // skip c++11 initialization, ({...})
             if (Token::Match(tok, "%var%|(|, {"))
@@ -221,9 +216,7 @@ void CheckFunctions::checkMathFunctions()
     const bool printWarnings = _settings->isEnabled(Settings::WARNING);
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
@@ -320,9 +313,7 @@ void CheckFunctions::memsetZeroBytes()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
                 const std::vector<const Token *> &arguments = getArguments(tok);
@@ -361,9 +352,7 @@ void CheckFunctions::memsetInvalid2ndParam()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->classStart->next(); tok && (tok != scope->classEnd); tok = tok->next()) {
             if (!Token::simpleMatch(tok, "memset ("))
                 continue;
