@@ -444,6 +444,9 @@ static std::string readCode(const std::string &file, unsigned int linenr, unsign
     const std::string::size_type endPos = line.find_last_not_of("\r\n\t ");
     if (endPos + 1 < line.size())
         line.erase(endPos + 1);
+    std::string::size_type pos = 0;
+    while ((pos = line.find("\t", pos)) != std::string::npos)
+        line[pos] = ' ';
     return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
 }
 
