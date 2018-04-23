@@ -3074,10 +3074,9 @@ static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase*
 
     // look for variable type in any using namespace in this scope or above
     while (scope) {
-        for (std::list<Scope::UsingInfo>::const_iterator ui = scope->usingList.begin();
-             ui != scope->usingList.end(); ++ui) {
-            if (ui->scope) {
-                argType = symbolDatabase->findVariableType(ui->scope, typeTok);
+        for (const Scope::UsingInfo &ui : scope->usingList) {
+            if (ui.scope) {
+                argType = symbolDatabase->findVariableType(ui.scope, typeTok);
                 if (argType)
                     return argType;
             }
@@ -3492,7 +3491,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     }
 
     if ((Token::Match(tok, "throw %any% :: %any% (") &&
-                Token::simpleMatch(tok->linkAt(4), ") ;"))) {
+         Token::simpleMatch(tok->linkAt(4), ") ;"))) {
         return tok->linkAt(4);
     }
 
