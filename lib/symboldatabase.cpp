@@ -3489,7 +3489,9 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     if (Token::Match(tok, "throw %any% (") &&
         Token::simpleMatch(tok->linkAt(2), ") ;")) {
         return tok->linkAt(2);
-    } else if ((Token::Match(tok, "throw %any% :: %any% (") &&
+    }
+
+    if ((Token::Match(tok, "throw %any% :: %any% (") &&
                 Token::simpleMatch(tok->linkAt(4), ") ;"))) {
         return tok->linkAt(4);
     }
