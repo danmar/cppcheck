@@ -433,6 +433,20 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
     }
 }
 
+// TODO: read info from some shared resource instead?
+static std::string readCode(const std::string &file, unsigned int linenr, unsigned int column, const char endl[])
+{
+    std::ifstream fin(file);
+    std::string line;
+    while (linenr > 0 && std::getline(fin,line)) {
+        linenr--;
+    }
+    const std::string::size_type endPos = line.find_last_not_of("\r\n\t ");
+    if (endPos + 1 < line.size())
+        line.erase(endPos + 1);
+    return line + endl + std::string(column,' ') + '^';
+}
+
 std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string &outputFormat) const
 {
     // Save this ErrorMessage in plain text.
@@ -499,13 +513,25 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         findAndReplace(result, "{message}", verbose ? _verboseMessage : _shortMessage);
         findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
         if (!_callStack.empty()) {
-            std::ostringstream oss;
-            oss << _callStack.back().line;
-            findAndReplace(result, "{line}", oss.str());
             findAndReplace(result, "{file}", _callStack.back().getfile());
+            findAndReplace(result, "{line}", MathLib::toString(_callStack.back().line));
+            findAndReplace(result, "{column}", MathLib::toString(_callStack.back().col));
+            if (result.find("{code}") != std::string::npos) {
+                const std::string::size_type pos = result.find("\r");
+                const char *endl;
+                if (pos == std::string::npos)
+                    endl = "\n";
+                else if (pos+1 < result.size() && result[pos+1] == '\n')
+                    endl = "\r\n";
+                else
+                    endl = "\r";
+                findAndReplace(result, "{code}", readCode(_callStack.back().getfile(), _callStack.back().line, _callStack.back().col, endl));
+            }
         } else {
             findAndReplace(result, "{file}", emptyString);
             findAndReplace(result, "{line}", emptyString);
+            findAndReplace(result, "{column}", emptyString);
+            findAndReplace(result, "{code}", emptyString);
         }
 
         return result;
