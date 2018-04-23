@@ -15,6 +15,7 @@
 #if  defined(__STD_UTF_16__) || defined(__STD_UTF_32__)
 #include <uchar.h>
 #endif
+#include <ctype.h>
 #include <wctype.h>
 #include <fenv.h>
 #include <setjmp.h>
@@ -3672,6 +3673,135 @@ void invalidFunctionArgBool_abs(bool b, double x, double y)
     (void)abs(b); // #6990
     // cppcheck-suppress invalidFunctionArgBool
     (void)abs(x<y); // #5635
+}
+
+void invalidFunctionArg(char c)
+{
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isalnum(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isalnum(-1);
+    /* no warning for*/
+    (void)isalnum(c);
+    (void)isalnum(0);
+    (void)isalnum(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isalpha(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isalpha(-1);
+    /* no warning for*/
+    (void)isalpha(c);
+    (void)isalpha(0);
+    (void)isalpha(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isblank(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isblank(-1);
+    /* no warning for*/
+    (void)isblank(c);
+    (void)isblank(0);
+    (void)isblank(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)iscntrl(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)iscntrl(-1);
+    /* no warning for*/
+    (void)iscntrl(c);
+    (void)iscntrl(0);
+    (void)iscntrl(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isdigit(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isdigit(-1);
+    /* no warning for*/
+    (void)isdigit(c);
+    (void)isdigit(0);
+    (void)isdigit(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isgraph(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isgraph(-1);
+    /* no warning for*/
+    (void)isgraph(c);
+    (void)isgraph(0);
+    (void)isgraph(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)islower(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)islower(-1);
+    /* no warning for*/
+    (void)islower(c);
+    (void)islower(0);
+    (void)islower(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isupper(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isupper(-1);
+    /* no warning for*/
+    (void)isupper(c);
+    (void)isupper(0);
+    (void)isupper(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isprint(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isprint(-1);
+    /* no warning for*/
+    (void)isprint(c);
+    (void)isprint(0);
+    (void)isprint(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)ispunct(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)ispunct(-1);
+    /* no warning for*/
+    (void)ispunct(c);
+    (void)ispunct(0);
+    (void)ispunct(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isspace(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isspace(-1);
+    /* no warning for*/
+    (void)isspace(c);
+    (void)isspace(0);
+    (void)isspace(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isxdigit(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)isxdigit(-1);
+    /* no warning for*/
+    (void)isxdigit(c);
+    (void)isxdigit(0);
+    (void)isxdigit(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)tolower(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)tolower(-1);
+    /* no warning for*/
+    (void)tolower(c);
+    (void)tolower(0);
+    (void)tolower(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)toupper(256);
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)toupper(-1);
+    /* no warning for*/
+    (void)toupper(c);
+    (void)toupper(0);
+    (void)toupper(255);
 }
 
 void ignoredReturnValue_abs(int i)
