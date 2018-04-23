@@ -102,17 +102,17 @@ CmdLineParser::CmdLineParser(Settings *settings)
 {
 }
 
-void CmdLineParser::PrintMessage(const std::string &message)
+void CmdLineParser::printMessage(const std::string &message)
 {
     std::cout << message << std::endl;
 }
 
-void CmdLineParser::PrintMessage(const char* message)
+void CmdLineParser::printMessage(const char* message)
 {
     std::cout << message << std::endl;
 }
 
-bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
+bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
     bool def = false;
     bool maxconfigs = false;
@@ -168,7 +168,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 } else {
                     i++;
                     if (i >= argc || argv[i][0] == '-') {
-                        PrintMessage("cppcheck: No language given to '-x' option.");
+                        printMessage("cppcheck: No language given to '-x' option.");
                         return false;
                     }
                     str = argv[i];
@@ -179,7 +179,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 else if (str == "c++")
                     _settings->enforcedLang = Settings::CPP;
                 else {
-                    PrintMessage("cppcheck: Unknown language '" + str + "' enforced.");
+                    printMessage("cppcheck: Unknown language '" + str + "' enforced.");
                     return false;
                 }
             }
@@ -191,12 +191,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                 std::ifstream f(filename);
                 if (!f.is_open()) {
-                    PrintMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
+                    printMessage("cppcheck: Couldn't open the file: \"" + filename + "\".");
                     return false;
                 }
                 const std::string errmsg(_settings->nofail.parseFile(f));
                 if (!errmsg.empty()) {
-                    PrintMessage(errmsg);
+                    printMessage(errmsg);
                     return false;
                 }
             }
@@ -218,12 +218,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                         message += "\n    cppcheck --suppressions-list=a.txt --suppressions-list=b.txt file.cpp";
                     }
 
-                    PrintMessage(message);
+                    printMessage(message);
                     return false;
                 }
                 const std::string errmsg(_settings->nomsg.parseFile(f));
                 if (!errmsg.empty()) {
-                    PrintMessage(errmsg);
+                    printMessage(errmsg);
                     return false;
                 }
             }
@@ -232,7 +232,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 const char * filename = argv[i] + 15;
                 const std::string errmsg(_settings->nomsg.parseXmlFile(filename));
                 if (!errmsg.empty()) {
-                    PrintMessage(errmsg);
+                    printMessage(errmsg);
                     return false;
                 }
             }
@@ -241,7 +241,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 const std::string suppression = argv[i]+11;
                 const std::string errmsg(_settings->nomsg.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
-                    PrintMessage(errmsg);
+                    printMessage(errmsg);
                     return false;
                 }
             }
@@ -275,7 +275,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                         paths.erase(0, pos + 1);
                     }
                 } else {
-                    PrintMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
+                    printMessage("cppcheck: No paths specified for the '" + std::string(argv[i]) + "' option.");
                     return false;
                 }
             }
@@ -303,13 +303,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                 std::istringstream iss(numberString);
                 if (!(iss >> _settings->xml_version)) {
-                    PrintMessage("cppcheck: argument to '--xml-version' is not a number.");
+                    printMessage("cppcheck: argument to '--xml-version' is not a number.");
                     return false;
                 }
 
                 if (_settings->xml_version != 2) {
                     // We only have xml version 2
-                    PrintMessage("cppcheck: '--xml-version' can only be 2.");
+                    printMessage("cppcheck: '--xml-version' can only be 2.");
                     return false;
                 }
 
@@ -334,7 +334,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
                 const std::string errmsg = _settings->addEnabled(argv[i] + 9);
                 if (!errmsg.empty()) {
-                    PrintMessage(errmsg);
+                    printMessage(errmsg);
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
@@ -351,7 +351,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 std::istringstream iss(temp);
                 if (!(iss >> _settings->exitCode)) {
                     _settings->exitCode = 0;
-                    PrintMessage("cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'.");
+                    printMessage("cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'.");
                     return false;
                 }
             }
@@ -364,7 +364,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-D") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        PrintMessage("cppcheck: argument to '-D' is missing.");
+                        printMessage("cppcheck: argument to '-D' is missing.");
                         return false;
                     }
 
@@ -393,7 +393,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-U") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        PrintMessage("cppcheck: argument to '-U' is missing.");
+                        printMessage("cppcheck: argument to '-U' is missing.");
                         return false;
                     }
 
@@ -420,7 +420,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-I") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        PrintMessage("cppcheck: argument to '-I' is missing.");
+                        printMessage("cppcheck: argument to '-I' is missing.");
                         return false;
                     }
                     path = argv[i];
@@ -470,7 +470,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-i") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        PrintMessage("cppcheck: argument to '-i' is missing.");
+                        printMessage("cppcheck: argument to '-i' is missing.");
                         return false;
                     }
                     path = argv[i];
@@ -507,7 +507,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (std::strstr(argv[i], ".sln") || std::strstr(argv[i], ".vcxproj")) {
                     if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
-                        PrintMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
+                        printMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
                         return false;
                     }
                 }
@@ -545,7 +545,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     ++i;
                     _settings->templateFormat = argv[i];
                 } else {
-                    PrintMessage("cppcheck: argument to '--template' is missing.");
+                    printMessage("cppcheck: argument to '--template' is missing.");
                     return false;
                 }
 
@@ -571,7 +571,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     ++i;
                     _settings->templateLocation = argv[i];
                 } else {
-                    PrintMessage("cppcheck: argument to '--template' is missing.");
+                    printMessage("cppcheck: argument to '--template' is missing.");
                     return false;
                 }
             }
@@ -584,7 +584,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-j") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        PrintMessage("cppcheck: argument to '-j' is missing.");
+                        printMessage("cppcheck: argument to '-j' is missing.");
                         return false;
                     }
 
@@ -597,14 +597,14 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                 std::istringstream iss(numberString);
                 if (!(iss >> _settings->jobs)) {
-                    PrintMessage("cppcheck: argument to '-j' is not a number.");
+                    printMessage("cppcheck: argument to '-j' is not a number.");
                     return false;
                 }
 
                 if (_settings->jobs > 10000) {
                     // This limit is here just to catch typos. If someone has
                     // need for more jobs, this value should be increased.
-                    PrintMessage("cppcheck: argument for '-j' is allowed to be 10000 at max.");
+                    printMessage("cppcheck: argument for '-j' is allowed to be 10000 at max.");
                     return false;
                 }
             } else if (std::strncmp(argv[i], "-l", 2) == 0) {
@@ -614,7 +614,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-l") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        PrintMessage("cppcheck: argument to '-l' is missing.");
+                        printMessage("cppcheck: argument to '-l' is missing.");
                         return false;
                     }
 
@@ -627,7 +627,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                 std::istringstream iss(numberString);
                 if (!(iss >> _settings->loadAverage)) {
-                    PrintMessage("cppcheck: argument to '-l' is not a number.");
+                    printMessage("cppcheck: argument to '-l' is not a number.");
                     return false;
                 }
             }
@@ -671,7 +671,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     std::string message("cppcheck: error: unrecognized showtime mode: \"");
                     message += showtimeMode;
                     message += "\". Supported modes: file, summary, top5.";
-                    PrintMessage(message);
+                    printMessage(message);
                     return false;
                 }
             }
@@ -745,7 +745,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                     std::string message("cppcheck: error: unrecognized platform: \"");
                     message += platform;
                     message += "\".";
-                    PrintMessage(message);
+                    printMessage(message);
                     return false;
                 }
             }
@@ -756,12 +756,12 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
 
                 std::istringstream iss(14+argv[i]);
                 if (!(iss >> _settings->maxConfigs)) {
-                    PrintMessage("cppcheck: argument to '--max-configs=' is not a number.");
+                    printMessage("cppcheck: argument to '--max-configs=' is not a number.");
                     return false;
                 }
 
                 if (_settings->maxConfigs < 1) {
-                    PrintMessage("cppcheck: argument to '--max-configs=' must be greater than 0.");
+                    printMessage("cppcheck: argument to '--max-configs=' must be greater than 0.");
                     return false;
                 }
 
@@ -780,7 +780,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
                 std::string message("cppcheck: error: unrecognized command line option: \"");
                 message += argv[i];
                 message += "\".";
-                PrintMessage(message);
+                printMessage(message);
                 return false;
             }
         }
@@ -801,7 +801,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
         _settings->maxConfigs = 1U;
 
     if (_settings->isEnabled(Settings::UNUSED_FUNCTION) && _settings->jobs > 1) {
-        PrintMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
+        printMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
     if (argc <= 1) {
@@ -810,13 +810,13 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     }
 
     if (_showHelp) {
-        PrintHelp();
+        printHelp();
         return true;
     }
 
     // Print error only if we have "real" command and expect files
     if (!_exitAfterPrint && _pathnames.empty() && _settings->project.fileSettings.empty()) {
-        PrintMessage("cppcheck: No C or C++ source files found.");
+        printMessage("cppcheck: No C or C++ source files found.");
         return false;
     }
 
@@ -827,7 +827,7 @@ bool CmdLineParser::ParseFromArgs(int argc, const char* const argv[])
     return true;
 }
 
-void CmdLineParser::PrintHelp()
+void CmdLineParser::printHelp()
 {
     std::cout << "Cppcheck - A tool for static C/C++ code analysis\n"
               "\n"
