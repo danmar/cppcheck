@@ -9902,50 +9902,52 @@ void Tokenizer::printUnknownTypes() const
 
     for (unsigned int i = 1; i <= _varId; ++i) {
         const Variable *var = _symbolDatabase->getVariableFromVarId(i);
-
+        if (!var)
+            continue;
         // is unknown type?
-        if (var && !var->type() && !var->typeStartToken()->isStandardType()) {
-            std::string name;
-            const Token * nameTok;
+        if (var->type() || var->typeStartToken()->isStandardType())
+            continue;
 
-            // single token type?
-            if (var->typeStartToken() == var->typeEndToken()) {
-                nameTok = var->typeStartToken();
-                name = nameTok->str();
-            }
+        std::string name;
+        const Token * nameTok;
 
-            // complicated type
-            else {
-                const Token *tok = var->typeStartToken();
-                int level = 0;
-
-                nameTok =  tok;
-
-                while (tok) {
-                    // skip pointer and reference part of type
-                    if (level == 0 && Token::Match(tok, "*|&"))
-                        break;
-
-                    name += tok->str();
-
-                    if (Token::Match(tok, "struct|union|enum"))
-                        name += " ";
-
-                    // pointers and references are OK in template
-                    else if (tok->str() == "<")
-                        ++level;
-                    else if (tok->str() == ">")
-                        --level;
-
-                    if (tok == var->typeEndToken())
-                        break;
-
-                    tok = tok->next();
-                }
-            }
-
-            unknowns.insert(std::pair<std::string, const Token *>(name, nameTok));
+        // single token type?
+        if (var->typeStartToken() == var->typeEndToken()) {
+            nameTok = var->typeStartToken();
+            name = nameTok->str();
         }
+
+        // complicated type
+        else {
+            const Token *tok = var->typeStartToken();
+            int level = 0;
+
+            nameTok =  tok;
+
+            while (tok) {
+                // skip pointer and reference part of type
+                if (level == 0 && Token::Match(tok, "*|&"))
+                    break;
+
+                name += tok->str();
+
+                if (Token::Match(tok, "struct|union|enum"))
+                    name += " ";
+
+                // pointers and references are OK in template
+                else if (tok->str() == "<")
+                    ++level;
+                else if (tok->str() == ">")
+                    --level;
+
+                if (tok == var->typeEndToken())
+                    break;
+
+                tok = tok->next();
+            }
+        }
+
+        unknowns.insert(std::pair<std::string, const Token *>(name, nameTok));
     }
 
     if (!unknowns.empty()) {
