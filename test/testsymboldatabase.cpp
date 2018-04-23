@@ -147,6 +147,9 @@ private:
         TEST_CASE(isVariableDeclarationRValueRef);
         TEST_CASE(isVariableStlType);
 
+        TEST_CASE(findVariableType1);
+        TEST_CASE(findVariableType2);
+
         TEST_CASE(rangeBasedFor);
 
         TEST_CASE(arrayMemberVar1);
@@ -771,6 +774,53 @@ private:
         ASSERT(true == v.isReference());
         ASSERT(true == v.isRValueReference());
         ASSERT(var.tokens()->tokAt(2)->scope() != 0);
+    }
+
+    void findVariableType1() {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "    struct B {};\n"
+                      "    void f();\n"
+                      "};\n"
+                      "\n"
+                      "void f()\n"
+                      "{\n"
+                      "    struct A::B b;\n"
+                      "    b.x = 1;\n"
+                      "}");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        const Variable* bvar = db->getVariableFromVarId(1);
+        ASSERT_EQUALS("b", bvar->name());
+        ASSERT(bvar->type() != nullptr);
+    }
+
+    void findVariableType2() {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "    class B {\n"
+                      "    public:\n"
+                      "        struct C {\n"
+                      "            int x;\n"
+                      "            int y;\n"
+                      "        };\n"
+                      "    };\n"
+                      "\n"
+                      "    void f();\n"
+                      "};\n"
+                      "\n"
+                      "void A::f()\n"
+                      "{\n"
+                      "    struct B::C c;\n"
+                      "    c.x = 1;\n"
+                      "}");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        const Variable* cvar = db->getVariableFromVarId(3);
+        ASSERT_EQUALS("c", cvar->name());
+        ASSERT(cvar->type() != nullptr);
     }
 
     void rangeBasedFor() {

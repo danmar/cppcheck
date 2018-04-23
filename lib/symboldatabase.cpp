@@ -3921,7 +3921,9 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
                     if (scope1) {
                         scope = scope1;
                         break;
-                    } else
+                    } else if (scope->type == Scope::eFunction && scope->functionOf)
+                        scope = scope->functionOf;
+                    else
                         scope = scope->nestedIn;
                 }
             }
