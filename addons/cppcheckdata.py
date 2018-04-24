@@ -461,12 +461,12 @@ class Suppression:
         self.fileName = element.get('fileName')
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
-        
-    def isMatch(file, line, message, id):
+
+    def isMatch(file, line, message, errorId):
         if (fnmatch(file, self.fileName)
             and (self.lineNumber is None or line == self.lineNumber)
             and fnmatch(message, '*'+self.symbolName+'*')
-            and fnmatch(id, self.errorId)):
+            and fnmatch(errorId, self.errorId)):
             return true
         else:
             return false
@@ -737,7 +737,7 @@ def ArgumentParser():
     return parser
 
 
-def reportError(template, callstack=(), severity='', message='', id='', suppressions=[], outputFunc=None):
+def reportError(template, callstack=(), severity='', message='', errorId='', suppressions=None, outputFunc=None):
     """
         Format an error message according to the template.
 
@@ -759,11 +759,11 @@ def reportError(template, callstack=(), severity='', message='', id='', suppress
     file = callstack[-1][0]
     line = str(callstack[-1][1])
     
-    if any(suppression.isMatch(file, line, message, id) for suppression in suppressions):
+    if suppressions is not None and any(suppression.isMatch(file, line, message, errorId) for suppression in suppressions):
         return None
     
     outputLine = template.format(callstack=stack, file=file, line=line,
-                           severity=severity, message=message, id=id)
+                           severity=severity, message=message, id=errorId)
     if outputFunc is not None:
         outputFunc(outputLine)
     # format message
