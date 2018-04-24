@@ -2240,7 +2240,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                 while (scope2 && count > 0) {
                     count--;
                     tok1 = tok1->tokAt(2);
-                    scope2 = scope2->findInNestedList(tok1->str());
+                    scope2 = scope2->findRecordInNestedList(tok1->str());
                 }
 
                 if (count == 0 && scope2) {
@@ -4470,6 +4470,12 @@ const Scope *Scope::findRecordInNestedList(const std::string & name) const
         if ((*it)->className == name && (*it)->type != eFunction)
             return (*it);
     }
+
+    const Type * nested_type = findType(name);
+
+    if (nested_type)
+        return nested_type->classScope;
+
     return nullptr;
 }
 
