@@ -239,6 +239,8 @@ void misra_16_3() {
     case 10:  // 16.3
       return; // 15.5
     case 11:
+    { break; }
+    case 12:
     default: break;
   }
 }

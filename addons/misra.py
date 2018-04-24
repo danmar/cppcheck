@@ -280,7 +280,40 @@ def getPrecedence(expr):
     return -1
 
 
-def noParentheses(tok1, tok2):
+def findRawLink(token):
+    tok1 = None
+    tok2 = None
+    forward = False
+
+    if token.str in '{([':
+        tok1 = token.str
+        tok2 = '})]'['{(['.find(token.str)]
+        forward = True
+    elif token.str in '})]':
+        tok1 = token.str
+        tok2 = '{(['['})]'.find(token.str)]
+        forward = False
+    else:
+        return None
+
+    # try to find link
+    indent = 0
+    while token:
+        if token.str == tok1:
+            indent = indent + 1
+        elif token.str == tok2:
+            if indent <= 1:
+                return token
+            indent = indent - 1
+        if forward == True:
+            token = token.next
+        else:
+            token = token.previous
+
+    # raw link not found
+    return None
+
+def numberOfParentheses(tok1, tok2):
     while tok1 and tok1 != tok2:
         if tok1.str == '(' or tok1.str == ')':
             return False
@@ -678,11 +711,11 @@ def misra_12_1(data):
         if p < 2 or p > 12:
             continue
         p1 = getPrecedence(token.astOperand1)
-        if p < p1 <= 12 and noParentheses(token.astOperand1, token):
+        if p < p1 <= 12 and numberOfParentheses(token.astOperand1, token):
             reportError(token, 12, 1)
             continue
         p2 = getPrecedence(token.astOperand2)
-        if p < p2 <= 12 and noParentheses(token, token.astOperand2):
+        if p < p2 <= 12 and numberOfParentheses(token, token.astOperand2):
             reportError(token, 12, 1)
             continue
 
@@ -934,8 +967,11 @@ def misra_16_3(rawTokens):
             state = STATE_BREAK
         elif token.str == '{':
             state = STATE_OK
-        elif token.str == '}':
-            state = STATE_NONE
+        elif token.str == '}' and state == STATE_BREAK:
+            # is this {} an unconditional block of code?
+            link = findRawLink(token)
+            if (link is None) or (link.previous is None) or (link.previous not in ':;{}'):
+                state = STATE_NONE
         elif token.str == 'case' or token.str == 'default':
             if state != STATE_OK:
                 reportError(token, 16, 3)
