@@ -8,6 +8,7 @@ License: No restrictions, use this as you need.
 
 import xml.etree.ElementTree as ET
 import argparse
+from fnmatch import fnmatch
 
 
 class Directive:
@@ -460,6 +461,15 @@ class Suppression:
         self.fileName = element.get('fileName')
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
+        
+    def isMatch(file, line, message, id):
+        if (fnmatch(file, self.fileName)
+            and (self.lineNumber is None or line == self.lineNumber)
+            and fnmatch(message, '*'+self.symbolName+'*')
+            and fnmatch(id, self.errorId)):
+            return true
+        else:
+            return false
 
 class Configuration:
     """
@@ -727,7 +737,7 @@ def ArgumentParser():
     return parser
 
 
-def reportError(template, callstack=(), severity='', message='', id=''):
+def reportError(template, callstack=(), severity='', message='', id='', suppressions=[], outputFunc=None):
     """
         Format an error message according to the template.
 
@@ -748,6 +758,13 @@ def reportError(template, callstack=(), severity='', message='', id=''):
     stack = ' -> '.join('[' + f + ':' + str(l) + ']' for (f, l) in callstack)
     file = callstack[-1][0]
     line = str(callstack[-1][1])
-    # format message
-    return template.format(callstack=stack, file=file, line=line,
+    
+    if any(suppression.isMatch(file, line, message, id) for suppression in suppressions):
+        return None
+    
+    outputLine = template.format(callstack=stack, file=file, line=line,
                            severity=severity, message=message, id=id)
+    if outputFunc is not None:
+        outputFunc(outputLine)
+    # format message
+    return outputLine
