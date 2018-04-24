@@ -3196,17 +3196,16 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
     if (isVirtual())
         return true;
-    else if (access == Private || access == Public || access == Protected) {
-        bool safe = true;
-        bool hasVirt = isImplicitlyVirtual_rec(nestedIn->definedType, safe);
-        if (hasVirt)
-            return true;
-        else if (safe)
-            return false;
-        else
-            return defaultVal;
-    } else
+    if (!nestedIn->isClassOrStruct())
         return false;
+    bool safe = true;
+    bool hasVirt = isImplicitlyVirtual_rec(nestedIn->definedType, safe);
+    if (hasVirt)
+        return true;
+    else if (safe)
+        return false;
+    else
+        return defaultVal;
 }
 
 bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
