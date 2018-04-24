@@ -554,7 +554,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     _settings->templateFormat = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
                     _settings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
                 } else if (_settings->templateFormat == "daca2") {
-                    _settings->templateFormat = "{file}:{line}:{column}: {inconclusive:inconclusive }{severity}: {message} [{id}]\\n{code}";
+                    _settings->templateFormat = "{file}:{line}:{column}: {severity}: {message} [{id}]\\n{code}";
                     _settings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
                 } else if (_settings->templateFormat == "vs")
                     _settings->templateFormat = "{file}({line}): {severity}: {message}";
