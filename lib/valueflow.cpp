@@ -387,157 +387,157 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             return;
         }
 
-        for (std::list<ValueFlow::Value>::const_iterator value1 = parent->astOperand1()->values().begin(); value1 != parent->astOperand1()->values().end(); ++value1) {
-            if (!value1->isIntValue() && !value1->isFloatValue() && !value1->isTokValue())
+        for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
+            if (!value1.isIntValue() && !value1.isFloatValue() && !value1.isTokValue())
                 continue;
-            if (value1->isTokValue() && (!parent->isComparisonOp() || value1->tokvalue->tokType() != Token::eString))
+            if (value1.isTokValue() && (!parent->isComparisonOp() || value1.tokvalue->tokType() != Token::eString))
                 continue;
-            for (std::list<ValueFlow::Value>::const_iterator value2 = parent->astOperand2()->values().begin(); value2 != parent->astOperand2()->values().end(); ++value2) {
-                if (!value2->isIntValue() && !value2->isFloatValue() && !value2->isTokValue())
+            for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
+                if (!value2.isIntValue() && !value2.isFloatValue() && !value2.isTokValue())
                     continue;
-                if (value2->isTokValue() && (!parent->isComparisonOp() || value2->tokvalue->tokType() != Token::eString || value1->isTokValue()))
+                if (value2.isTokValue() && (!parent->isComparisonOp() || value2.tokvalue->tokType() != Token::eString || value1.isTokValue()))
                     continue;
-                if (known || value1->varId == 0U || value2->varId == 0U ||
-                    (value1->varId == value2->varId && value1->varvalue == value2->varvalue && value1->isIntValue() && value2->isIntValue())) {
+                if (known || value1.varId == 0U || value2.varId == 0U ||
+                    (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() && value2.isIntValue())) {
                     ValueFlow::Value result(0);
-                    result.condition = value1->condition ? value1->condition : value2->condition;
-                    result.setInconclusive(value1->isInconclusive() | value2->isInconclusive());
-                    result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
-                    result.varvalue = (result.varId == value1->varId) ? value1->varvalue : value2->varvalue;
-                    result.errorPath = (value1->errorPath.empty() ? value2 : value1)->errorPath;
-                    if (value1->valueKind == value2->valueKind)
-                        result.valueKind = value1->valueKind;
-                    const float floatValue1 = value1->isIntValue() ? value1->intvalue : value1->floatValue;
-                    const float floatValue2 = value2->isIntValue() ? value2->intvalue : value2->floatValue;
+                    result.condition = value1.condition ? value1.condition : value2.condition;
+                    result.setInconclusive(value1.isInconclusive() | value2.isInconclusive());
+                    result.varId = (value1.varId != 0U) ? value1.varId : value2.varId;
+                    result.varvalue = (result.varId == value1.varId) ? value1.varvalue : value2.varvalue;
+                    result.errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
+                    if (value1.valueKind == value2.valueKind)
+                        result.valueKind = value1.valueKind;
+                    const float floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
+                    const float floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
                     switch (parent->str()[0]) {
                     case '+':
-                        if (value1->isTokValue() || value2->isTokValue())
+                        if (value1.isTokValue() || value2.isTokValue())
                             break;
-                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                        if (value1.isFloatValue() || value2.isFloatValue()) {
                             result.valueType = ValueFlow::Value::FLOAT;
                             result.floatValue = floatValue1 + floatValue2;
                         } else {
-                            result.intvalue = value1->intvalue + value2->intvalue;
+                            result.intvalue = value1.intvalue + value2.intvalue;
                         }
                         setTokenValue(parent, result, settings);
                         break;
                     case '-':
-                        if (value1->isTokValue() || value2->isTokValue())
+                        if (value1.isTokValue() || value2.isTokValue())
                             break;
-                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                        if (value1.isFloatValue() || value2.isFloatValue()) {
                             result.valueType = ValueFlow::Value::FLOAT;
                             result.floatValue = floatValue1 - floatValue2;
                         } else {
-                            result.intvalue = value1->intvalue - value2->intvalue;
+                            result.intvalue = value1.intvalue - value2.intvalue;
                         }
                         setTokenValue(parent, result, settings);
                         break;
                     case '*':
-                        if (value1->isTokValue() || value2->isTokValue())
+                        if (value1.isTokValue() || value2.isTokValue())
                             break;
-                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                        if (value1.isFloatValue() || value2.isFloatValue()) {
                             result.valueType = ValueFlow::Value::FLOAT;
                             result.floatValue = floatValue1 * floatValue2;
                         } else {
-                            result.intvalue = value1->intvalue * value2->intvalue;
+                            result.intvalue = value1.intvalue * value2.intvalue;
                         }
                         setTokenValue(parent, result, settings);
                         break;
                     case '/':
-                        if (value1->isTokValue() || value2->isTokValue() || value2->intvalue == 0)
+                        if (value1.isTokValue() || value2.isTokValue() || value2.intvalue == 0)
                             break;
-                        if (value1->isFloatValue() || value2->isFloatValue()) {
+                        if (value1.isFloatValue() || value2.isFloatValue()) {
                             result.valueType = ValueFlow::Value::FLOAT;
                             result.floatValue = floatValue1 / floatValue2;
                         } else {
-                            result.intvalue = value1->intvalue / value2->intvalue;
+                            result.intvalue = value1.intvalue / value2.intvalue;
                         }
                         setTokenValue(parent, result, settings);
                         break;
                     case '%':
-                        if (!value1->isIntValue() || !value2->isIntValue())
+                        if (!value1.isIntValue() || !value2.isIntValue())
                             break;
-                        if (value2->intvalue == 0)
+                        if (value2.intvalue == 0)
                             break;
-                        result.intvalue = value1->intvalue % value2->intvalue;
+                        result.intvalue = value1.intvalue % value2.intvalue;
                         setTokenValue(parent, result, settings);
                         break;
                     case '=':
                         if (parent->str() == "==") {
-                            if ((value1->isIntValue() && value2->isTokValue()) ||
-                                (value1->isTokValue() && value2->isIntValue())) {
+                            if ((value1.isIntValue() && value2.isTokValue()) ||
+                                (value1.isTokValue() && value2.isIntValue())) {
                                 result.intvalue = 0;
                                 setTokenValue(parent, result, settings);
-                            } else if (value1->isIntValue() && value2->isIntValue()) {
-                                result.intvalue = value1->intvalue == value2->intvalue;
+                            } else if (value1.isIntValue() && value2.isIntValue()) {
+                                result.intvalue = value1.intvalue == value2.intvalue;
                                 setTokenValue(parent, result, settings);
                             }
                         }
                         break;
                     case '!':
                         if (parent->str() == "!=") {
-                            if ((value1->isIntValue() && value2->isTokValue()) ||
-                                (value1->isTokValue() && value2->isIntValue())) {
+                            if ((value1.isIntValue() && value2.isTokValue()) ||
+                                (value1.isTokValue() && value2.isIntValue())) {
                                 result.intvalue = 1;
                                 setTokenValue(parent, result, settings);
-                            } else if (value1->isIntValue() && value2->isIntValue()) {
-                                result.intvalue = value1->intvalue != value2->intvalue;
+                            } else if (value1.isIntValue() && value2.isIntValue()) {
+                                result.intvalue = value1.intvalue != value2.intvalue;
                                 setTokenValue(parent, result, settings);
                             }
                         }
                         break;
                     case '>': {
-                        const bool f = value1->isFloatValue() || value2->isFloatValue();
-                        if (!f && !value1->isIntValue() && !value2->isIntValue())
+                        const bool f = value1.isFloatValue() || value2.isFloatValue();
+                        if (!f && !value1.isIntValue() && !value2.isIntValue())
                             break;
                         if (parent->str() == ">")
-                            result.intvalue = f ? (floatValue1 > floatValue2) : (value1->intvalue > value2->intvalue);
+                            result.intvalue = f ? (floatValue1 > floatValue2) : (value1.intvalue > value2.intvalue);
                         else if (parent->str() == ">=")
-                            result.intvalue = f ? (floatValue1 >= floatValue2) : (value1->intvalue >= value2->intvalue);
-                        else if (!f && parent->str() == ">>" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < MathLib::bigint_bits)
-                            result.intvalue = value1->intvalue >> value2->intvalue;
+                            result.intvalue = f ? (floatValue1 >= floatValue2) : (value1.intvalue >= value2.intvalue);
+                        else if (!f && parent->str() == ">>" && value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits)
+                            result.intvalue = value1.intvalue >> value2.intvalue;
                         else
                             break;
                         setTokenValue(parent, result, settings);
                         break;
                     }
                     case '<': {
-                        const bool f = value1->isFloatValue() || value2->isFloatValue();
-                        if (!f && !value1->isIntValue() && !value2->isIntValue())
+                        const bool f = value1.isFloatValue() || value2.isFloatValue();
+                        if (!f && !value1.isIntValue() && !value2.isIntValue())
                             break;
                         if (parent->str() == "<")
-                            result.intvalue = f ? (floatValue1 < floatValue2) : (value1->intvalue < value2->intvalue);
+                            result.intvalue = f ? (floatValue1 < floatValue2) : (value1.intvalue < value2.intvalue);
                         else if (parent->str() == "<=")
-                            result.intvalue = f ? (floatValue1 <= floatValue2) : (value1->intvalue <= value2->intvalue);
-                        else if (!f && parent->str() == "<<" && value1->intvalue >= 0 && value2->intvalue >= 0 && value2->intvalue < MathLib::bigint_bits)
-                            result.intvalue = value1->intvalue << value2->intvalue;
+                            result.intvalue = f ? (floatValue1 <= floatValue2) : (value1.intvalue <= value2.intvalue);
+                        else if (!f && parent->str() == "<<" && value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits)
+                            result.intvalue = value1.intvalue << value2.intvalue;
                         else
                             break;
                         setTokenValue(parent, result, settings);
                         break;
                     }
                     case '&':
-                        if (!value1->isIntValue() || !value2->isIntValue())
+                        if (!value1.isIntValue() || !value2.isIntValue())
                             break;
                         if (parent->str() == "&")
-                            result.intvalue = value1->intvalue & value2->intvalue;
+                            result.intvalue = value1.intvalue & value2.intvalue;
                         else
-                            result.intvalue = value1->intvalue && value2->intvalue;
+                            result.intvalue = value1.intvalue && value2.intvalue;
                         setTokenValue(parent, result, settings);
                         break;
                     case '|':
-                        if (!value1->isIntValue() || !value2->isIntValue())
+                        if (!value1.isIntValue() || !value2.isIntValue())
                             break;
                         if (parent->str() == "|")
-                            result.intvalue = value1->intvalue | value2->intvalue;
+                            result.intvalue = value1.intvalue | value2.intvalue;
                         else
-                            result.intvalue = value1->intvalue || value2->intvalue;
+                            result.intvalue = value1.intvalue || value2.intvalue;
                         setTokenValue(parent, result, settings);
                         break;
                     case '^':
-                        if (!value1->isIntValue() || !value2->isIntValue())
+                        if (!value1.isIntValue() || !value2.isIntValue())
                             break;
-                        result.intvalue = value1->intvalue ^ value2->intvalue;
+                        result.intvalue = value1.intvalue ^ value2.intvalue;
                         setTokenValue(parent, result, settings);
                         break;
                     default:
