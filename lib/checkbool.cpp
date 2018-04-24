@@ -380,18 +380,18 @@ void CheckBool::pointerArithBool()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->type != Scope::eIf && scope->type != Scope::eWhile && scope->type != Scope::eDo && scope->type != Scope::eFor)
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eIf && scope.type != Scope::eWhile && scope.type != Scope::eDo && scope.type != Scope::eFor)
             continue;
-        const Token* tok = scope->classDef->next()->astOperand2();
-        if (scope->type == Scope::eFor) {
-            tok = Token::findsimplematch(scope->classDef->tokAt(2), ";");
+        const Token* tok = scope.classDef->next()->astOperand2();
+        if (scope.type == Scope::eFor) {
+            tok = Token::findsimplematch(scope.classDef->tokAt(2), ";");
             if (tok)
                 tok = tok->astOperand2();
             if (tok)
                 tok = tok->astOperand1();
-        } else if (scope->type == Scope::eDo)
-            tok = (scope->classEnd->tokAt(2)) ? scope->classEnd->tokAt(2)->astOperand2() : nullptr;
+        } else if (scope.type == Scope::eDo)
+            tok = (scope.classEnd->tokAt(2)) ? scope.classEnd->tokAt(2)->astOperand2() : nullptr;
 
         pointerArithBoolCond(tok);
     }
