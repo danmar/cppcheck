@@ -3493,6 +3493,24 @@ void uninitvar_vsprintf(void)
     (void)vsprintf(s,format,arg);
 }
 
+void valid_vsprintf_helper(const char * format, ...)
+{
+    char buffer[2];
+    va_list args;
+    va_start(args, format);
+    vsprintf(buffer, format, args);
+    printf(buffer);
+    va_end(args);
+}
+
+void valid_vsprintf()
+{
+    // buffer will contain "2\0" => no bufferAccessOutOfBounds
+    // cppcheck-suppress checkLibraryFunction
+    // cppcheck-suppress checkLibraryNoReturn
+    valid_vsprintf_helper("%1.0f", 2.0f);
+}
+
 void uninitvar_vswprintf(void)
 {
     wchar_t *s;
