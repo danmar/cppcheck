@@ -8,6 +8,7 @@ License: No restrictions, use this as you need.
 
 import xml.etree.ElementTree as ET
 import argparse
+from fnmatch import fnmatch
 
 
 class Directive:
@@ -450,12 +451,43 @@ class ValueFlow:
         for value in element:
             self.values.append(ValueFlow.Value(value))
 
+class Suppression:
+    """
+    Suppression class
+    This class contains a suppression entry to suppress a warning.
+
+    Attributes
+      errorId     The id string of the error to suppress, can be a wildcard
+      fileName    The name of the file to suppress warnings for, can include wildcards
+      lineNumber  The number of the line to suppress warnings from, can be 0 to represent any line
+      symbolName  The name of the symbol to match warnings for, can include wildcards
+    """
+
+    errorId = None
+    fileName = None
+    lineNumber = None
+    symbolName = None
+
+    def __init__(self, element):
+        self.errorId = element.get('errorId')
+        self.fileName = element.get('fileName')
+        self.lineNumber = element.get('lineNumber')
+        self.symbolName = element.get('symbolName')
+
+    def isMatch(file, line, message, errorId):
+        if (fnmatch(file, self.fileName)
+            and (self.lineNumber is None or line == self.lineNumber)
+            and fnmatch(message, '*'+self.symbolName+'*')
+            and fnmatch(errorId, self.errorId)):
+            return true
+        else:
+            return false
 
 class Configuration:
     """
     Configuration class
     This class contains the directives, tokens, scopes, functions,
-    variables and value flows for one configuration.
+    variables, value flows, and suppressions for one configuration.
 
     Attributes:
         name          Name of the configuration, "" for default
@@ -465,6 +497,7 @@ class Configuration:
         functions     List of Function items
         variables     List of Variable items
         valueflow     List of ValueFlow values
+        suppressions  List of warning suppressions
     """
 
     name = ''
@@ -474,6 +507,7 @@ class Configuration:
     functions = []
     variables = []
     valueflow = []
+    suppressions = []
 
     def __init__(self, confignode):
         self.name = confignode.get('cfg')
@@ -483,6 +517,7 @@ class Configuration:
         self.functions = []
         self.variables = []
         self.valueflow = []
+        self.suppressions = []
         arguments = []
 
         for element in confignode:
@@ -518,6 +553,9 @@ class Configuration:
             if element.tag == 'valueflow':
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
+            if element.tag == "suppressions":
+                for suppression in element:
+                    self.suppressions.append(Suppression(suppression))
 
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
@@ -711,7 +749,7 @@ def ArgumentParser():
     return parser
 
 
-def reportError(template, callstack=(), severity='', message='', id=''):
+def reportError(template, callstack=(), severity='', message='', errorId='', suppressions=None, outputFunc=None):
     """
         Format an error message according to the template.
 
@@ -732,6 +770,13 @@ def reportError(template, callstack=(), severity='', message='', id=''):
     stack = ' -> '.join('[' + f + ':' + str(l) + ']' for (f, l) in callstack)
     file = callstack[-1][0]
     line = str(callstack[-1][1])
+
+    if suppressions is not None and any(suppression.isMatch(file, line, message, errorId) for suppression in suppressions):
+        return None
+
+    outputLine = template.format(callstack=stack, file=file, line=line,
+                           severity=severity, message=message, id=errorId)
+    if outputFunc is not None:
+        outputFunc(outputLine)
     # format message
-    return template.format(callstack=stack, file=file, line=line,
-                           severity=severity, message=message, id=id)
+    return outputLine

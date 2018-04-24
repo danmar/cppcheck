@@ -136,6 +136,12 @@ public:
     bool isSuppressed(const ErrorMessage &errmsg);
 
     /**
+     * @brief Create an xml dump of suppressions
+     * @param out stream to write XML to
+    */
+    void dump(std::ostream &out);
+
+    /**
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */

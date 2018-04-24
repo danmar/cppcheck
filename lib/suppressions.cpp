@@ -18,6 +18,7 @@
 
 #include "suppressions.h"
 
+#include "errorlogger.h"
 #include "mathlib.h"
 #include "path.h"
 
@@ -28,6 +29,8 @@
 #include <stack>
 #include <sstream>
 #include <utility>
+
+class ErrorLogger;
 
 static bool isValidGlobPattern(const std::string &pattern)
 {
@@ -272,6 +275,23 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
             return true;
     }
     return false;
+}
+
+void Suppressions::dump(std::ostream & out)
+{
+    out << "  <suppressions>" << std::endl;
+    for (const Suppression &suppression : _suppressions) {
+        out << "    <suppression";
+        out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
+        if (!suppression.fileName.empty()) 
+            out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
+        if (suppression.lineNumber > 0)
+            out << " lineNumber=\"" << suppression.lineNumber << '"';
+        if (!suppression.symbolName.empty())
+            out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
+        out << " />" << std::endl;
+    }
+    out << "  </suppressions>" << std::endl;
 }
 
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
