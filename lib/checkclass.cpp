@@ -86,17 +86,14 @@ void CheckClass::constructors()
         return;
 
     const bool printInconclusive = _settings->inconclusive;
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
 
         bool usedInUnion = false;
-        for (std::list<Scope>::const_iterator it = symbolDatabase->scopeList.begin(); it != symbolDatabase->scopeList.end(); ++it) {
-            if (it->type != Scope::eUnion)
+        for (const Scope &unionScope : symbolDatabase->scopeList) {
+            if (unionScope.type != Scope::eUnion)
                 continue;
-            const Scope &unionScope = *it;
-            for (std::list<Variable>::const_iterator var = unionScope.varlist.begin(); var != unionScope.varlist.end(); ++var) {
-                if (var->type() && var->type()->classScope == scope) {
+            for (const Variable &var : unionScope.varlist) {
+                if (var.type() && var.type()->classScope == scope) {
                     usedInUnion = true;
                     break;
                 }
@@ -106,10 +103,9 @@ void CheckClass::constructors()
         // There are no constructors.
         if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
             // If there is a private variable, there should be a constructor..
-            std::list<Variable>::const_iterator var;
-            for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                if (var->isPrivate() && !var->isStatic() && !Token::Match(var->nameToken(), "%varid% ; %varid% =", var->declarationId()) &&
-                    (!var->isClass() || (var->type() && var->type()->needInitialization == Type::True))) {
+            for (const Variable &var : scope->varlist) {
+                if (var.isPrivate() && !var.isStatic() && !Token::Match(var.nameToken(), "%varid% ; %varid% =", var.declarationId()) &&
+                    (!var.isClass() || (var.type() && var.type()->needInitialization == Type::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;
                 }
@@ -123,8 +119,7 @@ void CheckClass::constructors()
         // TODO: handle union variables better
         {
             bool bailout = false;
-            for (std::list<Scope *>::const_iterator it = scope->nestedList.begin(); it != scope->nestedList.end(); ++it) {
-                const Scope * const nestedScope = *it;
+            for (const Scope * const nestedScope : scope->nestedList) {
                 if (nestedScope->type == Scope::eUnion) {
                     bailout = true;
                     break;
@@ -240,10 +235,7 @@ void CheckClass::checkExplicitConstructors()
     if (!_settings->isEnabled(Settings::STYLE))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
-
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         // Do not perform check, if the class/struct has not any constructors
         if (scope->numConstructors == 0)
             continue;
@@ -251,8 +243,8 @@ void CheckClass::checkExplicitConstructors()
         // Is class abstract? Maybe this test is over-simplification, but it will suffice for simple cases,
         // and it will avoid false positives.
         bool isAbstractClass = false;
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->isPure()) {
+        for (const Function &func : scope->functionList) {
+            if (func.isPure()) {
                 isAbstractClass = true;
                 break;
             }
@@ -263,21 +255,21 @@ void CheckClass::checkExplicitConstructors()
         if (isAbstractClass && _settings->standards.cpp != Standards::CPP11)
             continue;
 
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (const Function &func : scope->functionList) {
 
             // We are looking for constructors, which are meeting following criteria:
             //  1) Constructor is declared with a single parameter
             //  2) Constructor is not declared as explicit
             //  3) It is not a copy/move constructor of non-abstract class
             //  4) Constructor is not marked as delete (programmer can mark the default constructor as deleted, which is ok)
-            if (!func->isConstructor() || func->isDelete() || (!func->hasBody() && func->access == Private))
+            if (!func.isConstructor() || func.isDelete() || (!func.hasBody() && func.access == Private))
                 continue;
 
-            if (!func->isExplicit() &&
-                func->argCount() == 1 &&
-                func->type != Function::eCopyConstructor &&
-                func->type != Function::eMoveConstructor) {
-                noExplicitConstructorError(func->tokenDef, scope->className, scope->type == Scope::eStruct);
+            if (!func.isExplicit() &&
+                func.argCount() == 1 &&
+                func.type != Function::eCopyConstructor &&
+                func.type != Function::eMoveConstructor) {
+                noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
             }
         }
     }
@@ -288,9 +280,7 @@ void CheckClass::copyconstructors()
     if (!_settings->isEnabled(Settings::STYLE))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         std::map<unsigned int, const Token*> allocatedVars;
 
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
@@ -949,9 +939,7 @@ void CheckClass::privateFunctions()
     if (!_settings->isEnabled(Settings::STYLE))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
 
         // do not check borland classes with properties..
         if (Token::findsimplematch(scope->classStart, "; __property ;", scope->classEnd))
@@ -1211,10 +1199,7 @@ void CheckClass::operatorEq()
     if (!_settings->isEnabled(Settings::STYLE))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
-
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->access == Public) {
                 // skip "deleted" functions - cannot be called anyway
@@ -1267,10 +1252,7 @@ void CheckClass::operatorEqRetRefThis()
     if (!_settings->isEnabled(Settings::STYLE))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
-
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure return signature is correct
@@ -1401,9 +1383,7 @@ void CheckClass::operatorEqToSelf()
     if (!_settings->isEnabled(Settings::WARNING))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         // skip classes with multiple inheritance
         if (scope->definedType->derivedFrom.size() > 1)
             continue;
@@ -1527,9 +1507,7 @@ void CheckClass::virtualDestructor()
 
     std::list<const Function *> inconclusiveErrors;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
 
         // Skip base classes (unless inconclusive)
         if (scope->definedType->derivedFrom.empty()) {
@@ -1706,10 +1684,7 @@ void CheckClass::checkConst()
     if (!_settings->isEnabled(Settings::STYLE))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
-
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // does the function have a body?
             if (func->type != Function::eFunction || !func->hasBody())
@@ -2092,9 +2067,7 @@ void CheckClass::initializerListOrder()
     if (!_settings->inconclusive)
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
@@ -2410,9 +2383,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     if (!_settings->isEnabled(Settings::WARNING))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
 
         bool hasNonStaticVars = false;
         for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
@@ -2472,9 +2443,7 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
     if (!_settings->isEnabled(Settings::STYLE))
         return;
 
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * classScope = symbolDatabase->classAndStructScopes[i];
+    for (const Scope * classScope : symbolDatabase->classAndStructScopes) {
         if (!test && classScope->classDef->fileIndex() != 1)
             continue;
         std::list<Function>::const_iterator func;
