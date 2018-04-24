@@ -2446,15 +2446,14 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
     for (const Scope * classScope : symbolDatabase->classAndStructScopes) {
         if (!test && classScope->classDef->fileIndex() != 1)
             continue;
-        std::list<Function>::const_iterator func;
-        for (func = classScope->functionList.begin(); func != classScope->functionList.end(); ++func) {
-            if (func->access != AccessControl::Public)
+        for (const Function &func : classScope->functionList) {
+            if (func.access != AccessControl::Public)
                 continue;
-            if (!func->hasBody())
+            if (!func.hasBody())
                 continue;
-            if (func->name().compare(0,8,"operator")==0)
+            if (func.name().compare(0,8,"operator")==0)
                 continue;
-            for (const Token *tok = func->functionScope->classStart; tok; tok = tok->next()) {
+            for (const Token *tok = func.functionScope->classStart; tok; tok = tok->next()) {
                 if (Token::Match(tok, "if|switch|while|for|do|}"))
                     break;
                 if (tok->str() != "/")
@@ -2466,7 +2465,7 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
                 const Variable *var = tok->astOperand2()->variable();
                 if (!var || !var->isArgument())
                     continue;
-                unsafeClassDivZeroError(tok, classScope->className, func->name(), var->name());
+                unsafeClassDivZeroError(tok, classScope->className, func.name(), var->name());
                 break;
             }
         }
