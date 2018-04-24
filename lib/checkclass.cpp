@@ -2368,17 +2368,11 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
 }
 
 
-//---------------------------------------------------------------------------
-// Check that copy constructor and operator defined together
-//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------------------------------------
+// Rule of 3: If a class defines a 'copy constructor', 'destructor' or 'operator='; then all these must be defined
+//---------------------------------------------------------------------------------------------------------------------
 
-enum CtorType {
-    NO,
-    WITHOUT_BODY,
-    WITH_BODY
-};
-
-void CheckClass::checkCopyCtorAndEqOperator()
+void CheckClass::checkRuleOf3()
 {
     if (!_settings->isEnabled(Settings::WARNING))
         return;
@@ -2386,8 +2380,8 @@ void CheckClass::checkCopyCtorAndEqOperator()
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
 
         bool hasNonStaticVars = false;
-        for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-            if (!var->isStatic()) {
+        for (const Variable &var : scope->varlist) {
+            if (!var.isStatic()) {
                 hasNonStaticVars = true;
                 break;
             }
@@ -2395,22 +2389,31 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (!hasNonStaticVars)
             continue;
 
-        CtorType copyCtors = CtorType::NO;
-        bool moveCtor = false;
-        CtorType assignmentOperators = CtorType::NO;
+        enum CtorType {
+            NO,
+            WITHOUT_BODY,
+            WITH_BODY
+        };
 
-        std::list<Function>::const_iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (copyCtors == CtorType::NO && func->type == Function::eCopyConstructor) {
-                copyCtors = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+        CtorType copyCtor = CtorType::NO;
+        CtorType assignmentOperator = CtorType::NO;
+        bool destructor = false;
+        bool moveCtor = false;
+
+        for (const Function &func : scope->functionList) {
+            if (copyCtor != CtorType::WITH_BODY && func.type == Function::eCopyConstructor) {
+                copyCtor = func.hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
             }
-            if (assignmentOperators == CtorType::NO && func->type == Function::eOperatorEqual) {
-                const Variable * variable = func->getArgumentVar(0);
+            if (assignmentOperator != CtorType::WITH_BODY && func.type == Function::eOperatorEqual) {
+                const Variable * variable = func.getArgumentVar(0);
                 if (variable && variable->type() && variable->type()->classScope == scope) {
-                    assignmentOperators = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+                    assignmentOperator = func.hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
                 }
             }
-            if (func->type == Function::eMoveConstructor) {
+            if (func.type == Function::eDestructor) {
+                destructor = true;
+            }
+            if (func.type == Function::eMoveConstructor) {
                 moveCtor = true;
                 break;
             }
@@ -2419,20 +2422,48 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (moveCtor)
             continue;
 
-        if ((copyCtors == CtorType::WITH_BODY && assignmentOperators == CtorType::NO) ||
-            (copyCtors == CtorType::NO && assignmentOperators == CtorType::WITH_BODY))
-            copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors == CtorType::WITH_BODY);
+        // No method defined
+        if (copyCtor != CtorType::WITH_BODY && assignmentOperator != CtorType::WITH_BODY && !destructor)
+            continue;
+
+        // all 3 methods are defined
+        if (copyCtor == CtorType::WITH_BODY && assignmentOperator == CtorType::WITH_BODY && destructor)
+            continue;
+
+        ruleOf3Error(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtor == CtorType::WITH_BODY, assignmentOperator == CtorType::WITH_BODY, destructor);
     }
 }
 
-void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor)
+void CheckClass::ruleOf3Error(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor, bool hasAssignmentOperator, bool hasDestructor)
 {
-    const std::string message = "$symbol:" + classname + "\n"
-                                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' has '" +
-                                getFunctionTypeName(hasCopyCtor ? Function::eCopyConstructor : Function::eOperatorEqual) +
-                                "' but lack of '" + getFunctionTypeName(hasCopyCtor ? Function::eOperatorEqual : Function::eCopyConstructor) +
-                                "'.";
-    reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
+    std::string message = "$symbol:" + classname + "\n"
+                          "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' defines";
+    if (hasCopyCtor)
+        message += " '" + std::string(getFunctionTypeName(Function::eCopyConstructor)) + '\'';
+    if (hasAssignmentOperator) {
+        if (hasCopyCtor)
+            message += " and";
+        message += " '" + std::string(getFunctionTypeName(Function::eOperatorEqual)) + '\'';
+    }
+    if (hasDestructor) {
+        if (hasCopyCtor || hasAssignmentOperator)
+            message += " and";
+        message += " '" + std::string(getFunctionTypeName(Function::eDestructor)) + '\'';
+    }
+    message += " but does not define";
+    if (!hasCopyCtor)
+        message += " '" + std::string(getFunctionTypeName(Function::eCopyConstructor)) + '\'';
+    if (!hasAssignmentOperator) {
+        if (!hasCopyCtor)
+            message += " and";
+        message += " '" + std::string(getFunctionTypeName(Function::eOperatorEqual)) + '\'';
+    }
+    if (!hasDestructor) {
+        if (!hasCopyCtor || !hasAssignmentOperator)
+            message += " and";
+        message += " '" + std::string(getFunctionTypeName(Function::eDestructor)) + '\'';
+    }
+    reportError(tok, Severity::warning, "ruleOf3", message);
 }
 
 void CheckClass::checkUnsafeClassDivZero(bool test)

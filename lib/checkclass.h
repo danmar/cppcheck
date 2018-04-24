@@ -89,7 +89,7 @@ public:
 
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
-        checkClass.checkCopyCtorAndEqOperator();
+        checkClass.checkRuleOf3();
     }
 
 
@@ -149,8 +149,8 @@ public:
     /** @brief Check duplicated inherited members */
     void checkDuplInheritedMembers();
 
-    /** @brief Check that copy constructor and operator defined together */
-    void checkCopyCtorAndEqOperator();
+    /** @brief Rule of 3: If a class defines a 'copy constructor', 'destructor' or 'operator='; then all these must be defined */
+    void checkRuleOf3();
 
     /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
     void checkUnsafeClassDivZero(bool test=false);
@@ -187,7 +187,7 @@ private:
     void pureVirtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void virtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &funcname);
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
-    void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
+    void ruleOf3Error(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor, bool hasAssignmentOperator, bool hasDestructor);
     void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
@@ -218,7 +218,7 @@ private:
         c.suggestInitializationList(nullptr, "variable");
         c.selfInitializationError(nullptr, "var");
         c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
-        c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
+        c.ruleOf3Error(nullptr, "class", false, false, true, true);
         c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
@@ -248,7 +248,7 @@ private:
                "- Suspicious subtraction from 'this'\n"
                "- Call of pure virtual function in constructor/destructor\n"
                "- Duplicated inherited data members\n"
-               "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
+               "- Rule of 3: If a class defines a 'copy constructor', 'destructor' or 'operator='; then all these must be defined\n"
                "- Check that arbitrary usage of public interface does not result in division by zero\n";
     }
 
