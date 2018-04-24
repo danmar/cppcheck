@@ -53,16 +53,16 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
 struct Dimension {
     Dimension() : start(nullptr), end(nullptr), num(0), known(true) { }
 
-    const Token *start;  // size start token
-    const Token *end;    // size end token
-    MathLib::bigint num; // (assumed) dimension length when size is a number, 0 if not known
-    bool known;          // Known size
+    const Token *start;  ///< size start token
+    const Token *end;    ///< size end token
+    MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
+    bool known;          ///< Known size
 };
 
 /** @brief Information about a class type. */
 class CPPCHECKLIB Type {
 public:
-    const Token* classDef; // Points to "class" token
+    const Token* classDef;     ///< Points to "class" token
     const Scope* classScope;
     const Scope* enclosingScope;
     enum NeedInitialization {
@@ -867,20 +867,20 @@ public:
         setFlag(fIsVariadic, state);
     }
 
-    const Token *tokenDef; // function name token in class definition
-    const Token *argDef;   // function argument start '(' in class definition
-    const Token *token;    // function name token in implementation
-    const Token *arg;      // function argument start '('
-    const Token *retDef;   // function return type token
-    const ::Type *retType; // function return type
-    const Scope *functionScope; // scope of function body
-    const Scope* nestedIn; // Scope the function is declared in
-    std::list<Variable> argumentList; // argument list
-    unsigned int initArgCount; // number of args with default values
-    Type type;             // constructor, destructor, ...
-    AccessControl access;  // public/protected/private
-    const Token *noexceptArg;
-    const Token *throwArg;
+    const Token *tokenDef;            ///< function name token in class definition
+    const Token *argDef;              ///< function argument start '(' in class definition
+    const Token *token;               ///< function name token in implementation
+    const Token *arg;                 ///< function argument start '('
+    const Token *retDef;              ///< function return type token
+    const ::Type *retType;            ///< function return type
+    const Scope *functionScope;       ///< scope of function body
+    const Scope* nestedIn;            ///< Scope the function is declared in
+    std::list<Variable> argumentList; ///< argument list
+    unsigned int initArgCount;        ///< number of args with default values
+    Type type;                        ///< constructor, destructor, ...
+    AccessControl access;             ///< public/protected/private
+    const Token *noexceptArg;         ///< noexcept token
+    const Token *throwArg;            ///< throw token
 
     static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth);
 
@@ -913,9 +913,9 @@ public:
 
     const SymbolDatabase *check;
     std::string className;
-    const Token *classDef;   // class/struct/union/namespace token
-    const Token *classStart; // '{' token
-    const Token *classEnd;   // '}' token
+    const Token *classDef;   ///< class/struct/union/namespace token
+    const Token *classStart; ///< '{' token
+    const Token *classEnd;   ///< '}' token
     std::list<Function> functionList;
     std::multimap<std::string, const Function *> functionMap;
     std::list<Variable> varlist;
@@ -929,8 +929,8 @@ public:
     std::map<std::string, Type*> definedTypesMap;
 
     // function specific fields
-    const Scope *functionOf; // scope this function belongs to
-    Function *function; // function info for this function
+    const Scope *functionOf; ///< scope this function belongs to
+    Function *function; ///< function info for this function
 
     // enum specific fields
     const Token * enumType;
@@ -1063,12 +1063,12 @@ private:
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
-    unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
-    unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
-    const Scope *typeScope;
-    const Library::Container *container;
-    const Token *containerTypeToken;
-    std::string originalTypeName;
+    unsigned int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    unsigned int constness;               ///< bit 0=data, bit 1=*, bit 2=**
+    const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
+    const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
+    const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
+    std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
 
     ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
     ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
