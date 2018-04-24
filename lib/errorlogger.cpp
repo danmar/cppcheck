@@ -483,7 +483,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         const std::string::size_type pos1 = result.find("{inconclusive:");
         const std::string::size_type pos2 = result.find("}", pos1+1);
         const std::string replaceFrom = result.substr(pos1,pos2-pos1+1);
-        const std::string replaceWith = result.substr(pos1+14, pos2-pos1-14);
+        const std::string replaceWith = _inconclusive ? result.substr(pos1+14, pos2-pos1-14) : std::string();
         findAndReplace(result, replaceFrom, replaceWith);
     }
     findAndReplace(result, "{severity}", Severity::toString(_severity));
