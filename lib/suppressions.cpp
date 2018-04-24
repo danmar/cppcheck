@@ -283,7 +283,7 @@ void Suppressions::dump(std::ostream & out)
     for (const Suppression &suppression : _suppressions) {
         out << "    <suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
-        if (!suppression.fileName.empty()) 
+        if (!suppression.fileName.empty())
             out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
         if (suppression.lineNumber > 0)
             out << " lineNumber=\"" << suppression.lineNumber << '"';

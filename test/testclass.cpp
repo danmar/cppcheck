@@ -188,12 +188,12 @@ private:
 
         TEST_CASE(duplInheritedMembers);
         TEST_CASE(explicitConstructors);
-        TEST_CASE(ruleOf3);
+        TEST_CASE(copyCtorAndEqOperator);
 
         TEST_CASE(unsafeClassDivZero);
     }
 
-    void checkRuleOf3(const char code[]) {
+    void checkCopyCtorAndEqOperator(const char code[]) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -207,92 +207,93 @@ private:
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkRuleOf3();
+        checkClass.checkCopyCtorAndEqOperator();
     }
 
-    void ruleOf3() {
-        checkRuleOf3("class A {\n"
-                     "    A(const A& other) { } \n"
-                     "    A& operator=(const A& other) { return *this; }\n"
-                     "};");
+    void copyCtorAndEqOperator() {
+        checkCopyCtorAndEqOperator("class A \n"
+                                   "{ \n"
+                                   "    A(const A& other) { } \n"
+                                   "    A& operator=(const A& other) { return *this; }\n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
-        checkRuleOf3("class A {};");
+        checkCopyCtorAndEqOperator("class A \n"
+                                   "{ \n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkRuleOf3("class A {\n"
-                     "    A(const A& other) { } \n"
-                     "};");
+        checkCopyCtorAndEqOperator("class A \n"
+                                   "{ \n"
+                                   "    A(const A& other) { } \n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkRuleOf3("class A {\n"
-                     "    A& operator=(const A& other) { return *this; }\n"
-                     "};");
+        checkCopyCtorAndEqOperator("class A \n"
+                                   "{ \n"
+                                   "    A& operator=(const A& other) { return *this; }\n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
 
 
-        checkRuleOf3("class A {\n"
-                     "    A(const A& other) { } \n"
-                     "    int x;\n"
-                     "};");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' defines 'copy constructor' but does not define 'operator=' and 'destructor'\n", errout.str());
+        checkCopyCtorAndEqOperator("class A \n"
+                                   "{ \n"
+                                   "    A(const A& other) { } \n"
+                                   "    int x;\n"
+                                   "};");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'copy constructor' but lack of 'operator='.\n", errout.str());
 
-        checkRuleOf3("class A {\n"
-                     "    A& operator=(const A& other) { return *this; }\n"
-                     "    int x;\n"
-                     "};");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' defines 'operator=' but does not define 'copy constructor' and 'destructor'\n", errout.str());
+        checkCopyCtorAndEqOperator("class A \n"
+                                   "{ \n"
+                                   "    A& operator=(const A& other) { return *this; }\n"
+                                   "    int x;\n"
+                                   "};");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'operator=' but lack of 'copy constructor'.\n", errout.str());
 
-        checkRuleOf3("class A {\n"
-                     "    ~A() { }\n"
-                     "    int x;\n"
-                     "};");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' defines 'destructor' but does not define 'copy constructor' and 'operator='\n", errout.str());
-
-        checkRuleOf3("class A {\n"
-                     "    A& operator=(const int &x) { this->x = x; return *this; }\n"
-                     "    int x;\n"
-                     "};");
+        checkCopyCtorAndEqOperator("class A \n"
+                                   "{ \n"
+                                   "    A& operator=(const int &x) { this->x = x; return *this; }\n"
+                                   "    int x;\n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkRuleOf3("class A {\n"
-                     "public:\n"
-                     "    A() : x(0) { }\n"
-                     "    ~A() {}\n"
-                     "    A(const A & a) { x = a.x; }\n"
-                     "    A & operator = (const A & a) {\n"
-                     "        x = a.x;\n"
-                     "        return *this;\n"
-                     "    }\n"
-                     "private:\n"
-                     "    int x;\n"
-                     "};\n"
-                     "class B : public A {\n"
-                     "public:\n"
-                     "    B() { }\n"
-                     "    B(const B & b) :A(b) { }\n"
-                     "private:\n"
-                     "    static int i;\n"
-                     "};");
+        checkCopyCtorAndEqOperator("class A {\n"
+                                   "public:\n"
+                                   "    A() : x(0) { }\n"
+                                   "    A(const A & a) { x = a.x; }\n"
+                                   "    A & operator = (const A & a) {\n"
+                                   "        x = a.x;\n"
+                                   "        return *this;\n"
+                                   "    }\n"
+                                   "private:\n"
+                                   "    int x;\n"
+                                   "};\n"
+                                   "class B : public A {\n"
+                                   "public:\n"
+                                   "    B() { }\n"
+                                   "    B(const B & b) :A(b) { }\n"
+                                   "private:\n"
+                                   "    static int i;\n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
 
         // #7987 - Don't show warning when there is a move constructor
-        checkRuleOf3("struct S {\n"
-                     "  std::string test;\n"
-                     "  S(S&& s) : test(std::move(s.test)) { }\n"
-                     "  S& operator = (S &&s) {\n"
-                     "    test = std::move(s.test);\n"
-                     "    return *this;\n"
-                     "  }\n"
-                     "};\n");
+        checkCopyCtorAndEqOperator("struct S {\n"
+                                   "  std::string test;\n"
+                                   "  S(S&& s) : test(std::move(s.test)) { }\n"
+                                   "  S& operator = (S &&s) {\n"
+                                   "    test = std::move(s.test);\n"
+                                   "    return *this;\n"
+                                   "  }\n"
+                                   "};\n");
         ASSERT_EQUALS("", errout.str());
 
         // #8337 - False positive in copy constructor detection
-        checkRuleOf3("struct StaticListNode {\n"
-                     "  StaticListNode(StaticListNode*& prev) : m_next(0) {}\n"
-                     "  StaticListNode* m_next;\n"
-                     "};");
+        checkCopyCtorAndEqOperator("struct StaticListNode {\n"
+                                   "  StaticListNode(StaticListNode*& prev) : m_next(0) {}\n"
+                                   "  StaticListNode* m_next;\n"
+                                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 
