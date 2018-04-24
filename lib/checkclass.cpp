@@ -2427,10 +2427,10 @@ void CheckClass::checkRuleOf3()
             continue;
 
         // all 3 methods are defined
-        if (copyCtor == CtorType::WITH_BODY && assignmentOperator == CtorType::WITH_BODY && destructor)
+        if (copyCtor != CtorType::NO && assignmentOperator != CtorType::NO && destructor)
             continue;
 
-        ruleOf3Error(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtor == CtorType::WITH_BODY, assignmentOperator == CtorType::WITH_BODY, destructor);
+        ruleOf3Error(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtor != CtorType::NO, assignmentOperator != CtorType::NO, destructor);
     }
 }
 

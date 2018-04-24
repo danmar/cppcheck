@@ -245,6 +245,12 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' defines 'operator=' but does not define 'copy constructor' and 'destructor'\n", errout.str());
 
         checkRuleOf3("class A {\n"
+                     "    ~A() { }\n"
+                     "    int x;\n"
+                     "};");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' defines 'destructor' but does not define 'copy constructor' and 'operator='\n", errout.str());
+
+        checkRuleOf3("class A {\n"
                      "    A& operator=(const int &x) { this->x = x; return *this; }\n"
                      "    int x;\n"
                      "};");
