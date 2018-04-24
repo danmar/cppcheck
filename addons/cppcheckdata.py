@@ -758,10 +758,10 @@ def reportError(template, callstack=(), severity='', message='', errorId='', sup
     stack = ' -> '.join('[' + f + ':' + str(l) + ']' for (f, l) in callstack)
     file = callstack[-1][0]
     line = str(callstack[-1][1])
-    
+
     if suppressions is not None and any(suppression.isMatch(file, line, message, errorId) for suppression in suppressions):
         return None
-    
+
     outputLine = template.format(callstack=stack, file=file, line=line,
                            severity=severity, message=message, id=errorId)
     if outputFunc is not None:
