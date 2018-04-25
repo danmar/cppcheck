@@ -1320,7 +1320,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
 
     // function returning function pointer? '... ( ... %name% ( ... ))( ... ) {'
     // function returning reference to array '... ( & %name% ( ... ))[ ... ] {'
-    if (tok->str() == "(" && tok->strAt(1) != "*" &&
+    // TODO: Activate this again
+    if (false && tok->str() == "(" && tok->strAt(1) != "*" &&
         (tok->link()->previous()->str() == ")" || Token::simpleMatch(tok->link()->tokAt(-2), ") const"))) {
         const Token* tok2 = tok->link()->next();
         if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
@@ -1673,9 +1674,6 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
       throwArg(nullptr),
       flags(0)
 {
-    if (Token::simpleMatch(tok, "( ^"))
-        throw InternalError(tok, "SymbolDatabase bailout: Unhandled code: ( ^ ...");
-
     // operator function
     if (tokenDef->isOperatorKeyword()) {
         isOperator(true);
