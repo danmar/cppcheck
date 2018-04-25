@@ -1673,6 +1673,9 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
       throwArg(nullptr),
       flags(0)
 {
+    if (Token::simpleMatch(tok, "( ^"))
+        throw InternalError(tok, "SymbolDatabase bailout: Unhandled code: ( ^ ...");
+
     // operator function
     if (tokenDef->isOperatorKeyword()) {
         isOperator(true);
