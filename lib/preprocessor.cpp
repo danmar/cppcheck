@@ -818,7 +818,7 @@ void Preprocessor::dump(std::ostream &out) const
 
     for (std::list<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it) {
         out << "    <directive "
-            << "file=\"" << it->file << "\" "
+            << "file=\"" << ErrorLogger::toxml(it->file) << "\" "
             << "linenr=\"" << it->linenr << "\" "
             // str might contain characters such as '"', '<' or '>' which
             // could result in invalid XML, so run it through toxml().
