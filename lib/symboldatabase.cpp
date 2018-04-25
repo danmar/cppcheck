@@ -420,91 +420,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             // class function?
             else if (isFunction(tok, scope, &funcStart, &argStart, &declEnd)) {
                 if (tok->previous()->str() != "::" || tok->strAt(-2) == scope->className) {
-                    Function function;
-
-                    // save the function definition argument start '('
-                    function.argDef = argStart;
+                    Function function(_tokenizer, tok, scope, funcStart, argStart);
 
                     // save the access type
                     function.access = access[scope];
 
-                    // save the function name location
-                    function.tokenDef = funcStart;
-
-                    // save the function parent scope
-                    function.nestedIn = scope;
-
-                    // operator function
-                    if (function.tokenDef->isOperatorKeyword()) {
-                        function.isOperator(true);
-
-                        // 'operator =' is special
-                        if (function.tokenDef->str() == "operator=")
-                            function.type = Function::eOperatorEqual;
-                    }
-
-                    // class constructor/destructor
-                    else if (function.tokenDef->str() == scope->className) {
-                        // destructor
-                        if (function.tokenDef->previous()->str() == "~")
-                            function.type = Function::eDestructor;
-                        // constructor of any kind
-                        else
-                            function.type = Function::eConstructor;
-
-                        if (function.tokenDef->previous()->str() == "explicit")
-                            function.isExplicit(true);
-                    }
-
-                    const Token *tok1 = tok;
-
-                    // look for end of previous statement
-                    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
-                        // virtual function
-                        const Token* tok2 = tok1->previous();
-
-                        if (tok2->str() == "virtual") {
-                            function.isVirtual(true);
-                            break;
-                        }
-
-                        // static function
-                        else if (tok2->str() == "static") {
-                            function.isStatic(true);
-                            break;
-                        }
-
-                        // friend function
-                        else if (tok2->str() == "friend") {
-                            function.isFriend(true);
-                            break;
-                        }
-
-                        // Function template
-                        else if (tok2->link() && tok2->str() == ">" && Token::simpleMatch(tok2->link()->previous(), "template <"))
-                            break;
-
-                        tok1 = tok2;
-                    }
-
-                    // find the return type
-                    if (!function.isConstructor() && !function.isDestructor()) {
-                        if (argStart->link()->strAt(1) == ".") // Trailing return type
-                            function.retDef = argStart->link()->tokAt(2);
-                        else {
-                            while (tok1 && Token::Match(tok1->next(), "virtual|static|friend|const|struct|union|enum"))
-                                tok1 = tok1->next();
-
-                            if (tok1)
-                                function.retDef = tok1;
-                        }
-                    }
-
                     const Token *end = function.argDef->link();
-
-                    // const function
-                    if (end->next()->str() == "const")
-                        function.isConst(true);
 
                     // count the number of constructors
                     if (function.isConstructor())
@@ -515,83 +436,13 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     function.arg = function.argDef;
 
                     // out of line function
-                    if (_tokenizer->isFunctionHead(end, ";")) {
-                        // find the function implementation later
-                        tok = end->next();
-
-                        if (tok->str() == "const")
-                            tok = tok->next();
-
-                        if (tok->str() == "&") {
-                            function.hasLvalRefQualifier(true);
-                            tok = tok->next();
-                        } else if (tok->str() == "&&") {
-                            function.hasRvalRefQualifier(true);
-                            tok = tok->next();
-                        } else if (tok->str() == "noexcept") {
-                            function.isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
-                            tok = tok->next();
-                            if (tok->str() == "(")
-                                tok = tok->link()->next();
-                        } else if (Token::simpleMatch(tok, "throw (")) {
-                            function.isThrow(true);
-                            if (tok->strAt(2) != ")")
-                                function.throwArg = end->tokAt(2);
-                            tok = tok->linkAt(1)->next();
-                        }
-
-                        if (Token::Match(tok, "= %any% ;")) {
-                            const std::string& modifier = tok->strAt(1);
-                            function.isPure(modifier == "0");
-                            function.isDefault(modifier == "default");
-                            function.isDelete(modifier == "delete");
-                            tok = tok->tokAt(2);
-                        }
-
-                        // skip over unknown tokens
-                        while (tok && tok->str() != ";")
-                            tok = tok->next();
-
+                    if (const Token *endTok = _tokenizer->isFunctionHead(end, ";")) {
+                        tok = endTok;
                         scope->addFunction(function);
                     }
 
                     // inline function
                     else {
-                        function.isInline(true);
-                        function.hasBody(true);
-
-                        if (Token::Match(end, ") const| noexcept")) {
-                            int arg = 2;
-
-                            if (end->strAt(1) == "const")
-                                arg++;
-
-                            if (end->strAt(arg) == "(")
-                                function.noexceptArg = end->tokAt(arg + 1);
-
-                            function.isNoExcept(true);
-                        } else if (Token::Match(end, ") const| throw (")) {
-                            int arg = 3;
-
-                            if (end->strAt(1) == "const")
-                                arg++;
-
-                            if (end->strAt(arg) != ")")
-                                function.throwArg = end->tokAt(arg);
-
-                            function.isThrow(true);
-                        } else if (Token::Match(end, ") const| &|&&| [;{]")) {
-                            int arg = 1;
-
-                            if (end->strAt(arg) == "const")
-                                arg++;
-
-                            if (end->strAt(arg) == "&")
-                                function.hasLvalRefQualifier(true);
-                            else if (end->strAt(arg) == "&&")
-                                function.hasRvalRefQualifier(true);
-                        }
-
                         // find start of function '{'
                         bool foundInitList = false;
                         while (end && end->str() != "{" && end->str() != ";") {
@@ -695,48 +546,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                         if (!function)
                             _tokenizer->syntaxError(tok);
-
-                        // global functions can't be const but we have tests that are
-                        if (Token::Match(argStart->link(), ") const| noexcept")) {
-                            int arg = 2;
-
-                            if (argStart->link()->strAt(1) == "const")
-                                arg++;
-
-                            if (argStart->link()->strAt(arg) == "(")
-                                function->noexceptArg = argStart->link()->tokAt(arg + 1);
-
-                            function->isNoExcept(true);
-                        } else if (Token::Match(argStart->link(), ") const| throw (")) {
-                            int arg = 3;
-
-                            if (argStart->link()->strAt(1) == "const")
-                                arg++;
-
-                            if (argStart->link()->strAt(arg) != ")")
-                                function->throwArg = argStart->link()->tokAt(arg);
-
-                            function->isThrow(true);
-                        }
-
-                        const Token *tok1 = tok->previous();
-
-                        // look for end of previous statement
-                        while (tok1 && !Token::Match(tok1, ";|}|{")) {
-                            // static function
-                            if (tok1->str() == "static") {
-                                function->isStaticLocal(true);
-                                break;
-                            }
-
-                            // extern function
-                            else if (tok1->str() == "extern") {
-                                function->isExtern(true);
-                                break;
-                            }
-
-                            tok1 = tok1->previous();
-                        }
                     }
 
                     // syntax error?
@@ -755,42 +564,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                     // save function prototype in database
                     if (newFunc) {
-                        Function* func = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
-
-                        if (Token::Match(argStart->link(), ") const| noexcept")) {
-                            int arg = 2;
-
-                            if (argStart->link()->strAt(1) == "const")
-                                arg++;
-
-                            if (argStart->link()->strAt(arg) == "(")
-                                func->noexceptArg = argStart->link()->tokAt(arg + 1);
-
-                            func->isNoExcept(true);
-                        } else if (Token::Match(argStart->link(), ") const| throw (")) {
-                            int arg = 3;
-
-                            if (argStart->link()->strAt(1) == "const")
-                                arg++;
-
-                            if (argStart->link()->strAt(arg) != ")")
-                                func->throwArg = argStart->link()->tokAt(arg);
-
-                            func->isThrow(true);
-                        }
-
-                        const Token *tok1 = tok->previous();
-
-                        // look for end of previous statement
-                        while (tok1 && !Token::Match(tok1, ";|}|{")) {
-                            // extern function
-                            if (tok1->str() == "extern") {
-                                func->isExtern(true);
-                                break;
-                            }
-
-                            tok1 = tok1->previous();
-                        }
+                        addGlobalFunctionDecl(scope, tok, argStart, funcStart);
                     }
 
                     tok = declEnd;
@@ -1883,6 +1657,169 @@ void Variable::evaluate(const Library* lib)
     }
 }
 
+Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef)
+    : tokenDef(tokDef),
+      argDef(tokArgDef),
+      token(nullptr),
+      arg(nullptr),
+      retDef(nullptr),
+      retType(nullptr),
+      functionScope(nullptr),
+      nestedIn(scope),
+      initArgCount(0),
+      type(eFunction),
+      access(Public),
+      noexceptArg(nullptr),
+      throwArg(nullptr),
+      flags(0)
+{
+    // operator function
+    if (tokenDef->isOperatorKeyword()) {
+        isOperator(true);
+
+        // 'operator =' is special
+        if (tokenDef->str() == "operator=")
+            type = Function::eOperatorEqual;
+    }
+
+    // class constructor/destructor
+    else if (tokenDef->str() == scope->className) {
+        // destructor
+        if (tokenDef->previous()->str() == "~")
+            type = Function::eDestructor;
+        // constructor of any kind
+        else
+            type = Function::eConstructor;
+
+        isExplicit(tokenDef->previous()->str() == "explicit");
+    }
+
+    const Token *tok1 = tok;
+
+    // look for end of previous statement
+    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
+        tok1 = tok1->previous();
+
+        // extern function
+        if (tok1->str() == "extern") {
+            isExtern(true);
+        }
+
+        // virtual function
+        else if (tok1->str() == "virtual") {
+            isVirtual(true);
+        }
+
+        // static function
+        else if (tok1->str() == "static") {
+            isStatic(true);
+            if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal)
+                isStaticLocal(true);
+        }
+
+        // friend function
+        else if (tok1->str() == "friend") {
+            isFriend(true);
+        }
+
+        // Function template
+        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <"))
+            break;
+    }
+
+    // find the return type
+    if (!isConstructor() && !isDestructor()) {
+        if (argDef->link()->strAt(1) == ".") // Trailing return type
+            retDef = argDef->link()->tokAt(2);
+        else {
+            if (tok1->str() == ">")
+                tok1 = tok1->next();
+            while (Token::Match(tok1, "extern|virtual|static|friend|struct|union|enum"))
+                tok1 = tok1->next();
+            retDef = tok1;
+        }
+    }
+
+    const Token *end = argDef->link();
+
+    // const function
+    if (end->next()->str() == "const")
+        isConst(true);
+
+    if (_tokenizer->isFunctionHead(end, ";")) {
+        // find the function implementation later
+        tok = end->next();
+
+        if (tok->str() == "const")
+            tok = tok->next();
+
+        if (tok->str() == "&") {
+            hasLvalRefQualifier(true);
+            tok = tok->next();
+        } else if (tok->str() == "&&") {
+            hasRvalRefQualifier(true);
+            tok = tok->next();
+        } else if (tok->str() == "noexcept") {
+            isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
+            tok = tok->next();
+            if (tok->str() == "(")
+                tok = tok->link()->next();
+        } else if (Token::simpleMatch(tok, "throw (")) {
+            isThrow(true);
+            if (tok->strAt(2) != ")")
+                throwArg = end->tokAt(2);
+            tok = tok->linkAt(1)->next();
+        }
+
+        if (Token::Match(tok, "= 0|default|delete ;")) {
+            const std::string& modifier = tok->strAt(1);
+            isPure(modifier == "0");
+            isDefault(modifier == "default");
+            isDelete(modifier == "delete");
+            tok = tok->tokAt(2);
+        }
+    } else {
+        // assume implementation is inline (definition and implementation same)
+        token = tokenDef;
+        arg = argDef;
+
+        isInline(true);
+        hasBody(true);
+
+        if (Token::Match(end, ") const| noexcept")) {
+            int argPos = 2;
+
+            if (end->strAt(1) == "const")
+                argPos++;
+
+            if (end->strAt(argPos) == "(")
+                noexceptArg = end->tokAt(argPos + 1);
+
+            isNoExcept(true);
+        } else if (Token::Match(end, ") const| throw (")) {
+            int argPos = 3;
+
+            if (end->strAt(1) == "const")
+                argPos++;
+
+            if (end->strAt(argPos) != ")")
+                throwArg = end->tokAt(argPos);
+
+            isThrow(true);
+        } else if (Token::Match(end, ") const| &|&&| [;{]")) {
+            int argPos = 1;
+
+            if (end->strAt(argPos) == "const")
+                argPos++;
+
+            if (end->strAt(argPos) == "&")
+                hasLvalRefQualifier(true);
+            else if (end->strAt(argPos) == "&&")
+                hasRvalRefQualifier(true);
+        }
+    }
+}
+
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth)
 {
     const bool isCPP = scope->check->isCPP();
@@ -2089,43 +2026,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 
 Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStart)
 {
-    Function function;
-
-    // save the function definition argument start '('
-    function.argDef = argStart;
-
-    // save the access type
-    function.access = Public;
-
-    // save the function name location
-    function.tokenDef = funcStart;
-
-    function.isInline(false);
-    function.hasBody(false);
-    function.type = Function::eFunction;
-    function.nestedIn = scope;
-
-    const Token *tok1 = tok;
-
-    // look for end of previous statement
-    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{"))
-        tok1 = tok1->previous();
-
-    // find the return type
-    while (Token::Match(tok1, "static|extern|const")) {
-        if (tok1->str() == "static")
-            function.isStaticLocal(true);
-        else if (tok1->str() == "extern")
-            function.isExtern(true);
-
-        tok1 = tok1->next();
-    }
-
-    if (function.argDef->link()->strAt(1) == ".")
-        function.retDef = function.argDef->link()->tokAt(2);
-    else if (tok1)
-        function.retDef = tok1;
-
+    Function function(_tokenizer, tok, scope, funcStart, argStart);
     scope->addFunction(function);
     return &scope->functionList.back();
 }
@@ -3196,10 +3097,15 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
     if (isVirtual())
         return true;
+    return isOverride(defaultVal);
+}
+
+bool Function::isOverride(bool defaultVal) const
+{
     if (!nestedIn->isClassOrStruct())
         return false;
     bool safe = true;
-    bool hasVirt = isImplicitlyVirtual_rec(nestedIn->definedType, safe);
+    bool hasVirt = isOverrideRecursive(nestedIn->definedType, safe);
     if (hasVirt)
         return true;
     else if (safe)
@@ -3208,7 +3114,7 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
         return defaultVal;
 }
 
-bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
+bool Function::isOverrideRecursive(const ::Type* baseType, bool& safe) const
 {
     // check each base class
     for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
@@ -3248,7 +3154,7 @@ bool Function::isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const
             if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies()) {
                 // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
                 // #5590 with a loop within the class hierarchy.
-                if (isImplicitlyVirtual_rec(derivedFromType, safe))  {
+                if (isOverrideRecursive(derivedFromType, safe))  {
                     return true;
                 }
             }

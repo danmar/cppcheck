@@ -665,12 +665,13 @@ class CPPCHECKLIB Function {
         fIsExplicit     = (1 << 9),  ///< @brief is explicit
         fIsDefault      = (1 << 10), ///< @brief is default
         fIsDelete       = (1 << 11), ///< @brief is delete
-        fIsNoExcept     = (1 << 12), ///< @brief is noexcept
-        fIsThrow        = (1 << 13), ///< @brief is throw
-        fIsOperator     = (1 << 14), ///< @brief is operator
-        fHasLvalRefQual = (1 << 15), ///< @brief has & lvalue ref-qualifier
-        fHasRvalRefQual = (1 << 16), ///< @brief has && rvalue ref-qualifier
-        fIsVariadic     = (1 << 17)  ///< @brief is variadic
+        fIsKwOverride   = (1 << 12), ///< @brief does declaration contain 'override' keyword?
+        fIsNoExcept     = (1 << 13), ///< @brief is noexcept
+        fIsThrow        = (1 << 14), ///< @brief is throw
+        fIsOperator     = (1 << 15), ///< @brief is operator
+        fHasLvalRefQual = (1 << 16), ///< @brief has & lvalue ref-qualifier
+        fHasRvalRefQual = (1 << 17), ///< @brief has && rvalue ref-qualifier
+        fIsVariadic     = (1 << 18)  ///< @brief is variadic
     };
 
     /**
@@ -711,6 +712,8 @@ public:
           flags(0) {
     }
 
+    Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
+
     const std::string &name() const {
         return tokenDef->str();
     }
@@ -728,6 +731,9 @@ public:
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
+
+    /** @brief check if this function overrides a base class virtual function */
+    bool isOverride(bool defaultVal = false) const;
 
     bool isConstructor() const {
         return type==eConstructor ||
@@ -815,6 +821,36 @@ public:
     void hasBody(bool state) {
         setFlag(fHasBody, state);
     }
+
+    const Token *tokenDef;            ///< function name token in class definition
+    const Token *argDef;              ///< function argument start '(' in class definition
+    const Token *token;               ///< function name token in implementation
+    const Token *arg;                 ///< function argument start '('
+    const Token *retDef;              ///< function return type token
+    const ::Type *retType;            ///< function return type
+    const Scope *functionScope;       ///< scope of function body
+    const Scope* nestedIn;            ///< Scope the function is declared in
+    std::list<Variable> argumentList; ///< argument list
+    unsigned int initArgCount;        ///< number of args with default values
+    Type type;                        ///< constructor, destructor, ...
+    AccessControl access;             ///< public/protected/private
+    const Token *noexceptArg;         ///< noexcept token
+    const Token *throwArg;            ///< throw token
+
+    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth);
+
+    /**
+     * @return token to ":" if the function is a constructor
+     * and it contains member initialization otherwise a nullptr is returned
+     */
+    const Token * constructorMemberInitialization() const;
+
+private:
+    /** Recursively determine if this function overrides a virtual method in a base class */
+    bool isOverrideRecursive(const ::Type* baseType, bool& safe) const;
+
+    unsigned int flags;
+
     void isInline(bool state) {
         setFlag(fIsInline, state);
     }
@@ -867,33 +903,6 @@ public:
         setFlag(fIsVariadic, state);
     }
 
-    const Token *tokenDef;            ///< function name token in class definition
-    const Token *argDef;              ///< function argument start '(' in class definition
-    const Token *token;               ///< function name token in implementation
-    const Token *arg;                 ///< function argument start '('
-    const Token *retDef;              ///< function return type token
-    const ::Type *retType;            ///< function return type
-    const Scope *functionScope;       ///< scope of function body
-    const Scope* nestedIn;            ///< Scope the function is declared in
-    std::list<Variable> argumentList; ///< argument list
-    unsigned int initArgCount;        ///< number of args with default values
-    Type type;                        ///< constructor, destructor, ...
-    AccessControl access;             ///< public/protected/private
-    const Token *noexceptArg;         ///< noexcept token
-    const Token *throwArg;            ///< throw token
-
-    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth);
-
-    /**
-     * @return token to ":" if the function is a constructor
-     * and it contains member initialization otherwise a nullptr is returned
-     */
-    const Token * constructorMemberInitialization() const;
-
-private:
-    bool isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const;
-
-    unsigned int flags;
 };
 
 class CPPCHECKLIB Scope {
