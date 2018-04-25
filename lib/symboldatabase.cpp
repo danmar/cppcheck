@@ -1776,7 +1776,6 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
             isPure(modifier == "0");
             isDefault(modifier == "default");
             isDelete(modifier == "delete");
-            tok = tok->tokAt(2);
         }
     } else {
         // assume implementation is inline (definition and implementation same)
