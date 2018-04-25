@@ -1742,80 +1742,41 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
 
     const Token *end = argDef->link();
 
-    // const function
-    if (end->next()->str() == "const")
-        isConst(true);
-
-    if (_tokenizer->isFunctionHead(end, ";")) {
-        // find the function implementation later
-        tok = end->next();
-
+    // Parse attributes
+    tok = end->next();
+    while (tok) {
         if (tok->str() == "const")
-            tok = tok->next();
-
-        if (tok->str() == "&") {
+            isConst(true);
+        else if (tok->str() == "&")
             hasLvalRefQualifier(true);
-            tok = tok->next();
-        } else if (tok->str() == "&&") {
+        else if (tok->str() == "&&")
             hasRvalRefQualifier(true);
-            tok = tok->next();
-        } else if (tok->str() == "noexcept") {
+        else if (tok->str() == "noexcept") {
             isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
             tok = tok->next();
             if (tok->str() == "(")
-                tok = tok->link()->next();
+                tok = tok->link();
         } else if (Token::simpleMatch(tok, "throw (")) {
             isThrow(true);
             if (tok->strAt(2) != ")")
-                throwArg = end->tokAt(2);
-            tok = tok->linkAt(1)->next();
-        }
-
-        if (Token::Match(tok, "= 0|default|delete ;")) {
+                throwArg = tok->next();
+            tok = tok->linkAt(1);
+        } else if (Token::Match(tok, "= 0|default|delete ;")) {
             const std::string& modifier = tok->strAt(1);
             isPure(modifier == "0");
             isDefault(modifier == "default");
             isDelete(modifier == "delete");
-        }
-    } else {
+        } else
+            break;
+        tok = tok->next();
+    }
+
+    if (!_tokenizer->isFunctionHead(end, ";")) {
         // assume implementation is inline (definition and implementation same)
         token = tokenDef;
         arg = argDef;
-
         isInline(true);
         hasBody(true);
-
-        if (Token::Match(end, ") const| noexcept")) {
-            int argPos = 2;
-
-            if (end->strAt(1) == "const")
-                argPos++;
-
-            if (end->strAt(argPos) == "(")
-                noexceptArg = end->tokAt(argPos + 1);
-
-            isNoExcept(true);
-        } else if (Token::Match(end, ") const| throw (")) {
-            int argPos = 3;
-
-            if (end->strAt(1) == "const")
-                argPos++;
-
-            if (end->strAt(argPos) != ")")
-                throwArg = end->tokAt(argPos);
-
-            isThrow(true);
-        } else if (Token::Match(end, ") const| &|&&| [;{]")) {
-            int argPos = 1;
-
-            if (end->strAt(argPos) == "const")
-                argPos++;
-
-            if (end->strAt(argPos) == "&")
-                hasLvalRefQualifier(true);
-            else if (end->strAt(argPos) == "&&")
-                hasRvalRefQualifier(true);
-        }
     }
 }
 
