@@ -252,5 +252,15 @@ bool ApplicationList::findDefaultWindowsEditor()
         }
     }
 
+    const QString regPathMSVSCode = "HKEY_CLASSES_ROOT\\Applications\\Code.exe\\shell\\open\\command";
+    const QSettings registryMSVSCode(regPathMSVSCode, QSettings::NativeFormat);
+    const QString msvscodeRegistry = registryMSVSCode.value("Default", QString()).toString();
+    if (!msvscodeRegistry.isEmpty()) {
+        const QString msvscodePath = msvscodeRegistry.left(msvscodeRegistry.indexOf(".exe") + 4).replace("\"", "");
+        if (checkAndAddApplication(msvscodePath, "Microsoft VS Code", "-g (file):(line)")) {
+            foundOne = true;
+        }
+    }
+
     return foundOne;
 }
