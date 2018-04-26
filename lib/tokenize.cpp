@@ -8352,16 +8352,26 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, "switch (")) {
             if (Token::simpleMatch(tok->linkAt(1), ") {")) {
                 tok = tok->linkAt(1)->linkAt(1);
-            } else {
-                const Token *switchToken = tok;
-                tok = tok->linkAt(1);
-                while (tok && !Token::Match(tok, "[;{}]"))
-                    tok = tok->next();
-                if (!tok)
-                    syntaxError(switchToken);
-                if (tok->str() != ";")
-                    syntaxError(tok);
+                continue;
             }
+            const Token *switchToken = tok;
+            tok = tok->linkAt(1);
+            if (!tok)
+                syntaxError(switchToken);
+            // Look for the end of the switch statement, i.e. the first semi-colon or '}'
+            for ( ; tok ; tok = tok->next()) {
+                if (tok->str() == "{") {
+                    tok = tok->link();
+                }
+                if (Token::Match(tok, ";|}")) {
+                    // We're at the end of the switch block
+                    if (tok->str() == "}" && tok->strAt(-1) == ":") // Invalid case
+                        syntaxError(switchToken);
+                    break;
+                }
+            }
+            if (!tok)
+                break;
         } else if (tok->str() == "(") {
             tok = tok->link();
         } else if (tok->str() == "case") {
