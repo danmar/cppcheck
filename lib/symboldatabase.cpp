@@ -4352,11 +4352,24 @@ const Type* Scope::findType(const std::string & name) const
 {
     auto it = definedTypesMap.find(name);
 
-    if (definedTypesMap.end() == it) {
-        return nullptr;
-    } else {
+    // Type was found
+    if (definedTypesMap.end() != it)
         return (*it).second;
+
+    // is type defined in anonymous namespace..
+    it = definedTypesMap.find("");
+    if (it != definedTypesMap.end()) {
+        for (const Scope *scope : nestedList) {
+            if (scope->className.empty() && (scope->type == eNamespace || scope->isClassOrStructOrUnion())) {
+                const Type *t = scope->findType(name);
+                if (t)
+                    return t;
+            }
+        }
     }
+
+    // Type was not found
+    return nullptr;
 }
 
 //---------------------------------------------------------------------------

@@ -149,6 +149,7 @@ private:
 
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
+        TEST_CASE(findVariableType3);
 
         TEST_CASE(rangeBasedFor);
 
@@ -824,6 +825,25 @@ private:
         const Variable* cvar = db->getVariableFromVarId(3);
         ASSERT_EQUALS("c", cvar->name());
         ASSERT(cvar->type() != nullptr);
+    }
+
+    void findVariableType3() {
+        GET_SYMBOL_DB("namespace {\n"
+                      "    struct A {\n"
+                      "        int x;\n"
+                      "        int y;\n"
+                      "    };\n"
+                      "}\n"
+                      "\n"
+                      "void f()\n"
+                      "{\n"
+                      "    struct A a;\n"
+                      "    a.x = 1;\n"
+                      "}");
+        (void)db;
+        const Variable* avar = Token::findsimplematch(tokenizer.tokens(), "a")->variable();
+        ASSERT(avar);
+        ASSERT(avar && avar->type() != nullptr);
     }
 
     void rangeBasedFor() {
