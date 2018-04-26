@@ -58,6 +58,7 @@ private:
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
         TEST_CASE(dereference_member);
+        TEST_CASE(dereference_brace_initialized); // 8509
 
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
@@ -629,6 +630,15 @@ private:
               "    return nullptr;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void dereference_brace_initialized() {
+        check("void f() {\n"
+              "    std::vector<int> ints;\n"
+              "    std::vector<int>::const_iterator iter {ints.cbegin()};\n"
+              "    std::cout << (*iter) << std::endl;\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Invalid iterator 'iter' used.\n", errout.str());
     }
 
     void STLSize() {
