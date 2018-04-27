@@ -1746,7 +1746,7 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
 
     const Token *end = argDef->link();
 
-    // Parse attributes
+    // parse function attributes..
     tok = end->next();
     while (tok) {
         if (tok->str() == "const")
@@ -1775,7 +1775,7 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
         tok = tok->next();
     }
 
-    if (!_tokenizer->isFunctionHead(end, ";")) {
+    if (_tokenizer->isFunctionHead(end, ":{")) {
         // assume implementation is inline (definition and implementation same)
         token = tokenDef;
         arg = argDef;
