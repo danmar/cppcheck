@@ -9,6 +9,7 @@ knownConditionTrueFalse:lib/platform.cpp
 knownConditionTrueFalse:build/*
 nullPointer:lib/checkother.cpp
 nullPointer:build/checkother.cpp
+missingOverride
 
 *:gui/test/*
 *:test/test.cxx
