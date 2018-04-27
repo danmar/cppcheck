@@ -4042,24 +4042,6 @@ private:
             ASSERT_EQUALS("void f ( int a [ 5 ] ) ;", tokenizeAndStringify(code));
         }
         {
-            const char in1[] = "class Base {\n"
-                               "  virtual int test() = 0;\n"
-                               "};\n"
-                               "class Derived : public Base {\n"
-                               "  virtual int test() override final {\n"
-                               "    for( int Index ( 0 ); Index < 16; ++ Index) { int stub = 0; }\n"
-                               "  }\n"
-                               "};";
-            const char out1[] = "class Base {\n"
-                                "virtual int test ( ) = 0 ;\n"
-                                "} ;\n"
-                                "class Derived : public Base {\n"
-                                "virtual int test ( ) {\n"
-                                "for ( int Index ( 0 ) ; Index < 16 ; ++ Index ) { int stub ; stub = 0 ; }\n"
-                                "}\n"
-                                "} ;";
-            ASSERT_EQUALS(out1, tokenizeAndStringify(in1));
-
             const char in4 [] = "struct B final : A { void foo(); };";
             const char out4 [] = "struct B : A { void foo ( ) ; } ;";
             ASSERT_EQUALS(out4, tokenizeAndStringify(in4));
