@@ -2484,3 +2484,39 @@ void CheckClass::unsafeClassDivZeroError(const Token *tok, const std::string &cl
     const std::string s = className + "::" + methodName + "()";
     reportError(tok, Severity::style, "unsafeClassDivZero", symbols + "Public interface of " + className + " is not safe. When calling " + s + ", if parameter " + varName + " is 0 that leads to division by zero.");
 }
+
+void CheckClass::checkOverride()
+{
+    if (!_settings->isEnabled(Settings::STYLE))
+        return;
+    if (_settings->standards.cpp < Standards::CPP11)
+        return;
+    for (const Scope * classScope : symbolDatabase->classAndStructScopes) {
+        if (!classScope->definedType || classScope->definedType->derivedFrom.empty())
+            continue;
+        for (const Function &func : classScope->functionList) {
+            if (func.hasOverrideKeyword())
+                continue;
+            const Function *baseFunc = func.getOverridenFunction();
+            if (baseFunc)
+                overrideError(baseFunc, &func);
+        }
+    }
+}
+
+void CheckClass::overrideError(const Function *funcInBase, const Function *funcInDerived)
+{
+    const std::string functionName = funcInDerived ? funcInDerived->name() : "";
+
+    ErrorPath errorPath;
+    if (funcInBase && funcInDerived) {
+        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual function in base class"));
+        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, "Function in derived class"));
+    }
+
+    reportError(errorPath, Severity::style, "missingOverride",
+                "$symbol:" + functionName + "\n"
+                "Function '$symbol' overrides function in base class but does not have the 'override' keyword.",
+                CWE(0U) /* Unknown CWE! */,
+                false);
+}

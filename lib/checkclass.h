@@ -90,6 +90,8 @@ public:
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
+
+        checkClass.checkOverride();
     }
 
 
@@ -155,6 +157,9 @@ public:
     /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
     void checkUnsafeClassDivZero(bool test=false);
 
+    /** @brief Check that the override keyword is used when overriding virtual methods */
+    void checkOverride();
+
 private:
     const SymbolDatabase *symbolDatabase;
 
@@ -189,6 +194,7 @@ private:
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
+    void overrideError(const Function *funcInBase, const Function *funcInDerived);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
         CheckClass c(nullptr, settings, errorLogger);
@@ -222,6 +228,7 @@ private:
         c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
+        c.overrideError(nullptr, nullptr);
     }
 
     static std::string myName() {
@@ -249,7 +256,8 @@ private:
                "- Call of pure virtual function in constructor/destructor\n"
                "- Duplicated inherited data members\n"
                "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
-               "- Check that arbitrary usage of public interface does not result in division by zero\n";
+               "- Check that arbitrary usage of public interface does not result in division by zero\n"
+               "- Check that the 'override' keyword is used when overriding virtual methods\n";
     }
 
     // operatorEqRetRefThis helper functions

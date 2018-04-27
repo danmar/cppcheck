@@ -3061,74 +3061,75 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
     if (isVirtual())
         return true;
-    return isOverride(defaultVal);
-}
-
-bool Function::isOverride(bool defaultVal) const
-{
-    if (!nestedIn->isClassOrStruct())
-        return false;
-    bool safe = true;
-    bool hasVirt = isOverrideRecursive(nestedIn->definedType, safe);
-    if (hasVirt)
+    bool foundAllBaseClasses = true;
+    if (getOverridenFunction(&foundAllBaseClasses))
         return true;
-    else if (safe)
+    if (foundAllBaseClasses)
         return false;
-    else
-        return defaultVal;
+    return defaultVal;
 }
 
-bool Function::isOverrideRecursive(const ::Type* baseType, bool& safe) const
+const Function *Function::getOverridenFunction(bool *foundAllBaseClasses) const
+{
+    if (foundAllBaseClasses)
+        *foundAllBaseClasses = true;
+    if (!nestedIn->isClassOrStruct())
+        return nullptr;
+    return getOverridenFunctionRecursive(nestedIn->definedType, foundAllBaseClasses);
+}
+
+const Function * Function::getOverridenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const
 {
     // check each base class
     for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
         const ::Type* derivedFromType = baseType->derivedFrom[i].type;
         // check if base class exists in database
-        if (derivedFromType && derivedFromType->classScope) {
-            const Scope *parent = derivedFromType->classScope;
+        if (!derivedFromType || !derivedFromType->classScope) {
+            if (foundAllBaseClasses)
+                *foundAllBaseClasses = false;
+            continue;
+        }
 
-            // check if function defined in base class
-            for (std::multimap<std::string, const Function *>::const_iterator it = parent->functionMap.find(tokenDef->str()); it != parent->functionMap.end() && it->first == tokenDef->str(); ++it) {
-                const Function * func = it->second;
-                if (func->isVirtual()) { // Base is virtual and of same name
-                    const Token *temp1 = func->tokenDef->previous();
-                    const Token *temp2 = tokenDef->previous();
-                    bool returnMatch = true;
+        const Scope *parent = derivedFromType->classScope;
 
-                    // check for matching return parameters
-                    while (temp1->str() != "virtual") {
-                        if (temp1->str() != temp2->str() &&
-                            !(temp1->str() == derivedFromType->name() &&
-                              temp2->str() == baseType->name())) {
-                            returnMatch = false;
-                            break;
-                        }
+        // check if function defined in base class
+        for (std::multimap<std::string, const Function *>::const_iterator it = parent->functionMap.find(tokenDef->str()); it != parent->functionMap.end() && it->first == tokenDef->str(); ++it) {
+            const Function * func = it->second;
+            if (func->isVirtual()) { // Base is virtual and of same name
+                const Token *temp1 = func->tokenDef->previous();
+                const Token *temp2 = tokenDef->previous();
+                bool match = true;
 
-                        temp1 = temp1->previous();
-                        temp2 = temp2->previous();
+                // check for matching return parameters
+                while (temp1->str() != "virtual") {
+                    if (temp1->str() != temp2->str() &&
+                        !(temp1->str() == derivedFromType->name() &&
+                          temp2->str() == baseType->name())) {
+                        match = false;
+                        break;
                     }
 
-                    // check for matching function parameters
-                    if (returnMatch && argsMatch(baseType->classScope, func->argDef, argDef, emptyString, 0)) {
-                        return true;
-                    }
+                    temp1 = temp1->previous();
+                    temp2 = temp2->previous();
                 }
-            }
 
-            if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies()) {
-                // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
-                // #5590 with a loop within the class hierarchy.
-                if (isOverrideRecursive(derivedFromType, safe))  {
-                    return true;
+                // check for matching function parameters
+                if (match && argsMatch(baseType->classScope, func->argDef, argDef, emptyString, 0)) {
+                    return func;
                 }
             }
-        } else {
-            // unable to find base class so assume it has no virtual function
-            safe = false;
-            return false;
+        }
+
+        if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies()) {
+            // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
+            // #5590 with a loop within the class hierarchy.
+            const Function *func = getOverridenFunctionRecursive(derivedFromType, foundAllBaseClasses);
+            if (func)  {
+                return func;
+            }
         }
     }
-    return false;
+    return nullptr;
 }
 
 const Variable* Function::getArgumentVar(std::size_t num) const

@@ -653,25 +653,25 @@ private:
 class CPPCHECKLIB Function {
     /** @brief flags mask used to access specific bit. */
     enum {
-        fHasBody        = (1 << 0),  ///< @brief has implementation
-        fIsInline       = (1 << 1),  ///< @brief implementation in class definition
-        fIsConst        = (1 << 2),  ///< @brief is const
-        fIsVirtual      = (1 << 3),  ///< @brief is virtual
-        fIsPure         = (1 << 4),  ///< @brief is pure virtual
-        fIsStatic       = (1 << 5),  ///< @brief is static
-        fIsStaticLocal  = (1 << 6),  ///< @brief is static local
-        fIsExtern       = (1 << 7),  ///< @brief is extern
-        fIsFriend       = (1 << 8),  ///< @brief is friend
-        fIsExplicit     = (1 << 9),  ///< @brief is explicit
-        fIsDefault      = (1 << 10), ///< @brief is default
-        fIsDelete       = (1 << 11), ///< @brief is delete
-        fIsKwOverride   = (1 << 12), ///< @brief does declaration contain 'override' keyword?
-        fIsNoExcept     = (1 << 13), ///< @brief is noexcept
-        fIsThrow        = (1 << 14), ///< @brief is throw
-        fIsOperator     = (1 << 15), ///< @brief is operator
-        fHasLvalRefQual = (1 << 16), ///< @brief has & lvalue ref-qualifier
-        fHasRvalRefQual = (1 << 17), ///< @brief has && rvalue ref-qualifier
-        fIsVariadic     = (1 << 18)  ///< @brief is variadic
+        fHasBody             = (1 << 0),  ///< @brief has implementation
+        fIsInline            = (1 << 1),  ///< @brief implementation in class definition
+        fIsConst             = (1 << 2),  ///< @brief is const
+        fIsVirtual           = (1 << 3),  ///< @brief is virtual
+        fIsPure              = (1 << 4),  ///< @brief is pure virtual
+        fIsStatic            = (1 << 5),  ///< @brief is static
+        fIsStaticLocal       = (1 << 6),  ///< @brief is static local
+        fIsExtern            = (1 << 7),  ///< @brief is extern
+        fIsFriend            = (1 << 8),  ///< @brief is friend
+        fIsExplicit          = (1 << 9),  ///< @brief is explicit
+        fIsDefault           = (1 << 10), ///< @brief is default
+        fIsDelete            = (1 << 11), ///< @brief is delete
+        fHasOverrideKeyword  = (1 << 12), ///< @brief does declaration contain 'override' keyword?
+        fIsNoExcept          = (1 << 13), ///< @brief is noexcept
+        fIsThrow             = (1 << 14), ///< @brief is throw
+        fIsOperator          = (1 << 15), ///< @brief is operator
+        fHasLvalRefQual      = (1 << 16), ///< @brief has & lvalue ref-qualifier
+        fHasRvalRefQual      = (1 << 17), ///< @brief has && rvalue ref-qualifier
+        fIsVariadic          = (1 << 18)  ///< @brief is variadic
     };
 
     /**
@@ -729,11 +729,12 @@ public:
         return initArgCount;
     }
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
+
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
 
-    /** @brief check if this function overrides a base class virtual function */
-    bool isOverride(bool defaultVal = false) const;
+    /** @brief get function in base class that is overridden */
+    const Function *getOverridenFunction(bool *foundAllBaseClasses = nullptr) const;
 
     bool isConstructor() const {
         return type==eConstructor ||
@@ -805,6 +806,9 @@ public:
     bool isThrow() const {
         return getFlag(fIsThrow);
     }
+    bool hasOverrideKeyword() const {
+        return getFlag(fHasOverrideKeyword);
+    }
     bool isOperator() const {
         return getFlag(fIsOperator);
     }
@@ -847,7 +851,7 @@ public:
 
 private:
     /** Recursively determine if this function overrides a virtual method in a base class */
-    bool isOverrideRecursive(const ::Type* baseType, bool& safe) const;
+    const Function * getOverridenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
 
     unsigned int flags;
 
@@ -902,7 +906,6 @@ private:
     void isVariadic(bool state) {
         setFlag(fIsVariadic, state);
     }
-
 };
 
 class CPPCHECKLIB Scope {

@@ -191,6 +191,8 @@ private:
         TEST_CASE(copyCtorAndEqOperator);
 
         TEST_CASE(unsafeClassDivZero);
+
+        TEST_CASE(override1);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -6596,6 +6598,28 @@ private:
                                 "}\n"
                                 "void A::operator/(int x) { int a = 1000 / x; }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkOverride(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.addEnabled("style");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkOverride();
+    }
+
+    void override1() {
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { virtual void f(); };");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Function 'f' overrides function in base class but does not have the 'override' keyword.\n", errout.str());
     }
 };
 
