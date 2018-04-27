@@ -143,7 +143,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             const Variable *arg = scope->function->getArgumentVar(i);
             if (arg && arg->declarationId() && Token::Match(arg->typeStartToken(), "%type% * %name% [,)]")) {
                 // Treat the pointer as initialized until it is assigned by malloc
-                for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+                for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
                     if (Token::Match(tok, "[;{}] %varid% = %name% (", arg->declarationId()) &&
                         _settings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
                         if (arg->typeStartToken()->strAt(-1) == "struct" || (arg->type() && arg->type()->isStructType()))
@@ -178,8 +178,8 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
                 for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {
                     const Scope &innerScope = *it2;
                     if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
-                        if (var.typeStartToken()->linenr() >= innerScope.classStart->linenr() &&
-                            var.typeStartToken()->linenr() <= innerScope.classEnd->linenr()) {
+                        if (var.typeStartToken()->linenr() >= innerScope.bodyStart->linenr() &&
+                            var.typeStartToken()->linenr() <= innerScope.bodyEnd->linenr()) {
                             innerunion = true;
                             break;
                         }
@@ -1230,7 +1230,7 @@ void CheckUninitVar::valueFlowUninit()
     for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (!scope->isExecutable())
             continue;
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;
@@ -1256,7 +1256,7 @@ void CheckUninitVar::deadPointer()
         if (!scope->isExecutable())
             continue;
         // Dead pointers..
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->variable() &&
                 tok->variable()->isPointer() &&
                 isVariableUsage(tok, true, NO_ALLOC)) {

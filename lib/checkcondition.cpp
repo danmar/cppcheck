@@ -534,14 +534,14 @@ void CheckCondition::multiCondition2()
         // parse until second condition is reached..
         enum MULTICONDITIONTYPE { INNER, AFTER } type;
         const Token *tok;
-        if (Token::Match(scope->classStart, "{ return|throw|continue|break")) {
-            tok = scope->classEnd->next();
+        if (Token::Match(scope->bodyStart, "{ return|throw|continue|break")) {
+            tok = scope->bodyEnd->next();
             type = MULTICONDITIONTYPE::AFTER;
         } else {
-            tok = scope->classStart;
+            tok = scope->bodyStart;
             type = MULTICONDITIONTYPE::INNER;
         }
-        const Token * const endToken = tok->scope()->classEnd;
+        const Token * const endToken = tok->scope()->bodyEnd;
 
         for (; tok && tok != endToken; tok = tok->next()) {
             if (Token::simpleMatch(tok, "if (")) {
@@ -875,7 +875,7 @@ void CheckCondition::checkIncorrectLogicOperator()
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
 
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%oror%|&&") || !tok->astOperand1() || !tok->astOperand2())
                 continue;
 
@@ -1066,7 +1066,7 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp())
                 continue;
             const Token *num, *modulo;
@@ -1122,7 +1122,7 @@ void CheckCondition::clarifyCondition()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "( %name% [=&|^]")) {
                 for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "[")
@@ -1188,7 +1188,7 @@ void CheckCondition::alwaysTrueFalse()
 
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
 
             if (tok->link()) // don't write false positives when templates are used
                 continue;
@@ -1299,7 +1299,7 @@ void CheckCondition::checkInvalidTestForOverflow()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
                 continue;
 
@@ -1363,7 +1363,7 @@ void CheckCondition::checkPointerAdditionResultNotNull()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
                 continue;
 

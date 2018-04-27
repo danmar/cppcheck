@@ -448,9 +448,9 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
 /// TODO: This is copy pasted from Tokenizer. We should reuse this code.
 namespace {
     struct ScopeInfo2 {
-        ScopeInfo2(const std::string &name_, const Token *classEnd_) : name(name_), classEnd(classEnd_) {}
+        ScopeInfo2(const std::string &name_, const Token *bodyEnd_) : name(name_), bodyEnd(bodyEnd_) {}
         const std::string name;
-        const Token * const classEnd;
+        const Token * const bodyEnd;
     };
 }
 static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
@@ -468,7 +468,7 @@ static std::string getFullName(const std::list<ScopeInfo2> &scopeInfo, const std
 
 static void setScopeInfo(const Token *tok, std::list<ScopeInfo2> *scopeInfo)
 {
-    while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().classEnd)
+    while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
         scopeInfo->pop_back();
     if (!Token::Match(tok, "namespace|class|struct %name% {|:|::"))
         return;

@@ -398,7 +398,7 @@ private:
         const Token * start = tokenizer.tokens();
         const SymbolDatabase * db = tokenizer.getSymbolDatabase();
         if (db && db->functionScopes.size())
-            start = db->functionScopes[0]->classStart->next();
+            start = db->functionScopes[0]->bodyStart->next();
 
         const unsigned int varId(Token::findmatch(start, varname)->varId());
 

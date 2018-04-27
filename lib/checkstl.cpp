@@ -152,10 +152,10 @@ void CheckStl::iterators()
 
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
-        for (const Token *tok2 = var->nameToken(); tok2 && tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
-            if (invalidationScope && tok2 == invalidationScope->classEnd)
+        for (const Token *tok2 = var->nameToken(); tok2 && tok2 != var->scope()->bodyEnd; tok2 = tok2->next()) {
+            if (invalidationScope && tok2 == invalidationScope->bodyEnd)
                 validIterator = true; // Assume that the iterator becomes valid again
-            if (containerAssignScope && tok2 == containerAssignScope->classEnd)
+            if (containerAssignScope && tok2 == containerAssignScope->bodyEnd)
                 containerToken = nullptr; // We don't know which containers might be used with the iterator
 
             if (tok2 == validatingToken) {
@@ -348,7 +348,7 @@ void CheckStl::mismatchingContainers()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const ftok = tok;
@@ -443,7 +443,7 @@ void CheckStl::stlOutOfBounds()
         // variable id for the container variable
         const unsigned int declarationId = var->declarationId();
 
-        for (const Token *tok3 = i->classStart; tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
+        for (const Token *tok3 = i->bodyStart; tok3 && tok3 != i->bodyEnd; tok3 = tok3->next()) {
             if (tok3->varId() == declarationId) {
                 tok3 = tok3->next();
                 if (Token::Match(tok3, ". %name% ( )")) {
@@ -476,7 +476,7 @@ void CheckStl::negativeIndex()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%var% [") || WRONG_DATA(!tok->next()->astOperand2(), tok))
                 continue;
             const Variable * const var = tok->variable();
@@ -529,7 +529,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
     bool inconclusiveType=false;
     if (!isIterator(var, inconclusiveType))
         return;
-    for (const Token *tok = scope.classStart; tok != scope.classEnd; tok = tok->next()) {
+    for (const Token *tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
         if (tok->str() != "(")
             continue;
         if (!Token::Match(tok->tokAt(-2), ". erase ( ++| %varid% )", var->declarationId()))
@@ -539,7 +539,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
         // Iterator is invalid..
         unsigned int indentlevel = 0U;
         const Token *tok2 = tok->link();
-        for (; tok2 != scope.classEnd; tok2 = tok2->next()) {
+        for (; tok2 != scope.bodyEnd; tok2 = tok2->next()) {
             if (tok2->str() == "{") {
                 ++indentlevel;
                 continue;
@@ -560,7 +560,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
             if (indentlevel == 0U && Token::Match(tok2, "break|return|goto"))
                 break;
         }
-        if (tok2 == scope.classEnd)
+        if (tok2 == scope.bodyEnd)
             dereferenceErasedError(tok, scope.classDef, var->nameToken()->str(), inconclusiveType);
     }
 }
@@ -572,7 +572,7 @@ void CheckStl::pushback()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = & %var% [")) {
                 // Skip it directly if it is a pointer or an array
                 const Token* containerTok = tok->tokAt(3);
@@ -584,7 +584,7 @@ void CheckStl::pushback()
 
                 bool invalidPointer = false;
                 const Token* function = nullptr;
-                const Token* end2 = tok->scope()->classEnd;
+                const Token* end2 = tok->scope()->bodyEnd;
                 for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
                     // push_back on vector..
                     if (Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve|resize|clear", containerTok->varId())) {
@@ -622,7 +622,7 @@ void CheckStl::pushback()
         const Token* validatingToken = nullptr;
 
         std::string invalidIterator;
-        const Token* end2 = var->scope()->classEnd;
+        const Token* end2 = var->scope()->bodyEnd;
         for (const Token *tok2 = var->nameToken(); tok2 != end2; tok2 = tok2->next()) {
 
             if (validatingToken == tok2) {
@@ -735,7 +735,7 @@ void CheckStl::stlBoundaries()
         if (!container || container->opLessAllowed)
             continue;
 
-        const Token* const end = var->scope()->classEnd;
+        const Token* const end = var->scope()->bodyEnd;
         for (const Token *tok = var->nameToken(); tok != end; tok = tok->next()) {
             if (Token::Match(tok, "!!* %varid% <", var->declarationId())) {
                 stlBoundariesError(tok);
@@ -877,7 +877,7 @@ void CheckStl::size()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% . size ( )") ||
                 Token::Match(tok, "%name% . %var% . size ( )")) {
                 // get the variable
@@ -976,7 +976,7 @@ void CheckStl::missingComparison()
         if (i->type != Scope::eFor || !i->classDef)
             continue;
 
-        for (const Token *tok2 = i->classDef->tokAt(2); tok2 != i->classStart; tok2 = tok2->next()) {
+        for (const Token *tok2 = i->classDef->tokAt(2); tok2 != i->bodyStart; tok2 = tok2->next()) {
             if (tok2->str() == ";")
                 break;
 
@@ -1002,7 +1002,7 @@ void CheckStl::missingComparison()
             const Token *incrementToken = nullptr;
 
             // Parse loop..
-            for (const Token *tok3 = i->classStart; tok3 != i->classEnd; tok3 = tok3->next()) {
+            for (const Token *tok3 = i->bodyStart; tok3 != i->bodyEnd; tok3 = tok3->next()) {
                 if (Token::Match(tok3, "%varid% ++", iteratorId))
                     incrementToken = tok3;
                 else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
@@ -1097,7 +1097,7 @@ void CheckStl::string_c_str()
         else if (Token::Match(scope->function->tokenDef->tokAt(-3), "std :: string|wstring !!&"))
             returnType = stdString;
 
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Invalid usage..
             if (Token::Match(tok, "throw %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
                 tok->next()->variable() && tok->next()->variable()->isStlStringType()) {
@@ -1408,7 +1408,7 @@ void CheckStl::uselessCalls()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (printWarning && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %name% [,)]") &&
                 tok->varId() == tok->tokAt(4)->varId()) {
                 const Variable* var = tok->variable();
@@ -1617,7 +1617,7 @@ void CheckStl::readingEmptyStlContainer()
         if (i->type != Scope::eFunction)
             continue;
 
-        for (const Token *tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
+        for (const Token *tok = i->bodyStart->next(); tok != i->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "for|while")) { // Loops and end of scope clear the sets.
                 const Token* tok2 = tok->linkAt(1);
                 if (!tok2)

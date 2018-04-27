@@ -297,8 +297,8 @@ void CheckNullPointer::nullPointerLinkedList()
                         // Make sure there is a "break" or "return" inside the loop.
                         // Without the "break" a null pointer could be dereferenced in the
                         // for statement.
-                        for (const Token *tok4 = scope->classStart; tok4; tok4 = tok4->next()) {
-                            if (tok4 == i->classEnd) {
+                        for (const Token *tok4 = scope->bodyStart; tok4; tok4 = tok4->next()) {
+                            if (tok4 == i->bodyEnd) {
                                 const ValueFlow::Value v(scope->classDef, 0LL);
                                 nullPointerError(tok1, var->name(), &v, false);
                                 break;
@@ -393,12 +393,12 @@ void CheckNullPointer::nullConstantDereference()
         if (scope->function == nullptr || !scope->function->hasBody()) // We only look for functions with a body
             continue;
 
-        const Token *tok = scope->classStart;
+        const Token *tok = scope->bodyStart;
 
         if (scope->function->isConstructor())
             tok = scope->function->token; // Check initialization list
 
-        for (; tok != scope->classEnd; tok = tok->next()) {
+        for (; tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "sizeof|decltype|typeid|typeof ("))
                 tok = tok->next()->link();
 
@@ -524,7 +524,7 @@ void CheckNullPointer::arithmetic()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "-|+|+=|-=|++|--"))
                 continue;
             const Token *pointerOperand;

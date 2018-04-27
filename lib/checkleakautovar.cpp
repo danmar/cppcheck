@@ -164,7 +164,7 @@ void CheckLeakAutoVar::check()
         // Empty variable info
         VarInfo varInfo;
 
-        checkScope(scope->classStart, &varInfo, notzero);
+        checkScope(scope->bodyStart, &varInfo, notzero);
 
         varInfo.conditionalAlloc.clear();
 
@@ -180,7 +180,7 @@ void CheckLeakAutoVar::check()
                 ++it;
         }
 
-        ret(scope->classEnd, varInfo);
+        ret(scope->bodyEnd, varInfo);
     }
 }
 
@@ -205,7 +205,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
     const Token * const endToken = startToken->link();
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
         if (!tok->scope()->isExecutable()) {
-            tok = tok->scope()->classEnd;
+            tok = tok->scope()->bodyEnd;
             if (!tok) // Ticket #6666 (crash upon invalid code)
                 break;
         }
@@ -590,7 +590,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken);
                     if (dtok && dtok->type()) {
                         const Scope * tscope = dtok->type()->classScope;
-                        for (const Token *tok2 = tscope->classStart; tok2 != tscope->classEnd; tok2 = tok2->next()) {
+                        for (const Token *tok2 = tscope->bodyStart; tok2 != tscope->bodyEnd; tok2 = tok2->next()) {
                             af = _settings->library.dealloc(tok2);
                             if (af)
                                 break;

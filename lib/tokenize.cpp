@@ -397,9 +397,9 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
 namespace {
     struct Space {
-        Space() : classEnd(nullptr), isNamespace(false) { }
+        Space() : bodyEnd(nullptr), isNamespace(false) { }
         std::string className;
-        const Token * classEnd;
+        const Token * bodyEnd;
         bool isNamespace;
     };
 }
@@ -574,11 +574,11 @@ void Tokenizer::simplifyTypedef()
                 Space info;
                 info.isNamespace = isNamespace;
                 info.className = className;
-                info.classEnd = tok->link();
+                info.bodyEnd = tok->link();
                 spaceInfo.push_back(info);
 
                 hasClass = false;
-            } else if (!spaceInfo.empty() && tok->str() == "}" && spaceInfo.back().classEnd == tok) {
+            } else if (!spaceInfo.empty() && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
                 spaceInfo.pop_back();
             }
             continue;
@@ -1026,7 +1026,7 @@ void Tokenizer::simplifyTypedef()
                                 inMemberFunc = false;
                         }
 
-                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].classEnd) {
+                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].bodyEnd) {
                             --classLevel;
                             pattern.clear();
 
@@ -1079,7 +1079,7 @@ void Tokenizer::simplifyTypedef()
                             if (classLevel < spaceInfo.size() &&
                                 spaceInfo[classLevel].isNamespace &&
                                 spaceInfo[classLevel].className == tok2->previous()->str()) {
-                                spaceInfo[classLevel].classEnd = tok2->link();
+                                spaceInfo[classLevel].bodyEnd = tok2->link();
                                 ++classLevel;
                                 pattern.clear();
                                 for (std::size_t i = classLevel; i < spaceInfo.size(); ++i)
@@ -2859,9 +2859,9 @@ namespace {
     };
 
     struct ScopeInfo2 {
-        ScopeInfo2(const std::string &name_, const Token *classEnd_) : name(name_), classEnd(classEnd_) {}
+        ScopeInfo2(const std::string &name_, const Token *bodyEnd_) : name(name_), bodyEnd(bodyEnd_) {}
         const std::string name;
-        const Token * const classEnd;
+        const Token * const bodyEnd;
     };
 }
 
@@ -3015,7 +3015,7 @@ void Tokenizer::setVarIdPass2()
     // class members..
     std::map<std::string, std::map<std::string, unsigned int> > varsByClass;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (tok->str() == "}" && !scopeInfo.empty() && tok == scopeInfo.back().classEnd)
+        while (tok->str() == "}" && !scopeInfo.empty() && tok == scopeInfo.back().bodyEnd)
             scopeInfo.pop_back();
 
         if (!Token::Match(tok, "namespace|class|struct %name% {|:|::"))
@@ -9787,10 +9787,10 @@ void Tokenizer::removeUnnecessaryQualification()
                 tok = tok->next();
             if (!tok)
                 return;
-            info.classEnd = tok->link();
+            info.bodyEnd = tok->link();
             classInfo.push_back(info);
         } else if (!classInfo.empty()) {
-            if (tok == classInfo.back().classEnd)
+            if (tok == classInfo.back().bodyEnd)
                 classInfo.pop_back();
             else if (tok->str() == classInfo.back().className &&
                      !classInfo.back().isNamespace && tok->previous()->str() != ":" &&

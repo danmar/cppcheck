@@ -1596,7 +1596,7 @@ private:
         GET_SYMBOL_DB("void func();\n"
                       "int bar() {}\n"
                       "void func() {}")
-        ASSERT_EQUALS(3, db->findScopeByName("func")->classStart->linenr());
+        ASSERT_EQUALS(3, db->findScopeByName("func")->bodyStart->linenr());
     }
 
     void Cpp11InitInInitList() {
@@ -1605,7 +1605,7 @@ private:
                       "    Foo() : bar({\"a\", \"b\"})\n"
                       "    {}\n"
                       "};");
-        ASSERT_EQUALS(4, db->scopeList.front().nestedList.front()->nestedList.front()->classStart->linenr());
+        ASSERT_EQUALS(4, db->scopeList.front().nestedList.front()->nestedList.front()->bodyStart->linenr());
     }
 
     void hasGlobalVariables1() {
@@ -3793,7 +3793,7 @@ private:
             if (bar) {
                 unsigned int linenrs[] = { 2, 1 };
                 unsigned int index = 0;
-                for (const Token * tok = bar->classStart->next(); tok != bar->classEnd; tok = tok->next()) {
+                for (const Token * tok = bar->bodyStart->next(); tok != bar->bodyEnd; tok = tok->next()) {
                     if (Token::Match(tok, "%name% (") && !tok->varId() && Token::simpleMatch(tok->linkAt(1), ") ;")) {
                         const Function * function = db->findFunction(tok);
                         ASSERT(function != nullptr);

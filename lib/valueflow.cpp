@@ -1271,7 +1271,7 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
     const std::size_t functions = symboldatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symboldatabase->functionScopes[i];
-        for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             MathLib::bigint num = 0;
             const Token *vartok = nullptr;
             if (tok->isComparisonOp() && tok->astOperand1() && tok->astOperand2()) {
@@ -1816,8 +1816,8 @@ static bool valueFlowForward(Token * const               startToken,
                     if (loopCondition) {
                         const Token *tok3 = Token::findmatch(start, "%varid%", end, varid);
                         if (Token::Match(tok3, "%varid% =", varid) &&
-                            tok3->scope()->classEnd                &&
-                            Token::Match(tok3->scope()->classEnd->tokAt(-3), "[;}] break ;") &&
+                            tok3->scope()->bodyEnd                &&
+                            Token::Match(tok3->scope()->bodyEnd->tokAt(-3), "[;}] break ;") &&
                             !Token::findmatch(tok3->next(), "%varid%", end, varid)) {
                             bail = false;
                             tok2 = end;
@@ -1880,7 +1880,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
             if (tok2->str() == "break") {
                 if (scope && scope->type == Scope::eSwitch) {
-                    tok2 = const_cast<Token *>(scope->classEnd);
+                    tok2 = const_cast<Token *>(scope->bodyEnd);
                     if (tok2 == endToken)
                         break;
                     --indentlevel;
@@ -2206,14 +2206,14 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
         const Scope * scope = symboldatabase->functionScopes[i];
         if (!scope)
             continue;
-        const Token * start = scope->classStart;
+        const Token * start = scope->bodyStart;
         if (scope->function) {
             const Token * memberInitializationTok = scope->function->constructorMemberInitialization();
             if (memberInitializationTok)
                 start = memberInitializationTok;
         }
 
-        for (Token* tok = const_cast<Token*>(start); tok != scope->classEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(start); tok != scope->bodyEnd; tok = tok->next()) {
             Token * varTok;
             if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName() == emptyString) {
                 varTok = tok;
@@ -2229,7 +2229,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                 if (!var || (!var->isLocal() && !var->isArgument()))
                     continue;
                 const unsigned int varId = varTok->varId();
-                const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+                const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
                 setTokenValue(varTok, value, settings);
                 valueFlowForward(varTok->next(), endOfVarScope, var, varId, values, false, false, tokenlist, errorLogger, settings);
                 continue;
@@ -2252,7 +2252,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             const Variable *var = varTok->variable();
             if (!var)
                 continue;
-            const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+            const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::MOVED;
@@ -2278,7 +2278,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
     for (std::size_t i = 0; i < functions; ++i) {
         std::set<unsigned int> aliased;
         const Scope * scope = symboldatabase->functionScopes[i];
-        for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Alias
             if (tok->str() == "&" && !tok->astOperand2() && tok->astOperand1()) {
                 aliased.insert(tok->astOperand1()->varId());
@@ -2299,7 +2299,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!var || (!var->isLocal() && !var->isGlobal() && !var->isArgument()))
                 continue;
 
-            const Token * const endOfVarScope = var->typeStartToken()->scope()->classEnd;
+            const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
             // Rhs values..
             if (!tok->astOperand2() || tok->astOperand2()->values().empty())
@@ -2340,7 +2340,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
     for (std::size_t func = 0; func < functions; ++func) {
         const Scope * scope = symboldatabase->functionScopes[func];
         std::set<unsigned> aliased;
-        for (Token* tok = const_cast<Token*>(scope->classStart); tok != scope->classEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             const Token * vartok = nullptr;
             const Token * numtok = nullptr;
             const Token * lowertok = nullptr;
@@ -2584,7 +2584,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         // TODO: constValue could be true if there are no assignments in the conditional blocks and
                         //       perhaps if there are no && and no || in the condition
                         bool constValue = false;
-                        valueFlowForward(after->next(), top->scope()->classEnd, var, varid, *values, constValue, false, tokenlist, errorLogger, settings);
+                        valueFlowForward(after->next(), top->scope()->bodyEnd, var, varid, *values, constValue, false, tokenlist, errorLogger, settings);
                     }
                 }
             }
@@ -2949,9 +2949,9 @@ static void valueFlowForLoopSimplifyAfter(Token *fortok, unsigned int varid, con
     const Variable *var = vartok->variable();
     const Token *endToken = nullptr;
     if (var->isLocal())
-        endToken = var->typeStartToken()->scope()->classEnd;
+        endToken = var->typeStartToken()->scope()->bodyEnd;
     else
-        endToken = fortok->scope()->classEnd;
+        endToken = fortok->scope()->bodyEnd;
 
     std::list<ValueFlow::Value> values;
     values.emplace_back(num);
@@ -2976,7 +2976,7 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
             continue;
 
         Token* tok = const_cast<Token*>(scope->classDef);
-        Token* const bodyStart = const_cast<Token*>(scope->classStart);
+        Token* const bodyStart = const_cast<Token*>(scope->bodyStart);
 
         if (!Token::simpleMatch(tok->next()->astOperand2(), ";") ||
             !Token::simpleMatch(tok->next()->astOperand2()->astOperand2(), ";"))
@@ -3027,7 +3027,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
     if (!varid2)
         return;
 
-    valueFlowForward(const_cast<Token*>(functionScope->classStart->next()), functionScope->classEnd, arg, varid2, argvalues, false, true, tokenlist, errorLogger, settings);
+    valueFlowForward(const_cast<Token*>(functionScope->bodyStart->next()), functionScope->bodyEnd, arg, varid2, argvalues, false, true, tokenlist, errorLogger, settings);
 }
 
 static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
@@ -3049,7 +3049,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
             continue;
         }
 
-        for (Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "{") {
                 tok = tok->link();
                 continue;
@@ -3085,7 +3085,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                 if (vartok->variable()->scope()) {
                     if (known)
                         values.back().setKnown();
-                    valueFlowForward(tok->tokAt(3), vartok->variable()->scope()->classEnd, vartok->variable(), vartok->varId(), values, values.back().isKnown(), false, tokenlist, errorLogger, settings);
+                    valueFlowForward(tok->tokAt(3), vartok->variable()->scope()->bodyEnd, vartok->variable(), vartok->varId(), values, values.back().isKnown(), false, tokenlist, errorLogger, settings);
                 }
             }
         }
@@ -3279,8 +3279,8 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         // Get scope and args of function
         const Function * const function = tok->astOperand1()->function();
         const Scope * const functionScope = function->functionScope;
-        if (!functionScope || !Token::simpleMatch(functionScope->classStart, "{ return")) {
-            if (functionScope && tokenlist->getSettings()->debugwarnings && Token::findsimplematch(functionScope->classStart, "return", functionScope->classEnd))
+        if (!functionScope || !Token::simpleMatch(functionScope->bodyStart, "{ return")) {
+            if (functionScope && tokenlist->getSettings()->debugwarnings && Token::findsimplematch(functionScope->bodyStart, "return", functionScope->bodyEnd))
                 bailout(tokenlist, errorLogger, tok, "function return; nontrivial function body");
             continue;
         }
@@ -3302,7 +3302,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         // Determine return value of subfunction..
         MathLib::bigint result = 0;
         bool error = false;
-        execute(functionScope->classStart->next()->astOperand1(),
+        execute(functionScope->bodyStart->next()->astOperand1(),
                 &programMemory,
                 &result,
                 &error);
@@ -3354,7 +3354,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
         const bool constValue = true;
         const bool subFunction = false;
 
-        valueFlowForward(vardecl->next(), vardecl->scope()->classEnd, var, vardecl->varId(), values, constValue, subFunction, tokenlist, errorLogger, settings);
+        valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var, vardecl->varId(), values, constValue, subFunction, tokenlist, errorLogger, settings);
     }
 }
 

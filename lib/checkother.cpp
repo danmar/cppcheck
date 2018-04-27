@@ -86,7 +86,7 @@ void CheckOther::checkCastIntToCharAndBack()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         std::map<unsigned int, std::string> vars;
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // Quick check to see if any of the matches below have any chances
             if (!Token::Match(tok, "%var%|EOF %comp%|="))
                 continue;
@@ -153,7 +153,7 @@ void CheckOther::clarifyCalculation()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // ? operator where lhs is arithmetical expression
             if (tok->str() != "?" || !tok->astOperand1() || !tok->astOperand1()->isCalculation())
                 continue;
@@ -205,7 +205,7 @@ void CheckOther::clarifyStatement()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "* %name%") && tok->astOperand1()) {
                 const Token *tok2 = tok->previous();
 
@@ -244,9 +244,9 @@ void CheckOther::checkSuspiciousSemicolon()
         if (i->type == Scope::eIf || i->type == Scope::eElse || i->type == Scope::eWhile || i->type == Scope::eFor) {
             // Ensure the semicolon is at the same line number as the if/for/while statement
             // and the {..} block follows it without an extra empty line.
-            if (Token::simpleMatch(i->classStart, "{ ; } {") &&
-                i->classStart->previous()->linenr() == i->classStart->tokAt(2)->linenr()
-                && i->classStart->linenr()+1 >= i->classStart->tokAt(3)->linenr()) {
+            if (Token::simpleMatch(i->bodyStart, "{ ; } {") &&
+                i->bodyStart->previous()->linenr() == i->bodyStart->tokAt(2)->linenr()
+                && i->bodyStart->linenr()+1 >= i->bodyStart->tokAt(3)->linenr()) {
                 SuspiciousSemicolonError(i->classDef);
             }
         }
@@ -275,8 +275,8 @@ void CheckOther::warningOldStylePointerCast()
         if (scope->function && scope->function->isConstructor())
             tok = scope->classDef;
         else
-            tok = scope->classStart;
-        for (; tok && tok != scope->classEnd; tok = tok->next()) {
+            tok = scope->bodyStart;
+        for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
             if (!Token::Match(tok, "( const| %type% * const| ) (| %name%|%num%|%bool%|%char%|%str%"))
                 continue;
@@ -322,7 +322,7 @@ void CheckOther::invalidPointerCast()
     const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             const Token* toTok = nullptr;
             const Token* fromTok = nullptr;
             // Find cast
@@ -382,7 +382,7 @@ void CheckOther::checkPipeParameterSize()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "pipe ( %var% )") ||
                 Token::Match(tok, "pipe2 ( %var% ,")) {
                 const Token * const varTok = tok->tokAt(2);
@@ -459,7 +459,7 @@ static bool checkExceptionHandling(const Token* tok)
     }
     if (var && upperScope && upperScope->type == Scope::eTry) {
         // Check all exception han
-        const Token* tok2 = upperScope->classEnd;
+        const Token* tok2 = upperScope->bodyEnd;
         while (Token::simpleMatch(tok2, "} catch (")) {
             tok2 = tok2->linkAt(2)->next();
             if (Token::findmatch(tok2, "%varid%", tok2->link(), var->declarationId()))
@@ -491,7 +491,7 @@ void CheckOther::checkRedundantAssignment()
         std::set<unsigned int> initialized;
         const Token* writtenArgumentsEnd = nullptr;
 
-        for (const Token* tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (tok == writtenArgumentsEnd)
                 writtenArgumentsEnd = nullptr;
 
@@ -681,7 +681,7 @@ void CheckOther::checkRedundantAssignment()
                         memAssignments.clear();
                         continue;
                     }
-                    const Token* funcEnd = func->functionScope->classEnd;
+                    const Token* funcEnd = func->functionScope->bodyEnd;
                     bool noreturn;
                     if (!_tokenizer->IsScopeNoReturn(funcEnd, &noreturn) && !noreturn) {
                         eraseNotLocalArg(varAssignments, symbolDatabase);
@@ -765,14 +765,14 @@ void CheckOther::checkRedundantAssignmentInSwitch()
     // Find the beginning of a switch. E.g.:
     //   switch (var) { ...
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eSwitch || !i->classStart)
+        if (i->type != Scope::eSwitch || !i->bodyStart)
             continue;
 
         // Check the contents of the switch statement
         std::map<unsigned int, const Token*> varsWithBitsSet;
         std::map<unsigned int, std::string> bitOperations;
 
-        for (const Token *tok2 = i->classStart->next(); tok2 != i->classEnd; tok2 = tok2->next()) {
+        for (const Token *tok2 = i->bodyStart->next(); tok2 != i->bodyEnd; tok2 = tok2->next()) {
             if (tok2->str() == "{") {
                 // Inside a conditional or loop. Don't mark variable accesses as being redundant. E.g.:
                 //   case 3: b = 1;
@@ -893,7 +893,7 @@ void CheckOther::checkSuspiciousCaseInSwitch()
         if (scope.type != Scope::eSwitch)
             continue;
 
-        for (const Token* tok = scope.classStart->next(); tok != scope.classEnd; tok = tok->next()) {
+        for (const Token* tok = scope.bodyStart->next(); tok != scope.bodyEnd; tok = tok->next()) {
             if (tok->str() == "case") {
                 const Token* finding = nullptr;
                 for (const Token* tok2 = tok->next(); tok2; tok2 = tok2->next()) {
@@ -932,7 +932,7 @@ void CheckOther::checkSuspiciousEqualityComparison()
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "for (")) {
                 const Token* const openParen = tok->next();
                 const Token* const closeParen = tok->linkAt(1);
@@ -985,7 +985,7 @@ void CheckOther::checkUnreachableCode()
     const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             const Token* secondBreak = nullptr;
             const Token* labelName = nullptr;
             if (tok->link() && Token::Match(tok, "(|[|<"))
@@ -1050,7 +1050,7 @@ void CheckOther::checkUnreachableCode()
                         if (Token::Match(silencedWarning, "( void ) %name% ;")) {
                             silencedWarning = silencedWarning->tokAt(5);
                             continue;
-                        } else if (silencedWarning && silencedWarning == scope->classEnd)
+                        } else if (silencedWarning && silencedWarning == scope->bodyEnd)
                             silencedCompilerWarningOnly = true;
 
                         break;
@@ -1126,7 +1126,7 @@ void CheckOther::checkVariableScope()
             continue;
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
-        for (; tok && tok != var->scope()->classEnd; tok = tok->next()) {
+        for (; tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
             if (tok->str() == "{" && tok->scope() != tok->previous()->scope() && !tok->isExpandedMacro() && tok->scope()->type != Scope::eLambda) {
                 if (used) {
                     bool used2 = false;
@@ -1182,10 +1182,10 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
             if (used) {
                 bool used2 = false;
-                if (!checkInnerScope((*i)->classStart, var, used2) || used2) {
+                if (!checkInnerScope((*i)->bodyStart, var, used2) || used2) {
                     return false;
                 }
-            } else if (!checkInnerScope((*i)->classStart, var, used)) {
+            } else if (!checkInnerScope((*i)->bodyStart, var, used)) {
                 return false;
             }
         }
@@ -1354,7 +1354,7 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
 
 static bool canBeConst(const Variable *var)
 {
-    for (const Token* tok2 = var->scope()->classStart; tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
+    for (const Token* tok2 = var->scope()->bodyStart; tok2 != var->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->varId() == var->declarationId()) {
             const Token* parent = tok2->astParent();
             if (!parent)
@@ -1481,7 +1481,7 @@ void CheckOther::checkCharVariable()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% [")) {
                 if (!tok->variable())
                     continue;
@@ -1710,7 +1710,7 @@ void CheckOther::checkMisusedScopedObject()
 
     const SymbolDatabase * const symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if ((tok->next()->type() || (tok->next()->function() && tok->next()->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
                 && Token::Match(tok, "[;{}] %name% (")
                 && Token::Match(tok->linkAt(2), ") ; !!}")
@@ -1756,11 +1756,11 @@ void CheckOther::checkDuplicateBranch()
             continue;
 
         // check all the code in the function for if (..) else
-        if (Token::simpleMatch(scope.classEnd, "} else {")) {
+        if (Token::simpleMatch(scope.bodyEnd, "} else {")) {
             // Make sure there are no macros (different macros might be expanded
             // to the same code)
             bool macro = false;
-            for (const Token *tok = scope.classStart; tok != scope.classEnd->linkAt(2); tok = tok->next()) {
+            for (const Token *tok = scope.bodyStart; tok != scope.bodyEnd->linkAt(2); tok = tok->next()) {
                 if (tok->isExpandedMacro()) {
                     macro = true;
                     break;
@@ -1770,17 +1770,17 @@ void CheckOther::checkDuplicateBranch()
                 continue;
 
             // save if branch code
-            const std::string branch1 = scope.classStart->next()->stringifyList(scope.classEnd);
+            const std::string branch1 = scope.bodyStart->next()->stringifyList(scope.bodyEnd);
 
             if (branch1.empty())
                 continue;
 
             // save else branch code
-            const std::string branch2 = scope.classEnd->tokAt(3)->stringifyList(scope.classEnd->linkAt(2));
+            const std::string branch2 = scope.bodyEnd->tokAt(3)->stringifyList(scope.bodyEnd->linkAt(2));
 
             // check for duplicates
             if (branch1 == branch2)
-                duplicateBranchError(scope.classDef, scope.classEnd->next());
+                duplicateBranchError(scope.classDef, scope.bodyEnd->next());
         }
     }
 }
@@ -1808,7 +1808,7 @@ void CheckOther::checkInvalidFree()
     const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
 
             // Keep track of which variables were assigned addresses to newly-allocated memory
             if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
@@ -1924,7 +1924,7 @@ void CheckOther::checkDuplicateExpression()
         if (scope->type != Scope::eFunction)
             continue;
 
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "=" && Token::Match(tok->astOperand1(), "%var%")) {
                 const Token * endStatement = Token::findsimplematch(tok, ";");
                 if (Token::Match(endStatement, "; %type% %var% ;")) {
@@ -2077,7 +2077,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isName() && Token::Match(tok, "isgreater|isless|islessgreater|isgreaterequal|islessequal ( %var% , %var% )")) {
                 const unsigned int varidLeft = tok->tokAt(2)->varId();// get the left varid
                 const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
@@ -2126,7 +2126,7 @@ void CheckOther::checkSignOfUnsignedVariable()
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         // check all the code in the function
-        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
                 continue;
 
@@ -2348,7 +2348,7 @@ void CheckOther::checkIncompleteArrayFill()
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|memcpy|memmove ( %var% ,") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
                 const Variable *var = tok->tokAt(2)->variable();
                 if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
@@ -2396,7 +2396,7 @@ void CheckOther::checkVarFuncNullUB()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             // Is NULL passed to a function?
             if (Token::Match(tok,"[(,] NULL [,)]")) {
                 // Locate function name in this function call.
@@ -2561,12 +2561,12 @@ void CheckOther::checkUnusedLabel()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->scope()->isExecutable())
-                tok = tok->scope()->classEnd;
+                tok = tok->scope()->bodyEnd;
 
             if (Token::Match(tok, "{|}|; %name% :") && tok->strAt(1) != "default") {
-                if (!Token::findsimplematch(scope->classStart->next(), ("goto " + tok->strAt(1)).c_str(), scope->classEnd->previous()))
+                if (!Token::findsimplematch(scope->bodyStart->next(), ("goto " + tok->strAt(1)).c_str(), scope->bodyEnd->previous()))
                     unusedLabelError(tok->next(), tok->next()->scope()->type == Scope::eSwitch);
             }
         }
@@ -2597,7 +2597,7 @@ void CheckOther::checkEvaluationOrder()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * functionScope : symbolDatabase->functionScopes) {
-        for (const Token* tok = functionScope->classStart; tok != functionScope->classEnd; tok = tok->next()) {
+        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "++|--") && !tok->isAssignmentOp())
                 continue;
             if (!tok->astOperand1())
@@ -2682,13 +2682,13 @@ void CheckOther::checkAccessOfMovedVariable()
     const bool reportInconclusive = _settings->inconclusive;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        const Token * scopeStart = scope->classStart;
+        const Token * scopeStart = scope->bodyStart;
         if (scope->function) {
             const Token * memberInitializationStart = scope->function->constructorMemberInitialization();
             if (memberInitializationStart)
                 scopeStart = memberInitializationStart;
         }
-        for (const Token* tok = scopeStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scopeStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             const ValueFlow::Value * movedValue = tok->getMovedValue();
             if (!movedValue || movedValue->moveKind == ValueFlow::Value::NonMovedVariable)
                 continue;

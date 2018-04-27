@@ -461,7 +461,7 @@ void CheckBufferOverrun::checkFunctionParameter(const Token &ftok, unsigned int 
                 return;
 
             // Check the parameter usage in the function scope..
-            for (const Token* ftok2 = func->functionScope->classStart; ftok2 != func->functionScope->classEnd; ftok2 = ftok2->next()) {
+            for (const Token* ftok2 = func->functionScope->bodyStart; ftok2 != func->functionScope->bodyEnd; ftok2 = ftok2->next()) {
                 if (Token::Match(ftok2, "if|for|switch|while (")) {
                     // bailout if there is buffer usage..
                     if (bailoutIfSwitch(ftok2, parameter->declarationId())) {
@@ -614,7 +614,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<const st
 
     const bool printPortability = _settings->isEnabled(Settings::PORTABILITY);
 
-    for (const Token* const end = tok->scope()->classEnd; tok && tok != end; tok = tok->next()) {
+    for (const Token* const end = tok->scope()->bodyEnd; tok && tok != end; tok = tok->next()) {
         if (declarationId != 0 && Token::Match(tok, "%varid% = new|malloc|realloc", declarationId)) {
             // Abort
             break;
@@ -899,7 +899,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 {
     bool reassigned = false;
 
-    for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
+    for (const Token* const end = tok->scope()->bodyEnd; tok != end; tok = tok->next()) {
         if (reassigned && tok->str() == ";")
             break;
 
@@ -918,7 +918,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, std::map<unsigned int, Arr
 {
     unsigned int reassigned = 0;
 
-    for (const Token* const end = tok->scope()->classEnd; tok != end; tok = tok->next()) {
+    for (const Token* const end = tok->scope()->bodyEnd; tok != end; tok = tok->next()) {
         if (reassigned && tok->str() == ";") {
             arrayInfos.erase(reassigned);
             reassigned = 0;
@@ -1233,7 +1233,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             arrayInfos[var->declarationId()] = ArrayInfo(&*var, symbolDatabase, var->declarationId());
         }
         if (!arrayInfos.empty())
-            checkScope(scope->classStart ? scope->classStart : _tokenizer->tokens(), arrayInfos);
+            checkScope(scope->bodyStart ? scope->bodyStart : _tokenizer->tokens(), arrayInfos);
     }
 
     const std::vector<const std::string*> v;
@@ -1243,7 +1243,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
 
-        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "[*;{}] %var% ="))
                 continue;
 
@@ -1355,9 +1355,9 @@ void CheckBufferOverrun::checkStructVariable()
                 // check for member variables
                 if (func_scope->functionOf == scope) {
                     // only check non-empty function
-                    if (func_scope->classStart->next() != func_scope->classEnd) {
+                    if (func_scope->bodyStart->next() != func_scope->bodyEnd) {
                         // start checking after the {
-                        const Token *tok = func_scope->classStart->next();
+                        const Token *tok = func_scope->bodyStart->next();
                         checkScope(tok, arrayInfo);
                     }
                 }
@@ -1370,7 +1370,7 @@ void CheckBufferOverrun::checkStructVariable()
                 std::vector<const std::string*> varname = { nullptr, &arrayInfo.varname() };
 
                 // search the function and it's parameters
-                for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->classEnd; tok3 = tok3->next()) {
+                for (const Token *tok3 = func_scope->classDef; tok3 && tok3 != func_scope->bodyEnd; tok3 = tok3->next()) {
                     // search for the class/struct name
                     if (tok3->str() != scope->className)
                         continue;
@@ -1442,7 +1442,7 @@ void CheckBufferOverrun::checkStructVariable()
 
                     // Goto end of statement.
                     const Token *checkTok = nullptr;
-                    while (tok3 && tok3 != func_scope->classEnd) {
+                    while (tok3 && tok3 != func_scope->bodyEnd) {
                         // End of statement.
                         if (tok3->str() == ";") {
                             checkTok = tok3;
@@ -1703,7 +1703,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token *tok = scope->classStart->next(); tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
             const unsigned int dstVarId = tok->varId();
             if (!dstVarId || tok->strAt(1) != "=")
                 continue;
@@ -1729,7 +1729,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 
             // To avoid false positives and added complexity, we will only look for
             // improper usage of the buffer within the block that it was allocated
-            for (const Token* const end = tok->scope()->classEnd; tok && tok->next() && tok != end; tok = tok->next()) {
+            for (const Token* const end = tok->scope()->bodyEnd; tok && tok->next() && tok != end; tok = tok->next()) {
                 // If the buffers are modified, we can't be sure of their sizes
                 if (tok->varId() == srcVarId || tok->varId() == dstVarId)
                     break;
@@ -1753,7 +1753,7 @@ void CheckBufferOverrun::checkStringArgument()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t functionIndex = 0; functionIndex < functions; ++functionIndex) {
         const Scope * const scope = symbolDatabase->functionScopes[functionIndex];
-        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% (") || !_settings->library.hasminsize(tok->str()))
                 continue;
 
@@ -1804,7 +1804,7 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 continue;
 
             // Jump to the opening curly brace
-            tok = symbolDatabase->functionScopes[i]->classStart;
+            tok = symbolDatabase->functionScopes[i]->bodyStart;
 
             // Search within main() for possible buffer overruns involving argv
             for (const Token* end = tok->link(); tok != end; tok = tok->next()) {
@@ -1925,7 +1925,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * const scope = symbolDatabase->functionScopes[i];
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;
@@ -2000,7 +2000,7 @@ Check::FileInfo* CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
     const std::size_t functions = symbolDB->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * const scope = symbolDB->functionScopes[i];
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% [")          &&
                 Token::Match(tok->linkAt(1), "] !![") &&
                 tok->variable()                       &&

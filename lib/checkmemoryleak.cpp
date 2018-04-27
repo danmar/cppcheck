@@ -352,7 +352,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
 
     // Get return pointer..
     unsigned int varid = 0;
-    for (const Token *tok2 = func->functionScope->classStart; tok2 != func->functionScope->classEnd; tok2 = tok2->next()) {
+    for (const Token *tok2 = func->functionScope->bodyStart; tok2 != func->functionScope->bodyEnd; tok2 = tok2->next()) {
         if (tok2->str() == "return") {
             const AllocType allocType = getAllocationType(tok2->next(), 0, callstack);
             if (allocType != No)
@@ -382,7 +382,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
 
     // Check if return pointer is allocated..
     AllocType allocType = No;
-    for (const Token* tok = func->functionScope->classStart; tok != func->functionScope->classEnd; tok = tok->next()) {
+    for (const Token* tok = func->functionScope->bodyStart; tok != func->functionScope->bodyEnd; tok = tok->next()) {
         if (Token::Match(tok, "%varid% =", varid)) {
             allocType = getAllocationType(tok->tokAt(2), varid, callstack);
         }
@@ -434,7 +434,7 @@ const char *CheckMemoryLeak::functionArgAlloc(const Function *func, unsigned int
 
     // Check if pointer is allocated.
     bool realloc = false;
-    for (tok = func->functionScope->classStart; tok && tok != func->functionScope->classEnd; tok = tok->next()) {
+    for (tok = func->functionScope->bodyStart; tok && tok != func->functionScope->bodyEnd; tok = tok->next()) {
         if (tok->varId() == arg->declarationId()) {
             if (Token::Match(tok->tokAt(-3), "free ( * %name% )")) {
                 realloc = true;
@@ -572,7 +572,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         if (!func || !func->hasBody())
             return nullptr;
 
-        Token *ftok = getcode(func->functionScope->classStart->next(), callstack, 0, alloctype, dealloctype, false, 1);
+        Token *ftok = getcode(func->functionScope->bodyStart->next(), callstack, 0, alloctype, dealloctype, false, 1);
         simplifycode(ftok);
         const char *ret = nullptr;
         if (Token::simpleMatch(ftok, "; alloc ; }"))
@@ -593,7 +593,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         // Function is not noreturn
         if (tok->function() && tok->function()->functionScope) {
             std::string temp;
-            if (!_settings->library.isScopeNoReturn(tok->function()->functionScope->classEnd, &temp) && temp.empty())
+            if (!_settings->library.isScopeNoReturn(tok->function()->functionScope->bodyEnd, &temp) && temp.empty())
                 return nullptr;
         } else if (_settings->library.isnotnoreturn(tok))
             return nullptr;
@@ -631,7 +631,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             const Variable* param = function->getArgumentVar(par-1);
             if (!param || !param->nameToken())
                 return "use";
-            Token *func = getcode(function->functionScope->classStart->next(), callstack, param->declarationId(), alloctype, dealloctype, false, sz);
+            Token *func = getcode(function->functionScope->bodyStart->next(), callstack, param->declarationId(), alloctype, dealloctype, false, sz);
             //simplifycode(func);
             const Token *func_ = func;
             while (func_ && func_->str() == ";")
@@ -2141,14 +2141,14 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
         const Scope * scope = symbolDatabase->functionScopes[i];
 
         // Search for the "var = realloc(var, 100" pattern within this function
-        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0 &&
                 Token::Match(tok, "%name% = realloc|g_try_realloc ( %name% ,") &&
                 tok->varId() == tok->tokAt(4)->varId() &&
                 isNoArgument(symbolDatabase, tok->varId())) {
                 // Check that another copy of the pointer wasn't saved earlier in the function
-                if (Token::findmatch(scope->classStart, "%name% = %varid% ;", tok, tok->varId()) ||
-                    Token::findmatch(scope->classStart, "[{};] %varid% = %name% [;=]", tok, tok->varId()))
+                if (Token::findmatch(scope->bodyStart, "%name% = %varid% ;", tok, tok->varId()) ||
+                    Token::findmatch(scope->bodyStart, "[{};] %varid% = %name% [;=]", tok, tok->varId()))
                     continue;
 
                 const Token* tokEndRealloc = tok->linkAt(3);
@@ -2166,8 +2166,8 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                         tok->next()->varId() == tok->tokAt(6)->varId()) &&
                        isNoArgument(symbolDatabase, tok->next()->varId())) {
                 // Check that another copy of the pointer wasn't saved earlier in the function
-                if (Token::findmatch(scope->classStart, "%name% = * %varid% ;", tok, tok->next()->varId()) ||
-                    Token::findmatch(scope->classStart, "[{};] * %varid% = %name% [;=]", tok, tok->next()->varId()))
+                if (Token::findmatch(scope->bodyStart, "%name% = * %varid% ;", tok, tok->next()->varId()) ||
+                    Token::findmatch(scope->bodyStart, "[{};] * %varid% = %name% [;=]", tok, tok->next()->varId()))
                     continue;
 
                 const Token* tokEndRealloc = tok->linkAt(4);
@@ -2205,7 +2205,7 @@ void CheckMemoryLeakInFunction::check()
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         if (!scope->hasInlineOrLambdaFunction())
-            checkScope(scope->classStart->next(), emptyString, 0, scope->functionOf != nullptr, 1);
+            checkScope(scope->bodyStart->next(), emptyString, 0, scope->functionOf != nullptr, 1);
     }
 
     // Check variables..
@@ -2232,7 +2232,7 @@ void CheckMemoryLeakInFunction::check()
             sz = 1;
 
         if (var->isArgument())
-            checkScope(var->scope()->classStart->next(), var->name(), i, isInMemberFunc(var->scope()), sz);
+            checkScope(var->scope()->bodyStart->next(), var->name(), i, isInMemberFunc(var->scope()), sz);
         else
             checkScope(var->nameToken(), var->name(), i, isInMemberFunc(var->scope()), sz);
     }
@@ -2296,9 +2296,9 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
             continue;
         }
         bool body = false;
-        const Token *end = func->functionScope->classEnd;
+        const Token *end = func->functionScope->bodyEnd;
         for (const Token *tok = func->arg->link(); tok != end; tok = tok->next()) {
-            if (tok == func->functionScope->classStart)
+            if (tok == func->functionScope->bodyStart)
                 body = true;
             else {
                 if (!body) {
@@ -2410,7 +2410,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if ((func->type == Function::eFunction || func->type == Function::eOperatorEqual) &&
             func->access == Public && func->hasBody()) {
-            const Token *tok2 = func->functionScope->classStart->next();
+            const Token *tok2 = func->functionScope->bodyStart->next();
             if (Token::Match(tok2, "%varid% =", varid)) {
                 const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(2), varid);
                 if (alloc != CheckMemoryLeak::No)
@@ -2448,7 +2448,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 {
     const unsigned int declarationId(variable->declarationId());
     bool alloc = false;
-    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->classEnd; tok2 = tok2->next()) {
+    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (Token::Match(tok2, "= %varid% [;=]", declarationId)) {
             return false;
         } else if (Token::Match(tok2, "%varid% = malloc|kmalloc (", declarationId)) {
@@ -2472,7 +2472,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
     // Check struct..
     unsigned int indentlevel2 = 0;
-    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->classEnd; tok2 = tok2->next()) {
+    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->str() == "{")
             ++indentlevel2;
 
@@ -2648,7 +2648,7 @@ void CheckMemoryLeakNoVar::check()
         checkForUnsafeArgAlloc(scope);
 
         // parse the executable scope until tok is reached...
-        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             // allocating memory in parameter for function call..
             if (!(Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") [,)]")))
                 continue;
@@ -2682,7 +2682,7 @@ void CheckMemoryLeakNoVar::check()
 //---------------------------------------------------------------------------
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
-    for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+    for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
             continue;
 
@@ -2730,7 +2730,7 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
     if (!_tokenizer->isCPP() || !_settings->inconclusive || !_settings->isEnabled(Settings::WARNING))
         return;
 
-    for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+    for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
         if (Token::Match(tok, "%name% (")) {
             const Token *endParamToken = tok->next()->link();
             const Token* pointerType = nullptr;

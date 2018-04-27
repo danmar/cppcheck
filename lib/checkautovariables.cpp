@@ -165,7 +165,7 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
     if (!start) // Ticket #5024
         return false;
 
-    for (const Token *tok = start; tok && tok != scope->classEnd; tok = tok->next()) {
+    for (const Token *tok = start; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->varId() == varId)
             return true;
         const Scope::ScopeType scopeType = tok->scope()->type;
@@ -186,7 +186,7 @@ void CheckAutoVariables::assignFunctionArg()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // TODO: What happens if this is removed?
             if (tok->astParent())
                 continue;
@@ -196,7 +196,7 @@ void CheckAutoVariables::assignFunctionArg()
             if (isNonReferenceArg(vartok) &&
                 !Token::Match(vartok->next(), "= %varid% ;", vartok->varId()) &&
                 !variableIsUsedInScope(Token::findsimplematch(vartok->next(), ";"), vartok->varId(), scope) &&
-                !Token::findsimplematch(vartok, "goto", scope->classEnd)) {
+                !Token::findsimplematch(vartok, "goto", scope->bodyEnd)) {
                 if (vartok->variable()->isPointer() && printWarning)
                     errorUselessAssignmentPtrArg(vartok);
                 else if (printStyle)
@@ -208,7 +208,7 @@ void CheckAutoVariables::assignFunctionArg()
 
 static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVarId)
 {
-    const Token * const end = vartok->variable()->typeStartToken()->scope()->classEnd;
+    const Token * const end = vartok->variable()->typeStartToken()->scope()->bodyEnd;
     for (const Token *tok2 = vartok; tok2 != nullptr && tok2 != end; tok2 = tok2->next()) {
         if (Token::Match(tok2, "%varid% =", pointerVarId))
             return true;
@@ -227,7 +227,7 @@ void CheckAutoVariables::autoVariables()
     const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Critical assignment
             if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
                 if (checkRvalueExpression(tok->tokAt(4)))
@@ -335,7 +335,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
 
         // have we reached a function that returns a pointer
         if (tok->previous() && tok->previous()->str() == "*") {
-            for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
+            for (const Token *tok2 = scope->bodyStart->next(); tok2 && tok2 != scope->bodyEnd; tok2 = tok2->next()) {
                 // Return pointer to local array variable..
                 if (tok2 ->str() == "return" && isAutoVarArray(tok2->astOperand1())) {
                     errorReturnPointerToLocalArray(tok2);
@@ -519,9 +519,9 @@ void CheckAutoVariables::returnReference()
 
         // have we reached a function that returns a reference?
         if (tok->previous() && tok->previous()->str() == "&") {
-            for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
+            for (const Token *tok2 = scope->bodyStart->next(); tok2 && tok2 != scope->bodyEnd; tok2 = tok2->next()) {
                 if (!tok2->scope()->isExecutable()) {
-                    tok2 = tok2->scope()->classEnd;
+                    tok2 = tok2->scope()->bodyEnd;
                     if (!tok2)
                         break;
                     continue;

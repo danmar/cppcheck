@@ -160,10 +160,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
 
                 new_scope->classDef = tok;
-                new_scope->classStart = tok2;
-                new_scope->classEnd = tok2->link();
+                new_scope->bodyStart = tok2;
+                new_scope->bodyEnd = tok2->link();
                 // make sure we have valid code
-                if (!new_scope->classEnd) {
+                if (!new_scope->bodyEnd) {
                     _tokenizer->syntaxError(tok);
                 }
                 scope = new_scope;
@@ -203,11 +203,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         tok2 = tok2->tokAt(2);
                 }
 
-                new_scope->classStart = tok2;
-                new_scope->classEnd = tok2->link();
+                new_scope->bodyStart = tok2;
+                new_scope->bodyEnd = tok2->link();
 
                 // make sure we have valid code
-                if (!new_scope->classEnd) {
+                if (!new_scope->bodyEnd) {
                     _tokenizer->syntaxError(tok);
                 }
 
@@ -239,11 +239,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             const Token *tok2 = tok->linkAt(3)->next();
 
-            new_scope->classStart = tok2;
-            new_scope->classEnd = tok2->link();
+            new_scope->bodyStart = tok2;
+            new_scope->bodyEnd = tok2->link();
 
             // make sure we have valid code
-            if (!new_scope->classEnd) {
+            if (!new_scope->bodyEnd) {
                 scopeList.pop_back();
                 break;
             }
@@ -328,11 +328,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             const Token *tok2 = tok->next();
 
-            new_scope->classStart = tok2;
-            new_scope->classEnd = tok2->link();
+            new_scope->bodyStart = tok2;
+            new_scope->bodyEnd = tok2->link();
 
             // make sure we have valid code
-            if (!new_scope->classEnd) {
+            if (!new_scope->bodyEnd) {
                 scopeList.pop_back();
                 break;
             }
@@ -355,8 +355,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             const Token *tok2 = tok->next();
 
-            new_scope->classStart = tok2;
-            new_scope->classEnd = tok2->link();
+            new_scope->bodyStart = tok2;
+            new_scope->bodyEnd = tok2->link();
 
             typeList.emplace_back(tok, new_scope, scope);
             {
@@ -366,7 +366,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // make sure we have valid code
-            if (!new_scope->classEnd) {
+            if (!new_scope->bodyEnd) {
                 scopeList.pop_back();
                 break;
             }
@@ -387,7 +387,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // check for end of scope
-        else if (tok == scope->classEnd) {
+        else if (tok == scope->bodyEnd) {
             access.erase(scope);
             scope = const_cast<Scope*>(scope->nestedIn);
             continue;
@@ -907,7 +907,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
     const std::size_t functions = functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope *func = functionScopes[i];
-        for (const Token *tok = func->classStart->next(); tok && tok != func->classEnd; tok = tok->next()) {
+        for (const Token *tok = func->bodyStart->next(); tok && tok != func->bodyEnd; tok = tok->next()) {
             // check for member variable
             if (tok->varId() && tok->next() &&
                 (tok->next()->str() == "." ||
@@ -933,8 +933,8 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
 {
     // Set scope pointers
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        Token* start = const_cast<Token*>(it->classStart);
-        Token* end = const_cast<Token*>(it->classEnd);
+        Token* start = const_cast<Token*>(it->bodyStart);
+        Token* end = const_cast<Token*>(it->bodyEnd);
         if (it->type == Scope::eGlobal) {
             start = const_cast<Token*>(_tokenizer->list.front());
             end = const_cast<Token*>(_tokenizer->list.back());
@@ -947,7 +947,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             if (start != end && tok->str() == "{") {
                 bool isEndOfScope = false;
                 for (std::list<Scope*>::const_iterator innerScope = it->nestedList.begin(); innerScope != it->nestedList.end(); ++innerScope) {
-                    if (tok == (*innerScope)->classStart) { // Is begin of inner scope
+                    if (tok == (*innerScope)->bodyStart) { // Is begin of inner scope
                         tok = tok->link();
                         if (tok->next() == end || !tok->next()) {
                             isEndOfScope = true;
@@ -1006,7 +1006,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                     continue;
                 }
                 tok = tok->next();
-                while (tok && tok != func->functionScope->classStart) {
+                while (tok && tok != func->functionScope->bodyStart) {
                     if (Token::Match(tok, "%name% {|(")) {
                         if (tok->str() == func->tokenDef->str()) {
                             const Function *function = func->functionScope->functionOf->findFunction(tok);
@@ -1958,7 +1958,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
 const Token * Function::constructorMemberInitialization() const
 {
-    if (!isConstructor() || !functionScope || !functionScope->classStart)
+    if (!isConstructor() || !functionScope || !functionScope->bodyStart)
         return nullptr;
     if (Token::Match(token, "%name% (") && Token::simpleMatch(token->linkAt(1), ") :"))
         return token->linkAt(1)->next();
@@ -2182,11 +2182,11 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
 
     if (tok1 && tok1->str() == "{") {
-        newScope->classStart = tok1;
-        newScope->classEnd = tok1->link();
+        newScope->bodyStart = tok1;
+        newScope->bodyEnd = tok1->link();
 
         // syntax error?
-        if (!newScope->classEnd) {
+        if (!newScope->bodyEnd) {
             scopeList.pop_back();
             while (tok1->next())
                 tok1 = tok1->next();
@@ -2612,8 +2612,8 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << "Scope: " << &*scope << " " << scope->type << std::endl;
         std::cout << "    className: " << scope->className << std::endl;
         std::cout << "    classDef: " << tokenToString(scope->classDef, _tokenizer) << std::endl;
-        std::cout << "    classStart: " << tokenToString(scope->classStart, _tokenizer) << std::endl;
-        std::cout << "    classEnd: " << tokenToString(scope->classEnd, _tokenizer) << std::endl;
+        std::cout << "    bodyStart: " << tokenToString(scope->bodyStart, _tokenizer) << std::endl;
+        std::cout << "    bodyEnd: " << tokenToString(scope->bodyEnd, _tokenizer) << std::endl;
 
         std::list<Function>::const_iterator func;
 
@@ -2858,10 +2858,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " type=\"" << scope->type << "\"";
         if (!scope->className.empty())
             out << " className=\"" << ErrorLogger::toxml(scope->className) << "\"";
-        if (scope->classStart)
-            out << " classStart=\"" << scope->classStart << '\"';
-        if (scope->classEnd)
-            out << " classEnd=\"" << scope->classEnd << '\"';
+        if (scope->bodyStart)
+            out << " bodyStart=\"" << scope->bodyStart << '\"';
+        if (scope->bodyEnd)
+            out << " bodyEnd=\"" << scope->bodyEnd << '\"';
         if (scope->nestedIn)
             out << " nestedIn=\"" << scope->nestedIn << "\"";
         if (scope->function)
@@ -3153,8 +3153,8 @@ const Variable* Function::getArgumentVar(std::size_t num) const
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_) :
     check(check_),
     classDef(classDef_),
-    classStart(start_),
-    classEnd(start_->link()),
+    bodyStart(start_),
+    bodyEnd(start_->link()),
     nestedIn(nestedIn_),
     numConstructors(0),
     numCopyOrMoveConstructors(0),
@@ -3170,8 +3170,8 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
     check(check_),
     classDef(classDef_),
-    classStart(nullptr),
-    classEnd(nullptr),
+    bodyStart(nullptr),
+    bodyEnd(nullptr),
     nestedIn(nestedIn_),
     numConstructors(0),
     numCopyOrMoveConstructors(0),
@@ -3252,8 +3252,8 @@ void Scope::getVariableList(const Library* lib)
 {
     const Token *start;
 
-    if (classStart)
-        start = classStart->next();
+    if (bodyStart)
+        start = bodyStart->next();
 
     // global scope
     else if (className.empty())
@@ -3264,7 +3264,7 @@ void Scope::getVariableList(const Library* lib)
         return;
 
     AccessControl varaccess = defaultAccess();
-    for (const Token *tok = start; tok && tok != classEnd; tok = tok->next()) {
+    for (const Token *tok = start; tok && tok != bodyEnd; tok = tok->next()) {
         // syntax error?
         if (tok->next() == nullptr)
             break;
@@ -3831,7 +3831,7 @@ bool Scope::hasInlineOrLambdaFunction() const
     for (std::list<Scope*>::const_iterator it = nestedList.begin(); it != nestedList.end(); ++it) {
         const Scope *s = *it;
         // Inline function
-        if (s->type == Scope::eUnconditional && Token::simpleMatch(s->classStart->previous(), ") {"))
+        if (s->type == Scope::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {"))
             return true;
         // Lambda function
         if (s->type == Scope::eLambda)

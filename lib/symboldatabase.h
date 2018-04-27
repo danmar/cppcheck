@@ -930,8 +930,8 @@ public:
     const SymbolDatabase *check;
     std::string className;
     const Token *classDef;   ///< class/struct/union/namespace token
-    const Token *classStart; ///< '{' token
-    const Token *classEnd;   ///< '}' token
+    const Token *bodyStart;  ///< '{' token
+    const Token *bodyEnd;    ///< '}' token
     std::list<Function> functionList;
     std::multimap<std::string, const Function *> functionMap;
     std::list<Variable> varlist;

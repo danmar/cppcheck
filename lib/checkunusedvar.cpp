@@ -789,24 +789,24 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     // Check variable usage
     const Token *tok;
     if (scope->type == Scope::eFunction)
-        tok = scope->classStart->next();
+        tok = scope->bodyStart->next();
     else
         tok = scope->classDef->next();
-    for (; tok && tok != scope->classEnd; tok = tok->next()) {
+    for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "for" || tok->str() == "while" || tok->str() == "do") {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
                 if ((*i)->classDef == tok) { // Find associated scope
                     checkFunctionVariableUsage_iterateScopes(*i, variables, true); // Scan child scope
-                    tok = (*i)->classStart->link();
+                    tok = (*i)->bodyStart->link();
                     break;
                 }
             }
             if (!tok)
                 break;
         }
-        if (tok->str() == "{" && tok != scope->classStart && !tok->previous()->varId()) {
+        if (tok->str() == "{" && tok != scope->bodyStart && !tok->previous()->varId()) {
             for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
-                if ((*i)->classStart == tok) { // Find associated scope
+                if ((*i)->bodyStart == tok) { // Find associated scope
                     checkFunctionVariableUsage_iterateScopes(*i, variables, false); // Scan child scope
                     tok = tok->link();
                     break;
@@ -1315,11 +1315,11 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (scope->type != Scope::eStruct && scope->type != Scope::eUnion)
             continue;
 
-        if (scope->classStart->fileIndex() != 0 || scope->className.empty())
+        if (scope->bodyStart->fileIndex() != 0 || scope->className.empty())
             continue;
 
         // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.
-        if (scope->classEnd->isAttributePacked())
+        if (scope->bodyEnd->isAttributePacked())
             continue;
 
         // Bail out if struct/union contains any functions
@@ -1354,16 +1354,16 @@ void CheckUnusedVar::checkStructMemberUsage()
 
         // Bail out if some data is casted to struct..
         const std::string castPattern("( struct| " + scope->className + " * ) & %name% [");
-        if (Token::findmatch(scope->classEnd, castPattern.c_str()))
+        if (Token::findmatch(scope->bodyEnd, castPattern.c_str()))
             continue;
 
         // (struct S){..}
         const std::string initPattern("( struct| " + scope->className + " ) {");
-        if (Token::findmatch(scope->classEnd, initPattern.c_str()))
+        if (Token::findmatch(scope->bodyEnd, initPattern.c_str()))
             continue;
 
         // Bail out if struct is used in sizeof..
-        for (const Token *tok = scope->classEnd; nullptr != (tok = Token::findsimplematch(tok, "sizeof ("));) {
+        for (const Token *tok = scope->bodyEnd; nullptr != (tok = Token::findsimplematch(tok, "sizeof ("));) {
             tok = tok->tokAt(2);
             if (Token::Match(tok, ("struct| " + scope->className).c_str())) {
                 bailout = true;
@@ -1374,7 +1374,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // Try to prevent false positives when struct members are not used directly.
-        if (Token::findmatch(scope->classEnd, (scope->className + " %type%| *").c_str()))
+        if (Token::findmatch(scope->bodyEnd, (scope->className + " %type%| *").c_str()))
             continue;
 
         for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
