@@ -38,6 +38,22 @@ private:
         settings0.addEnabled("style");
         settings1.addEnabled("warning");
 
+        // Load std.cfg configuration
+        {
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <memory>\n"
+                                   "    <alloc init=\"false\">malloc</alloc>\n"
+                                   "    <dealloc>free</dealloc>\n"
+                                   "  </memory>\n"
+                                   "</def>";
+            tinyxml2::XMLDocument doc;
+            doc.Parse(xmldata, sizeof(xmldata));
+            settings0.library.load(doc);
+            settings1.library.load(doc);
+        }
+
+
         TEST_CASE(virtualDestructor1);      // Base class not found => no error
         TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
         TEST_CASE(virtualDestructor3);      // Base class has a destructor, but it's not virtual
