@@ -6619,7 +6619,15 @@ private:
     void override1() {
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { virtual void f(); };");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Function 'f' overrides function in base class but does not have the 'override' keyword.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { virtual void f() override; };");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { virtual void f() final; };");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

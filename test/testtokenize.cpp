@@ -4059,18 +4059,6 @@ private:
                                 "}\n"
                                 "} ;";
             ASSERT_EQUALS(out1, tokenizeAndStringify(in1));
-            const char in2[] =  "class Derived{\n"
-                                "  virtual int test() final override;"
-                                "};";
-            const char out2[] = "class Derived {\n"
-                                "virtual int test ( ) override ; } ;";
-            ASSERT_EQUALS(out2, tokenizeAndStringify(in2));
-            const char in3[] =  "class Derived{\n"
-                                "  virtual int test() final override const;"
-                                "};";
-            const char out3[] = "class Derived {\n"
-                                "virtual int test ( ) override const ; } ;";
-            ASSERT_EQUALS(out3, tokenizeAndStringify(in3));
 
             const char in4 [] = "struct B final : A { void foo(); };";
             const char out4 [] = "struct B : A { void foo ( ) ; } ;";

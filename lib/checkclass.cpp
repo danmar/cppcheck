@@ -2495,7 +2495,7 @@ void CheckClass::checkOverride()
         if (!classScope->definedType || classScope->definedType->derivedFrom.empty())
             continue;
         for (const Function &func : classScope->functionList) {
-            if (func.hasOverrideKeyword())
+            if (func.hasOverrideSpecifier() || func.hasFinalSpecifier())
                 continue;
             const Function *baseFunc = func.getOverridenFunction();
             if (baseFunc)
@@ -2516,7 +2516,7 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
 
     reportError(errorPath, Severity::style, "missingOverride",
                 "$symbol:" + functionName + "\n"
-                "Function '$symbol' overrides function in base class but does not have the 'override' keyword.",
+                "The function '$symbol' overrides a function in a base class but is not marked with a 'override' specifier.",
                 CWE(0U) /* Unknown CWE! */,
                 false);
 }

@@ -103,7 +103,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
     }
     if (cpp && tok->str() == ")") {
         tok = tok->next();
-        while (Token::Match(tok, "const|noexcept|override|volatile|&|&& !!(") ||
+        while (Token::Match(tok, "const|noexcept|override|final|volatile|&|&& !!(") ||
                (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
             tok = tok->next();
         if (tok && tok->str() == ")")
@@ -9030,26 +9030,9 @@ void Tokenizer::simplifyKeyword()
                 tok->deleteNext();
                 continue;
             }
-            // final:
-            // 2) void f() final;  <- function is final
-            if (Token::Match(tok, ") const|override|final")) {
-                Token* specifier = tok->tokAt(2);
-                while (Token::Match(specifier, "const|override|final")) {
-                    specifier=specifier->next();
-                }
-                if (Token::Match(specifier, "[{;]")) {
-                    specifier = tok->next();
-                    while (!Token::Match(specifier, "[{;]")) {
-                        if (specifier->str()=="final")
-                            specifier->deleteThis();
-                        else
-                            specifier=specifier->next();
-                    }
-                }
-            }
 
             // noexcept -> noexcept(true)
-            // 3) void f() noexcept; -> void f() noexcept(true);
+            // 2) void f() noexcept; -> void f() noexcept(true);
             if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards

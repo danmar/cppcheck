@@ -1755,6 +1755,10 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
             hasLvalRefQualifier(true);
         else if (tok->str() == "&&")
             hasRvalRefQualifier(true);
+        else if (tok->str() == "override")
+            setFlag(fHasOverrideSpecifier, true);
+        else if (tok->str() == "final")
+            setFlag(fHasFinalSpecifier, true);
         else if (tok->str() == "noexcept") {
             isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
             tok = tok->next();
