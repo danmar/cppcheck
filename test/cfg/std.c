@@ -504,6 +504,15 @@ void uninitvar_asctime(void)
     (void)asctime(tm);
 }
 
+void uninitvar_asctime_s(void)
+{
+    const struct tm *tm;
+    char buf[26];
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress asctime_sCalled
+    asctime_s(buf, sizeof(buf), tm);
+}
+
 void uninitvar_assert(void)
 {
     int i;
@@ -3695,6 +3704,10 @@ void invalidFunctionArgBool_abs(bool b, double x, double y)
 
 void invalidFunctionArg(char c)
 {
+    // cppcheck-suppress asctime_sCalled
+    // cppcheck-suppress invalidFunctionArg
+    asctime_s(1, 24, 1);
+
     /* cppcheck-suppress invalidFunctionArg */
     (void)isalnum(256);
     /* cppcheck-suppress invalidFunctionArg */
@@ -3839,6 +3852,18 @@ void nullPointer_asctime(void)
     // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)asctime(0);
+}
+
+void nullPointer_asctime_s(void)
+{
+    struct tm *tm = 0;
+    char * buf = NULL;
+    // cppcheck-suppress asctime_sCalled
+    // cppcheck-suppress nullPointer
+    asctime_s(buf, 26, 1);
+    // cppcheck-suppress asctime_sCalled
+    // cppcheck-suppress nullPointer
+    asctime_s(1, 26, tm);
 }
 
 void nullPointer_wcsftime(size_t maxsize)
