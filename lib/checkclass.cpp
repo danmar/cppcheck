@@ -283,22 +283,22 @@ void CheckClass::copyconstructors()
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         std::map<unsigned int, const Token*> allocatedVars;
 
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eConstructor && func->functionScope) {
-                const Token* tok = func->functionScope->classDef->linkAt(1);
-                for (const Token* const end = func->functionScope->bodyStart; tok != end; tok = tok->next()) {
-                    if (Token::Match(tok, "%var% ( new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
-                        const Variable* var = tok->variable();
-                        if (var && var->isPointer() && var->scope() == scope)
-                            allocatedVars[tok->varId()] = tok;
-                    }
+        for (const Function &func : scope->functionList) {
+            if (func.type != Function::eConstructor || !func.functionScope)
+                continue;
+            const Token* tok = func.token->linkAt(1);
+            for (const Token* const end = func.functionScope->bodyStart; tok != end; tok = tok->next()) {
+                if (Token::Match(tok, "%var% ( new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
+                    const Variable* var = tok->variable();
+                    if (var && var->isPointer() && var->scope() == scope)
+                        allocatedVars[tok->varId()] = tok;
                 }
-                for (const Token* const end = func->functionScope->bodyEnd; tok != end; tok = tok->next()) {
-                    if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
-                        const Variable* var = tok->variable();
-                        if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
-                            allocatedVars[tok->varId()] = tok;
-                    }
+            }
+            for (const Token* const end = func.functionScope->bodyEnd; tok != end; tok = tok->next()) {
+                if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
+                    const Variable* var = tok->variable();
+                    if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
+                        allocatedVars[tok->varId()] = tok;
                 }
             }
         }
