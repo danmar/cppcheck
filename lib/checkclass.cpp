@@ -305,34 +305,35 @@ void CheckClass::copyconstructors()
 
         std::set<const Token*> copiedVars;
         const Token* copyCtor = nullptr;
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eCopyConstructor) {
-                copyCtor = func->tokenDef;
-                if (func->functionScope) {
-                    const Token* tok = func->tokenDef->linkAt(1)->next();
-                    if (tok->str()==":") {
-                        tok=tok->next();
-                        while (Token::Match(tok, "%name% (")) {
-                            if (allocatedVars.find(tok->varId()) != allocatedVars.end()) {
-                                if (tok->varId() && Token::Match(tok->tokAt(2), "%name% . %name% )"))
-                                    copiedVars.insert(tok);
-                                else if (!Token::Match(tok->tokAt(2), "%any% )"))
-                                    allocatedVars.erase(tok->varId()); // Assume memory is allocated
-                            }
-                            tok = tok->linkAt(1)->tokAt(2);
-                        }
-                    }
-                    for (tok=func->functionScope->classStart; tok!=func->functionScope->classEnd; tok=tok->next()) {
-                        if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
-                            allocatedVars.erase(tok->varId());
-                        } else if (Token::Match(tok, "%var% = %name% . %name% ;") && allocatedVars.find(tok->varId()) != allocatedVars.end()) {
-                            copiedVars.insert(tok);
-                        }
-                    }
-                } else // non-copyable or implementation not seen
-                    allocatedVars.clear();
+        for (const Function &func : scope->functionList) {
+            if (func.type != Function::eCopyConstructor)
+                continue;
+            copyCtor = func.tokenDef;
+            if (!func.functionScope) {
+                allocatedVars.clear();
                 break;
             }
+            const Token* tok = func.tokenDef->linkAt(1)->next();
+            if (tok->str()==":") {
+                tok=tok->next();
+                while (Token::Match(tok, "%name% (")) {
+                    if (allocatedVars.find(tok->varId()) != allocatedVars.end()) {
+                        if (tok->varId() && Token::Match(tok->tokAt(2), "%name% . %name% )"))
+                            copiedVars.insert(tok);
+                        else if (!Token::Match(tok->tokAt(2), "%any% )"))
+                            allocatedVars.erase(tok->varId()); // Assume memory is allocated
+                    }
+                    tok = tok->linkAt(1)->tokAt(2);
+                }
+            }
+            for (tok = func.functionScope->classStart; tok != func.functionScope->classEnd; tok = tok->next()) {
+                if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
+                    allocatedVars.erase(tok->varId());
+                } else if (Token::Match(tok, "%var% = %name% . %name% ;") && allocatedVars.find(tok->varId()) != allocatedVars.end()) {
+                    copiedVars.insert(tok);
+                }
+            }
+            break;
         }
         if (!copyCtor) {
             if (!allocatedVars.empty() && scope->definedType->derivedFrom.empty()) // TODO: Check if base class is non-copyable
