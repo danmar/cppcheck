@@ -8359,7 +8359,7 @@ void Tokenizer::findGarbageCode() const
             if (!tok)
                 syntaxError(switchToken);
             // Look for the end of the switch statement, i.e. the first semi-colon or '}'
-            for ( ; tok ; tok = tok->next()) {
+            for (; tok ; tok = tok->next()) {
                 if (tok->str() == "{") {
                     tok = tok->link();
                 }
