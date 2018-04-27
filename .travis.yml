@@ -70,7 +70,7 @@ script:
   - touch /tmp/cppcheck.cppcheck
   - ./cppcheck --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
 # check gui with qt settings
-  - ./cppcheck --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui -igui/test |& tee --append /tmp/cppcheck.cppcheck
+  - ./cppcheck --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test |& tee --append /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # run extra tests
   - tools/generate_and_run_more_tests.sh
