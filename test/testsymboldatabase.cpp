@@ -296,7 +296,8 @@ private:
         TEST_CASE(isImplicitlyVirtual);
         TEST_CASE(isPure);
 
-        TEST_CASE(isFunction); // UNKNOWN_MACRO(a,b) { .. }
+        TEST_CASE(isFunction1); // UNKNOWN_MACRO(a,b) { .. }
+        TEST_CASE(isFunction2);
 
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
@@ -3745,7 +3746,8 @@ private:
             ASSERT(!(it++)->isPure());
         }
     }
-    void isFunction() { // #5602 - UNKNOWN_MACRO(a,b) { .. }
+
+    void isFunction1() { // #5602 - UNKNOWN_MACRO(a,b) { .. }
         GET_SYMBOL_DB("TEST(a,b) {\n"
                       "  std::vector<int> messages;\n"
                       "  foo(messages[2].size());\n"
@@ -3757,6 +3759,25 @@ private:
                var->typeStartToken() &&
                var->typeStartToken()->str() == "std");
     }
+
+    void isFunction2() {
+        GET_SYMBOL_DB("void set_cur_cpu_spec()\n"
+                      "{\n"
+                      "    t = PTRRELOC(t);\n"
+                      "}\n"
+                      "\n"
+                      "cpu_spec * __init setup_cpu_spec()\n"
+                      "{\n"
+                      "    t = PTRRELOC(t);\n"
+                      "    *PTRRELOC(&x) = &y;\n"
+                      "}");
+        ASSERT(db != nullptr);
+        ASSERT(db && !db->isFunction(Token::findsimplematch(tokenizer.tokens(), "PTRRELOC ( &"), &db->scopeList.back(), nullptr, nullptr, nullptr));
+        ASSERT(db->findScopeByName("set_cur_cpu_spec") != nullptr);
+        // TODO: ASSERT(db->findScopeByName("setup_cpu_spec") != nullptr);
+        ASSERT(db->findScopeByName("PTRRELOC") == nullptr);
+    }
+
 
     void findFunction1() {
         GET_SYMBOL_DB("int foo(int x);\n" /* 1 */

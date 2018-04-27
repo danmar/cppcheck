@@ -1109,6 +1109,7 @@ public:
 
 
 class CPPCHECKLIB SymbolDatabase {
+    friend class TestSymbolDatabase;
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();

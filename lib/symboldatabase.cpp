@@ -1358,6 +1358,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         const Token* tok1 = tok->previous();
         const Token* tok2 = tok->next()->link()->next();
 
+        if (!_tokenizer->isFunctionHead(tok->next(), ";:{"))
+            return false;
+
         // skip over destructor "~"
         if (tok1->str() == "~")
             tok1 = tok1->previous();
