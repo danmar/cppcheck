@@ -268,8 +268,8 @@ class Scope:
     C++ class: http://cppcheck.net/devinfo/doxyoutput/classScope.html
 
     Attributes
-        classStart     The { Token for this scope
-        classEnd       The } Token for this scope
+        bodyStart      The { Token for this scope
+        bodyEnd        The } Token for this scope
         className      Name of this scope.
                        For a function scope, this is the function name;
                        For a class scope, this is the class name.
@@ -277,11 +277,10 @@ class Scope:
     """
 
     Id = None
-    classStartId = None
-
-    classStart = None
-    classEndId = None
-    classEnd = None
+    bodyStartId = None
+    bodyStart = None
+    bodyEndId = None
+    bodyEnd = None
     className = None
     nestedInId = None
     nestedIn = None
@@ -290,17 +289,17 @@ class Scope:
     def __init__(self, element):
         self.Id = element.get('id')
         self.className = element.get('className')
-        self.classStartId = element.get('classStart')
-        self.classStart = None
-        self.classEndId = element.get('classEnd')
-        self.classEnd = None
+        self.bodyStartId = element.get('bodyStart')
+        self.bodyStart = None
+        self.bodyEndId = element.get('bodyEnd')
+        self.bodyEnd = None
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
 
     def setId(self, IdMap):
-        self.classStart = IdMap[self.classStartId]
-        self.classEnd = IdMap[self.classEndId]
+        self.bodyStart = IdMap[self.bodyStartId]
+        self.bodyEnd = IdMap[self.bodyEndId]
         self.nestedIn = IdMap[self.nestedInId]
 
 

@@ -38,7 +38,7 @@ def isUnpackedStruct(token):
         return False;
     if token.valueType.typeScope.type != "Struct":
         return False
-    startToken = token.valueType.typeScope.classStart
+    startToken = token.valueType.typeScope.bodyStart
 
     linenr = int(startToken.linenr)
     for line in open(startToken.file):
