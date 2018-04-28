@@ -645,7 +645,7 @@ void CheckCondition::multiCondition2()
                     const Token *parent = tok;
                     while (Token::Match(parent->astParent(), ".|[") || (Token::simpleMatch(parent->astParent(), "*") && !parent->astParent()->astOperand2()))
                         parent = parent->astParent();
-                    if (Token::Match(parent->astParent(), "%assign%"))
+                    if (Token::Match(parent->astParent(), "%assign%|++|--"))
                         break;
                 }
                 if (_tokenizer->isCPP() && Token::Match(tok, "%name% <<") && (!tok->valueType() || !tok->valueType()->isIntegral()))
