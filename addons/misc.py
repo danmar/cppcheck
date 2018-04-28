@@ -50,7 +50,18 @@ def isStringLiteral(tokenString):
     return tokenString.startswith('"')
 
 # check data
-def stringConcatInArrayInit(rawTokens):
+def stringConcatInArrayInit(configurations, rawTokens):
+    # Get all string macros
+    stringMacros = []
+    for cfg in configurations:
+        for directive in cfg.directives:
+            res = re.match(r'#define[ ]+([A-Za-z0-9_]+)[ ]+".*', directive.str)
+            if res:
+                macroName = res.group(1)
+                if macroName not in stringMacros:
+                    stringMacros.append(macroName)
+
+    # Check code
     arrayInit = False
     for i in range(len(rawTokens)):
         if i < 2:
@@ -62,8 +73,12 @@ def stringConcatInArrayInit(rawTokens):
             arrayInit = False
         elif tok1 == ']' and tok2 == '=' and tok3 == '{':
             arrayInit = True
-        elif arrayInit and (tok1 in [',', '{']) and isStringLiteral(tok2) and isStringLiteral(tok3):
-            reportError(rawTokens[i], 'style', 'String concatenation in array initialization, missing comma?', 'stringConcatInArrayInit')
+        elif arrayInit and (tok1 in [',', '{']):
+            isString2 = (isStringLiteral(tok2) or (tok2 in stringMacros))
+            isString3 = (isStringLiteral(tok3) or (tok3 in stringMacros))
+            if isString2 and isString3:
+                reportError(rawTokens[i], 'style', 'String concatenation in array initialization, missing comma?', 'stringConcatInArrayInit')
+
 
 def implicitlyVirtual(data):
     for cfg in data.configurations:
@@ -135,7 +150,7 @@ for arg in sys.argv[1:]:
                     if word in ['stringConcatInArrayInit', 'implicitlyVirtual', 'ellipsisStructArg']:
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
 
-    stringConcatInArrayInit(data.rawTokens)
+    stringConcatInArrayInit(data.configurations, data.rawTokens)
     implicitlyVirtual(data)
     ellipsisStructArg(data)
 

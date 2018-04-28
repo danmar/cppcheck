@@ -1,10 +1,11 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misc-test.cpp && python ../misc.py -verify misc-test.cpp.dump
 
-
 // Warn about string concatenation in array initializers..
 const char *a[] = {"a" "b"}; // stringConcatInArrayInit
 const char *b[] = {"a","b" "c"}; // stringConcatInArrayInit
+#define MACRO "MACRO"
+const char *c[] = { MACRO "text" }; // stringConcatInArrayInit
 
 
 // Function is implicitly virtual
