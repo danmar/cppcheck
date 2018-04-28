@@ -909,11 +909,12 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
-    newToken->_linenr = _linenr;
-    newToken->_fileIndex = _fileIndex;
-    newToken->_progressValue = _progressValue;
 
     if (newToken != this) {
+        newToken->_linenr = _linenr;
+        newToken->_fileIndex = _fileIndex;
+        newToken->_progressValue = _progressValue;
+
         if (prepend) {
             /*if (this->previous())*/ {
                 newToken->previous(this->previous());
