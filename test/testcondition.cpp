@@ -90,6 +90,7 @@ private:
         TEST_CASE(identicalInnerCondition);
 
         TEST_CASE(identicalConditionAfterEarlyExit);
+        TEST_CASE(innerConditionModified);
 
         TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
@@ -1986,6 +1987,32 @@ private:
               "  in >> ch;\n"
               "  if (ch != '|') {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void innerConditionModified() {
+        check("void f(int x, int y) {\n"
+              "  if (x == 0) {\n"
+              "    x += y;\n"
+              "    if (x == 0) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x == 0) {\n"
+              "    x += y;\n"
+              "    if (x == 1) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int * x, int * y) {\n"
+              "  if (x[*y] == 0) {\n"
+              "    (*y)++;\n"
+              "    if (x[*y] == 0) {}\n"
+              "  }\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
