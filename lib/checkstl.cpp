@@ -130,12 +130,12 @@ void CheckStl::iterators()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
-
+    for (const Variable* var : symbolDatabase->variableList()) {
         bool inconclusiveType=false;
         if (!isIterator(var, inconclusiveType))
             continue;
+
+        const unsigned int iteratorId = var->declarationId();
 
         // the validIterator flag says if the iterator has a valid value or not
         bool validIterator = Token::Match(var->nameToken()->next(), "[(=:{]");
@@ -389,8 +389,7 @@ void CheckStl::mismatchingContainers()
             }
         }
     }
-    for (unsigned int varid = 0; varid < symbolDatabase->getVariableListSize(); varid++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+    for (const Variable *var : symbolDatabase->variableList()) {
         if (var && var->isStlStringType() && Token::Match(var->nameToken(), "%var% (") && Token::Match(var->nameToken()->tokAt(2), pattern2.c_str())) {
             if (var->nameToken()->strAt(2) != var->nameToken()->strAt(8)) {
                 mismatchingContainersError(var->nameToken());
@@ -605,12 +604,12 @@ void CheckStl::pushback()
     }
 
     // Iterator becomes invalid after reserve, resize, insert, push_back or push_front..
-    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
-
+    for (const Variable* var : symbolDatabase->variableList()) {
         // Check that its an iterator
         if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
             continue;
+
+        const unsigned int iteratorId = var->declarationId();
 
         // ... on std::vector
         if (!Token::Match(var->typeStartToken(), "std| ::| vector <"))
@@ -726,8 +725,7 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &func, co
 void CheckStl::stlBoundaries()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->scope() || !var->scope()->isExecutable())
             continue;
 

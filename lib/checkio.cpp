@@ -126,9 +126,7 @@ void CheckIO::checkFileUsage()
     std::map<unsigned int, Filepointer> filepointers;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t varListSize = symbolDatabase->getVariableListSize();
-    for (std::size_t i = 1; i < varListSize; ++i) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->declarationId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
             continue;
 
@@ -143,9 +141,7 @@ void CheckIO::checkFileUsage()
         }
     }
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t j = 0; j < functions; ++j) {
-        const Scope * scope = symbolDatabase->functionScopes[j];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         unsigned int indent = 0;
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "{")

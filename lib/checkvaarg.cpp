@@ -96,8 +96,7 @@ void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string&
 void CheckVaarg::va_list_usage()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int varid = 1; varid < symbolDatabase->getVariableListSize(); varid++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isPointer() || var->isReference() || var->isArray() || !var->scope() || var->typeStartToken()->str() != "va_list")
             continue;
         if (!var->isLocal() && !var->isArgument()) // Check only local variables and arguments

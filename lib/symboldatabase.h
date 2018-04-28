@@ -1164,8 +1164,8 @@ public:
         return _variableList.at(varId);
     }
 
-    std::size_t getVariableListSize() const {
-        return _variableList.size();
+    const std::vector<const Variable *> & variableList() const {
+        return _variableList;
     }
 
     /**

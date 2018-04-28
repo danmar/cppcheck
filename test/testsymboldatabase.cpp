@@ -377,7 +377,7 @@ private:
         ASSERT(db != nullptr);
         if (!db)
             return;
-        ASSERT(db->getVariableListSize() == 2); // the first one is not used
+        ASSERT(db->variableList().size() == 2); // the first one is not used
         const Variable * v = db->getVariableFromVarId(1);
         ASSERT(v != nullptr);
         if (!v)
@@ -857,8 +857,8 @@ private:
         if (!db)
             return;
         ASSERT(db->scopeList.back().type == Scope::eFor);
-        ASSERT_EQUALS(2, db->getVariableListSize());
-        if (db->getVariableListSize() < 2)
+        ASSERT_EQUALS(2, db->variableList().size());
+        if (db->variableList().size() < 2)
             return;
         const Variable* e = db->getVariableFromVarId(1);
         ASSERT(e && e->isReference() && e->isLocal());
@@ -965,7 +965,7 @@ private:
                       "const double Foo::d = 5.0;");
 
         const Variable* v = db->getVariableFromVarId(1);
-        ASSERT(v && db->getVariableListSize() == 2);
+        ASSERT(v && db->variableList().size() == 2);
         ASSERT(v && v->isStatic() && v->isConst() && v->isPrivate());
     }
 
@@ -975,7 +975,7 @@ private:
 
         const Variable* v = db->getVariableFromVarId(2);
         // three elements: varId 0 also counts via a fake-entry
-        ASSERT(v && db->getVariableListSize() == 3);
+        ASSERT(v && db->variableList().size() == 3);
 
         ASSERT_THROW(db->getVariableFromVarId(3), std::out_of_range);
     }
@@ -1304,7 +1304,7 @@ private:
         ASSERT(db != nullptr);
 
         if (db) {
-            ASSERT_EQUALS(10, db->getVariableListSize() - 1);
+            ASSERT_EQUALS(10, db->variableList().size() - 1);
             ASSERT_EQUALS(true, db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->dimensions().size() == 1);
             ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
             ASSERT_EQUALS(true, db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->dimensions().size() == 0);
@@ -1325,7 +1325,7 @@ private:
         ASSERT(db != nullptr);
 
         if (db) {
-            ASSERT_EQUALS(1, db->getVariableListSize() - 1);
+            ASSERT_EQUALS(1, db->variableList().size() - 1);
             ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
             if (db->getVariableFromVarId(1))
                 ASSERT_EQUALS("pFun", db->getVariableFromVarId(1)->name());
@@ -1660,7 +1660,7 @@ private:
                       "const char m[];\n"
                       "void f(const char* const l;) {}");
 
-        ASSERT(db && db->getVariableListSize() == 6 && db->getVariableFromVarId(1) && db->getVariableFromVarId(2) && db->getVariableFromVarId(3) && db->getVariableFromVarId(4) && db->getVariableFromVarId(5));
+        ASSERT(db && db->variableList().size() == 6 && db->getVariableFromVarId(1) && db->getVariableFromVarId(2) && db->getVariableFromVarId(3) && db->getVariableFromVarId(4) && db->getVariableFromVarId(5));
         if (db && db->getVariableFromVarId(1) && db->getVariableFromVarId(2) && db->getVariableFromVarId(3) && db->getVariableFromVarId(4) && db->getVariableFromVarId(5)) {
             ASSERT_EQUALS("std", db->getVariableFromVarId(1)->typeStartToken()->str());
             ASSERT_EQUALS("std", db->getVariableFromVarId(2)->typeStartToken()->str());
@@ -1727,7 +1727,7 @@ private:
     void functionArgs1() {
         {
             GET_SYMBOL_DB("void f(std::vector<std::string>, const std::vector<int> & v) { }");
-            ASSERT_EQUALS(1+1, db->getVariableListSize());
+            ASSERT_EQUALS(1+1, db->variableList().size());
             const Variable* v = db->getVariableFromVarId(1);
             ASSERT(v && v->isReference() && v->isConst() && v->isArgument());
             const Scope* f = db->findScopeByName("f");
@@ -1738,7 +1738,7 @@ private:
         }
         {
             GET_SYMBOL_DB("void g(std::map<std::string, std::vector<int> > m) { }");
-            ASSERT_EQUALS(1+1, db->getVariableListSize());
+            ASSERT_EQUALS(1+1, db->variableList().size());
             const Variable* m = db->getVariableFromVarId(1);
             ASSERT(m && !m->isReference() && !m->isConst() && m->isArgument() && m->isClass());
             const Scope* g = db->findScopeByName("g");
@@ -2193,7 +2193,7 @@ private:
                            "}";
         GET_SYMBOL_DB(str);
         ASSERT_EQUALS("", errout.str());
-        ASSERT(db && db->getVariableListSize() == 5); // index 0 + 4 variables
+        ASSERT(db && db->variableList().size() == 5); // index 0 + 4 variables
         ASSERT(db && db->scopeList.size() == 7); // global + function + try + 4 catch
     }
 
@@ -2471,7 +2471,7 @@ private:
                            "}";
         GET_SYMBOL_DB(str);
         ASSERT_EQUALS("", errout.str());
-        ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
+        ASSERT(db && db->variableList().size() == 2); // index 0 + 1 variable
     }
 
     // ticket #3561 (throw C)
@@ -2481,7 +2481,7 @@ private:
                            "}";
         GET_SYMBOL_DB_C(str);
         ASSERT_EQUALS("", errout.str());
-        ASSERT(db && db->getVariableListSize() == 2); // index 0 + 1 variable
+        ASSERT(db && db->variableList().size() == 2); // index 0 + 1 variable
     }
 
     // ticket #3543 (segmentation fault)
@@ -2617,8 +2617,8 @@ private:
         ASSERT(Fred && Fred->classDef && Fred->classScope && Fred->enclosingScope && Fred->name() == "Fred");
         ASSERT(Wilma && Wilma->classDef && Wilma->classScope && Wilma->enclosingScope && Wilma->name() == "Wilma");
         ASSERT(Barney && Barney->classDef && Barney->classScope && Barney->enclosingScope && Barney->name() == "Barney");
-        ASSERT(db->getVariableListSize() == 5);
-        if (db->getVariableListSize() != 5)
+        ASSERT(db->variableList().size() == 5);
+        if (db->variableList().size() != 5)
             return;
         ASSERT(db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->type() && db->getVariableFromVarId(1)->type()->name() == "Barney");
         ASSERT(db->getVariableFromVarId(2) && db->getVariableFromVarId(2)->type() && db->getVariableFromVarId(2)->type()->name() == "Wilma");
@@ -2673,9 +2673,9 @@ private:
                       "    int l ( 1 );\n"
                       "}");
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(4U, db->getVariableListSize() - 1);
+        ASSERT_EQUALS(4U, db->variableList().size() - 1);
         ASSERT_EQUALS(2U, db->scopeList.size());
-        for (std::size_t i = 1U; i < db->getVariableListSize(); i++)
+        for (std::size_t i = 1U; i < db->variableList().size(); i++)
             ASSERT(db->getVariableFromVarId(i) != nullptr);
     }
 
@@ -2695,8 +2695,8 @@ private:
                       "}");
 
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(4U, db->getVariableListSize() - 1);
-        for (std::size_t i = 1U; i < db->getVariableListSize(); i++)
+        ASSERT_EQUALS(4U, db->variableList().size() - 1);
+        for (std::size_t i = 1U; i < db->variableList().size(); i++)
             ASSERT(db->getVariableFromVarId(i) != nullptr);
 
         ASSERT_EQUALS(4U, db->scopeList.size());
@@ -2826,7 +2826,7 @@ private:
         ASSERT(db != nullptr);
         if (db) {
             ASSERT_EQUALS(2, db->scopeList.size());
-            ASSERT_EQUALS(2, db->getVariableListSize()-1);
+            ASSERT_EQUALS(2, db->variableList().size()-1);
             ASSERT(db->getVariableFromVarId(1) != nullptr);
             ASSERT(db->getVariableFromVarId(2) != nullptr);
         }
@@ -3495,7 +3495,7 @@ private:
         ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
         ASSERT_EQUALS(2, scope->enumeratorList[1].value);
 
-        ASSERT(db->getVariableListSize() == 6); // the first one is not used
+        ASSERT(db->variableList().size() == 6); // the first one is not used
         const Variable * v = db->getVariableFromVarId(1);
         ASSERT(v != nullptr);
         if (!v)
@@ -3587,7 +3587,7 @@ private:
         ASSERT(db != nullptr);
         if (!db)
             return;
-        ASSERT(db->getVariableListSize() == 13); // the first one is not used
+        ASSERT(db->variableList().size() == 13); // the first one is not used
         const Variable * v;
         unsigned int id = 1;
         TEST(settings1.sizeof_int);

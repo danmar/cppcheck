@@ -1342,8 +1342,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // bail out for extern/global struct
-        for (size_t i = 0; i < symbolDatabase->getVariableListSize(); i++) {
-            const Variable* var = symbolDatabase->getVariableFromVarId(i);
+        for (const Variable* var : symbolDatabase->variableList()) {
             if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == scope->className) {
                 bailout = true;
                 break;

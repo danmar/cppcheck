@@ -1106,8 +1106,7 @@ static bool isVLAIndex(const Token *index)
 
 void CheckBufferOverrun::negativeArraySize()
 {
-    for (unsigned int i = 1; i <= _tokenizer->varIdCount(); i++) {
-        const Variable * const var = symbolDatabase->getVariableFromVarId(i);
+    for (const Variable *var : symbolDatabase->variableList()) {
         if (!var || !var->isArray())
             continue;
         const Token * const nameToken = var->nameToken();

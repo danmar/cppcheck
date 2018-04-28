@@ -2201,16 +2201,13 @@ static bool isInMemberFunc(const Scope* scope)
 void CheckMemoryLeakInFunction::check()
 {
     // Check locking/unlocking of global resources..
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->hasInlineOrLambdaFunction())
             checkScope(scope->bodyStart->next(), emptyString, 0, scope->functionOf != nullptr, 1);
     }
 
     // Check variables..
-    for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || !var->scope())
             continue;
 
@@ -2232,9 +2229,9 @@ void CheckMemoryLeakInFunction::check()
             sz = 1;
 
         if (var->isArgument())
-            checkScope(var->scope()->bodyStart->next(), var->name(), i, isInMemberFunc(var->scope()), sz);
+            checkScope(var->scope()->bodyStart->next(), var->name(), var->declarationId(), isInMemberFunc(var->scope()), sz);
         else
-            checkScope(var->nameToken(), var->name(), i, isInMemberFunc(var->scope()), sz);
+            checkScope(var->nameToken(), var->name(), var->declarationId(), isInMemberFunc(var->scope()), sz);
     }
 }
 //---------------------------------------------------------------------------
@@ -2434,8 +2431,7 @@ void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::
 void CheckMemoryLeakStructMember::check()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int i = 1; i < symbolDatabase->getVariableListSize(); i++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->isLocal() || var->isStatic())
             continue;
         if (var->typeEndToken()->isStandardType())
