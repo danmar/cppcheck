@@ -16,10 +16,15 @@ std::ostream& operator<<(std::ostream& stream, const CXString& str)
 
 int main(int argc, char **argv)
 {
+    if (argc == 1) {
+        std::cerr << "No source file\n";
+        return EXIT_FAILURE;
+    }
+
     CXIndex index = clang_createIndex(0, 0);
     CXTranslationUnit unit = clang_parseTranslationUnit(
                                  index,
-                                 "file1.cpp", argv, argc,
+                                 argv[1], nullptr, 0,
                                  nullptr, 0,
                                  CXTranslationUnit_None);
     if (unit == nullptr) {
@@ -35,13 +40,14 @@ int main(int argc, char **argv)
         cursor,
     [](CXCursor c, CXCursor parent, CXClientData client_data) {
         switch (clang_getCursorKind(c)) {
-        case CXCursor_FunctionDecl: {
+        case CXCursor_FunctionDecl:
+        case CXCursor_CXXMethod: {
             CXSourceLocation location = clang_getCursorLocation(c);
             CXString filename;
             unsigned int line, column;
             clang_getPresumedLocation(location, &filename, &line, &column);
 
-            std::cout << "<FunctionDecl"
+            std::cout << "<" << clang_getCursorKindSpelling(clang_getCursorKind(c))
                       << " name=\"" << clang_getCursorSpelling(c) << '\"'
                       << " filename=\"" << filename << '\"'
                       << " line=\"" << line << '\"'
