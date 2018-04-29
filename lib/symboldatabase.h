@@ -696,23 +696,6 @@ class CPPCHECKLIB Function {
 public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
-    Function()
-        : tokenDef(nullptr),
-          argDef(nullptr),
-          token(nullptr),
-          arg(nullptr),
-          retDef(nullptr),
-          retType(nullptr),
-          functionScope(nullptr),
-          nestedIn(nullptr),
-          initArgCount(0),
-          type(eFunction),
-          access(Public),
-          noexceptArg(nullptr),
-          throwArg(nullptr),
-          flags(0) {
-    }
-
     Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
 
     const std::string &name() const {
