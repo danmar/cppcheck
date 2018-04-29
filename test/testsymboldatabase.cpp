@@ -2383,7 +2383,7 @@ private:
         // ticket #2991 - segmentation fault
         check("::y(){x}");
 
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", errout.str());
     }
 
     void symboldatabase20() {
@@ -3030,13 +3030,14 @@ private:
                           "    impl() { }\n"
                           "    ~impl() { }\n"
                           "    impl(const impl &) { }\n"
-                          "};\n");
+                          "    void foo(const impl &, const impl &) const { }\n"
+                          "};");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 6);
+            ASSERT(db && db->scopeList.size() == 7);
             ASSERT(db && db->classAndStructScopes.size() == 2);
             ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
+            ASSERT(db && db->functionScopes.size() == 4);
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
@@ -3055,6 +3056,12 @@ private:
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 5 &&
                    functionToken->function()->token->linenr() == 5);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const impl & , const impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 6);
         }
         {
             GET_SYMBOL_DB("class Fred { struct impl; };\n"
@@ -3062,34 +3069,42 @@ private:
                           "    impl();\n"
                           "    ~impl();\n"
                           "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
                           "};\n"
                           "Fred::impl::impl() { }\n"
                           "Fred::impl::~impl() { }\n"
-                          "Fred::impl::impl(const Fred::impl &) { }");
+                          "Fred::impl::impl(const Fred::impl &) { }\n"
+                          "void Fred::impl::foo(const Fred::impl &, const Fred::impl &) const { }");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 6);
+            ASSERT(db && db->scopeList.size() == 7);
             ASSERT(db && db->classAndStructScopes.size() == 2);
             ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
+            ASSERT(db && db->functionScopes.size() == 4);
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 3 &&
-                   functionToken->function()->token->linenr() == 7);
+                   functionToken->function()->token->linenr() == 8);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
             ASSERT(db && functionToken && functionToken->next()->function() &&
                    functionToken->next()->function()->functionScope &&
                    functionToken->next()->function()->tokenDef->linenr() == 4 &&
-                   functionToken->next()->function()->token->linenr() == 8);
+                   functionToken->next()->function()->token->linenr() == 9);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred :: impl & ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 5 &&
-                   functionToken->function()->token->linenr() == 9);
+                   functionToken->function()->token->linenr() == 10);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred :: impl & , const Fred :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 11);
         }
         {
             GET_SYMBOL_DB("namespace NS {\n"
@@ -3098,14 +3113,15 @@ private:
                           "        impl() { }\n"
                           "        ~impl() { }\n"
                           "        impl(const impl &) { }\n"
+                          "        void foo(const impl &, const impl &) const { }\n"
                           "    };\n"
                           "}");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 7);
+            ASSERT(db && db->scopeList.size() == 8);
             ASSERT(db && db->classAndStructScopes.size() == 2);
             ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
+            ASSERT(db && db->functionScopes.size() == 4);
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
@@ -3124,6 +3140,12 @@ private:
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 6 &&
                    functionToken->function()->token->linenr() == 6);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const impl & , const impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 7);
         }
         {
             GET_SYMBOL_DB("namespace NS {\n"
@@ -3132,54 +3154,19 @@ private:
                           "        impl();\n"
                           "        ~impl();\n"
                           "        impl(const impl &);\n"
+                          "        void foo(const impl &, const impl &) const;\n"
                           "    };\n"
                           "    Fred::impl::impl() { }\n"
                           "    Fred::impl::~impl() { }\n"
                           "    Fred::impl::impl(const Fred::impl &) { }\n"
+                          "    void Fred::impl::foo(const Fred::impl &, const Fred::impl &) const { }\n"
                           "}");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 7);
+            ASSERT(db && db->scopeList.size() == 8);
             ASSERT(db && db->classAndStructScopes.size() == 2);
             ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
-
-            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
-                   functionToken->function()->functionScope &&
-                   functionToken->function()->tokenDef->linenr() == 4 &&
-                   functionToken->function()->token->linenr() == 8);
-
-            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->next()->function() &&
-                   functionToken->next()->function()->functionScope &&
-                   functionToken->next()->function()->tokenDef->linenr() == 5 &&
-                   functionToken->next()->function()->token->linenr() == 9);
-
-            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred :: impl & ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
-                   functionToken->function()->functionScope &&
-                   functionToken->function()->tokenDef->linenr() == 6 &&
-                   functionToken->function()->token->linenr() == 10);
-        }
-        {
-            GET_SYMBOL_DB("namespace NS {\n"
-                          "    class Fred { struct impl; };\n"
-                          "    struct Fred::impl {\n"
-                          "        impl();\n"
-                          "        ~impl();\n"
-                          "        impl(const impl &);\n"
-                          "    };\n"
-                          "}\n"
-                          "NS::Fred::impl::impl() { }\n"
-                          "NS::Fred::impl::~impl() { }\n"
-                          "NS::Fred::impl::impl(const NS::Fred::impl &) { }\n");
-
-            ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 7);
-            ASSERT(db && db->classAndStructScopes.size() == 2);
-            ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
+            ASSERT(db && db->functionScopes.size() == 4);
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
@@ -3193,11 +3180,62 @@ private:
                    functionToken->next()->function()->tokenDef->linenr() == 5 &&
                    functionToken->next()->function()->token->linenr() == 10);
 
-            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const NS :: Fred :: impl & ) { }");
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred :: impl & ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 6 &&
                    functionToken->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred :: impl & , const Fred :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 12);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    class Fred { struct impl; };\n"
+                          "    struct Fred::impl {\n"
+                          "        impl();\n"
+                          "        ~impl();\n"
+                          "        impl(const impl &);\n"
+                          "        void foo(const impl &, const impl &) const;\n"
+                          "    };\n"
+                          "}\n"
+                          "NS::Fred::impl::impl() { }\n"
+                          "NS::Fred::impl::~impl() { }\n"
+                          "NS::Fred::impl::impl(const NS::Fred::impl &) { }\n"
+                          "void NS::Fred::impl::foo(const NS::Fred::impl &, const NS::Fred::impl &) const { }");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 4 &&
+                   functionToken->function()->token->linenr() == 10);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 5 &&
+                   functionToken->next()->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const NS :: Fred :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 12);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const NS :: Fred :: impl & , const NS :: Fred :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 13);
         }
         {
             GET_SYMBOL_DB("namespace NS {\n"
@@ -3207,13 +3245,14 @@ private:
                           "    impl() { }\n"
                           "    ~impl() { }\n"
                           "    impl(const impl &) { }\n"
+                          "    void foo(const impl &, const impl &) const { }\n"
                           "};");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 7);
+            ASSERT(db && db->scopeList.size() == 8);
             ASSERT(db && db->classAndStructScopes.size() == 2);
             ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
+            ASSERT(db && db->functionScopes.size() == 4);
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
@@ -3232,6 +3271,12 @@ private:
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 7 &&
                    functionToken->function()->token->linenr() == 7);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const impl & , const impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 8);
         }
         {
             GET_SYMBOL_DB("namespace NS {\n"
@@ -3241,55 +3286,18 @@ private:
                           "    impl();\n"
                           "    ~impl();\n"
                           "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
                           "};\n"
                           "NS::Fred::impl::impl() { }\n"
                           "NS::Fred::impl::~impl() { }\n"
-                          "NS::Fred::impl::impl(const NS::Fred::impl &) { }");
+                          "NS::Fred::impl::impl(const NS::Fred::impl &) { }\n"
+                          "void NS::Fred::impl::foo(const NS::Fred::impl &, const NS::Fred::impl &) const { }");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 7);
+            ASSERT(db && db->scopeList.size() == 8);
             ASSERT(db && db->classAndStructScopes.size() == 2);
             ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
-
-            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
-                   functionToken->function()->functionScope &&
-                   functionToken->function()->tokenDef->linenr() == 5 &&
-                   functionToken->function()->token->linenr() == 9);
-
-            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->next()->function() &&
-                   functionToken->next()->function()->functionScope &&
-                   functionToken->next()->function()->tokenDef->linenr() == 6 &&
-                   functionToken->next()->function()->token->linenr() == 10);
-
-            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const NS :: Fred :: impl & ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
-                   functionToken->function()->functionScope &&
-                   functionToken->function()->tokenDef->linenr() == 7 &&
-                   functionToken->function()->token->linenr() == 11);
-        }
-        {
-            GET_SYMBOL_DB("namespace NS {\n"
-                          "    class Fred { struct impl; };\n"
-                          "}\n"
-                          "struct NS::Fred::impl {\n"
-                          "    impl();\n"
-                          "    ~impl();\n"
-                          "    impl(const impl &);\n"
-                          "};\n"
-                          "namespace NS {\n"
-                          "    Fred::impl::impl() { }\n"
-                          "    Fred::impl::~impl() { }\n"
-                          "    Fred::impl::impl(const Fred::impl &) { }\n"
-                          "}");
-
-            ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 7);
-            ASSERT(db && db->classAndStructScopes.size() == 2);
-            ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
+            ASSERT(db && db->functionScopes.size() == 4);
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
@@ -3303,7 +3311,274 @@ private:
                    functionToken->next()->function()->tokenDef->linenr() == 6 &&
                    functionToken->next()->function()->token->linenr() == 11);
 
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const NS :: Fred :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 12);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const NS :: Fred :: impl & , const NS :: Fred :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 13);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    class Fred { struct impl; };\n"
+                          "}\n"
+                          "struct NS::Fred::impl {\n"
+                          "    impl();\n"
+                          "    ~impl();\n"
+                          "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
+                          "};\n"
+                          "namespace NS {\n"
+                          "    Fred::impl::impl() { }\n"
+                          "    Fred::impl::~impl() { }\n"
+                          "    Fred::impl::impl(const Fred::impl &) { }\n"
+                          "    void Fred::impl::foo(const Fred::impl &, const Fred::impl &) const { }\n"
+                          "}");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 5 &&
+                   functionToken->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 6 &&
+                   functionToken->next()->function()->token->linenr() == 12);
+
             functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 13);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred :: impl & , const Fred :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 14);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    class Fred { struct impl; };\n"
+                          "}\n"
+                          "struct NS::Fred::impl {\n"
+                          "    impl();\n"
+                          "    ~impl();\n"
+                          "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
+                          "};\n"
+                          "using namespace NS;\n"
+                          "Fred::impl::impl() { }\n"
+                          "Fred::impl::~impl() { }\n"
+                          "Fred::impl::impl(const Fred::impl &) { }\n"
+                          "void Fred::impl::foo(const Fred::impl &, const Fred::impl &) const { }");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 5 &&
+                   functionToken->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 6 &&
+                   functionToken->next()->function()->token->linenr() == 12);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 13);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred :: impl & , const Fred :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 14);
+        }
+        {
+            GET_SYMBOL_DB("template <typename A> class Fred { struct impl; };\n"
+                          "template <typename A> struct Fred<A>::impl {\n"
+                          "    impl() { }\n"
+                          "    ~impl() { }\n"
+                          "    impl(const impl &) { }\n"
+                          "    void foo(const impl &, const impl &) const { }\n"
+                          "};\n");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 7);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 3 &&
+                   functionToken->function()->token->linenr() == 3);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 4 &&
+                   functionToken->next()->function()->token->linenr() == 4);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 5 &&
+                   functionToken->function()->token->linenr() == 5);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const impl & , const impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 6);
+        }
+        {
+            GET_SYMBOL_DB("template <typename A> class Fred { struct impl; };\n"
+                          "template <typename A> struct Fred<A>::impl {\n"
+                          "    impl();\n"
+                          "    ~impl();\n"
+                          "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
+                          "};\n"
+                          "template <typename A> Fred<A>::impl::impl() { }\n"
+                          "template <typename A> Fred<A>::impl::~impl() { }\n"
+                          "template <typename A> Fred<A>::impl::impl(const Fred<A>::impl &) { }\n"
+                          "template <typename A> void Fred<A>::impl::foo(const Fred<A>::impl &, const Fred<A>::impl &) const { }\n");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 7);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 3 &&
+                   functionToken->function()->token->linenr() == 8);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 4 &&
+                   functionToken->next()->function()->token->linenr() == 9);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred < A > :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 5 &&
+                   functionToken->function()->token->linenr() == 10);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred < A > :: impl & , const Fred < A > :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 11);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    template <typename A> class Fred { struct impl; };\n"
+                          "    template <typename A> struct Fred<A>::impl {\n"
+                          "        impl() { }\n"
+                          "        ~impl() { }\n"
+                          "        impl(const impl &) { }\n"
+                          "        void foo(const impl &, const impl &) const { }\n"
+                          "    };\n"
+                          "}");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 4 &&
+                   functionToken->function()->token->linenr() == 4);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 5 &&
+                   functionToken->next()->function()->token->linenr() == 5);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 6);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const impl & , const impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 7);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    template <typename A> class Fred { struct impl; };\n"
+                          "    template <typename A> struct Fred<A>::impl {\n"
+                          "        impl();\n"
+                          "        ~impl();\n"
+                          "        impl(const impl &);\n"
+                          "        void foo(const impl &, const impl &) const;\n"
+                          "    };\n"
+                          "    template <typename A> Fred<A>::impl::impl() { }\n"
+                          "    template <typename A> Fred<A>::impl::~impl() { }\n"
+                          "    template <typename A> Fred<A>::impl::impl(const Fred<A>::impl &) { }\n"
+                          "    template <typename A> void Fred<A>::impl::foo(const Fred<A>::impl &, const Fred<A>::impl &) const { }\n"
+                          "}");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 4 &&
+                   functionToken->function()->token->linenr() == 9);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 5 &&
+                   functionToken->next()->function()->token->linenr() == 10);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred < A > :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred < A > :: impl & , const Fred < A > :: impl & ) const { }");
             ASSERT(db && functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 7 &&
@@ -3311,23 +3586,110 @@ private:
         }
         {
             GET_SYMBOL_DB("namespace NS {\n"
-                          "    class Fred { struct impl; };\n"
+                          "    template <typename A> class Fred { struct impl; };\n"
+                          "    template <typename A> struct Fred<A>::impl {\n"
+                          "        impl();\n"
+                          "        ~impl();\n"
+                          "        impl(const impl &);\n"
+                          "        void foo(const impl &, const impl &) const;\n"
+                          "    };\n"
                           "}\n"
-                          "struct NS::Fred::impl {\n"
+                          "template <typename A> NS::Fred<A>::impl::impl() { }\n"
+                          "template <typename A> NS::Fred<A>::impl::~impl() { }\n"
+                          "template <typename A> NS::Fred<A>::impl::impl(const NS::Fred<A>::impl &) { }\n"
+                          "template <typename A> void NS::Fred<A>::impl::foo(const NS::Fred<A>::impl &, const NS::Fred<A>::impl &) const { }\n");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 4 &&
+                   functionToken->function()->token->linenr() == 10);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 5 &&
+                   functionToken->next()->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const NS :: Fred < A > :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 6 &&
+                   functionToken->function()->token->linenr() == 12);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const NS :: Fred < A > :: impl & , const NS :: Fred < A > :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 13);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    template <typename A> class Fred { struct impl; };\n"
+                          "}\n"
+                          "template <typename A> struct NS::Fred<A>::impl {\n"
+                          "    impl() { }\n"
+                          "    ~impl() { }\n"
+                          "    impl(const impl &) { }\n"
+                          "    void foo(const impl &, const impl &) const { }\n"
+                          "};");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 5 &&
+                   functionToken->function()->token->linenr() == 5);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 6 &&
+                   functionToken->next()->function()->token->linenr() == 6);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 7);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const impl & , const impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 8);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    template <typename A> class Fred { struct impl; };\n"
+                          "}\n"
+                          "template <typename A> struct NS::Fred<A>::impl {\n"
                           "    impl();\n"
                           "    ~impl();\n"
                           "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
                           "};\n"
-                          "using namespace NS;\n"
-                          "Fred::impl::impl() { }\n"
-                          "Fred::impl::~impl() { }\n"
-                          "Fred::impl::impl(const Fred::impl &) { }");
+                          "template <typename A> NS::Fred<A>::impl::impl() { }\n"
+                          "template <typename A> NS::Fred<A>::impl::~impl() { }\n"
+                          "template <typename A> NS::Fred<A>::impl::impl(const NS::Fred<A>::impl &) { }\n"
+                          "template <typename A> void NS::Fred<A>::impl::foo(const NS::Fred<A>::impl &, const NS::Fred<A>::impl &) const { }\n");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 7);
+            ASSERT(db && db->scopeList.size() == 8);
             ASSERT(db && db->classAndStructScopes.size() == 2);
             ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 3);
+            ASSERT(db && db->functionScopes.size() == 4);
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
             ASSERT(db && functionToken && functionToken->function() &&
@@ -3341,11 +3703,110 @@ private:
                    functionToken->next()->function()->tokenDef->linenr() == 6 &&
                    functionToken->next()->function()->token->linenr() == 11);
 
-            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred :: impl & ) { }");
-            TODO_ASSERT(db && functionToken && functionToken->function() &&
-                        functionToken->function()->functionScope &&
-                        functionToken->function()->tokenDef->linenr() == 7 &&
-                        functionToken->function()->token->linenr() == 12);
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const NS :: Fred < A > :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 12);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const NS :: Fred < A > :: impl & , const NS :: Fred < A > :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 13);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    template <typename A> class Fred { struct impl; };\n"
+                          "}\n"
+                          "template <typename A> struct NS::Fred<A>::impl {\n"
+                          "    impl();\n"
+                          "    ~impl();\n"
+                          "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
+                          "};\n"
+                          "namespace NS {\n"
+                          "    template <typename A> Fred<A>::impl::impl() { }\n"
+                          "    template <typename A> Fred<A>::impl::~impl() { }\n"
+                          "    template <typename A> Fred<A>::impl::impl(const Fred<A>::impl &) { }\n"
+                          "    template <typename A> void Fred<A>::impl::foo(const Fred<A>::impl &, const Fred<A>::impl &) const { }\n"
+                          "}");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 5 &&
+                   functionToken->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 6 &&
+                   functionToken->next()->function()->token->linenr() == 12);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred < A > :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 13);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred < A > :: impl & , const Fred < A > :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 14);
+        }
+        {
+            GET_SYMBOL_DB("namespace NS {\n"
+                          "    template <typename A> class Fred { struct impl; };\n"
+                          "}\n"
+                          "template <typename A> struct NS::Fred::impl {\n"
+                          "    impl();\n"
+                          "    ~impl();\n"
+                          "    impl(const impl &);\n"
+                          "    void foo(const impl &, const impl &) const;\n"
+                          "};\n"
+                          "using namespace NS;\n"
+                          "template <typename A> Fred<A>::impl::impl() { }\n"
+                          "template <typename A> Fred<A>::impl::~impl() { }\n"
+                          "template <typename A> Fred<A>::impl::impl(const Fred<A>::impl &) { }\n"
+                          "template <typename A> void Fred<A>::impl::foo(const Fred<A>::impl &, const Fred<A>::impl &) const { }\n");
+
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 8);
+            ASSERT(db && db->classAndStructScopes.size() == 2);
+            ASSERT(db && db->typeList.size() == 2);
+            ASSERT(db && db->functionScopes.size() == 4);
+
+            const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 5 &&
+                   functionToken->function()->token->linenr() == 11);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
+            ASSERT(db && functionToken && functionToken->next()->function() &&
+                   functionToken->next()->function()->functionScope &&
+                   functionToken->next()->function()->tokenDef->linenr() == 6 &&
+                   functionToken->next()->function()->token->linenr() == 12);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred < A > :: impl & ) { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 7 &&
+                   functionToken->function()->token->linenr() == 13);
+
+            functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred < A > :: impl & , const Fred < A > :: impl & ) const { }");
+            ASSERT(db && functionToken && functionToken->function() &&
+                   functionToken->function()->functionScope &&
+                   functionToken->function()->tokenDef->linenr() == 8 &&
+                   functionToken->function()->token->linenr() == 14);
         }
     }
 

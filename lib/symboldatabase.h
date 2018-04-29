@@ -828,7 +828,7 @@ public:
     const Token *noexceptArg;         ///< noexcept token
     const Token *throwArg;            ///< throw token
 
-    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth);
+    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int path_length);
 
     /**
      * @return token to ":" if the function is a constructor
@@ -1211,7 +1211,7 @@ private:
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
-    Function *findFunctionInScope(const Token *func, const Scope *ns);
+    Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, unsigned int path_length);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
     typedef std::map<unsigned int, unsigned int> MemberIdMap;
