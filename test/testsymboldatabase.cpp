@@ -3774,7 +3774,7 @@ private:
         ASSERT(db != nullptr);
         ASSERT(db && !db->isFunction(Token::findsimplematch(tokenizer.tokens(), "PTRRELOC ( &"), &db->scopeList.back(), nullptr, nullptr, nullptr));
         ASSERT(db->findScopeByName("set_cur_cpu_spec") != nullptr);
-        // TODO: ASSERT(db->findScopeByName("setup_cpu_spec") != nullptr);
+        ASSERT(db->findScopeByName("setup_cpu_spec") != nullptr);
         ASSERT(db->findScopeByName("PTRRELOC") == nullptr);
     }
 
