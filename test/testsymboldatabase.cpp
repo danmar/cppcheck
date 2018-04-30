@@ -282,6 +282,7 @@ private:
         TEST_CASE(symboldatabase62);
         TEST_CASE(symboldatabase63);
         TEST_CASE(symboldatabase64);
+        TEST_CASE(symboldatabase65);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3808,6 +3809,12 @@ private:
                    functionToken->function()->tokenDef->linenr() == 8 &&
                    functionToken->function()->token->linenr() == 14);
         }
+    }
+
+    void symboldatabase65() {
+        // don't crash on missing links from instantiation of template with typedef
+        check("int ( * X0 ) ( long ) < int ( ) ( long ) > :: f0 ( int * ) { return 0 ; }");
+        ASSERT_EQUALS("[test.cpp:1]: (debug) SymbolDatabase::findFunction found '>' without link.\n", errout.str());
     }
 
     void enum1() {

@@ -4283,9 +4283,15 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         const Token *tok1 = tok;
 
         while (Token::Match(tok1->tokAt(-2), ">|%type% ::")) {
-            if (tok1->strAt(-2) == ">")
-                tok1 = tok1->linkAt(-2)->tokAt(-1);
-            else
+            if (tok1->strAt(-2) == ">") {
+                if (tok1->linkAt(-2))
+                    tok1 = tok1->linkAt(-2)->tokAt(-1);
+                else {
+                    if (_settings->debugwarnings)
+                        debugMessage(tok1->tokAt(-2), "SymbolDatabase::findFunction found '>' without link.");
+                    return nullptr;
+                }
+            } else
                 tok1 = tok1->tokAt(-2);
         }
 
