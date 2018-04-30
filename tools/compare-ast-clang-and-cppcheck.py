@@ -71,9 +71,15 @@ ast2 = cppcheck_ast(sys.argv[1])
 #    print(func)
 
 print('Compare...')
+numberOfMissing = 0
+numberOfExtra = 0
 for func in ast1:
     if func not in ast2:
-		print('- ' + func)
-#for func in ast2:
-#    if func not in ast1:
-#		print('+ ' + func)
+        numberOfMissing = numberOfMissing + 1
+        print('Missing Function ' + func)
+for func in ast2:
+    if func not in ast1:
+        numberOfExtra = numberOfExtra + 1
+        print('Extra Function ' + func)
+print('Number of missing functions: ' + str(numberOfMissing))
+print('Number of extra functions: ' + str(numberOfExtra) + ' (clang AST currently only contains FunctionDecl and CXXMethod)')
