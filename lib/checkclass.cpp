@@ -2401,18 +2401,17 @@ void CheckClass::checkCopyCtorAndEqOperator()
         bool moveCtor = false;
         CtorType assignmentOperators = CtorType::NO;
 
-        std::list<Function>::const_iterator func;
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (copyCtors == CtorType::NO && func->type == Function::eCopyConstructor) {
-                copyCtors = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+        for (const Function &func : scope->functionList) {
+            if (copyCtors == CtorType::NO && func.type == Function::eCopyConstructor) {
+                copyCtors = func.hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
             }
-            if (assignmentOperators == CtorType::NO && func->type == Function::eOperatorEqual) {
-                const Variable * variable = func->getArgumentVar(0);
+            if (assignmentOperators == CtorType::NO && func.type == Function::eOperatorEqual) {
+                const Variable * variable = func.getArgumentVar(0);
                 if (variable && variable->type() && variable->type()->classScope == scope) {
-                    assignmentOperators = func->hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
+                    assignmentOperators = func.hasBody() ? CtorType::WITH_BODY : CtorType::WITHOUT_BODY;
                 }
             }
-            if (func->type == Function::eMoveConstructor) {
+            if (func.type == Function::eMoveConstructor) {
                 moveCtor = true;
                 break;
             }
