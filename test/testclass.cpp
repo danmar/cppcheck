@@ -68,6 +68,8 @@ private:
 
         TEST_CASE(copyConstructor1);
         TEST_CASE(copyConstructor2); // ticket #4458
+        TEST_CASE(noOperatorEq); // class with memory management should have operator eq
+        TEST_CASE(noDestructor); // class with memory management should have destructor
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
@@ -564,6 +566,8 @@ private:
                              "      p=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,str);\n"
                              "   }\n"
+                             "   F&operator=(const F&);\n"
+                             "   ~F();\n"
                              "};");
         ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n", errout.str());
 
@@ -575,6 +579,8 @@ private:
                              "   F(char *str) {\n"
                              "      p = malloc(strlen(str)+1);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            "[test.cpp:3] -> [test.cpp:7]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
@@ -593,6 +599,8 @@ private:
                              "      p=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,str);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            "[test.cpp:5] -> [test.cpp:10]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
@@ -621,6 +629,8 @@ private:
                              "      d=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,f.p);\n"
                              "   }\n"
+                             "   ~kalci();\n"
+                             "   kalci& operator=(const kalci&kalci);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -644,6 +654,8 @@ private:
                              "      c=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,f.p);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:14] -> [test.cpp:11]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", "", errout.str());
 
@@ -656,6 +668,8 @@ private:
                              "      : p(malloc(size))\n"
                              "   {\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -668,6 +682,8 @@ private:
                              "   F(const F &f)\n"
                              "   {\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", "", errout.str());
 
@@ -681,6 +697,8 @@ private:
                              "      c=(char *)malloc(100);\n"
                              "      d=(char*)malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("[test.cpp:1]: (style) class 'F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
 
@@ -703,6 +721,8 @@ private:
                              "      c=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(d,f.p);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -712,6 +732,8 @@ private:
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -722,6 +744,8 @@ private:
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -731,6 +755,8 @@ private:
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) 'class F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", "", errout.str());
 
@@ -739,13 +765,17 @@ private:
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
-                             "   F(F& f);\n" // non-copyable
+                             "   F(F& f);\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
                              "   F() : p(malloc(100)) {}\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("[test.cpp:1]: (style) class 'F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
 
@@ -770,11 +800,32 @@ private:
                              "    }\n"
                              "    Vector( const Vector<_Tp>& v ) {\n"
                              "    }\n"
+                             "     ~Vector();\n"
+                             "     Vector& operator=(const Vector&v);\n"
                              "    _Tp* _M_finish;\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
+    void noOperatorEq() {
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct 'F' does not have a assignment operator which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
+    }
+
+    void noDestructor() {
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   F&operator=(const F&);"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct 'F' does not have a destructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
+    }
 
     // Check the operator Equal
     void checkOpertorEq(const char code[]) {

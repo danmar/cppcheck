@@ -305,6 +305,27 @@ void CheckClass::copyconstructors()
             }
         }
 
+        if (!allocatedVars.empty()) {
+            bool hasCopyCtor = false;
+            bool hasOperatorEq = false;
+            bool hasDestructor = false;
+            for (const Function &func : scope->functionList) {
+                if (func.type == Function::eCopyConstructor)
+                    hasCopyCtor = true;
+                else if (func.type == Function::eOperatorEqual)
+                    hasOperatorEq = true;
+                else if (func.type == Function::eDestructor)
+                    hasDestructor = true;
+            }
+            bool derived = !scope->definedType->derivedFrom.empty();
+            if (!hasCopyCtor && !derived)
+                noCopyConstructorError(scope, derived);
+            if (!hasOperatorEq)
+                noOperatorEqError(scope);
+            if (!hasDestructor)
+                noDestructorError(scope);
+        }
+
         std::set<const Token*> copiedVars;
         const Token* copyCtor = nullptr;
         for (const Function &func : scope->functionList) {
@@ -337,14 +358,9 @@ void CheckClass::copyconstructors()
             }
             break;
         }
-        if (!copyCtor) {
-            if (!allocatedVars.empty() && scope->definedType->derivedFrom.empty()) // TODO: Check if base class is non-copyable
-                noCopyConstructorError(scope->classDef, scope->className, scope->type == Scope::eStruct);
-        } else {
-            if (!copiedVars.empty()) {
-                for (std::set<const Token*>::const_iterator it = copiedVars.begin(); it != copiedVars.end(); ++it) {
-                    copyConstructorShallowCopyError(*it, (*it)->str());
-                }
+        if (copyCtor && !copiedVars.empty()) {
+            for (std::set<const Token*>::const_iterator it = copiedVars.begin(); it != copiedVars.end(); ++it) {
+                copyConstructorShallowCopyError(*it, (*it)->str());
             }
             // throw error if count mismatch
             /* FIXME: This doesn't work. See #4154
@@ -372,12 +388,34 @@ void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::st
                 "$symbol:" + varname + "\nValue of pointer '$symbol', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, false);
 }
 
-void CheckClass::noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct)
+void CheckClass::noCopyConstructorError(const Scope *scope, bool inconclusive)
 {
-    // The constructor might be intentionally missing. Therefore this is not a "warning"
+    const Token *tok = scope ? scope->classDef : nullptr;
+    const std::string &classname = scope ? scope->className : "class";
+    bool isStruct = scope ? (scope->type == Scope::eStruct) : false;
     reportError(tok, Severity::style, "noCopyConstructor",
                 "$symbol:" + classname + "\n" +
-                std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.", CWE398, false);
+                std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.", CWE398, inconclusive);
+}
+
+void CheckClass::noOperatorEqError(const Scope *scope)
+{
+    const Token *tok = scope ? scope->classDef : nullptr;
+    const std::string &classname = scope ? scope->className : "class";
+    bool isStruct = scope ? (scope->type == Scope::eStruct) : false;
+    reportError(tok, Severity::style, "noOperatorEq",
+                "$symbol:" + classname + "\n" +
+                std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a assignment operator which is recommended since the class contains a pointer to allocated memory.", CWE398, false);
+}
+
+void CheckClass::noDestructorError(const Scope *scope)
+{
+    const Token *tok = scope ? scope->classDef : nullptr;
+    const std::string &classname = scope ? scope->className : "class";
+    bool isStruct = scope ? (scope->type == Scope::eStruct) : false;
+    reportError(tok, Severity::style, "noDestructor",
+                "$symbol:" + classname + "\n" +
+                std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a destructor which is recommended since the class contains a pointer to allocated memory.", CWE398, false);
 }
 
 bool CheckClass::canNotCopy(const Scope *scope)

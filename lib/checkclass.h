@@ -168,7 +168,9 @@ private:
     void noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     //void copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& var_name);
     void copyConstructorShallowCopyError(const Token *tok, const std::string& varname);
-    void noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct);
+    void noCopyConstructorError(const Scope *scope, bool inconclusive);
+    void noOperatorEqError(const Scope *scope);
+    void noDestructorError(const Scope *scope);
     void uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool inconclusive);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
@@ -202,7 +204,9 @@ private:
         c.noExplicitConstructorError(nullptr, "classname", false);
         //c.copyConstructorMallocError(nullptr, 0, "var");
         c.copyConstructorShallowCopyError(nullptr, "var");
-        c.noCopyConstructorError(nullptr, "class", false);
+        c.noCopyConstructorError(nullptr, false);
+        c.noOperatorEqError(nullptr);
+        c.noDestructorError(nullptr);
         c.uninitVarError(nullptr, false, "classname", "varname", false);
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
