@@ -47,7 +47,7 @@ int main(int argc, char **argv)
             unsigned int line, column;
             clang_getPresumedLocation(location, &filename, &line, &column);
 
-            std::cout << "<" << clang_getCursorKindSpelling(clang_getCursorKind(c))
+            std::cout << "<Function" /* << clang_getCursorKindSpelling(clang_getCursorKind(c)) */
                       << " name=\"" << clang_getCursorSpelling(c) << '\"'
                       << " filename=\"" << filename << '\"'
                       << " line=\"" << line << '\"'
