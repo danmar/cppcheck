@@ -43,6 +43,8 @@ int main(int argc, char **argv)
     [](CXCursor c, CXCursor parent, CXClientData client_data) {
         switch (clang_getCursorKind(c)) {
         case CXCursor_FunctionDecl:
+        case CXCursor_Constructor:
+        case CXCursor_Destructor:
         case CXCursor_CXXMethod: {
             CXSourceLocation location = clang_getCursorLocation(c);
             CXString filename;
@@ -82,6 +84,7 @@ int main(int argc, char **argv)
         }
         break;
         default:
+            //std::cout << "<" << clang_getCursorKindSpelling(clang_getCursorKind(c)) << " kind=\"" << clang_getCursorKind(c) << "\"/>\n";
             break;
         };
 
