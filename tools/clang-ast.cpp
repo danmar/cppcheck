@@ -21,10 +21,12 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    const char *argv1[] = { argv[0], "-std=c++11" };
+
     CXIndex index = clang_createIndex(0, 0);
     CXTranslationUnit unit = clang_parseTranslationUnit(
                                  index,
-                                 argv[1], nullptr, 0,
+                                 argv[1], argv1, sizeof(argv1) / sizeof(argv1[0]),
                                  nullptr, 0,
                                  CXTranslationUnit_None);
     if (unit == nullptr) {
