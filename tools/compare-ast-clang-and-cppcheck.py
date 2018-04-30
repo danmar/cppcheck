@@ -40,8 +40,11 @@ def cppcheck_ast(sourcefile):
     cfg = data.configurations[0]
     ret = []
     for func in cfg.functions:
+        name = func.name
+        if func.type == 'Destructor':
+            name = '~' + name
         s = '<Function'
-        s = s + ' name="' + func.name + '"'
+        s = s + ' name="' + name + '"'
         s = s + ' filename="' + func.tokenDef.file + '"'
         s = s + ' line="' + str(func.tokenDef.linenr) + '"'
         s = s + '/>'

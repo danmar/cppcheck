@@ -316,6 +316,7 @@ class Function:
     tokenDef = None
     tokenDefId = None
     name = None
+    type = None
     isVirtual = None
     isImplicitlyVirtual = None
 
@@ -323,6 +324,7 @@ class Function:
         self.Id = element.get('id')
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
+        self.type = element.get('type')
         isVirtual = element.get('isVirtual')
         self.isVirtual = (isVirtual and isVirtual == 'true')
         isImplicitlyVirtual = element.get('isImplicitlyVirtual')
