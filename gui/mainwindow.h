@@ -54,7 +54,9 @@ public:
     enum { MaxRecentProjects = 5 };
 
     MainWindow(TranslationHandler* th, QSettings* settings);
+    MainWindow(const MainWindow &) = delete;
     virtual ~MainWindow();
+    MainWindow &operator=(const MainWindow &) = delete;
 
     /**
       * List of checked platforms.

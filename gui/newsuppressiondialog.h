@@ -13,7 +13,9 @@ class NewSuppressionDialog : public QDialog {
 
 public:
     explicit NewSuppressionDialog(QWidget *parent = 0);
+    NewSuppressionDialog(const NewSuppressionDialog &) = delete;
     ~NewSuppressionDialog();
+    NewSuppressionDialog &operator=(const NewSuppressionDialog &) = delete;
 
     Suppressions::Suppression getSuppression() const;
 

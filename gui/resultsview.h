@@ -46,7 +46,9 @@ public:
 
     explicit ResultsView(QWidget * parent = 0);
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
+    ResultsView(const ResultsView &) = delete;
     virtual ~ResultsView();
+    ResultsView &operator=(const ResultsView &) = delete;
 
     void setTags(const QStringList &tags) {
         mUI.mTree->setTags(tags);
