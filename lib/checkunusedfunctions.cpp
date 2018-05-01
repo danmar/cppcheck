@@ -392,11 +392,11 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
         const std::string::size_type firstColon = filesTxtLine.find(':');
         if (firstColon == std::string::npos)
             continue;
-        const std::string::size_type lastColon = filesTxtLine.rfind(':');
-        if (firstColon == lastColon)
+        const std::string::size_type secondColon = filesTxtLine.find(':', firstColon+1);
+        if (secondColon == std::string::npos)
             continue;
         const std::string xmlfile = buildDir + '/' + filesTxtLine.substr(0,firstColon);
-        const std::string sourcefile = filesTxtLine.substr(lastColon+1);
+        const std::string sourcefile = filesTxtLine.substr(secondColon+1);
 
         tinyxml2::XMLDocument doc;
         const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
