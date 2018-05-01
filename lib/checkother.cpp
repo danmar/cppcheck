@@ -1974,8 +1974,8 @@ void CheckOther::checkDuplicateExpression()
                         }
                     }
                 } else if (styleEnabled &&
-                           isOppositeCond(true, _tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), _settings->library, false) &&
-                           !Token::simpleMatch(tok, "=") &&
+                           isOppositeExpression(_tokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), _settings->library, false) &&
+                           !Token::Match(tok, "=|-|-=|/|/=") &&
                            isWithoutSideEffects(_tokenizer->isCPP(), tok->astOperand1())) {
                     oppositeExpressionError(tok, tok, tok->str());
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative

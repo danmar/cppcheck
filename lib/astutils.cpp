@@ -359,6 +359,22 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                         (comp1 == ">" && comp2 == "<"))));
 }
 
+bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure)
+{
+    if (!tok1 || !tok2)
+        return false;
+    if(isOppositeCond(true, cpp, tok1, tok2, library, pure))
+        return true;
+    if(tok1->str() == "-") {
+        return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure);
+    }
+    if(tok2->str() == "-") {
+        return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure);
+    }
+    return false;
+
+}
+
 bool isConstExpression(const Token *tok, const Library& library, bool pure)
 {
     if (!tok)
