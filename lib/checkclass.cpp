@@ -872,7 +872,7 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
     // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
     reportError(tok, Severity::style, "noConstructor",
                 "$symbol:" + classname + "\n" +
-                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a constructor.\n"
+                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a constructor although it has private member variables.\n"
                 "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not have a constructor "
                 "although it has private member variables. Member variables of builtin types are left "
                 "uninitialized when the class is instantiated. That may cause bugs or undefined behavior.", CWE398, false);

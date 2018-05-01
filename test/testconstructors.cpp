@@ -208,14 +208,14 @@ private:
               "private:\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor although it has private member variables.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
               "private:\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The struct 'Fred' does not have a constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The struct 'Fred' does not have a constructor although it has private member variables.\n", errout.str());
     }
 
 
@@ -369,8 +369,8 @@ private:
         check("struct Fred { int x; };\n"
               "class Barney { Fred fred; };\n"
               "class Wilma { struct Betty { int x; } betty; };");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The class 'Barney' does not have a constructor.\n"
-                      "[test.cpp:3]: (style) The class 'Wilma' does not have a constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) The class 'Barney' does not have a constructor although it has private member variables.\n"
+                      "[test.cpp:3]: (style) The class 'Wilma' does not have a constructor although it has private member variables.\n", errout.str());
     }
 
     void simple9() { // ticket #4574
@@ -470,7 +470,7 @@ private:
               "{\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor although it has private member variables.\n", errout.str());
     }
 
     void noConstructor2() {
