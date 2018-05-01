@@ -572,12 +572,9 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
             errmsg = "Pointer arithmetic with NULL pointer.";
     }
 
-    std::list<const Token*> callstack;
-    callstack.push_back(tok);
-    if (value && value->condition)
-        callstack.push_back(value->condition);
+    const ErrorPath errorPath = getErrorPath(tok, value, tok && tok->str()[0] == '-' ? "Null pointer subtraction" : "Null pointer arithmetic");
 
-    reportError(callstack,
+    reportError(errorPath,
                 (value && value->condition) ? Severity::warning : Severity::error,
                 (value && value->condition) ? "nullPointerArithmeticRedundantCheck" : "nullPointerArithmetic",
                 errmsg,
