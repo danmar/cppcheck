@@ -735,7 +735,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style, inconclusive) class 'F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
 
         checkCopyConstructor("class E { E(E&); };\n" // non-copyable
                              "class F : E\n"
@@ -758,7 +758,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) 'class F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) class 'F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"

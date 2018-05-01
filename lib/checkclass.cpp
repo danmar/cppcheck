@@ -275,6 +275,27 @@ void CheckClass::checkExplicitConstructors()
     }
 }
 
+static bool isNonCopyable(const Scope *scope, bool *unknown)
+{
+    bool u = false;
+    // check if there is base class that is not copyable
+    for (const Type::BaseInfo &baseInfo : scope->definedType->derivedFrom) {
+        if (!baseInfo.type) {
+            u = true;
+            continue;
+        }
+
+        for (const Function &func : baseInfo.type->classScope->functionList) {
+            if (func.type != Function::eCopyConstructor)
+                continue;
+            if (func.access == Private || func.isDelete())
+                return true;
+        }
+    }
+    *unknown = u;
+    return false;
+}
+
 void CheckClass::copyconstructors()
 {
     if (!_settings->isEnabled(Settings::STYLE))
@@ -317,9 +338,11 @@ void CheckClass::copyconstructors()
                 else if (func.type == Function::eDestructor)
                     hasDestructor = true;
             }
-            bool derived = !scope->definedType->derivedFrom.empty();
-            if (!hasCopyCtor && !derived)
-                noCopyConstructorError(scope, derived);
+            if (!hasCopyCtor) {
+                bool unknown = false;
+                if (!isNonCopyable(scope, &unknown))
+                    noCopyConstructorError(scope, unknown);
+            }
             if (!hasOperatorEq)
                 noOperatorEqError(scope);
             if (!hasDestructor)
