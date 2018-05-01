@@ -46,6 +46,9 @@ class CodeEditor : public QPlainTextEdit {
 
 public:
     explicit CodeEditor(QWidget *parent);
+    CodeEditor(const CodeEditor &) = delete;
+    ~CodeEditor() {}
+    CodeEditor &operator=(const CodeEditor &) = delete;
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
