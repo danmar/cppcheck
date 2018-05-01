@@ -345,8 +345,9 @@ void CheckClass::copyconstructors()
             }
             if (!hasOperatorEq)
                 noOperatorEqError(scope);
-            if (!hasDestructor)
-                noDestructorError(scope);
+            if (!hasDestructor) {
+                // TODO: how are pointers allocated? noDestructorError(scope);
+            }
         }
 
         std::set<const Token*> copiedVars;
