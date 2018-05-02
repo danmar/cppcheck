@@ -62,6 +62,7 @@ void MainWindow::loadFile()
         }
         std::random_shuffle(allErrors.begin(), allErrors.end());
         ui->results->addItems(allErrors.mid(0,100));
+        ui->results->sortItems();
     } else {
         ui->results->addItems(allErrors);
     }
