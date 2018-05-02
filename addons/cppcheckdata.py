@@ -46,6 +46,7 @@ class ValueType:
 
     type = None
     sign = None
+    bits = 0
     constness = 0
     pointer = 0
     typeScopeId = None
@@ -55,6 +56,9 @@ class ValueType:
     def __init__(self, element):
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
+        bits = element.get('valueType-bits')
+        if bits:
+            self.bits = int(bits)
         self.typeScopeId = element.get('valueType-typeScope')
         self.originalTypeName = element.get('valueType-originalTypeName')
         constness = element.get('valueType-constness')

@@ -216,7 +216,7 @@ def hasSideEffectsRecursive(expr):
 def isBoolExpression(expr):
     if not expr:
         return False
-    if expr.valueType and expr.valueType.type == 'bool':
+    if expr.valueType and (expr.valueType.type == 'bool' or expr.valueType.bits == 1):
         return True
     return expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1']
 

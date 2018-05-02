@@ -153,12 +153,18 @@ void misra_14_2() {
   // TODO check more variants
 }
 
+struct {
+  unsigned int x:1;
+  unsigned int y:1;
+} _14_4_struct;
 void misra_14_4(bool b) {
   if (x+4){} // 14.4
   else {}
 
   if (b) {}
   else {}
+
+  if (_14_4_struct.x) {}
 }
 
 void misra_15_1() {
