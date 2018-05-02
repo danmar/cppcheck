@@ -363,11 +363,11 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
 {
     if (!tok1 || !tok2)
         return false;
-    if(isOppositeCond(true, cpp, tok1, tok2, library, pure))
+    if (isOppositeCond(true, cpp, tok1, tok2, library, pure))
         return true;
-    if(tok1->str() == "-")
+    if (tok1->str() == "-")
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure);
-    if(tok2->str() == "-")
+    if (tok2->str() == "-")
         return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure);
     return false;
 }
