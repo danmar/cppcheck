@@ -559,20 +559,28 @@ void CheckNullPointer::arithmetic()
 
 void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value *value)
 {
+    std::string arithmetic;
+    if (tok && tok->str()[0] == '-')
+        arithmetic = "subtraction";
+    else if (tok && tok->str()[0] == '+')
+        arithmetic = "addition";
+    else
+        arithmetic = "arithmetic";
+
     std::string errmsg;
-    if (tok && tok->str().front() == '-') {
+    if (tok && tok->str()[0] == '-') {
         if (value && value->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer " + arithmetic + ".";
         else
             errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
     } else {
         if (value && value->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is pointer arithmetic with NULL pointer.";
         else
-            errmsg = "Pointer arithmetic with NULL pointer.";
+            errmsg = "Pointer " + arithmetic + " with NULL pointer.";
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, value, tok && tok->str()[0] == '-' ? "Null pointer subtraction" : "Null pointer arithmetic");
+    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
 
     reportError(errorPath,
                 (value && value->condition) ? Severity::warning : Severity::error,
