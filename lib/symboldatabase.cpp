@@ -4746,6 +4746,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
 void SymbolDatabase::setValueType(Token *tok, const Variable &var)
 {
     ValueType valuetype;
+    if (var.nameToken())
+        valuetype.bits = var.nameToken()->bits();
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
     if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, _settings))
@@ -5519,6 +5521,9 @@ std::string ValueType::dump() const
         ret << " valueType-sign=\"unsigned\"";
         break;
     };
+
+    if (bits > 0)
+        ret << " valueType-bits=\"" << bits << '\"';
 
     if (pointer > 0)
         ret << " valueType-pointer=\"" << pointer << '\"';

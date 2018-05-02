@@ -361,6 +361,7 @@ private:
         TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
         TEST_CASE(bitfields14); // ticket #4561 (segfault for 'class a { signals: };')
         TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
+        TEST_CASE(bitfields16); // Save bitfield bit count
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -5565,6 +5566,16 @@ private:
                                            "};"));
     }
 
+    void bitfields16() {
+        const char code[] = "struct A { unsigned int x : 1; };";
+
+        errout.str("");
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT_EQUALS(1, x->bits());
+    }
 
     void simplifyNamespaceStd() {
         static const char code1[] = "map<foo, bar> m;"; // namespace std is not used

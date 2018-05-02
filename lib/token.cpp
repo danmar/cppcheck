@@ -49,6 +49,7 @@ Token::Token(Token **tokens) :
     _progressValue(0),
     _tokType(eNone),
     _flags(0),
+    _bits(0),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
     _astParent(nullptr),
