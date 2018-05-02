@@ -11,18 +11,48 @@ Highlighter::Highlighter(QTextDocument *parent)
     keywordFormat.setForeground(Qt::darkBlue);
     keywordFormat.setFontWeight(QFont::Bold);
     QStringList keywordPatterns;
-    keywordPatterns << "\\bchar\\b" << "\\bclass\\b" << "\\bconst\\b"
-                    << "\\bdouble\\b" << "\\benum\\b" << "\\bexplicit\\b"
-                    << "\\bfriend\\b" << "\\binline\\b" << "\\bint\\b"
-                    << "\\blong\\b" << "\\bnamespace\\b" << "\\boperator\\b"
-                    << "\\bprivate\\b" << "\\bprotected\\b" << "\\bpublic\\b"
-                    << "\\bshort\\b" << "\\bsignals\\b" << "\\bsigned\\b"
-                    << "\\bslots\\b" << "\\bstatic\\b" << "\\bstruct\\b"
-                    << "\\btemplate\\b" << "\\btypedef\\b" << "\\btypename\\b"
-                    << "\\bunion\\b" << "\\bunsigned\\b" << "\\bvirtual\\b"
-                    << "\\bvoid\\b" << "\\bvolatile\\b" << "\\bbool\\b";
+    keywordPatterns << "bool"
+                    << "break"
+                    << "case"
+                    << "char"
+                    << "class"
+                    << "const"
+                    << "continue"
+                    << "default"
+                    << "do"
+                    << "double"
+                    << "else"
+                    << "enum"
+                    << "explicit"
+                    << "for"
+                    << "friend"
+                    << "if"
+                    << "inline"
+                    << "int"
+                    << "long"
+                    << "namespace"
+                    << "operator"
+                    << "private"
+                    << "protected"
+                    << "public"
+                    << "return"
+                    << "short"
+                    << "signed"
+                    << "static"
+                    << "struct"
+                    << "switch"
+                    << "template"
+                    << "throw"
+                    << "typedef"
+                    << "typename"
+                    << "union"
+                    << "unsigned"
+                    << "virtual"
+                    << "void"
+                    << "volatile"
+                    << "while";
     foreach (const QString &pattern, keywordPatterns) {
-        rule.pattern = QRegularExpression(pattern);
+        rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
         rule.format = keywordFormat;
         highlightingRules.append(rule);
     }
@@ -38,26 +68,36 @@ Highlighter::Highlighter(QTextDocument *parent)
     rule.format = quotationFormat;
     highlightingRules.append(rule);
 
-    functionFormat.setFontItalic(true);
-    functionFormat.setForeground(Qt::blue);
-    rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
-    rule.format = functionFormat;
-    highlightingRules.append(rule);
-
     singleLineCommentFormat.setForeground(Qt::gray);
     rule.pattern = QRegularExpression("//[^\n]*");
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
 
+    highlightingRulesWithSymbols = highlightingRules;
+
     multiLineCommentFormat.setForeground(Qt::gray);
+
+    symbolFormat.setForeground(Qt::red);
+    symbolFormat.setBackground(QColor(220,220,255));
 
     commentStartExpression = QRegularExpression("/\\*");
     commentEndExpression = QRegularExpression("\\*/");
 }
 
+void Highlighter::setSymbols(const QStringList &symbols)
+{
+    highlightingRulesWithSymbols = highlightingRules;
+    foreach (const QString &sym, symbols) {
+        HighlightingRule rule;
+        rule.pattern = QRegularExpression("\\b" + sym + "\\b");
+        rule.format = symbolFormat;
+        highlightingRulesWithSymbols.append(rule);
+    }
+}
+
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, highlightingRules) {
+    foreach (const HighlightingRule &rule, highlightingRulesWithSymbols) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -94,32 +134,41 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     highlighter = new Highlighter(this->document());
     mErrorPosition = -1;
 
+    setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
 
     updateLineNumberAreaWidth(0);
 }
 
 static int getPos(const QString &fileData, int lineNumber)
 {
+    if (lineNumber <= 1)
+        return 0;
     for (int pos = 0, line = 1; pos < fileData.size(); ++pos) {
         if (fileData[pos] != '\n')
             continue;
         ++line;
-        if (line == lineNumber)
+        if (line >= lineNumber)
             return pos + 1;
     }
     return fileData.size();
 }
 
-void CodeEditor::setErrorLine(int errorLine)
+void CodeEditor::setError(const QString &code, int errorLine, const QStringList &symbols)
 {
-    mErrorPosition = getPos(toPlainText(), errorLine);
+    highlighter->setSymbols(symbols);
+
+    setPlainText(code);
+
+    mErrorPosition = getPos(code, errorLine);
     QTextCursor tc = textCursor();
     tc.setPosition(mErrorPosition);
     setTextCursor(tc);
     centerCursor();
+
+    highlightErrorLine();
 }
 
 int CodeEditor::lineNumberAreaWidth()
@@ -158,12 +207,8 @@ void CodeEditor::resizeEvent(QResizeEvent *event)
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
-void CodeEditor::highlightCurrentLine()
+void CodeEditor::highlightErrorLine()
 {
-    QTextCursor tc = textCursor();
-    tc.setPosition(mErrorPosition);
-    setTextCursor(tc);
-
     QList<QTextEdit::ExtraSelection> extraSelections;
 
     QTextEdit::ExtraSelection selection;
@@ -172,7 +217,8 @@ void CodeEditor::highlightCurrentLine()
 
     selection.format.setBackground(lineColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = textCursor();
+    selection.cursor = QTextCursor(document());
+    selection.cursor.setPosition(mErrorPosition);
     selection.cursor.clearSelection();
     extraSelections.append(selection);
 
