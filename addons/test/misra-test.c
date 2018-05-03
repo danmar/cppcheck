@@ -282,6 +282,14 @@ void misra_16_6() {
   case 2: break;
   default: break;
   }
+
+  // No 16.6 in this switch:
+  switch (x) {
+  case A: return 1; // 15.5
+  case B: return 1; // 15.5
+  case C: return 1; // 15.5
+  default: return 2; // 15.5
+  }
 }
 
 void misra_16_7() {

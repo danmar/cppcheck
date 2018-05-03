@@ -362,6 +362,22 @@ def isHexDigit(c):
 def isOctalDigit(c):
     return (c >= '0' and c <= '7')
 
+def isNoReturnScope(tok):
+    if tok is None or tok.str != '}':
+        return False
+    if tok.previous is None or tok.previous.str != ';':
+        return False
+    if simpleMatch(tok.previous.previous, 'break ;'):
+        return True
+    prev = tok.previous.previous
+    while prev and prev.str not in ';{}':
+        if prev.str in '])':
+            prev = prev.link
+        prev = prev.previous
+    if prev and prev.next.str in ['throw', 'return']:
+        return True
+    return False
+
 def misra_3_1(rawTokens):
     for token in rawTokens:
         if token.str.startswith('/*') or token.str.startswith('//'):
@@ -1022,11 +1038,11 @@ def misra_16_6(data):
         tok = token.next.link.next.next
         count = 0
         while tok:
-            if tok.str == 'break':
+            if tok.str in ['break', 'return', 'throw']:
                 count = count + 1
             elif tok.str == '{':
                 tok = tok.link
-                if simpleMatch(tok.previous.previous, 'break ;'):
+                if isNoReturnScope(tok):
                     count = count + 1
             elif tok.str == '}':
                 break
