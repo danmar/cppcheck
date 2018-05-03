@@ -1163,6 +1163,20 @@ def misra_20_5(data):
         if directive.str.startswith('#undef '):
             reportError(directive, 20, 5)
 
+def misra_20_14(data):
+    if1 = []
+    for directive in data.directives:
+        if directive.str.startswith('#if '):
+            if1.append(directive)
+        elif directive.str == '#else' or directive.str.startswith('#elif '):
+            if len(if1)==0:
+                if1.append(directive)
+            if directive.file != if1[-1].file:
+                reportError(directive, 20, 14)
+        elif len(if1) > 0 and directive.str == '#endif':
+            if directive.file != if1[-1].file:
+                reportError(directive, 20, 14)
+            if1.pop()
 
 def misra_21_3(data):
     for token in data.tokenlist:
@@ -1443,6 +1457,7 @@ for arg in sys.argv[1:]:
             misra_20_3(data.rawTokens)
         misra_20_4(cfg)
         misra_20_5(cfg)
+        misra_20_14(cfg)
         misra_21_3(cfg)
         misra_21_4(cfg)
         misra_21_5(cfg)
