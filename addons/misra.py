@@ -1163,6 +1163,16 @@ def misra_20_5(data):
         if directive.str.startswith('#undef '):
             reportError(directive, 20, 5)
 
+def misra_20_13(data):
+    for directive in data.directives:
+        dir = directive.str
+        if dir.find(' ') > 0:
+            dir = dir[:dir.find(' ')]
+        if dir.find('(') > 0:
+            dir = dir[:dir.find('(')]
+        if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include', '#pragma', '#undef', '#warning']:
+            reportError(directive, 20, 13)
+
 def misra_20_14(data):
     if1 = []
     for directive in data.directives:
@@ -1457,6 +1467,7 @@ for arg in sys.argv[1:]:
             misra_20_3(data.rawTokens)
         misra_20_4(cfg)
         misra_20_5(cfg)
+        misra_20_13(cfg)
         misra_20_14(cfg)
         misra_21_3(cfg)
         misra_21_4(cfg)
