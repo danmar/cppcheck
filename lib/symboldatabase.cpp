@@ -100,7 +100,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          tok->progressValue());
         // Locate next class
         if ((_tokenizer->isCPP() && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
-                                      !Token::Match(tok->previous(), "new|friend|const|)|(|<")) ||
+                                      !Token::Match(tok->previous(), "new|friend|const|enum|)|(|<")) ||
                                      (Token::Match(tok, "enum class| %name% {") ||
                                       Token::Match(tok, "enum class| %name% : %name% {"))))
             || (_tokenizer->isC() && Token::Match(tok, "struct|union|enum %name% {"))) {
@@ -154,7 +154,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 break; // bail
             }
 
-            Scope *new_scope = findScope(tok->next(), scope);
+            const Token * name = tok->next();
+
+            if (name->str() == "class" && name->strAt(-1) == "enum")
+                name = name->next();
+
+            Scope *new_scope = findScope(name, scope);
 
             if (new_scope) {
                 // only create base list for classes and structures
@@ -198,7 +203,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                 // fill typeList...
                 if (new_scope->isClassOrStructOrUnion() || new_scope->type == Scope::eEnum) {
-                    Type* new_type = findType(tok->next(), scope);
+                    Type* new_type = findType(name, scope);
                     if (!new_type) {
                         typeList.emplace_back(new_scope->classDef, new_scope, scope);
                         new_type = &typeList.back();
@@ -2328,6 +2333,8 @@ const std::string& Type::name() const
 {
     const Token* next = classDef->next();
     if (classScope && classScope->enumClass && isEnumType())
+        return next->strAt(1);
+    else if (next->str() == "class")
         return next->strAt(1);
     else if (next->isName())
         return next->str();

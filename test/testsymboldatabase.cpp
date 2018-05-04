@@ -283,6 +283,7 @@ private:
         TEST_CASE(symboldatabase63);
         TEST_CASE(symboldatabase64);
         TEST_CASE(symboldatabase65);
+        TEST_CASE(symboldatabase66); // #8540
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3815,6 +3816,15 @@ private:
         // don't crash on missing links from instantiation of template with typedef
         check("int ( * X0 ) ( long ) < int ( ) ( long ) > :: f0 ( int * ) { return 0 ; }");
         ASSERT_EQUALS("[test.cpp:1]: (debug) SymbolDatabase::findFunction found '>' without link.\n", errout.str());
+    }
+
+    void symboldatabase66() { // #8540
+        GET_SYMBOL_DB("enum class ENUM1;\n"
+                      "enum class ENUM2 { MEMBER2 };\n"
+                      "enum class ENUM3 : int { MEMBER1, };");
+        ASSERT(db != nullptr);
+        ASSERT(db && db->scopeList.size() == 3);
+        ASSERT(db && db->typeList.size() == 3);
     }
 
     void enum1() {
