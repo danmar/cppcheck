@@ -27,7 +27,7 @@ def compilecppcheck(CPPFLAGS):
 def runcppcheck(rev, folder):
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
     subprocess.call(['nice', '--adjustment=19', 'python',
-                    os.path.expanduser('~/cppcheck/tools/daca2.py'), '--cpulimit=90', folder, '--rev=' + rev])
+                    os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev])
 
 
 def daca2report(reportfolder):
