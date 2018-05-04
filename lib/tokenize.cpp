@@ -6314,6 +6314,7 @@ bool Tokenizer::simplifyKnownVariables()
     // constants..
     {
         std::map<unsigned int, std::string> constantValues;
+        std::map<unsigned int, std::list<Token*>> constantValueUsages;
         bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (goback) {
@@ -6373,18 +6374,7 @@ bool Tokenizer::simplifyKnownVariables()
                 const Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
                 const Token * const valuetok = vartok->tokAt(2);
                 if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% )| ;")) {
-                    //check if there's not a reference usage inside the code
-                    bool withreference = false;
-                    for (const Token *tok2 = valuetok->tokAt(2); tok2; tok2 = tok2->next()) {
-                        if (Token::Match(tok2,"(|[|,|{|return|%op% & %varid%", vartok->varId())) {
-                            withreference = true;
-                            break;
-                        }
-                    }
-                    //don't simplify 'f(&x)' to 'f(&100)'
-                    if (withreference)
-                        continue;
-
+                    // record a constant value for this variable
                     constantValues[vartok->varId()] = valuetok->str();
 
                     // remove statement
@@ -6397,9 +6387,31 @@ bool Tokenizer::simplifyKnownVariables()
                     ret = true;
                 }
             }
-
             else if (tok->varId() && constantValues.find(tok->varId()) != constantValues.end()) {
-                tok->str(constantValues[tok->varId()]);
+                // Record the usage of a known variable
+                constantValueUsages[tok->varId()].push_back(tok);
+            }
+        }
+
+        for (auto usageList : constantValueUsages)
+        {
+            bool referenceFound = false;
+            for (auto usage : usageList.second)
+            {
+                // check if any usages of each known variable are a reference
+                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", usageList.first))
+                {
+                    referenceFound = true;
+                    break;
+                }
+            }
+            if (!referenceFound)
+            {
+                // replace all usages of non-referenced known variables with their value
+                for (auto usage : usageList.second)
+                {
+                    usage->str(constantValues[usageList.first]);
+                }
             }
         }
     }
