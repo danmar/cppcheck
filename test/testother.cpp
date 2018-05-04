@@ -3955,6 +3955,9 @@ private:
 
         check("void f(int a) { a = a / (-a); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int i){ return !((i - 1) & i); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateVarExpression() {
