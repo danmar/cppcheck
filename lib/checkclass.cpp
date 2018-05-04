@@ -341,10 +341,10 @@ void CheckClass::copyconstructors()
             if (!funcCopyCtor || funcCopyCtor->isDefault()) {
                 bool unknown = false;
                 if (!isNonCopyable(scope, &unknown))
-                    noCopyConstructorError(scope, allocatedVars.begin()->second, unknown);
+                    noCopyConstructorError(scope, funcCopyCtor, allocatedVars.begin()->second, unknown);
             }
             if (!funcOperatorEq || funcOperatorEq->isDefault())
-                noOperatorEqError(scope, allocatedVars.begin()->second);
+                noOperatorEqError(scope, funcOperatorEq, allocatedVars.begin()->second);
             if (!funcDestructor || funcDestructor->isDefault()) {
                 const Token * mustDealloc = nullptr;
                 for (std::map<unsigned int, const Token*>::const_iterator it = allocatedVars.begin(); it != allocatedVars.end(); ++it) {
@@ -361,7 +361,7 @@ void CheckClass::copyconstructors()
                         mustDealloc = it->second;
                 }
                 if (mustDealloc)
-                    noDestructorError(scope, mustDealloc);
+                    noDestructorError(scope, funcDestructor, mustDealloc);
             }
         }
 
@@ -427,32 +427,39 @@ void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::st
                 "$symbol:" + varname + "\nValue of pointer '$symbol', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, false);
 }
 
-void CheckClass::noCopyConstructorError(const Scope *scope, const Token *alloc, bool inconclusive)
+static std::string noMemberErrorMessage(const Scope *scope, const char function[], bool isdefault)
 {
     const std::string &classname = scope ? scope->className : "class";
-    bool isStruct = scope ? (scope->type == Scope::eStruct) : false;
-    reportError(alloc, Severity::style, "noCopyConstructor",
-                "$symbol:" + classname + "\n" +
-                std::string(isStruct ? "Struct" : "Class") + " '$symbol' does not have a copy constructor but it has dynamic memory/resource allocation. It is recommended to delete or define the copy constructor.", CWE398, inconclusive);
+    const std::string type = (scope && scope->type == Scope::eStruct) ? "Struct" : "Class";
+    bool isDestructor = (function[0] == 'd');
+    std::string errmsg = "$symbol:" + classname + '\n';
+
+    if (isdefault) {
+        errmsg += type + " '$symbol' has dynamic memory/resource allocation(s). The " + function + " is explicitly defaulted but the default " + function + " does not work well.";
+        if (isDestructor)
+            errmsg += " It is recommended to define the " + std::string(function) + '.';
+        else
+            errmsg += " It is recommended to define or delete the " + std::string(function) + '.';
+    } else {
+        errmsg += type + " '$symbol' does not have a " + function + " which is recommended since it has dynamic memory/resource allocation(s).";
+    }
+
+    return errmsg;
 }
 
-void CheckClass::noOperatorEqError(const Scope *scope, const Token *alloc)
+void CheckClass::noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
-    const std::string &classname = scope ? scope->className : "class";
-    bool isStruct = scope ? (scope->type == Scope::eStruct) : false;
-    reportError(alloc, Severity::style, "noOperatorEq",
-                "$symbol:" + classname + "\n" +
-                std::string(isStruct ? "Struct" : "Class") + " '$symbol' does not have a assignment operator but it has dynamic memory/resource allocation. It is recommended to delete or define the assignment operator.", CWE398, false);
+    reportError(alloc, Severity::style, "noCopyConstructor", noMemberErrorMessage(scope, "copy constructor", isdefault), CWE398, inconclusive);
 }
 
-void CheckClass::noDestructorError(const Scope *scope, const Token *alloc)
+void CheckClass::noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc)
 {
-    const std::string &classname = scope ? scope->className : "class";
-    bool isStruct = scope ? (scope->type == Scope::eStruct) : false;
+    reportError(alloc, Severity::style, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, false);
+}
 
-    reportError(alloc, Severity::style, "noDestructor",
-                "$symbol:" + classname + "\n" +
-                std::string(isStruct ? "Struct" : "Class") + " '$symbol' does not have a destructor which is recommended since the class has dynamic memory/resource allocation.", CWE398, false);
+void CheckClass::noDestructorError(const Scope *scope, bool isdefault, const Token *alloc)
+{
+    reportError(alloc, Severity::style, "noDestructor", noMemberErrorMessage(scope, "destructor", isdefault), CWE398, false);
 }
 
 bool CheckClass::canNotCopy(const Scope *scope)

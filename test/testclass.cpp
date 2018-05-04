@@ -701,7 +701,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Class 'F' does not have a copy constructor but it has dynamic memory/resource allocation. It is recommended to delete or define the copy constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -736,7 +736,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Class 'F' does not have a copy constructor but it has dynamic memory/resource allocation. It is recommended to delete or define the copy constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("class E { E(E&); };\n" // non-copyable
                              "class F : E\n"
@@ -759,7 +759,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'F' does not have a copy constructor but it has dynamic memory/resource allocation. It is recommended to delete or define the copy constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
@@ -778,7 +778,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'F' does not have a copy constructor but it has dynamic memory/resource allocation. It is recommended to delete or define the copy constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         // #7198
         checkCopyConstructor("struct F {\n"
@@ -824,7 +824,7 @@ private:
                              "   F&operator=(const F &f);\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a copy constructor but it has dynamic memory/resource allocation. It is recommended to delete or define the copy constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The copy constructor is explicitly defaulted but the default copy constructor does not work well. It is recommended to define or delete the copy constructor.\n", errout.str());
     }
 
     void noOperatorEq() {
@@ -834,7 +834,7 @@ private:
                              "   F(const F &f);\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a assignment operator but it has dynamic memory/resource allocation. It is recommended to delete or define the assignment operator.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         // defaulted operator=
         checkCopyConstructor("struct F {\n"
@@ -844,7 +844,7 @@ private:
                              "   F &operator=(const F &f) = default;\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a assignment operator but it has dynamic memory/resource allocation. It is recommended to delete or define the assignment operator.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The operator= is explicitly defaulted but the default operator= does not work well. It is recommended to define or delete the operator=.\n", errout.str());
 
         // deleted operator=
         checkCopyConstructor("struct F {\n"
@@ -864,7 +864,7 @@ private:
                              "   F(const F &f);\n"
                              "   F&operator=(const F&);"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a destructor which is recommended since the class has dynamic memory/resource allocation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("struct F {\n"
                              "   C* c;\n"
@@ -881,7 +881,7 @@ private:
                              "   F(const F &f);\n"
                              "   F&operator=(const F&);"
                              "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Struct 'F' does not have a destructor which is recommended since the class has dynamic memory/resource allocation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         // defaulted destructor
         checkCopyConstructor("struct F {\n"
@@ -891,7 +891,7 @@ private:
                              "   F &operator=(const F &f);\n"
                              "   ~F() = default;\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a destructor which is recommended since the class has dynamic memory/resource allocation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The destructor is explicitly defaulted but the default destructor does not work well. It is recommended to define the destructor.\n", errout.str());
 
         // deleted destructor
         checkCopyConstructor("struct F {\n"
