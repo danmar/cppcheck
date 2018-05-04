@@ -1663,7 +1663,7 @@ static bool valueFlowForward(Token * const               startToken,
                 // '{'
                 Token * const startToken1 = tok2->linkAt(1)->next();
 
-                valueFlowForward(startToken1->next(),
+                if (!valueFlowForward(startToken1->next(),
                                  startToken1->link(),
                                  var,
                                  varid,
@@ -1672,7 +1672,8 @@ static bool valueFlowForward(Token * const               startToken,
                                  subFunction,
                                  tokenlist,
                                  errorLogger,
-                                 settings);
+                                 settings))
+                    return false;
 
                 if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                     removeValues(values, truevalues);
@@ -1691,7 +1692,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if (Token::simpleMatch(tok2, "} else {")) {
                     Token * const startTokenElse = tok2->tokAt(2);
 
-                    valueFlowForward(startTokenElse->next(),
+                    if (!valueFlowForward(startTokenElse->next(),
                                      startTokenElse->link(),
                                      var,
                                      varid,
@@ -1700,7 +1701,8 @@ static bool valueFlowForward(Token * const               startToken,
                                      subFunction,
                                      tokenlist,
                                      errorLogger,
-                                     settings);
+                                     settings))
+                        return false;
 
                     if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         removeValues(values, falsevalues);
