@@ -983,10 +983,10 @@ def misra_16_3(rawTokens):
             state = STATE_BREAK
         elif token.str == '{':
             state = STATE_OK
-        elif token.str == '}' and state == STATE_BREAK:
+        elif token.str == '}' and state == STATE_OK:
             # is this {} an unconditional block of code?
             link = findRawLink(token)
-            if (link is None) or (link.previous is None) or (link.previous not in ':;{}'):
+            if (link is None) or (link.previous is None) or (link.previous.str not in ':;{}'):
                 state = STATE_NONE
         elif token.str == 'case' or token.str == 'default':
             if state != STATE_OK:
