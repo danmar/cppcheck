@@ -327,25 +327,25 @@ void CheckClass::copyconstructors()
         }
 
         if (!allocatedVars.empty()) {
-            bool hasCopyCtor = false;
-            bool hasOperatorEq = false;
-            bool hasDestructor = false;
+            const Function *funcCopyCtor = nullptr;
+            const Function *funcOperatorEq = nullptr;
+            const Function *funcDestructor = nullptr;
             for (const Function &func : scope->functionList) {
                 if (func.type == Function::eCopyConstructor)
-                    hasCopyCtor = true;
+                    funcCopyCtor = &func;
                 else if (func.type == Function::eOperatorEqual)
-                    hasOperatorEq = true;
+                    funcOperatorEq = &func;
                 else if (func.type == Function::eDestructor)
-                    hasDestructor = true;
+                    funcDestructor = &func;
             }
-            if (!hasCopyCtor) {
+            if (!funcCopyCtor || funcCopyCtor->isDefault()) {
                 bool unknown = false;
                 if (!isNonCopyable(scope, &unknown))
                     noCopyConstructorError(scope, allocatedVars.begin()->second, unknown);
             }
-            if (!hasOperatorEq)
+            if (!funcOperatorEq || funcOperatorEq->isDefault())
                 noOperatorEqError(scope, allocatedVars.begin()->second);
-            if (!hasDestructor) {
+            if (!funcDestructor || funcDestructor->isDefault()) {
                 const Token * mustDealloc = nullptr;
                 for (std::map<unsigned int, const Token*>::const_iterator it = allocatedVars.begin(); it != allocatedVars.end(); ++it) {
                     if (!Token::Match(it->second, "%var% [(=] new %type%")) {
