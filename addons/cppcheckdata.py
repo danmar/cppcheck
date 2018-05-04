@@ -551,7 +551,7 @@ class Configuration:
             if element.tag == 'variables':
                 for variable in element:
                     var = Variable(variable)
-                    if var.nameToken:
+                    if var.nameTokenId:
                         self.variables.append(var)
                     else:
                         arguments.append(var)
