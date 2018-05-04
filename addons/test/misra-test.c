@@ -283,7 +283,7 @@ void misra_16_6() {
   default: break;
   }
 
-  // No 16.6 in this switch:
+  // No 16 6 in this switch:
   switch (x) {
   case A: return 1; // 15.5
   case B: return 1; // 15.5
