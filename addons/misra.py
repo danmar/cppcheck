@@ -1174,19 +1174,24 @@ def misra_20_13(data):
             reportError(directive, 20, 13)
 
 def misra_20_14(data):
-    if1 = []
+    # stack for #if blocks. contains the #if directive until the corresponding #endif is seen.
+    # the size increases when there are inner #if directives.
+    ifStack = []
     for directive in data.directives:
         if directive.str.startswith('#if '):
-            if1.append(directive)
+            ifStack.append(directive)
         elif directive.str == '#else' or directive.str.startswith('#elif '):
-            if len(if1)==0:
-                if1.append(directive)
-            if directive.file != if1[-1].file:
+            if len(ifStack)==0:
                 reportError(directive, 20, 14)
-        elif len(if1) > 0 and directive.str == '#endif':
-            if directive.file != if1[-1].file:
+                ifStack.append(directive)
+            elif directive.file != ifStack[-1].file:
                 reportError(directive, 20, 14)
-            if1.pop()
+        elif directive.str == '#endif':
+            if len(ifStack) == 0:
+                reportError(directive, 20, 14)
+            elif  directive.file != ifStack[-1].file:
+                reportError(directive, 20, 14)
+                ifStack.pop()
 
 def misra_21_3(data):
     for token in data.tokenlist:
