@@ -70,7 +70,7 @@ static const Token* skipScopeIdentifiers(const Token* tok)
         tok = tok->next();
     }
     while (Token::Match(tok, "%name% ::") ||
-           (Token::Match(tok, "%name% <") && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::")) {
+           (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> ::"))) {
         if (tok->strAt(1) == "::")
             tok = tok->tokAt(2);
         else
@@ -3848,7 +3848,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
         if (scope) {
             // follow qualification
             while (scope && (Token::Match(tok1, "%type% ::") ||
-                             (Token::Match(tok1, "%type% <") && tok1->linkAt(1) && Token::simpleMatch(tok1->linkAt(1)->next(), "::")))) {
+                             (Token::Match(tok1, "%type% <") && Token::simpleMatch(tok1->linkAt(1), "> ::")))) {
                 if (tok1->strAt(1) == "::")
                     tok1 = tok1->tokAt(2);
                 else
@@ -4497,7 +4497,7 @@ const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope
         if (tok->strAt(1) == "::") {
             scope = scope->findRecordInNestedList(tok->str());
             tok = tok->tokAt(2);
-        } else if (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::") {
+        } else if (tok->strAt(1) == "<" && Token::simpleMatch(tok->linkAt(1), "> ::")) {
             scope = scope->findRecordInNestedList(tok->str());
             tok = tok->linkAt(1)->tokAt(2);
         } else
@@ -4532,7 +4532,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
     const Scope* scope = start_scope;
 
     while (scope && tok && tok->isName()) {
-        if (tok->strAt(1) == "::" || (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::")) {
+        if (tok->strAt(1) == "::" || (tok->strAt(1) == "<" && Token::simpleMatch(tok->linkAt(1), "> ::"))) {
             scope = scope->findRecordInNestedList(tok->str());
             if (scope) {
                 if (tok->strAt(1) == "::")
@@ -4564,7 +4564,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
             start_scope = startScope;
 
             while (scope && tok && tok->isName()) {
-                if (tok->strAt(1) == "::" || (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::")) {
+                if (tok->strAt(1) == "::" || (tok->strAt(1) == "<" && Token::simpleMatch(tok->linkAt(1), "> ::"))) {
                     scope = scope->findRecordInNestedList(tok->str());
                     if (scope) {
                         if (tok->strAt(1) == "::")
@@ -4619,7 +4619,7 @@ const Type* SymbolDatabase::findTypeInNested(const Token *startTok, const Scope 
     const Scope* scope = startScope;
 
     while (scope && tok && tok->isName()) {
-        if (tok->strAt(1) == "::" || (tok->strAt(1) == "<" && tok->linkAt(1) && tok->linkAt(1)->strAt(1) == "::")) {
+        if (tok->strAt(1) == "::" || (tok->strAt(1) == "<" && Token::simpleMatch(tok->linkAt(1), "> ::"))) {
             hasPath = true;
             scope = scope->findRecordInNestedList(tok->str());
             if (scope) {
