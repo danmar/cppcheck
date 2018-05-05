@@ -340,11 +340,14 @@ void CheckClass::copyconstructors()
             }
             if (!funcCopyCtor || funcCopyCtor->isDefault()) {
                 bool unknown = false;
-                if (!isNonCopyable(scope, &unknown))
+                if (!isNonCopyable(scope, &unknown) && !unknown)
                     noCopyConstructorError(scope, funcCopyCtor, allocatedVars.begin()->second, unknown);
             }
-            if (!funcOperatorEq || funcOperatorEq->isDefault())
-                noOperatorEqError(scope, funcOperatorEq, allocatedVars.begin()->second);
+            if (!funcOperatorEq || funcOperatorEq->isDefault()) {
+                bool unknown = false;
+                if (!isNonCopyable(scope, &unknown) && !unknown)
+                    noOperatorEqError(scope, funcOperatorEq, allocatedVars.begin()->second, unknown);
+            }
             if (!funcDestructor || funcDestructor->isDefault()) {
                 const Token * mustDealloc = nullptr;
                 for (std::map<unsigned int, const Token*>::const_iterator it = allocatedVars.begin(); it != allocatedVars.end(); ++it) {
@@ -452,9 +455,9 @@ void CheckClass::noCopyConstructorError(const Scope *scope, bool isdefault, cons
     reportError(alloc, Severity::style, "noCopyConstructor", noMemberErrorMessage(scope, "copy constructor", isdefault), CWE398, inconclusive);
 }
 
-void CheckClass::noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc)
+void CheckClass::noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
-    reportError(alloc, Severity::style, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, false);
+    reportError(alloc, Severity::style, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, inconclusive);
 }
 
 void CheckClass::noDestructorError(const Scope *scope, bool isdefault, const Token *alloc)

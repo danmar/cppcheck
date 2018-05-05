@@ -736,7 +736,7 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkCopyConstructor("class E { E(E&); };\n" // non-copyable
                              "class F : E\n"
@@ -852,6 +852,15 @@ private:
                              "   F() { c = malloc(100); }\n"
                              "   F(const F &f);\n"
                              "   F &operator=(const F &f) = delete;\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // base class deletes operator=
+        checkCopyConstructor("struct F : NonCopyable {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
                              "   ~F();\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
