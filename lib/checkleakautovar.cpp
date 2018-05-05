@@ -193,6 +193,19 @@ static bool isVarUsedInTree(const Token *tok, unsigned int varid)
     return isVarUsedInTree(tok->astOperand1(), varid) || isVarUsedInTree(tok->astOperand2(), varid);
 }
 
+static bool isPointerReleased(const Token *startToken, const Token *endToken, unsigned int varid)
+{
+    for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
+        if (tok->varId() != varid)
+            continue;
+        if(Token::Match(tok, "%var% . release ( )"))
+            return true;
+        if(Token::Match(tok, "%var% ="))
+            return false;
+    }
+    return false;
+}
+
 void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
                                   std::set<unsigned int> notzero)
@@ -563,6 +576,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             const Token * typeEndTok = ftok->linkAt(1);
             if (!Token::Match(typeEndTok, "> %var% {|( %var% ,|)|}"))
+                continue;
+
+            tok = typeEndTok->linkAt(2);
+
+            unsigned varid = typeEndTok->next()->varId();
+            if(isPointerReleased(typeEndTok->tokAt(2), endToken, varid))
                 continue;
 
             bool arrayDelete = false;
