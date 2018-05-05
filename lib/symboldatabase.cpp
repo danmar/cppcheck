@@ -1787,9 +1787,8 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
             setFlag(fHasFinalSpecifier, true);
         else if (tok->str() == "noexcept") {
             isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
-            tok = tok->next();
-            if (tok->str() == "(")
-                tok = tok->link();
+            if (tok->next()->str() == "(")
+                tok = tok->linkAt(1);
         } else if (Token::simpleMatch(tok, "throw (")) {
             isThrow(true);
             if (tok->strAt(2) != ")")

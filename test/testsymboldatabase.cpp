@@ -284,6 +284,7 @@ private:
         TEST_CASE(symboldatabase64);
         TEST_CASE(symboldatabase65);
         TEST_CASE(symboldatabase66); // #8540
+        TEST_CASE(symboldatabase67); // #8538
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2858,6 +2859,7 @@ private:
         if (db) {
             ASSERT_EQUALS(1U, db->functionScopes.size());
             ASSERT_EQUALS("getReg", db->functionScopes.front()->className);
+            ASSERT_EQUALS(true, db->functionScopes.front()->function->hasOverrideSpecifier());
         }
     }
 
@@ -3825,6 +3827,15 @@ private:
         ASSERT(db != nullptr);
         ASSERT(db && db->scopeList.size() == 3);
         ASSERT(db && db->typeList.size() == 3);
+    }
+
+    void symboldatabase67() { // #8538
+        GET_SYMBOL_DB("std::string get_endpoint_url() const noexcept override;");
+        const Function *f = db ? &db->scopeList.front().functionList.front() : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->hasOverrideSpecifier());
+        ASSERT(f && f->isConst());
+        ASSERT(f && f->isNoExcept());
     }
 
     void enum1() {
