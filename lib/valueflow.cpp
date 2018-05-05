@@ -16,6 +16,65 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @brief This is the ValueFlow component in Cppcheck.
+ *
+ * Each @sa Token in the token list has a list of values. These are possible
+ * the "possible" values for the Token at runtime.
+ *
+ * In the --debug and --debug-normal output you can see the ValueFlow data. For example:
+ *
+ *     int f()
+ *     {
+ *         int x = 10;
+ *         return 4 * x + 2;
+ *     }
+ *
+ * The --debug-normal output says:
+ *
+ *     ##Value flow
+ *     Line 3
+ *       10 always 10
+ *     Line 4
+ *       4 always 4
+ *       * always 40
+ *       x always 10
+ *       + always 42
+ *       2 always 2
+ *
+ * All value flow analysis is executed in the ValueFlow::setValues() function. The ValueFlow analysis is executed after the tokenizer/ast/symboldatabase/etc..
+ * The ValueFlow analysis is done in a series of valueFlow* function calls, where each such function call can only use results from previous function calls.
+ * The function calls should be arranged so that valueFlow* that do not require previous ValueFlow information should be first.
+ *
+ * Type of analysis
+ * ================
+ *
+ * This is "flow sensitive" value flow analysis. We _usually_ track the value for 1 variable at a time.
+ *
+ * How are calculations handled
+ * ============================
+ *
+ * Here is an example code:
+ *
+ *   x = 3 + 4;
+ *
+ * The valueFlowNumber set the values for the "3" and "4" tokens by calling setTokenValue().
+ * The setTokenValue() handle the calculations automatically. When both "3" and "4" have values, the "+" can be calculated. setTokenValue() recursively calls itself when parents in calculations can be calculated.
+ *
+ * Forward / Reverse flow analysis
+ * ===============================
+ *
+ * In forward value flow analysis we know a value and see what happens when we are stepping the program forward. Like normal execution.
+ * The valueFlowForward is used in this analysis.
+ *
+ * In reverse value flow analysis we know the value of a variable at line X. And try to "execute backwards" to determine possible values before line X.
+ * The valueFlowReverse is used in this analysis.
+ *
+ *
+ */
+
+
+
 #include "valueflow.h"
 
 #include "astutils.h"
