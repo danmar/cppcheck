@@ -109,6 +109,7 @@ private:
         TEST_CASE(mismatchAllocDealloc);
 
         TEST_CASE(smartPointerDeleter);
+        TEST_CASE(smartPointerRelease);
 
         // Execution reaches a 'return'
         TEST_CASE(return1);
@@ -1252,6 +1253,22 @@ private:
               "    std::unique_ptr<int, decltype(&destroy)> xp(x, &destroy());\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+    void smartPointerRelease() {
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "    x.release();\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "    x.release();\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: i\n", errout.str());
     }
 
     void return1() {
