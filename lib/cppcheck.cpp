@@ -303,6 +303,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         std::set<unsigned long long> checksums;
         unsigned int checkCount = 0;
+        bool hasValidConfig = false;
         for (std::set<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // bail out if terminated
             if (_settings.terminated())
@@ -362,6 +363,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 timer.Stop();
                 if (tokensP.empty())
                     continue;
+                hasValidConfig = true;
 
                 // skip rest of iteration if just checking configuration
                 if (_settings.checkConfiguration)
@@ -440,6 +442,20 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 reportErr(errmsg);
             }
+        }
+
+        if (!hasValidConfig && configurations.size() > 1) {
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            ErrorLogger::ErrorMessage::FileLocation loc;
+            loc.setfile(Path::toNativeSeparators(filename));
+            locationList.push_back(loc);
+            ErrorLogger::ErrorMessage errmsg(locationList,
+                                             loc.getfile(),
+                                             Severity::information,
+                                             "No tested configuration is valid, this file is not analyzed.",
+                                             "noValidConfiguration",
+                                             false);
+            reportErr(errmsg);
         }
 
         // dumped all configs, close root </dumps> element now
