@@ -1780,18 +1780,18 @@ private:
     }
 
     void array_index_negative3() {
-      check("int f(int i) {\n"
-            "    int p[2] = {0, 0};\n"
-            "    if(i >= 2)\n"
-            "        return 0;\n"
-            "    else if(i == 0)\n"
-            "        return 0;\n"
-            "    return p[i - 1];\n"
-            "}\n"
-            "void g(int i) {\n"
-            "    if( i == 0 )\n"
-            "        return f(i);\n"
-            "}");
+        check("int f(int i) {\n"
+              "    int p[2] = {0, 0};\n"
+              "    if(i >= 2)\n"
+              "        return 0;\n"
+              "    else if(i == 0)\n"
+              "        return 0;\n"
+              "    return p[i - 1];\n"
+              "}\n"
+              "void g(int i) {\n"
+              "    if( i == 0 )\n"
+              "        return f(i);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

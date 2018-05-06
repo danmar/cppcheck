@@ -1723,15 +1723,15 @@ static bool valueFlowForward(Token * const               startToken,
                 Token * const startToken1 = tok2->linkAt(1)->next();
 
                 bool vfresult = valueFlowForward(startToken1->next(),
-                                 startToken1->link(),
-                                 var,
-                                 varid,
-                                 truevalues,
-                                 constValue,
-                                 subFunction,
-                                 tokenlist,
-                                 errorLogger,
-                                 settings);
+                                                 startToken1->link(),
+                                                 var,
+                                                 varid,
+                                                 truevalues,
+                                                 constValue,
+                                                 subFunction,
+                                                 tokenlist,
+                                                 errorLogger,
+                                                 settings);
 
                 if (!condAlwaysFalse && isVariableChanged(startToken1, startToken1->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                     removeValues(values, truevalues);
@@ -1751,15 +1751,15 @@ static bool valueFlowForward(Token * const               startToken,
                     Token * const startTokenElse = tok2->tokAt(2);
 
                     vfresult = valueFlowForward(startTokenElse->next(),
-                                     startTokenElse->link(),
-                                     var,
-                                     varid,
-                                     falsevalues,
-                                     constValue,
-                                     subFunction,
-                                     tokenlist,
-                                     errorLogger,
-                                     settings);
+                                                startTokenElse->link(),
+                                                var,
+                                                varid,
+                                                falsevalues,
+                                                constValue,
+                                                subFunction,
+                                                tokenlist,
+                                                errorLogger,
+                                                settings);
 
                     if (!condAlwaysTrue && isVariableChanged(startTokenElse, startTokenElse->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
                         removeValues(values, falsevalues);

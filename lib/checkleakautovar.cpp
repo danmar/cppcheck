@@ -198,9 +198,9 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, un
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
         if (tok->varId() != varid)
             continue;
-        if(Token::Match(tok, "%var% . release ( )"))
+        if (Token::Match(tok, "%var% . release ( )"))
             return true;
-        if(Token::Match(tok, "%var% ="))
+        if (Token::Match(tok, "%var% ="))
             return false;
     }
     return false;
@@ -581,7 +581,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             tok = typeEndTok->linkAt(2);
 
             unsigned varid = typeEndTok->next()->varId();
-            if(isPointerReleased(typeEndTok->tokAt(2), endToken, varid))
+            if (isPointerReleased(typeEndTok->tokAt(2), endToken, varid))
                 continue;
 
             bool arrayDelete = false;
