@@ -10,6 +10,7 @@ knownConditionTrueFalse:build/*
 nullPointer:lib/checkother.cpp
 nullPointer:build/checkother.cpp
 missingOverride
+noValidConfiguration
 
 *:gui/test/*
 *:test/test.cxx
