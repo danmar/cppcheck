@@ -1722,7 +1722,7 @@ static bool valueFlowForward(Token * const               startToken,
                 // '{'
                 Token * const startToken1 = tok2->linkAt(1)->next();
 
-                valueFlowForward(startToken1->next(),
+                bool vfresult = valueFlowForward(startToken1->next(),
                                  startToken1->link(),
                                  var,
                                  varid,
@@ -1741,7 +1741,7 @@ static bool valueFlowForward(Token * const               startToken,
                 // goto '}'
                 tok2 = startToken1->link();
 
-                if (isReturnScope(tok2)) {
+                if (isReturnScope(tok2) || !vfresult) {
                     if (condAlwaysTrue)
                         return false;
                     removeValues(values, truevalues);
@@ -1750,7 +1750,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if (Token::simpleMatch(tok2, "} else {")) {
                     Token * const startTokenElse = tok2->tokAt(2);
 
-                    valueFlowForward(startTokenElse->next(),
+                    vfresult = valueFlowForward(startTokenElse->next(),
                                      startTokenElse->link(),
                                      var,
                                      varid,
@@ -1769,7 +1769,7 @@ static bool valueFlowForward(Token * const               startToken,
                     // goto '}'
                     tok2 = startTokenElse->link();
 
-                    if (isReturnScope(tok2)) {
+                    if (isReturnScope(tok2) || !vfresult) {
                         if (condAlwaysFalse)
                             return false;
                         removeValues(values, falsevalues);

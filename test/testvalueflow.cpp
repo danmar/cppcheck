@@ -2455,6 +2455,18 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
 
+        code = "int f(int i) {\n"
+               "  if(i >= 2)\n"
+               "    return 0;\n"
+               "  else if(i == 0)\n"
+               "    return 0;\n"
+               "  int a = i;\n"
+               "}\n"
+               "void g(int i) {\n"
+               "  return f(0);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+
         code = "void f1(int x) { a=x; }\n"
                "void f2(int y) { f1(y<123); }\n";
         ASSERT_EQUALS(true, testValueOfX(code, 1U, 0));
