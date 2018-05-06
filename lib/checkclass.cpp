@@ -280,7 +280,7 @@ static bool isNonCopyable(const Scope *scope, bool *unknown)
     bool u = false;
     // check if there is base class that is not copyable
     for (const Type::BaseInfo &baseInfo : scope->definedType->derivedFrom) {
-        if (!baseInfo.type) {
+        if (!baseInfo.type || !baseInfo.type->classScope) {
             u = true;
             continue;
         }
