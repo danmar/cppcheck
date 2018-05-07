@@ -19,7 +19,7 @@
 /**
  * @brief This is the ValueFlow component in Cppcheck.
  *
- * Each @sa Token in the token list has a list of values. These are possible
+ * Each @sa Token in the token list has a list of values. These are
  * the "possible" values for the Token at runtime.
  *
  * In the --debug and --debug-normal output you can see the ValueFlow data. For example:
