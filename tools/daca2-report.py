@@ -147,7 +147,6 @@ for lib in (False, True):
         data = data.replace('&', '&amp;')
         data = data.replace('<', '&lt;')
         data = data.replace('>', '&gt;')
-        data = data.replace('\n', '\n')
 
         f = open(path + 'daca2-' + a + '.html', 'wt')
         f.write('<!DOCTYPE html>\n')
