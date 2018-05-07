@@ -125,13 +125,7 @@ for lib in (False, True):
                 continue
             severity = res.group(1)
             messageId = res.group(2)
-            if messageId == 'cppcheckError':
-                continue
-            if messageId == 'internalAstError':
-                continue
-            if messageId == 'preprocessorErrorDirective':
-                continue
-            if messageId == 'syntaxError':
+            if messageId in ['cppcheckError', 'internalAstError', 'preprocessorErrorDirective', 'syntaxError']:
                 continue
             totalNumber[severity] = totalNumber[severity] + 1
             if messageId not in categories[severity]:
