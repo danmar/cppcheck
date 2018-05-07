@@ -94,6 +94,7 @@ for severity in ['error', 'warning', 'style', 'portability', 'performance']:
     categories[severity] = []
 
 daca2 = daca2folder
+pattern = re.compile(r'.*: (error|warning|style|performance|portability):.* \[([a-zA-Z0-9_\\-]+)\]')
 for lib in (False, True):
     for a in "0123456789abcdefghijklmnopqrstuvwxyz":
         if lib:
@@ -120,7 +121,7 @@ for lib in (False, True):
             datestr = ''
 
         for line in data.split('\n'):
-            res = re.match(r'.*: (error|warning|style|performance|style|portability):.* \[([a-zA-Z0-9_\\-]+)\]', line)
+            res = pattern.match(line)
             if res is None:
                 continue
             severity = res.group(1)
