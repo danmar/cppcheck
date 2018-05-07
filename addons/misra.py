@@ -458,15 +458,17 @@ def misra_5_3(data):
 
 
 def misra_5_4(data):
+    compiled = re.compile(r'#define [a-zA-Z0-9_]{64,}')
     for dir in data.directives:
-        if re.match(r'#define [a-zA-Z0-9_]{64,}', dir.str):
+        if compiled.match(dir.str):
             reportError(dir, 5, 4)
 
 
 def misra_5_5(data):
     macroNames = []
+    compiled = re.compile(r'#define ([A-Za-z0-9_]+)')
     for dir in data.directives:
-        res = re.match(r'#define ([A-Za-z0-9_]+)', dir.str)
+        res = compiled.match(dir.str)
         if res:
             macroNames.append(res.group(1))
     for var in data.variables:
@@ -475,14 +477,16 @@ def misra_5_5(data):
 
 
 def misra_7_1(rawTokens):
+    compiled = re.compile(r'^0[0-7]+$')
     for tok in rawTokens:
-        if re.match(r'^0[0-7]+$', tok.str):
+        if compiled.match(tok.str):
             reportError(tok, 7, 1)
 
 
 def misra_7_3(rawTokens):
+    compiled = re.compile(r'^[0-9]+l')
     for tok in rawTokens:
-        if re.match(r'^[0-9]+l', tok.str):
+        if compiled.match(tok.str):
             reportError(tok, 7, 3)
 
 
@@ -690,8 +694,9 @@ def misra_11_8(data):
 
 
 def misra_11_9(data):
+    compiled = re.compile(r'#define ([A-Za-z_][A-Za-z_0-9]*) (.*)')
     for directive in data.directives:
-        res1 = re.match(r'#define ([A-Za-z_][A-Za-z_0-9]*) (.*)', directive.str)
+        res1 = compiled.match(directive.str)
         if not res1:
             continue
         name = res1.group(1)
@@ -704,13 +709,14 @@ def misra_11_9(data):
 
 def misra_12_1_sizeof(rawTokens):
     state = 0
+    compiled = re.compile(r'^[a-zA-Z_]')
     for tok in rawTokens:
         if tok.str.startswith('//') or tok.str.startswith('/*'):
             continue
         if tok.str == 'sizeof':
             state = 1
         elif state == 1:
-            if re.match(r'^[a-zA-Z_]', tok.str):
+            if compiled.match(tok.str):
                 state = 2
             else:
                 state = 0
@@ -1241,6 +1247,10 @@ def loadRuleTexts(filename):
     appendixA = False
     ruleText = False
     global ruleTexts
+    Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
+    Choice_pattern = re.compile(r'^[ ]*(Advisory|Required|Mandatory)$')
+    xA_Z_pattern = re.compile(r'^[#A-Z].*')
+    a_z_pattern = re.compile(r'^[a-z].*')
     for line in open(filename, 'rt'):
         line = line.replace('\r', '').replace('\n', '')
         if len(line) == 0:
@@ -1255,21 +1265,21 @@ def loadRuleTexts(filename):
             continue
         if line.find('Appendix B') >= 0:
             break
-        res = re.match(r'^Rule ([0-9]+).([0-9]+)', line)
+        res = Rule_pattern.match(line)
         if res:
             num1 = int(res.group(1))
             num2 = int(res.group(2))
             ruleText = False
             continue
-        if re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line):
+        if Choice_pattern.match(line):
             ruleText = False
-        elif re.match(r'^[#A-Z].*', line):
+        elif xA_Z_pattern.match(line):
             if ruleText:
                 num2 = num2 + 1
             num = num1 * 100 + num2
             ruleTexts[num] = line
             ruleText = True
-        elif ruleText and re.match(r'^[a-z].*', line):
+        elif ruleText and a_z_pattern.match(line):
             num = num1 * 100 + num2
             ruleTexts[num] = ruleTexts[num] + ' ' + line
             continue
@@ -1331,8 +1341,9 @@ def generateTable():
 
     # what rules are handled by this addon?
     addon = []
+    compiled = re.compile(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*')
     for line in open('misra.py'):
-        res = re.match(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*', line)
+        res = compiled.match(line)
         if res is None:
             continue
         addon.append(res.group(1) + '.' + res.group(2))
@@ -1391,8 +1402,9 @@ for arg in sys.argv[1:]:
         VERIFY_EXPECTED = []
         for tok in data.rawTokens:
             if tok.str.startswith('//') and 'TODO' not in tok.str:
+                compiled = re.compile(r'[0-9]+\.[0-9]+')
                 for word in tok.str[2:].split(' '):
-                    if re.match(r'[0-9]+\.[0-9]+', word):
+                    if compiled.match(word):
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
     else:
         print('Checking ' + arg + '...')
