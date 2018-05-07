@@ -53,10 +53,10 @@ def doSearch(path,arguments):
 
 def summary(path, arguments):
   count = {}
+  pattern = re.compile(r'.*: (error|warning|style|performance|portability):.*\[([a-zA-Z0-9]+)\]$')
   for g in getfiles(path, arguments):
     for line in readlines(g):
-      line = trimline(line)
-      res = re.match(r'.*: (error|warning|style|performance|portability):.*\[([a-zA-Z0-9]+)\]$', line)
+      res = pattern.match(trimline(line))
       if res is None:
         continue
       id = res.group(2)
