@@ -10220,9 +10220,7 @@ void Tokenizer::simplifyNamespaceAliases()
     int scope = 0;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok)
-            break;
-        else if (tok->str() == "{")
+        if (tok->str() == "{")
             scope++;
         else if (tok->str() == "}")
             scope--;
