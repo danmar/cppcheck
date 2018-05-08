@@ -442,7 +442,7 @@ def misra_5_2(data):
         if len(scopeVars[scope]["varlist"]) <= 1:
             continue
         for i, variable1 in enumerate(scopeVars[scope]["varlist"]):
-            for j, variable2 in enumerate(scopeVars[scope]["varlist"][i + 1:]):
+            for variable2 in scopeVars[scope]["varlist"][i + 1:]:
                 if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
                         variable1.Id != variable2.Id):
                     if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
@@ -458,7 +458,7 @@ def misra_5_2(data):
         if len(scopeVars[scope]["scopelist"]) <= 1:
             continue
         for i, scopename1 in enumerate(scopeVars[scope]["scopelist"]):
-            for j, scopename2 in enumerate(scopeVars[scope]["scopelist"][i + 1:]):
+            for scopename2 in scopeVars[scope]["scopelist"][i + 1:]:
                 if (scopename1.className[:31] == scopename2.className[:31]):
                     if int(scopename1.bodyStart.linenr) > int(scopename2.bodyStart.linenr):
                         reportError(scopename1.bodyStart, 5, 2)
