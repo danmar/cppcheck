@@ -512,10 +512,41 @@ def misra_5_3(data):
 
 
 def misra_5_4(data):
-    compiled = re.compile(r'#define [a-zA-Z0-9_]{64,}')
+    macro = {}
+    compile_name = re.compile(r'#define ([a-zA-Z0-9_]+)')
+    compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[\(]([a-zA-Z0-9_, ]+)[\)]')
     for dir in data.directives:
-        if compiled.match(dir.str):
-            reportError(dir, 5, 4)
+        res1 = compile_name.match(dir.str)
+        if res1:
+            if dir not in macro:
+                macro.setdefault(dir, {})["name"] = []
+                macro.setdefault(dir, {})["params"] = []
+            macro[dir]["name"] = res1.group(1)
+        res2 = compile_param.match(dir.str)
+        if res2:
+            res_gp2 = res2.group(2).split(",")
+            res_gp2 = [macroname.replace(" ", "") for macroname in res_gp2]
+            macro[dir]["params"].extend(res_gp2)
+    for mvar in macro:
+        if len(macro[mvar]["params"]) > 0:
+            for i, macroparam1 in enumerate(macro[mvar]["params"]):
+                for j, macroparam2 in enumerate(macro[mvar]["params"]):
+                    if j > i and macroparam1[:31] == macroparam2[:31]:
+                        reportError(mvar, 5, 4)
+
+    for x, m_var1 in enumerate(macro):
+        for y, m_var2 in enumerate(macro):
+            if x < y and macro[m_var1]["name"][:31] == macro[m_var2]["name"][:31]:
+                if m_var1.linenr > m_var2.linenr:
+                    reportError(m_var1, 5, 4)
+                else:
+                    reportError(m_var2, 5, 4)
+            for param in macro[m_var2]["params"]:
+                if macro[m_var1]["name"][:31] == param[:31]:
+                    if m_var1.linenr > m_var2.linenr:
+                        reportError(m_var1, 5, 4)
+                    else:
+                        reportError(m_var2, 5, 4)
 
 
 def misra_5_5(data):
@@ -526,8 +557,13 @@ def misra_5_5(data):
         if res:
             macroNames.append(res.group(1))
     for var in data.variables:
-        if var.nameToken.str in macroNames:
-            reportError(var.nameToken, 5, 5)
+        for macro in macroNames:
+            if var.nameToken.str[:31] == macro[:31]:
+                reportError(var.nameToken, 5, 5)
+    for scope in data.scopes:
+        for macro in macroNames:
+            if scope.className and scope.className[:31] == macro[:31]:
+                reportError(scope.bodyStart, 5, 5)
 
 
 def misra_7_1(rawTokens):
