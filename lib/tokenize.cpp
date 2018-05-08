@@ -3577,6 +3577,12 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
+    // convert C++17 style nested namespaces to old style namespaces
+    simplifyNestedNamespace();
+
+    // simplify namespace aliases
+    simplifyNamespaceAliases();
+
     // Remove [[attribute]]
     simplifyCPPAttribute();
 
@@ -5616,6 +5622,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
         if (Token::Match(type0, "else|return|public:|protected:|private:"))
             continue;
         if (isCPP11 && type0->str() == "using")
+            continue;
+        if (isCPP() && type0->str() == "namespace")
             continue;
 
         bool isconst = false;
@@ -10161,4 +10169,107 @@ const Token *Tokenizer::findSQLBlockEnd(const Token *tokSQLStart)
     }
 
     return tokLastEnd;
+}
+
+void Tokenizer::simplifyNestedNamespace()
+{
+    if (!isCPP())
+        return;
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "namespace %name% ::") && tok->strAt(-1) != "using") {
+            Token * tok2 = tok->tokAt(2);
+
+            // validate syntax
+            while (Token::Match(tok2, ":: %name%"))
+                tok2 = tok2->tokAt(2);
+
+            if (!tok2 || tok2->str() != "{")
+                return; // syntax error
+
+            std::stack<Token *> links;
+            tok2 = tok->tokAt(2);
+
+            while (tok2->str() == "::") {
+                links.push(tok2);
+                tok2->str("{");
+                tok2->insertToken("namespace");
+                tok2 = tok2->tokAt(3);
+            }
+
+            tok = tok2;
+
+            if (!links.empty() && tok2->str() == "{") {
+                tok2 = tok2->link();
+                while (!links.empty()) {
+                    tok2->insertToken("}");
+                    tok2 = tok2->next();
+                    Token::createMutualLinks(links.top(), tok2);
+                    links.pop();
+                }
+            }
+        }
+    }
+}
+
+void Tokenizer::simplifyNamespaceAliases()
+{
+    if (!isCPP())
+        return;
+
+    int scope = 0;
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == "{")
+            scope++;
+        else if (tok->str() == "}")
+            scope--;
+        else if (Token::Match(tok, "namespace %name% =")) {
+            const std::string name(tok->next()->str());
+            Token * tokNameStart = tok->tokAt(3);
+            Token * tokNameEnd = tokNameStart;
+
+            while (tokNameEnd && tokNameEnd->next() && tokNameEnd->next()->str() != ";")
+                tokNameEnd = tokNameEnd->next();
+
+            if (!tokNameEnd)
+                return; // syntax error
+
+            int endScope = scope;
+            Token * tokLast = tokNameEnd->next();
+            Token * tokNext = tokLast->next();
+            Token * tok2 = tokNext;
+
+            while (tok2 && endScope >= scope) {
+                if (Token::simpleMatch(tok2, "{"))
+                    endScope++;
+                else if (Token::simpleMatch(tok2, "}"))
+                    endScope--;
+                else if (tok2->str() == name) {
+                    tok2->str(tokNameStart->str());
+                    Token * tok3 = tokNameStart;
+                    while (tok3 != tokNameEnd) {
+                        tok2->insertToken(tok3->next()->str());
+                        tok2 = tok2->next();
+                        tok3 = tok3->next();
+                    }
+                }
+                tok2 = tok2->next();
+            }
+
+            if (tok->previous() && tokNext) {
+                Token::eraseTokens(tok->previous(), tokNext);
+                tok = tokNext->previous();
+            } else if (tok->previous()) {
+                Token::eraseTokens(tok->previous(), tokLast);
+                tok = tokLast;
+            } else if (tokNext) {
+                Token::eraseTokens(tok, tokNext);
+                tok->deleteThis();
+            } else {
+                Token::eraseTokens(tok, tokLast);
+                tok->deleteThis();
+            }
+        }
+    }
 }

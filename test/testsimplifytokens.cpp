@@ -226,6 +226,8 @@ private:
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
         TEST_CASE(simplifyCharAt);
         TEST_CASE(simplifyOverride); // ticket #5069
+        TEST_CASE(simplifyNestedNamespace);
+        TEST_CASE(simplifyNamespaceAliases);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
@@ -3527,6 +3529,23 @@ private:
                             "}\n";
         ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 1 , 2 } ; doSomething ( override , 2 ) ; }",
                       tok(code, true));
+    }
+
+    void simplifyNestedNamespace() {
+        ASSERT_EQUALS("namespace A { namespace B { namespace C { int i ; } } }", tok("namespace A::B::C { int i; }"));
+    }
+
+    void simplifyNamespaceAliases() {
+        ASSERT_EQUALS(";",
+                      tok("namespace ios = boost::iostreams;"));
+        ASSERT_EQUALS("boost :: iostreams :: istream foo ( \"foo\" ) ;",
+                      tok("namespace ios = boost::iostreams; ios::istream foo(\"foo\");"));
+        ASSERT_EQUALS("boost :: iostreams :: istream foo ( \"foo\" ) ;",
+                      tok("using namespace std; namespace ios = boost::iostreams; ios::istream foo(\"foo\");"));
+        ASSERT_EQUALS(";",
+                      tok("using namespace std; namespace ios = boost::iostreams;"));
+        ASSERT_EQUALS("namespace NS { boost :: iostreams :: istream foo ( \"foo\" ) ; }",
+                      tok("namespace NS { using namespace std; namespace ios = boost::iostreams; ios::istream foo(\"foo\"); }"));
     }
 };
 
