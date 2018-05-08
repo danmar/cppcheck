@@ -424,6 +424,46 @@ def misra_5_1(data):
         if token.isName and len(token.str) > 31:
             reportError(token, 5, 1)
 
+def misra_5_2(data):
+    scopeVars = {}
+    for var in data.variables:
+        if var.nameToken.scope not in scopeVars:
+            scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
+            scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
+        scopeVars[var.nameToken.scope]["varlist"].append(var)
+    for scope in data.scopes:
+        if scope.nestedIn and scope.className:
+            if scope.nestedIn not in scopeVars:
+                print "in loop"
+                scopeVars.setdefault(scope.nestedIn, {})["varlist"] = []
+                scopeVars.setdefault(scope.nestedIn, {})["scopelist"] = []
+            scopeVars[scope.nestedIn]["scopelist"].append(scope)
+    for scope in scopeVars:
+        if len(scopeVars[scope]["varlist"]) <= 1:
+            continue
+        for i, variable1 in enumerate(scopeVars[scope]["varlist"]):
+            for j, variable2 in enumerate(scopeVars[scope]["varlist"][i + 1:]):
+                if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
+                        variable1.Id != variable2.Id):
+                    if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
+                        reportError(variable1.nameToken, 5, 2)
+                    else:
+                        reportError(variable2.nameToken, 5, 2)
+            for innerscope in scopeVars[scope]["scopelist"]:
+                if (variable1.nameToken.str[:31] == innerscope.className[:31]):
+                    if int(variable1.nameToken.linenr) > int(innerscope.bodyStart.linenr):
+                        reportError(variable1.nameToken, 5, 2)
+                    else:
+                        reportError(innerscope.bodyStart, 5, 2)
+        if len(scopeVars[scope]["scopelist"]) <= 1:
+            continue
+        for i, scopename1 in enumerate(scopeVars[scope]["scopelist"]):
+            for j, scopename2 in enumerate(scopeVars[scope]["scopelist"][i + 1:]):
+                if (scopename1.className[:31] == scopename2.className[:31]):
+                    if int(scopename1.bodyStart.linenr) > int(scopename2.bodyStart.linenr):
+                        reportError(scopename1.bodyStart, 5, 2)
+                    else:
+                        reportError(scopename2.bodyStart, 5, 2)
 
 def misra_5_3(data):
     scopeVars = {}
@@ -1420,6 +1460,7 @@ for arg in sys.argv[1:]:
             misra_3_1(data.rawTokens)
             misra_4_1(data.rawTokens)
         misra_5_1(cfg)
+        misra_5_2(cfg)
         misra_5_3(cfg)
         misra_5_4(cfg)
         misra_5_5(cfg)
