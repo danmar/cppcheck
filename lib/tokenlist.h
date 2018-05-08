@@ -109,6 +109,9 @@ public:
     Token *front() {
         return _front;
     }
+	void front(Token* newFront) {
+		_front = newFront;
+	}
 
     /** get last token of list */
     const Token *back() const {
