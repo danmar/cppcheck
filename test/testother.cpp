@@ -3958,6 +3958,9 @@ private:
 
         check("bool f(int i){ return !((i - 1) & i); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(unsigned i){ return (x > 0) && (x & (x-1)) == 0; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateVarExpression() {
