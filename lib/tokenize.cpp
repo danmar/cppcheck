@@ -6360,6 +6360,8 @@ bool Tokenizer::simplifyKnownVariables()
                 }
                 if (!isconst)
                     continue;
+                
+                Token *tok1 = tok;
 
                 // start of statement
                 if (tok != list.front() && !Token::Match(tok->previous(),";|{|}|private:|protected:|public:"))
@@ -6376,43 +6378,51 @@ bool Tokenizer::simplifyKnownVariables()
                 if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% )| ;")) {
                     // record a constant value for this variable
                     constantValues[vartok->varId()] = valuetok->str();
-                    constantVars[vartok->varId()] = vartok;
+                    constantVars[vartok->varId()] = tok1;
                 }
             }
             else if (tok->varId()) {
-                // find the entry for the known variable, if any
-                if (constantValues.find(tok->varId()) != constantValues.end()) {
+                // find the entry for the known variable, if any.  Exclude the location where the variable is assigned with next == "="
+                if (constantValues.find(tok->varId()) != constantValues.end() && tok->next()->str() != "=") {
                     constantValueUsages[tok->varId()].push_back(tok);
                 }
             }
         }
 
-        for (auto usageList : constantValueUsages)
+        for (auto constantVar : constantVars)
         {
             bool referenceFound = false;
-            for (auto usage : usageList.second)
+            std::list<Token*> usageList = constantValueUsages[constantVar.first];
+            for (Token* usage : usageList)
             {
                 // check if any usages of each known variable are a reference
-                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", usageList.first))
+                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar.first))
                 {
                     referenceFound = true;
                     break;
                 }
             }
+            
             if (!referenceFound)
             {
                 // replace all usages of non-referenced known variables with their value
-                for (auto usage : usageList.second)
+                for (Token* usage : usageList)
                 {
-                    usage->str(constantValues[usageList.first]);
+                    usage->str(constantValues[constantVar.first]);
                 }
 
-                Token* tok = constantVars[usageList.first];
-                // remove value statement
-                while (tok->next()->str() != ";")
-                    tok->deleteNext();
-                tok->deleteNext();
-                tok->deleteThis();
+                Token* startTok = constantVar.second;
+                // remove variable assignment statement
+                while (startTok->next()->str() != MatchCompiler::makeConstString(";"))
+                    startTok->deleteNext();
+                startTok->deleteNext();
+                // about to delete the token, so set front of list to next
+                if (list.front() == startTok)
+                {
+                    list.front(startTok->next());
+                }
+                startTok->deleteThisInPlace();
+                constantVar.second = nullptr;
                 ret = true;
             }
         }
