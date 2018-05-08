@@ -434,7 +434,6 @@ def misra_5_2(data):
     for scope in data.scopes:
         if scope.nestedIn and scope.className:
             if scope.nestedIn not in scopeVars:
-                print "in loop"
                 scopeVars.setdefault(scope.nestedIn, {})["varlist"] = []
                 scopeVars.setdefault(scope.nestedIn, {})["scopelist"] = []
             scopeVars[scope.nestedIn]["scopelist"].append(scope)
@@ -443,6 +442,8 @@ def misra_5_2(data):
             continue
         for i, variable1 in enumerate(scopeVars[scope]["varlist"]):
             for variable2 in scopeVars[scope]["varlist"][i + 1:]:
+                if variable1.isArgument and variable2.isArgument:
+                    continue
                 if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
                         variable1.Id != variable2.Id):
                     if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
