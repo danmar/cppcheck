@@ -444,7 +444,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
         }
 
-        if (!hasValidConfig && configurations.size() > 1 && _settings->isEnabled(Settings::INFORMATION)) {
+        if (!hasValidConfig && configurations.size() > 1 && _settings.isEnabled(Settings::INFORMATION)) {
             std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
             ErrorLogger::ErrorMessage::FileLocation loc;
             loc.setfile(Path::toNativeSeparators(filename));
