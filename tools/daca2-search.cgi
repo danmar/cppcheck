@@ -69,8 +69,8 @@ def summary(path, arguments):
     print('<tr><td>' + id +'</td><td><a href="/cgi-bin/daca2-search.cgi?id='+id+'">'+str(count[id])+'</a></td></tr>')
   print('</table>')
 
-sys.stdout.write('Content-type: text/html\r\n\r\n')
-sys.stdout.write('<html><body>\n')
+sys.stdout.write('Content-type: text/html\r\n\r\n'
+                 '<html><body>\n')
 
 cgitb.enable()
 arguments = cgi.FieldStorage()
