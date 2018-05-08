@@ -14,12 +14,48 @@ typedef unsigned long long u64;
 
 //// 3.1
 
+extern int n01_var_hides_var____________________________________________63x;
+static int n01_var_hides_var____________________________________________63y;//5.2
+static int n02_function_hides_var_______________________________________63x;
+void n02_function_hides_var_______________________________________63y(void) {}//5.2
+void foo(void) 
+{
+  int i;
+  switch(f1()) 
+  {
+    case 1: 
+    {
+      do
+      {
+        for(i = 0; i < 10; i++) 
+        {
+          if(f3()) 
+          {
+            int
+            n03_var_hides_var____________________________________________63x;
+            int
+            n03_var_hides_var____________________________________________63y;//5.2
+          }
+        }
+      } while(f2());
+    } 
+  }
+}
+
+union n06_field_hides_field________________________________________63x {
+int n04_field_hides_field________________________________________63x;
+int n04_field_hides_field________________________________________63y;//5.2
+};
+struct n06_field_hides_field________________________________________63y { //5.2
+int n05_field_hides_field________________________________________63x;
+int n05_field_hides_field________________________________________63y;//5.2
+};
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
 
 void misra_5_1() {
   int a123456789012345678901234567890; // no-warning
-  int a1234567890123456789012345678901; // 5.1
+  int a1234567890123456789012345678901; // 5.1 ,5.2
 }
 
 void misra_5_3() {
@@ -41,7 +77,7 @@ void misra_7_1() {
 
 void misra_7_3() {
   int x = 12l; // 7.3
-  int x = 12lu; // 7.3
+  int x = 12lu; // 7.3, 5.2
 }
 
 extern int a811[]; // 8.11
