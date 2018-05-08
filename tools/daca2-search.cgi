@@ -61,7 +61,7 @@ def summary(path, arguments):
         continue
       id = res.group(2)
       if id in count:
-        count[id] = count[id] + 1
+        count[id] += 1
       else:
         count[id] = 1
   print('<table>')
