@@ -40,6 +40,7 @@
 #include <ctime>
 #include <iostream>
 #include <stack>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 //---------------------------------------------------------------------------
@@ -6313,8 +6314,9 @@ bool Tokenizer::simplifyKnownVariables()
 
     // constants..
     {
-        std::map<Token*, std::string> constantValues;
-        std::map<Token*, std::list<Token*>> constantValueUsages;
+        std::unordered_map<unsigned int, std::string> constantValues;
+        std::unordered_map<unsigned int, Token*> constantVars;
+        std::unordered_map<unsigned int, std::list<Token*>> constantValueUsages;
         bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (goback) {
@@ -6369,21 +6371,18 @@ bool Tokenizer::simplifyKnownVariables()
                 if (!tok->isStandardType())
                     continue;
 
-                const Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
+                Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
                 const Token * const valuetok = vartok->tokAt(2);
                 if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% )| ;")) {
                     // record a constant value for this variable
-                    constantValues[const_cast<Token*>(vartok)] = valuetok->str();
+                    constantValues[vartok->varId()] = valuetok->str();
+                    constantVars[vartok->varId()] = vartok;
                 }
             }
             else if (tok->varId()) {
                 // find the entry for the known variable, if any
-                for (auto const & vartok : constantValues) {
-                    if (vartok.first->varId() == tok->varId()) {
-                        // Record the usage of a known variable
-                        constantValueUsages[vartok.first].push_back(tok);
-                        break;
-                    }
+                if (constantValues.find(tok->varId()) != constantValues.end()) {
+                    constantValueUsages[tok->varId()].push_back(tok);
                 }
             }
         }
@@ -6394,7 +6393,7 @@ bool Tokenizer::simplifyKnownVariables()
             for (auto usage : usageList.second)
             {
                 // check if any usages of each known variable are a reference
-                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", usageList.first->varId()))
+                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", usageList.first))
                 {
                     referenceFound = true;
                     break;
@@ -6408,7 +6407,7 @@ bool Tokenizer::simplifyKnownVariables()
                     usage->str(constantValues[usageList.first]);
                 }
 
-                Token* tok = usageList.first;
+                Token* tok = constantVars[usageList.first];
                 // remove value statement
                 while (tok->next()->str() != ";")
                     tok->deleteNext();
