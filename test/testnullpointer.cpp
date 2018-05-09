@@ -2649,6 +2649,11 @@ private:
 
         check("int* f10() { int *x = NULL; return x++; } ");
         ASSERT_EQUALS("[test.cpp:1]: (error) Pointer addition with NULL pointer.\n", errout.str());
+
+        check("class foo {};\n"
+              "const char* get() const { return 0; }\n"
+              "void f(foo x) { if (get()) x += get(); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
