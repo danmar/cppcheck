@@ -1049,9 +1049,17 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
 
 void SymbolDatabase::createSymbolDatabaseSetTypePointers()
 {
+    std::set<std::string> typenames;
+    for (const Type &t : typeList) {
+        typenames.insert(t.name());
+    }
+
     // Set type pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (!tok->isName() || tok->varId() || tok->function() || tok->type() || tok->enumerator())
+            continue;
+
+        if (typenames.find(tok->str()) == typenames.end())
             continue;
 
         const Type *type = findVariableType(tok->scope(), tok);
