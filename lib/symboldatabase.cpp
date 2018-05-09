@@ -1407,7 +1407,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         }
 
         // skip over const, noexcept, throw and override specifiers
-        while (Token::Match(tok2, "const|noexcept|throw|override")) {
+        while (Token::Match(tok2, "const|noexcept|throw|override|final")) {
             tok2 = tok2->next();
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();

@@ -285,6 +285,7 @@ private:
         TEST_CASE(symboldatabase65);
         TEST_CASE(symboldatabase66); // #8540
         TEST_CASE(symboldatabase67); // #8538
+        TEST_CASE(symboldatabase68); // #8560
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3836,6 +3837,31 @@ private:
         ASSERT(f && f->hasOverrideSpecifier());
         ASSERT(f && f->isConst());
         ASSERT(f && f->isNoExcept());
+    }
+
+    void symboldatabase68() { // #8560
+        GET_SYMBOL_DB("struct Bar {\n"
+                      "    virtual std::string get_endpoint_url() const noexcept;\n"
+                      "};\n"
+                      "struct Foo : Bar {\n"
+                      "    virtual std::string get_endpoint_url() const noexcept override final;\n"
+                      "};");
+        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept ;") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 2);
+        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && !f->function()->hasOverrideSpecifier());
+        ASSERT(f && f->function() && !f->function()->hasFinalSpecifier());
+        ASSERT(f && f->function() && f->function()->isConst());
+        ASSERT(f && f->function() && f->function()->isNoExcept());
+        f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept override final ;") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 5);
+        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && f->function()->hasOverrideSpecifier());
+        ASSERT(f && f->function() && f->function()->hasFinalSpecifier());
+        ASSERT(f && f->function() && f->function()->isConst());
+        ASSERT(f && f->function() && f->function()->isNoExcept());
     }
 
     void enum1() {
