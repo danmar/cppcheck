@@ -1266,7 +1266,7 @@ def misra_21_7(data):
 
 def misra_21_8(data):
     for token in data.tokenlist:
-        if isFunctionCall(token) and (token.astOperand1.str in {'abort', 'getenv', 'system'}):
+        if isFunctionCall(token) and (token.astOperand1.str in {'abort', 'exit', 'getenv', 'system'}):
             reportError(token, 21, 8)
 
 

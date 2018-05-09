@@ -388,6 +388,7 @@ void misra_21_8() {
   abort(); // 21.8
   getenv("foo"); // 21.8
   system(""); // 21.8
+  exit(-1); // 21.8
 }
 
 void misra_21_9() {
