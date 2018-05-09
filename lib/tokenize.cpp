@@ -6413,7 +6413,7 @@ bool Tokenizer::simplifyKnownVariables()
 
                 Token* startTok = constantVar.second;
                 // remove variable assignment statement
-                while (startTok->next()->str() != MatchCompiler::makeConstString(";"))
+                while (startTok->next()->str() != ";")
                     startTok->deleteNext();
                 startTok->deleteNext();
                 // about to delete the token, so set front of list to next
