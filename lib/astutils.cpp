@@ -253,7 +253,8 @@ static bool isZeroBoundCond(const Token * const cond)
     if(cond == nullptr)
         return false;
     // Assume unsigned
-    bool isZero = cond->astOperand2()->getValue(0);
+    // TODO: Handle reverse conditions
+    const bool isZero = cond->astOperand2()->getValue(0);
     if (cond->str() == "==" || cond->str() == ">=")
         return isZero;
     if (cond->str() == "<=")
@@ -290,6 +291,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
+        // TODO: Handle reverse conditions
         if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") &&
             Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size") &&
             cond1->astOperand1()->astOperand1()->varId() == cond2->astOperand1()->astOperand1()->astOperand1()->varId()) {
