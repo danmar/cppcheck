@@ -58,18 +58,50 @@ void misra_5_1() {
   int a1234567890123456789012345678901; // 5.1 ,5.2
 }
 
-void misra_5_3() {
+void misra_5_3() 
+{
   u8 x=1;
-  if (y!=0) {
+  if (y!=0) 
+  {
     u8 x=2; // 5.3
   } else {}
 }
 
-#define m54_123456789012345678901234567890123456789012345678901234567890    1 // 5.4
-#define m54_1234567890123456789012345678901234567890123456789012345678901   2 // 5.4
+#define n01_macro_hides_macro________31x 1
+#define n02_param_hides_macro________31x 1
+#define n03_macro_hides_param________31x 1
+#define n01_macro_hides_macro________31y 2 //5.4
+#define m1(n02_param_hides_macro________31y) 1 //5.4
+#define n03_macro_hides_param________31y 2 //5.4
+#define m2(n04_param_hides_param________31x,n04_param_hides_param________31y) 1
 
-#define m55(x,y) (x+y)
-int m55; // 5.5
+#define n01_var_hides_macro__________31x 1
+#define n02_function_hides_macro_____31x 1
+#define n03_param_hides_macro________31x 1
+#define n04_tag_hides_macro__________31x 1
+#define n05_label_hides_macro________31x 1
+
+int n01_var_hides_macro__________31y; //5.5
+void n02_function_hides_macro_____31y(int n03_param_hides_macro________31y){} //5.5
+struct n04_tag_hides_macro__________31y { //5.5
+int x;
+};
+void f1() 
+{
+  switch(f2()) 
+  {
+    case 1:
+    {
+      do 
+      {
+        if(f3())
+        {
+          int n05_label_hides_macro________31y; //5.5
+        }
+      } while(f2());
+    }
+  }
+}
 
 void misra_7_1() {
   int x = 066; // 7.1
