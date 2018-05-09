@@ -528,11 +528,18 @@ void CheckNullPointer::arithmetic()
             if (!Token::Match(tok, "-|+|+=|-=|++|--"))
                 continue;
             const Token *pointerOperand;
-            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer != 0)
+            const Token *numericOperand;
+            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer != 0) {
                 pointerOperand = tok->astOperand1();
-            else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0)
+                numericOperand = tok->astOperand2();
+            }
+            else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0) {
                 pointerOperand = tok->astOperand2();
+                numericOperand = tok->astOperand1();
+            }
             else
+                continue;
+            if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
                 continue;
             MathLib::bigint checkValue = 0;
             // When using an assign op, the value read from
