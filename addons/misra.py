@@ -1535,7 +1535,7 @@ for arg in sys.argv[1:]:
         misra_21_8(cfg)
         misra_21_9(cfg)
         misra_21_11(cfg)
-
+        # 22.4 is already covered by Cppcheck writeReadOnlyFile
     if VERIFY:
         exitCode = 0
         for expected in VERIFY_EXPECTED:
