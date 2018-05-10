@@ -655,6 +655,9 @@ externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp externals/sim
 externals/tinyxml/tinyxml2.o: externals/tinyxml/tinyxml2.cpp externals/tinyxml/tinyxml2.h
 	$(CXX)  $(CPPFLAGS) $(CFG) $(CXXFLAGS) -w $(UNDEF_STRICT_ANSI) -c -o externals/tinyxml/tinyxml2.o externals/tinyxml/tinyxml2.cpp
 
+tools/clang-ast.o: tools/clang-ast.cpp
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/clang-ast.o tools/clang-ast.cpp
+
 tools/dmake.o: tools/dmake.cpp cli/filelister.h lib/pathmatch.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/dmake.o tools/dmake.cpp
 
