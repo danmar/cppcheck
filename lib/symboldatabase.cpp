@@ -1794,7 +1794,7 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
         else if (tok->str() == "final")
             setFlag(fHasFinalSpecifier, true);
         else if (tok->str() == "volatile")
-            setFlag(fIsVolatile, true);
+            isVolatile(true);
         else if (tok->str() == "noexcept") {
             isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
             if (tok->next()->str() == "(")
