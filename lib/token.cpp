@@ -286,8 +286,6 @@ void Token::deleteThisInPlace()
     if (_link) {
         _link->link(nullptr);
     }
-    // complete the deletion
-    delete this;
 }
 
 void Token::deleteThis()
