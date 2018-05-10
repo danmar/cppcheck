@@ -278,11 +278,11 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->bodyStart;
         for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const| %type% * const| ) (| %name%|%num%|%bool%|%char%|%str%"))
+            if (!Token::Match(tok, "( const|volatile| const|volatile| %type% * const| ) (| %name%|%num%|%bool%|%char%|%str%"))
                 continue;
 
             // skip first "const" in "const Type* const"
-            if (tok->strAt(1) == "const")
+            while (Token::Match(tok->next(), "const|volatile"))
                 tok = tok->next();
             const Token* typeTok = tok->next();
             // skip second "const" in "const Type* const"
@@ -326,7 +326,7 @@ void CheckOther::invalidPointerCast()
             const Token* toTok = nullptr;
             const Token* fromTok = nullptr;
             // Find cast
-            if (Token::Match(tok, "( const| %type% %type%| const| * )")) {
+            if (Token::Match(tok, "( const|volatile| const|volatile| %type% %type%| const| * )")) {
                 toTok = tok;
                 fromTok = tok->astOperand1();
             } else if (Token::simpleMatch(tok, "reinterpret_cast <") && tok->linkAt(1)) {

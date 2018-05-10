@@ -1406,8 +1406,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                 tok1 = tok1->link()->tokAt(-2);
         }
 
-        // skip over const, noexcept, throw and override specifiers
-        while (Token::Match(tok2, "const|noexcept|throw|override|final")) {
+        // skip over const, noexcept, throw, override, final and volatile specifiers
+        while (Token::Match(tok2, "const|noexcept|throw|override|final|volatile")) {
             tok2 = tok2->next();
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
@@ -1646,9 +1646,9 @@ void Variable::evaluate(const Library* lib)
             tok = tok->next();
     }
 
-    while (Token::Match(_start, "static|const %any%"))
+    while (Token::Match(_start, "static|const|volatile %any%"))
         _start = _start->next();
-    while (_end && _end->previous() && _end->str() == "const")
+    while (_end && _end->previous() && Token::Match(_end, "const|volatile"))
         _end = _end->previous();
 
     if (_start) {
@@ -1793,6 +1793,8 @@ Function::Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *s
             setFlag(fHasOverrideSpecifier, true);
         else if (tok->str() == "final")
             setFlag(fHasFinalSpecifier, true);
+        else if (tok->str() == "volatile")
+            setFlag(fIsVolatile, true);
         else if (tok->str() == "noexcept") {
             isNoExcept(!Token::simpleMatch(tok->next(), "( false )"));
             if (tok->next()->str() == "(")
@@ -2703,6 +2705,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        hasLvalRefQual: " << func->hasLvalRefQualifier() << std::endl;
             std::cout << "        hasRvalRefQual: " << func->hasRvalRefQualifier() << std::endl;
             std::cout << "        isVariadic: " << func->isVariadic() << std::endl;
+            std::cout << "        isVolatile: " << func->isVolatile() << std::endl;
             std::cout << "        attributes:";
             if (func->isAttributeConst())
                 std::cout << " const ";
@@ -3057,7 +3060,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
         const Token *typeTok = startTok;
         // skip over stuff to get to type
-        while (Token::Match(typeTok, "const|enum|struct|::"))
+        while (Token::Match(typeTok, "const|volatile|enum|struct|::"))
             typeTok = typeTok->next();
         if (Token::Match(typeTok, ",|)")) { // #8333
             symbolDatabase->_tokenizer->syntaxError(typeTok);
@@ -3069,7 +3072,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
         // check for argument with no name or missing varid
         if (!endTok) {
-            if (tok->previous()->isName() && tok->strAt(-1) != "const") {
+            if (tok->previous()->isName() && !Token::Match(tok->tokAt(-1), "const|volatile")) {
                 if (tok->previous() != typeTok) {
                     nameTok = tok->previous();
                     endTok = nameTok->previous();
@@ -3100,7 +3103,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         }
 
         // skip over stuff before type
-        while (Token::Match(startTok, "enum|struct|const"))
+        while (Token::Match(startTok, "enum|struct|const|volatile"))
             startTok = startTok->next();
 
         argumentList.emplace_back(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->_settings->library);
@@ -3434,8 +3437,8 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         return next;
     }
 
-    // skip const|static|mutable|extern
-    while (Token::Match(tok, "const|static|mutable|extern")) {
+    // skip const|volatile|static|mutable|extern
+    while (Token::Match(tok, "const|volatile|static|mutable|extern")) {
         tok = tok->next();
     }
 

@@ -672,7 +672,8 @@ class CPPCHECKLIB Function {
         fIsOperator           = (1 << 16), ///< @brief is operator
         fHasLvalRefQual       = (1 << 17), ///< @brief has & lvalue ref-qualifier
         fHasRvalRefQual       = (1 << 18), ///< @brief has && rvalue ref-qualifier
-        fIsVariadic           = (1 << 19)  ///< @brief is variadic
+        fIsVariadic           = (1 << 19), ///< @brief is variadic
+        fIsVolatile           = (1 << 20)  ///< @brief is volatile
     };
 
     /**
@@ -808,6 +809,9 @@ public:
     bool isVariadic() const {
         return getFlag(fIsVariadic);
     }
+    bool isVolatile() const {
+        return getFlag(fIsVolatile);
+    }
 
     void hasBody(bool state) {
         setFlag(fHasBody, state);
@@ -892,6 +896,9 @@ private:
     }
     void isVariadic(bool state) {
         setFlag(fIsVariadic, state);
+    }
+    void isVolatile(bool state) {
+        setFlag(fIsVolatile, state);
     }
 };
 

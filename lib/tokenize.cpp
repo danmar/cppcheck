@@ -3635,7 +3635,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (_settings->terminated())
         return false;
 
-    // Remove "volatile", "inline", "register", and "restrict"
+    // Remove "inline", "register", and "restrict"
     simplifyKeyword();
 
     // simplify simple calculations inside <..>
@@ -4169,7 +4169,7 @@ void Tokenizer::removeMacrosInGlobalScope()
         if (tok->str() == "(") {
             tok = tok->link();
             if (Token::Match(tok, ") %type% {") &&
-                !Token::Match(tok->next(), "const|namespace|class|struct|union|noexcept|override|final"))
+                !Token::Match(tok->next(), "const|namespace|class|struct|union|noexcept|override|final|volatile"))
                 tok->deleteNext();
         }
 
@@ -5521,10 +5521,10 @@ void Tokenizer::simplifyFunctionPointers()
         Token *endTok = tok->link()->next()->link();
         if (Token::simpleMatch(endTok, ") throw ("))
             endTok = endTok->linkAt(2);
-        if (!Token::Match(endTok, ") const| ;|,|)|=|[|{"))
+        if (!Token::Match(endTok, ") const|volatile| const|volatile| ;|,|)|=|[|{"))
             continue;
 
-        if (endTok->strAt(1) == "const")
+        while (Token::Match(endTok->next(), "const|volatile"))
             endTok->deleteNext();
 
         // ok simplify this function pointer to an ordinary pointer
@@ -8960,8 +8960,7 @@ void Tokenizer::simplifyCPPAttribute()
 }
 
 static const std::set<std::string> keywords = {
-    "volatile"
-    , "inline"
+    "inline"
     , "_inline"
     , "__inline"
     , "__forceinline"
@@ -8969,7 +8968,7 @@ static const std::set<std::string> keywords = {
     , "__restrict"
     , "__restrict__"
 };
-// Remove "volatile", "inline", "register", "restrict", "override", "final", "static" and "constexpr"
+// Remove "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
 //   - Not in C++ standard yet

@@ -286,6 +286,7 @@ private:
         TEST_CASE(symboldatabase66); // #8540
         TEST_CASE(symboldatabase67); // #8538
         TEST_CASE(symboldatabase68); // #8560
+        TEST_CASE(symboldatabase69);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3862,6 +3863,28 @@ private:
         ASSERT(f && f->function() && f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
         ASSERT(f && f->function() && f->function()->isNoExcept());
+    }
+
+    void symboldatabase69() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    int x, y;\n"
+                      "    void foo() volatile { }\n"
+                      "    void foo() const { }\n"
+                      "    void foo() { }\n"
+                      "};");
+        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) volatile {") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 3);
+        ASSERT(f && f->function() && f->function()->isVolatile());
+        f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) const {") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 4);
+        ASSERT(f && f->function() && f->function()->isConst());
+        f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) {") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 5);
+        ASSERT(f && f->function() && !f->function()->isVolatile());
+        ASSERT(f && f->function() && !f->function()->isConst());
     }
 
     void enum1() {
