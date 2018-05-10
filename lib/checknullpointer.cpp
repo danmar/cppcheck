@@ -532,12 +532,10 @@ void CheckNullPointer::arithmetic()
             if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer != 0) {
                 pointerOperand = tok->astOperand1();
                 numericOperand = tok->astOperand2();
-            }
-            else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0) {
+            } else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0) {
                 pointerOperand = tok->astOperand2();
                 numericOperand = tok->astOperand1();
-            }
-            else
+            } else
                 continue;
             if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
                 continue;
