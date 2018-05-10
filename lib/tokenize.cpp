@@ -6416,12 +6416,7 @@ bool Tokenizer::simplifyKnownVariables()
                 while (startTok->next()->str() != ";")
                     startTok->deleteNext();
                 startTok->deleteNext();
-                // about to delete the token, so set front of list to next
-                if (list.front() == startTok)
-                {
-                    list.front(startTok->next());
-                }
-                startTok->deleteThisInPlace();
+                list.deleteToken(startTok);
                 constantVar.second = nullptr;
                 ret = true;
             }
