@@ -467,23 +467,19 @@ def misra_5_2(data):
                         reportError(scopename2.bodyStart, 5, 2)
 
 def misra_5_3(data):
-    enum = []
     scopeVars = {}
     for var in data.variables:
+        if var.isArgument:
+            # TODO
+            continue
         if var.nameToken.scope not in scopeVars:
             scopeVars[var.nameToken.scope] = []
         scopeVars[var.nameToken.scope].append(var)
+
     for innerScope in data.scopes:
-        if innerScope.type == "Enum":
-            enum_token = innerScope.bodyStart.next
-            while enum_token != innerScope.bodyEnd:
-                if enum_token.values and enum_token.type and enum_token.type == "name":
-                    enum.append(enum_token.str)
-                enum_token = enum_token.next
+        if innerScope.type == 'Global':
             continue
         if innerScope not in scopeVars:
-            continue
-        if innerScope.type == "Global":
             continue
         for innerVar in scopeVars[innerScope]:
             outerScope = innerScope.nestedIn
@@ -491,24 +487,14 @@ def misra_5_3(data):
                 if outerScope not in scopeVars:
                     outerScope = outerScope.nestedIn
                     continue
+                found = False
                 for outerVar in scopeVars[outerScope]:
-                    if innerVar.nameToken.str[:31] == outerVar.nameToken.str[:31]:
-                        if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
-                            reportError(innerVar.nameToken, 5, 3)
-                        else:
-                            reportError(outerVar.nameToken, 5, 3)
-                for scope in data.scopes:
-                    if scope.className and innerVar.nameToken.str[:31] == scope.className[:31]:
-                        if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
-                            reportError(innerVar.nameToken, 5, 3)
-                        else:
-                            reportError(scope.bodyStart, 5, 3)
-                for e in enum:
-                    if innerVar.nameToken.str[:31] == e[:31]:
-                        if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
-                            reportError(innerVar.nameToken, 5, 3)
-                        else:
-                            reportError(innerScope.bodyStart, 5, 3)
+                    if innerVar.nameToken.str == outerVar.nameToken.str:
+                        found = True
+                        break
+                if found:
+                    reportError(innerVar.nameToken, 5, 3)
+                    break
                 outerScope = outerScope.nestedIn
 
 
