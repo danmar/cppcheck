@@ -585,8 +585,10 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     const std::string& projectDir = Path::simplifyPath(Path::getPathFromFilename(projectFilename));
 
     std::list<std::string> compileList;
-    std::string defines;
     std::string includePath;
+    std::string userdefines;
+    std::string sysdefines;
+    std::string cflag1;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "FILELIST") == 0) {
@@ -606,11 +608,129 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
                 } else if (std::strcmp(m->Name(), "USERDEFINES") == 0) {
                     const char *v = m->Attribute("value");
                     if (v)
-                        defines = v;
+                       userdefines = v;
+                } else if (std::strcmp(m->Name(), "SYSDEFINES") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        sysdefines = v;
+                } else if (std::strcmp(m->Name(), "CFLAG1") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        cflag1 = v;
                 }
             }
         }
     }
+
+    std::set<std::string> cflags;
+
+    {
+        std::string arg;
+
+        for (int i = 0; i < cflag1.size(); ++i) {
+            if (cflag1.at(i) == ' ' && !arg.empty()) {
+                cflags.insert(arg);
+                arg.clear();
+                continue;
+            }
+            arg += cflag1.at(i);
+        }
+
+        if (!arg.empty()) {
+            cflags.insert(arg);
+        }
+    }
+    
+    std::string predefines;
+
+    // Collecting predefines. See BCB6 help topic "Predefined macros"
+    {
+        //  Defined in any compiler that has an optimizer.
+        predefines += ";__BCOPT__=1";
+
+        // Version number.
+        // BCB6 is 0x056? (SP4 is 0x0564)
+        // @see http://docwiki.embarcadero.com/RADStudio/Tokyo/en/Predefined_Macros#C.2B.2B_Compiler_Versions_in_Predefined_Macros
+        predefines += ";__BORLANDC__=0x0560";
+
+        // Defined if Calling Convention is set to cdecl; otherwise undefined.
+        // Check /PROJECT/OPTIONS/CFLAG1/@value neither contain -p, -pm, -pr nor -ps (-pc may or may not be there, as it is the default)
+        bool useCdecl = (cflags.find("-p") == cflags.end()
+            && cflags.find("-pm") == cflags.end()
+            && cflags.find("-pr") == cflags.end()
+            && cflags.find("-ps") == cflags.end());
+        if (useCdecl) {
+            predefines += ";__CDECL=1";
+        }
+
+        // Defined by default indicating that the default char is unsigned char. Use the -K compiler option to undefine this macro.
+        // Check /PROJECT/OPTIONS/CFLAG1/@value contains -K
+        bool treatCharAsUnsignedChar = (cflags.find("-K") != cflags.end());
+        if (treatCharAsUnsignedChar) {
+            predefines += ";_CHAR_UNSIGNED=1";
+        }
+
+        // Defined whenever one of the CodeGuard compiler options is used; otherwise it is undefined.
+        // Check /PROJECT/OPTIONS/CFLAG1/@value contains -vGd, -vGt or -vGc
+        bool codeguardUsed = (cflags.find("-vGd") != cflags.end()
+            || cflags.find("-vGt") != cflags.end()
+            || cflags.find("-vGc") != cflags.end());
+        if (codeguardUsed) {
+            predefines += ";__CODEGUARD__";
+        }
+
+        // When defined, the macro indicates that the program is a console application.
+        // Check /PROJECT/OPTIONS/CFLAG1/@value contains -tWC
+        bool isConsoleApp = (cflags.find("-tWC") != cflags.end());
+        if (isConsoleApp) {
+            predefines += ";__CONSOLE__=1";
+        }
+
+        // Enable stack unwinding. This is true by default; use -xd- to disable.
+        // Check /PROJECT/OPTIONS/CFLAG1/@value doesn't contains -xd-
+        bool enableStackUnwinding = (cflags.find("-xd-") == cflags.end());
+        if (enableStackUnwinding) {
+            predefines += ";_CPPUNWIND=1";
+        }
+
+        /*
+        _ _cplusplus	1	Defined if in C++ mode; otherwise, undefined.
+
+        _ _DLL_ _	1	Defined whenever the - WD compiler option is used; otherwise it is undefined.
+        _ _FLAT_ _	1	Defined when compiling in 32 - bit flat memory model.
+
+        _M_IX86	0x12c	Always defined.The default  value is 300. You can change the value to 400 or 500 by using the / 4 or /5 compiler options.
+        _ _MT_ _	1	Defined only if the - tWM option is used.It specifies that the multithread library is to be linked.
+        _ _PASCAL_ _ 	1	Defined if Calling Convention is set to Pascal; otherwise undefined.
+
+        _ _STDC_ _	1	Defined if you compile with the - A compiler option; otherwise, it is undefined.
+        _ _TCPLUSPLUS_ _ 	0x0560	Version number.
+        _ _TEMPLATES_ _	1	Defined as 1 for C++ files(meaning that templates are supported); otherwise, it is undefined.
+        _ _TLS_ _	1	Thread Local Storage.Always true in C++Builder.
+        _ _TURBOC_ _ 	0x0560	Will increase in later releases.
+
+        _WCHAR_T		Defined only for C++ programs to indicate that wchar_t is an intrinsically defined data type.
+        _WCHAR_T_DEFINED		Defined only for C++ programs to indicate that wchar_t is an intrinsically defined data type.
+        _Windows	 	Defined for Windows - only code.
+        _ _WIN32_ _	1	Defined for console and GUI applications.
+        */
+    }
+
+    // TODO
+    // define:  __BCPLUSPLUS__
+    // value:   0x0560 (0x0564 for our BCB6 SP4) @see http://docwiki.embarcadero.com/RADStudio/Tokyo/en/Predefined_Macros#C.2B.2B_Compiler_Versions_in_Predefined_Macros
+    // desc:    Defined if you've selected C++ compilation; will increase in later releases.
+    // 
+    // C++ compilation is selected by file extension by default, so this define has to be set on a per-file base.
+    // @see http://docwiki.embarcadero.com/RADStudio/Tokyo/en/BCC32.EXE,_the_C%2B%2B_32-bit_Command-Line_Compiler
+    // > Files with the .CPP extension compile as C++ files. Files with a .C
+    // > extension, with no extension, or with extensions other than .CPP,
+    // > .OBJ, .LIB, or .ASM compile as C files.
+    //
+    // We can also force C++ compilation for all files. Check for the -P
+    // command line switch being passed to the compiler.
+    // /PROJECT/OPTIONS/CFLAG1/@style matches /["\s]-P["\s]/
+    bool forceCppCompilation = (cflags.find("-P") != cflags.end());
 
     // Include paths may contain variables like "$(BCB)\include" or "$(BCB)\include\vcl".
     // Those get resolved by ImportProject::FileSettings::setIncludePaths by
@@ -620,11 +740,23 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     // Reading the BCB6 install location from registry in windows environments would also be possible,
     // but I didn't see any such functionality around the source. Not in favor of adding it only
     // for the BCB6 project loading.
-    // Also, considering this seems to be mostly about sys includes, which would slow down the check a lot,
-    // it's probably not needed right now anyways.
     std::map<std::string, std::string, cppcheck::stricmp> variables;
+    std::string defines;
+
+    if (!predefines.empty()) {
+       defines = defines.empty() ? predefines : (defines + ";" + predefines);
+    }
+
+    if (!userdefines.empty()) {
+       defines = defines.empty() ? userdefines : (defines + ";" + userdefines);
+    }
+        
+    if (!sysdefines.empty()) {
+        defines = defines.empty() ? sysdefines : (defines + ";" + sysdefines);
+    }
 
     for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
+        // TODO add define __BCPLUSPLUS__ depending on forceCppCompilation and file extension
         FileSettings fs;
         fs.setIncludePaths(projectDir, toStringList(includePath), variables);
         fs.setDefines(defines);
