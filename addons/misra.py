@@ -1316,7 +1316,7 @@ def misra_21_7(data):
 
 def misra_21_8(data):
     for token in data.tokenlist:
-        if isFunctionCall(token) and (token.astOperand1.str in {'abort', 'getenv', 'system'}):
+        if isFunctionCall(token) and (token.astOperand1.str in {'abort', 'exit', 'getenv', 'system'}):
             reportError(token, 21, 8)
 
 
@@ -1585,7 +1585,7 @@ for arg in sys.argv[1:]:
         misra_21_8(cfg)
         misra_21_9(cfg)
         misra_21_11(cfg)
-
+        # 22.4 is already covered by Cppcheck writeReadOnlyFile
     if VERIFY:
         exitCode = 0
         for expected in VERIFY_EXPECTED:

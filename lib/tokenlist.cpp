@@ -1183,7 +1183,7 @@ void TokenList::validateAst() const
             throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::AST);
 
         // Check for endless recursion
-        const Token* parent=tok->astParent();
+        const Token* parent = tok->astParent();
         if (parent) {
             std::set < const Token* > astTokens; // list of anchestors
             astTokens.insert(tok);
@@ -1195,8 +1195,11 @@ void TokenList::validateAst() const
                 astTokens.insert(parent);
             } while ((parent = parent->astParent()) != nullptr);
             safeAstTokens.insert(astTokens.begin(), astTokens.end());
-        } else
+        } else if (tok->str() == ";") {
+            safeAstTokens.clear();
+        } else {
             safeAstTokens.insert(tok);
+        }
     }
 }
 

@@ -2587,6 +2587,8 @@ void Tokenizer::setVarIdPass1()
     bool initlist = false;
     bool inlineFunction = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->isOp())
+            continue;
         if (!functionDeclEndStack.empty() && tok == functionDeclEndStack.top()) {
             functionDeclEndStack.pop();
             if (tok->str() == ":")

@@ -1049,9 +1049,17 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
 
 void SymbolDatabase::createSymbolDatabaseSetTypePointers()
 {
+    std::set<std::string> typenames;
+    for (const Type &t : typeList) {
+        typenames.insert(t.name());
+    }
+
     // Set type pointers
     for (const Token* tok = _tokenizer->list.front(); tok != _tokenizer->list.back(); tok = tok->next()) {
         if (!tok->isName() || tok->varId() || tok->function() || tok->type() || tok->enumerator())
+            continue;
+
+        if (typenames.find(tok->str()) == typenames.end())
             continue;
 
         const Type *type = findVariableType(tok->scope(), tok);
@@ -1399,7 +1407,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         }
 
         // skip over const, noexcept, throw and override specifiers
-        while (Token::Match(tok2, "const|noexcept|throw|override")) {
+        while (Token::Match(tok2, "const|noexcept|throw|override|final")) {
             tok2 = tok2->next();
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
