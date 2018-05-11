@@ -6315,7 +6315,7 @@ bool Tokenizer::simplifyKnownVariables()
     // constants..
     {
         std::unordered_map<unsigned int, std::string> constantValues;
-        std::unordered_map<unsigned int, Token*> constantVars;
+        std::map<unsigned int, Token*> constantVars;
         std::unordered_map<unsigned int, std::list<Token*>> constantValueUsages;
         bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -6389,14 +6389,14 @@ bool Tokenizer::simplifyKnownVariables()
             }
         }
 
-        for (auto constantVar : constantVars)
+        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++)
         {
             bool referenceFound = false;
-            std::list<Token*> usageList = constantValueUsages[constantVar.first];
+            std::list<Token*> usageList = constantValueUsages[constantVar->first];
             for (Token* usage : usageList)
             {
                 // check if any usages of each known variable are a reference
-                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar.first))
+                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first))
                 {
                     referenceFound = true;
                     break;
@@ -6408,16 +6408,17 @@ bool Tokenizer::simplifyKnownVariables()
                 // replace all usages of non-referenced known variables with their value
                 for (Token* usage : usageList)
                 {
-                    usage->str(constantValues[constantVar.first]);
+                    usage->str(constantValues[constantVar->first]);
                 }
 
-                Token* startTok = constantVar.second;
+                Token* startTok = constantVar->second;
                 // remove variable assignment statement
                 while (startTok->next()->str() != ";")
                     startTok->deleteNext();
                 startTok->deleteNext();
-                list.deleteToken(startTok);
-                constantVar.second = nullptr;
+				startTok->deleteThis();
+                
+                constantVar->second = nullptr;
                 ret = true;
             }
         }
