@@ -58,12 +58,34 @@ void misra_5_1() {
   int a1234567890123456789012345678901; // 5.1 ,5.2
 }
 
-void misra_5_3() {
-  u8 x=1;
-  if (y!=0) {
-    u8 x=2; // 5.3
-  } else {}
+extern int misra_5_3_param_hides_var____31x;
+extern int misra_5_3_var_hides_var______31x;
+void misra_5_3_var_hides_function_31x (void) {}
+enum E {
+misra_5_3_var_hidesenumconst_31x = 2,misra_5_3_enum_hidesfunction_31x = 5
+};
+void f1(int misra_5_3_param_hides_var____31y) //5.3
+{
+  int misra_5_3_var_hides_var______31y; //5.3
+  int misra_5_3_var_hides_function_31y; //5.3
+  int misra_5_3_var_hidesenumconst_31y; //5.3
+  switch(misra_5_3_func2()) 
+  {
+    case 1:
+    {
+      do 
+      {
+        int misra_5_3_var_hides_var_1____31x;
+        if(misra_5_3_func3())
+        {
+          int misra_5_3_var_hides_var_1____31y = 1; //5.3
+        }
+      } while(misra_5_3_func2());
+    }
+  }
 }
+void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
+
 
 #define misra_5_4_macro_hides_macro__31x 1
 #define misra_5_4_param_hides_macro__31x 1
