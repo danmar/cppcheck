@@ -426,19 +426,22 @@ bool isUniqueExpression(const Token* tok)
         if(!scope)
             return true;
         const Type * varType = var->type();
-        typedef std::initializer_list<std::reference_wrapper<const std::list<Variable>>> VariableLists;
-        VariableLists setOfVars = fun ? VariableLists{scope->varlist, fun->argumentList} : VariableLists{scope->varlist};
+        const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
         if (varType) {
-            for(const std::list<Variable>& vars:setOfVars) {
-                for(const Variable& v:vars) {
+            for(const std::list<Variable>* vars:setOfVars) {
+                if(!vars)
+                    continue;
+                for(const Variable& v:*vars) {
                     if (v.type() && v.type()->name() == varType->name() && v.name() != var->name()) {
                         return false;
                     }
                 }
             }
         } else {
-            for(const std::list<Variable>& vars:setOfVars) {
-                for(const Variable& v:vars) {
+            for(const std::list<Variable>* vars:setOfVars) {
+                if(!vars)
+                    continue;
+                for(const Variable& v:*vars) {
                     if (v.isFloatingType() == var->isFloatingType() &&
                         v.isEnumType() == var->isEnumType() &&
                         v.isClass() == var->isClass() &&
