@@ -277,6 +277,21 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
     return false;
 }
 
+bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
+{
+    const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
+    for (std::list<Suppression>::iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+        Suppression &s = *it;
+        if (!s.isLocal())
+            continue;
+        if (unmatchedSuppression && s.errorId != errmsg.errorId)
+            continue;
+        if (s.isMatch(errmsg))
+            return true;
+    }
+    return false;
+}
+
 void Suppressions::dump(std::ostream & out)
 {
     out << "  <suppressions>" << std::endl;
@@ -294,6 +309,8 @@ void Suppressions::dump(std::ostream & out)
     out << "  </suppressions>" << std::endl;
 }
 
+#include <iostream>
+
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
@@ -303,7 +320,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;
-        if (!file.empty() && !s.fileName.empty() && s.fileName != file)
+        if (file.empty() || !s.isLocal() || s.fileName != file)
             continue;
         result.push_back(s);
     }
@@ -319,7 +336,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
             continue;
-        if (s.fileName.find_first_of("?*") == std::string::npos)
+        if (s.isLocal())
             continue;
         result.push_back(s);
     }

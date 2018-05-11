@@ -50,6 +50,8 @@ private:
         TEST_CASE(inlinesuppress);
         TEST_CASE(inlinesuppress_symbolname);
 
+        TEST_CASE(globalSuppressions); // Testing that global suppressions work (#8515)
+
         TEST_CASE(inlinesuppress_unusedFunction); // #4210 - unusedFunction
         TEST_CASE(globalsuppress_unusedFunction); // #4946
         TEST_CASE(suppressionWithRelativePaths); // #4733
@@ -430,6 +432,19 @@ private:
                          "}\n",
                          "");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+    }
+
+    void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
+        errout.str("");
+
+        CppCheck cppCheck(*this, false); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
+        Settings& settings = cppCheck.settings();
+        settings.nomsg.addSuppressionLine("uninitvar");
+        settings.exitCode = 1;
+
+        const char code[] = "int f() { int a; return a; }";
+        ASSERT_EQUALS(0, cppCheck.check("test.c", code)); // <- no unsuppressed error is seen
+        ASSERT_EQUALS("[test.c:1]: (error) Uninitialized variable: a\n", errout.str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"

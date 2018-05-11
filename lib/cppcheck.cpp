@@ -747,10 +747,15 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
-    if (_settings.nomsg.isSuppressed(errorMessage))
-        return;
+    if (_useGlobalSuppressions) {
+        if (_settings.nomsg.isSuppressed(errorMessage))
+            return;
+    } else {
+        if (_settings.nomsg.isSuppressedLocal(errorMessage))
+            return;
+    }
 
-    if (!_settings.nofail.isSuppressed(errorMessage))
+    if (!_settings.nofail.isSuppressed(errorMessage) && (_useGlobalSuppressions || !_settings.nomsg.isSuppressed(errorMessage)))
         exitcode = 1;
 
     _errorList.push_back(errmsg);

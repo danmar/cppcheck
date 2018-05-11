@@ -238,8 +238,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}");
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout.str());
     }
 
     void testiterator() {

@@ -248,6 +248,24 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
     return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values();
 }
 
+static bool isZeroBoundCond(const Token * const cond)
+{
+    if (cond == nullptr)
+        return false;
+    // Assume unsigned
+    // TODO: Handle reverse conditions
+    const bool isZero = cond->astOperand2()->getValue(0);
+    if (cond->str() == "==" || cond->str() == ">=")
+        return isZero;
+    if (cond->str() == "<=")
+        return true;
+    if (cond->str() == "<")
+        return !isZero;
+    if (cond->str() == ">")
+        return false;
+    return false;
+}
+
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure)
 {
     if (!cond1 || !cond2)
@@ -273,16 +291,17 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
+        // TODO: Handle reverse conditions
         if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") &&
             Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size") &&
             cond1->astOperand1()->astOperand1()->varId() == cond2->astOperand1()->astOperand1()->astOperand1()->varId()) {
-            return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
+            return !isZeroBoundCond(cond2);
         }
 
         if (Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") &&
             Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size") &&
             cond2->astOperand1()->astOperand1()->varId() == cond1->astOperand1()->astOperand1()->astOperand1()->varId()) {
-            return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
+            return !isZeroBoundCond(cond1);
         }
     }
 
