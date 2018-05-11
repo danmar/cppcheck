@@ -3868,21 +3868,29 @@ private:
     void symboldatabase69() {
         GET_SYMBOL_DB("struct Fred {\n"
                       "    int x, y;\n"
+                      "    void foo() const volatile { }\n"
                       "    void foo() volatile { }\n"
                       "    void foo() const { }\n"
                       "    void foo() { }\n"
                       "};");
-        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) volatile {") : nullptr;
+        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) const volatile {") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 3);
+        ASSERT(f && f->function() && f->function()->isConst());
+        ASSERT(f && f->function() && f->function()->isVolatile());
+        f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) volatile {") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 4);
+        ASSERT(f && f->function() && !f->function()->isConst());
         ASSERT(f && f->function() && f->function()->isVolatile());
         f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) const {") : nullptr;
         ASSERT(f != nullptr);
-        ASSERT(f && f->function() && f->function()->token->linenr() == 4);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 5);
         ASSERT(f && f->function() && f->function()->isConst());
+        ASSERT(f && f->function() && !f->function()->isVolatile());
         f = db ? Token::findsimplematch(tokenizer.tokens(), "foo ( ) {") : nullptr;
         ASSERT(f != nullptr);
-        ASSERT(f && f->function() && f->function()->token->linenr() == 5);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 6);
         ASSERT(f && f->function() && !f->function()->isVolatile());
         ASSERT(f && f->function() && !f->function()->isConst());
     }
