@@ -613,7 +613,11 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
                     const char *v = m->Attribute("value");
                     if (v)
                         sysdefines = v;
-                } else if (std::strcmp(m->Name(), "CFLAG1") == 0) {
+                }
+            }
+        } else if (std::strcmp(node->Name(), "OPTIONS") == 0) {
+            for (const tinyxml2::XMLElement *m = node->FirstChildElement(); m; m = m->NextSiblingElement()) {
+                if (std::strcmp(m->Name(), "CFLAG1") == 0) {
                     const char *v = m->Attribute("value");
                     if (v)
                         cflag1 = v;
@@ -814,6 +818,14 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     std::map<std::string, std::string, cppcheck::stricmp> variables;
     std::string defines = predefines + ";" + sysdefines + ";" + userdefines;
     std::string cppDefines  = cppPredefines + ";" + defines;
+
+    while (!defines.empty() && defines.at(0) == ';') {
+        defines.erase(0, 1);
+    }
+
+    while (!cppDefines.empty() && cppDefines.at(0) == ';') {
+        cppDefines.erase(0, 1);
+    }
 
     for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
         // C++ compilation is selected by file extension by default, so these
