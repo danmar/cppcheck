@@ -10213,6 +10213,31 @@ void Tokenizer::simplifyNestedNamespace()
     }
 }
 
+static bool sameTokens(const Token *first, const Token *last, const Token *other)
+{
+    while (other && first->str() == other->str()) {
+        if (first == last)
+            return true;
+        first = first->next();
+        other = other->next();
+    }
+
+    return false;
+}
+
+static Token * deleteAlias(Token * tok)
+{
+    // delete all tokens up to ';'
+    do {
+        tok->deleteThis();
+    } while (tok->str() != ";");
+
+    // delete ';' if not last token
+    tok->deleteThis();
+
+    return tok;
+}
+
 void Tokenizer::simplifyNamespaceAliases()
 {
     if (!isCPP())
@@ -10247,6 +10272,28 @@ void Tokenizer::simplifyNamespaceAliases()
                 else if (Token::simpleMatch(tok2, "}"))
                     endScope--;
                 else if (tok2->str() == name) {
+                    if (Token::Match(tok2->previous(), "namespace %name% =")) {
+                        // check for possible duplicate aliases
+                        if (sameTokens(tokNameStart, tokNameEnd, tok2->tokAt(2))) {
+                            // delete duplicate
+                            tok2 = deleteAlias(tok2->previous());
+                            continue;
+                        } else {
+                            // conflicting declaration (syntax error)
+                            if (endScope == scope) {
+                                // delete conflicting declaration
+                                tok2 = deleteAlias(tok2->previous());
+                            }
+
+                            // new declaration
+                            else {
+                                // TODO: use the new alias in this scope
+                                tok2 = deleteAlias(tok2->previous());
+                            }
+                            continue;
+                        }
+                    }
+
                     tok2->str(tokNameStart->str());
                     Token * tok3 = tokNameStart;
                     while (tok3 != tokNameEnd) {
