@@ -6360,7 +6360,7 @@ bool Tokenizer::simplifyKnownVariables()
                 }
                 if (!isconst)
                     continue;
-                
+
                 Token *tok1 = tok;
 
                 // start of statement
