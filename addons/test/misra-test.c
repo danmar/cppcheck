@@ -82,19 +82,19 @@ void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){} //
 struct misra_5_5_tag_hides_macro____31y { //5.5
 int x;
 };
-void f1() 
+void misra_5_5_func1() 
 {
-  switch(f2()) 
+  switch(misra_5_5_func2()) 
   {
     case 1:
     {
       do 
       {
-        if(f3())
+        if(misra_5_5_func3())
         {
           int misra_5_5_hides_macro________31y; //5.5
         }
-      } while(f2());
+      } while(misra_5_5_func2());
     }
   }
 }
