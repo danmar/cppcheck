@@ -88,6 +88,10 @@ public:
         bool isMatch(const ErrorMessage &errmsg);
         std::string getText() const;
 
+        bool isLocal() const {
+            return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos;
+        }
+
         std::string errorId;
         std::string fileName;
         int lineNumber;
@@ -134,6 +138,13 @@ public:
      * @return true if this error is suppressed.
      */
     bool isSuppressed(const ErrorMessage &errmsg);
+
+    /**
+     * @brief Returns true if this message should not be shown to the user, only uses local suppressions.
+     * @param errmsg error message
+     * @return true if this error is suppressed.
+     */
+    bool isSuppressedLocal(const ErrorMessage &errmsg);
 
     /**
      * @brief Create an xml dump of suppressions
