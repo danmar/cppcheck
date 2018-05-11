@@ -75,6 +75,7 @@ private:
         TEST_CASE(tokenize34);  // #8031
         TEST_CASE(tokenize35);  // #8361
         TEST_CASE(tokenize36);  // #8436
+        TEST_CASE(tokenize37);  // #8550
 
         TEST_CASE(validate);
 
@@ -855,6 +856,21 @@ private:
     void tokenize36() { // #8436
         const char code[] = "int foo ( int i ) { return i ? * new int { 5 } : int { i ? 0 : 1 } ; }";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void tokenize37() { // #8550
+        const char codeC[] = "class name { public: static void init ( ) {} } ; "
+                            "typedef class name N; "
+                            "void foo ( ) { return N :: init ( ) ; }";
+        const char expC [] = "class name { public: static void init ( ) { } } ; "
+                            "void foo ( ) { return name :: init ( ) ; }";
+        ASSERT_EQUALS(expC, tokenizeAndStringify(codeC));
+        const char codeS[] = "class name { public: static void init ( ) {} } ; "
+                            "typedef struct name N; "
+                            "void foo ( ) { return N :: init ( ) ; }";
+        const char expS [] = "class name { public: static void init ( ) { } } ; "
+                            "void foo ( ) { return name :: init ( ) ; }";
+        ASSERT_EQUALS(expS, tokenizeAndStringify(codeS));
     }
 
     void validate() {
