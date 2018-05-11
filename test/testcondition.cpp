@@ -1851,6 +1851,12 @@ private:
         check("void f1(const std::string &s) { if(s.size() > 42) if(s.empty()) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
+        check("void f1(const std::string &s) { if(s.size() > 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
@@ -1876,6 +1882,26 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f1(const std::string v[10]) { if(v[0].size() > 42) if(v[1].empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() <= 1) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() <= 2) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() < 2) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        // TODO: These are identical condition since size cannot be negative
+        check("void f1(const std::string &s) { if(s.size() <= 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        // TODO: These are identical condition since size cannot be negative
+        check("void f1(const std::string &s) { if(s.size() < 1) if(s.empty()) {}} ");
         ASSERT_EQUALS("", errout.str());
     }
 
