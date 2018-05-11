@@ -615,15 +615,6 @@ public:
     void deleteThis();
 
     /**
-    * Remove this token from the token list.
-    *
-    * The tokens either side are left untouched except for 
-    * their _next and _previous, so pointers to them are still
-    * valid after the deleteThisInPlace()
-    */
-    void deleteThisInPlace();
-
-    /**
      * Create link to given token
      * @param linkToToken The token where this token should link
      * to.
