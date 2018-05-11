@@ -67,12 +67,6 @@ public:
      * @param tok token list to delete
      */
     static void deleteTokens(Token *tok);
-	
-    /**
-     * Delete a single token
-     * @param tok token to delete
-     */
-    void deleteToken(Token *tok);
 
     void addtoken(std::string str, const unsigned int lineno, const unsigned int fileno, bool split = false);
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
