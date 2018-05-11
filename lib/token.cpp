@@ -272,22 +272,6 @@ void Token::takeData(Token *fromToken)
         _link->link(this);
 }
 
-void Token::deleteThisInPlace()
-{
-    // attach previous to next
-    if (_previous) {
-        _previous->next(_next);
-    }
-    // and next to previous
-    if (_next) {
-        _next->previous(_previous);
-    }
-    // unlink the token
-    if (_link) {
-        _link->link(nullptr);
-    }
-}
-
 void Token::deleteThis()
 {
     if (_next) { // Copy next to this and delete next
