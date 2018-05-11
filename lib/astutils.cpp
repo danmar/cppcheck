@@ -250,7 +250,7 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 
 static bool isZeroBoundCond(const Token * const cond)
 {
-    if(cond == nullptr)
+    if (cond == nullptr)
         return false;
     // Assume unsigned
     // TODO: Handle reverse conditions
