@@ -1,0 +1,17 @@
+
+==========
+Benchmarks
+==========
+
+In this file we can document some good code repos / code samples to use when working on optimisations.
+
+Trac tickets:
+http://trac.cppcheck.net/ticket/2435 -- Tokenizer::simplifyTypedef
+http://trac.cppcheck.net/ticket/8355 -- TokenList::createAst
+
+Repos:
+cppcheck/lib
+TODO: Some nice code with many templates
+
+
+
