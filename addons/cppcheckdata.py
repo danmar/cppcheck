@@ -139,7 +139,6 @@ class Token:
     Id = None
     str = None
     next = None
-    type = None
     previous = None
     linkId = None
     link = None
@@ -188,25 +187,25 @@ class Token:
         self.previous = None
         self.scopeId = element.get('scope')
         self.scope = None
-        self.type = element.get('type')
-        if self.type == 'name':
+        type = element.get('type')
+        if type == 'name':
             self.isName = True
             if element.get('isUnsigned'):
                 self.isUnsigned = True
             if element.get('isSigned'):
                 self.isSigned = True
-        elif self.type == 'number':
+        elif type == 'number':
             self.isNumber = True
             if element.get('isInt'):
                 self.isInt = True
             elif element.get('isFloat'):
                 self.isFloat = True
-        elif self.type == 'string':
+        elif type == 'string':
             self.isString = True
             self.strlen = int(element.get('strlen'))
-        elif self.type == 'char':
+        elif type == 'char':
             self.isChar = True
-        elif self.type == 'op':
+        elif type == 'op':
             self.isOp = True
             if element.get('isArithmeticalOp'):
                 self.isArithmeticalOp = True

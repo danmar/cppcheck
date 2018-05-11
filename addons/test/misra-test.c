@@ -65,23 +65,21 @@ void misra_5_3() {
   } else {}
 }
 
-#define n01_macro_hides_macro________31x 1
-#define n02_param_hides_macro________31x 1
-#define n03_macro_hides_param________31x 1
-#define n01_macro_hides_macro________31y 2 //5.4
-#define m1(n02_param_hides_macro________31y) 1 //5.4
-#define n03_macro_hides_param________31y 2 //5.4
-#define m2(n04_param_hides_param________31x,n04_param_hides_param________31y) 1
+#define misra_5_4_macro_hides_macro__31x 1
+#define misra_5_4_param_hides_macro__31x 1
+#define misra_5_4_macro_hides_macro__31y 2 //5.4
+#define m1(misra_5_4_param_hides_macro__31y) 1 //5.4
+#define m2(misra_5_4_param_hides_param__31x,misra_5_4_param_hides_param__31y) 1 //5.4
 
-#define n01_var_hides_macro__________31x 1
-#define n02_function_hides_macro_____31x 1
-#define n03_param_hides_macro________31x 1
-#define n04_tag_hides_macro__________31x 1
-#define n05_label_hides_macro________31x 1
+#define misra_5_5_var_hides_macro____31x 1
+#define misra_5_5_functionhides_macro31x 1
+#define misra_5_5_param_hides_macro__31x 1
+#define misra_5_5_tag_hides_macro____31x 1
+#define misra_5_5_hides_macro________31x 1
 
-int n01_var_hides_macro__________31y; //5.5
-void n02_function_hides_macro_____31y(int n03_param_hides_macro________31y){} //5.5
-struct n04_tag_hides_macro__________31y { //5.5
+int misra_5_5_var_hides_macro____31y; //5.5
+void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){} //5.5
+struct misra_5_5_tag_hides_macro____31y { //5.5
 int x;
 };
 void f1() 
@@ -94,7 +92,7 @@ void f1()
       {
         if(f3())
         {
-          int n05_label_hides_macro________31y; //5.5
+          int misra_5_5_hides_macro________31y; //5.5
         }
       } while(f2());
     }
