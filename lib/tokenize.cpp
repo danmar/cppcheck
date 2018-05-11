@@ -6390,8 +6390,7 @@ bool Tokenizer::simplifyKnownVariables()
                     constantValues[vartok->varId()] = valuetok->str();
                     constantVars[vartok->varId()] = tok1;
                 }
-            }
-            else if (tok->varId()) {
+            } else if (tok->varId()) {
                 // find the entry for the known variable, if any.  Exclude the location where the variable is assigned with next == "="
                 if (constantValues.find(tok->varId()) != constantValues.end() && tok->next()->str() != "=") {
                     constantValueUsages[tok->varId()].push_back(tok);
@@ -6399,25 +6398,20 @@ bool Tokenizer::simplifyKnownVariables()
             }
         }
 
-        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++)
-        {
+        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++) {
             bool referenceFound = false;
             std::list<Token*> usageList = constantValueUsages[constantVar->first];
-            for (Token* usage : usageList)
-            {
+            for (Token* usage : usageList) {
                 // check if any usages of each known variable are a reference
-                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first))
-                {
+                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first)) {
                     referenceFound = true;
                     break;
                 }
             }
-            
-            if (!referenceFound)
-            {
+
+            if (!referenceFound) {
                 // replace all usages of non-referenced known variables with their value
-                for (Token* usage : usageList)
-                {
+                for (Token* usage : usageList) {
                     usage->str(constantValues[constantVar->first]);
                 }
 
@@ -6426,8 +6420,8 @@ bool Tokenizer::simplifyKnownVariables()
                 while (startTok->next()->str() != ";")
                     startTok->deleteNext();
                 startTok->deleteNext();
-				startTok->deleteThis();
-                
+                startTok->deleteThis();
+
                 constantVar->second = nullptr;
                 ret = true;
             }
