@@ -104,20 +104,6 @@ void TokenList::deleteTokens(Token *tok)
     }
 }
 
-void deleteToken(Token *tok)
-{
-    if (tok == _front)
-    {
-        _front = tok->next();
-    }
-    if (tok == _back)
-    {
-        _back = tok->previous();
-    }
-    tok->deleteThisInPlace();
-    delete tok;
-}
-
 //---------------------------------------------------------------------------
 // add a token.
 //---------------------------------------------------------------------------
