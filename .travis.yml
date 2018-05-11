@@ -80,7 +80,7 @@ script:
   - cd ./gui
 # clean rebuild
   - git clean -dfx .
-#     can't set this as env flags, so try again with HAVE_RULES=yes
+# can't set this as env flags, so try again with HAVE_RULES=yes
   - qmake HAVE_RULES=yes
   - echo $CXXFLAGS
   - make -s -j4
@@ -118,8 +118,19 @@ script:
   - ./cppcheck test/testpreprocessor.cpp --dump
   - xmllint --noout test/testpreprocessor.cpp.dump
 # check addons/misra.py
-#  - ./cppcheck --dump addons/misra-test.c
-#  - python addons/misra.py -verify addons/misra-test.c.dump
+  - cd addons/test
+  - ../../cppcheck --dump misc-test.cpp
+  - python3 ../misc.py -verify misc-test.cpp.dump
+  - ../../cppcheck --dump cert-test.c
+  - python3 ../cert.py -verify cert-test.c.dump
+# these are broken right now.
+# uncomment as soon as it gets fixed
+#  - ../../cppcheck --dump misra-test.c
+#  - python3 ../misra.py -verify misra-test.c.dump
+  - ../../cppcheck --dump misra-test.cpp
+  - python3 ../misra.py -verify misra-test.cpp.dump
+  - cd ../../
+
 
 notifications:
   irc:
