@@ -5984,8 +5984,8 @@ void Tokenizer::simplifyPlatformTypes()
 void Tokenizer::simplifyStaticConst()
 {
     // This function will simplify the token list so that the qualifiers "extern", "static"
-    // and "const" appear in the reverse order to what is in the array below.
-    const std::string qualifiers[] = {"const", "static", "extern"};
+    // and "const" appear in the same order as in the array below.
+    const std::string qualifiers[] = {"extern", "static", "const"};
 
     // Move 'const' before all other qualifiers and types and then
     // move 'static' before all other qualifiers and types, ...
@@ -5999,17 +5999,27 @@ void Tokenizer::simplifyStaticConst()
 
             // Look backwards to find the beginning of the declaration
             Token* leftTok = tok;
+            bool behindOther = false;
             for (; leftTok; leftTok = leftTok->previous()) {
-                if (!Token::Match(leftTok, "%type%|static|const|extern|struct|::") ||
+                for (size_t j = 0; j <= i; j++) {
+                    if (leftTok->str() == qualifiers[j]) {
+                        behindOther = true;
+                        break;
+                    }
+                }
+                if (behindOther)
+                    break;
+                if (!Token::Match(leftTok, "%type%|struct|::") ||
                     (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator"))) {
-                    continue2 = true;
                     break;
                 }
             }
 
             // The token preceding the declaration should indicate the start of a declaration
-            if (leftTok == tok ||
-                (leftTok && !Token::Match(leftTok, ";|{|}|(|,|private:|protected:|public:"))) {
+            if (leftTok == tok)
+                continue;
+
+            if (leftTok && !behindOther && !Token::Match(leftTok, ";|{|}|(|,|private:|protected:|public:")) {
                 continue2 = true;
                 break;
             }
