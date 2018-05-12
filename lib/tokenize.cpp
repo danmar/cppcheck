@@ -10227,10 +10227,10 @@ static bool sameTokens(const Token *first, const Token *last, const Token *other
 
 static Token * deleteAlias(Token * tok)
 {
-    // delete all tokens up to ';'
-    do {
-        tok->deleteThis();
-    } while (tok->str() != ";");
+    Token::eraseTokens(tok, Token::findsimplematch(tok, ";"));
+
+    // delete first token
+    tok->deleteThis();
 
     // delete ';' if not last token
     tok->deleteThis();
