@@ -5989,8 +5989,9 @@ void Tokenizer::simplifyStaticConst()
 
     // Move 'const' before all other qualifiers and types and then
     // move 'static' before all other qualifiers and types, ...
-    for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        bool continue2 = false;
+        for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
 
             // Keep searching for a qualifier
             if (!tok->next() || tok->next()->str() != qualifiers[i])
@@ -6000,14 +6001,17 @@ void Tokenizer::simplifyStaticConst()
             Token* leftTok = tok;
             for (; leftTok; leftTok = leftTok->previous()) {
                 if (!Token::Match(leftTok, "%type%|static|const|extern|struct|::") ||
-                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator")))
+                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator"))) {
+                    continue2 = true;
                     break;
+                }
             }
 
             // The token preceding the declaration should indicate the start of a declaration
             if (leftTok == tok ||
                 (leftTok && !Token::Match(leftTok, ";|{|}|(|,|private:|protected:|public:"))) {
-                continue;
+                continue2 = true;
+                break;
             }
 
             // Move the qualifier to the left-most position in the declaration
@@ -6015,11 +6019,17 @@ void Tokenizer::simplifyStaticConst()
             if (!leftTok) {
                 list.front()->insertToken(qualifiers[i], emptyString, false);
                 list.front()->swapWithNext();
-            } else if (leftTok->next())
+                tok = list.front();
+            } else if (leftTok->next()) {
                 leftTok->next()->insertToken(qualifiers[i], emptyString, true);
-            else
+                tok = leftTok->next();
+            } else {
                 leftTok->insertToken(qualifiers[i]);
+                tok = leftTok;
+            }
         }
+        if (continue2)
+            continue;
     }
 }
 
