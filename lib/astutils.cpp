@@ -422,10 +422,11 @@ bool isUniqueExpression(const Token* tok)
     } else if(tok->variable()) {
         const Variable * var = tok->variable();
         const Scope * scope = var->scope();
-        const Function * fun = scope->function;
         if(!scope)
             return true;
         const Type * varType = var->type();
+        // Iterate over the variables in scope and the parameters of the function if possible
+        const Function * fun = scope->function;
         const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
         if (varType) {
             for(const std::list<Variable>* vars:setOfVars) {
