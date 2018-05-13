@@ -77,6 +77,8 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure);
 
 bool isWithoutSideEffects(bool cpp, const Token* tok);
 
+bool isUniqueExpression(const Token* tok);
+
 /** Is scope a return scope (scope will unconditionally return) */
 bool isReturnScope(const Token *endToken);
 
