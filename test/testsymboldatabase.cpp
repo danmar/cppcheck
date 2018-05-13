@@ -287,6 +287,7 @@ private:
         TEST_CASE(symboldatabase67); // #8538
         TEST_CASE(symboldatabase68); // #8560
         TEST_CASE(symboldatabase69);
+        TEST_CASE(symboldatabase70);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3893,6 +3894,27 @@ private:
         ASSERT(f && f->function() && f->function()->token->linenr() == 6);
         ASSERT(f && f->function() && !f->function()->isVolatile());
         ASSERT(f && f->function() && !f->function()->isConst());
+    }
+
+    void symboldatabase70() {
+        {
+            GET_SYMBOL_DB("class Map<String,Entry>::Entry* e;");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 1);
+            ASSERT(db && db->variableList().size() == 2);
+        }
+        {
+            GET_SYMBOL_DB("template class boost::token_iterator_generator<boost::offset_separator>::type; void foo() { }");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 2);
+        }
+        {
+            GET_SYMBOL_DB("void foo() {\n"
+                          "    return class Arm_relocate_functions<big_endian>::thumb32_branch_offset(upper_insn, lower_insn);\n"
+                          "}");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 2);
+        }
     }
 
     void enum1() {
