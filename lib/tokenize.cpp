@@ -9008,33 +9008,26 @@ static const std::set<std::string> keywords = {
 //   - Not in C++ standard yet
 void Tokenizer::simplifyKeyword()
 {
-
     // FIXME: There is a risk that "keywords" are removed by mistake. This
     // code should be fixed so it doesn't remove variables etc. Nonstandard
     // keywords should be defined with a library instead. For instance the
     // linux kernel code at least uses "_inline" as struct member name at some
     // places.
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (keywords.find(tok->str()) == keywords.end())
-            continue;
+        if (keywords.find(tok->str()) != keywords.end()) {
+            // Don't remove struct members
+            if (!Token::simpleMatch(tok->previous(), "."))
+                tok->deleteThis(); // Simplify..
+        }
 
-        // Don't remove struct members
-        if (Token::simpleMatch(tok->previous(), "."))
-            continue;
-
-        // Simplify..
-        tok->deleteThis();
-    }
-
-    if (isC() || _settings->standards.cpp == Standards::CPP03) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (isC() || _settings->standards.cpp == Standards::CPP03) {
             if (tok->str() == "auto")
                 tok->deleteThis();
         }
-    }
 
-    if (_settings->standards.c >= Standards::C99) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+
+        if (_settings->standards.c >= Standards::C99) {
             while (tok->str() == "restrict") {
                 tok->deleteThis();
             }
@@ -9045,18 +9038,14 @@ void Tokenizer::simplifyKeyword()
                 tok->deleteNext();
             }
         }
-    }
 
-    if (_settings->standards.c >= Standards::C11) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (_settings->standards.c >= Standards::C11) {
             while (tok->str() == "_Atomic") {
                 tok->deleteThis();
             }
         }
-    }
 
-    if (isCPP() && _settings->standards.cpp >= Standards::CPP11) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (isCPP() && _settings->standards.cpp >= Standards::CPP11) {
             while (tok->str() == "constexpr") {
                 tok->deleteThis();
             }
@@ -9065,12 +9054,11 @@ void Tokenizer::simplifyKeyword()
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok, "%type% final [:{]")) {
                 tok->deleteNext();
-                continue;
             }
 
             // noexcept -> noexcept(true)
             // 2) void f() noexcept; -> void f() noexcept(true);
-            if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
+            else if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards
                 Token * tokNoExcept = tok->next();
