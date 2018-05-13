@@ -3546,6 +3546,38 @@ private:
                       tok("using namespace std; namespace ios = boost::iostreams;"));
         ASSERT_EQUALS("namespace NS { boost :: iostreams :: istream foo ( \"foo\" ) ; }",
                       tok("namespace NS { using namespace std; namespace ios = boost::iostreams; ios::istream foo(\"foo\"); }"));
+
+        // duplicate namespace aliases
+        ASSERT_EQUALS(";",
+                      tok("namespace ios = boost::iostreams;\nnamespace ios = boost::iostreams;"));
+        ASSERT_EQUALS(";",
+                      tok("namespace ios = boost::iostreams;\nnamespace ios = boost::iostreams;\nnamespace ios = boost::iostreams;"));
+        ASSERT_EQUALS("namespace A { namespace B { void foo ( ) { bar ( A :: B :: ab ( ) ) ; } } }",
+                      tok("namespace A::B {"
+                          "namespace AB = A::B;"
+                          "void foo() {"
+                          "    namespace AB = A::B;" // duplicate declaration
+                          "    bar(AB::ab());"
+                          "}"
+                          "namespace AB = A::B;" //duplicate declaration
+                          "}"));
+
+        // redeclared nested namespace aliases
+        TODO_ASSERT_EQUALS("namespace A { namespace B { void foo ( ) { bar ( A :: B :: ab ( ) ) ; { baz ( A :: a ( ) ) ; } bar ( A :: B :: ab ( ) ) ; } } }",
+                           "namespace A { namespace B { void foo ( ) { bar ( A :: B :: ab ( ) ) ; { baz ( A :: B :: a ( ) ) ; } bar ( A :: B :: ab ( ) ) ; } } }",
+                           tok("namespace A::B {"
+                               "namespace AB = A::B;"
+                               "void foo() {"
+                               "    namespace AB = A::B;" // duplicate declaration
+                               "    bar(AB::ab());"
+                               "    {"
+                               "         namespace AB = A;"
+                               "         baz(AB::a());" // redeclaration OK
+                               "    }"
+                               "    bar(AB::ab());"
+                               "}"
+                               "namespace AB = A::B;" //duplicate declaration
+                               "}"));
     }
 };
 
