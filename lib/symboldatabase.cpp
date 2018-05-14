@@ -544,10 +544,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 while (friendInfo.nameEnd && friendInfo.nameEnd->strAt(1) == "::")
                     friendInfo.nameEnd = friendInfo.nameEnd->tokAt(2);
 
-                // save the name
-                if (friendInfo.nameEnd)
-                    friendInfo.name = friendInfo.nameEnd->str();
-
                 // fill this in after parsing is complete
                 friendInfo.type = nullptr;
 
@@ -705,7 +701,7 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
 
     // fill in friend info
     for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-        for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
+        for (std::vector<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
             i->type = findType(i->nameStart, it->enclosingScope);
         }
     }
@@ -2884,18 +2880,14 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << " )" << std::endl;
 
         std::cout << "    friendList[" << type->friendList.size() << "] = (";
-
-        std::list<Type::FriendInfo>::const_iterator fii;
-
-        count = type->friendList.size();
-        for (fii = type->friendList.begin(); fii != type->friendList.end(); ++fii) {
-            if (fii->type)
-                std::cout << fii->type;
+        for (size_t i = 0; i < type->friendList.size(); i++) {
+            if (type->friendList[i].type)
+                std::cout << type->friendList[i].type;
             else
                 std::cout << " Unknown";
 
-            std::cout << " " << fii->name;
-            if (count-- > 1)
+            std::cout << " " << type->friendList[i].nameEnd ? type->friendList[i].nameEnd->str() : emptyString;
+            if (i+1 < type->friendList.size())
                 std::cout << ",";
         }
 
