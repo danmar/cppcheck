@@ -28,6 +28,7 @@
 #include "valueflow.h"
 
 #include <list>
+#include <functional>
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
@@ -421,6 +422,61 @@ bool isWithoutSideEffects(bool cpp, const Token* tok)
         return var && (!var->isClass() || var->isPointer() || var->isStlType());
     }
     return true;
+}
+
+bool isUniqueExpression(const Token* tok)
+{
+    if(!tok)
+        return true;
+    if(tok->function()) {
+        const Function * fun = tok->function();
+        const Scope * scope = fun->nestedIn;
+        if(!scope)
+            return true;
+        for(const Function& f:scope->functionList) {
+            if(f.argumentList.size() == fun->argumentList.size() && f.name() != fun->name()) {
+                return false;
+            }
+        }
+    } else if(tok->variable()) {
+        const Variable * var = tok->variable();
+        const Scope * scope = var->scope();
+        if(!scope)
+            return true;
+        const Type * varType = var->type();
+        // Iterate over the variables in scope and the parameters of the function if possible
+        const Function * fun = scope->function;
+        const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
+        if (varType) {
+            for(const std::list<Variable>* vars:setOfVars) {
+                if(!vars)
+                    continue;
+                for(const Variable& v:*vars) {
+                    if (v.type() && v.type()->name() == varType->name() && v.name() != var->name()) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            for(const std::list<Variable>* vars:setOfVars) {
+                if(!vars)
+                    continue;
+                for(const Variable& v:*vars) {
+                    if (v.isFloatingType() == var->isFloatingType() &&
+                        v.isEnumType() == var->isEnumType() &&
+                        v.isClass() == var->isClass() &&
+                        v.isArray() == var->isArray() &&
+                        v.isPointer() == var->isPointer() &&
+                        v.name() != var->name())
+                        return false;
+                }
+            }
+        }
+    } else if(!isUniqueExpression(tok->astOperand1())) {
+        return false;
+    }
+
+    return isUniqueExpression(tok->astOperand2());
 }
 
 bool isReturnScope(const Token * const endToken)

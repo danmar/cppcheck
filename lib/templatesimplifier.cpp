@@ -1241,10 +1241,10 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
 // TODO: This is not the correct class for simplifyCalculations(), so it
 // should be moved away.
-bool TemplateSimplifier::simplifyCalculations(Token *start, const Token * const end)
+bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
 {
     bool ret = false, goback = false;
-    for (Token *tok = start; tok != end; tok = tok->next()) {
+    for (Token *tok = _tokens; tok; tok = tok->next()) {
         if (goback) {
             tok = tok->previous();
             goback = false;
@@ -1527,6 +1527,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     for (std::list<TokenAndName>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
         if (numberOfTemplateInstantiations != templateInstantiations.size()) {
             numberOfTemplateInstantiations = templateInstantiations.size();
+            simplifyCalculations(tokenlist.front());
             ++recursiveCount;
             if (recursiveCount > 100) {
                 // bail out..
@@ -1540,8 +1541,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         if (iter2->name != templateDeclaration.name)
             continue;
-
-        simplifyCalculations(iter2->token->next(), iter2->token->linkAt(1));
 
         if (!matchSpecialization(tok->tokAt(namepos), iter2->token, specializations))
             continue;

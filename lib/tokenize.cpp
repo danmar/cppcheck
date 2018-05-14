@@ -40,6 +40,7 @@
 #include <ctime>
 #include <iostream>
 #include <stack>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 //---------------------------------------------------------------------------
@@ -1253,7 +1254,7 @@ void Tokenizer::simplifyTypedef()
                             structRemoved = true;
                         typeStart = typeStart->next();
                     }
-                    if (typeStart->str() == "struct" && Token::Match(tok2, "%name% ::"))
+                    if (Token::Match(typeStart, "struct|class") && Token::Match(tok2, "%name% ::"))
                         typeStart = typeStart->next();
 
                     if (sameStartEnd)
@@ -5983,13 +5984,14 @@ void Tokenizer::simplifyPlatformTypes()
 void Tokenizer::simplifyStaticConst()
 {
     // This function will simplify the token list so that the qualifiers "extern", "static"
-    // and "const" appear in the reverse order to what is in the array below.
-    const std::string qualifiers[] = {"const", "static", "extern"};
+    // and "const" appear in the same order as in the array below.
+    const std::string qualifiers[] = {"extern", "static", "const"};
 
     // Move 'const' before all other qualifiers and types and then
     // move 'static' before all other qualifiers and types, ...
-    for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        bool continue2 = false;
+        for (size_t i = 0; i < sizeof(qualifiers)/sizeof(qualifiers[0]); i++) {
 
             // Keep searching for a qualifier
             if (!tok->next() || tok->next()->str() != qualifiers[i])
@@ -5997,16 +5999,29 @@ void Tokenizer::simplifyStaticConst()
 
             // Look backwards to find the beginning of the declaration
             Token* leftTok = tok;
+            bool behindOther = false;
             for (; leftTok; leftTok = leftTok->previous()) {
-                if (!Token::Match(leftTok, "%type%|static|const|extern|struct|::") ||
-                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator")))
+                for (size_t j = 0; j <= i; j++) {
+                    if (leftTok->str() == qualifiers[j]) {
+                        behindOther = true;
+                        break;
+                    }
+                }
+                if (behindOther)
                     break;
+                if (!Token::Match(leftTok, "%type%|struct|::") ||
+                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator"))) {
+                    break;
+                }
             }
 
             // The token preceding the declaration should indicate the start of a declaration
-            if (leftTok == tok ||
-                (leftTok && !Token::Match(leftTok, ";|{|}|(|,|private:|protected:|public:"))) {
+            if (leftTok == tok)
                 continue;
+
+            if (leftTok && !behindOther && !Token::Match(leftTok, ";|{|}|(|,|private:|protected:|public:")) {
+                continue2 = true;
+                break;
             }
 
             // Move the qualifier to the left-most position in the declaration
@@ -6014,11 +6029,17 @@ void Tokenizer::simplifyStaticConst()
             if (!leftTok) {
                 list.front()->insertToken(qualifiers[i], emptyString, false);
                 list.front()->swapWithNext();
-            } else if (leftTok->next())
+                tok = list.front();
+            } else if (leftTok->next()) {
                 leftTok->next()->insertToken(qualifiers[i], emptyString, true);
-            else
+                tok = leftTok->next();
+            } else {
                 leftTok->insertToken(qualifiers[i]);
+                tok = leftTok;
+            }
         }
+        if (continue2)
+            continue;
     }
 }
 
@@ -6323,7 +6344,9 @@ bool Tokenizer::simplifyKnownVariables()
 
     // constants..
     {
-        std::map<unsigned int, std::string> constantValues;
+        std::unordered_map<unsigned int, std::string> constantValues;
+        std::map<unsigned int, Token*> constantVars;
+        std::unordered_map<unsigned int, std::list<Token*>> constantValueUsages;
         bool goback = false;
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (goback) {
@@ -6380,36 +6403,47 @@ bool Tokenizer::simplifyKnownVariables()
                 if (!tok->isStandardType())
                     continue;
 
-                const Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
+                Token * const vartok = (tok->next() && tok->next()->str() == "const") ? tok->tokAt(2) : tok->next();
                 const Token * const valuetok = vartok->tokAt(2);
                 if (Token::Match(valuetok, "%bool%|%char%|%num%|%str% )| ;")) {
-                    //check if there's not a reference usage inside the code
-                    bool withreference = false;
-                    for (const Token *tok2 = valuetok->tokAt(2); tok2; tok2 = tok2->next()) {
-                        if (Token::Match(tok2,"(|[|,|{|return|%op% & %varid%", vartok->varId())) {
-                            withreference = true;
-                            break;
-                        }
-                    }
-                    //don't simplify 'f(&x)' to 'f(&100)'
-                    if (withreference)
-                        continue;
-
+                    // record a constant value for this variable
                     constantValues[vartok->varId()] = valuetok->str();
+                    constantVars[vartok->varId()] = tok1;
+                }
+            } else if (tok->varId()) {
+                // find the entry for the known variable, if any.  Exclude the location where the variable is assigned with next == "="
+                if (constantValues.find(tok->varId()) != constantValues.end() && tok->next()->str() != "=") {
+                    constantValueUsages[tok->varId()].push_back(tok);
+                }
+            }
+        }
 
-                    // remove statement
-                    while (tok1->next()->str() != ";")
-                        tok1->deleteNext();
-                    tok1->deleteNext();
-                    tok1->deleteThis();
-                    tok = tok1;
-                    goback = true;
-                    ret = true;
+        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++) {
+            bool referenceFound = false;
+            std::list<Token*> usageList = constantValueUsages[constantVar->first];
+            for (Token* usage : usageList) {
+                // check if any usages of each known variable are a reference
+                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first)) {
+                    referenceFound = true;
+                    break;
                 }
             }
 
-            else if (tok->varId() && constantValues.find(tok->varId()) != constantValues.end()) {
-                tok->str(constantValues[tok->varId()]);
+            if (!referenceFound) {
+                // replace all usages of non-referenced known variables with their value
+                for (Token* usage : usageList) {
+                    usage->str(constantValues[constantVar->first]);
+                }
+
+                Token* startTok = constantVar->second;
+                // remove variable assignment statement
+                while (startTok->next()->str() != ";")
+                    startTok->deleteNext();
+                startTok->deleteNext();
+                startTok->deleteThis();
+
+                constantVar->second = nullptr;
+                ret = true;
             }
         }
     }
@@ -8974,33 +9008,26 @@ static const std::set<std::string> keywords = {
 //   - Not in C++ standard yet
 void Tokenizer::simplifyKeyword()
 {
-
     // FIXME: There is a risk that "keywords" are removed by mistake. This
     // code should be fixed so it doesn't remove variables etc. Nonstandard
     // keywords should be defined with a library instead. For instance the
     // linux kernel code at least uses "_inline" as struct member name at some
     // places.
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (keywords.find(tok->str()) == keywords.end())
-            continue;
+        if (keywords.find(tok->str()) != keywords.end()) {
+            // Don't remove struct members
+            if (!Token::simpleMatch(tok->previous(), "."))
+                tok->deleteThis(); // Simplify..
+        }
 
-        // Don't remove struct members
-        if (Token::simpleMatch(tok->previous(), "."))
-            continue;
-
-        // Simplify..
-        tok->deleteThis();
-    }
-
-    if (isC() || _settings->standards.cpp == Standards::CPP03) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (isC() || _settings->standards.cpp == Standards::CPP03) {
             if (tok->str() == "auto")
                 tok->deleteThis();
         }
-    }
 
-    if (_settings->standards.c >= Standards::C99) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+
+        if (_settings->standards.c >= Standards::C99) {
             while (tok->str() == "restrict") {
                 tok->deleteThis();
             }
@@ -9011,18 +9038,14 @@ void Tokenizer::simplifyKeyword()
                 tok->deleteNext();
             }
         }
-    }
 
-    if (_settings->standards.c >= Standards::C11) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (_settings->standards.c >= Standards::C11) {
             while (tok->str() == "_Atomic") {
                 tok->deleteThis();
             }
         }
-    }
 
-    if (isCPP() && _settings->standards.cpp >= Standards::CPP11) {
-        for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (isCPP() && _settings->standards.cpp >= Standards::CPP11) {
             while (tok->str() == "constexpr") {
                 tok->deleteThis();
             }
@@ -9031,12 +9054,11 @@ void Tokenizer::simplifyKeyword()
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok, "%type% final [:{]")) {
                 tok->deleteNext();
-                continue;
             }
 
             // noexcept -> noexcept(true)
             // 2) void f() noexcept; -> void f() noexcept(true);
-            if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
+            else if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards
                 Token * tokNoExcept = tok->next();
@@ -10213,6 +10235,31 @@ void Tokenizer::simplifyNestedNamespace()
     }
 }
 
+static bool sameTokens(const Token *first, const Token *last, const Token *other)
+{
+    while (other && first->str() == other->str()) {
+        if (first == last)
+            return true;
+        first = first->next();
+        other = other->next();
+    }
+
+    return false;
+}
+
+static Token * deleteAlias(Token * tok)
+{
+    Token::eraseTokens(tok, Token::findsimplematch(tok, ";"));
+
+    // delete first token
+    tok->deleteThis();
+
+    // delete ';' if not last token
+    tok->deleteThis();
+
+    return tok;
+}
+
 void Tokenizer::simplifyNamespaceAliases()
 {
     if (!isCPP())
@@ -10247,6 +10294,28 @@ void Tokenizer::simplifyNamespaceAliases()
                 else if (Token::simpleMatch(tok2, "}"))
                     endScope--;
                 else if (tok2->str() == name) {
+                    if (Token::Match(tok2->previous(), "namespace %name% =")) {
+                        // check for possible duplicate aliases
+                        if (sameTokens(tokNameStart, tokNameEnd, tok2->tokAt(2))) {
+                            // delete duplicate
+                            tok2 = deleteAlias(tok2->previous());
+                            continue;
+                        } else {
+                            // conflicting declaration (syntax error)
+                            if (endScope == scope) {
+                                // delete conflicting declaration
+                                tok2 = deleteAlias(tok2->previous());
+                            }
+
+                            // new declaration
+                            else {
+                                // TODO: use the new alias in this scope
+                                tok2 = deleteAlias(tok2->previous());
+                            }
+                            continue;
+                        }
+                    }
+
                     tok2->str(tokNameStart->str());
                     Token * tok3 = tokNameStart;
                     while (tok3 != tokNameEnd) {

@@ -224,12 +224,11 @@ public:
     /**
      * Simplify constant calculations such as "1+2" => "3".
      * This also performs simple cleanup of parentheses etc.
-     * @param start start token
-     * @param end   end token
+     * @param _tokens start token
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    static bool simplifyCalculations(Token *start, const Token *end = nullptr);
+    static bool simplifyCalculations(Token *_tokens);
 
 private:
     /**

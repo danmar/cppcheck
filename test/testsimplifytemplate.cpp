@@ -1097,7 +1097,7 @@ private:
                            "struct Factorial<4> { enum FacHelper { value = 4 * Factorial<3> :: value } ; } ; "
                            "struct Factorial<3> { enum FacHelper { value = 3 * Factorial<2> :: value } ; } ; "
                            "struct Factorial<2> { enum FacHelper { value = 2 * Factorial<1> :: value } ; } ; "
-                           "struct Factorial<1> { enum FacHelper { value = Factorial<0> :: value } ; } ;";
+                           "struct Factorial<1> { enum FacHelper { value = Factorial < 0 > :: value } ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

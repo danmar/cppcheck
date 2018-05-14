@@ -100,7 +100,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          tok->progressValue());
         // Locate next class
         if ((_tokenizer->isCPP() && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
-                                      !Token::Match(tok->previous(), "new|friend|const|enum|)|(|<")) ||
+                                      !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|)|(|<")) ||
                                      (Token::Match(tok, "enum class| %name% {") ||
                                       Token::Match(tok, "enum class| %name% : %name% {"))))
             || (_tokenizer->isC() && Token::Match(tok, "struct|union|enum %name% {"))) {
@@ -143,9 +143,22 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     else if (Token::Match(tok2, "%name% ["))
                         continue;
                     // skip template
-                    else if (Token::Match(tok->previous(), "template class|struct") &&
-                             Token::simpleMatch(tok2->previous(), "> ;")) {
+                    else if (Token::simpleMatch(tok2, ";") &&
+                             Token::Match(tok->previous(), "template|> class|struct")) {
                         tok = tok2;
+                        continue;
+                    }
+                    // forward declaration
+                    else if (Token::simpleMatch(tok2, ";") &&
+                             Token::Match(tok, "class|struct|union")) {
+                        // TODO: see if it can be used
+                        tok = tok2;
+                        continue;
+                    }
+                    // skip constructor
+                    else if (Token::simpleMatch(tok2, "(") &&
+                             Token::simpleMatch(tok2->link(), ") ;")) {
+                        tok = tok2->link()->next();
                         continue;
                     } else
                         throw InternalError(tok2, "SymbolDatabase bailout; unhandled code", InternalError::SYNTAX);
