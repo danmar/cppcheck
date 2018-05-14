@@ -58,13 +58,12 @@ void misra_5_1() {
   int a1234567890123456789012345678901; // 5.1 ,5.2
 }
 
-extern int misra_5_3_param_hides_var____31x;
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
-enum E {
+enum misra_5_3_Enum {
 misra_5_3_var_hidesenumconst_31x = 2,misra_5_3_enum_hidesfunction_31x = 5
 };
-void f1(int misra_5_3_param_hides_var____31y) //5.3
+void misra_5_3_func1(void)
 {
   int misra_5_3_var_hides_var______31y; //5.3
   int misra_5_3_var_hides_function_31y; //5.3
