@@ -216,7 +216,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "    <tok "
                           << "fileIndex=\"" << tok->location.fileIndex << "\" "
                           << "linenr=\"" << tok->location.line << "\" "
-                          << "str=\"" << ErrorLogger::toxml(tok->str) << "\""
+                          << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
                           << "/>" << std::endl;
                 }
                 fdump << "  </rawtokens>" << std::endl;
