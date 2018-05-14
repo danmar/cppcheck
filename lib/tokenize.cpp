@@ -5540,26 +5540,31 @@ void Tokenizer::simplifyFunctionPointers()
 
 bool Tokenizer::simplifyFunctionReturn()
 {
-    bool ret = false;
+    std::map<std::string, const Token*> functions;
+
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();
 
         else if (Token::Match(tok, "%name% ( ) { return %bool%|%char%|%num%|%str% ; }") && tok->strAt(-1) != "::") {
             const Token* const any = tok->tokAt(5);
+            functions[tok->str()] = any;
+            tok = any;
+        }
+    }
 
-            const std::string pattern("(|[|=|return|%op% " + tok->str() + " ( ) ;|]|)|%cop%");
-            for (Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
-                if (Token::Match(tok2, pattern.c_str())) {
-                    if (tok->str() != tok2->strAt(1))
-                        // Ticket #7916: tok is for instance "foo < bar >", a single token for an instantiation,
-                        // and tok2->strAt(1) is "foo"; bail out (TODO: we can probably handle this pattern)
-                        continue;
-                    tok2 = tok2->next();
-                    tok2->str(any->str());
-                    tok2->deleteNext(2);
-                    ret = true;
-                }
+    if (functions.empty())
+        return false;
+
+    bool ret = false;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "(|[|=|return|%op% %name% ( ) ;|]|)|%cop%")) {
+            tok = tok->next();
+            auto it = functions.find(tok->str());
+            if (it != functions.cend()) {
+                tok->str(it->second->str());
+                tok->deleteNext(2);
+                ret = true;
             }
         }
     }
