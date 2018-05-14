@@ -1056,7 +1056,7 @@ void CheckClass::privateFunctions()
             bool used = checkFunctionUsage(privateFuncs.front(), scope); // Usage in this class
             // Check in friend classes
             const std::vector<Type::FriendInfo>& friendList = scope->definedType->friendList;
-            for (size_t i = 0; i < friendList.size(); i++) {
+            for (size_t i = 0; i < friendList.size() && !used; i++) {
                 if (friendList[i].type)
                     used = checkFunctionUsage(privateFuncs.front(), friendList[i].type->classScope);
                 else
