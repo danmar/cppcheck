@@ -4042,7 +4042,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
             }
 
-            // check for a match with refrence of a variable
+            // check for a match with reference of a variable
             else if (Token::Match(arguments[j], "* %var% ,|)")) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
                 if (callarg) {
