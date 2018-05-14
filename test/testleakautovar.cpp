@@ -142,7 +142,7 @@ private:
 
         TEST_CASE(inlineFunction); // #3989
 
-		TEST_CASE(smartPtrInContainer); // #8262
+        TEST_CASE(smartPtrInContainer); // #8262
     }
 
     void check(const char code[], bool cpp = false) {
@@ -1523,17 +1523,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-	// #8262
-	void smartPtrInContainer() {
-		check(  "std::list< std::shared_ptr<int> > mList;\n"
-				"void test(){\n"
-				"  int *pt = new int(1);\n"
-				"  mList.push_back(std::shared_ptr<int>(pt));\n"
-				"}\n",
-				true
-			);
-		TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Memory leak: pt\n", errout.str());
-	}
+    // #8262
+    void smartPtrInContainer() {
+        check("std::list< std::shared_ptr<int> > mList;\n"
+              "void test(){\n"
+              "  int *pt = new int(1);\n"
+              "  mList.push_back(std::shared_ptr<int>(pt));\n"
+              "}\n",
+              true
+             );
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Memory leak: pt\n", errout.str());
+    }
 
 };
 
