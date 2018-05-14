@@ -860,16 +860,16 @@ private:
 
     void tokenize37() { // #8550
         const char codeC[] = "class name { public: static void init ( ) {} } ; "
-                            "typedef class name N; "
-                            "void foo ( ) { return N :: init ( ) ; }";
+                             "typedef class name N; "
+                             "void foo ( ) { return N :: init ( ) ; }";
         const char expC [] = "class name { public: static void init ( ) { } } ; "
-                            "void foo ( ) { return name :: init ( ) ; }";
+                             "void foo ( ) { return name :: init ( ) ; }";
         ASSERT_EQUALS(expC, tokenizeAndStringify(codeC));
         const char codeS[] = "class name { public: static void init ( ) {} } ; "
-                            "typedef struct name N; "
-                            "void foo ( ) { return N :: init ( ) ; }";
+                             "typedef struct name N; "
+                             "void foo ( ) { return N :: init ( ) ; }";
         const char expS [] = "class name { public: static void init ( ) { } } ; "
-                            "void foo ( ) { return name :: init ( ) ; }";
+                             "void foo ( ) { return name :: init ( ) ; }";
         ASSERT_EQUALS(expS, tokenizeAndStringify(codeS));
     }
 
