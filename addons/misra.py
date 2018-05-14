@@ -17,10 +17,11 @@ import cppcheckdata
 import sys
 import re
 import os
-import tempfile
-import subprocess
+import argparse
 
 ruleTexts = {}
+ignoreList = {}
+typeBits = {}
 
 VERIFY = False
 VERIFY_EXPECTED = []
@@ -30,6 +31,9 @@ VERIFY_ACTUAL = []
 def reportError(location, num1, num2):
     if VERIFY:
         VERIFY_ACTUAL.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
+    elif num1 in ignoreList and num2 in ignoreList[num1]:
+        # ignore error
+        return
     else:
         num = num1 * 100 + num2
         id = 'misra-c2012-' + str(num1) + '.' + str(num2)
@@ -38,7 +42,7 @@ def reportError(location, num1, num2):
         elif len(ruleTexts) == 0:
             errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
         else:
-            return
+            errmsg = 'misra violation (no description found for rule) [' + id + ']'
         sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] (style): ' + errmsg + '\n')
 
 
@@ -48,6 +52,7 @@ def simpleMatch(token, pattern):
             return False
         token = token.next
     return True
+
 
 def rawlink(rawtoken):
     if rawtoken.str == '}':
@@ -63,6 +68,7 @@ def rawlink(rawtoken):
     else:
         rawtoken = None
     return rawtoken
+
 
 KEYWORDS = {
     'auto',
@@ -133,15 +139,15 @@ def bitsOfEssentialType(expr):
     if type is None:
         return 0
     if type == 'char':
-        return CHAR_BIT
+        return typeBits['CHAR']
     if type == 'short':
-        return SHORT_BIT
+        return typeBits['SHORT']
     if type == 'int':
-        return INT_BIT
+        return typeBits['INT']
     if type == 'long':
-        return LONG_BIT
+        return typeBits['LONG']
     if type == 'long long':
-        return LONG_LONG_BIT
+        return typeBits['LONG_LONG']
     return 0
 
 
@@ -305,13 +311,14 @@ def findRawLink(token):
             if indent <= 1:
                 return token
             indent = indent - 1
-        if forward == True:
+        if forward is True:
             token = token.next
         else:
             token = token.previous
 
     # raw link not found
     return None
+
 
 def numberOfParentheses(tok1, tok2):
     while tok1 and tok1 != tok2:
@@ -348,7 +355,8 @@ def getArgumentsRecursive(tok, arguments):
         getArgumentsRecursive(tok.astOperand1, arguments)
         getArgumentsRecursive(tok.astOperand2, arguments)
     else:
-        arguments.append(tok);
+        arguments.append(tok)
+
 
 def getArguments(ftok):
     arguments = []
@@ -359,8 +367,10 @@ def getArguments(ftok):
 def isHexDigit(c):
     return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c >= 'F')
 
+
 def isOctalDigit(c):
     return (c >= '0' and c <= '7')
+
 
 def isNoReturnScope(tok):
     if tok is None or tok.str != '}':
@@ -378,11 +388,13 @@ def isNoReturnScope(tok):
         return True
     return False
 
+
 def misra_3_1(rawTokens):
     for token in rawTokens:
         if token.str.startswith('/*') or token.str.startswith('//'):
             if '//' in token.str[2:] or '/*' in token.str[2:]:
                 reportError(token, 3, 1)
+
 
 def misra_4_1(rawTokens):
     for token in rawTokens:
@@ -394,21 +406,21 @@ def misra_4_1(rawTokens):
             pos = pos + 1
             if token.str[pos1] != '\\':
                 continue
-            if token.str[pos1+1] == '\\':
+            if token.str[pos1 + 1] == '\\':
                 pos = pos1 + 2
                 continue
-            if token.str[pos1+1] == 'x':
-                if not isHexDigit(token.str[pos1+2]):
+            if token.str[pos1 + 1] == 'x':
+                if not isHexDigit(token.str[pos1 + 2]):
                     reportError(token, 4, 1)
                     continue
-                if not isHexDigit(token.str[pos1+3]):
+                if not isHexDigit(token.str[pos1 + 3]):
                     reportError(token, 4, 1)
                     continue
-            elif isOctalDigit(token.str[pos1+1]):
-                if not isOctalDigit(token.str[pos1+2]):
+            elif isOctalDigit(token.str[pos1 + 1]):
+                if not isOctalDigit(token.str[pos1 + 2]):
                     reportError(token, 4, 1)
                     continue
-                if not isOctalDigit(token.str[pos1+2]):
+                if not isOctalDigit(token.str[pos1 + 2]):
                     reportError(token, 4, 1)
                     continue
             else:
@@ -423,6 +435,7 @@ def misra_5_1(data):
     for token in data.tokenlist:
         if token.isName and len(token.str) > 31:
             reportError(token, 5, 1)
+
 
 def misra_5_2(data):
     scopeVars = {}
@@ -465,6 +478,7 @@ def misra_5_2(data):
                         reportError(scopename1.bodyStart, 5, 2)
                     else:
                         reportError(scopename2.bodyStart, 5, 2)
+
 
 def misra_5_3(data):
     scopeVars = {}
@@ -840,7 +854,8 @@ def misra_12_2(data):
 
 def misra_12_3(data):
     for token in data.tokenlist:
-        if token.str != ',' or token.scope.type == 'Enum' or token.scope.type == 'Class' or token.scope.type == 'Global':
+        if token.str != ',' or token.scope.type == 'Enum' or \
+           token.scope.type == 'Class' or token.scope.type == 'Global':
             continue
         if token.astParent and token.astParent.str in ['(', ',', '{']:
             continue
@@ -848,9 +863,9 @@ def misra_12_3(data):
 
 
 def misra_12_4(data):
-    if INT_BIT == 16:
+    if typeBits['INT'] == 16:
         max_uint = 0xffff
-    elif INT_BIT == 32:
+    elif typeBits['INT'] == 32:
         max_uint = 0xffffffff
     else:
         return
@@ -1246,6 +1261,7 @@ def misra_20_5(data):
         if directive.str.startswith('#undef '):
             reportError(directive, 20, 5)
 
+
 def misra_20_13(data):
     for directive in data.directives:
         dir = directive.str
@@ -1253,8 +1269,10 @@ def misra_20_13(data):
             dir = dir[:dir.find(' ')]
         if dir.find('(') > 0:
             dir = dir[:dir.find('(')]
-        if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include', '#pragma', '#undef', '#warning']:
+        if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include',
+                       '#pragma', '#undef', '#warning']:
             reportError(directive, 20, 13)
+
 
 def misra_20_14(data):
     # stack for #if blocks. contains the #if directive until the corresponding #endif is seen.
@@ -1264,7 +1282,7 @@ def misra_20_14(data):
         if directive.str.startswith('#if '):
             ifStack.append(directive)
         elif directive.str == '#else' or directive.str.startswith('#elif '):
-            if len(ifStack)==0:
+            if len(ifStack) == 0:
                 reportError(directive, 20, 14)
                 ifStack.append(directive)
             elif directive.file != ifStack[-1].file:
@@ -1272,9 +1290,10 @@ def misra_20_14(data):
         elif directive.str == '#endif':
             if len(ifStack) == 0:
                 reportError(directive, 20, 14)
-            elif  directive.file != ifStack[-1].file:
+            elif directive.file != ifStack[-1].file:
                 reportError(directive, 20, 14)
                 ifStack.pop()
+
 
 def misra_21_3(data):
     for token in data.tokenlist:
@@ -1316,6 +1335,26 @@ def misra_21_11(data):
     directive = findInclude(data.directives, '<tgmath.h>')
     if directive:
         reportError(directive, 21, 11)
+
+
+def setIgnoreList(ignorelist):
+    num1 = 0
+    num2 = 0
+    global ignoreList
+    rule_pattern = re.compile(r'([0-9]+).([0-9]+)')
+    strlist = ignorelist.split(",")
+
+    # build ignore list
+    ignoreList = {}
+    for item in strlist:
+        res = rule_pattern.match(item)
+        if res:
+            num1 = int(res.group(1))
+            num2 = int(res.group(2))
+            if num1 in ignoreList:
+                ignoreList[num1][num2] = True
+            else:
+                ignoreList[num1] = {num2: True}
 
 
 def loadRuleTexts(filename):
@@ -1361,6 +1400,7 @@ def loadRuleTexts(filename):
             ruleTexts[num] = ruleTexts[num] + ' ' + line
             continue
 
+
 if len(sys.argv) == 1:
     print("""
 Syntax: misra.py [OPTIONS] <dumpfiles>
@@ -1390,6 +1430,7 @@ OPTIONS:
                         <...>
 """)
     sys.exit(1)
+
 
 def generateTable():
     numberOfRules = {}
@@ -1426,14 +1467,15 @@ def generateTable():
         addon.append(res.group(1) + '.' + res.group(2))
 
     # rules handled by cppcheck
-    cppcheck = ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6', '17.5', '18.1', '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
+    cppcheck = ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6', '17.5', '18.1', '18.6',
+                '20.6', '22.1', '22.2', '22.4', '22.6']
 
     # rules that can be checked with compilers
-    compiler = ['1.1', '1.2']
+    # compiler = ['1.1', '1.2']
 
     # print table
-    for i1 in range(1,23):
-        for i2 in range(1,numberOfRules[i1]+1):
+    for i1 in range(1, 23):
+        for i2 in range(1, numberOfRules[i1] + 1):
             num = str(i1) + '.' + str(i2)
             s = ''
             if num in addon:
@@ -1444,35 +1486,17 @@ def generateTable():
             print(num[:8] + s)
     sys.exit(1)
 
-for arg in sys.argv[1:]:
-    if arg == '-verify':
-        VERIFY = True
-    elif arg.startswith('--rule-texts='):
-        filename = arg[13:]
-        if not os.path.isfile(filename):
-            print('Fatal error: file is not found: ' + filename)
-            sys.exit(1)
-        loadRuleTexts(filename)
-    elif ".dump" in arg:
-        continue
-    elif arg == "-generate-table":
-        generateTable()
-    else:
-        print('Fatal error: unhandled argument ' + arg)
-        sys.exit(1)
 
-for arg in sys.argv[1:]:
-    if not arg.endswith('.dump'):
-        continue
+def parseDump(dumpfile):
 
-    data = cppcheckdata.parsedump(arg)
+    data = cppcheckdata.parsedump(dumpfile)
 
-    CHAR_BIT      = data.platform.char_bit
-    SHORT_BIT     = data.platform.short_bit
-    INT_BIT       = data.platform.int_bit
-    LONG_BIT      = data.platform.long_bit
-    LONG_LONG_BIT = data.platform.long_long_bit
-    POINTER_BIT   = data.platform.pointer_bit
+    typeBits['CHAR'] = data.platform.char_bit
+    typeBits['SHORT'] = data.platform.short_bit
+    typeBits['INT'] = data.platform.int_bit
+    typeBits['LONG'] = data.platform.long_bit
+    typeBits['LONG_LONG'] = data.platform.long_long_bit
+    typeBits['POINTER'] = data.platform.pointer_bit
 
     if VERIFY:
         VERIFY_ACTUAL = []
@@ -1484,14 +1508,14 @@ for arg in sys.argv[1:]:
                     if compiled.match(word):
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
     else:
-        print('Checking ' + arg + '...')
+        print('Checking ' + dumpfile + '...')
 
     cfgNumber = 0
 
     for cfg in data.configurations:
         cfgNumber = cfgNumber + 1
         if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
+            print('Checking ' + dumpfile + ', config "' + cfg.name + '"...')
 
         if cfgNumber == 1:
             misra_3_1(data.rawTokens)
@@ -1583,3 +1607,28 @@ for arg in sys.argv[1:]:
                 print('Not expected: ' + actual)
                 exitCode = 1
         sys.exit(exitCode)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--rule-texts", type=str, help="Path to text file of MISRA rules")
+parser.add_argument("--ignore-rules", type=str, help="MISRA rules to ignore (comma-separated string)")
+parser.add_argument("-verify", help="Verify check", action="store_true")
+parser.add_argument("-generate-table", help="Generate rule table", action="store_true")
+parser.add_argument("file", help="Path of dump file from cppcheck")
+args = parser.parse_args()
+
+if args.verify:
+    VERIFY = True
+elif args.generate_table:
+    generateTable()
+else:
+    if args.rule_texts:
+        filename = os.path.normpath(args.rule_texts)
+        if not os.path.isfile(filename):
+            print('Fatal error: file is not found: ' + filename)
+            sys.exit(1)
+        loadRuleTexts(filename)
+    if args.ignore_rules:
+        setIgnoreList(args.ignore_rules)
+    if args.file:
+        parseDump(args.file)
