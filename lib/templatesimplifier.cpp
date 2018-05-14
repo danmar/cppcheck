@@ -1409,11 +1409,6 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                 }
             }
         }
-        // Division where result is a whole number
-        else if (Token::Match(tok->previous(), "* %num% /") &&
-                 tok->str() == MathLib::multiply(tok->strAt(2), MathLib::divide(tok->str(), tok->strAt(2)))) {
-            tok->deleteNext(2);
-        }
 
         else if (simplifyNumericCalculations(tok)) {
             ret = true;
