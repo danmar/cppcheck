@@ -2886,9 +2886,11 @@ void SymbolDatabase::printOut(const char *title) const
             else
                 std::cout << " Unknown";
 
-            std::cout << " " << type->friendList[i].nameEnd ? type->friendList[i].nameEnd->str() : emptyString;
+            std::cout << ' ';
+            if (type->friendList[i].nameEnd)
+                std::cout << type->friendList[i].nameEnd->str();
             if (i+1 < type->friendList.size())
-                std::cout << ",";
+                std::cout << ',';
         }
 
         std::cout << " )" << std::endl;
