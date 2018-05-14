@@ -212,6 +212,7 @@ private:
         TEST_CASE(unsafeClassDivZero);
 
         TEST_CASE(override1);
+        TEST_CASE(override2);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -6782,6 +6783,19 @@ private:
                       "class Derived : Base { virtual void f() final; };");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void override2() {
+        checkOverride("class TimerResultsIntf {\n"
+                      "public:\n"
+                      "    virtual void AddResults(const std::string& str, std::clock_t clocks) = 0;\n"
+                      "};\n"
+                      "class TimerResults : public TimerResultsIntf {\n"
+                      "public:\n"
+                      "    virtual void AddResults(const std::string& str, std::clock_t clocks);\n"
+                      "};");
+        ASSERT_EQUALS("", errout.str());
+    };
+
 };
 
 REGISTER_TEST(TestClass)
