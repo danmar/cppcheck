@@ -6222,7 +6222,8 @@ private:
                             "DWORD64 dword64;"
                             "ULONG64 ulong64;"
                             "LPWSTR lpcwstr;"
-                            "LPCWSTR lpcwstr;";
+                            "LPCWSTR lpcwstr;"
+                            "PFLOAT ptrToFloat;";
 
         const char expected[] = "int f ; "
                                 "unsigned char g ; "
@@ -6292,7 +6293,8 @@ private:
                                 "unsigned long long dword64 ; "
                                 "unsigned long long ulong64 ; "
                                 "wchar_t * lpcwstr ; "
-                                "const wchar_t * lpcwstr ;";
+                                "const wchar_t * lpcwstr ; "
+                                "float * ptrToFloat ;";
 
         // These types should be defined the same on all Windows platforms
         std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
