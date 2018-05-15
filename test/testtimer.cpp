@@ -29,7 +29,7 @@ public:
 
 private:
 
-    void run() {
+    void run() override {
         TEST_CASE(result);
     }
 

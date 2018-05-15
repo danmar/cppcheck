@@ -44,7 +44,7 @@ public:
     }
 
     /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (!settings->isEnabled(Settings::INTERNAL))
             return;
 
@@ -94,7 +94,7 @@ private:
     void extraWhitespaceError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void checkRedundantTokCheckError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckInternal c(nullptr, settings, errorLogger);
         c.multiComparePatternError(nullptr, ";|%type%", "Match");
         c.simplePatternError(nullptr, "class {", "Match");
@@ -111,7 +111,7 @@ private:
         return "cppcheck internal API usage";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         // Don't include these checks on the WIKI where people can read what
         // checks there are. These checks are not intended for users.
         return "";

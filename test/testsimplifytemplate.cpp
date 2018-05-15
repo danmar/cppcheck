@@ -36,7 +36,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         settings.addEnabled("portability");
 
         TEST_CASE(template1);

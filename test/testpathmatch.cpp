@@ -39,7 +39,7 @@ private:
     const PathMatch fooCppMatcher;
     const PathMatch srcFooCppMatcher;
 
-    void run() {
+    void run() override {
         TEST_CASE(emptymaskemptyfile);
         TEST_CASE(emptymaskpath1);
         TEST_CASE(emptymaskpath2);

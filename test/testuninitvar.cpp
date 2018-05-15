@@ -36,7 +36,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(uninitvar1);
