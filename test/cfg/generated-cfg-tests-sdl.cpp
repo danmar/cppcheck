@@ -120,3 +120,27 @@ void test__IMG_isJPG__arg1__notnull() {
   IMG_isJPG(NULL);
 }
 
+
+int main() {
+    test__SDL_mutexP__noreturn();
+    test__SDL_mutexP__arg1__notbool();
+    test__SDL_mutexP__arg1__notnull();
+    test__SDL_mutexV__noreturn();
+    test__SDL_mutexV__arg1__notbool();
+    test__SDL_mutexV__arg1__notnull();
+    test__SDL_RWsize__noreturn();
+    test__SDL_RWsize__arg1__notbool();
+    test__SDL_RWsize__arg1__notnull();
+    test__SDL_RWread__noreturn();
+    test__SDL_RWread__arg1__notbool();
+    test__SDL_RWread__arg1__notnull();
+    test__SDL_RWread__arg2__notbool();
+    test__SDL_RWread__arg2__notnull();
+    test__IMG_isPNG__noreturn();
+    test__IMG_isPNG__arg1__notbool();
+    test__IMG_isPNG__arg1__notnull();
+    test__IMG_isJPG__noreturn();
+    test__IMG_isJPG__arg1__notbool();
+    test__IMG_isJPG__arg1__notnull();
+    return 0;
+}

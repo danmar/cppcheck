@@ -2246,3 +2246,666 @@ void test__wxGrid__SetCellTextColour__arg3__notuninit() {
   wxGrid::SetCellTextColour(arg1, arg2, x);
 }
 
+void test__wxEntry__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxEntry(arg1, arg2, arg3, arg4); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxEntry__leakignore() {
+  char *p = malloc(10); *p=0;
+  wxEntry(p, arg2, arg3, arg4);
+  // cppcheck-suppress memleak
+}
+
+void test__wxEntry__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxEntry(x, arg2, arg3, arg4);
+}
+
+void test__wxEntry__arg4__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxEntry(arg1, arg2, arg3, x);
+}
+
+void test__wxWindow__SetBackgroundColour__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxWindow::SetBackgroundColour(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxFrame__SetBackgroundColour__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxFrame::SetBackgroundColour(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxFrame__SetMenuBar__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxFrame::SetMenuBar(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxFrame__SetMenuBar__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxFrame::SetMenuBar(x);
+}
+
+void test__wxMenuBar__Append__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxMenuBar::Append(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxMenuBar__Append__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxMenuBar::Append(x, arg2);
+}
+
+void test__wxAtoi__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = wxAtoi(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxAtoi__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  wxAtoi(arg1);
+}
+
+void test__wxAtoi__leakignore() {
+  char *p = malloc(10); *p=0;
+  result = wxAtoi(p);
+  // cppcheck-suppress memleak
+}
+
+void test__wxAtof__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = wxAtof(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxAtof__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  wxAtof(arg1);
+}
+
+void test__wxAtof__leakignore() {
+  char *p = malloc(10); *p=0;
+  result = wxAtof(p);
+  // cppcheck-suppress memleak
+}
+
+void test__wxAtol__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = wxAtol(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxAtol__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  wxAtol(arg1);
+}
+
+void test__wxAtol__leakignore() {
+  char *p = malloc(10); *p=0;
+  result = wxAtol(p);
+  // cppcheck-suppress memleak
+}
+
+void test__wxString__ToDouble__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToDouble(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToDouble__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToDouble(NULL);
+}
+
+void test__wxString__ToCDouble__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToCDouble(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToCDouble__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToCDouble(NULL);
+}
+
+void test__wxString__ToLong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToLong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToLong__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToLong(NULL, arg2);
+}
+
+void test__wxString__ToLong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxString::ToLong(arg1, x);
+}
+
+void test__wxString__ToCLong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToCLong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToCLong__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToCLong(NULL, arg2);
+}
+
+void test__wxString__ToCLong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxString::ToCLong(arg1, x);
+}
+
+void test__wxString__ToLongLong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToLongLong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToLongLong__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToLongLong(NULL, arg2);
+}
+
+void test__wxString__ToLongLong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxString::ToLongLong(arg1, x);
+}
+
+void test__wxString__ToULong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToULong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToULong__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToULong(NULL, arg2);
+}
+
+void test__wxString__ToULong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxString::ToULong(arg1, x);
+}
+
+void test__wxString__ToCULong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToCULong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToCULong__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToCULong(NULL, arg2);
+}
+
+void test__wxString__ToCULong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxString::ToCULong(arg1, x);
+}
+
+void test__wxString__ToULongLong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; wxString::ToULongLong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__wxString__ToULongLong__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  wxString::ToULongLong(NULL, arg2);
+}
+
+void test__wxString__ToULongLong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  wxString::ToULongLong(arg1, x);
+}
+
+
+int main() {
+    test__wxString__Format__noreturn();
+    test__wxString__Format__arg1__notbool();
+    test__wxString__Format__arg1__notnull();
+    test__wxString__Format__arg1__notuninit();
+    test__wxString__Printf__noreturn();
+    test__wxString__Printf__arg1__notbool();
+    test__wxString__Printf__arg1__notnull();
+    test__wxString__Printf__arg1__notuninit();
+    test__wxString__IsEmpty__noreturn();
+    test__wxString__IsEmpty__useretval();
+    test__wxString__IsNull__noreturn();
+    test__wxString__IsNull__useretval();
+    test__wxString__IsNumber__noreturn();
+    test__wxString__IsNumber__useretval();
+    test__wxString__IsAscii__noreturn();
+    test__wxString__IsAscii__useretval();
+    test__wxString__IsWord__noreturn();
+    test__wxString__IsWord__useretval();
+    test__wxString__Len__noreturn();
+    test__wxString__Len__useretval();
+    test__wxString__length__noreturn();
+    test__wxString__length__useretval();
+    test__wxString__Length__noreturn();
+    test__wxString__Length__useretval();
+    test__wxString__Lower__noreturn();
+    test__wxString__Lower__useretval();
+    test__wxString__MakeCapitalized__noreturn();
+    test__wxString__MakeCapitalized__useretval();
+    test__wxString__MakeLower__noreturn();
+    test__wxString__MakeLower__useretval();
+    test__wxString__MakeUpper__noreturn();
+    test__wxString__MakeUpper__useretval();
+    test__wxString__Matches__noreturn();
+    test__wxString__Matches__useretval();
+    test__wxString__Matches__arg1__notuninit();
+    test__wxString__LowerCase__noreturn();
+    test__wxSysErrorCode__noreturn();
+    test__wxSysErrorCode__useretval();
+    test__wxLogMessage__noreturn();
+    test__wxLogMessage__leakignore();
+    test__wxLogMessage__arg1__notbool();
+    test__wxLogMessage__arg1__notnull();
+    test__wxLogMessage__arg1__notuninit();
+    test__wxLogVerbose__noreturn();
+    test__wxLogVerbose__leakignore();
+    test__wxLogVerbose__arg1__notbool();
+    test__wxLogVerbose__arg1__notnull();
+    test__wxLogVerbose__arg1__notuninit();
+    test__wxLogWarning__noreturn();
+    test__wxLogWarning__leakignore();
+    test__wxLogWarning__arg1__notbool();
+    test__wxLogWarning__arg1__notnull();
+    test__wxLogWarning__arg1__notuninit();
+    test__wxLogFatalError__noreturn();
+    test__wxLogFatalError__leakignore();
+    test__wxLogFatalError__arg1__notbool();
+    test__wxLogFatalError__arg1__notnull();
+    test__wxLogFatalError__arg1__notuninit();
+    test__wxLogError__noreturn();
+    test__wxLogError__leakignore();
+    test__wxLogError__arg1__notbool();
+    test__wxLogError__arg1__notnull();
+    test__wxLogError__arg1__notuninit();
+    test__wxLogTrace__noreturn();
+    test__wxLogTrace__leakignore();
+    test__wxLogTrace__arg2__notbool();
+    test__wxLogTrace__arg2__notnull();
+    test__wxLogTrace__arg2__notuninit();
+    test__wxLogDebug__noreturn();
+    test__wxLogDebug__leakignore();
+    test__wxLogDebug__arg1__notbool();
+    test__wxLogDebug__arg1__notnull();
+    test__wxLogDebug__arg1__notuninit();
+    test__wxLogSysError__noreturn();
+    test__wxLogSysError__leakignore();
+    test__wxLogSysError__arg1__notbool();
+    test__wxLogSysError__arg1__notnull();
+    test__wxLogSysError__arg1__notuninit();
+    test__wxLogGeneric__noreturn();
+    test__wxLogGeneric__leakignore();
+    test__wxLogGeneric__arg1__notuninit();
+    test__wxLogGeneric__arg2__notbool();
+    test__wxLogGeneric__arg2__notnull();
+    test__wxLogGeneric__arg2__notuninit();
+    test__wxLogInfo__noreturn();
+    test__wxLogInfo__leakignore();
+    test__wxLogInfo__arg1__notbool();
+    test__wxLogInfo__arg1__notnull();
+    test__wxLogInfo__arg1__notuninit();
+    test__wxSpinCtrl__GetMax__noreturn();
+    test__wxSpinCtrl__GetMax__useretval();
+    test__wxSpinCtrl__GetMin__noreturn();
+    test__wxSpinCtrl__GetMin__useretval();
+    test__wxSpinCtrl__GetBase__noreturn();
+    test__wxSpinCtrl__GetBase__useretval();
+    test__wxSpinCtrl__GetValue__noreturn();
+    test__wxSpinCtrl__GetValue__useretval();
+    test__wxSpinCtrl__SetBase__noreturn();
+    test__wxSpinCtrl__SetBase__pure();
+    test__wxSpinCtrl__SetBase__arg1__notbool();
+    test__wxSpinCtrl__SetBase__arg1__notuninit();
+    test__wxSpinCtrlDouble__GetDigits__noreturn();
+    test__wxSpinCtrlDouble__GetDigits__useretval();
+    test__wxSpinCtrlDouble__GetIncrement__noreturn();
+    test__wxSpinCtrlDouble__GetIncrement__useretval();
+    test__wxSpinCtrlDouble__GetMax__noreturn();
+    test__wxSpinCtrlDouble__GetMax__useretval();
+    test__wxSpinCtrlDouble__GetMin__noreturn();
+    test__wxSpinCtrlDouble__GetMin__useretval();
+    test__wxSpinCtrlDouble__GetValue__noreturn();
+    test__wxSpinCtrlDouble__GetValue__useretval();
+    test__wxSpinCtrlDouble__SetDigits__noreturn();
+    test__wxSpinCtrlDouble__SetDigits__arg1__notuninit();
+    test__wxSpinCtrlDouble__SetIncrement__noreturn();
+    test__wxSpinCtrlDouble__SetIncrement__arg1__notuninit();
+    test__wxSpinCtrlDouble__SetRange__noreturn();
+    test__wxSpinCtrlDouble__SetRange__arg1__notuninit();
+    test__wxSpinCtrlDouble__SetRange__arg2__notuninit();
+    test__wxSpinCtrlDouble__SetValue__noreturn();
+    test__wxSpinCtrlDouble__SetValue__arg1__notuninit();
+    test__wxSlider__GetLineSize__noreturn();
+    test__wxSlider__GetLineSize__useretval();
+    test__wxSlider__GetMax__noreturn();
+    test__wxSlider__GetMax__useretval();
+    test__wxSlider__GetMin__noreturn();
+    test__wxSlider__GetMin__useretval();
+    test__wxSlider__GetPageSize__noreturn();
+    test__wxSlider__GetPageSize__useretval();
+    test__wxSlider__GetSelEnd__noreturn();
+    test__wxSlider__GetSelEnd__useretval();
+    test__wxSlider__GetSelStart__noreturn();
+    test__wxSlider__GetSelStart__useretval();
+    test__wxSlider__GetThumbLength__noreturn();
+    test__wxSlider__GetThumbLength__useretval();
+    test__wxSlider__GetTickFreq__noreturn();
+    test__wxSlider__GetTickFreq__useretval();
+    test__wxSlider__GetValue__noreturn();
+    test__wxSlider__GetValue__useretval();
+    test__wxTimer__GetId__noreturn();
+    test__wxTimer__GetId__useretval();
+    test__wxTimer__GetInterval__noreturn();
+    test__wxTimer__GetInterval__useretval();
+    test__wxTimer__GetOwner__noreturn();
+    test__wxTimer__GetOwner__useretval();
+    test__wxTimer__IsOneShot__noreturn();
+    test__wxTimer__IsOneShot__useretval();
+    test__wxTimer__IsRunning__noreturn();
+    test__wxTimer__IsRunning__useretval();
+    test__wxTimer__Notify__noreturn();
+    test__wxTimer__SetOwner__noreturn();
+    test__wxTimer__SetOwner__arg1__notnull();
+    test__wxTimer__SetOwner__arg1__notuninit();
+    test__wxTimer__SetOwner__arg2__notuninit();
+    test__wxTimer__Start__noreturn();
+    test__wxTimer__Start__arg1__notuninit();
+    test__wxTimer__Start__arg2__notuninit();
+    test__wxTimer__StartOnce__noreturn();
+    test__wxTimer__StartOnce__arg1__notuninit();
+    test__wxTimer__Stop__noreturn();
+    test__wxRadioBox__Enable__noreturn();
+    test__wxRadioBox__Enable__arg1__notuninit();
+    test__wxRadioBox__Enable__arg2__notuninit();
+    test__wxRadioBox__FindString__noreturn();
+    test__wxRadioBox__FindString__arg1__notuninit();
+    test__wxRadioBox__FindString__arg2__notuninit();
+    test__wxRadioBox__GetColumnCount__noreturn();
+    test__wxRadioBox__GetColumnCount__useretval();
+    test__wxRadioBox__GetItemFromPoint__noreturn();
+    test__wxRadioBox__GetItemFromPoint__useretval();
+    test__wxRadioBox__GetItemFromPoint__arg1__notuninit();
+    test__wxRadioBox__GetItemHelpText__noreturn();
+    test__wxRadioBox__GetItemHelpText__useretval();
+    test__wxRadioBox__GetItemHelpText__arg1__notuninit();
+    test__wxRadioBox__GetItemToolTip__noreturn();
+    test__wxRadioBox__GetItemToolTip__useretval();
+    test__wxRadioBox__GetItemToolTip__arg1__notuninit();
+    test__wxRadioBox__GetRowCount__noreturn();
+    test__wxRadioBox__IsItemEnabled__noreturn();
+    test__wxRadioBox__IsItemEnabled__useretval();
+    test__wxRadioBox__IsItemEnabled__arg1__notuninit();
+    test__wxRadioBox__IsItemShown__noreturn();
+    test__wxRadioBox__IsItemShown__useretval();
+    test__wxRadioBox__IsItemShown__arg1__notuninit();
+    test__wxRadioBox__SetItemHelpText__noreturn();
+    test__wxRadioBox__SetItemHelpText__arg1__notuninit();
+    test__wxRadioBox__SetItemHelpText__arg2__notuninit();
+    test__wxRadioBox__SetItemToolTip__noreturn();
+    test__wxRadioBox__SetItemToolTip__arg1__notuninit();
+    test__wxRadioBox__SetItemToolTip__arg2__notuninit();
+    test__wxRadioBox__SetSelection__noreturn();
+    test__wxRadioBox__SetSelection__arg1__notuninit();
+    test__wxRadioBox__Show__noreturn();
+    test__wxRadioBox__Show__arg1__notuninit();
+    test__wxRadioBox__Show__arg2__notuninit();
+    test__wxRadioBox__GetCount__noreturn();
+    test__wxRadioBox__GetCount__useretval();
+    test__wxRadioBox__GetString__noreturn();
+    test__wxRadioBox__GetString__useretval();
+    test__wxRadioBox__GetString__arg1__notuninit();
+    test__wxRadioBox__SetString__noreturn();
+    test__wxRadioBox__SetString__arg1__notuninit();
+    test__wxRadioBox__SetString__arg2__notuninit();
+    test__wxRadioBox__GetSelection__noreturn();
+    test__wxRadioBox__GetSelection__useretval();
+    test__wxButton__GetAuthNeeded__noreturn();
+    test__wxButton__GetAuthNeeded__useretval();
+    test__wxButton__GetLabel__noreturn();
+    test__wxButton__GetLabel__useretval();
+    test__wxButton__SetAuthNeeded__noreturn();
+    test__wxButton__SetAuthNeeded__arg1__notuninit();
+    test__wxButton__SetDefault__noreturn();
+    test__wxButton__SetLabel__noreturn();
+    test__wxButton__SetLabel__arg1__notuninit();
+    test__wxColour__Alpha__noreturn();
+    test__wxColour__Alpha__useretval();
+    test__wxColour__Blue__noreturn();
+    test__wxColour__Blue__useretval();
+    test__wxColour__Green__noreturn();
+    test__wxColour__Green__useretval();
+    test__wxColour__Red__noreturn();
+    test__wxColour__Red__useretval();
+    test__wxTextFile__AddLine__noreturn();
+    test__wxTextFile__AddLine__arg1__notuninit();
+    test__wxTextFile__AddLine__arg2__notuninit();
+    test__wxTextFile__Clear__noreturn();
+    test__wxTextFile__Close__noreturn();
+    test__wxTextFile__Create__noreturn();
+    test__wxTextFile__Create__arg1__notuninit();
+    test__wxTextFile__Eof__noreturn();
+    test__wxTextFile__Eof__useretval();
+    test__wxTextFile__Exists__noreturn();
+    test__wxTextFile__Exists__useretval();
+    test__wxTextFile__GetCurrentLine__noreturn();
+    test__wxTextFile__GetCurrentLine__useretval();
+    test__wxTextFile__GetFirstLine__noreturn();
+    test__wxTextFile__GetFirstLine__useretval();
+    test__wxTextFile__GetLastLine__noreturn();
+    test__wxTextFile__GetLastLine__useretval();
+    test__wxTextFile__GetLineCount__noreturn();
+    test__wxTextFile__GetLineCount__useretval();
+    test__wxTextFile__GetLineType__noreturn();
+    test__wxTextFile__GetLineType__useretval();
+    test__wxTextFile__GetName__noreturn();
+    test__wxTextFile__GetName__useretval();
+    test__wxTextFile__GetNextLine__noreturn();
+    test__wxTextFile__GetNextLine__useretval();
+    test__wxTextFile__GetPrevLine__noreturn();
+    test__wxTextFile__GetPrevLine__useretval();
+    test__wxTextFile__GoToLine__noreturn();
+    test__wxTextFile__GoToLine__arg1__notuninit();
+    test__wxTextFile__GuessType__noreturn();
+    test__wxTextFile__GuessType__useretval();
+    test__wxTextFile__InsertLine__noreturn();
+    test__wxTextFile__InsertLine__arg1__notuninit();
+    test__wxTextFile__InsertLine__arg2__notuninit();
+    test__wxTextFile__InsertLine__arg3__notuninit();
+    test__wxTextFile__IsOpened__noreturn();
+    test__wxTextFile__IsOpened__useretval();
+    test__wxTextFile__RemoveLine__noreturn();
+    test__wxTextFile__RemoveLine__arg1__notuninit();
+    test__wxTextFile__GetLine__noreturn();
+    test__wxTextFile__GetLine__useretval();
+    test__wxTextFile__GetLine__arg1__notuninit();
+    test__wxSizer__AddSpacer__noreturn();
+    test__wxSizer__AddSpacer__arg1__notuninit();
+    test__wxBoxSizer__AddSpacer__noreturn();
+    test__wxBoxSizer__AddSpacer__arg1__notuninit();
+    test__wxBoxSizer__CalcMin__noreturn();
+    test__wxBoxSizer__GetOrientation__noreturn();
+    test__wxBoxSizer__GetOrientation__useretval();
+    test__wxBoxSizer__RecalcSizes__noreturn();
+    test__wxBoxSizer__SetOrientation__noreturn();
+    test__wxBoxSizer__SetOrientation__arg1__notuninit();
+    test__wxStaticBoxSizer__CalcMin__noreturn();
+    test__wxStaticBoxSizer__GetStaticBox__noreturn();
+    test__wxStaticBoxSizer__GetStaticBox__useretval();
+    test__wxStaticBoxSizer__RecalcSizes__noreturn();
+    test__wxMenu__Append__noreturn();
+    test__wxMenu__Append__arg1__notuninit();
+    test__wxMenu__Append__arg4__notuninit();
+    test__wxLaunchDefaultBrowser__noreturn();
+    test__wxLaunchDefaultBrowser__leakignore();
+    test__wxLaunchDefaultBrowser__arg1__notuninit();
+    test__wxLaunchDefaultBrowser__arg2__notuninit();
+    test__wxDirExists__noreturn();
+    test__wxDirExists__useretval();
+    test__wxDirExists__leakignore();
+    test__wxDirExists__arg1__notuninit();
+    test__wxFileExists__noreturn();
+    test__wxFileExists__useretval();
+    test__wxFileExists__leakignore();
+    test__wxFileExists__arg1__notuninit();
+    test__wxGetWorkingDirectory__noreturn();
+    test__wxGetWorkingDirectory__arg2__notuninit();
+    test__wxGetCwd__noreturn();
+    test__wxGetCwd__useretval();
+    test__wxSetWorkingDirectory__noreturn();
+    test__wxSetWorkingDirectory__leakignore();
+    test__wxSetWorkingDirectory__arg1__notuninit();
+    test__wxMkdir__noreturn();
+    test__wxMkdir__leakignore();
+    test__wxMkdir__arg1__notuninit();
+    test__wxMkdir__arg2__notuninit();
+    test__wxRmdir__noreturn();
+    test__wxRmdir__leakignore();
+    test__wxRmdir__arg1__notuninit();
+    test__wxRmdir__arg2__notuninit();
+    test__wxGetTranslation__noreturn();
+    test__wxGetTranslation__useretval();
+    test__wxGetTranslation__leakignore();
+    test__wxGetTranslation__arg1__notuninit();
+    test__wxGetTranslation__arg2__notuninit();
+    test__wxGetTranslation__arg3__notuninit();
+    test__wxGetTranslation__arg4__notuninit();
+    test__wxApp__MacOpenFile__noreturn();
+    test__wxApp__MacOpenFile__arg1__notuninit();
+    test__wxArtProvider__Insert__noreturn();
+    test__wxArtProvider__Insert__arg1__notnull();
+    test__wxArtProvider__Insert__arg1__notuninit();
+    test__wxCalendarCtrl__EnableYearChange__noreturn();
+    test__wxCalendarCtrl__EnableYearChange__arg1__notuninit();
+    test__wxComboCtrl__GetTextIndent__noreturn();
+    test__wxComboCtrl__GetTextIndent__useretval();
+    test__wxComboCtrl__HidePopup__noreturn();
+    test__wxComboCtrl__HidePopup__arg1__notuninit();
+    test__wxComboCtrl__ShowPopup__noreturn();
+    test__wxComboCtrl__SetTextIndent__noreturn();
+    test__wxComboCtrl__SetTextIndent__arg1__notuninit();
+    test__wxDataViewCustomRenderer__Activate__noreturn();
+    test__wxDataViewCustomRenderer__Activate__arg1__notuninit();
+    test__wxDataViewCustomRenderer__Activate__arg2__notnull();
+    test__wxDataViewCustomRenderer__Activate__arg3__notuninit();
+    test__wxDataViewCustomRenderer__Activate__arg4__notuninit();
+    test__wxDataViewCustomRenderer__LeftClick__noreturn();
+    test__wxDataViewCustomRenderer__LeftClick__arg1__notuninit();
+    test__wxDataViewCustomRenderer__LeftClick__arg2__notuninit();
+    test__wxDataViewCustomRenderer__LeftClick__arg3__notnull();
+    test__wxDataViewCustomRenderer__LeftClick__arg4__notuninit();
+    test__wxDataViewCustomRenderer__LeftClick__arg5__notuninit();
+    test__wxDebugContext__GetLevel__noreturn();
+    test__wxDebugContext__GetLevel__useretval();
+    test__wxDebugContext__SetLevel__noreturn();
+    test__wxDebugContext__SetLevel__arg1__notuninit();
+    test__wxDos2UnixFilename__noreturn();
+    test__wxDos2UnixFilename__leakignore();
+    test__wxDos2UnixFilename__arg1__notnull();
+    test__wxDos2UnixFilename__arg1__notuninit();
+    test__wxFileNameFromPath__noreturn();
+    test__wxFileNameFromPath__useretval();
+    test__wxFileNameFromPath__leakignore();
+    test__wxFileNameFromPath__arg1__notuninit();
+    test__wxSizerItem__SetWindow__noreturn();
+    test__wxSizerItem__SetWindow__arg1__notnull();
+    test__wxSizerItem__SetWindow__arg1__notuninit();
+    test__wxSizerItem__SetSizer__noreturn();
+    test__wxSizerItem__SetSizer__arg1__notnull();
+    test__wxSizerItem__SetSizer__arg1__notuninit();
+    test__wxSizerItem__SetSpacer__noreturn();
+    test__wxSizerItem__SetSpacer__arg1__notuninit();
+    test__wxGrid__SetCellAlignment__noreturn();
+    test__wxGrid__SetCellAlignment__arg1__notuninit();
+    test__wxGrid__SetCellAlignment__arg2__notuninit();
+    test__wxGrid__SetCellAlignment__arg3__notuninit();
+    test__wxGrid__SetCellTextColour__noreturn();
+    test__wxGrid__SetCellTextColour__arg1__notuninit();
+    test__wxGrid__SetCellTextColour__arg2__notuninit();
+    test__wxGrid__SetCellTextColour__arg3__notuninit();
+    test__wxEntry__noreturn();
+    test__wxEntry__leakignore();
+    test__wxEntry__arg1__notuninit();
+    test__wxEntry__arg4__notuninit();
+    test__wxWindow__SetBackgroundColour__noreturn();
+    test__wxFrame__SetBackgroundColour__noreturn();
+    test__wxFrame__SetMenuBar__noreturn();
+    test__wxFrame__SetMenuBar__arg1__notuninit();
+    test__wxMenuBar__Append__noreturn();
+    test__wxMenuBar__Append__arg1__notuninit();
+    test__wxAtoi__noreturn();
+    test__wxAtoi__useretval();
+    test__wxAtoi__leakignore();
+    test__wxAtof__noreturn();
+    test__wxAtof__useretval();
+    test__wxAtof__leakignore();
+    test__wxAtol__noreturn();
+    test__wxAtol__useretval();
+    test__wxAtol__leakignore();
+    test__wxString__ToDouble__noreturn();
+    test__wxString__ToDouble__arg1__notnull();
+    test__wxString__ToCDouble__noreturn();
+    test__wxString__ToCDouble__arg1__notnull();
+    test__wxString__ToLong__noreturn();
+    test__wxString__ToLong__arg1__notnull();
+    test__wxString__ToLong__arg2__notuninit();
+    test__wxString__ToCLong__noreturn();
+    test__wxString__ToCLong__arg1__notnull();
+    test__wxString__ToCLong__arg2__notuninit();
+    test__wxString__ToLongLong__noreturn();
+    test__wxString__ToLongLong__arg1__notnull();
+    test__wxString__ToLongLong__arg2__notuninit();
+    test__wxString__ToULong__noreturn();
+    test__wxString__ToULong__arg1__notnull();
+    test__wxString__ToULong__arg2__notuninit();
+    test__wxString__ToCULong__noreturn();
+    test__wxString__ToCULong__arg1__notnull();
+    test__wxString__ToCULong__arg2__notuninit();
+    test__wxString__ToULongLong__noreturn();
+    test__wxString__ToULongLong__arg1__notnull();
+    test__wxString__ToULongLong__arg2__notuninit();
+    return 0;
+}

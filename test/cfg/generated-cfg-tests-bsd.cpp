@@ -254,3 +254,47 @@ void test__strtonum__arg4__notuninit() {
   strtonum(arg1, arg2, arg3, x);
 }
 
+
+int main() {
+    test__fts_open__noreturn();
+    test__fts_open__arg1__notuninit();
+    test__fts_open__arg2__notuninit();
+    test__fts_open__arg3__notnull();
+    test__fts_open__arg3__notuninit();
+    test__fts_read__noreturn();
+    test__fts_read__arg1__notnull();
+    test__fts_read__arg1__notuninit();
+    test__readpassphrase__noreturn();
+    test__readpassphrase__arg1__notuninit();
+    test__readpassphrase__arg2__notuninit();
+    test__fts_set__noreturn();
+    test__fts_set__arg1__notuninit();
+    test__fts_set__arg2__notuninit();
+    test__fts_set__arg3__notuninit();
+    test__fts_set_clientptr__noreturn();
+    test__fts_set_clientptr__arg1__notuninit();
+    test__fts_set_clientptr__arg2__notuninit();
+    test__fts_get_clientptr__noreturn();
+    test__fts_get_clientptr__arg1__notuninit();
+    test__fts_get_stream__noreturn();
+    test__fts_get_stream__arg1__notuninit();
+    test__fts_close__noreturn();
+    test__fts_close__arg1__notuninit();
+    test__readpassphrase__noreturn();
+    test__readpassphrase__leakignore();
+    test__readpassphrase__arg1__notuninit();
+    test__readpassphrase__arg2__notnull();
+    test__readpassphrase__arg3__notnull();
+    test__readpassphrase__arg3__notuninit();
+    test__readpassphrase__arg4__notuninit();
+    test__setfib__noreturn();
+    test__setfib__arg1__notuninit();
+    test__strtonum__noreturn();
+    test__strtonum__leakignore();
+    test__strtonum__arg1__notnull();
+    test__strtonum__arg1__notuninit();
+    test__strtonum__arg2__notuninit();
+    test__strtonum__arg3__notuninit();
+    test__strtonum__arg4__notuninit();
+    return 0;
+}

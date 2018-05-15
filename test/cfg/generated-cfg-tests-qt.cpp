@@ -10,43 +10,96 @@
 
 void test__connect__noreturn() {
   int x = 1;
-  if (cond) { x=100; connect(arg1, arg2, arg3, arg4); }
+  if (cond) { x=100; connect(arg1, arg2, arg3, arg4, arg5); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
 }
 
 void test__connect__arg1__notnull() {
   // cppcheck-suppress nullPointer
-  connect(NULL, arg2, arg3, arg4);
+  connect(NULL, arg2, arg3, arg4, arg5);
 }
 
 void test__connect__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
-  connect(x, arg2, arg3, arg4);
+  connect(x, arg2, arg3, arg4, arg5);
 }
 
 void test__connect__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  connect(arg1, x, arg3, arg4);
+  connect(arg1, x, arg3, arg4, arg5);
 }
 
 void test__connect__arg3__notnull() {
   // cppcheck-suppress nullPointer
-  connect(arg1, arg2, NULL, arg4);
+  connect(arg1, arg2, NULL, arg4, arg5);
 }
 
 void test__connect__arg3__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
-  connect(arg1, arg2, x, arg4);
+  connect(arg1, arg2, x, arg4, arg5);
 }
 
 void test__connect__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  connect(arg1, arg2, arg3, x);
+  connect(arg1, arg2, arg3, x, arg5);
+}
+
+void test__connect__arg5__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  connect(arg1, arg2, arg3, arg4, x);
+}
+
+void test__QObject__connect__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QObject::connect(arg1, arg2, arg3, arg4, arg5); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QObject__connect__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  QObject::connect(NULL, arg2, arg3, arg4, arg5);
+}
+
+void test__QObject__connect__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QObject::connect(x, arg2, arg3, arg4, arg5);
+}
+
+void test__QObject__connect__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QObject::connect(arg1, x, arg3, arg4, arg5);
+}
+
+void test__QObject__connect__arg3__notnull() {
+  // cppcheck-suppress nullPointer
+  QObject::connect(arg1, arg2, NULL, arg4, arg5);
+}
+
+void test__QObject__connect__arg3__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QObject::connect(arg1, arg2, x, arg4, arg5);
+}
+
+void test__QObject__connect__arg4__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QObject::connect(arg1, arg2, arg3, x, arg5);
+}
+
+void test__QObject__connect__arg5__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QObject::connect(arg1, arg2, arg3, arg4, x);
 }
 
 void test__disconnect__noreturn() {
@@ -73,13 +126,8 @@ void test__disconnect__arg2__notuninit() {
   disconnect(arg1, x, arg3, arg4);
 }
 
-void test__disconnect__arg3__notnull() {
-  // cppcheck-suppress nullPointer
-  disconnect(arg1, arg2, NULL, arg4);
-}
-
 void test__disconnect__arg3__notuninit() {
-  int x[10];
+  int x;
   // cppcheck-suppress uninitvar
   disconnect(arg1, arg2, x, arg4);
 }
@@ -88,6 +136,42 @@ void test__disconnect__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   disconnect(arg1, arg2, arg3, x);
+}
+
+void test__QObject__disconnect__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QObject::disconnect(arg1, arg2, arg3, arg4); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QObject__disconnect__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  QObject::disconnect(NULL, arg2, arg3, arg4);
+}
+
+void test__QObject__disconnect__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QObject::disconnect(x, arg2, arg3, arg4);
+}
+
+void test__QObject__disconnect__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QObject::disconnect(arg1, x, arg3, arg4);
+}
+
+void test__QObject__disconnect__arg3__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QObject::disconnect(arg1, arg2, x, arg4);
+}
+
+void test__QObject__disconnect__arg4__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QObject::disconnect(arg1, arg2, arg3, x);
 }
 
 void test__tr__noreturn() {
@@ -232,17 +316,139 @@ void test__QString__sprintf__arg1__notuninit() {
   QString::sprintf(x);
 }
 
-void test__QString__asprintf__noreturn() {
+void test__QList__append__noreturn() {
   int x = 1;
-  if (cond) { x=100; QString::asprintf(arg1); }
+  if (cond) { x=100; QList::append(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__QList__append__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::append(x);
+}
+
+void test__QStringList__append__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::append(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__append__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::append(x);
+}
+
+void test__QString__append__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::append(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__append__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::append(x, arg2);
+}
+
+void test__QString__append__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::append(arg1, x);
+}
+
+void test__QStandardItem__appendRow__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStandardItem::appendRow(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItem__appendRow__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  QStandardItem::appendRow(NULL);
+}
+
+void test__QStandardItem__appendRow__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QStandardItem::appendRow(x);
+}
+
+void test__QStandardItem__appendRows__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStandardItem::appendRows(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItem__appendRows__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  QStandardItem::appendRows(NULL);
+}
+
+void test__QStandardItem__appendRows__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QStandardItem::appendRows(x);
+}
+
+void test__QStandardItemModel__appendRow__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStandardItemModel::appendRow(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItemModel__appendRow__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  QStandardItemModel::appendRow(NULL);
+}
+
+void test__QStandardItemModel__appendRow__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QStandardItemModel::appendRow(x);
+}
+
+void test__QString__arg__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::arg(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__arg__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::arg(arg1);
+}
+
+void test__QString__arg__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::arg(x);
+}
+
+void test__QString__asprintf__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::asprintf(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__asprintf__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::asprintf(arg1);
 }
 
 void test__QString__asprintf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
-  QString::asprintf(x);
+  result = QString::asprintf(x);
 }
 
 void test__QList__at__noreturn() {
@@ -671,6 +877,30 @@ void test__QStringList__crend__useretval() {
   QStringList::crend();
 }
 
+void test__QStandardItem__child__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QStandardItem::child(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItem__child__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QStandardItem::child(arg1, arg2);
+}
+
+void test__QStandardItem__child__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QStandardItem::child(x, arg2);
+}
+
+void test__QStandardItem__child__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QStandardItem::child(arg1, x);
+}
+
 void test__QString__chop__noreturn() {
   int x = 1;
   if (cond) { x=100; QString::chop(arg1); }
@@ -780,6 +1010,24 @@ void test__QList__endsWith__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = QList::endsWith(x);
+}
+
+void test__QMap__contains__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QMap::contains(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QMap__contains__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QMap::contains(arg1);
+}
+
+void test__QMap__contains__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QMap::contains(x);
 }
 
 void test__QString__contains__noreturn() {
@@ -1088,6 +1336,139 @@ void test__QStringList__isEmpty__useretval() {
   QStringList::isEmpty();
 }
 
+void test__QList__insert__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QList::insert(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QList__insert__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::insert(x, arg2);
+}
+
+void test__QList__insert__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::insert(arg1, x);
+}
+
+void test__QStringList__insert__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::insert(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__insert__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::insert(x, arg2);
+}
+
+void test__QStringList__insert__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::insert(arg1, x);
+}
+
+void test__QStandardItemModel__item__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QStandardItemModel::item(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItemModel__item__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QStandardItemModel::item(arg1, arg2);
+}
+
+void test__QStandardItemModel__item__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QStandardItemModel::item(x, arg2);
+}
+
+void test__QStandardItemModel__item__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QStandardItemModel::item(arg1, x);
+}
+
+void test__QStandardItemModel__itemFromIndex__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QStandardItemModel::itemFromIndex(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItemModel__itemFromIndex__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QStandardItemModel::itemFromIndex(arg1);
+}
+
+void test__QStandardItemModel__itemFromIndex__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QStandardItemModel::itemFromIndex(x);
+}
+
+void test__QString__fromLatin1__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::fromLatin1(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__fromLatin1__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::fromLatin1(arg1, arg2);
+}
+
+void test__QString__fromLatin1__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::fromLatin1(x, arg2);
+}
+
+void test__QString__fromLatin1__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::fromLatin1(arg1, x);
+}
+
+void test__QString__fromLocal8Bit__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::fromLocal8Bit(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__fromLocal8Bit__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::fromLocal8Bit(arg1, arg2);
+}
+
+void test__QString__fromLocal8Bit__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  result = QString::fromLocal8Bit(NULL, arg2);
+}
+
+void test__QString__fromLocal8Bit__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  result = QString::fromLocal8Bit(x, arg2);
+}
+
+void test__QString__fromLocal8Bit__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::fromLocal8Bit(arg1, x);
+}
+
 void test__QString__fromStdString__noreturn() {
   int x = 1;
   if (cond) { x=100; result = QString::fromStdString(arg1); }
@@ -1098,6 +1479,30 @@ void test__QString__fromStdString__noreturn() {
 void test__QString__fromStdString__useretval() {
   // cppcheck-suppress ignoredReturnValue
   QString::fromStdString(arg1);
+}
+
+void test__QString__fromUtf8__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::fromUtf8(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__fromUtf8__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::fromUtf8(arg1, arg2);
+}
+
+void test__QString__fromUtf8__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::fromUtf8(x, arg2);
+}
+
+void test__QString__fromUtf8__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::fromUtf8(arg1, x);
 }
 
 void test__QList__indexOf__noreturn() {
@@ -1146,6 +1551,46 @@ void test__QString__indexOf__noreturn() {
 void test__QString__indexOf__useretval() {
   // cppcheck-suppress ignoredReturnValue
   QString::indexOf();
+}
+
+void test__QString__insert__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::insert(arg1, arg2, arg3); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__insert__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QString::insert(!x, arg2, arg3);
+}
+
+void test__QString__insert__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::insert(x, arg2, arg3);
+}
+
+void test__QString__insert__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QString::insert(arg1, !x, arg3);
+}
+
+void test__QString__insert__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::insert(arg1, x, arg3);
+}
+
+void test__QString__insert__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QString::insert(arg1, arg2, !x);
+}
+
+void test__QString__insert__arg3__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::insert(arg1, arg2, x);
 }
 
 void test__QString__isRightToLeft__noreturn() {
@@ -1340,6 +1785,371 @@ void test__QString__number__useretval() {
   QString::number();
 }
 
+void test__QList__prepend__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QList::prepend(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QList__prepend__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::prepend(x);
+}
+
+void test__QStringList__prepend__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::prepend(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__prepend__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::prepend(x);
+}
+
+void test__QString__prepend__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::prepend(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__prepend__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QString::prepend(!x);
+}
+
+void test__QString__prepend__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  QString::prepend(NULL);
+}
+
+void test__QString__prepend__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QString::prepend(x);
+}
+
+void test__QList__push_back__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QList::push_back(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QList__push_back__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::push_back(x);
+}
+
+void test__QStringList__push_back__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::push_back(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__push_back__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::push_back(x);
+}
+
+void test__QList__push_front__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QList::push_front(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QList__push_front__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::push_front(x);
+}
+
+void test__QStringList__push_front__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::push_front(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__push_front__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::push_front(x);
+}
+
+void test__QString__remove__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::remove(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__remove__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::remove(x, arg2);
+}
+
+void test__QString__remove__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::remove(arg1, x);
+}
+
+void test__QList__removeAll__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QList::removeAll(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QList__removeAll__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::removeAll(x);
+}
+
+void test__QStringList__removeAll__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::removeAll(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__removeAll__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::removeAll(x);
+}
+
+void test__QList__removeAt__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QList::removeAt(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QList__removeAt__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::removeAt(x);
+}
+
+void test__QStringList__removeAt__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::removeAt(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__removeAt__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::removeAt(x);
+}
+
+void test__QStandardItem__removeRow__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStandardItem::removeRow(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItem__removeRow__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItem::removeRow(x);
+}
+
+void test__QStandardItem__removeRows__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStandardItem::removeRows(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItem__removeRows__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItem::removeRows(x, arg2);
+}
+
+void test__QStandardItem__removeRows__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItem::removeRows(arg1, x);
+}
+
+void test__QAbstractItemModel__removeRow__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QAbstractItemModel::removeRow(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QAbstractItemModel__removeRow__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QAbstractItemModel::removeRow(!x, arg2);
+}
+
+void test__QAbstractItemModel__removeRow__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QAbstractItemModel::removeRow(x, arg2);
+}
+
+void test__QAbstractItemModel__removeRow__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QAbstractItemModel::removeRow(arg1, !x);
+}
+
+void test__QAbstractItemModel__removeRow__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QAbstractItemModel::removeRow(arg1, x);
+}
+
+void test__QStandardItemModel__removeRow__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStandardItemModel::removeRow(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItemModel__removeRow__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QStandardItemModel::removeRow(!x, arg2);
+}
+
+void test__QStandardItemModel__removeRow__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItemModel::removeRow(x, arg2);
+}
+
+void test__QStandardItemModel__removeRow__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QStandardItemModel::removeRow(arg1, !x);
+}
+
+void test__QStandardItemModel__removeRow__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItemModel::removeRow(arg1, x);
+}
+
+void test__QStandardItemModel__removeRows__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStandardItemModel::removeRows(arg1, arg2, arg3); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStandardItemModel__removeRows__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItemModel::removeRows(x, arg2, arg3);
+}
+
+void test__QStandardItemModel__removeRows__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QStandardItemModel::removeRows(arg1, !x, arg3);
+}
+
+void test__QStandardItemModel__removeRows__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItemModel::removeRows(arg1, x, arg3);
+}
+
+void test__QStandardItemModel__removeRows__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  QStandardItemModel::removeRows(arg1, arg2, !x);
+}
+
+void test__QStandardItemModel__removeRows__arg3__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStandardItemModel::removeRows(arg1, arg2, x);
+}
+
+void test__QString__repeated__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::repeated(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__repeated__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::repeated(arg1);
+}
+
+void test__QString__repeated__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::repeated(x);
+}
+
+void test__QString__replace__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::replace(arg1, arg2, arg3, arg4, arg5); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__replace__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::replace(x, arg2, arg3, arg4, arg5);
+}
+
+void test__QString__replace__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::replace(arg1, x, arg3, arg4, arg5);
+}
+
+void test__QString__replace__arg3__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::replace(arg1, arg2, x, arg4, arg5);
+}
+
+void test__QString__replace__arg4__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::replace(arg1, arg2, arg3, x, arg5);
+}
+
+void test__QString__replace__arg5__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::replace(arg1, arg2, arg3, arg4, x);
+}
+
+void test__QString__reserve__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::reserve(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__reserve__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::reserve(x);
+}
+
 void test__QString__right__noreturn() {
   int x = 1;
   if (cond) { x=100; result = QString::right(arg1); }
@@ -1363,6 +2173,67 @@ void test__QString__right__arg1__notuninit() {
   result = QString::right(x);
 }
 
+void test__QString__section__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::section(arg1, arg2, arg3, arg4); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__section__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::section(arg1, arg2, arg3, arg4);
+}
+
+void test__QString__section__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::section(x, arg2, arg3, arg4);
+}
+
+void test__QString__section__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::section(arg1, x, arg3, arg4);
+}
+
+void test__QString__section__arg3__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::section(arg1, arg2, x, arg4);
+}
+
+void test__QString__section__arg4__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::section(arg1, arg2, arg3, x);
+}
+
+void test__QString__setNum__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::setNum(arg1, arg2, arg3); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__setNum__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::setNum(x, arg2, arg3);
+}
+
+void test__QString__setNum__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::setNum(arg1, x, arg3);
+}
+
+void test__QString__setNum__arg3__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::setNum(arg1, arg2, x);
+}
+
 void test__QString__split__noreturn() {
   int x = 1;
   if (cond) { x=100; result = QString::split(arg1); }
@@ -1379,6 +2250,68 @@ void test__QString__split__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = QString::split(x);
+}
+
+void test__QList__swap__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QList::swap(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QList__swap__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::swap(x, arg2);
+}
+
+void test__QList__swap__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QList::swap(arg1, x);
+}
+
+void test__QStringList__swap__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QStringList::swap(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__swap__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::swap(x, arg2);
+}
+
+void test__QStringList__swap__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QStringList::swap(arg1, x);
+}
+
+void test__QString__toDouble__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toDouble(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toDouble__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toDouble(arg1);
+}
+
+void test__QString__toFloat__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toFloat(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toFloat__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toFloat(arg1);
 }
 
 void test__QString__toInt__noreturn() {
@@ -1405,6 +2338,54 @@ void test__QString__toInt__arg2__notuninit() {
   result = QString::toInt(arg1, x);
 }
 
+void test__QString__toLong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toLong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toLong__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toLong(arg1, arg2);
+}
+
+void test__QString__toLong__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toLong(x, arg2);
+}
+
+void test__QString__toLong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toLong(arg1, x);
+}
+
+void test__QString__toLongLong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toLongLong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toLongLong__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toLongLong(arg1, arg2);
+}
+
+void test__QString__toLongLong__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toLongLong(x, arg2);
+}
+
+void test__QString__toLongLong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toLongLong(arg1, x);
+}
+
 void test__QString__toLower__noreturn() {
   int x = 1;
   if (cond) { x=100; result = QString::toLower(); }
@@ -1417,6 +2398,30 @@ void test__QString__toLower__useretval() {
   QString::toLower();
 }
 
+void test__QString__toShort__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toShort(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toShort__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toShort(arg1, arg2);
+}
+
+void test__QString__toShort__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toShort(x, arg2);
+}
+
+void test__QString__toShort__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toShort(arg1, x);
+}
+
 void test__QString__toStdString__noreturn() {
   int x = 1;
   if (cond) { x=100; result = QString::toStdString(); }
@@ -1427,6 +2432,102 @@ void test__QString__toStdString__noreturn() {
 void test__QString__toStdString__useretval() {
   // cppcheck-suppress ignoredReturnValue
   QString::toStdString();
+}
+
+void test__QString__toUInt__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toUInt(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toUInt__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toUInt(arg1, arg2);
+}
+
+void test__QString__toUInt__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toUInt(x, arg2);
+}
+
+void test__QString__toUInt__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toUInt(arg1, x);
+}
+
+void test__QString__toULong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toULong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toULong__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toULong(arg1, arg2);
+}
+
+void test__QString__toULong__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toULong(x, arg2);
+}
+
+void test__QString__toULong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toULong(arg1, x);
+}
+
+void test__QString__toULongLong__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toULongLong(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toULongLong__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toULongLong(arg1, arg2);
+}
+
+void test__QString__toULongLong__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toULongLong(x, arg2);
+}
+
+void test__QString__toULongLong__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toULongLong(arg1, x);
+}
+
+void test__QString__toUShort__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QString::toUShort(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__toUShort__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QString::toUShort(arg1, arg2);
+}
+
+void test__QString__toUShort__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toUShort(x, arg2);
+}
+
+void test__QString__toUShort__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QString::toUShort(arg1, x);
 }
 
 void test__QString__toUpper__noreturn() {
@@ -1463,6 +2564,61 @@ void test__QString__trimmed__noreturn() {
 void test__QString__trimmed__useretval() {
   // cppcheck-suppress ignoredReturnValue
   QString::trimmed();
+}
+
+void test__QString__truncate__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::truncate(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__truncate__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::truncate(x);
+}
+
+void test__QString__vsprintf__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QString::vsprintf(arg1, arg2); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QString__vsprintf__arg1__notnull() {
+  // cppcheck-suppress nullPointer
+  QString::vsprintf(NULL, arg2);
+}
+
+void test__QString__vsprintf__arg1__notuninit() {
+  int x[10];
+  // cppcheck-suppress uninitvar
+  QString::vsprintf(x, arg2);
+}
+
+void test__QString__vsprintf__arg2__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QString::vsprintf(arg1, x);
+}
+
+void test__QStringList__join__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QStringList::join(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QStringList__join__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QStringList::join(arg1);
+}
+
+void test__QStringList__join__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  result = QStringList::join(x);
 }
 
 void test__QMetaObject__connectSlotsByName__noreturn() {
@@ -1534,6 +2690,19 @@ void test__QFile__rename__noreturn() {
   x = 1 << x;
 }
 
+void test__QFile__setFileName__noreturn() {
+  int x = 1;
+  if (cond) { x=100; QFile::setFileName(arg1); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QFile__setFileName__arg1__notuninit() {
+  int x;
+  // cppcheck-suppress uninitvar
+  QFile::setFileName(x);
+}
+
 void test__QFile__size__noreturn() {
   int x = 1;
   if (cond) { x=100; result = QFile::size(); }
@@ -1558,3 +2727,513 @@ void test__QIODevice__size__useretval() {
   QIODevice::size();
 }
 
+void test__QFileDialog__getOpenFileName__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QFileDialog::getOpenFileName(); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QFileDialog__getOpenFileName__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QFileDialog::getOpenFileName();
+}
+
+void test__QFileDialog__getSaveFileName__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QFileDialog::getSaveFileName(); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QFileDialog__getSaveFileName__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QFileDialog::getSaveFileName();
+}
+
+void test__QFileDialog__getExistingDirectory__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QFileDialog::getExistingDirectory(); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QFileDialog__getExistingDirectory__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QFileDialog::getExistingDirectory();
+}
+
+void test__QFileDialog__getOpenFileNames__noreturn() {
+  int x = 1;
+  if (cond) { x=100; result = QFileDialog::getOpenFileNames(); }
+  // cppcheck-suppress shiftTooManyBits
+  x = 1 << x;
+}
+
+void test__QFileDialog__getOpenFileNames__useretval() {
+  // cppcheck-suppress ignoredReturnValue
+  QFileDialog::getOpenFileNames();
+}
+
+
+int main() {
+    test__connect__noreturn();
+    test__connect__arg1__notnull();
+    test__connect__arg1__notuninit();
+    test__connect__arg2__notuninit();
+    test__connect__arg3__notnull();
+    test__connect__arg3__notuninit();
+    test__connect__arg4__notuninit();
+    test__connect__arg5__notuninit();
+    test__QObject__connect__noreturn();
+    test__QObject__connect__arg1__notnull();
+    test__QObject__connect__arg1__notuninit();
+    test__QObject__connect__arg2__notuninit();
+    test__QObject__connect__arg3__notnull();
+    test__QObject__connect__arg3__notuninit();
+    test__QObject__connect__arg4__notuninit();
+    test__QObject__connect__arg5__notuninit();
+    test__disconnect__noreturn();
+    test__disconnect__arg1__notnull();
+    test__disconnect__arg1__notuninit();
+    test__disconnect__arg2__notuninit();
+    test__disconnect__arg3__notuninit();
+    test__disconnect__arg4__notuninit();
+    test__QObject__disconnect__noreturn();
+    test__QObject__disconnect__arg1__notnull();
+    test__QObject__disconnect__arg1__notuninit();
+    test__QObject__disconnect__arg2__notuninit();
+    test__QObject__disconnect__arg3__notuninit();
+    test__QObject__disconnect__arg4__notuninit();
+    test__tr__noreturn();
+    test__tr__useretval();
+    test__tr__leakignore();
+    test__tr__arg1__notnull();
+    test__tr__arg1__notuninit();
+    test__tr__arg2__notuninit();
+    test__tr__arg3__notuninit();
+    test__QObject__tr__noreturn();
+    test__QObject__tr__useretval();
+    test__QObject__tr__arg1__notnull();
+    test__QObject__tr__arg1__notuninit();
+    test__QObject__tr__arg2__notuninit();
+    test__QObject__tr__arg3__notuninit();
+    test__QSettings__setValue__noreturn();
+    test__QSettings__setValue__arg1__notnull();
+    test__QSettings__setValue__arg1__notuninit();
+    test__QSettings__setValue__arg2__notuninit();
+    test__QSettings__value__noreturn();
+    test__QSettings__value__useretval();
+    test__QSettings__value__arg1__notnull();
+    test__QSettings__value__arg1__notuninit();
+    test__QSettings__value__arg2__notuninit();
+    test__QString__sprintf__noreturn();
+    test__QString__sprintf__arg1__notuninit();
+    test__QList__append__noreturn();
+    test__QList__append__arg1__notuninit();
+    test__QStringList__append__noreturn();
+    test__QStringList__append__arg1__notuninit();
+    test__QString__append__noreturn();
+    test__QString__append__arg1__notuninit();
+    test__QString__append__arg2__notuninit();
+    test__QStandardItem__appendRow__noreturn();
+    test__QStandardItem__appendRow__arg1__notnull();
+    test__QStandardItem__appendRow__arg1__notuninit();
+    test__QStandardItem__appendRows__noreturn();
+    test__QStandardItem__appendRows__arg1__notnull();
+    test__QStandardItem__appendRows__arg1__notuninit();
+    test__QStandardItemModel__appendRow__noreturn();
+    test__QStandardItemModel__appendRow__arg1__notnull();
+    test__QStandardItemModel__appendRow__arg1__notuninit();
+    test__QString__arg__noreturn();
+    test__QString__arg__useretval();
+    test__QString__arg__arg1__notuninit();
+    test__QString__asprintf__noreturn();
+    test__QString__asprintf__useretval();
+    test__QString__asprintf__arg1__notuninit();
+    test__QList__at__noreturn();
+    test__QList__at__useretval();
+    test__QList__at__arg1__notuninit();
+    test__QString__at__noreturn();
+    test__QString__at__useretval();
+    test__QString__at__arg1__notuninit();
+    test__QStringList__at__noreturn();
+    test__QStringList__at__useretval();
+    test__QStringList__at__arg1__notuninit();
+    test__QString__capacity__noreturn();
+    test__QString__capacity__useretval();
+    test__QList__begin__noreturn();
+    test__QList__begin__useretval();
+    test__QList__end__noreturn();
+    test__QList__end__useretval();
+    test__QList__cbegin__noreturn();
+    test__QList__cbegin__useretval();
+    test__QList__cend__noreturn();
+    test__QList__cend__useretval();
+    test__QList__constBegin__noreturn();
+    test__QList__constBegin__useretval();
+    test__QList__constEnd__noreturn();
+    test__QList__constEnd__useretval();
+    test__QList__rbegin__noreturn();
+    test__QList__rbegin__useretval();
+    test__QList__rend__noreturn();
+    test__QList__rend__useretval();
+    test__QList__crbegin__noreturn();
+    test__QList__crbegin__useretval();
+    test__QList__crend__noreturn();
+    test__QList__crend__useretval();
+    test__QString__begin__noreturn();
+    test__QString__begin__useretval();
+    test__QString__end__noreturn();
+    test__QString__end__useretval();
+    test__QString__cbegin__noreturn();
+    test__QString__cbegin__useretval();
+    test__QString__cend__noreturn();
+    test__QString__cend__useretval();
+    test__QString__constBegin__noreturn();
+    test__QString__constBegin__useretval();
+    test__QString__constEnd__noreturn();
+    test__QString__constEnd__useretval();
+    test__QString__rbegin__noreturn();
+    test__QString__rbegin__useretval();
+    test__QString__rend__noreturn();
+    test__QString__rend__useretval();
+    test__QString__crbegin__noreturn();
+    test__QString__crbegin__useretval();
+    test__QString__crend__noreturn();
+    test__QString__crend__useretval();
+    test__QStringList__begin__noreturn();
+    test__QStringList__begin__useretval();
+    test__QStringList__end__noreturn();
+    test__QStringList__end__useretval();
+    test__QStringList__cbegin__noreturn();
+    test__QStringList__cbegin__useretval();
+    test__QStringList__cend__noreturn();
+    test__QStringList__cend__useretval();
+    test__QStringList__constBegin__noreturn();
+    test__QStringList__constBegin__useretval();
+    test__QStringList__constEnd__noreturn();
+    test__QStringList__constEnd__useretval();
+    test__QStringList__rbegin__noreturn();
+    test__QStringList__rbegin__useretval();
+    test__QStringList__rend__noreturn();
+    test__QStringList__rend__useretval();
+    test__QStringList__crbegin__noreturn();
+    test__QStringList__crbegin__useretval();
+    test__QStringList__crend__noreturn();
+    test__QStringList__crend__useretval();
+    test__QStandardItem__child__noreturn();
+    test__QStandardItem__child__useretval();
+    test__QStandardItem__child__arg1__notuninit();
+    test__QStandardItem__child__arg2__notuninit();
+    test__QString__chop__noreturn();
+    test__QString__chop__arg1__notuninit();
+    test__QList__clear__noreturn();
+    test__QString__clear__noreturn();
+    test__QString__compare__noreturn();
+    test__QString__compare__useretval();
+    test__QString__compare__arg1__notuninit();
+    test__QString__compare__arg2__notuninit();
+    test__QString__compare__arg3__notuninit();
+    test__QList__contains__noreturn();
+    test__QList__contains__useretval();
+    test__QList__contains__arg1__notuninit();
+    test__QList__startsWith__noreturn();
+    test__QList__startsWith__useretval();
+    test__QList__startsWith__arg1__notuninit();
+    test__QList__endsWith__noreturn();
+    test__QList__endsWith__useretval();
+    test__QList__endsWith__arg1__notuninit();
+    test__QMap__contains__noreturn();
+    test__QMap__contains__useretval();
+    test__QMap__contains__arg1__notuninit();
+    test__QString__contains__noreturn();
+    test__QString__contains__useretval();
+    test__QString__contains__arg1__notuninit();
+    test__QString__contains__arg2__notuninit();
+    test__QString__startsWith__noreturn();
+    test__QString__startsWith__useretval();
+    test__QString__startsWith__arg1__notuninit();
+    test__QString__startsWith__arg2__notuninit();
+    test__QString__endsWith__noreturn();
+    test__QString__endsWith__useretval();
+    test__QString__endsWith__arg1__notuninit();
+    test__QString__endsWith__arg2__notuninit();
+    test__QStringList__contains__noreturn();
+    test__QStringList__contains__useretval();
+    test__QStringList__contains__arg1__notuninit();
+    test__QStringList__startsWith__noreturn();
+    test__QStringList__startsWith__useretval();
+    test__QStringList__startsWith__arg1__notuninit();
+    test__QStringList__endsWith__noreturn();
+    test__QStringList__endsWith__useretval();
+    test__QStringList__endsWith__arg1__notuninit();
+    test__QList__count__noreturn();
+    test__QList__count__useretval();
+    test__QList__length__noreturn();
+    test__QList__length__useretval();
+    test__QList__size__noreturn();
+    test__QList__size__useretval();
+    test__QString__count__noreturn();
+    test__QString__count__useretval();
+    test__QString__length__noreturn();
+    test__QString__length__useretval();
+    test__QString__size__noreturn();
+    test__QString__size__useretval();
+    test__QStringList__count__noreturn();
+    test__QStringList__count__useretval();
+    test__QStringList__length__noreturn();
+    test__QStringList__length__useretval();
+    test__QStringList__size__noreturn();
+    test__QStringList__size__useretval();
+    test__QList__empty__noreturn();
+    test__QList__empty__useretval();
+    test__QList__isEmpty__noreturn();
+    test__QList__isEmpty__useretval();
+    test__QString__isEmpty__noreturn();
+    test__QString__isEmpty__useretval();
+    test__QString__isNull__noreturn();
+    test__QString__isNull__useretval();
+    test__QStringList__empty__noreturn();
+    test__QStringList__empty__useretval();
+    test__QStringList__isEmpty__noreturn();
+    test__QStringList__isEmpty__useretval();
+    test__QList__insert__noreturn();
+    test__QList__insert__arg1__notuninit();
+    test__QList__insert__arg2__notuninit();
+    test__QStringList__insert__noreturn();
+    test__QStringList__insert__arg1__notuninit();
+    test__QStringList__insert__arg2__notuninit();
+    test__QStandardItemModel__item__noreturn();
+    test__QStandardItemModel__item__useretval();
+    test__QStandardItemModel__item__arg1__notuninit();
+    test__QStandardItemModel__item__arg2__notuninit();
+    test__QStandardItemModel__itemFromIndex__noreturn();
+    test__QStandardItemModel__itemFromIndex__useretval();
+    test__QStandardItemModel__itemFromIndex__arg1__notuninit();
+    test__QString__fromLatin1__noreturn();
+    test__QString__fromLatin1__useretval();
+    test__QString__fromLatin1__arg1__notuninit();
+    test__QString__fromLatin1__arg2__notuninit();
+    test__QString__fromLocal8Bit__noreturn();
+    test__QString__fromLocal8Bit__useretval();
+    test__QString__fromLocal8Bit__arg1__notnull();
+    test__QString__fromLocal8Bit__arg1__notuninit();
+    test__QString__fromLocal8Bit__arg2__notuninit();
+    test__QString__fromStdString__noreturn();
+    test__QString__fromStdString__useretval();
+    test__QString__fromUtf8__noreturn();
+    test__QString__fromUtf8__useretval();
+    test__QString__fromUtf8__arg1__notuninit();
+    test__QString__fromUtf8__arg2__notuninit();
+    test__QList__indexOf__noreturn();
+    test__QList__indexOf__useretval();
+    test__QList__indexOf__arg1__notuninit();
+    test__QStringList__indexOf__noreturn();
+    test__QStringList__indexOf__useretval();
+    test__QStringList__indexOf__arg1__notuninit();
+    test__QString__indexOf__noreturn();
+    test__QString__indexOf__useretval();
+    test__QString__insert__noreturn();
+    test__QString__insert__arg1__notbool();
+    test__QString__insert__arg1__notuninit();
+    test__QString__insert__arg2__notbool();
+    test__QString__insert__arg2__notuninit();
+    test__QString__insert__arg3__notbool();
+    test__QString__insert__arg3__notuninit();
+    test__QString__isRightToLeft__noreturn();
+    test__QString__isRightToLeft__useretval();
+    test__QList__lastIndexOf__noreturn();
+    test__QList__lastIndexOf__useretval();
+    test__QList__lastIndexOf__arg1__notuninit();
+    test__QList__lastIndexOf__arg2__notuninit();
+    test__QStringList__lastIndexOf__noreturn();
+    test__QStringList__lastIndexOf__useretval();
+    test__QStringList__lastIndexOf__arg1__notuninit();
+    test__QStringList__lastIndexOf__arg2__notuninit();
+    test__QString__lastIndexOf__noreturn();
+    test__QString__lastIndexOf__useretval();
+    test__QString__lastIndexOf__arg1__notuninit();
+    test__QString__lastIndexOf__arg2__notuninit();
+    test__QString__lastIndexOf__arg3__notuninit();
+    test__QString__left__noreturn();
+    test__QString__left__useretval();
+    test__QString__left__arg1__notuninit();
+    test__QList__mid__noreturn();
+    test__QList__mid__useretval();
+    test__QList__mid__arg1__notuninit();
+    test__QList__mid__arg2__notuninit();
+    test__QString__mid__noreturn();
+    test__QString__mid__useretval();
+    test__QString__mid__arg1__notuninit();
+    test__QString__mid__arg2__notuninit();
+    test__QStringList__mid__noreturn();
+    test__QStringList__mid__useretval();
+    test__QStringList__mid__arg1__notuninit();
+    test__QStringList__mid__arg2__notuninit();
+    test__QString__number__noreturn();
+    test__QString__number__useretval();
+    test__QList__prepend__noreturn();
+    test__QList__prepend__arg1__notuninit();
+    test__QStringList__prepend__noreturn();
+    test__QStringList__prepend__arg1__notuninit();
+    test__QString__prepend__noreturn();
+    test__QString__prepend__arg1__notbool();
+    test__QString__prepend__arg1__notnull();
+    test__QString__prepend__arg1__notuninit();
+    test__QList__push_back__noreturn();
+    test__QList__push_back__arg1__notuninit();
+    test__QStringList__push_back__noreturn();
+    test__QStringList__push_back__arg1__notuninit();
+    test__QList__push_front__noreturn();
+    test__QList__push_front__arg1__notuninit();
+    test__QStringList__push_front__noreturn();
+    test__QStringList__push_front__arg1__notuninit();
+    test__QString__remove__noreturn();
+    test__QString__remove__arg1__notuninit();
+    test__QString__remove__arg2__notuninit();
+    test__QList__removeAll__noreturn();
+    test__QList__removeAll__arg1__notuninit();
+    test__QStringList__removeAll__noreturn();
+    test__QStringList__removeAll__arg1__notuninit();
+    test__QList__removeAt__noreturn();
+    test__QList__removeAt__arg1__notuninit();
+    test__QStringList__removeAt__noreturn();
+    test__QStringList__removeAt__arg1__notuninit();
+    test__QStandardItem__removeRow__noreturn();
+    test__QStandardItem__removeRow__arg1__notuninit();
+    test__QStandardItem__removeRows__noreturn();
+    test__QStandardItem__removeRows__arg1__notuninit();
+    test__QStandardItem__removeRows__arg2__notuninit();
+    test__QAbstractItemModel__removeRow__noreturn();
+    test__QAbstractItemModel__removeRow__arg1__notbool();
+    test__QAbstractItemModel__removeRow__arg1__notuninit();
+    test__QAbstractItemModel__removeRow__arg2__notbool();
+    test__QAbstractItemModel__removeRow__arg2__notuninit();
+    test__QStandardItemModel__removeRow__noreturn();
+    test__QStandardItemModel__removeRow__arg1__notbool();
+    test__QStandardItemModel__removeRow__arg1__notuninit();
+    test__QStandardItemModel__removeRow__arg2__notbool();
+    test__QStandardItemModel__removeRow__arg2__notuninit();
+    test__QStandardItemModel__removeRows__noreturn();
+    test__QStandardItemModel__removeRows__arg1__notuninit();
+    test__QStandardItemModel__removeRows__arg2__notbool();
+    test__QStandardItemModel__removeRows__arg2__notuninit();
+    test__QStandardItemModel__removeRows__arg3__notbool();
+    test__QStandardItemModel__removeRows__arg3__notuninit();
+    test__QString__repeated__noreturn();
+    test__QString__repeated__useretval();
+    test__QString__repeated__arg1__notuninit();
+    test__QString__replace__noreturn();
+    test__QString__replace__arg1__notuninit();
+    test__QString__replace__arg2__notuninit();
+    test__QString__replace__arg3__notuninit();
+    test__QString__replace__arg4__notuninit();
+    test__QString__replace__arg5__notuninit();
+    test__QString__reserve__noreturn();
+    test__QString__reserve__arg1__notuninit();
+    test__QString__right__noreturn();
+    test__QString__right__useretval();
+    test__QString__right__arg1__notbool();
+    test__QString__right__arg1__notuninit();
+    test__QString__section__noreturn();
+    test__QString__section__useretval();
+    test__QString__section__arg1__notuninit();
+    test__QString__section__arg2__notuninit();
+    test__QString__section__arg3__notuninit();
+    test__QString__section__arg4__notuninit();
+    test__QString__setNum__noreturn();
+    test__QString__setNum__arg1__notuninit();
+    test__QString__setNum__arg2__notuninit();
+    test__QString__setNum__arg3__notuninit();
+    test__QString__split__noreturn();
+    test__QString__split__useretval();
+    test__QString__split__arg1__notuninit();
+    test__QList__swap__noreturn();
+    test__QList__swap__arg1__notuninit();
+    test__QList__swap__arg2__notuninit();
+    test__QStringList__swap__noreturn();
+    test__QStringList__swap__arg1__notuninit();
+    test__QStringList__swap__arg2__notuninit();
+    test__QString__toDouble__noreturn();
+    test__QString__toDouble__useretval();
+    test__QString__toFloat__noreturn();
+    test__QString__toFloat__useretval();
+    test__QString__toInt__noreturn();
+    test__QString__toInt__useretval();
+    test__QString__toInt__arg1__notuninit();
+    test__QString__toInt__arg2__notuninit();
+    test__QString__toLong__noreturn();
+    test__QString__toLong__useretval();
+    test__QString__toLong__arg1__notuninit();
+    test__QString__toLong__arg2__notuninit();
+    test__QString__toLongLong__noreturn();
+    test__QString__toLongLong__useretval();
+    test__QString__toLongLong__arg1__notuninit();
+    test__QString__toLongLong__arg2__notuninit();
+    test__QString__toLower__noreturn();
+    test__QString__toLower__useretval();
+    test__QString__toShort__noreturn();
+    test__QString__toShort__useretval();
+    test__QString__toShort__arg1__notuninit();
+    test__QString__toShort__arg2__notuninit();
+    test__QString__toStdString__noreturn();
+    test__QString__toStdString__useretval();
+    test__QString__toUInt__noreturn();
+    test__QString__toUInt__useretval();
+    test__QString__toUInt__arg1__notuninit();
+    test__QString__toUInt__arg2__notuninit();
+    test__QString__toULong__noreturn();
+    test__QString__toULong__useretval();
+    test__QString__toULong__arg1__notuninit();
+    test__QString__toULong__arg2__notuninit();
+    test__QString__toULongLong__noreturn();
+    test__QString__toULongLong__useretval();
+    test__QString__toULongLong__arg1__notuninit();
+    test__QString__toULongLong__arg2__notuninit();
+    test__QString__toUShort__noreturn();
+    test__QString__toUShort__useretval();
+    test__QString__toUShort__arg1__notuninit();
+    test__QString__toUShort__arg2__notuninit();
+    test__QString__toUpper__noreturn();
+    test__QString__toUpper__useretval();
+    test__QString__toUtf8__noreturn();
+    test__QString__toUtf8__useretval();
+    test__QString__trimmed__noreturn();
+    test__QString__trimmed__useretval();
+    test__QString__truncate__noreturn();
+    test__QString__truncate__arg1__notuninit();
+    test__QString__vsprintf__noreturn();
+    test__QString__vsprintf__arg1__notnull();
+    test__QString__vsprintf__arg1__notuninit();
+    test__QString__vsprintf__arg2__notuninit();
+    test__QStringList__join__noreturn();
+    test__QStringList__join__useretval();
+    test__QStringList__join__arg1__notuninit();
+    test__QMetaObject__connectSlotsByName__noreturn();
+    test__QMetaObject__connectSlotsByName__arg1__notnull();
+    test__QDir__fromNativeSeparators__noreturn();
+    test__QDir__fromNativeSeparators__useretval();
+    test__QDir__fromNativeSeparators__arg1__notuninit();
+    test__QDir__toNativeSeparators__noreturn();
+    test__QDir__toNativeSeparators__useretval();
+    test__QDir__toNativeSeparators__arg1__notuninit();
+    test__QFile__open__noreturn();
+    test__QFile__remove__noreturn();
+    test__QFile__rename__noreturn();
+    test__QFile__setFileName__noreturn();
+    test__QFile__setFileName__arg1__notuninit();
+    test__QFile__size__noreturn();
+    test__QFile__size__useretval();
+    test__QIODevice__size__noreturn();
+    test__QIODevice__size__useretval();
+    test__QFileDialog__getOpenFileName__noreturn();
+    test__QFileDialog__getOpenFileName__useretval();
+    test__QFileDialog__getSaveFileName__noreturn();
+    test__QFileDialog__getSaveFileName__useretval();
+    test__QFileDialog__getExistingDirectory__noreturn();
+    test__QFileDialog__getExistingDirectory__useretval();
+    test__QFileDialog__getOpenFileNames__noreturn();
+    test__QFileDialog__getOpenFileNames__useretval();
+    return 0;
+}
