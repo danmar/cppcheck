@@ -420,9 +420,23 @@ def misra_4_1(rawTokens):
 
 
 def misra_5_1(data):
-    for token in data.tokenlist:
-        if token.isName and len(token.str) > 31:
-            reportError(token, 5, 1)
+    scopeVars = {}
+    for var in data.variables:
+        if var.isArgument:
+            continue
+        if var.nameToken.scope not in scopeVars:
+            scopeVars[var.nameToken.scope] = []
+        scopeVars[var.nameToken.scope].append(var)
+    for scope in scopeVars:
+        for i, variable1 in enumerate(scopeVars[scope]):
+            for variable2 in scopeVars[scope][i + 1:]:
+                if (variable1.isExtern and variable2.isExtern and
+                    variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
+                        variable1.Id != variable2.Id):
+                    if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
+                        reportError(variable1.nameToken, 5, 1)
+                    else:
+                        reportError(variable2.nameToken, 5, 1)
 
 def misra_5_2(data):
     scopeVars = {}
@@ -443,6 +457,8 @@ def misra_5_2(data):
         for i, variable1 in enumerate(scopeVars[scope]["varlist"]):
             for variable2 in scopeVars[scope]["varlist"][i + 1:]:
                 if variable1.isArgument and variable2.isArgument:
+                    continue
+                if variable1.isExtern and variable2.isExtern:
                     continue
                 if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
                         variable1.Id != variable2.Id):
@@ -465,6 +481,8 @@ def misra_5_2(data):
                         reportError(scopename1.bodyStart, 5, 2)
                     else:
                         reportError(scopename2.bodyStart, 5, 2)
+
+
 
 def misra_5_3(data):
     enum = []
