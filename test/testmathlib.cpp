@@ -30,7 +30,7 @@ public:
 
 private:
 
-    void run() {
+    void run() override {
         TEST_CASE(isint);
         TEST_CASE(isbin);
         TEST_CASE(isdec);

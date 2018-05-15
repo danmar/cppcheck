@@ -61,7 +61,7 @@ public:
     }
 
     void ShowResults(SHOWTIME_MODES mode) const;
-    virtual void AddResults(const std::string& str, std::clock_t clocks);
+    virtual void AddResults(const std::string& str, std::clock_t clocks) override;
 
 private:
     std::map<std::string, struct TimerResultsData> _results;

@@ -32,7 +32,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         int id = 0;
         while (!settings.library.ismemory(++id));
         settings.library.setalloc("malloc", id, -1);
@@ -1566,7 +1566,7 @@ private:
         checkLeak.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(heapDoubleFree);
