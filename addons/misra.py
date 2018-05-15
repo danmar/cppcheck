@@ -1611,7 +1611,7 @@ def parseDump(dumpfile):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--rule-texts", type=str, help="Path to text file of MISRA rules")
-parser.add_argument("--ignore-rules", type=str, help="MISRA rules to ignore (comma-separated string)")
+parser.add_argument("--suppress-rules", type=str, help="MISRA rules to suppress (comma-separated)")
 parser.add_argument("-verify", help="Verify check", action="store_true")
 parser.add_argument("-generate-table", help="Generate rule table", action="store_true")
 parser.add_argument("file", help="Path of dump file from cppcheck")
