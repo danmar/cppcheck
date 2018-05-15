@@ -13,6 +13,8 @@ typedef unsigned int       u32;
 typedef unsigned long long u64;
 
 //// 3.1
+extern int a123456789012345678901234567890x;
+extern int a123456789012345678901234567890y; //5.1
 
 extern int n01_var_hides_var____________________________________________63x;
 static int n01_var_hides_var____________________________________________63y;//5.2
@@ -21,7 +23,7 @@ void n02_function_hides_var_______________________________________63y(void) {}//
 void foo(void) 
 {
   int i;
-  switch(f1()) 
+  switch(f1()) //16.4 16.6
   {
     case 1: 
     {
@@ -29,7 +31,7 @@ void foo(void)
       {
         for(i = 0; i < 10; i++) 
         {
-          if(f3()) 
+          if(f3()) //14.4
           {
             int
             n03_var_hides_var____________________________________________63x;
@@ -37,12 +39,12 @@ void foo(void)
             n03_var_hides_var____________________________________________63y;//5.2
           }
         }
-      } while(f2());
+      } while(f2()); //14.4
     } 
   }
 }
 
-union n06_field_hides_field________________________________________63x {
+union n06_field_hides_field________________________________________63x { //19.2
 int n04_field_hides_field________________________________________63x;
 int n04_field_hides_field________________________________________63y;//5.2
 };
@@ -52,11 +54,6 @@ int n05_field_hides_field________________________________________63y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
-
-void misra_5_1() {
-  int a123456789012345678901234567890; // no-warning
-  int a1234567890123456789012345678901; // 5.1 ,5.2
-}
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
@@ -68,18 +65,18 @@ void misra_5_3_func1(void)
   int misra_5_3_var_hides_var______31y; //5.3
   int misra_5_3_var_hides_function_31y; //5.3
   int misra_5_3_var_hidesenumconst_31y; //5.3
-  switch(misra_5_3_func2()) 
+  switch(misra_5_3_func2()) //16.4 16.6
   {
     case 1:
     {
       do 
       {
         int misra_5_3_var_hides_var_1____31x;
-        if(misra_5_3_func3())
+        if(misra_5_3_func3()) //14.4
         {
           int misra_5_3_var_hides_var_1____31y = 1; //5.3
         }
-      } while(misra_5_3_func2());
+      } while(misra_5_3_func2()); //14.4
     }
   }
 }
@@ -105,17 +102,17 @@ int x;
 };
 void misra_5_5_func1() 
 {
-  switch(misra_5_5_func2()) 
+  switch(misra_5_5_func2()) //16.4 16.6
   {
     case 1:
     {
       do 
       {
-        if(misra_5_5_func3())
+        if(misra_5_5_func3()) //14.4
         {
           int misra_5_5_hides_macro________31y; //5.5
         }
-      } while(misra_5_5_func2());
+      } while(misra_5_5_func2()); //14.4
     }
   }
 }
@@ -127,7 +124,7 @@ void misra_7_1() {
 
 void misra_7_3() {
   int x = 12l; // 7.3
-  int x = 12lu; // 7.3, 5.2
+  int x = 12lu; // 7.3 5.2
 }
 
 extern int a811[]; // 8.11
