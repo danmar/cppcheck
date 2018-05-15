@@ -1617,18 +1617,18 @@ parser.add_argument("-generate-table", help="Generate rule table", action="store
 parser.add_argument("file", help="Path of dump file from cppcheck")
 args = parser.parse_args()
 
-if args.verify:
-    VERIFY = True
-elif args.generate_table:
+if args.generate_table:
     generateTable()
 else:
+    if args.verify:
+        VERIFY = True
     if args.rule_texts:
         filename = os.path.normpath(args.rule_texts)
         if not os.path.isfile(filename):
             print('Fatal error: file is not found: ' + filename)
             sys.exit(1)
         loadRuleTexts(filename)
-    if args.ignore_rules:
-        setIgnoreList(args.ignore_rules)
+    if args.suppress_rules:
+        setIgnoreList(args.suppress_rules)
     if args.file:
         parseDump(args.file)
