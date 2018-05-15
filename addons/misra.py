@@ -581,7 +581,7 @@ def misra_7_1(rawTokens):
 
 
 def misra_7_3(rawTokens):
-    compiled = re.compile(r'^[0-9]+l')
+    compiled = re.compile(r'^[0-9.uU]+l')
     for tok in rawTokens:
         if compiled.match(tok.str):
             reportError(tok, 7, 3)
