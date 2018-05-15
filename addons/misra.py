@@ -594,24 +594,22 @@ def misra_8_11(data):
 
 
 def misra_8_12(data):
-    for token in data.tokenlist:
-        if token.str != '{':
+    for scope in data.scopes:
+        enum = []
+        implicit_enum = []
+        if scope.type != 'Enum':
             continue
-        if not token.scope or token.scope.type != 'Enum':
-            continue
-        etok = token
-        values = []
-        while etok:
-            if etok.str == '}':
-                break
-            if etok.str == '=':
-                rhsValues = etok.astOperand2.values
-                if rhsValues and len(rhsValues) == 1:
-                    if rhsValues[0].intvalue in values:
-                        reportError(etok, 8, 12)
-                        break
-                    values.append(rhsValues[0].intvalue)
-            etok = etok.next
+        e_token = scope.bodyStart.next
+        while e_token != scope.bodyEnd:
+            if e_token.values:
+                enum.append(e_token.str)
+            if (e_token.values and e_token.isName and e_token.next.str != "="):
+                for v in e_token.values:
+                    implicit_enum.append(v.intvalue)
+            e_token = e_token.next
+        for implicit_enum_value in implicit_enum:
+            if str(implicit_enum_value) in enum:
+                reportError(scope.bodyStart, 8, 12)
 
 
 def misra_8_14(rawTokens):
