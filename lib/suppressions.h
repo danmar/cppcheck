@@ -73,7 +73,7 @@ public:
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
             return false;
-        };
+        }
 
         /**
          * Parse inline suppression in comment
