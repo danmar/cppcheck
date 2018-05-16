@@ -110,7 +110,7 @@ private:
         return 0;
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
         settings2.platform(Settings::Unspecified);
 

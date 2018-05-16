@@ -130,10 +130,8 @@ void misra_7_3() {
 
 extern int a811[]; // 8.11
 
-enum e812 {
-  A=3,
-  B=3 // 8.12
-};
+enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
+enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 
 void misra_8_14(char * restrict str) {} // 8.14
 

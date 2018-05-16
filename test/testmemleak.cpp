@@ -42,7 +42,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         TEST_CASE(testFunctionReturnType);
         TEST_CASE(open);
     }
@@ -153,7 +153,7 @@ private:
     }
 
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "posix.cfg");
         LOAD_LIB_2(settings2.library, "std.cfg");
@@ -4108,7 +4108,7 @@ private:
         checkMemoryLeak.check();
     }
 
-    void run() {
+    void run() override {
         settings.addEnabled("warning");
         settings.addEnabled("style");
 
@@ -5282,7 +5282,7 @@ private:
         checkMemoryLeakStructMember.check();
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
 
@@ -5730,7 +5730,7 @@ private:
         checkMemoryLeakNoVar.check();
     }
 
-    void run() {
+    void run() override {
         settings.inconclusive = true;
         settings.standards.posix = true;
         settings.addEnabled("warning");
@@ -6065,7 +6065,7 @@ private:
         checkMemoryLeak4.check();
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "gtk.cfg");
         settings.addEnabled("all");
 
@@ -6180,7 +6180,7 @@ private:
         checkMemoryLeak.check();
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(openfileNoLeak);

@@ -32,7 +32,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         settings.platform(Settings::Unspecified);
         settings.addEnabled("warning");
         settings.addEnabled("portability");

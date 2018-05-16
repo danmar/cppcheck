@@ -73,7 +73,7 @@ private:
         checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() {
+    void run() override {
         settings0.addEnabled("warning");
         settings0.addEnabled("style");
         settings0.addEnabled("portability");

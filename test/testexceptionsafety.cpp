@@ -31,7 +31,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         settings.addEnabled("all");
 
         TEST_CASE(destructors);

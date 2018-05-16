@@ -60,7 +60,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.check();
         checkUninitVar.deadPointer();
@@ -100,7 +100,7 @@ public:
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 
 private:
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckUninitVar c(nullptr, settings, errorLogger);
 
         // error
@@ -115,7 +115,7 @@ private:
         return "Uninitialized variables";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Uninitialized variables\n"
                "- using uninitialized local variables\n"
                "- using allocated data before it has been initialized\n"
