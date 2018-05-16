@@ -6229,6 +6229,10 @@ private:
                             "PDWORD_PTR pdWordPtr;"
                             "PDWORD32 pdWord32;"
                             "PDWORD64 pdWord64;"
+                            "LONGLONG ll;"
+                            "USN usn;"
+                            "PULONG64 puLong64;"
+                            "PULONG32 puLong32;"
                             "PFLOAT ptrToFloat;";
 
         const char expected[] = "int f ; "
@@ -6306,6 +6310,10 @@ private:
                                 "long * pdWordPtr ; "
                                 "unsigned int * pdWord32 ; "
                                 "unsigned long * pdWord64 ; "
+                                "long long ll ; "
+                                "long long usn ; "
+                                "unsigned long long * puLong64 ; "
+                                "unsigned int * puLong32 ; "
                                 "float * ptrToFloat ;";
 
         // These types should be defined the same on all Windows platforms
