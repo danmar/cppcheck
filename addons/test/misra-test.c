@@ -13,20 +13,18 @@ typedef unsigned int       u32;
 typedef unsigned long long u64;
 
 //// 3.1
-extern int a123456789012345678901234567890x;
-extern int a123456789012345678901234567890y; //5.1
 
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
 
-extern int n01_var_hides_var____________________________________________63x;
-static int n01_var_hides_var____________________________________________63y;//5.2
-static int n02_function_hides_var_______________________________________63x;
-void n02_function_hides_var_______________________________________63y(void) {}//5.2
+extern int misra_5_2_var_hides_var______31x;
+static int misra_5_2_var_hides_var______31y;//5.2
+static int misra_5_2_function_hides_var_31x;
+void misra_5_2_function_hides_var_31y(void) {}//5.2
 void foo(void) 
 {
   int i;
-  switch(f1()) //16.4 16.6
+  switch(misra_5_2_func1()) //16.4 16.6
   {
     case 1: 
     {
@@ -34,26 +32,24 @@ void foo(void)
       {
         for(i = 0; i < 10; i++) 
         {
-          if(f3()) //14.4
+          if(misra_5_2_func3()) //14.4
           {
-            int
-            n03_var_hides_var____________________________________________63x;
-            int
-            n03_var_hides_var____________________________________________63y;//5.2
+            int misra_5_2_var_hides_var_1____31x;
+            int misra_5_2_var_hides_var_1____31y;//5.2
           }
         }
-      } while(f2()); //14.4
+      } while(misra_5_2_func2()); //14.4
     } 
   }
 }
 
-union n06_field_hides_field________________________________________63x { //19.2
-int n04_field_hides_field________________________________________63x;
-int n04_field_hides_field________________________________________63y;//5.2
+union misra_5_2_field_hides_field__63x { //19.2
+int misra_5_2_field_hides_field__31x;
+int misra_5_2_field_hides_field__31y;//5.2
 };
-struct n06_field_hides_field________________________________________63y { //5.2
-int n05_field_hides_field________________________________________63x;
-int n05_field_hides_field________________________________________63y;//5.2
+struct misra_5_2_field_hides_field__63y { //5.2
+int misra_5_2_field_hides_field1_31x;
+int misra_5_2_field_hides_field1_31y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
