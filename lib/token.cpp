@@ -223,6 +223,24 @@ void Token::deleteNext(unsigned long index)
         *tokensBack = this;
 }
 
+void Token::deletePrevious(unsigned long index)
+{
+    while (_previous && index) {
+        Token *p = _previous;
+
+        // #8154 we are about to be unknown -> destroy the link to us
+        if (p->_link && p->_link->_link == p)
+            p->_link->link(nullptr);
+
+        _previous = p->previous();
+        delete p;
+        --index;
+    }
+
+    if (_previous)
+        _previous->next(this);
+}
+
 void Token::swapWithNext()
 {
     if (_next) {
