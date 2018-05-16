@@ -44,7 +44,7 @@ private:
     Settings settings2;
     Settings settings_windows;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
         TEST_CASE(tokenize1);

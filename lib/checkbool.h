@@ -50,7 +50,7 @@ public:
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckBool checkBool(tokenizer, settings, errorLogger);
 
         // Checks
@@ -61,7 +61,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckBool checkBool(tokenizer, settings, errorLogger);
 
         // Checks
@@ -113,7 +113,7 @@ private:
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void pointerArithBoolError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckBool c(nullptr, settings, errorLogger);
 
         c.assignBoolToPointerError(nullptr);
@@ -131,7 +131,7 @@ private:
         return "Boolean";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Boolean type checks\n"
                "- using increment on boolean\n"
                "- comparison of a boolean expression with an integer other than 0 or 1\n"

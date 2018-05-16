@@ -619,8 +619,21 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
 
     const bool showerror = (!_settings.userDefines.empty() && !_settings.force);
     reportOutput(outputList, showerror);
-    if (hasErrors(outputList))
-        return simplecpp::TokenList(files);
+    if (hasErrors(outputList)) {
+        for (const simplecpp::Output &output : outputList) {
+            switch (output.type) {
+            case simplecpp::Output::ERROR:
+            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+            case simplecpp::Output::SYNTAX_ERROR:
+            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+                throw output;
+            case simplecpp::Output::WARNING:
+            case simplecpp::Output::MISSING_HEADER:
+            case simplecpp::Output::PORTABILITY_BACKSLASH:
+                break;
+            };
+        }
+    }
 
     tokens2.removeComments();
 
@@ -675,7 +688,13 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     if (hasErrors(outputList))
         return "";
 
-    return getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
+    std::string ret;
+    try {
+        ret = getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
+    } catch (const simplecpp::Output &o) {
+        ret.clear();
+    }
+    return ret;
 }
 
 void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)

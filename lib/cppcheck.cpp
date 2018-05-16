@@ -304,6 +304,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         std::set<unsigned long long> checksums;
         unsigned int checkCount = 0;
         bool hasValidConfig = false;
+        std::list<std::string> configurationError;
         for (std::set<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // bail out if terminated
             if (_settings.terminated())
@@ -361,9 +362,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files);
                 _tokenizer.createTokens(&tokensP);
                 timer.Stop();
+                hasValidConfig = true;
                 if (tokensP.empty())
                     continue;
-                hasValidConfig = true;
 
                 // skip rest of iteration if just checking configuration
                 if (_settings.checkConfiguration)
@@ -418,6 +419,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     checkSimplifiedTokens(_tokenizer);
                 }
 
+            } catch (const simplecpp::Output &o) {
+                // #error etc during preprocessing
+                configurationError.push_back(std::string(o.location.file() + ':' + MathLib::toString(o.location.line) + ": " + o.msg));
+                --checkCount; // don't count invalid configurations
+                continue;
+
             } catch (const InternalError &e) {
                 internalErrorFound=true;
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -445,6 +452,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         if (!hasValidConfig && configurations.size() > 1 && _settings.isEnabled(Settings::INFORMATION)) {
+            std::string msg;
+            msg = "This file is not analyzed. Every tested configuration results in preprocessor errors. It seems that Cppcheck failed to extract a valid configuration. Use -v for more details.";
+            msg += "\nThis file is not analyzed. Every tested configuration results in preprocessor errors. It seems that Cppcheck failed to extract a valid configuration. The preprocessor errors:";
+            for (const std::string &s : configurationError)
+                msg += "\n  " + s;
+
             std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
             ErrorLogger::ErrorMessage::FileLocation loc;
             loc.setfile(Path::toNativeSeparators(filename));
@@ -452,7 +465,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             ErrorLogger::ErrorMessage errmsg(locationList,
                                              loc.getfile(),
                                              Severity::information,
-                                             "No tested configuration is valid, this file is not analyzed.",
+                                             msg,
                                              "noValidConfiguration",
                                              false);
             reportErr(errmsg);

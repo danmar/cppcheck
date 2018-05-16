@@ -39,7 +39,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         TEST_CASE(empty);
         TEST_CASE(function);
         TEST_CASE(function_match_scope);

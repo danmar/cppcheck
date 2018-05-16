@@ -42,23 +42,23 @@ public:
     * @brief Create the report (file).
     * @return true if succeeded, false if file could not be created.
     */
-    virtual bool create();
+    virtual bool create() override;
 
     /**
     * @brief Write report header.
     */
-    virtual void writeHeader();
+    virtual void writeHeader() override;
 
     /**
     * @brief Write report footer.
     */
-    virtual void writeFooter();
+    virtual void writeFooter() override;
 
     /**
     * @brief Write error to report.
     * @param error Error data.
     */
-    virtual void writeError(const ErrorItem &error);
+    virtual void writeError(const ErrorItem &error) override;
 
 private:
 
