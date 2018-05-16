@@ -100,6 +100,7 @@ private:
         TEST_CASE(template60);  // handling of methods outside template definition
         TEST_CASE(template61);  // daca2, kodi
         TEST_CASE(template62);  // #8314 - inner template instantiation
+        TEST_CASE(template63);  // #8576 - qualified type
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1142,6 +1143,12 @@ private:
                            "class C3<int,6> { } ; "
                            "C3<int,6> :: C3<int,6> ( const C3<int,6> & v ) { C1<int*> c1 ; } "
                            "struct C1<int*> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template63() { // #8576
+        const char code[] = "template<class T> struct TestClass { T m_hi; }; TestClass<std::auto_ptr<v>> objTest3;";
+        const char exp[] = "TestClass<std::auto_ptr<v>> objTest3 ; struct TestClass<std::auto_ptr<v>> { std :: auto_ptr < v > m_hi ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
