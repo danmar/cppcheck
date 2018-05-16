@@ -6223,6 +6223,12 @@ private:
                             "ULONG64 ulong64;"
                             "LPWSTR lpcwstr;"
                             "LPCWSTR lpcwstr;"
+                            "LPHANDLE lpHandle;"
+                            "PCWSTR pcwStr;"
+                            "PDWORDLONG pdWordLong;"
+                            "PDWORD_PTR pdWordPtr;"
+                            "PDWORD32 pdWord32;"
+                            "PDWORD64 pdWord64;"
                             "PFLOAT ptrToFloat;";
 
         const char expected[] = "int f ; "
@@ -6294,10 +6300,16 @@ private:
                                 "unsigned long long ulong64 ; "
                                 "wchar_t * lpcwstr ; "
                                 "const wchar_t * lpcwstr ; "
+                                "void * lpHandle ; "
+                                "const wchar_t * pcwStr ; "
+                                "long * pdWordLong ; "
+                                "long * pdWordPtr ; "
+                                "unsigned int * pdWord32 ; "
+                                "unsigned long * pdWord64 ; "
                                 "float * ptrToFloat ;";
 
         // These types should be defined the same on all Windows platforms
-        std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
+        const std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
         ASSERT_EQUALS(expected, win32A);
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win64));
