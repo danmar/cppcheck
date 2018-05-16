@@ -98,6 +98,11 @@ public:
     void deleteNext(unsigned long index = 1);
 
     /**
+    * Unlink and delete the previous 'index' tokens.
+    */
+    void deletePrevious(unsigned long index = 1);
+
+    /**
      * Swap the contents of this token with the next token.
      */
     void swapWithNext();
