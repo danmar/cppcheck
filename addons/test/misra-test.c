@@ -122,9 +122,13 @@ void misra_7_1() {
 }
 
 void misra_7_3() {
-  int x = 12l; // 7.3
-  int x = 12lu; // 7.3 5.2
-}
+  long misra_7_3_a = 0l; //7.3       
+  long misra_7_3_b = 0lU; //7.3     
+  long long misra_7_3_c = 0Ull; //7.3     
+  long long misra_7_3_d = 0ll; //7.3     
+  long double misra_7_3_e = 7.3l; //7.3  
+  }
+
 
 extern int a811[]; // 8.11
 
