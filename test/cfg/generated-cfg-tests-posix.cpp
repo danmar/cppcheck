@@ -26,6 +26,11 @@ void test__a64l__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__a64l__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = a64l(!x);
+}
+
 void test__a64l__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = a64l(NULL);
@@ -53,6 +58,11 @@ void test__l64a__leakignore() {
   char *p = malloc(10); *p=0;
   result = l64a(p);
   // cppcheck-suppress memleak
+}
+
+void test__l64a__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = l64a(!x);
 }
 
 void test__l64a__arg1__notuninit() {
@@ -84,6 +94,11 @@ void test__accept__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   accept(arg1, x, arg3);
+}
+
+void test__accept__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  accept(arg1, arg2, !x);
 }
 
 void test__accept__arg3__notuninit() {
@@ -121,6 +136,11 @@ void test__access__arg1__notuninit() {
   result = access(x, arg2);
 }
 
+void test__access__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = access(arg1, !x);
+}
+
 void test__access__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -146,6 +166,11 @@ void test__adjtime__arg1__notuninit() {
   adjtime(x, arg2);
 }
 
+void test__adjtime__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  adjtime(arg1, !x);
+}
+
 void test__gettimeofday__noreturn() {
   int x = 1;
   if (cond) { x=100; gettimeofday(arg1, arg2); }
@@ -157,6 +182,11 @@ void test__gettimeofday__leakignore() {
   char *p = malloc(10); *p=0;
   gettimeofday(p, arg2);
   // cppcheck-suppress memleak
+}
+
+void test__gettimeofday__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  gettimeofday(arg1, !x);
 }
 
 void test__settimeofday__noreturn() {
@@ -176,6 +206,11 @@ void test__settimeofday__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   settimeofday(x, arg2);
+}
+
+void test__settimeofday__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  settimeofday(arg1, !x);
 }
 
 void test__settimeofday__arg2__notuninit() {
@@ -225,6 +260,11 @@ void test__FD_ISSET__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   FD_ISSET(x, arg2);
+}
+
+void test__FD_ISSET__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  FD_ISSET(arg1, !x);
 }
 
 void test__FD_ISSET__arg2__notnull() {
@@ -287,6 +327,11 @@ void test__fdatasync__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__fdatasync__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fdatasync(!x);
+}
+
 void test__fdatasync__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -338,6 +383,11 @@ void test__fnmatch__arg2__notuninit() {
   result = fnmatch(arg1, x, arg3);
 }
 
+void test__fnmatch__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = fnmatch(arg1, arg2, !x);
+}
+
 void test__fnmatch__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -355,6 +405,11 @@ void test__fsync__leakignore() {
   char *p = malloc(10); *p=0;
   fsync(p);
   // cppcheck-suppress memleak
+}
+
+void test__fsync__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fsync(!x);
 }
 
 void test__fsync__arg1__notuninit() {
@@ -387,6 +442,11 @@ void test__truncate__arg1__notuninit() {
   truncate(x, arg2);
 }
 
+void test__truncate__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  truncate(arg1, !x);
+}
+
 void test__truncate__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -412,6 +472,11 @@ void test__ftruncate__arg1__notuninit() {
   ftruncate(x, arg2);
 }
 
+void test__ftruncate__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ftruncate(arg1, !x);
+}
+
 void test__ftruncate__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -435,6 +500,11 @@ void test__flock__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   flock(x, arg2);
+}
+
+void test__flock__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  flock(arg1, !x);
 }
 
 void test__flock__arg2__notuninit() {
@@ -467,6 +537,11 @@ void test__symlink__arg1__notuninit() {
   symlink(x, arg2);
 }
 
+void test__symlink__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  symlink(arg1, !x);
+}
+
 void test__symlink__arg2__notnull() {
   // cppcheck-suppress nullPointer
   symlink(arg1, NULL);
@@ -496,10 +571,20 @@ void test__open__arg1__notuninit() {
   open(x, arg2, arg3);
 }
 
+void test__open__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  open(arg1, !x, arg3);
+}
+
 void test__open__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   open(arg1, x, arg3);
+}
+
+void test__open__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  open(arg1, arg2, !x);
 }
 
 void test__open__arg3__notuninit() {
@@ -529,6 +614,11 @@ void test__creat__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
   result = creat(x, arg2);
+}
+
+void test__creat__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = creat(arg1, !x);
 }
 
 void test__creat__arg2__notuninit() {
@@ -628,6 +718,11 @@ void test__faccessat__arg3__notuninit() {
   faccessat(arg1, arg2, x, arg4);
 }
 
+void test__faccessat__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  faccessat(arg1, arg2, arg3, !x);
+}
+
 void test__faccessat__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -647,6 +742,11 @@ void test__acct__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__acct__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  acct(!x);
+}
+
 void test__acct__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -664,6 +764,11 @@ void test__alarm__leakignore() {
   char *p = malloc(10); *p=0;
   alarm(p);
   // cppcheck-suppress memleak
+}
+
+void test__alarm__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  alarm(!x);
 }
 
 void test__alarm__arg1__notuninit() {
@@ -708,6 +813,11 @@ void test__getrpcbyname__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__getrpcbyname__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getrpcbyname(!x);
+}
+
 void test__getrpcbyname__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = getrpcbyname(NULL);
@@ -735,6 +845,11 @@ void test__getrpcbynumber__leakignore() {
   char *p = malloc(10); *p=0;
   result = getrpcbynumber(p);
   // cppcheck-suppress memleak
+}
+
+void test__getrpcbynumber__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getrpcbynumber(!x);
 }
 
 void test__getrpcbynumber__arg1__notuninit() {
@@ -779,6 +894,11 @@ void test__getprotobyname__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__getprotobyname__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getprotobyname(!x);
+}
+
 void test__getprotobyname__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = getprotobyname(NULL);
@@ -806,6 +926,11 @@ void test__getprotobynumber__leakignore() {
   char *p = malloc(10); *p=0;
   result = getprotobynumber(p);
   // cppcheck-suppress memleak
+}
+
+void test__getprotobynumber__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getprotobynumber(!x);
 }
 
 void test__getprotobynumber__arg1__notuninit() {
@@ -861,6 +986,11 @@ void test__getservbyname__arg1__notuninit() {
   result = getservbyname(x, arg2);
 }
 
+void test__getservbyname__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getservbyname(arg1, !x);
+}
+
 void test__getservbyname__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -889,6 +1019,11 @@ void test__getservbyport__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = getservbyport(x, arg2);
+}
+
+void test__getservbyport__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getservbyport(arg1, !x);
 }
 
 void test__getservbyport__arg2__notuninit() {
@@ -933,6 +1068,11 @@ void test__getnetbyname__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__getnetbyname__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getnetbyname(!x);
+}
+
 void test__getnetbyname__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = getnetbyname(NULL);
@@ -966,6 +1106,11 @@ void test__getnetbyaddr__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = getnetbyaddr(x, arg2);
+}
+
+void test__getnetbyaddr__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getnetbyaddr(arg1, !x);
 }
 
 void test__getnetbyaddr__arg2__notuninit() {
@@ -1010,6 +1155,11 @@ void test__gethostbyname__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__gethostbyname__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = gethostbyname(!x);
+}
+
 void test__gethostbyname__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = gethostbyname(NULL);
@@ -1048,6 +1198,11 @@ void test__gethostbyname2__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
   result = gethostbyname2(x, arg2);
+}
+
+void test__gethostbyname2__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = gethostbyname2(arg1, !x);
 }
 
 void test__gethostbyname2__arg2__notuninit() {
@@ -1091,6 +1246,11 @@ void test__gethostbyaddr__arg2__notuninit() {
   result = gethostbyaddr(arg1, x, arg3);
 }
 
+void test__gethostbyaddr__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = gethostbyaddr(arg1, arg2, !x);
+}
+
 void test__gethostbyaddr__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1108,6 +1268,11 @@ void test__brk__leakignore() {
   char *p = malloc(10); *p=0;
   brk(p);
   // cppcheck-suppress memleak
+}
+
+void test__brk__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  brk(!x);
 }
 
 void test__brk__arg1__notnull() {
@@ -1164,6 +1329,11 @@ void test__strfry__noreturn() {
   x = 1 << x;
 }
 
+void test__strfry__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  strfry(!x);
+}
+
 void test__strfry__arg1__notnull() {
   // cppcheck-suppress nullPointer
   strfry(NULL);
@@ -1193,6 +1363,11 @@ void test__strsep__arg1__notuninit() {
   strsep(x, arg2);
 }
 
+void test__strsep__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  strsep(arg1, !x);
+}
+
 void test__strsep__arg2__notnull() {
   // cppcheck-suppress nullPointer
   strsep(arg1, NULL);
@@ -1209,6 +1384,11 @@ void test__strdup__noreturn() {
   if (cond) { x=100; strdup(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__strdup__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  strdup(!x);
 }
 
 void test__strdup__arg1__notnull() {
@@ -1240,6 +1420,11 @@ void test__strndup__arg1__notuninit() {
   strndup(x, arg2);
 }
 
+void test__strndup__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  strndup(arg1, !x);
+}
+
 void test__strndup__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1251,6 +1436,11 @@ void test__wcsdup__noreturn() {
   if (cond) { x=100; wcsdup(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__wcsdup__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  wcsdup(!x);
 }
 
 void test__wcsdup__arg1__notnull() {
@@ -1277,6 +1467,11 @@ void test__mkstemp__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__mkstemp__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mkstemp(!x);
+}
+
 void test__mkstemp__arg1__notnull() {
   // cppcheck-suppress nullPointer
   mkstemp(NULL);
@@ -1299,6 +1494,11 @@ void test__mkdtemp__leakignore() {
   char *p = malloc(10); *p=0;
   mkdtemp(p);
   // cppcheck-suppress memleak
+}
+
+void test__mkdtemp__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mkdtemp(!x);
 }
 
 void test__mkdtemp__arg1__notnull() {
@@ -1328,6 +1528,11 @@ void test__mktemp__leakignore() {
   char *p = malloc(10); *p=0;
   result = mktemp(p);
   // cppcheck-suppress memleak
+}
+
+void test__mktemp__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = mktemp(!x);
 }
 
 void test__mktemp__arg1__notnull() {
@@ -1360,6 +1565,11 @@ void test__getcwd__arg1__notuninit() {
   getcwd(x, arg2);
 }
 
+void test__getcwd__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getcwd(arg1, !x);
+}
+
 void test__getcwd__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1390,6 +1600,11 @@ void test__mkdir__arg1__notuninit() {
   mkdir(x, arg2);
 }
 
+void test__mkdir__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mkdir(arg1, !x);
+}
+
 void test__mkdir__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1407,6 +1622,11 @@ void test__rmdir__leakignore() {
   char *p = malloc(10); *p=0;
   rmdir(p);
   // cppcheck-suppress memleak
+}
+
+void test__rmdir__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  rmdir(!x);
 }
 
 void test__rmdir__arg1__notnull() {
@@ -1433,6 +1653,11 @@ void test__chdir__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__chdir__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  chdir(!x);
+}
+
 void test__chdir__arg1__notnull() {
   // cppcheck-suppress nullPointer
   chdir(NULL);
@@ -1455,6 +1680,11 @@ void test__chroot__leakignore() {
   char *p = malloc(10); *p=0;
   chroot(p);
   // cppcheck-suppress memleak
+}
+
+void test__chroot__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  chroot(!x);
 }
 
 void test__chroot__arg1__notnull() {
@@ -1492,6 +1722,11 @@ void test__link__arg1__notuninit() {
   link(x, arg2);
 }
 
+void test__link__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  link(arg1, !x);
+}
+
 void test__link__arg2__notnull() {
   // cppcheck-suppress nullPointer
   link(arg1, NULL);
@@ -1514,6 +1749,11 @@ void test__unlink__leakignore() {
   char *p = malloc(10); *p=0;
   unlink(p);
   // cppcheck-suppress memleak
+}
+
+void test__unlink__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  unlink(!x);
 }
 
 void test__unlink__arg1__notnull() {
@@ -1551,6 +1791,11 @@ void test__stat__arg1__notuninit() {
   stat(x, arg2);
 }
 
+void test__stat__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  stat(arg1, !x);
+}
+
 void test__stat__arg2__notnull() {
   // cppcheck-suppress nullPointer
   stat(arg1, NULL);
@@ -1580,6 +1825,11 @@ void test__lstat__arg1__notuninit() {
   lstat(x, arg2);
 }
 
+void test__lstat__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  lstat(arg1, !x);
+}
+
 void test__lstat__arg2__notnull() {
   // cppcheck-suppress nullPointer
   lstat(arg1, NULL);
@@ -1602,6 +1852,11 @@ void test__fstat__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   fstat(x, arg2);
+}
+
+void test__fstat__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fstat(arg1, !x);
 }
 
 void test__fstat__arg2__notnull() {
@@ -1633,6 +1888,11 @@ void test__chmod__arg1__notuninit() {
   chmod(x, arg2);
 }
 
+void test__chmod__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  chmod(arg1, !x);
+}
+
 void test__chmod__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1656,6 +1916,11 @@ void test__fchmod__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   fchmod(x, arg2);
+}
+
+void test__fchmod__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fchmod(arg1, !x);
 }
 
 void test__fchmod__arg2__notuninit() {
@@ -1694,6 +1959,11 @@ void test__chown__arg2__notuninit() {
   chown(arg1, x, arg3);
 }
 
+void test__chown__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  chown(arg1, arg2, !x);
+}
+
 void test__chown__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1730,6 +2000,11 @@ void test__lchown__arg2__notuninit() {
   lchown(arg1, x, arg3);
 }
 
+void test__lchown__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  lchown(arg1, arg2, !x);
+}
+
 void test__lchown__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1761,6 +2036,11 @@ void test__fchown__arg2__notuninit() {
   fchown(arg1, x, arg3);
 }
 
+void test__fchown__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fchown(arg1, arg2, !x);
+}
+
 void test__fchown__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1778,6 +2058,11 @@ void test__times__leakignore() {
   char *p = malloc(10); *p=0;
   times(p);
   // cppcheck-suppress memleak
+}
+
+void test__times__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  times(!x);
 }
 
 void test__times__arg1__notuninit() {
@@ -1810,6 +2095,11 @@ void test__utime__arg1__notuninit() {
   utime(x, arg2);
 }
 
+void test__utime__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  utime(arg1, !x);
+}
+
 void test__utime__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1840,6 +2130,11 @@ void test__utimes__arg1__notuninit() {
   utimes(x, arg2);
 }
 
+void test__utimes__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  utimes(arg1, !x);
+}
+
 void test__utimes__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1856,6 +2151,11 @@ void test__opendir__noreturn() {
 void test__opendir__useretval() {
   // cppcheck-suppress ignoredReturnValue
   opendir(arg1);
+}
+
+void test__opendir__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = opendir(!x);
 }
 
 void test__opendir__arg1__notnull() {
@@ -1881,6 +2181,11 @@ void test__fdopendir__useretval() {
   fdopendir(arg1);
 }
 
+void test__fdopendir__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = fdopendir(!x);
+}
+
 void test__fdopendir__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1903,6 +2208,11 @@ void test__isatty__leakignore() {
   char *p = malloc(10); *p=0;
   result = isatty(p);
   // cppcheck-suppress memleak
+}
+
+void test__isatty__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = isatty(!x);
 }
 
 void test__isatty__arg1__notuninit() {
@@ -1934,6 +2244,11 @@ void test__popen__arg1__notuninit() {
   result = popen(x, arg2);
 }
 
+void test__popen__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = popen(arg1, !x);
+}
+
 void test__popen__arg2__notnull() {
   // cppcheck-suppress nullPointer
   result = popen(arg1, NULL);
@@ -1950,6 +2265,11 @@ void test__pclose__noreturn() {
   if (cond) { x=100; pclose(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__pclose__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  pclose(!x);
 }
 
 void test__pclose__arg1__notnull() {
@@ -1982,6 +2302,11 @@ void test__socket__arg2__notuninit() {
   socket(arg1, x, arg3);
 }
 
+void test__socket__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  socket(arg1, arg2, !x);
+}
+
 void test__socket__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -1999,6 +2324,11 @@ void test__nice__leakignore() {
   char *p = malloc(10); *p=0;
   nice(p);
   // cppcheck-suppress memleak
+}
+
+void test__nice__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  nice(!x);
 }
 
 void test__nice__arg1__notuninit() {
@@ -2025,6 +2355,11 @@ void test__close__noreturn() {
   if (cond) { x=100; close(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__close__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  close(!x);
 }
 
 void test__close__arg1__notuninit() {
@@ -2058,6 +2393,11 @@ void test__confstr__arg2__notuninit() {
   confstr(arg1, x, arg3);
 }
 
+void test__confstr__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  confstr(arg1, arg2, !x);
+}
+
 void test__confstr__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2081,6 +2421,11 @@ void test__fpathconf__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   fpathconf(x, arg2);
+}
+
+void test__fpathconf__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fpathconf(arg1, !x);
 }
 
 void test__fpathconf__arg2__notuninit() {
@@ -2113,6 +2458,11 @@ void test__pathconf__arg1__notuninit() {
   pathconf(x, arg2);
 }
 
+void test__pathconf__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  pathconf(arg1, !x);
+}
+
 void test__pathconf__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2130,6 +2480,11 @@ void test__sysconf__leakignore() {
   char *p = malloc(10); *p=0;
   sysconf(p);
   // cppcheck-suppress memleak
+}
+
+void test__sysconf__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sysconf(!x);
 }
 
 void test__sysconf__arg1__notuninit() {
@@ -2154,6 +2509,11 @@ void test__fdopen__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = fdopen(x, arg2);
+}
+
+void test__fdopen__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = fdopen(arg1, !x);
 }
 
 void test__fdopen__arg2__notnull() {
@@ -2253,6 +2613,11 @@ void test__rand_r__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__rand_r__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  rand_r(!x);
+}
+
 void test__rand_r__arg1__notnull() {
   // cppcheck-suppress nullPointer
   rand_r(NULL);
@@ -2285,6 +2650,11 @@ void test__strcasecmp__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
   strcasecmp(x, arg2);
+}
+
+void test__strcasecmp__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  strcasecmp(arg1, !x);
 }
 
 void test__strcasecmp__arg2__notnull() {
@@ -2355,6 +2725,11 @@ void test__read__arg1__notuninit() {
   read(x, arg2, arg3);
 }
 
+void test__read__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  read(arg1, arg2, !x);
+}
+
 void test__read__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2386,6 +2761,11 @@ void test__write__arg2__notuninit() {
   write(arg1, x, arg3);
 }
 
+void test__write__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  write(arg1, arg2, !x);
+}
+
 void test__write__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2402,6 +2782,11 @@ void test__recv__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   recv(arg1, arg2, x, arg4);
+}
+
+void test__recv__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  recv(arg1, arg2, arg3, !x);
 }
 
 void test__recv__arg4__notuninit() {
@@ -2428,10 +2813,20 @@ void test__recvfrom__arg4__notuninit() {
   recvfrom(arg1, arg2, arg3, x, arg5, arg6);
 }
 
+void test__recvfrom__arg6__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  recvfrom(arg1, arg2, arg3, arg4, arg5, !x);
+}
+
 void test__recvmsg__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   recvmsg(x, arg2, arg3);
+}
+
+void test__recvmsg__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  recvmsg(arg1, arg2, !x);
 }
 
 void test__recvmsg__arg3__notuninit() {
@@ -2450,6 +2845,11 @@ void test__send__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   send(arg1, arg2, x, arg4);
+}
+
+void test__send__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  send(arg1, arg2, arg3, !x);
 }
 
 void test__send__arg4__notuninit() {
@@ -2476,6 +2876,11 @@ void test__sendto__arg4__notuninit() {
   sendto(arg1, arg2, arg3, x, arg5, arg6);
 }
 
+void test__sendto__arg6__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sendto(arg1, arg2, arg3, arg4, arg5, !x);
+}
+
 void test__sendmsg__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2486,6 +2891,11 @@ void test__sendmsg__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   sendmsg(arg1, x, arg3);
+}
+
+void test__sendmsg__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sendmsg(arg1, arg2, !x);
 }
 
 void test__sendmsg__arg3__notuninit() {
@@ -2542,6 +2952,11 @@ void test__mmap__arg5__notuninit() {
   result = mmap(arg1, arg2, arg3, arg4, x, arg6);
 }
 
+void test__mmap__arg6__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = mmap(arg1, arg2, arg3, arg4, arg5, !x);
+}
+
 void test__mmap__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2596,6 +3011,11 @@ void test__mmap64__arg5__notuninit() {
   result = mmap64(arg1, arg2, arg3, arg4, x, arg6);
 }
 
+void test__mmap64__arg6__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = mmap64(arg1, arg2, arg3, arg4, arg5, !x);
+}
+
 void test__mmap64__arg6__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2618,6 +3038,11 @@ void test__munmap__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
   munmap(x, arg2);
+}
+
+void test__munmap__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  munmap(arg1, !x);
 }
 
 void test__munmap__arg2__notuninit() {
@@ -2805,6 +3230,11 @@ void test__getsid__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__getsid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getsid(!x);
+}
+
 void test__getsid__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2901,6 +3331,11 @@ void test__getpgid__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__getpgid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getpgid(!x);
+}
+
 void test__getpgid__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2923,6 +3358,11 @@ void test__setuid__leakignore() {
   char *p = malloc(10); *p=0;
   result = setuid(p);
   // cppcheck-suppress memleak
+}
+
+void test__setuid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = setuid(!x);
 }
 
 void test__setuid__arg1__notuninit() {
@@ -2949,6 +3389,11 @@ void test__seteuid__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__seteuid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = seteuid(!x);
+}
+
 void test__seteuid__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -2971,6 +3416,11 @@ void test__setgid__leakignore() {
   char *p = malloc(10); *p=0;
   result = setgid(p);
   // cppcheck-suppress memleak
+}
+
+void test__setgid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = setgid(!x);
 }
 
 void test__setgid__arg1__notuninit() {
@@ -2997,6 +3447,11 @@ void test__setegid__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__setegid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = setegid(!x);
+}
+
 void test__setegid__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3016,6 +3471,11 @@ void test__setpgid__arg1__notuninit() {
   setpgid(x, arg2);
 }
 
+void test__setpgid__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  setpgid(arg1, !x);
+}
+
 void test__setpgid__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3024,9 +3484,14 @@ void test__setpgid__arg2__notuninit() {
 
 void test__pipe__noreturn() {
   int x = 1;
-  if (cond) { x=100; pipe(); }
+  if (cond) { x=100; pipe(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__pipe__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  pipe(!x);
 }
 
 void test__setpgrp__noreturn() {
@@ -3049,6 +3514,11 @@ void test__setregid__arg1__notuninit() {
   setregid(x, arg2);
 }
 
+void test__setregid__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  setregid(arg1, !x);
+}
+
 void test__setregid__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3066,6 +3536,11 @@ void test__setreuid__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   setreuid(x, arg2);
+}
+
+void test__setreuid__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  setreuid(arg1, !x);
 }
 
 void test__setreuid__arg2__notuninit() {
@@ -3087,6 +3562,11 @@ void test__setfsuid__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__setfsuid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  setfsuid(!x);
+}
+
 void test__setfsuid__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3104,6 +3584,11 @@ void test__setfsgid__leakignore() {
   char *p = malloc(10); *p=0;
   setfsgid(p);
   // cppcheck-suppress memleak
+}
+
+void test__setfsgid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  setfsgid(!x);
 }
 
 void test__setfsgid__arg1__notuninit() {
@@ -3132,6 +3617,11 @@ void test__getwd__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__getwd__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getwd(!x);
+}
+
 void test__getwd__arg1__notnull() {
   // cppcheck-suppress nullPointer
   getwd(NULL);
@@ -3142,6 +3632,11 @@ void test__htonl__noreturn() {
   if (cond) { x=100; htonl(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__htonl__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  htonl(!x);
 }
 
 void test__htonl__arg1__notuninit() {
@@ -3157,6 +3652,11 @@ void test__htons__noreturn() {
   x = 1 << x;
 }
 
+void test__htons__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  htons(!x);
+}
+
 void test__htons__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3168,6 +3668,11 @@ void test__ntohl__noreturn() {
   if (cond) { x=100; ntohl(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__ntohl__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ntohl(!x);
 }
 
 void test__ntohl__arg1__notuninit() {
@@ -3183,6 +3688,11 @@ void test__ntohs__noreturn() {
   x = 1 << x;
 }
 
+void test__ntohs__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ntohs(!x);
+}
+
 void test__ntohs__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3194,6 +3704,11 @@ void test__mq_close__noreturn() {
   if (cond) { x=100; mq_close(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__mq_close__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_close(!x);
 }
 
 void test__mq_close__arg1__notuninit() {
@@ -3215,6 +3730,11 @@ void test__mq_getattr__arg1__notuninit() {
   mq_getattr(x, arg2);
 }
 
+void test__mq_getattr__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_getattr(arg1, !x);
+}
+
 void test__mq_notify__noreturn() {
   int x = 1;
   if (cond) { x=100; mq_notify(arg1, arg2); }
@@ -3231,6 +3751,11 @@ void test__mq_notify__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
   mq_notify(x, arg2);
+}
+
+void test__mq_notify__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_notify(arg1, !x);
 }
 
 void test__mq_open__noreturn() {
@@ -3253,6 +3778,11 @@ void test__mq_receive__arg1__notuninit() {
   mq_receive(x, arg2, arg3, arg4);
 }
 
+void test__mq_receive__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_receive(arg1, arg2, arg3, !x);
+}
+
 void test__mq_send__noreturn() {
   int x = 1;
   if (cond) { x=100; mq_send(arg1, arg2, arg3, arg4); }
@@ -3264,6 +3794,11 @@ void test__mq_send__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   mq_send(x, arg2, arg3, arg4);
+}
+
+void test__mq_send__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_send(arg1, arg2, arg3, !x);
 }
 
 void test__mq_setattr__noreturn() {
@@ -3279,6 +3814,11 @@ void test__mq_setattr__arg1__notuninit() {
   mq_setattr(x, arg2, arg3);
 }
 
+void test__mq_setattr__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_setattr(arg1, arg2, !x);
+}
+
 void test__mq_timedreceive__noreturn() {
   int x = 1;
   if (cond) { x=100; mq_timedreceive(arg1, arg2, arg3, arg4, arg5); }
@@ -3290,6 +3830,11 @@ void test__mq_timedreceive__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   mq_timedreceive(x, arg2, arg3, arg4, arg5);
+}
+
+void test__mq_timedreceive__arg5__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_timedreceive(arg1, arg2, arg3, arg4, !x);
 }
 
 void test__mq_timedsend__noreturn() {
@@ -3305,11 +3850,21 @@ void test__mq_timedsend__arg1__notuninit() {
   mq_timedsend(x, arg2, arg3, arg4, arg5);
 }
 
+void test__mq_timedsend__arg5__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_timedsend(arg1, arg2, arg3, arg4, !x);
+}
+
 void test__mq_unlink__noreturn() {
   int x = 1;
   if (cond) { x=100; mq_unlink(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__mq_unlink__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  mq_unlink(!x);
 }
 
 void test__mq_unlink__arg1__notnull() {
@@ -3328,6 +3883,11 @@ void test__dbm_clearerr__noreturn() {
   if (cond) { x=100; dbm_clearerr(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__dbm_clearerr__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  dbm_clearerr(!x);
 }
 
 void test__dbm_clearerr__arg1__notnull() {
@@ -3395,6 +3955,11 @@ void test__dbm_error__useretval() {
   dbm_error(arg1);
 }
 
+void test__dbm_error__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = dbm_error(!x);
+}
+
 void test__dbm_error__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = dbm_error(NULL);
@@ -3447,6 +4012,11 @@ void test__dbm_firstkey__useretval() {
   dbm_firstkey(arg1);
 }
 
+void test__dbm_firstkey__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = dbm_firstkey(!x);
+}
+
 void test__dbm_firstkey__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = dbm_firstkey(NULL);
@@ -3468,6 +4038,11 @@ void test__dbm_nextkey__noreturn() {
 void test__dbm_nextkey__useretval() {
   // cppcheck-suppress ignoredReturnValue
   dbm_nextkey(arg1);
+}
+
+void test__dbm_nextkey__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = dbm_nextkey(!x);
 }
 
 void test__dbm_nextkey__arg1__notnull() {
@@ -3505,6 +4080,11 @@ void test__dbm_open__arg2__notuninit() {
   dbm_open(arg1, x, arg3);
 }
 
+void test__dbm_open__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  dbm_open(arg1, arg2, !x);
+}
+
 void test__dbm_open__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3539,6 +4119,11 @@ void test__dbm_store__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   dbm_store(arg1, arg2, x, arg4);
+}
+
+void test__dbm_store__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  dbm_store(arg1, arg2, arg3, !x);
 }
 
 void test__dbm_store__arg4__notuninit() {
@@ -3590,6 +4175,11 @@ void test__getaddrinfo__arg3__notuninit() {
   getaddrinfo(arg1, arg2, x, arg4);
 }
 
+void test__getaddrinfo__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getaddrinfo(arg1, arg2, arg3, !x);
+}
+
 void test__getaddrinfo__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3621,6 +4211,11 @@ void test__uname__noreturn() {
   if (cond) { x=100; uname(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__uname__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  uname(!x);
 }
 
 void test__uname__arg1__notnull() {
@@ -3657,6 +4252,11 @@ void test__getpwnam__noreturn() {
 void test__getpwnam__useretval() {
   // cppcheck-suppress ignoredReturnValue
   getpwnam(arg1);
+}
+
+void test__getpwnam__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getpwnam(!x);
 }
 
 void test__getpwnam__arg1__notuninit() {
@@ -3700,6 +4300,11 @@ void test__strtok_r__arg2__notuninit() {
   strtok_r(arg1, x, arg3);
 }
 
+void test__strtok_r__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  strtok_r(arg1, arg2, !x);
+}
+
 void test__strtok_r__arg3__notnull() {
   // cppcheck-suppress nullPointer
   strtok_r(arg1, arg2, NULL);
@@ -3729,6 +4334,11 @@ void test__getpwnam_r__arg4__notuninit() {
   result = getpwnam_r(arg1, arg2, arg3, x, arg5);
 }
 
+void test__getpwnam_r__arg5__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getpwnam_r(arg1, arg2, arg3, arg4, !x);
+}
+
 void test__getpwuid__noreturn() {
   int x = 1;
   if (cond) { x=100; result = getpwuid(arg1); }
@@ -3739,6 +4349,11 @@ void test__getpwuid__noreturn() {
 void test__getpwuid__useretval() {
   // cppcheck-suppress ignoredReturnValue
   getpwuid(arg1);
+}
+
+void test__getpwuid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getpwuid(!x);
 }
 
 void test__getpwuid__arg1__notuninit() {
@@ -3766,6 +4381,11 @@ void test__getpwuid_r__arg4__notuninit() {
   getpwuid_r(arg1, arg2, arg3, x, arg5);
 }
 
+void test__getpwuid_r__arg5__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getpwuid_r(arg1, arg2, arg3, arg4, !x);
+}
+
 void test__setpwent__noreturn() {
   int x = 1;
   if (cond) { x=100; setpwent(); }
@@ -3778,6 +4398,11 @@ void test__catclose__noreturn() {
   if (cond) { x=100; catclose(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__catclose__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  catclose(!x);
 }
 
 void test__catclose__arg1__notuninit() {
@@ -3816,6 +4441,11 @@ void test__catgets__arg3__notuninit() {
   result = catgets(arg1, arg2, x, arg4);
 }
 
+void test__catgets__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = catgets(arg1, arg2, arg3, !x);
+}
+
 void test__catgets__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3838,6 +4468,11 @@ void test__catopen__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
   catopen(x, arg2);
+}
+
+void test__catopen__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  catopen(arg1, !x);
 }
 
 void test__catopen__arg2__notuninit() {
@@ -3865,6 +4500,11 @@ void test__poll__arg2__notuninit() {
   poll(arg1, x, arg3);
 }
 
+void test__poll__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  poll(arg1, arg2, !x);
+}
+
 void test__poll__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3887,6 +4527,11 @@ void test__regcomp__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   regcomp(arg1, x, arg3);
+}
+
+void test__regcomp__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  regcomp(arg1, arg2, !x);
 }
 
 void test__regcomp__arg3__notuninit() {
@@ -3912,6 +4557,11 @@ void test__regerror__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   regerror(arg1, x, arg3, arg4);
+}
+
+void test__regerror__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  regerror(arg1, arg2, arg3, !x);
 }
 
 void test__regerror__arg4__notuninit() {
@@ -3961,6 +4611,11 @@ void test__regexec__arg4__notuninit() {
   regexec(arg1, arg2, arg3, x, arg5);
 }
 
+void test__regexec__arg5__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  regexec(arg1, arg2, arg3, arg4, !x);
+}
+
 void test__regexec__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -3992,6 +4647,11 @@ void test__sched_get_priority_max__noreturn() {
   x = 1 << x;
 }
 
+void test__sched_get_priority_max__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sched_get_priority_max(!x);
+}
+
 void test__sched_get_priority_max__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4003,6 +4663,11 @@ void test__sched_get_priority_min__noreturn() {
   if (cond) { x=100; sched_get_priority_min(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__sched_get_priority_min__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sched_get_priority_min(!x);
 }
 
 void test__sched_get_priority_min__arg1__notuninit() {
@@ -4024,6 +4689,11 @@ void test__sched_getparam__arg1__notuninit() {
   sched_getparam(x, arg2);
 }
 
+void test__sched_getparam__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sched_getparam(arg1, !x);
+}
+
 void test__sched_getparam__arg2__notnull() {
   // cppcheck-suppress nullPointer
   sched_getparam(arg1, NULL);
@@ -4034,6 +4704,11 @@ void test__sched_getscheduler__noreturn() {
   if (cond) { x=100; sched_getscheduler(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__sched_getscheduler__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sched_getscheduler(!x);
 }
 
 void test__sched_getscheduler__arg1__notuninit() {
@@ -4055,6 +4730,11 @@ void test__sched_rr_get_interval__arg1__notuninit() {
   sched_rr_get_interval(x, arg2);
 }
 
+void test__sched_rr_get_interval__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sched_rr_get_interval(arg1, !x);
+}
+
 void test__sched_rr_get_interval__arg2__notnull() {
   // cppcheck-suppress nullPointer
   sched_rr_get_interval(arg1, NULL);
@@ -4071,6 +4751,11 @@ void test__sched_setparam__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   sched_setparam(x, arg2);
+}
+
+void test__sched_setparam__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sched_setparam(arg1, !x);
 }
 
 void test__sched_setparam__arg2__notuninit() {
@@ -4096,6 +4781,11 @@ void test__sched_setscheduler__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   sched_setscheduler(arg1, x, arg3);
+}
+
+void test__sched_setscheduler__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sched_setscheduler(arg1, arg2, !x);
 }
 
 void test__sched_setscheduler__arg3__notuninit() {
@@ -4135,6 +4825,11 @@ void test__ecvt__arg3__notnull() {
   ecvt(arg1, arg2, NULL, arg4);
 }
 
+void test__ecvt__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ecvt(arg1, arg2, arg3, !x);
+}
+
 void test__ecvt__arg4__notnull() {
   // cppcheck-suppress nullPointer
   ecvt(arg1, arg2, arg3, NULL);
@@ -4164,6 +4859,11 @@ void test__fcvt__arg3__notnull() {
   fcvt(arg1, arg2, NULL, arg4);
 }
 
+void test__fcvt__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fcvt(arg1, arg2, arg3, !x);
+}
+
 void test__fcvt__arg4__notnull() {
   // cppcheck-suppress nullPointer
   fcvt(arg1, arg2, arg3, NULL);
@@ -4186,6 +4886,11 @@ void test__gcvt__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   gcvt(arg1, x, arg3);
+}
+
+void test__gcvt__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  gcvt(arg1, arg2, !x);
 }
 
 void test__gcvt__arg3__notnull() {
@@ -4242,6 +4947,11 @@ void test__nanosleep__arg1__notnull() {
   nanosleep(NULL, arg2);
 }
 
+void test__nanosleep__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  nanosleep(arg1, !x);
+}
+
 void test__setkey__noreturn() {
   int x = 1;
   if (cond) { x=100; setkey(arg1); }
@@ -4279,6 +4989,11 @@ void test__getpass__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__getpass__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getpass(!x);
+}
+
 void test__getpass__arg1__notnull() {
   // cppcheck-suppress nullPointer
   getpass(NULL);
@@ -4301,6 +5016,11 @@ void test__putenv__noreturn() {
   if (cond) { x=100; putenv(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__putenv__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  putenv(!x);
 }
 
 void test__putenv__arg1__notnull() {
@@ -4356,6 +5076,11 @@ void test__unsetenv__noreturn() {
   x = 1 << x;
 }
 
+void test__unsetenv__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  unsetenv(!x);
+}
+
 void test__unsetenv__arg1__notnull() {
   // cppcheck-suppress nullPointer
   unsetenv(NULL);
@@ -4380,6 +5105,11 @@ void test__localtime__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__localtime__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  localtime(!x);
+}
+
 void test__localtime__arg1__notnull() {
   // cppcheck-suppress nullPointer
   localtime(NULL);
@@ -4396,6 +5126,11 @@ void test__std__localtime__noreturn() {
   if (cond) { x=100; std::localtime(arg1); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test__std__localtime__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  std::localtime(!x);
 }
 
 void test__std__localtime__arg1__notnull() {
@@ -4433,6 +5168,11 @@ void test__localtime_r__arg1__notuninit() {
   localtime_r(x, arg2);
 }
 
+void test__localtime_r__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  localtime_r(arg1, !x);
+}
+
 void test__localtime_r__arg2__notnull() {
   // cppcheck-suppress nullPointer
   localtime_r(arg1, NULL);
@@ -4449,6 +5189,11 @@ void test__readdir__leakignore() {
   char *p = malloc(10); *p=0;
   readdir(p);
   // cppcheck-suppress memleak
+}
+
+void test__readdir__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  readdir(!x);
 }
 
 void test__readdir__arg1__notnull() {
@@ -4491,6 +5236,11 @@ void test__readdir_r__arg2__notnull() {
   readdir_r(arg1, NULL, arg3);
 }
 
+void test__readdir_r__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  readdir_r(arg1, arg2, !x);
+}
+
 void test__readdir_r__arg3__notnull() {
   // cppcheck-suppress nullPointer
   readdir_r(arg1, arg2, NULL);
@@ -4523,6 +5273,11 @@ void test__readlink__arg1__notuninit() {
 void test__readlink__arg2__notnull() {
   // cppcheck-suppress nullPointer
   readlink(arg1, NULL, arg3);
+}
+
+void test__readlink__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  readlink(arg1, arg2, !x);
 }
 
 void test__readlink__arg3__notuninit() {
@@ -4566,6 +5321,11 @@ void test__readlinkat__arg3__notnull() {
   readlinkat(arg1, arg2, NULL, arg4);
 }
 
+void test__readlinkat__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  readlinkat(arg1, arg2, arg3, !x);
+}
+
 void test__readlinkat__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4594,6 +5354,11 @@ void test__asctime_r__arg1__notuninit() {
   int x[10];
   // cppcheck-suppress uninitvar
   asctime_r(x, arg2);
+}
+
+void test__asctime_r__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  asctime_r(arg1, !x);
 }
 
 void test__asctime_r__arg2__notnull() {
@@ -4625,6 +5390,11 @@ void test__ctime_r__arg1__notuninit() {
   ctime_r(x, arg2);
 }
 
+void test__ctime_r__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ctime_r(arg1, !x);
+}
+
 void test__ctime_r__arg2__notnull() {
   // cppcheck-suppress nullPointer
   ctime_r(arg1, NULL);
@@ -4654,6 +5424,11 @@ void test__gmtime_r__arg1__notuninit() {
   gmtime_r(x, arg2);
 }
 
+void test__gmtime_r__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  gmtime_r(arg1, !x);
+}
+
 void test__gmtime_r__arg2__notnull() {
   // cppcheck-suppress nullPointer
   gmtime_r(arg1, NULL);
@@ -4675,6 +5450,11 @@ void test__gmtime__leakignore() {
   char *p = malloc(10); *p=0;
   result = gmtime(p);
   // cppcheck-suppress memleak
+}
+
+void test__gmtime__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = gmtime(!x);
 }
 
 void test__gmtime__arg1__notnull() {
@@ -4701,6 +5481,11 @@ void test__clock_settime__arg1__notuninit() {
   clock_settime(x, arg2);
 }
 
+void test__clock_settime__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  clock_settime(arg1, !x);
+}
+
 void test__clock_settime__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4718,6 +5503,11 @@ void test__killpg__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   killpg(x, arg2);
+}
+
+void test__killpg__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  killpg(arg1, !x);
 }
 
 void test__killpg__arg2__notuninit() {
@@ -4739,6 +5529,11 @@ void test__kill__arg1__notuninit() {
   kill(x, arg2);
 }
 
+void test__kill__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  kill(arg1, !x);
+}
+
 void test__kill__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4756,6 +5551,11 @@ void test__clock_gettime__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   clock_gettime(x, arg2);
+}
+
+void test__clock_gettime__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  clock_gettime(arg1, !x);
 }
 
 void test__clock_gettime__arg2__notnull() {
@@ -4776,6 +5576,11 @@ void test__clock_getres__arg1__notuninit() {
   clock_getres(x, arg2);
 }
 
+void test__clock_getres__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  clock_getres(arg1, !x);
+}
+
 void test__tmpnam__noreturn() {
   int x = 1;
   if (cond) { x=100; tmpnam(arg1); }
@@ -4787,6 +5592,11 @@ void test__tmpnam__leakignore() {
   char *p = malloc(10); *p=0;
   tmpnam(p);
   // cppcheck-suppress memleak
+}
+
+void test__tmpnam__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tmpnam(!x);
 }
 
 void test__tmpnam__arg1__notuninit() {
@@ -4806,6 +5616,11 @@ void test__tmpnam_r__leakignore() {
   char *p = malloc(10); *p=0;
   tmpnam_r(p);
   // cppcheck-suppress memleak
+}
+
+void test__tmpnam_r__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tmpnam_r(!x);
 }
 
 void test__tmpnam_r__arg1__notuninit() {
@@ -4909,6 +5724,11 @@ void test__ualarm__arg1__notuninit() {
   ualarm(x, arg2);
 }
 
+void test__ualarm__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ualarm(arg1, !x);
+}
+
 void test__ualarm__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -4937,6 +5757,11 @@ void test__scalb__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = scalb(x, arg2);
+}
+
+void test__scalb__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = scalb(arg1, !x);
 }
 
 void test__scalb__arg2__notuninit() {
@@ -5020,6 +5845,11 @@ void test__bcmp__arg2__notuninit() {
   result = bcmp(arg1, x, arg3);
 }
 
+void test__bcmp__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = bcmp(arg1, arg2, !x);
+}
+
 void test__bcmp__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5063,6 +5893,11 @@ void test__ftime__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__ftime__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ftime(!x);
+}
+
 void test__ftime__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5098,6 +5933,11 @@ void test__wcswcs__arg1__notuninit() {
   result = wcswcs(x, arg2);
 }
 
+void test__wcswcs__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = wcswcs(arg1, !x);
+}
+
 void test__wcswcs__arg2__notnull() {
   // cppcheck-suppress nullPointer
   result = wcswcs(arg1, NULL);
@@ -5125,6 +5965,11 @@ void test__stpcpy__leakignore() {
 void test__stpcpy__arg1__notnull() {
   // cppcheck-suppress nullPointer
   stpcpy(NULL, arg2);
+}
+
+void test__stpcpy__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  stpcpy(arg1, !x);
 }
 
 void test__stpcpy__arg2__notnull() {
@@ -5167,6 +6012,11 @@ void test__index__arg1__notuninit() {
   result = index(x, arg2);
 }
 
+void test__index__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = index(arg1, !x);
+}
+
 void test__index__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5202,6 +6052,11 @@ void test__rindex__arg1__notuninit() {
   result = rindex(x, arg2);
 }
 
+void test__rindex__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = rindex(arg1, !x);
+}
+
 void test__rindex__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5225,6 +6080,11 @@ void test__bsd_signal__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   bsd_signal(x, arg2);
+}
+
+void test__bsd_signal__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  bsd_signal(arg1, !x);
 }
 
 void test__bsd_signal__arg2__notuninit() {
@@ -5425,6 +6285,11 @@ void test__pthread_attr_setstackaddr__arg1__notuninit() {
   pthread_attr_setstackaddr(x, arg2);
 }
 
+void test__pthread_attr_setstackaddr__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  pthread_attr_setstackaddr(arg1, !x);
+}
+
 void test__pthread_attr_setstackaddr__arg2__notnull() {
   // cppcheck-suppress nullPointer
   pthread_attr_setstackaddr(arg1, NULL);
@@ -5460,6 +6325,11 @@ void test__pthread_attr_getstackaddr__arg1__notuninit() {
   pthread_attr_getstackaddr(x, arg2);
 }
 
+void test__pthread_attr_getstackaddr__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  pthread_attr_getstackaddr(arg1, !x);
+}
+
 void test__pthread_attr_getstackaddr__arg2__notnull() {
   // cppcheck-suppress nullPointer
   pthread_attr_getstackaddr(arg1, NULL);
@@ -5487,6 +6357,11 @@ void test__tempnam__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = tempnam(x, arg2);
+}
+
+void test__tempnam__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = tempnam(arg1, !x);
 }
 
 void test__tempnam__arg2__notuninit() {
@@ -5524,6 +6399,11 @@ void test__crypt__arg1__notuninit() {
   result = crypt(x, arg2);
 }
 
+void test__crypt__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = crypt(arg1, !x);
+}
+
 void test__crypt__arg2__notnull() {
   // cppcheck-suppress nullPointer
   result = crypt(arg1, NULL);
@@ -5553,6 +6433,11 @@ void test__ttyname__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__ttyname__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = ttyname(!x);
+}
+
 void test__ttyname__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5575,6 +6460,11 @@ void test__getspnam__leakignore() {
   char *p = malloc(10); *p=0;
   result = getspnam(p);
   // cppcheck-suppress memleak
+}
+
+void test__getspnam__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getspnam(!x);
 }
 
 void test__getspnam__arg1__notnull() {
@@ -5624,6 +6514,11 @@ void test__fgetspent__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__fgetspent__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = fgetspent(!x);
+}
+
 void test__fgetspent__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = fgetspent(NULL);
@@ -5653,6 +6548,11 @@ void test__sgetspent__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__sgetspent__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = sgetspent(!x);
+}
+
 void test__sgetspent__arg1__notnull() {
   // cppcheck-suppress nullPointer
   result = sgetspent(NULL);
@@ -5680,6 +6580,11 @@ void test__fgetpwent__leakignore() {
   char *p = malloc(10); *p=0;
   result = fgetpwent(p);
   // cppcheck-suppress memleak
+}
+
+void test__fgetpwent__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = fgetpwent(!x);
 }
 
 void test__fgetpwent__arg1__notnull() {
@@ -5741,6 +6646,11 @@ void test__getgrent_r__arg3__notuninit() {
   result = getgrent_r(arg1, arg2, x, arg4);
 }
 
+void test__getgrent_r__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getgrent_r(arg1, arg2, arg3, !x);
+}
+
 void test__fgetgrent__noreturn() {
   int x = 1;
   if (cond) { x=100; result = fgetgrent(arg1); }
@@ -5757,6 +6667,11 @@ void test__fgetgrent__leakignore() {
   char *p = malloc(10); *p=0;
   result = fgetgrent(p);
   // cppcheck-suppress memleak
+}
+
+void test__fgetgrent__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = fgetgrent(!x);
 }
 
 void test__fgetgrent__arg1__notnull() {
@@ -5793,6 +6708,11 @@ void test__getnetgrent__arg2__notnull() {
   getnetgrent(arg1, NULL, arg3);
 }
 
+void test__getnetgrent__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getnetgrent(arg1, arg2, !x);
+}
+
 void test__getnetgrent__arg3__notnull() {
   // cppcheck-suppress nullPointer
   getnetgrent(arg1, arg2, NULL);
@@ -5814,6 +6734,11 @@ void test__getgrnam__leakignore() {
   char *p = malloc(10); *p=0;
   result = getgrnam(p);
   // cppcheck-suppress memleak
+}
+
+void test__getgrnam__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getgrnam(!x);
 }
 
 void test__getgrnam__arg1__notnull() {
@@ -5843,6 +6768,11 @@ void test__getgrgid__leakignore() {
   char *p = malloc(10); *p=0;
   result = getgrgid(p);
   // cppcheck-suppress memleak
+}
+
+void test__getgrgid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = getgrgid(!x);
 }
 
 void test__getgrgid__arg1__notuninit() {
@@ -5882,6 +6812,11 @@ void test__ctermid__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__ctermid__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  ctermid(!x);
+}
+
 void test__realpath__noreturn() {
   int x = 1;
   if (cond) { x=100; realpath(arg1, arg2); }
@@ -5906,6 +6841,11 @@ void test__realpath__arg1__notuninit() {
   realpath(x, arg2);
 }
 
+void test__realpath__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  realpath(arg1, !x);
+}
+
 void test__fileno__noreturn() {
   int x = 1;
   if (cond) { x=100; result = fileno(arg1); }
@@ -5922,6 +6862,11 @@ void test__fileno__leakignore() {
   char *p = malloc(10); *p=0;
   result = fileno(p);
   // cppcheck-suppress memleak
+}
+
+void test__fileno__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = fileno(!x);
 }
 
 void test__fileno__arg1__notnull() {
@@ -5965,6 +6910,11 @@ void test__fseeko__arg2__notuninit() {
   fseeko(arg1, x, arg3);
 }
 
+void test__fseeko__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  fseeko(arg1, arg2, !x);
+}
+
 void test__fseeko__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -5987,6 +6937,11 @@ void test__ftello__leakignore() {
   char *p = malloc(10); *p=0;
   result = ftello(p);
   // cppcheck-suppress memleak
+}
+
+void test__ftello__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = ftello(!x);
 }
 
 void test__ftello__arg1__notnull() {
@@ -6024,6 +6979,11 @@ void test__execv__arg1__notuninit() {
   execv(x, arg2);
 }
 
+void test__execv__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  execv(arg1, !x);
+}
+
 void test__execv__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6054,6 +7014,11 @@ void test__execvp__arg1__notuninit() {
   execvp(x, arg2);
 }
 
+void test__execvp__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  execvp(arg1, !x);
+}
+
 void test__execvp__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6073,6 +7038,11 @@ void test__wait__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__wait__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  wait(!x);
+}
+
 void test__waitpid__noreturn() {
   int x = 1;
   if (cond) { x=100; waitpid(arg1, arg2, arg3); }
@@ -6090,6 +7060,11 @@ void test__waitpid__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   waitpid(x, arg2, arg3);
+}
+
+void test__waitpid__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  waitpid(arg1, arg2, !x);
 }
 
 void test__waitpid__arg3__notuninit() {
@@ -6127,6 +7102,11 @@ void test__strnlen__arg1__notuninit() {
   result = strnlen(x, arg2);
 }
 
+void test__strnlen__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = strnlen(arg1, !x);
+}
+
 void test__strnlen__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6162,6 +7142,11 @@ void test__wcsnlen__arg1__notuninit() {
   result = wcsnlen(x, arg2);
 }
 
+void test__wcsnlen__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = wcsnlen(arg1, !x);
+}
+
 void test__wcsnlen__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6184,6 +7169,11 @@ void test__ffs__leakignore() {
   char *p = malloc(10); *p=0;
   result = ffs(p);
   // cppcheck-suppress memleak
+}
+
+void test__ffs__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = ffs(!x);
 }
 
 void test__ffs__arg1__notuninit() {
@@ -6209,6 +7199,11 @@ void test__shmctl__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   shmctl(x, arg2);
+}
+
+void test__shmctl__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  shmctl(arg1, !x);
 }
 
 void test__shmctl__arg2__notuninit() {
@@ -6242,6 +7237,11 @@ void test__shmget__arg2__notuninit() {
   shmget(arg1, x, arg3);
 }
 
+void test__shmget__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  shmget(arg1, arg2, !x);
+}
+
 void test__shmget__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6267,6 +7267,11 @@ void test__shmat__arg1__notuninit() {
   shmat(x, arg2, arg3);
 }
 
+void test__shmat__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  shmat(arg1, arg2, !x);
+}
+
 void test__shmat__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6286,6 +7291,11 @@ void test__shmdt__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__shmdt__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  shmdt(!x);
+}
+
 void test__getrlimit__noreturn() {
   int x = 1;
   if (cond) { x=100; getrlimit(arg1, arg2); }
@@ -6303,6 +7313,11 @@ void test__getrlimit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   getrlimit(x, arg2);
+}
+
+void test__getrlimit__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getrlimit(arg1, !x);
 }
 
 void test__getrlimit__arg2__notnull() {
@@ -6327,6 +7342,11 @@ void test__setrlimit__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   setrlimit(x, arg2);
+}
+
+void test__setrlimit__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  setrlimit(arg1, !x);
 }
 
 void test__setrlimit__arg2__notnull() {
@@ -6368,6 +7388,11 @@ void test__glob__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   glob(arg1, arg2, x, arg4);
+}
+
+void test__glob__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  glob(arg1, arg2, arg3, !x);
 }
 
 void test__glob__arg4__notnull() {
@@ -6508,6 +7533,11 @@ void test__memccpy__arg3__notuninit() {
   memccpy(arg1, arg2, x, arg4);
 }
 
+void test__memccpy__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  memccpy(arg1, arg2, arg3, !x);
+}
+
 void test__memccpy__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6544,6 +7574,11 @@ void test__getopt__arg2__notuninit() {
   getopt(arg1, x, arg3);
 }
 
+void test__getopt__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getopt(arg1, arg2, !x);
+}
+
 void test__getopt__arg3__notnull() {
   // cppcheck-suppress nullPointer
   getopt(arg1, arg2, NULL);
@@ -6572,6 +7607,11 @@ void test__getitimer__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   getitimer(x, arg2);
+}
+
+void test__getitimer__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getitimer(arg1, !x);
 }
 
 void test__getitimer__arg2__notnull() {
@@ -6610,6 +7650,11 @@ void test__setitimer__arg2__notuninit() {
   setitimer(arg1, x, arg3);
 }
 
+void test__setitimer__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  setitimer(arg1, arg2, !x);
+}
+
 void test__setitimer__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6635,6 +7680,11 @@ void test__sigaction__arg1__notuninit() {
   sigaction(x, arg2, arg3);
 }
 
+void test__sigaction__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigaction(arg1, arg2, !x);
+}
+
 void test__sigaltstack__noreturn() {
   int x = 1;
   if (cond) { x=100; sigaltstack(arg1, arg2); }
@@ -6652,6 +7702,11 @@ void test__sigaltstack__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   sigaltstack(x, arg2);
+}
+
+void test__sigaltstack__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigaltstack(arg1, !x);
 }
 
 void test__siglongjmp__noreturn() {
@@ -6699,6 +7754,11 @@ void test__sigsetjmp__noreturn() {
   x = 1 << x;
 }
 
+void test__sigsetjmp__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigsetjmp(arg1, !x);
+}
+
 void test__sigsetjmp__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6710,6 +7770,11 @@ void test___setjmp__noreturn() {
   if (cond) { x=100; _setjmp(arg1, arg2); }
   // cppcheck-suppress shiftTooManyBits
   x = 1 << x;
+}
+
+void test___setjmp__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  _setjmp(arg1, !x);
 }
 
 void test___setjmp__arg2__notuninit() {
@@ -6729,6 +7794,11 @@ void test__sigsuspend__leakignore() {
   char *p = malloc(10); *p=0;
   sigsuspend(p);
   // cppcheck-suppress memleak
+}
+
+void test__sigsuspend__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigsuspend(!x);
 }
 
 void test__sigsuspend__arg1__notnull() {
@@ -6753,6 +7823,11 @@ void test__pthread_sigmask__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   pthread_sigmask(arg1, x, arg3);
+}
+
+void test__pthread_sigmask__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  pthread_sigmask(arg1, arg2, !x);
 }
 
 void test__pthread_sigmask__arg3__notuninit() {
@@ -6780,6 +7855,11 @@ void test__sigprocmask__arg2__notuninit() {
   sigprocmask(arg1, x, arg3);
 }
 
+void test__sigprocmask__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigprocmask(arg1, arg2, !x);
+}
+
 void test__sigprocmask__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6805,6 +7885,11 @@ void test__getrusage__arg1__notuninit() {
   getrusage(x, arg2);
 }
 
+void test__getrusage__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  getrusage(arg1, !x);
+}
+
 void test__getrusage__arg2__notnull() {
   // cppcheck-suppress nullPointer
   getrusage(arg1, NULL);
@@ -6823,6 +7908,11 @@ void test__sigemptyset__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__sigemptyset__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigemptyset(!x);
+}
+
 void test__sigemptyset__arg1__notnull() {
   // cppcheck-suppress nullPointer
   sigemptyset(NULL);
@@ -6839,6 +7929,11 @@ void test__sigfillset__leakignore() {
   char *p = malloc(10); *p=0;
   sigfillset(p);
   // cppcheck-suppress memleak
+}
+
+void test__sigfillset__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigfillset(!x);
 }
 
 void test__sigfillset__arg1__notnull() {
@@ -6862,6 +7957,11 @@ void test__sigaddset__leakignore() {
 void test__sigaddset__arg1__notnull() {
   // cppcheck-suppress nullPointer
   sigaddset(NULL, arg2);
+}
+
+void test__sigaddset__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigaddset(arg1, !x);
 }
 
 void test__sigaddset__arg2__notuninit() {
@@ -6888,6 +7988,11 @@ void test__sigdelset__arg1__notnull() {
   sigdelset(NULL, arg2);
 }
 
+void test__sigdelset__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigdelset(arg1, !x);
+}
+
 void test__sigdelset__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6912,6 +8017,11 @@ void test__sigismember__arg1__notnull() {
   sigismember(NULL, arg2);
 }
 
+void test__sigismember__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  sigismember(arg1, !x);
+}
+
 void test__sigismember__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6931,6 +8041,11 @@ void test__posix_spawn__leakignore() {
   // cppcheck-suppress memleak
 }
 
+void test__posix_spawn__arg6__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  posix_spawn(arg1, arg2, arg3, arg4, arg5, !x);
+}
+
 void test__posix_spawnp__noreturn() {
   int x = 1;
   if (cond) { x=100; posix_spawnp(arg1, arg2, arg3, arg4, arg5, arg6); }
@@ -6942,6 +8057,11 @@ void test__posix_spawnp__leakignore() {
   char *p = malloc(10); *p=0;
   posix_spawnp(p, arg2, arg3, arg4, arg5, arg6);
   // cppcheck-suppress memleak
+}
+
+void test__posix_spawnp__arg6__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  posix_spawnp(arg1, arg2, arg3, arg4, arg5, !x);
 }
 
 void test__msgctl__noreturn() {
@@ -6969,6 +8089,11 @@ void test__msgctl__arg2__notuninit() {
   msgctl(arg1, x, arg3);
 }
 
+void test__msgctl__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  msgctl(arg1, arg2, !x);
+}
+
 void test__msgctl__arg3__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -6991,6 +8116,11 @@ void test__msgget__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   result = msgget(x, arg2);
+}
+
+void test__msgget__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  result = msgget(arg1, !x);
 }
 
 void test__msgget__arg2__notuninit() {
@@ -7035,6 +8165,11 @@ void test__msgrcv__arg4__notuninit() {
   msgrcv(arg1, arg2, arg3, x, arg5);
 }
 
+void test__msgrcv__arg5__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  msgrcv(arg1, arg2, arg3, arg4, !x);
+}
+
 void test__msgrcv__arg5__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7071,6 +8206,11 @@ void test__msgsnd__arg3__notuninit() {
   msgsnd(arg1, arg2, x, arg4);
 }
 
+void test__msgsnd__arg4__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  msgsnd(arg1, arg2, arg3, !x);
+}
+
 void test__msgsnd__arg4__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7094,6 +8234,11 @@ void test__tcflow__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   tcflow(x, arg2);
+}
+
+void test__tcflow__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tcflow(arg1, !x);
 }
 
 void test__tcflow__arg2__notuninit() {
@@ -7121,6 +8266,11 @@ void test__tcflush__arg1__notuninit() {
   tcflush(x, arg2);
 }
 
+void test__tcflush__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tcflush(arg1, !x);
+}
+
 void test__tcflush__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7146,6 +8296,11 @@ void test__tcsendbreak__arg1__notuninit() {
   tcsendbreak(x, arg2);
 }
 
+void test__tcsendbreak__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tcsendbreak(arg1, !x);
+}
+
 void test__tcsendbreak__arg2__notnull() {
   // cppcheck-suppress nullPointer
   tcsendbreak(arg1, NULL);
@@ -7168,6 +8323,11 @@ void test__tcgetattr__arg1__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   tcgetattr(x, arg2);
+}
+
+void test__tcgetattr__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tcgetattr(arg1, !x);
 }
 
 void test__tcgetattr__arg2__notnull() {
@@ -7198,6 +8358,11 @@ void test__tcsetattr__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
   tcsetattr(arg1, x, arg3);
+}
+
+void test__tcsetattr__arg3__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tcsetattr(arg1, arg2, !x);
 }
 
 void test__tcsetattr__arg3__notnull() {
@@ -7235,6 +8400,11 @@ void test__cfsetospeed__arg1__notuninit() {
   cfsetospeed(x, arg2);
 }
 
+void test__cfsetospeed__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  cfsetospeed(arg1, !x);
+}
+
 void test__cfsetospeed__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7265,6 +8435,11 @@ void test__cfsetispeed__arg1__notuninit() {
   cfsetispeed(x, arg2);
 }
 
+void test__cfsetispeed__arg2__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  cfsetispeed(arg1, !x);
+}
+
 void test__cfsetispeed__arg2__notuninit() {
   int x;
   // cppcheck-suppress uninitvar
@@ -7282,6 +8457,11 @@ void test__tcdrain__leakignore() {
   char *p = malloc(10); *p=0;
   tcdrain(p);
   // cppcheck-suppress memleak
+}
+
+void test__tcdrain__arg1__notbool() {
+  // cppcheck-suppress invalidFunctionArgBool
+  tcdrain(!x);
 }
 
 void test__tcdrain__arg1__notuninit() {
@@ -7314,19 +8494,8 @@ void test__swab__arg2__notnull() {
   swab(arg1, NULL, arg3);
 }
 
-void test__swab__arg2__notuninit() {
-  int x[10];
-  // cppcheck-suppress uninitvar
-  swab(arg1, x, arg3);
-}
-
-void test__swab__arg3__notnull() {
-  // cppcheck-suppress nullPointer
-  swab(arg1, arg2, NULL);
-}
-
 void test__swab__arg3__notuninit() {
-  int x[10];
+  int x;
   // cppcheck-suppress uninitvar
   swab(arg1, arg2, x);
 }
@@ -7338,3 +8507,1459 @@ void test__sync__noreturn() {
   x = 1 << x;
 }
 
+
+int main() {
+    test__a64l__noreturn();
+    test__a64l__useretval();
+    test__a64l__leakignore();
+    test__a64l__arg1__notbool();
+    test__a64l__arg1__notnull();
+    test__a64l__arg1__notuninit();
+    test__l64a__noreturn();
+    test__l64a__useretval();
+    test__l64a__leakignore();
+    test__l64a__arg1__notbool();
+    test__l64a__arg1__notuninit();
+    test__accept__noreturn();
+    test__accept__leakignore();
+    test__accept__arg1__notuninit();
+    test__accept__arg2__notuninit();
+    test__accept__arg3__notbool();
+    test__accept__arg3__notuninit();
+    test__access__noreturn();
+    test__access__useretval();
+    test__access__leakignore();
+    test__access__arg1__notnull();
+    test__access__arg1__notuninit();
+    test__access__arg2__notbool();
+    test__access__arg2__notuninit();
+    test__adjtime__noreturn();
+    test__adjtime__leakignore();
+    test__adjtime__arg1__notuninit();
+    test__adjtime__arg2__notbool();
+    test__gettimeofday__noreturn();
+    test__gettimeofday__leakignore();
+    test__gettimeofday__arg2__notbool();
+    test__settimeofday__noreturn();
+    test__settimeofday__leakignore();
+    test__settimeofday__arg1__notuninit();
+    test__settimeofday__arg2__notbool();
+    test__settimeofday__arg2__notuninit();
+    test__FD_CLR__noreturn();
+    test__FD_CLR__leakignore();
+    test__FD_CLR__arg1__notuninit();
+    test__FD_CLR__arg2__notnull();
+    test__FD_ISSET__noreturn();
+    test__FD_ISSET__leakignore();
+    test__FD_ISSET__arg1__notuninit();
+    test__FD_ISSET__arg2__notbool();
+    test__FD_ISSET__arg2__notnull();
+    test__FD_SET__noreturn();
+    test__FD_SET__leakignore();
+    test__FD_SET__arg1__notuninit();
+    test__FD_SET__arg2__notnull();
+    test__FD_ZERO__noreturn();
+    test__FD_ZERO__leakignore();
+    test__FD_ZERO__arg1__notnull();
+    test__fdatasync__noreturn();
+    test__fdatasync__leakignore();
+    test__fdatasync__arg1__notbool();
+    test__fdatasync__arg1__notuninit();
+    test__fnmatch__noreturn();
+    test__fnmatch__useretval();
+    test__fnmatch__pure();
+    test__fnmatch__leakignore();
+    test__fnmatch__arg1__notnull();
+    test__fnmatch__arg1__notuninit();
+    test__fnmatch__arg2__notnull();
+    test__fnmatch__arg2__notuninit();
+    test__fnmatch__arg3__notbool();
+    test__fnmatch__arg3__notuninit();
+    test__fsync__noreturn();
+    test__fsync__leakignore();
+    test__fsync__arg1__notbool();
+    test__fsync__arg1__notuninit();
+    test__truncate__noreturn();
+    test__truncate__leakignore();
+    test__truncate__arg1__notnull();
+    test__truncate__arg1__notuninit();
+    test__truncate__arg2__notbool();
+    test__truncate__arg2__notuninit();
+    test__ftruncate__noreturn();
+    test__ftruncate__leakignore();
+    test__ftruncate__arg1__notuninit();
+    test__ftruncate__arg2__notbool();
+    test__ftruncate__arg2__notuninit();
+    test__flock__noreturn();
+    test__flock__leakignore();
+    test__flock__arg1__notuninit();
+    test__flock__arg2__notbool();
+    test__flock__arg2__notuninit();
+    test__symlink__noreturn();
+    test__symlink__leakignore();
+    test__symlink__arg1__notnull();
+    test__symlink__arg1__notuninit();
+    test__symlink__arg2__notbool();
+    test__symlink__arg2__notnull();
+    test__symlink__arg2__notuninit();
+    test__open__noreturn();
+    test__open__arg1__notnull();
+    test__open__arg1__notuninit();
+    test__open__arg2__notbool();
+    test__open__arg2__notuninit();
+    test__open__arg3__notbool();
+    test__open__arg3__notuninit();
+    test__creat__noreturn();
+    test__creat__useretval();
+    test__creat__arg1__notnull();
+    test__creat__arg1__notuninit();
+    test__creat__arg2__notbool();
+    test__creat__arg2__notuninit();
+    test__sleep__noreturn();
+    test__sleep__leakignore();
+    test__sleep__arg1__notbool();
+    test__sleep__arg1__notuninit();
+    test__usleep__noreturn();
+    test__usleep__leakignore();
+    test__usleep__arg1__notbool();
+    test___exit__noreturn();
+    test___exit__arg1__notuninit();
+    test__faccessat__noreturn();
+    test__faccessat__leakignore();
+    test__faccessat__arg1__notuninit();
+    test__faccessat__arg2__notnull();
+    test__faccessat__arg2__notuninit();
+    test__faccessat__arg3__notuninit();
+    test__faccessat__arg4__notbool();
+    test__faccessat__arg4__notuninit();
+    test__acct__noreturn();
+    test__acct__leakignore();
+    test__acct__arg1__notbool();
+    test__acct__arg1__notuninit();
+    test__alarm__noreturn();
+    test__alarm__leakignore();
+    test__alarm__arg1__notbool();
+    test__alarm__arg1__notuninit();
+    test__getrpcent__noreturn();
+    test__getrpcent__useretval();
+    test__getrpcent__leakignore();
+    test__getrpcbyname__noreturn();
+    test__getrpcbyname__useretval();
+    test__getrpcbyname__leakignore();
+    test__getrpcbyname__arg1__notbool();
+    test__getrpcbyname__arg1__notnull();
+    test__getrpcbyname__arg1__notuninit();
+    test__getrpcbynumber__noreturn();
+    test__getrpcbynumber__useretval();
+    test__getrpcbynumber__leakignore();
+    test__getrpcbynumber__arg1__notbool();
+    test__getrpcbynumber__arg1__notuninit();
+    test__getprotoent__noreturn();
+    test__getprotoent__useretval();
+    test__getprotoent__leakignore();
+    test__getprotobyname__noreturn();
+    test__getprotobyname__useretval();
+    test__getprotobyname__leakignore();
+    test__getprotobyname__arg1__notbool();
+    test__getprotobyname__arg1__notnull();
+    test__getprotobyname__arg1__notuninit();
+    test__getprotobynumber__noreturn();
+    test__getprotobynumber__useretval();
+    test__getprotobynumber__leakignore();
+    test__getprotobynumber__arg1__notbool();
+    test__getprotobynumber__arg1__notuninit();
+    test__getservent__noreturn();
+    test__getservent__useretval();
+    test__getservent__leakignore();
+    test__getservbyname__noreturn();
+    test__getservbyname__useretval();
+    test__getservbyname__leakignore();
+    test__getservbyname__arg1__notnull();
+    test__getservbyname__arg1__notuninit();
+    test__getservbyname__arg2__notbool();
+    test__getservbyname__arg2__notuninit();
+    test__getservbyport__noreturn();
+    test__getservbyport__useretval();
+    test__getservbyport__leakignore();
+    test__getservbyport__arg1__notuninit();
+    test__getservbyport__arg2__notbool();
+    test__getservbyport__arg2__notuninit();
+    test__getnetent__noreturn();
+    test__getnetent__useretval();
+    test__getnetent__leakignore();
+    test__getnetbyname__noreturn();
+    test__getnetbyname__useretval();
+    test__getnetbyname__leakignore();
+    test__getnetbyname__arg1__notbool();
+    test__getnetbyname__arg1__notnull();
+    test__getnetbyname__arg1__notuninit();
+    test__getnetbyaddr__noreturn();
+    test__getnetbyaddr__useretval();
+    test__getnetbyaddr__leakignore();
+    test__getnetbyaddr__arg1__notuninit();
+    test__getnetbyaddr__arg2__notbool();
+    test__getnetbyaddr__arg2__notuninit();
+    test__gethostent__noreturn();
+    test__gethostent__useretval();
+    test__gethostent__leakignore();
+    test__gethostbyname__noreturn();
+    test__gethostbyname__useretval();
+    test__gethostbyname__leakignore();
+    test__gethostbyname__arg1__notbool();
+    test__gethostbyname__arg1__notnull();
+    test__gethostbyname__arg1__notuninit();
+    test__gethostbyname2__noreturn();
+    test__gethostbyname2__useretval();
+    test__gethostbyname2__leakignore();
+    test__gethostbyname2__arg1__notnull();
+    test__gethostbyname2__arg1__notuninit();
+    test__gethostbyname2__arg2__notbool();
+    test__gethostbyname2__arg2__notuninit();
+    test__gethostbyaddr__noreturn();
+    test__gethostbyaddr__useretval();
+    test__gethostbyaddr__leakignore();
+    test__gethostbyaddr__arg1__notnull();
+    test__gethostbyaddr__arg1__notuninit();
+    test__gethostbyaddr__arg2__notuninit();
+    test__gethostbyaddr__arg3__notbool();
+    test__gethostbyaddr__arg3__notuninit();
+    test__brk__noreturn();
+    test__brk__leakignore();
+    test__brk__arg1__notbool();
+    test__brk__arg1__notnull();
+    test__sbrk__noreturn();
+    test__sbrk__leakignore();
+    test__sbrk__arg1__notuninit();
+    test__closedir__noreturn();
+    test__closedir__arg1__notbool();
+    test__closedir__arg1__notnull();
+    test__closedir__arg1__notuninit();
+    test__strfry__noreturn();
+    test__strfry__arg1__notbool();
+    test__strfry__arg1__notnull();
+    test__strsep__noreturn();
+    test__strsep__leakignore();
+    test__strsep__arg1__notnull();
+    test__strsep__arg1__notuninit();
+    test__strsep__arg2__notbool();
+    test__strsep__arg2__notnull();
+    test__strsep__arg2__notuninit();
+    test__strdup__noreturn();
+    test__strdup__arg1__notbool();
+    test__strdup__arg1__notnull();
+    test__strdup__arg1__notuninit();
+    test__strndup__noreturn();
+    test__strndup__arg1__notnull();
+    test__strndup__arg1__notuninit();
+    test__strndup__arg2__notbool();
+    test__strndup__arg2__notuninit();
+    test__wcsdup__noreturn();
+    test__wcsdup__arg1__notbool();
+    test__wcsdup__arg1__notnull();
+    test__wcsdup__arg1__notuninit();
+    test__mkstemp__noreturn();
+    test__mkstemp__leakignore();
+    test__mkstemp__arg1__notbool();
+    test__mkstemp__arg1__notnull();
+    test__mkstemp__arg1__notuninit();
+    test__mkdtemp__noreturn();
+    test__mkdtemp__leakignore();
+    test__mkdtemp__arg1__notbool();
+    test__mkdtemp__arg1__notnull();
+    test__mkdtemp__arg1__notuninit();
+    test__mktemp__noreturn();
+    test__mktemp__useretval();
+    test__mktemp__leakignore();
+    test__mktemp__arg1__notbool();
+    test__mktemp__arg1__notnull();
+    test__mktemp__arg1__notuninit();
+    test__getcwd__noreturn();
+    test__getcwd__leakignore();
+    test__getcwd__arg1__notuninit();
+    test__getcwd__arg2__notbool();
+    test__getcwd__arg2__notuninit();
+    test__mkdir__noreturn();
+    test__mkdir__leakignore();
+    test__mkdir__arg1__notnull();
+    test__mkdir__arg1__notuninit();
+    test__mkdir__arg2__notbool();
+    test__mkdir__arg2__notuninit();
+    test__rmdir__noreturn();
+    test__rmdir__leakignore();
+    test__rmdir__arg1__notbool();
+    test__rmdir__arg1__notnull();
+    test__rmdir__arg1__notuninit();
+    test__chdir__noreturn();
+    test__chdir__leakignore();
+    test__chdir__arg1__notbool();
+    test__chdir__arg1__notnull();
+    test__chdir__arg1__notuninit();
+    test__chroot__noreturn();
+    test__chroot__leakignore();
+    test__chroot__arg1__notbool();
+    test__chroot__arg1__notnull();
+    test__chroot__arg1__notuninit();
+    test__link__noreturn();
+    test__link__leakignore();
+    test__link__arg1__notnull();
+    test__link__arg1__notuninit();
+    test__link__arg2__notbool();
+    test__link__arg2__notnull();
+    test__link__arg2__notuninit();
+    test__unlink__noreturn();
+    test__unlink__leakignore();
+    test__unlink__arg1__notbool();
+    test__unlink__arg1__notnull();
+    test__unlink__arg1__notuninit();
+    test__stat__noreturn();
+    test__stat__leakignore();
+    test__stat__arg1__notnull();
+    test__stat__arg1__notuninit();
+    test__stat__arg2__notbool();
+    test__stat__arg2__notnull();
+    test__lstat__noreturn();
+    test__lstat__leakignore();
+    test__lstat__arg1__notnull();
+    test__lstat__arg1__notuninit();
+    test__lstat__arg2__notbool();
+    test__lstat__arg2__notnull();
+    test__fstat__noreturn();
+    test__fstat__leakignore();
+    test__fstat__arg1__notuninit();
+    test__fstat__arg2__notbool();
+    test__fstat__arg2__notnull();
+    test__chmod__noreturn();
+    test__chmod__leakignore();
+    test__chmod__arg1__notnull();
+    test__chmod__arg1__notuninit();
+    test__chmod__arg2__notbool();
+    test__chmod__arg2__notuninit();
+    test__fchmod__noreturn();
+    test__fchmod__leakignore();
+    test__fchmod__arg1__notuninit();
+    test__fchmod__arg2__notbool();
+    test__fchmod__arg2__notuninit();
+    test__chown__noreturn();
+    test__chown__leakignore();
+    test__chown__arg1__notnull();
+    test__chown__arg1__notuninit();
+    test__chown__arg2__notuninit();
+    test__chown__arg3__notbool();
+    test__chown__arg3__notuninit();
+    test__lchown__noreturn();
+    test__lchown__leakignore();
+    test__lchown__arg1__notnull();
+    test__lchown__arg1__notuninit();
+    test__lchown__arg2__notuninit();
+    test__lchown__arg3__notbool();
+    test__lchown__arg3__notuninit();
+    test__fchown__noreturn();
+    test__fchown__leakignore();
+    test__fchown__arg1__notuninit();
+    test__fchown__arg2__notuninit();
+    test__fchown__arg3__notbool();
+    test__fchown__arg3__notuninit();
+    test__times__noreturn();
+    test__times__leakignore();
+    test__times__arg1__notbool();
+    test__times__arg1__notuninit();
+    test__utime__noreturn();
+    test__utime__leakignore();
+    test__utime__arg1__notnull();
+    test__utime__arg1__notuninit();
+    test__utime__arg2__notbool();
+    test__utime__arg2__notuninit();
+    test__utimes__noreturn();
+    test__utimes__leakignore();
+    test__utimes__arg1__notnull();
+    test__utimes__arg1__notuninit();
+    test__utimes__arg2__notbool();
+    test__utimes__arg2__notuninit();
+    test__opendir__noreturn();
+    test__opendir__useretval();
+    test__opendir__arg1__notbool();
+    test__opendir__arg1__notnull();
+    test__opendir__arg1__notuninit();
+    test__fdopendir__noreturn();
+    test__fdopendir__useretval();
+    test__fdopendir__arg1__notbool();
+    test__fdopendir__arg1__notuninit();
+    test__isatty__noreturn();
+    test__isatty__useretval();
+    test__isatty__leakignore();
+    test__isatty__arg1__notbool();
+    test__isatty__arg1__notuninit();
+    test__popen__noreturn();
+    test__popen__useretval();
+    test__popen__arg1__notnull();
+    test__popen__arg1__notuninit();
+    test__popen__arg2__notbool();
+    test__popen__arg2__notnull();
+    test__popen__arg2__notuninit();
+    test__pclose__noreturn();
+    test__pclose__arg1__notbool();
+    test__pclose__arg1__notnull();
+    test__pclose__arg1__notuninit();
+    test__socket__noreturn();
+    test__socket__arg1__notuninit();
+    test__socket__arg2__notuninit();
+    test__socket__arg3__notbool();
+    test__socket__arg3__notuninit();
+    test__nice__noreturn();
+    test__nice__leakignore();
+    test__nice__arg1__notbool();
+    test__nice__arg1__notuninit();
+    test__pause__noreturn();
+    test__pause__leakignore();
+    test__close__noreturn();
+    test__close__arg1__notbool();
+    test__close__arg1__notuninit();
+    test__confstr__noreturn();
+    test__confstr__leakignore();
+    test__confstr__arg1__notuninit();
+    test__confstr__arg2__notuninit();
+    test__confstr__arg3__notbool();
+    test__confstr__arg3__notuninit();
+    test__fpathconf__noreturn();
+    test__fpathconf__leakignore();
+    test__fpathconf__arg1__notuninit();
+    test__fpathconf__arg2__notbool();
+    test__fpathconf__arg2__notuninit();
+    test__pathconf__noreturn();
+    test__pathconf__leakignore();
+    test__pathconf__arg1__notnull();
+    test__pathconf__arg1__notuninit();
+    test__pathconf__arg2__notbool();
+    test__pathconf__arg2__notuninit();
+    test__sysconf__noreturn();
+    test__sysconf__leakignore();
+    test__sysconf__arg1__notbool();
+    test__sysconf__arg1__notuninit();
+    test__fdopen__noreturn();
+    test__fdopen__useretval();
+    test__fdopen__arg1__notuninit();
+    test__fdopen__arg2__notbool();
+    test__fdopen__arg2__notnull();
+    test__fdopen__arg2__notuninit();
+    test__random__noreturn();
+    test__random__useretval();
+    test__srandom__noreturn();
+    test__rewinddir__noreturn();
+    test__rewinddir__leakignore();
+    test__rewinddir__arg1__notnull();
+    test__rewinddir__arg1__notuninit();
+    test__seekdir__noreturn();
+    test__seekdir__leakignore();
+    test__seekdir__arg1__notnull();
+    test__seekdir__arg1__notuninit();
+    test__seekdir__arg2__notuninit();
+    test__rand_r__noreturn();
+    test__rand_r__leakignore();
+    test__rand_r__arg1__notbool();
+    test__rand_r__arg1__notnull();
+    test__strcasecmp__noreturn();
+    test__strcasecmp__pure();
+    test__strcasecmp__leakignore();
+    test__strcasecmp__arg1__notnull();
+    test__strcasecmp__arg1__notuninit();
+    test__strcasecmp__arg2__notbool();
+    test__strcasecmp__arg2__notnull();
+    test__strcasecmp__arg2__notuninit();
+    test__strncasecmp__noreturn();
+    test__strncasecmp__pure();
+    test__strncasecmp__leakignore();
+    test__strncasecmp__arg1__notnull();
+    test__strncasecmp__arg1__notuninit();
+    test__strncasecmp__arg2__notnull();
+    test__strncasecmp__arg2__notuninit();
+    test__strncasecmp__arg3__notbool();
+    test__read__leakignore();
+    test__read__arg1__notuninit();
+    test__read__arg3__notbool();
+    test__read__arg3__notuninit();
+    test__write__noreturn();
+    test__write__leakignore();
+    test__write__arg1__notuninit();
+    test__write__arg2__notuninit();
+    test__write__arg3__notbool();
+    test__write__arg3__notuninit();
+    test__recv__arg1__notuninit();
+    test__recv__arg3__notuninit();
+    test__recv__arg4__notbool();
+    test__recv__arg4__notuninit();
+    test__recvfrom__arg1__notuninit();
+    test__recvfrom__arg3__notuninit();
+    test__recvfrom__arg4__notuninit();
+    test__recvfrom__arg6__notbool();
+    test__recvmsg__arg1__notuninit();
+    test__recvmsg__arg3__notbool();
+    test__recvmsg__arg3__notuninit();
+    test__send__arg1__notuninit();
+    test__send__arg3__notuninit();
+    test__send__arg4__notbool();
+    test__send__arg4__notuninit();
+    test__sendto__arg1__notuninit();
+    test__sendto__arg3__notuninit();
+    test__sendto__arg4__notuninit();
+    test__sendto__arg6__notbool();
+    test__sendmsg__arg1__notuninit();
+    test__sendmsg__arg2__notuninit();
+    test__sendmsg__arg3__notbool();
+    test__sendmsg__arg3__notuninit();
+    test__mmap__noreturn();
+    test__mmap__useretval();
+    test__mmap__leakignore();
+    test__mmap__arg1__notuninit();
+    test__mmap__arg2__notuninit();
+    test__mmap__arg3__notuninit();
+    test__mmap__arg4__notuninit();
+    test__mmap__arg5__notuninit();
+    test__mmap__arg6__notbool();
+    test__mmap__arg6__notuninit();
+    test__mmap64__noreturn();
+    test__mmap64__useretval();
+    test__mmap64__leakignore();
+    test__mmap64__arg1__notuninit();
+    test__mmap64__arg2__notuninit();
+    test__mmap64__arg3__notuninit();
+    test__mmap64__arg4__notuninit();
+    test__mmap64__arg5__notuninit();
+    test__mmap64__arg6__notbool();
+    test__mmap64__arg6__notuninit();
+    test__munmap__noreturn();
+    test__munmap__arg1__notnull();
+    test__munmap__arg1__notuninit();
+    test__munmap__arg2__notbool();
+    test__munmap__arg2__notuninit();
+    test__openlog__noreturn();
+    test__openlog__leakignore();
+    test__openlog__arg1__notuninit();
+    test__openlog__arg2__notuninit();
+    test__openlog__arg3__notuninit();
+    test__fcntl__noreturn();
+    test__fcntl__leakignore();
+    test__fcntl__arg1__notuninit();
+    test__fcntl__arg2__notuninit();
+    test__ioctl__noreturn();
+    test__ioctl__leakignore();
+    test__ioctl__arg1__notuninit();
+    test__ioctl__arg2__notuninit();
+    test__syslog__noreturn();
+    test__syslog__leakignore();
+    test__syslog__arg1__notuninit();
+    test__vsyslog__noreturn();
+    test__vsyslog__leakignore();
+    test__vsyslog__arg1__notuninit();
+    test__getgid__noreturn();
+    test__getgid__useretval();
+    test__getegid__noreturn();
+    test__getegid__useretval();
+    test__getuid__noreturn();
+    test__getuid__useretval();
+    test__getuid__leakignore();
+    test__getsid__noreturn();
+    test__getsid__useretval();
+    test__getsid__leakignore();
+    test__getsid__arg1__notbool();
+    test__getsid__arg1__notuninit();
+    test__geteuid__noreturn();
+    test__geteuid__useretval();
+    test__geteuid__leakignore();
+    test__getppid__noreturn();
+    test__getppid__useretval();
+    test__getppid__leakignore();
+    test__getpid__noreturn();
+    test__getpid__useretval();
+    test__getpid__leakignore();
+    test__getpgrp__noreturn();
+    test__getpgrp__useretval();
+    test__getpgrp__leakignore();
+    test__getpgid__noreturn();
+    test__getpgid__useretval();
+    test__getpgid__leakignore();
+    test__getpgid__arg1__notbool();
+    test__getpgid__arg1__notuninit();
+    test__setuid__noreturn();
+    test__setuid__useretval();
+    test__setuid__leakignore();
+    test__setuid__arg1__notbool();
+    test__setuid__arg1__notuninit();
+    test__seteuid__noreturn();
+    test__seteuid__useretval();
+    test__seteuid__leakignore();
+    test__seteuid__arg1__notbool();
+    test__seteuid__arg1__notuninit();
+    test__setgid__noreturn();
+    test__setgid__useretval();
+    test__setgid__leakignore();
+    test__setgid__arg1__notbool();
+    test__setgid__arg1__notuninit();
+    test__setegid__noreturn();
+    test__setegid__useretval();
+    test__setegid__leakignore();
+    test__setegid__arg1__notbool();
+    test__setegid__arg1__notuninit();
+    test__setpgid__noreturn();
+    test__setpgid__arg1__notuninit();
+    test__setpgid__arg2__notbool();
+    test__setpgid__arg2__notuninit();
+    test__pipe__noreturn();
+    test__pipe__arg1__notbool();
+    test__setpgrp__noreturn();
+    test__setregid__noreturn();
+    test__setregid__arg1__notuninit();
+    test__setregid__arg2__notbool();
+    test__setregid__arg2__notuninit();
+    test__setreuid__noreturn();
+    test__setreuid__arg1__notuninit();
+    test__setreuid__arg2__notbool();
+    test__setreuid__arg2__notuninit();
+    test__setfsuid__noreturn();
+    test__setfsuid__leakignore();
+    test__setfsuid__arg1__notbool();
+    test__setfsuid__arg1__notuninit();
+    test__setfsgid__noreturn();
+    test__setfsgid__leakignore();
+    test__setfsgid__arg1__notbool();
+    test__setfsgid__arg1__notuninit();
+    test__setsid__noreturn();
+    test__getwd__noreturn();
+    test__getwd__leakignore();
+    test__getwd__arg1__notbool();
+    test__getwd__arg1__notnull();
+    test__htonl__noreturn();
+    test__htonl__arg1__notbool();
+    test__htonl__arg1__notuninit();
+    test__htons__noreturn();
+    test__htons__arg1__notbool();
+    test__htons__arg1__notuninit();
+    test__ntohl__noreturn();
+    test__ntohl__arg1__notbool();
+    test__ntohl__arg1__notuninit();
+    test__ntohs__noreturn();
+    test__ntohs__arg1__notbool();
+    test__ntohs__arg1__notuninit();
+    test__mq_close__noreturn();
+    test__mq_close__arg1__notbool();
+    test__mq_close__arg1__notuninit();
+    test__mq_getattr__noreturn();
+    test__mq_getattr__arg1__notuninit();
+    test__mq_getattr__arg2__notbool();
+    test__mq_notify__noreturn();
+    test__mq_notify__arg1__notnull();
+    test__mq_notify__arg1__notuninit();
+    test__mq_notify__arg2__notbool();
+    test__mq_open__noreturn();
+    test__mq_receive__noreturn();
+    test__mq_receive__arg1__notuninit();
+    test__mq_receive__arg4__notbool();
+    test__mq_send__noreturn();
+    test__mq_send__arg1__notuninit();
+    test__mq_send__arg4__notbool();
+    test__mq_setattr__noreturn();
+    test__mq_setattr__arg1__notuninit();
+    test__mq_setattr__arg3__notbool();
+    test__mq_timedreceive__noreturn();
+    test__mq_timedreceive__arg1__notuninit();
+    test__mq_timedreceive__arg5__notbool();
+    test__mq_timedsend__noreturn();
+    test__mq_timedsend__arg1__notuninit();
+    test__mq_timedsend__arg5__notbool();
+    test__mq_unlink__noreturn();
+    test__mq_unlink__arg1__notbool();
+    test__mq_unlink__arg1__notnull();
+    test__mq_unlink__arg1__notuninit();
+    test__dbm_clearerr__noreturn();
+    test__dbm_clearerr__arg1__notbool();
+    test__dbm_clearerr__arg1__notnull();
+    test__dbm_clearerr__arg1__notuninit();
+    test__dbm_close__noreturn();
+    test__dbm_close__arg1__notnull();
+    test__dbm_close__arg1__notuninit();
+    test__dbm_delete__noreturn();
+    test__dbm_delete__arg1__notnull();
+    test__dbm_delete__arg1__notuninit();
+    test__dbm_delete__arg2__notuninit();
+    test__dbm_error__noreturn();
+    test__dbm_error__useretval();
+    test__dbm_error__arg1__notbool();
+    test__dbm_error__arg1__notnull();
+    test__dbm_error__arg1__notuninit();
+    test__dbm_fetch__noreturn();
+    test__dbm_fetch__useretval();
+    test__dbm_fetch__arg1__notnull();
+    test__dbm_fetch__arg1__notuninit();
+    test__dbm_fetch__arg2__notuninit();
+    test__dbm_firstkey__noreturn();
+    test__dbm_firstkey__useretval();
+    test__dbm_firstkey__arg1__notbool();
+    test__dbm_firstkey__arg1__notnull();
+    test__dbm_firstkey__arg1__notuninit();
+    test__dbm_nextkey__noreturn();
+    test__dbm_nextkey__useretval();
+    test__dbm_nextkey__arg1__notbool();
+    test__dbm_nextkey__arg1__notnull();
+    test__dbm_nextkey__arg1__notuninit();
+    test__dbm_open__noreturn();
+    test__dbm_open__arg1__notnull();
+    test__dbm_open__arg1__notuninit();
+    test__dbm_open__arg2__notuninit();
+    test__dbm_open__arg3__notbool();
+    test__dbm_open__arg3__notuninit();
+    test__dbm_store__noreturn();
+    test__dbm_store__arg1__notnull();
+    test__dbm_store__arg1__notuninit();
+    test__dbm_store__arg2__notuninit();
+    test__dbm_store__arg3__notuninit();
+    test__dbm_store__arg4__notbool();
+    test__dbm_store__arg4__notuninit();
+    test__freeaddrinfo__noreturn();
+    test__freeaddrinfo__arg1__notnull();
+    test__freeaddrinfo__arg1__notuninit();
+    test__getaddrinfo__noreturn();
+    test__getaddrinfo__arg1__notuninit();
+    test__getaddrinfo__arg2__notuninit();
+    test__getaddrinfo__arg3__notuninit();
+    test__getaddrinfo__arg4__notbool();
+    test__getaddrinfo__arg4__notuninit();
+    test__endhostent__noreturn();
+    test__sethostent__noreturn();
+    test__sethostent__arg1__notuninit();
+    test__uname__noreturn();
+    test__uname__arg1__notbool();
+    test__uname__arg1__notnull();
+    test__endpwent__noreturn();
+    test__getpwent__noreturn();
+    test__getpwent__useretval();
+    test__getpwnam__noreturn();
+    test__getpwnam__useretval();
+    test__getpwnam__arg1__notbool();
+    test__getpwnam__arg1__notuninit();
+    test__strtok_r__noreturn();
+    test__strtok_r__pure();
+    test__strtok_r__leakignore();
+    test__strtok_r__arg1__notuninit();
+    test__strtok_r__arg2__notnull();
+    test__strtok_r__arg2__notuninit();
+    test__strtok_r__arg3__notbool();
+    test__strtok_r__arg3__notnull();
+    test__getpwnam_r__noreturn();
+    test__getpwnam_r__useretval();
+    test__getpwnam_r__arg1__notuninit();
+    test__getpwnam_r__arg4__notuninit();
+    test__getpwnam_r__arg5__notbool();
+    test__getpwuid__noreturn();
+    test__getpwuid__useretval();
+    test__getpwuid__arg1__notbool();
+    test__getpwuid__arg1__notuninit();
+    test__getpwuid_r__noreturn();
+    test__getpwuid_r__arg1__notuninit();
+    test__getpwuid_r__arg4__notuninit();
+    test__getpwuid_r__arg5__notbool();
+    test__setpwent__noreturn();
+    test__catclose__noreturn();
+    test__catclose__arg1__notbool();
+    test__catclose__arg1__notuninit();
+    test__catgets__noreturn();
+    test__catgets__useretval();
+    test__catgets__arg1__notuninit();
+    test__catgets__arg2__notuninit();
+    test__catgets__arg3__notuninit();
+    test__catgets__arg4__notbool();
+    test__catgets__arg4__notuninit();
+    test__catopen__noreturn();
+    test__catopen__arg1__notnull();
+    test__catopen__arg1__notuninit();
+    test__catopen__arg2__notbool();
+    test__catopen__arg2__notuninit();
+    test__poll__noreturn();
+    test__poll__arg1__notuninit();
+    test__poll__arg2__notuninit();
+    test__poll__arg3__notbool();
+    test__poll__arg3__notuninit();
+    test__regcomp__noreturn();
+    test__regcomp__arg1__notnull();
+    test__regcomp__arg2__notuninit();
+    test__regcomp__arg3__notbool();
+    test__regcomp__arg3__notuninit();
+    test__regerror__noreturn();
+    test__regerror__arg1__notuninit();
+    test__regerror__arg2__notuninit();
+    test__regerror__arg4__notbool();
+    test__regerror__arg4__notuninit();
+    test__regexec__noreturn();
+    test__regexec__arg1__notnull();
+    test__regexec__arg1__notuninit();
+    test__regexec__arg2__notnull();
+    test__regexec__arg2__notuninit();
+    test__regexec__arg3__notuninit();
+    test__regexec__arg4__notuninit();
+    test__regexec__arg5__notbool();
+    test__regexec__arg5__notuninit();
+    test__regfree__noreturn();
+    test__regfree__arg1__notnull();
+    test__regfree__arg1__notuninit();
+    test__sched_get_priority_max__noreturn();
+    test__sched_get_priority_max__arg1__notbool();
+    test__sched_get_priority_max__arg1__notuninit();
+    test__sched_get_priority_min__noreturn();
+    test__sched_get_priority_min__arg1__notbool();
+    test__sched_get_priority_min__arg1__notuninit();
+    test__sched_getparam__noreturn();
+    test__sched_getparam__arg1__notuninit();
+    test__sched_getparam__arg2__notbool();
+    test__sched_getparam__arg2__notnull();
+    test__sched_getscheduler__noreturn();
+    test__sched_getscheduler__arg1__notbool();
+    test__sched_getscheduler__arg1__notuninit();
+    test__sched_rr_get_interval__noreturn();
+    test__sched_rr_get_interval__arg1__notuninit();
+    test__sched_rr_get_interval__arg2__notbool();
+    test__sched_rr_get_interval__arg2__notnull();
+    test__sched_setparam__noreturn();
+    test__sched_setparam__arg1__notuninit();
+    test__sched_setparam__arg2__notbool();
+    test__sched_setparam__arg2__notuninit();
+    test__sched_setscheduler__noreturn();
+    test__sched_setscheduler__arg1__notuninit();
+    test__sched_setscheduler__arg2__notuninit();
+    test__sched_setscheduler__arg3__notbool();
+    test__sched_setscheduler__arg3__notuninit();
+    test__sched_yield__noreturn();
+    test__ecvt__noreturn();
+    test__ecvt__arg1__notuninit();
+    test__ecvt__arg2__notuninit();
+    test__ecvt__arg3__notnull();
+    test__ecvt__arg4__notbool();
+    test__ecvt__arg4__notnull();
+    test__fcvt__noreturn();
+    test__fcvt__arg1__notuninit();
+    test__fcvt__arg2__notuninit();
+    test__fcvt__arg3__notnull();
+    test__fcvt__arg4__notbool();
+    test__fcvt__arg4__notnull();
+    test__gcvt__noreturn();
+    test__gcvt__arg1__notuninit();
+    test__gcvt__arg2__notuninit();
+    test__gcvt__arg3__notbool();
+    test__gcvt__arg3__notnull();
+    test__lseek__noreturn();
+    test__lseek__leakignore();
+    test__lseek__arg1__notuninit();
+    test__lseek__arg2__notuninit();
+    test__lseek__arg3__notuninit();
+    test__nanosleep__noreturn();
+    test__nanosleep__leakignore();
+    test__nanosleep__arg1__notnull();
+    test__nanosleep__arg2__notbool();
+    test__setkey__noreturn();
+    test__setkey__leakignore();
+    test__setkey__arg1__notnull();
+    test__setkey__arg1__notuninit();
+    test__getpass__noreturn();
+    test__getpass__leakignore();
+    test__getpass__arg1__notbool();
+    test__getpass__arg1__notnull();
+    test__drand48__noreturn();
+    test__drand48__useretval();
+    test__putenv__noreturn();
+    test__putenv__arg1__notbool();
+    test__putenv__arg1__notnull();
+    test__putenv__arg1__notuninit();
+    test__setenv__noreturn();
+    test__setenv__arg1__notnull();
+    test__setenv__arg1__notuninit();
+    test__setenv__arg2__notnull();
+    test__setenv__arg2__notuninit();
+    test__setenv__arg3__notuninit();
+    test__unsetenv__noreturn();
+    test__unsetenv__arg1__notbool();
+    test__unsetenv__arg1__notnull();
+    test__unsetenv__arg1__notuninit();
+    test__localtime__noreturn();
+    test__localtime__leakignore();
+    test__localtime__arg1__notbool();
+    test__localtime__arg1__notnull();
+    test__localtime__arg1__notuninit();
+    test__std__localtime__noreturn();
+    test__std__localtime__arg1__notbool();
+    test__std__localtime__arg1__notnull();
+    test__std__localtime__arg1__notuninit();
+    test__localtime_r__noreturn();
+    test__localtime_r__leakignore();
+    test__localtime_r__arg1__notnull();
+    test__localtime_r__arg1__notuninit();
+    test__localtime_r__arg2__notbool();
+    test__localtime_r__arg2__notnull();
+    test__readdir__noreturn();
+    test__readdir__leakignore();
+    test__readdir__arg1__notbool();
+    test__readdir__arg1__notnull();
+    test__readdir__arg1__notuninit();
+    test__readdir_r__noreturn();
+    test__readdir_r__leakignore();
+    test__readdir_r__arg1__notnull();
+    test__readdir_r__arg1__notuninit();
+    test__readdir_r__arg2__notnull();
+    test__readdir_r__arg3__notbool();
+    test__readdir_r__arg3__notnull();
+    test__readlink__noreturn();
+    test__readlink__leakignore();
+    test__readlink__arg1__notnull();
+    test__readlink__arg1__notuninit();
+    test__readlink__arg2__notnull();
+    test__readlink__arg3__notbool();
+    test__readlink__arg3__notuninit();
+    test__readlinkat__noreturn();
+    test__readlinkat__leakignore();
+    test__readlinkat__arg1__notuninit();
+    test__readlinkat__arg2__notnull();
+    test__readlinkat__arg2__notuninit();
+    test__readlinkat__arg3__notnull();
+    test__readlinkat__arg4__notbool();
+    test__readlinkat__arg4__notuninit();
+    test__asctime_r__noreturn();
+    test__asctime_r__leakignore();
+    test__asctime_r__arg1__notnull();
+    test__asctime_r__arg1__notuninit();
+    test__asctime_r__arg2__notbool();
+    test__asctime_r__arg2__notnull();
+    test__ctime_r__noreturn();
+    test__ctime_r__leakignore();
+    test__ctime_r__arg1__notnull();
+    test__ctime_r__arg1__notuninit();
+    test__ctime_r__arg2__notbool();
+    test__ctime_r__arg2__notnull();
+    test__gmtime_r__noreturn();
+    test__gmtime_r__leakignore();
+    test__gmtime_r__arg1__notnull();
+    test__gmtime_r__arg1__notuninit();
+    test__gmtime_r__arg2__notbool();
+    test__gmtime_r__arg2__notnull();
+    test__gmtime__noreturn();
+    test__gmtime__useretval();
+    test__gmtime__leakignore();
+    test__gmtime__arg1__notbool();
+    test__gmtime__arg1__notnull();
+    test__gmtime__arg1__notuninit();
+    test__clock_settime__noreturn();
+    test__clock_settime__arg1__notuninit();
+    test__clock_settime__arg2__notbool();
+    test__clock_settime__arg2__notuninit();
+    test__killpg__noreturn();
+    test__killpg__arg1__notuninit();
+    test__killpg__arg2__notbool();
+    test__killpg__arg2__notuninit();
+    test__kill__noreturn();
+    test__kill__arg1__notuninit();
+    test__kill__arg2__notbool();
+    test__kill__arg2__notuninit();
+    test__clock_gettime__noreturn();
+    test__clock_gettime__arg1__notuninit();
+    test__clock_gettime__arg2__notbool();
+    test__clock_gettime__arg2__notnull();
+    test__clock_getres__noreturn();
+    test__clock_getres__arg1__notuninit();
+    test__clock_getres__arg2__notbool();
+    test__tmpnam__noreturn();
+    test__tmpnam__leakignore();
+    test__tmpnam__arg1__notbool();
+    test__tmpnam__arg1__notuninit();
+    test__tmpnam_r__noreturn();
+    test__tmpnam_r__leakignore();
+    test__tmpnam_r__arg1__notbool();
+    test__tmpnam_r__arg1__notuninit();
+    test__makecontext__noreturn();
+    test__makecontext__leakignore();
+    test__makecontext__arg1__notnull();
+    test__makecontext__arg2__notnull();
+    test__makecontext__arg2__notuninit();
+    test__makecontext__arg3__notuninit();
+    test__swapcontext__noreturn();
+    test__swapcontext__leakignore();
+    test__swapcontext__arg1__notnull();
+    test__swapcontext__arg2__notnull();
+    test__getcontext__noreturn();
+    test__getcontext__leakignore();
+    test__getcontext__arg1__notnull();
+    test__ualarm__noreturn();
+    test__ualarm__leakignore();
+    test__ualarm__arg1__notuninit();
+    test__ualarm__arg2__notbool();
+    test__ualarm__arg2__notuninit();
+    test__scalb__noreturn();
+    test__scalb__useretval();
+    test__scalb__leakignore();
+    test__scalb__arg1__notuninit();
+    test__scalb__arg2__notbool();
+    test__scalb__arg2__notuninit();
+    test__bcopy__noreturn();
+    test__bcopy__leakignore();
+    test__bcopy__arg1__notnull();
+    test__bcopy__arg1__notuninit();
+    test__bcopy__arg2__notnull();
+    test__bcopy__arg3__notuninit();
+    test__bcmp__noreturn();
+    test__bcmp__useretval();
+    test__bcmp__leakignore();
+    test__bcmp__arg1__notnull();
+    test__bcmp__arg1__notuninit();
+    test__bcmp__arg2__notnull();
+    test__bcmp__arg2__notuninit();
+    test__bcmp__arg3__notbool();
+    test__bcmp__arg3__notuninit();
+    test__bzero__noreturn();
+    test__bzero__leakignore();
+    test__bzero__arg1__notnull();
+    test__bzero__arg2__notuninit();
+    test__ftime__noreturn();
+    test__ftime__leakignore();
+    test__ftime__arg1__notbool();
+    test__ftime__arg1__notuninit();
+    test__wcswcs__noreturn();
+    test__wcswcs__useretval();
+    test__wcswcs__leakignore();
+    test__wcswcs__arg1__notnull();
+    test__wcswcs__arg1__notuninit();
+    test__wcswcs__arg2__notbool();
+    test__wcswcs__arg2__notnull();
+    test__wcswcs__arg2__notuninit();
+    test__stpcpy__noreturn();
+    test__stpcpy__leakignore();
+    test__stpcpy__arg1__notnull();
+    test__stpcpy__arg2__notbool();
+    test__stpcpy__arg2__notnull();
+    test__stpcpy__arg2__notuninit();
+    test__index__noreturn();
+    test__index__useretval();
+    test__index__leakignore();
+    test__index__arg1__notnull();
+    test__index__arg1__notuninit();
+    test__index__arg2__notbool();
+    test__index__arg2__notuninit();
+    test__rindex__noreturn();
+    test__rindex__useretval();
+    test__rindex__leakignore();
+    test__rindex__arg1__notnull();
+    test__rindex__arg1__notuninit();
+    test__rindex__arg2__notbool();
+    test__rindex__arg2__notuninit();
+    test__bsd_signal__noreturn();
+    test__bsd_signal__leakignore();
+    test__bsd_signal__arg1__notuninit();
+    test__bsd_signal__arg2__notbool();
+    test__bsd_signal__arg2__notuninit();
+    test__fork__noreturn();
+    test__fork__leakignore();
+    test__vfork__noreturn();
+    test__vfork__leakignore();
+    test__pthread_atfork__noreturn();
+    test__pthread_atfork__leakignore();
+    test__pthread_create__noreturn();
+    test__pthread_create__arg1__notnull();
+    test__pthread_create__arg3__notnull();
+    test__pthread_detach__noreturn();
+    test__pthread_detach__arg1__notuninit();
+    test__pthread_equal__noreturn();
+    test__pthread_equal__useretval();
+    test__pthread_equal__arg1__notuninit();
+    test__pthread_equal__arg2__notuninit();
+    test__pthread_exit__noreturn();
+    test__pthread_join__noreturn();
+    test__pthread_join__arg1__notuninit();
+    test__pthread_kill__noreturn();
+    test__pthread_kill__arg1__notuninit();
+    test__pthread_kill__arg2__notuninit();
+    test__pthread_self__noreturn();
+    test__pthread_self__useretval();
+    test__pthread_attr_destroy__noreturn();
+    test__pthread_attr_destroy__arg1__notnull();
+    test__pthread_attr_init__noreturn();
+    test__pthread_attr_init__arg1__notnull();
+    test__pthread_attr_setstackaddr__noreturn();
+    test__pthread_attr_setstackaddr__leakignore();
+    test__pthread_attr_setstackaddr__arg1__notnull();
+    test__pthread_attr_setstackaddr__arg1__notuninit();
+    test__pthread_attr_setstackaddr__arg2__notbool();
+    test__pthread_attr_setstackaddr__arg2__notnull();
+    test__pthread_attr_setstackaddr__arg2__notuninit();
+    test__pthread_attr_getstackaddr__noreturn();
+    test__pthread_attr_getstackaddr__leakignore();
+    test__pthread_attr_getstackaddr__arg1__notnull();
+    test__pthread_attr_getstackaddr__arg1__notuninit();
+    test__pthread_attr_getstackaddr__arg2__notbool();
+    test__pthread_attr_getstackaddr__arg2__notnull();
+    test__tempnam__noreturn();
+    test__tempnam__useretval();
+    test__tempnam__leakignore();
+    test__tempnam__arg1__notuninit();
+    test__tempnam__arg2__notbool();
+    test__tempnam__arg2__notuninit();
+    test__crypt__noreturn();
+    test__crypt__useretval();
+    test__crypt__leakignore();
+    test__crypt__arg1__notnull();
+    test__crypt__arg1__notuninit();
+    test__crypt__arg2__notbool();
+    test__crypt__arg2__notnull();
+    test__crypt__arg2__notuninit();
+    test__ttyname__noreturn();
+    test__ttyname__useretval();
+    test__ttyname__leakignore();
+    test__ttyname__arg1__notbool();
+    test__ttyname__arg1__notuninit();
+    test__getspnam__noreturn();
+    test__getspnam__useretval();
+    test__getspnam__leakignore();
+    test__getspnam__arg1__notbool();
+    test__getspnam__arg1__notnull();
+    test__getspnam__arg1__notuninit();
+    test__getspent__noreturn();
+    test__getspent__useretval();
+    test__getspent__leakignore();
+    test__fgetspent__noreturn();
+    test__fgetspent__useretval();
+    test__fgetspent__leakignore();
+    test__fgetspent__arg1__notbool();
+    test__fgetspent__arg1__notnull();
+    test__fgetspent__arg1__notuninit();
+    test__sgetspent__noreturn();
+    test__sgetspent__useretval();
+    test__sgetspent__leakignore();
+    test__sgetspent__arg1__notbool();
+    test__sgetspent__arg1__notnull();
+    test__sgetspent__arg1__notuninit();
+    test__fgetpwent__noreturn();
+    test__fgetpwent__useretval();
+    test__fgetpwent__leakignore();
+    test__fgetpwent__arg1__notbool();
+    test__fgetpwent__arg1__notnull();
+    test__fgetpwent__arg1__notuninit();
+    test__getgrent__noreturn();
+    test__getgrent__useretval();
+    test__getgrent__leakignore();
+    test__getgrent_r__noreturn();
+    test__getgrent_r__useretval();
+    test__getgrent_r__leakignore();
+    test__getgrent_r__arg2__notuninit();
+    test__getgrent_r__arg3__notuninit();
+    test__getgrent_r__arg4__notbool();
+    test__fgetgrent__noreturn();
+    test__fgetgrent__useretval();
+    test__fgetgrent__leakignore();
+    test__fgetgrent__arg1__notbool();
+    test__fgetgrent__arg1__notnull();
+    test__fgetgrent__arg1__notuninit();
+    test__getnetgrent__noreturn();
+    test__getnetgrent__leakignore();
+    test__getnetgrent__arg1__notnull();
+    test__getnetgrent__arg2__notnull();
+    test__getnetgrent__arg3__notbool();
+    test__getnetgrent__arg3__notnull();
+    test__getgrnam__noreturn();
+    test__getgrnam__useretval();
+    test__getgrnam__leakignore();
+    test__getgrnam__arg1__notbool();
+    test__getgrnam__arg1__notnull();
+    test__getgrnam__arg1__notuninit();
+    test__getgrgid__noreturn();
+    test__getgrgid__useretval();
+    test__getgrgid__leakignore();
+    test__getgrgid__arg1__notbool();
+    test__getgrgid__arg1__notuninit();
+    test__getlogin__noreturn();
+    test__getlogin__useretval();
+    test__getlogin__leakignore();
+    test__ctermid__noreturn();
+    test__ctermid__leakignore();
+    test__ctermid__arg1__notbool();
+    test__realpath__noreturn();
+    test__realpath__leakignore();
+    test__realpath__arg1__notnull();
+    test__realpath__arg1__notuninit();
+    test__realpath__arg2__notbool();
+    test__fileno__noreturn();
+    test__fileno__useretval();
+    test__fileno__leakignore();
+    test__fileno__arg1__notbool();
+    test__fileno__arg1__notnull();
+    test__fileno__arg1__notuninit();
+    test__fseeko__noreturn();
+    test__fseeko__leakignore();
+    test__fseeko__arg1__notnull();
+    test__fseeko__arg1__notuninit();
+    test__fseeko__arg2__notuninit();
+    test__fseeko__arg3__notbool();
+    test__fseeko__arg3__notuninit();
+    test__ftello__noreturn();
+    test__ftello__useretval();
+    test__ftello__leakignore();
+    test__ftello__arg1__notbool();
+    test__ftello__arg1__notnull();
+    test__ftello__arg1__notuninit();
+    test__execv__noreturn();
+    test__execv__leakignore();
+    test__execv__arg1__notnull();
+    test__execv__arg1__notuninit();
+    test__execv__arg2__notbool();
+    test__execv__arg2__notuninit();
+    test__execvp__noreturn();
+    test__execvp__leakignore();
+    test__execvp__arg1__notnull();
+    test__execvp__arg1__notuninit();
+    test__execvp__arg2__notbool();
+    test__execvp__arg2__notuninit();
+    test__wait__noreturn();
+    test__wait__leakignore();
+    test__wait__arg1__notbool();
+    test__waitpid__noreturn();
+    test__waitpid__leakignore();
+    test__waitpid__arg1__notuninit();
+    test__waitpid__arg3__notbool();
+    test__waitpid__arg3__notuninit();
+    test__strnlen__noreturn();
+    test__strnlen__useretval();
+    test__strnlen__leakignore();
+    test__strnlen__arg1__notnull();
+    test__strnlen__arg1__notuninit();
+    test__strnlen__arg2__notbool();
+    test__strnlen__arg2__notuninit();
+    test__wcsnlen__noreturn();
+    test__wcsnlen__useretval();
+    test__wcsnlen__leakignore();
+    test__wcsnlen__arg1__notnull();
+    test__wcsnlen__arg1__notuninit();
+    test__wcsnlen__arg2__notbool();
+    test__wcsnlen__arg2__notuninit();
+    test__ffs__noreturn();
+    test__ffs__useretval();
+    test__ffs__leakignore();
+    test__ffs__arg1__notbool();
+    test__ffs__arg1__notuninit();
+    test__shmctl__noreturn();
+    test__shmctl__leakignore();
+    test__shmctl__arg1__notuninit();
+    test__shmctl__arg2__notbool();
+    test__shmctl__arg2__notuninit();
+    test__shmget__noreturn();
+    test__shmget__leakignore();
+    test__shmget__arg1__notuninit();
+    test__shmget__arg2__notuninit();
+    test__shmget__arg3__notbool();
+    test__shmget__arg3__notuninit();
+    test__shmat__noreturn();
+    test__shmat__leakignore();
+    test__shmat__arg1__notuninit();
+    test__shmat__arg3__notbool();
+    test__shmat__arg3__notuninit();
+    test__shmdt__noreturn();
+    test__shmdt__leakignore();
+    test__shmdt__arg1__notbool();
+    test__getrlimit__noreturn();
+    test__getrlimit__leakignore();
+    test__getrlimit__arg1__notuninit();
+    test__getrlimit__arg2__notbool();
+    test__getrlimit__arg2__notnull();
+    test__setrlimit__noreturn();
+    test__setrlimit__leakignore();
+    test__setrlimit__arg1__notuninit();
+    test__setrlimit__arg2__notbool();
+    test__setrlimit__arg2__notnull();
+    test__setrlimit__arg2__notuninit();
+    test__glob__noreturn();
+    test__glob__arg1__notnull();
+    test__glob__arg1__notuninit();
+    test__glob__arg2__notuninit();
+    test__glob__arg3__notuninit();
+    test__glob__arg4__notbool();
+    test__glob__arg4__notnull();
+    test__globfree__noreturn();
+    test__globfree__arg1__notnull();
+    test__globfree__arg1__notuninit();
+    test__wcpncpy__noreturn();
+    test__wcpncpy__leakignore();
+    test__wcpncpy__arg1__notnull();
+    test__wcpncpy__arg2__notnull();
+    test__wcpncpy__arg2__notuninit();
+    test__wcpncpy__arg3__notbool();
+    test__wcpncpy__arg3__notuninit();
+    test__stpncpy__noreturn();
+    test__stpncpy__leakignore();
+    test__stpncpy__arg1__notnull();
+    test__stpncpy__arg2__notnull();
+    test__stpncpy__arg2__notuninit();
+    test__stpncpy__arg3__notbool();
+    test__stpncpy__arg3__notuninit();
+    test__memccpy__noreturn();
+    test__memccpy__leakignore();
+    test__memccpy__arg1__notnull();
+    test__memccpy__arg2__notnull();
+    test__memccpy__arg2__notuninit();
+    test__memccpy__arg3__notuninit();
+    test__memccpy__arg4__notbool();
+    test__memccpy__arg4__notuninit();
+    test__getopt__noreturn();
+    test__getopt__leakignore();
+    test__getopt__arg1__notuninit();
+    test__getopt__arg2__notnull();
+    test__getopt__arg2__notuninit();
+    test__getopt__arg3__notbool();
+    test__getopt__arg3__notnull();
+    test__getopt__arg3__notuninit();
+    test__getitimer__noreturn();
+    test__getitimer__leakignore();
+    test__getitimer__arg1__notuninit();
+    test__getitimer__arg2__notbool();
+    test__getitimer__arg2__notnull();
+    test__getitimer__arg2__notuninit();
+    test__setitimer__noreturn();
+    test__setitimer__leakignore();
+    test__setitimer__arg1__notuninit();
+    test__setitimer__arg2__notuninit();
+    test__setitimer__arg3__notbool();
+    test__setitimer__arg3__notuninit();
+    test__sigaction__noreturn();
+    test__sigaction__leakignore();
+    test__sigaction__arg1__notuninit();
+    test__sigaction__arg3__notbool();
+    test__sigaltstack__noreturn();
+    test__sigaltstack__leakignore();
+    test__sigaltstack__arg1__notuninit();
+    test__sigaltstack__arg2__notbool();
+    test__siglongjmp__noreturn();
+    test__siglongjmp__arg1__notuninit();
+    test__siglongjmp__arg2__notuninit();
+    test___longjmp__noreturn();
+    test___longjmp__arg1__notuninit();
+    test___longjmp__arg2__notuninit();
+    test__sigsetjmp__noreturn();
+    test__sigsetjmp__arg2__notbool();
+    test__sigsetjmp__arg2__notuninit();
+    test___setjmp__noreturn();
+    test___setjmp__arg2__notbool();
+    test___setjmp__arg2__notuninit();
+    test__sigsuspend__noreturn();
+    test__sigsuspend__leakignore();
+    test__sigsuspend__arg1__notbool();
+    test__sigsuspend__arg1__notnull();
+    test__pthread_sigmask__noreturn();
+    test__pthread_sigmask__arg1__notuninit();
+    test__pthread_sigmask__arg2__notuninit();
+    test__pthread_sigmask__arg3__notbool();
+    test__pthread_sigmask__arg3__notuninit();
+    test__sigprocmask__noreturn();
+    test__sigprocmask__arg1__notuninit();
+    test__sigprocmask__arg2__notuninit();
+    test__sigprocmask__arg3__notbool();
+    test__sigprocmask__arg3__notuninit();
+    test__getrusage__noreturn();
+    test__getrusage__leakignore();
+    test__getrusage__arg1__notuninit();
+    test__getrusage__arg2__notbool();
+    test__getrusage__arg2__notnull();
+    test__sigemptyset__noreturn();
+    test__sigemptyset__leakignore();
+    test__sigemptyset__arg1__notbool();
+    test__sigemptyset__arg1__notnull();
+    test__sigfillset__noreturn();
+    test__sigfillset__leakignore();
+    test__sigfillset__arg1__notbool();
+    test__sigfillset__arg1__notnull();
+    test__sigaddset__noreturn();
+    test__sigaddset__leakignore();
+    test__sigaddset__arg1__notnull();
+    test__sigaddset__arg2__notbool();
+    test__sigaddset__arg2__notuninit();
+    test__sigdelset__noreturn();
+    test__sigdelset__leakignore();
+    test__sigdelset__arg1__notnull();
+    test__sigdelset__arg2__notbool();
+    test__sigdelset__arg2__notuninit();
+    test__sigismember__noreturn();
+    test__sigismember__leakignore();
+    test__sigismember__arg1__notnull();
+    test__sigismember__arg2__notbool();
+    test__sigismember__arg2__notuninit();
+    test__posix_spawn__noreturn();
+    test__posix_spawn__leakignore();
+    test__posix_spawn__arg6__notbool();
+    test__posix_spawnp__noreturn();
+    test__posix_spawnp__leakignore();
+    test__posix_spawnp__arg6__notbool();
+    test__msgctl__noreturn();
+    test__msgctl__leakignore();
+    test__msgctl__arg1__notuninit();
+    test__msgctl__arg2__notuninit();
+    test__msgctl__arg3__notbool();
+    test__msgctl__arg3__notuninit();
+    test__msgget__noreturn();
+    test__msgget__useretval();
+    test__msgget__arg1__notuninit();
+    test__msgget__arg2__notbool();
+    test__msgget__arg2__notuninit();
+    test__msgrcv__noreturn();
+    test__msgrcv__leakignore();
+    test__msgrcv__arg1__notuninit();
+    test__msgrcv__arg2__notnull();
+    test__msgrcv__arg3__notuninit();
+    test__msgrcv__arg4__notuninit();
+    test__msgrcv__arg5__notbool();
+    test__msgrcv__arg5__notuninit();
+    test__msgsnd__noreturn();
+    test__msgsnd__leakignore();
+    test__msgsnd__arg1__notuninit();
+    test__msgsnd__arg2__notnull();
+    test__msgsnd__arg3__notuninit();
+    test__msgsnd__arg4__notbool();
+    test__msgsnd__arg4__notuninit();
+    test__tcflow__noreturn();
+    test__tcflow__leakignore();
+    test__tcflow__arg1__notuninit();
+    test__tcflow__arg2__notbool();
+    test__tcflow__arg2__notuninit();
+    test__tcflush__noreturn();
+    test__tcflush__leakignore();
+    test__tcflush__arg1__notuninit();
+    test__tcflush__arg2__notbool();
+    test__tcflush__arg2__notuninit();
+    test__tcsendbreak__noreturn();
+    test__tcsendbreak__leakignore();
+    test__tcsendbreak__arg1__notuninit();
+    test__tcsendbreak__arg2__notbool();
+    test__tcsendbreak__arg2__notnull();
+    test__tcgetattr__noreturn();
+    test__tcgetattr__leakignore();
+    test__tcgetattr__arg1__notuninit();
+    test__tcgetattr__arg2__notbool();
+    test__tcgetattr__arg2__notnull();
+    test__tcsetattr__noreturn();
+    test__tcsetattr__leakignore();
+    test__tcsetattr__arg1__notuninit();
+    test__tcsetattr__arg2__notuninit();
+    test__tcsetattr__arg3__notbool();
+    test__tcsetattr__arg3__notnull();
+    test__tcsetattr__arg3__notuninit();
+    test__cfsetospeed__noreturn();
+    test__cfsetospeed__leakignore();
+    test__cfsetospeed__arg1__notnull();
+    test__cfsetospeed__arg1__notuninit();
+    test__cfsetospeed__arg2__notbool();
+    test__cfsetospeed__arg2__notuninit();
+    test__cfsetispeed__noreturn();
+    test__cfsetispeed__leakignore();
+    test__cfsetispeed__arg1__notnull();
+    test__cfsetispeed__arg1__notuninit();
+    test__cfsetispeed__arg2__notbool();
+    test__cfsetispeed__arg2__notuninit();
+    test__tcdrain__noreturn();
+    test__tcdrain__leakignore();
+    test__tcdrain__arg1__notbool();
+    test__tcdrain__arg1__notuninit();
+    test__swab__noreturn();
+    test__swab__leakignore();
+    test__swab__arg1__notuninit();
+    test__swab__arg2__notnull();
+    test__swab__arg3__notuninit();
+    test__sync__noreturn();
+    return 0;
+}

@@ -28,6 +28,9 @@ static std::string replaceCharInString(std::string s, char from, char to)
     return s;
 }
 
+std::vector<std::string> function_names;
+std::string function_name;
+
 int main(int argc, char **argv)
 {
     if (argc != 2 || !std::strstr(argv[1], ".cfg")) {
@@ -70,6 +73,15 @@ int main(int argc, char **argv)
         }
     }
 
+    std::cout << std::endl;
+    std::cout << "int main() {" << std::endl;
+
+    for (const std::string & name : function_names)
+        std::cout << "    " << name << "();" << std::endl;
+
+    std::cout << "    return 0;" << std::endl;
+    std::cout << "}" << std::endl;
+
     return 0;
 }
 
@@ -94,7 +106,9 @@ static std::string functionCall(const std::string &functionName, bool useretval,
 static std::string testFunctionArg(const std::string &functionName, bool useretval, const char type[], int argNr, int numberOfArgs, const char code[], const char suppress[], const char badArg[])
 {
     std::ostringstream ostr;
-    ostr << "void test__" << replaceCharInString(functionName,':','_') << "__arg" << argNr << "__" << type << "() {" << std::endl;
+    function_name = "test__" + replaceCharInString(functionName,':','_') + "__arg" + std::to_string(argNr) + "__" + type;
+    function_names.push_back(function_name);
+    ostr << "void " << function_name << "() {" << std::endl;
     if (*code)
         ostr << "  " << code << std::endl;
     ostr << "  // cppcheck-suppress " << suppress << std::endl;
@@ -134,7 +148,9 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
     }
 
     if (noreturn) {
-        std::cout << "void test__" << replaceCharInString(functionName,':','_') << "__noreturn() {" << std::endl;
+        function_name = "test__" + replaceCharInString(functionName,':','_') + "__noreturn";
+        function_names.push_back(function_name);
+        std::cout << "void " << function_name << "() {" << std::endl;
         std::cout << "  int x = 1;" << std::endl;
         std::cout << "  if (cond) { x=100; " << functionCall(functionName, useretval, -1, numberOfArgs, "") << "; }" << std::endl;
         std::cout << "  // cppcheck-suppress shiftTooManyBits" << std::endl;
@@ -142,13 +158,17 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
         std::cout << "}" << std::endl << std::endl;
     }
     if (useretval) {
-        std::cout << "void test__" << replaceCharInString(functionName,':','_') << "__useretval() {" << std::endl;
+        function_name = "test__" + replaceCharInString(functionName,':','_') + "__useretval";
+        function_names.push_back(function_name);
+        std::cout << "void " << function_name << "() {" << std::endl;
         std::cout << "  // cppcheck-suppress ignoredReturnValue" << std::endl;
         std::cout << "  " << functionCall(functionName, false, -1, numberOfArgs, "") << ';' << std::endl;
         std::cout << "}" << std::endl << std::endl;
     }
     if (pure) {
-        std::cout << "void test__" << replaceCharInString(functionName,':','_') << "__pure(";
+        function_name = "test__" + replaceCharInString(functionName,':','_') + "__pure";
+        function_names.push_back(function_name);
+        std::cout << "void " << function_name << "(";
         for (int i = 1; i <= numberOfArgs; ++i)
             std::cout << (i>1?",":"") << "int arg" << i;
         std::cout << ") {" << std::endl;
@@ -158,7 +178,9 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
         std::cout << "}" << std::endl << std::endl;
     }
     if (leakignore && functionName.find("::") == std::string::npos) {
-        std::cout << "void test__" << replaceCharInString(functionName,':','_') << "__leakignore() {" << std::endl;
+        function_name = "test__" + replaceCharInString(functionName,':','_') + "__leakignore";
+        function_names.push_back(function_name);
+        std::cout << "void " << function_name << "() {" << std::endl;
         std::cout << "  char *p = malloc(10); *p=0;" << std::endl;
         std::cout << "  " << functionCall(functionName, useretval, 1, numberOfArgs, "p") << ';' << std::endl;
         std::cout << "  // cppcheck-suppress memleak" << std::endl;
