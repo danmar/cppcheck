@@ -33,7 +33,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         settings.addEnabled("style");
 
         TEST_CASE(incondition);

@@ -2584,7 +2584,7 @@ void CheckClass::checkOverride()
             if (func.hasOverrideSpecifier() || func.hasFinalSpecifier())
                 continue;
             const Function *baseFunc = func.getOverridenFunction();
-            if (baseFunc && !baseFunc->isPure())
+            if (baseFunc)
                 overrideError(baseFunc, &func);
         }
     }

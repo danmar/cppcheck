@@ -32,7 +32,7 @@ public:
 
 private:
 
-    void run() {
+    void run() override {
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);
         TEST_CASE(isVariableChangedByFunctionCall);

@@ -50,7 +50,7 @@ public:
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) override {
         CheckSizeof checkSizeof(tokenizer, settings, errorLogger);
 
         // Checks
@@ -65,7 +65,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) {
+    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) override {
     }
 
     /** @brief %Check for 'sizeof sizeof ..' */
@@ -107,7 +107,7 @@ private:
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
     void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckSizeof c(nullptr, settings, errorLogger);
 
         c.sizeofForArrayParameterError(nullptr);
@@ -128,7 +128,7 @@ private:
         return "Sizeof";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "sizeof() usage checks\n"
                "- sizeof for array given as function argument\n"
                "- sizeof for numeric given as function argument\n"
