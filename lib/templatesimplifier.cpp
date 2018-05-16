@@ -1571,7 +1571,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typeForNewName.clear();
                 break;
             }
-            if (Token::Match(tok3->tokAt(-2), "[<,] %name% <") && templateParameters(tok3) > 0)
+            if (Token::Match(tok3->tokAt(-2), "<|,|:: %name% <") && templateParameters(tok3) > 0)
                 ++indentlevel;
             else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
                 --indentlevel;
