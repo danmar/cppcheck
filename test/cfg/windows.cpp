@@ -163,6 +163,9 @@ void validCode()
     HLOCAL pLocalAlloc = LocalAlloc(1, 2);
     LocalFree(pLocalAlloc);
 
+    (void)lstrlen(bufTC);
+    (void)lstrlen(NULL);
+
     // Intrinsics
     __noop();
     __noop(1, "test", NULL);
@@ -485,6 +488,9 @@ void ignoredReturnValue()
 
     // cppcheck-suppress ignoredReturnValue
     _fileno(stdio);
+
+    // cppcheck-suppress ignoredReturnValue
+    lstrlen(TEXT("test"));
 }
 
 void invalidFunctionArg()
