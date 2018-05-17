@@ -3372,7 +3372,7 @@ bool Tokenizer::simplifySizeof()
 
             else if (Token::Match(tok->previous(), "%type% %name% [ %num% ] [,)]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %name% [ %num% ] [,)]")) {
-                Token tempTok(nullptr);
+                Token tempTok;
                 tempTok.str("*");
                 sizeOfVar[varId] = sizeOfType(&tempTok);
                 declTokOfVar[varId] = tok;
