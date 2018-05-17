@@ -55,9 +55,9 @@ class Variable;
 class CPPCHECKLIB Token {
 private:
     Token **tokensBack;
+    Token **tokensFront;
 
     // Not implemented..
-    Token();
     Token(const Token &);
     Token operator=(const Token &);
 
@@ -71,7 +71,8 @@ public:
         eNone
     };
 
-    explicit Token(Token **tokens);
+    Token();
+    Token(Token **tokens, Token** frontTokens);
     ~Token();
 
     template<typename T>
