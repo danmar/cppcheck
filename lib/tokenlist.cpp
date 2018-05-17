@@ -145,7 +145,7 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
     if (_back) {
         _back->insertToken(str);
     } else {
-        _front = new Token(&_back);
+        _front = new Token(&_back, &_front);
         _back = _front;
         _back->str(str);
     }
@@ -164,7 +164,7 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
     if (_back) {
         _back->insertToken(tok->str(), tok->originalName());
     } else {
-        _front = new Token(&_back);
+        _front = new Token(&_back, &_front);
         _back = _front;
         _back->str(tok->str());
         if (!tok->originalName().empty())
@@ -308,7 +308,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
         if (_back) {
             _back->insertToken(str);
         } else {
-            _front = new Token(&_back);
+            _front = new Token(&_back, &_front);
             _back = _front;
             _back->str(str);
         }
