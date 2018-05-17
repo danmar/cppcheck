@@ -317,13 +317,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             cfg = *it;
 
-            // If only errors are printed, print filename after the check
-            if (!_settings.quiet && (!cfg.empty() || it != configurations.begin())) {
-                std::string fixedpath = Path::simplifyPath(filename);
-                fixedpath = Path::toNativeSeparators(fixedpath);
-                _errorLogger.reportOut("Checking " + fixedpath + ": " + cfg + "...");
-            }
-
             if (!_settings.userDefines.empty()) {
                 if (!cfg.empty())
                     cfg = ";" + cfg;
@@ -363,6 +356,14 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 _tokenizer.createTokens(&tokensP);
                 timer.Stop();
                 hasValidConfig = true;
+
+                // If only errors are printed, print filename after the check
+                if (!_settings.quiet && (!cfg.empty() || it != configurations.begin())) {
+                    std::string fixedpath = Path::simplifyPath(filename);
+                    fixedpath = Path::toNativeSeparators(fixedpath);
+                    _errorLogger.reportOut("Checking " + fixedpath + ": " + cfg + "...");
+                }
+
                 if (tokensP.empty())
                     continue;
 
@@ -421,7 +422,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
-                configurationError.push_back(std::string(o.location.file() + ':' + MathLib::toString(o.location.line) + ": " + o.msg));
+                configurationError.push_back((cfg.empty() ? "\'\'" : cfg) + " : [" + o.location.file() + ':' + MathLib::toString(o.location.line) + "] " + o.msg);
                 --checkCount; // don't count invalid configurations
                 continue;
 
@@ -453,10 +454,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         if (!hasValidConfig && configurations.size() > 1 && _settings.isEnabled(Settings::INFORMATION)) {
             std::string msg;
-            msg = "This file is not analyzed. Every tested configuration results in preprocessor errors. It seems that Cppcheck failed to extract a valid configuration. Use -v for more details.";
-            msg += "\nThis file is not analyzed. Every tested configuration results in preprocessor errors. It seems that Cppcheck failed to extract a valid configuration. The preprocessor errors:";
+            msg = "This file is not analyzed. Cppcheck failed to extract a valid configuration. Use -v for more details.";
+            msg += "\nThis file is not analyzed. Cppcheck failed to extract a valid configuration. The tested configurations have these preprocessor errors:";
             for (const std::string &s : configurationError)
-                msg += "\n  " + s;
+                msg += '\n' + s;
 
             std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
             ErrorLogger::ErrorMessage::FileLocation loc;
