@@ -163,7 +163,9 @@ void validCode()
     HLOCAL pLocalAlloc = LocalAlloc(1, 2);
     LocalFree(pLocalAlloc);
 
+    // cppcheck-suppress lstrlenCalled
     (void)lstrlen(bufTC);
+    // cppcheck-suppress lstrlenCalled
     (void)lstrlen(NULL);
 
     // Intrinsics
@@ -489,6 +491,7 @@ void ignoredReturnValue()
     // cppcheck-suppress ignoredReturnValue
     _fileno(stdio);
 
+    // cppcheck-suppress lstrlenCalled
     // cppcheck-suppress ignoredReturnValue
     lstrlen(TEXT("test"));
 }
