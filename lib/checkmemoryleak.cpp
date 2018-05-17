@@ -688,7 +688,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
     std::set<unsigned int> extravar;
 
     // The first token should be ";"
-    Token* rethead = new Token(nullptr);
+    Token* rethead = new Token();
     rethead->str(";");
     rethead->linenr(tok->linenr());
     rethead->fileIndex(tok->fileIndex());
