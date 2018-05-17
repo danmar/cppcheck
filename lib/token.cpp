@@ -35,8 +35,11 @@
 
 const std::list<ValueFlow::Value> Token::emptyValueList;
 
-Token::Token(Token **tokens) :
-    tokensBack(tokens),
+Token::Token() : Token(nullptr, nullptr) { }
+
+Token::Token(Token **backTokens, Token** frontTokens) :
+    tokensBack(backTokens),
+    tokensFront(frontTokens),
     _next(nullptr),
     _previous(nullptr),
     _link(nullptr),
@@ -239,6 +242,8 @@ void Token::deletePrevious(unsigned long index)
 
     if (_previous)
         _previous->next(this);
+    else if (tokensFront)
+        *tokensFront = this;
 }
 
 void Token::swapWithNext()
@@ -924,7 +929,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     if (_str.empty())
         newToken = this;
     else
-        newToken = new Token(tokensBack);
+        newToken = new Token(tokensBack, tokensFront);
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
