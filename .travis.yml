@@ -75,6 +75,8 @@ script:
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # run extra tests
   - tools/generate_and_run_more_tests.sh
+# Validate XML
+  - make validateXMLV2
 # check test/cfg
   - make checkcfg
   - make validateCFG
