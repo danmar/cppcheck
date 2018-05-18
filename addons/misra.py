@@ -13,6 +13,8 @@
 #
 # Total number of rules: 143
 
+from __future__ import print_function
+
 import cppcheckdata
 import sys
 import re
@@ -24,9 +26,14 @@ ruleTexts = {}
 
 VERIFY = False
 SHOW_SUMMARY = True
+QUIET = False
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
 VIOLATIONS = []
+
+def printStatus(*args, **kwargs):
+    if not QUIET:
+        print(*args, **kwargs)
 
 def reportError(location, num1, num2):
     if VERIFY:
@@ -1446,6 +1453,8 @@ OPTIONS:
                         Rule 1.2
                         Rule text for 1.2
                         <...>
+
+--quiet               Only print something when there is an error
 """)
     sys.exit(1)
 
@@ -1517,6 +1526,8 @@ for arg in sys.argv[1:]:
         generateTable()
     elif arg == "--no-summary":
         SHOW_SUMMARY = False
+    elif arg == "--quiet":
+        QUIET = True
     else:
         print('Fatal error: unhandled argument ' + arg)
         sys.exit(1)
@@ -1545,14 +1556,14 @@ for arg in sys.argv[1:]:
                     if compiled.match(word):
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
     else:
-        print('Checking ' + arg + '...')
+        printStatus('Checking ' + arg + '...')
 
     cfgNumber = 0
 
     for cfg in data.configurations:
         cfgNumber = cfgNumber + 1
         if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
+            printStatus('Checking ' + arg + ', config "' + cfg.name + '"...')
 
         if cfgNumber == 1:
             misra_3_1(data.rawTokens)
