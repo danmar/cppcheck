@@ -332,7 +332,7 @@ private:
         Token *tokensFront = 0;
         Token tok(nullptr, &tokensFront);
         
-        tok->insertToken("aba");
+        tok.insertToken("aba");
         
         ASSERT_EQUALS(true, tokensFront == tok.previous());
         tok.deletePrevious();
