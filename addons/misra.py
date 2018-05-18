@@ -25,7 +25,7 @@ ruleTexts = {}
 VERIFY = False
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
-
+VIOLATIONS = []
 
 def reportError(location, num1, num2):
     if VERIFY:
@@ -39,8 +39,10 @@ def reportError(location, num1, num2):
             errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
         else:
             return
-        sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] (style): ' + errmsg + '\n')
+        errmsg = '[' + location.file + ':' + str(location.linenr) + '] (style): ' + errmsg + '\n'
+        sys.stderr.write(errmsg)
 
+        VIOLATIONS.append(errmsg)
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -1619,3 +1621,8 @@ for arg in sys.argv[1:]:
                 print('Not expected: ' + actual)
                 exitCode = 1
         sys.exit(exitCode)
+    else:
+        exitCode = 0
+        if len(VIOLATIONS) > 0:
+            print("\nRule violations found: %d\n"%(len(VIOLATIONS)))
+            exitCode = 1
