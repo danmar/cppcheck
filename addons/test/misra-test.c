@@ -5,7 +5,11 @@
 #include /*abc*/ "file.h" // 20.3
 #include <setjmp.h> // 21.4
 #include <signal.h> // 21.5
+#include <stdio.h> //21.6
+#include <wchar.h> //21.6
+#include <time.h> // 21.10
 #include <tgmath.h> // 21.11
+
 
 typedef unsigned char      u8;
 typedef unsigned short     u16;
