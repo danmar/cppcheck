@@ -61,6 +61,7 @@ private:
         TEST_CASE(strValue);
 
         TEST_CASE(deleteLast);
+        TEST_CASE(deleteFirst);
         TEST_CASE(nextArgument);
         TEST_CASE(eraseTokens);
 
@@ -320,11 +321,22 @@ private:
 
     void deleteLast() const {
         Token *tokensBack = 0;
-        Token tok(&tokensBack);
+        Token tok(&tokensBack, nullptr);
         tok.insertToken("aba");
         ASSERT_EQUALS(true, tokensBack == tok.next());
         tok.deleteNext();
         ASSERT_EQUALS(true, tokensBack == &tok);
+    }
+    
+    void deleteFirst() const {
+        Token *tokensFront = 0;
+        Token tok(nullptr, &tokensFront);
+        
+        tok->insertToken("aba");
+        
+        ASSERT_EQUALS(true, tokensFront == tok.previous());
+        tok.deletePrevious();
+        ASSERT_EQUALS(true, tokensFront == &tok);
     }
 
     void nextArgument() const {
