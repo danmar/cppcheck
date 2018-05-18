@@ -77,7 +77,9 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     }
     while (defs.find(";;") != std::string::npos)
         defs.erase(defs.find(";;"),1);
-    if (!defs.empty() && endsWith(defs,';'))
+    while (!defs.empty() && defs.at(0) == ';')
+        defs.erase(0, 1);
+    while (!defs.empty() && endsWith(defs,';'))
         defs.erase(defs.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
     bool eq = false;
     for (std::size_t pos = 0; pos < defs.size(); ++pos) {
@@ -590,33 +592,61 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     std::string sysdefines;
     std::string cflag1;
 
-    const tinyxml2::XMLElement *node;
-    if ((node = rootnode->FirstChildElement("FILELIST")) != nullptr) {
-        for (const tinyxml2::XMLElement *f = node->FirstChildElement("FILE"); f; f = f->NextSiblingElement("FILE")) {
-            std::string filename(f->Attribute("FILENAME"));
-            if (Path::acceptFile(filename))
-                compileList.emplace_back(std::move(filename));
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (std::strcmp(node->Name(), "FILELIST") == 0) {
+            for (const tinyxml2::XMLElement *f = node->FirstChildElement(); f; f = f->NextSiblingElement()) {
+                if (std::strcmp(f->Name(), "FILE") == 0) {
+                    const char *filename = f->Attribute("FILENAME");
+                    if (filename && Path::acceptFile(filename))
+                        compileList.push_back(filename);
+                }
+            }
+        } else if (std::strcmp(node->Name(), "MACROS") == 0) {
+            for (const tinyxml2::XMLElement *m = node->FirstChildElement(); m; m = m->NextSiblingElement()) {
+                if (std::strcmp(m->Name(), "INCLUDEPATH") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        includePath = v;
+                } else if (std::strcmp(m->Name(), "USERDEFINES") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        userdefines = v;
+                } else if (std::strcmp(m->Name(), "SYSDEFINES") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        sysdefines = v;
+                }
+            }
+        } else if (std::strcmp(node->Name(), "OPTIONS") == 0) {
+            for (const tinyxml2::XMLElement *m = node->FirstChildElement(); m; m = m->NextSiblingElement()) {
+                if (std::strcmp(m->Name(), "CFLAG1") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        cflag1 = v;
+                }
+            }
         }
-    }
-    if ((node = rootnode->FirstChildElement("MACROS")) != nullptr) {
-        const tinyxml2::XMLElement *node2;
-        if ((node2 = rootnode->FirstChildElement("INCLUDEPATH")) != nullptr)
-            includePath = node2->Attribute("value");
-        if ((node2 = rootnode->FirstChildElement("USERDEFINES")) != nullptr)
-            userdefines = node2->Attribute("value");
-        if ((node2 = rootnode->FirstChildElement("SYSDEFINES")) != nullptr)
-            sysdefines = node2->Attribute("value");
-    }
-    if ((node = rootnode->FirstChildElement("OPTIONS")) != nullptr) {
-        const tinyxml2::XMLElement *node2;
-        if ((node2 = node->FirstChildElement("CFLAG1")) != nullptr)
-            cflag1 = node2->Attribute("value");
     }
 
     std::set<std::string> cflags;
 
     // parse cflag1 and fill the cflags set
     {
+        std::string arg;
+
+        for (int i = 0; i < cflag1.size(); ++i) {
+            if (cflag1.at(i) == ' ' && !arg.empty()) {
+                cflags.insert(arg);
+                arg.clear();
+                continue;
+            }
+            arg += cflag1.at(i);
+        }
+
+        if (!arg.empty()) {
+            cflags.insert(arg);
+        }
+
         // cleanup: -t is "An alternate name for the -Wxxx switches; there is no difference"
         // -> Remove every known -txxx argument and replace it with its -Wxxx counterpart.
         //    This way, we know what we have to check for later on.
@@ -638,19 +668,10 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
             { "-tWV","-WV" }
         };
 
-        std::string::size_type pos = 0;
-        std::string::size_type lastPos = 0;
-        if (!cflag1.empty()) {
-            while ((pos = cflag1.find(' ', pos)) != std::string::npos) {
-                cflags.insert(cflag1.substr(lastPos, pos - lastPos));
-                lastPos = ++pos;
+        for (std::map<std::string, std::string>::const_iterator i = synonyms.begin(); i != synonyms.end(); ++i) {
+            if (cflags.erase(i->first) > 0) {
+                cflags.insert(i->second);
             }
-            const std::string flag = cflag1.substr(lastPos, pos - lastPos);
-            const auto synonymIt = synonyms.find(flag);
-            if (synonymIt == synonyms.cend())
-                cflags.insert(flag);
-            else
-                cflags.insert(synonymIt->second);
         }
     }
 
@@ -790,21 +811,8 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     // but I didn't see any such functionality around the source. Not in favor of adding it only
     // for the BCB6 project loading.
     std::map<std::string, std::string, cppcheck::stricmp> variables;
-    std::string defines = predefines;
-    if (!sysdefines.empty()) {
-        if (!defines.empty())
-            defines += ";";
-        defines += sysdefines;
-    }
-    if (!userdefines.empty()) {
-        if (!defines.empty())
-            defines += ";";
-        defines += userdefines;
-    }
-    std::string cppDefines = cppPredefines;
-    if (!defines.empty())
-        defines += ";" + defines;
-
+    const std::string defines = predefines + ";" + sysdefines + ";" + userdefines;
+    const std::string cppDefines  = cppPredefines + ";" + defines;
     const bool forceCppMode = (cflags.find("-P") != cflags.end());
 
     for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
