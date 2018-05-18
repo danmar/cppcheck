@@ -1532,7 +1532,7 @@ private:
               "}\n",
               true
              );
-        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Memory leak: pt\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

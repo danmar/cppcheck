@@ -119,8 +119,14 @@ private:
                     VarInfo *varInfo,
                     std::set<unsigned int> notzero);
 
+    /** Check token inside expression. 
+        
+        @return next token to process (if no other checks needed for this token). NULL if other checks could be performend.
+    */
+    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
+
     /** parse function call */
-    void functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
+    void functionCall(const Token *tokName, const Token *tokOpeningBr, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
 
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
