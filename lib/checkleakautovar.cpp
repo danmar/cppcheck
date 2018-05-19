@@ -600,16 +600,37 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 endDeleterToken = typeEndTok->linkAt(2);
             }
             if (deleterToken) {
+                // Skip the decaying plus in expressions like +[](T*){}
+                if (deleterToken->str() == "+") {
+                    deleterToken = deleterToken->next();
+                }
                 // Check if its a pointer to a function
                 const Token * dtok = Token::findmatch(deleterToken, "& %name%", endDeleterToken);
                 if (dtok) {
                     af = _settings->library.dealloc(dtok->tokAt(1));
                 } else {
+                    const Token * tscopeStart = nullptr;
+                    const Token * tscopeEnd = nullptr;
+                    // If the deleter is a lambda, check if it calls the dealloc function
+                    if (deleterToken->str() == "[" && 
+                        deleterToken->link() && 
+                        deleterToken->link()->strAt(1) == "(" &&
+                        deleterToken->link()->linkAt(1) &&
+                        // TODO: Check for mutable keyword
+                        deleterToken->link()->linkAt(1)->strAt(1) == "{") {
+                        tscopeStart = deleterToken->link()->linkAt(1)->tokAt(1);
+                        tscopeEnd = tscopeStart->link();
                     // If the deleter is a class, check if class calls the dealloc function
-                    dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken);
-                    if (dtok && dtok->type()) {
-                        const Scope * tscope = dtok->type()->classScope;
-                        for (const Token *tok2 = tscope->bodyStart; tok2 != tscope->bodyEnd; tok2 = tok2->next()) {
+                    } else if ((dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken)) && dtok->type()) {
+                            const Scope * tscope = dtok->type()->classScope;
+                            if(tscope) {
+                                tscopeStart = tscope->bodyStart;
+                                tscopeEnd = tscope->bodyEnd;
+                            }
+                    }
+
+                    if(tscopeStart && tscopeEnd) {
+                        for (const Token *tok2 = tscopeStart; tok2 != tscopeEnd; tok2 = tok2->next()) {
                             af = _settings->library.dealloc(tok2);
                             if (af)
                                 break;
