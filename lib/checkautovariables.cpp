@@ -165,7 +165,7 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
     if (!start) // Ticket #5024
         return false;
 
-    for (const Token *tok = start; tok && tok != scope->classEnd; tok = tok->next()) {
+    for (const Token *tok = start; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->varId() == varId)
             return true;
         const Scope::ScopeType scopeType = tok->scope()->type;
@@ -185,10 +185,8 @@ void CheckAutoVariables::assignFunctionArg()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // TODO: What happens if this is removed?
             if (tok->astParent())
                 continue;
@@ -198,7 +196,7 @@ void CheckAutoVariables::assignFunctionArg()
             if (isNonReferenceArg(vartok) &&
                 !Token::Match(vartok->next(), "= %varid% ;", vartok->varId()) &&
                 !variableIsUsedInScope(Token::findsimplematch(vartok->next(), ";"), vartok->varId(), scope) &&
-                !Token::findsimplematch(vartok, "goto", scope->classEnd)) {
+                !Token::findsimplematch(vartok, "goto", scope->bodyEnd)) {
                 if (vartok->variable()->isPointer() && printWarning)
                     errorUselessAssignmentPtrArg(vartok);
                 else if (printStyle)
@@ -210,7 +208,7 @@ void CheckAutoVariables::assignFunctionArg()
 
 static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVarId)
 {
-    const Token * const end = vartok->variable()->typeStartToken()->scope()->classEnd;
+    const Token * const end = vartok->variable()->typeStartToken()->scope()->bodyEnd;
     for (const Token *tok2 = vartok; tok2 != nullptr && tok2 != end; tok2 = tok2->next()) {
         if (Token::Match(tok2, "%varid% =", pointerVarId))
             return true;
@@ -228,10 +226,8 @@ void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = _settings->inconclusive;
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Critical assignment
             if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
                 if (checkRvalueExpression(tok->tokAt(4)))
@@ -331,9 +327,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
             continue;
 
@@ -341,7 +335,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
 
         // have we reached a function that returns a pointer
         if (tok->previous() && tok->previous()->str() == "*") {
-            for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
+            for (const Token *tok2 = scope->bodyStart->next(); tok2 && tok2 != scope->bodyEnd; tok2 = tok2->next()) {
                 // Return pointer to local array variable..
                 if (tok2 ->str() == "return" && isAutoVarArray(tok2->astOperand1())) {
                     errorReturnPointerToLocalArray(tok2);
@@ -392,7 +386,7 @@ void CheckAutoVariables::errorAssignAddressOfLocalArrayToGlobalPointer(const Tok
     const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
     const std::string arrayName   = array ? array->str() : std::string("array");
     reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "Address of local array " + arrayName + " is assigned to global pointer " + pointerName +" and not reassigned before " + arrayName + " goes out of scope.", CWE562, false);
+                "$symbol:" + arrayName + "\nAddress of local array $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable)
@@ -400,14 +394,15 @@ void CheckAutoVariables::errorAssignAddressOfLocalVariableToGlobalPointer(const 
     const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
     const std::string variableName = variable ? variable->str() : std::string("variable");
     reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "Address of local variable " + variableName + " is assigned to global pointer " + pointerName +" and not reassigned before " + variableName + " goes out of scope.", CWE562, false);
+                "$symbol:" + variableName + "\nAddress of local variable $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "returnAddressOfFunctionParameter",
-                "Address of function parameter '" + varname + "' returned.\n"
-                "Address of the function parameter '" + varname + "' becomes invalid after the function exits because "
+                "$symbol:" + varname + "\n"
+                "Address of function parameter '$symbol' returned.\n"
+                "Address of the function parameter '$symbol' becomes invalid after the function exits because "
                 "function parameters are stored on the stack which is freed when the function exits. Thus the returned "
                 "value is invalid.", CWE562, false);
 }
@@ -516,9 +511,7 @@ void CheckAutoVariables::returnReference()
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
             continue;
 
@@ -526,9 +519,9 @@ void CheckAutoVariables::returnReference()
 
         // have we reached a function that returns a reference?
         if (tok->previous() && tok->previous()->str() == "&") {
-            for (const Token *tok2 = scope->classStart->next(); tok2 && tok2 != scope->classEnd; tok2 = tok2->next()) {
+            for (const Token *tok2 = scope->bodyStart->next(); tok2 && tok2 != scope->bodyEnd; tok2 = tok2->next()) {
                 if (!tok2->scope()->isExecutable()) {
-                    tok2 = tok2->scope()->classEnd;
+                    tok2 = tok2->scope()->bodyEnd;
                     if (!tok2)
                         break;
                     continue;

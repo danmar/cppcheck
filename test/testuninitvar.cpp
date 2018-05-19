@@ -36,7 +36,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(uninitvar1);
@@ -472,6 +472,18 @@ private:
                            "}");
             ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
         }
+
+        // #8494 : Overloaded & operator
+        checkUninitVar("void f() {\n"
+                       "  int x;\n"
+                       "  a & x;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+        checkUninitVar("void f(int a) {\n"
+                       "  int x;\n"
+                       "  a & x;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVar("void a() {\n"   // asm
                        "    int x;\n"
@@ -1817,7 +1829,8 @@ private:
         {
             checkUninitVar("static int foo() {\n"
                            "    int ret;\n"
-                           "    return cin >> ret;\n"
+                           "    cin >> ret;\n"
+                           "    return ret;\n"
                            "}");
             ASSERT_EQUALS("", errout.str());
 
@@ -2185,7 +2198,6 @@ private:
                                 "    int x;\n"
                                 "    if (i >> x) { }\n"
                                 "}";
-
             checkUninitVar(code, "test.cpp");
             ASSERT_EQUALS("", errout.str());
 

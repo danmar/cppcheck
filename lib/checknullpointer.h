@@ -54,14 +54,14 @@ public:
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullPointer();
         checkNullPointer.arithmetic();
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
         checkNullPointer.nullConstantDereference();
     }
@@ -102,7 +102,7 @@ public:
 private:
 
     /** Get error messages. Used by --errorlist */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckNullPointer c(nullptr, settings, errorLogger);
         c.nullPointerError(nullptr, "pointer", nullptr, false);
         c.arithmeticError(nullptr, nullptr);
@@ -114,7 +114,7 @@ private:
     }
 
     /** class info in WIKI format. Used by --doc */
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Null pointers\n"
                "- null pointer dereferencing\n"
                "- undefined null pointer arithmetic\n";

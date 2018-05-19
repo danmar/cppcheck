@@ -44,7 +44,7 @@ private:
     Settings settings2;
     Settings settings_windows;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
         TEST_CASE(tokenize1);
@@ -74,6 +74,8 @@ private:
         TEST_CASE(tokenize33);  // #5780 Various crashes on valid template code
         TEST_CASE(tokenize34);  // #8031
         TEST_CASE(tokenize35);  // #8361
+        TEST_CASE(tokenize36);  // #8436
+        TEST_CASE(tokenize37);  // #8550
 
         TEST_CASE(validate);
 
@@ -82,6 +84,7 @@ private:
         TEST_CASE(syntax_case_default);
 
         TEST_CASE(foreach);     // #3690
+        TEST_CASE(ifconstexpr);
 
         TEST_CASE(combineOperators);
 
@@ -359,10 +362,12 @@ private:
         TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
         TEST_CASE(bitfields14); // ticket #4561 (segfault for 'class a { signals: };')
         TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
+        TEST_CASE(bitfields16); // Save bitfield bit count
 
         TEST_CASE(simplifyNamespaceStd);
 
         TEST_CASE(microsoftMemory);
+        TEST_CASE(microsoftString);
 
         TEST_CASE(borland);
 
@@ -848,6 +853,26 @@ private:
                              "template<typename T> ::CRCWord const Compute(T const t) { return 0; }");
     }
 
+    void tokenize36() { // #8436
+        const char code[] = "int foo ( int i ) { return i ? * new int { 5 } : int { i ? 0 : 1 } ; }";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void tokenize37() { // #8550
+        const char codeC[] = "class name { public: static void init ( ) {} } ; "
+                             "typedef class name N; "
+                             "void foo ( ) { return N :: init ( ) ; }";
+        const char expC [] = "class name { public: static void init ( ) { } } ; "
+                             "void foo ( ) { return name :: init ( ) ; }";
+        ASSERT_EQUALS(expC, tokenizeAndStringify(codeC));
+        const char codeS[] = "class name { public: static void init ( ) {} } ; "
+                             "typedef struct name N; "
+                             "void foo ( ) { return N :: init ( ) ; }";
+        const char expS [] = "class name { public: static void init ( ) { } } ; "
+                             "void foo ( ) { return name :: init ( ) ; }";
+        ASSERT_EQUALS(expS, tokenizeAndStringify(codeS));
+    }
+
     void validate() {
         // C++ code in C file
         ASSERT_THROW(tokenizeAndStringify(";using namespace std;",false,false,Settings::Native,"test.c"), InternalError);
@@ -903,6 +928,10 @@ private:
         // #3690,#5154
         const char code[] ="void f() { for each ( char c in MyString ) { Console::Write(c); } }";
         ASSERT_EQUALS("void f ( ) { asm ( \"char c in MyString\" ) { Console :: Write ( c ) ; } }", tokenizeAndStringify(code));
+    }
+
+    void ifconstexpr() {
+        ASSERT_EQUALS("void f ( ) { if ( FOO ) { bar ( c ) ; } }", tokenizeAndStringify("void f() { if constexpr ( FOO ) { bar(c); } }"));
     }
 
     void combineOperators() {
@@ -4020,7 +4049,7 @@ private:
 
         const std::string actual(tokenizeAndStringify(code));
 
-        ASSERT_EQUALS("int a ; a = 0 ;\nint b ; b = 0 ;\nint c ; c = 0 ;", actual);
+        ASSERT_EQUALS("volatile int a ; a = 0 ;\nvolatile int b ; b = 0 ;\nvolatile int c ; c = 0 ;", actual);
     }
 
 
@@ -4030,36 +4059,6 @@ private:
             ASSERT_EQUALS("void f ( int a [ 5 ] ) ;", tokenizeAndStringify(code));
         }
         {
-            const char in1[] = "class Base {\n"
-                               "  virtual int test() = 0;\n"
-                               "};\n"
-                               "class Derived : public Base {\n"
-                               "  virtual int test() override final {\n"
-                               "    for( int Index ( 0 ); Index < 16; ++ Index) { int stub = 0; }\n"
-                               "  }\n"
-                               "};";
-            const char out1[] = "class Base {\n"
-                                "virtual int test ( ) = 0 ;\n"
-                                "} ;\n"
-                                "class Derived : public Base {\n"
-                                "virtual int test ( ) {\n"
-                                "for ( int Index ( 0 ) ; Index < 16 ; ++ Index ) { int stub ; stub = 0 ; }\n"
-                                "}\n"
-                                "} ;";
-            ASSERT_EQUALS(out1, tokenizeAndStringify(in1));
-            const char in2[] =  "class Derived{\n"
-                                "  virtual int test() final override;"
-                                "};";
-            const char out2[] = "class Derived {\n"
-                                "virtual int test ( ) override ; } ;";
-            ASSERT_EQUALS(out2, tokenizeAndStringify(in2));
-            const char in3[] =  "class Derived{\n"
-                                "  virtual int test() final override const;"
-                                "};";
-            const char out3[] = "class Derived {\n"
-                                "virtual int test ( ) override const ; } ;";
-            ASSERT_EQUALS(out3, tokenizeAndStringify(in3));
-
             const char in4 [] = "struct B final : A { void foo(); };";
             const char out4 [] = "struct B : A { void foo ( ) ; } ;";
             ASSERT_EQUALS(out4, tokenizeAndStringify(in4));
@@ -4761,6 +4760,27 @@ private:
         //ticket #8345
         ASSERT_EQUALS("void foo ( ) { switch ( 0 ) { case 0 : ; default : ; } }",
                       tokenizeAndStringify("void foo () { switch(0) case 0 : default : ; }"));
+        //ticket #8477
+        ASSERT_EQUALS("void foo ( ) { enum Anonymous0 : int { Six = 6 } ; return Six ; }",
+                      tokenizeAndStringify("void foo () { enum : int { Six = 6 } ; return Six ; }"));
+        // ticket #8281
+        tokenizeAndStringify("void lzma_decode(int i) { "
+                             "  bool state; "
+                             "  switch (i) "
+                             "  while (true) { "
+                             "     state=false; "
+                             "   case 1: "
+                             "      ; "
+                             "  }"
+                             "}");
+        // ticket #8417
+        tokenizeAndStringify("void printOwnedAttributes(int mode) { "
+                             "  switch(mode) case 0: { break; } "
+                             "}");
+        ASSERT_THROW(tokenizeAndStringify("void printOwnedAttributes(int mode) { "
+                                          "  switch(mode) case 0: { break; } case 1: ; "
+                                          "}"),
+                     InternalError);
     }
 
     void simplifyPointerToStandardType() {
@@ -5562,6 +5582,16 @@ private:
                                            "};"));
     }
 
+    void bitfields16() {
+        const char code[] = "struct A { unsigned int x : 1; };";
+
+        errout.str("");
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT_EQUALS(1, x->bits());
+    }
 
     void simplifyNamespaceStd() {
         static const char code1[] = "map<foo, bar> m;"; // namespace std is not used
@@ -5708,6 +5738,25 @@ private:
 
         const char code7[] = "void foo() { FillMemory(f(1, g(a, b)), h(i, j(0, 1)), 255); }";
         ASSERT_EQUALS("void foo ( ) { memset ( f ( 1 , g ( a , b ) ) , 255 , h ( i , j ( 0 , 1 ) ) ) ; }", tokenizeAndStringify(code7,false,true,Settings::Win32A));
+    }
+
+    void microsoftString() {
+        const char code1a[] = "void foo() { _tprintf (_T(\"test\") _T(\"1\")); }";
+        ASSERT_EQUALS("void foo ( ) { printf ( \"test1\" ) ; }", tokenizeAndStringify(code1a, false, true, Settings::Win32A));
+        const char code1b[] = "void foo() { _tprintf (_TEXT(\"test\") _TEXT(\"2\")); }";
+        ASSERT_EQUALS("void foo ( ) { printf ( \"test2\" ) ; }", tokenizeAndStringify(code1b, false, true, Settings::Win32A));
+        const char code1c[] = "void foo() { _tprintf (TEXT(\"test\") TEXT(\"3\")); }";
+        ASSERT_EQUALS("void foo ( ) { printf ( \"test3\" ) ; }", tokenizeAndStringify(code1c, false, true, Settings::Win32A));
+
+        const char code2a[] = "void foo() { _tprintf (_T(\"test\") _T(\"1\")); }";
+        ASSERT_EQUALS("void foo ( ) { wprintf ( L\"test1\" ) ; }", tokenizeAndStringify(code2a, false, true, Settings::Win32W));
+        ASSERT_EQUALS("void foo ( ) { wprintf ( L\"test1\" ) ; }", tokenizeAndStringify(code2a, false, true, Settings::Win64));
+        const char code2b[] = "void foo() { _tprintf (_TEXT(\"test\") _TEXT(\"2\")); }";
+        ASSERT_EQUALS("void foo ( ) { wprintf ( L\"test2\" ) ; }", tokenizeAndStringify(code2b, false, true, Settings::Win32W));
+        ASSERT_EQUALS("void foo ( ) { wprintf ( L\"test2\" ) ; }", tokenizeAndStringify(code2b, false, true, Settings::Win64));
+        const char code2c[] = "void foo() { _tprintf (TEXT(\"test\") TEXT(\"3\")); }";
+        ASSERT_EQUALS("void foo ( ) { wprintf ( L\"test3\" ) ; }", tokenizeAndStringify(code2c, false, true, Settings::Win32W));
+        ASSERT_EQUALS("void foo ( ) { wprintf ( L\"test3\" ) ; }", tokenizeAndStringify(code2c, false, true, Settings::Win64));
     }
 
     void borland() {
@@ -6173,7 +6222,18 @@ private:
                             "DWORD64 dword64;"
                             "ULONG64 ulong64;"
                             "LPWSTR lpcwstr;"
-                            "LPCWSTR lpcwstr;";
+                            "LPCWSTR lpcwstr;"
+                            "LPHANDLE lpHandle;"
+                            "PCWSTR pcwStr;"
+                            "PDWORDLONG pdWordLong;"
+                            "PDWORD_PTR pdWordPtr;"
+                            "PDWORD32 pdWord32;"
+                            "PDWORD64 pdWord64;"
+                            "LONGLONG ll;"
+                            "USN usn;"
+                            "PULONG64 puLong64;"
+                            "PULONG32 puLong32;"
+                            "PFLOAT ptrToFloat;";
 
         const char expected[] = "int f ; "
                                 "unsigned char g ; "
@@ -6243,10 +6303,21 @@ private:
                                 "unsigned long long dword64 ; "
                                 "unsigned long long ulong64 ; "
                                 "wchar_t * lpcwstr ; "
-                                "const wchar_t * lpcwstr ;";
+                                "const wchar_t * lpcwstr ; "
+                                "void * lpHandle ; "
+                                "const wchar_t * pcwStr ; "
+                                "long * pdWordLong ; "
+                                "long * pdWordPtr ; "
+                                "unsigned int * pdWord32 ; "
+                                "unsigned long * pdWord64 ; "
+                                "long long ll ; "
+                                "long long usn ; "
+                                "unsigned long long * puLong64 ; "
+                                "unsigned int * puLong32 ; "
+                                "float * ptrToFloat ;";
 
         // These types should be defined the same on all Windows platforms
-        std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
+        const std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
         ASSERT_EQUALS(expected, win32A);
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win64));

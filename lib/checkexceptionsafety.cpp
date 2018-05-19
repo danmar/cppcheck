@@ -52,7 +52,7 @@ void CheckExceptionSafety::destructors()
             // only looking for destructors
             if (function->type == Function::eDestructor) {
                 // Inspect this destructor.
-                for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+                for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
                     // Skip try blocks
                     if (Token::simpleMatch(tok, "try {")) {
                         tok = tok->next()->link();
@@ -91,7 +91,7 @@ void CheckExceptionSafety::deallocThrow()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // only looking for delete now
             if (tok->str() != "delete")
                 continue;
@@ -100,7 +100,7 @@ void CheckExceptionSafety::deallocThrow()
             tok = tok->next();
             if (Token::simpleMatch(tok, "[ ]"))
                 tok = tok->tokAt(2);
-            if (!tok || tok == scope->classEnd)
+            if (!tok || tok == scope->bodyEnd)
                 break;
             if (!Token::Match(tok, "%var% ;"))
                 continue;
@@ -116,7 +116,7 @@ void CheckExceptionSafety::deallocThrow()
             const Token *throwToken = nullptr;
 
             // is there a throw after the deallocation?
-            const Token* const end2 = tok->scope()->classEnd;
+            const Token* const end2 = tok->scope()->bodyEnd;
             for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
                 // Throw after delete -> Dead pointer
                 if (tok2->str() == "throw") {
@@ -158,9 +158,9 @@ void CheckExceptionSafety::checkRethrowCopy()
         if (i->type != Scope::eCatch)
             continue;
 
-        const unsigned int varid = i->classStart->tokAt(-2)->varId();
+        const unsigned int varid = i->bodyStart->tokAt(-2)->varId();
         if (varid) {
-            for (const Token* tok = i->classStart->next(); tok && tok != i->classEnd; tok = tok->next()) {
+            for (const Token* tok = i->bodyStart->next(); tok && tok != i->bodyEnd; tok = tok->next()) {
                 if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
                     tok = tok->next()->link()->next()->link();
                     if (!tok)
@@ -188,7 +188,7 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
 
         // Find a pass-by-value declaration in the catch(), excluding basic types
         // e.g. catch (std::exception err)
-        const Variable *var = i->classStart->tokAt(-2)->variable();
+        const Variable *var = i->bodyStart->tokAt(-2)->variable();
         if (var && var->isClass() && !var->isPointer() && !var->isReference())
             catchExceptionByValueError(i->classDef);
     }
@@ -204,8 +204,8 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
     if (!function->functionScope)
         return nullptr;
 
-    for (const Token *tok = function->functionScope->classStart->next();
-         tok != function->functionScope->classEnd; tok = tok->next()) {
+    for (const Token *tok = function->functionScope->bodyStart->next();
+         tok != function->functionScope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "try") {
             // just bail for now
             break;
@@ -293,8 +293,8 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
         if (scope->function && !scope->function->isThrow() &&
             scope->className != "main" && scope->className != "wmain" &&
             scope->className != "_tmain" && scope->className != "WinMain") {
-            for (const Token *tok = scope->function->functionScope->classStart->next();
-                 tok != scope->function->functionScope->classEnd; tok = tok->next()) {
+            for (const Token *tok = scope->function->functionScope->bodyStart->next();
+                 tok != scope->function->functionScope->bodyEnd; tok = tok->next()) {
                 if (tok->str() == "try") {
                     break;
                 } else if (tok->function()) {

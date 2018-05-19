@@ -41,7 +41,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
@@ -229,8 +229,7 @@ private:
         settings.debugwarnings = true;
         errout.str("");
 
-        std::vector<std::string> files;
-        files.push_back("test.cpp");
+        std::vector<std::string> files(1, "test.cpp");
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, files[0]);
 
@@ -1716,7 +1715,6 @@ private:
 
     void valueFlowAfterCondition() {
         const char *code;
-
         // in if
         code = "void f(int x) {\n"
                "    if (x == 123) {\n"
@@ -1807,6 +1805,74 @@ private:
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "void f(int x) {\n"
+               "    if (x != 123) { throw ""; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x != 123) { }\n"
+               "    else { throw ""; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+        code = "void f(int x) {\n"
+               "    if (x == 123) { }\n"
+               "    else { throw ""; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+
+
+        code = "void f(int x) {\n"
+               "    if (x < 123) { }\n"
+               "    else { a = x; }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x < 123) { throw \"\"; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x < 123) { }\n"
+               "    else { throw \"\"; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 122));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x > 123) { }\n"
+               "    else { a = x; }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x > 123) { throw \"\"; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x > 123) { }\n"
+               "    else { throw \"\"; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
+
+        code = "void f(int x) {\n"
+               "    if (x < 123) { return; }\n"
+               "    else { return; }\n"
+               "    a = x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 124));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
 
         // if (var)
         code = "void f(int x) {\n"
@@ -2388,6 +2454,18 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
+
+        code = "int f(int i) {\n"
+               "  if(i >= 2)\n"
+               "    return 0;\n"
+               "  else if(i == 0)\n"
+               "    return 0;\n"
+               "  int a = i;\n"
+               "}\n"
+               "void g(int i) {\n"
+               "  return f(0);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
 
         code = "void f1(int x) { a=x; }\n"
                "void f2(int y) { f1(y<123); }\n";
@@ -3000,6 +3078,14 @@ private:
                "    a = x + 1;\n"
                "}\n";
         values = tokenValues(code, "x +");
+        ASSERT_EQUALS(true, values.empty());
+
+        // #8494 - overloaded operator &
+        code = "void f() {\n"
+               "    int x;\n"
+               "    a & x;\n"
+               "}";
+        values = tokenValues(code, "x ; }");
         ASSERT_EQUALS(true, values.empty());
     }
 };

@@ -73,7 +73,7 @@ private:
         checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() {
+    void run() override {
         settings0.addEnabled("warning");
         settings0.addEnabled("style");
         settings0.addEnabled("portability");
@@ -134,6 +134,7 @@ private:
         TEST_CASE(array_index_calculation);
         TEST_CASE(array_index_negative1);
         TEST_CASE(array_index_negative2);    // ticket #3063
+        TEST_CASE(array_index_negative3);
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member. #1576
         TEST_CASE(array_index_for_continue); // for,continue
@@ -1778,6 +1779,22 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'test.a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
     }
 
+    void array_index_negative3() {
+        check("int f(int i) {\n"
+              "    int p[2] = {0, 0};\n"
+              "    if(i >= 2)\n"
+              "        return 0;\n"
+              "    else if(i == 0)\n"
+              "        return 0;\n"
+              "    return p[i - 1];\n"
+              "}\n"
+              "void g(int i) {\n"
+              "    if( i == 0 )\n"
+              "        return f(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void array_index_for_decr() {
         check("void f()\n"
               "{\n"
@@ -3111,8 +3128,7 @@ private:
     }
 
     void countSprintfLength() const {
-        std::list<const Token*> unknownParameter;
-        unknownParameter.push_back(0);
+        std::list<const Token*> unknownParameter(1, nullptr);
 
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("Hello", unknownParameter));
         ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("s", unknownParameter));
@@ -3134,8 +3150,7 @@ private:
         ASSERT_EQUALS(4, CheckBufferOverrun::countSprintfLength("%%%%%d", unknownParameter));
 
         Token strTok(0);
-        std::list<const Token*> stringAsParameter;
-        stringAsParameter.push_back(&strTok);
+        std::list<const Token*> stringAsParameter(1, &strTok);
         strTok.str("\"\"");
         ASSERT_EQUALS(4, CheckBufferOverrun::countSprintfLength("str%s", stringAsParameter));
         strTok.str("\"12345\"");
@@ -3149,10 +3164,9 @@ private:
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%5.6s", stringAsParameter));
         ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%6.6s", stringAsParameter));
 
-        std::list<const Token*> intAsParameter;
         Token numTok(0);
         numTok.str("12345");
-        intAsParameter.push_back(&numTok);
+        std::list<const Token*> intAsParameter(1, &numTok);
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%02ld", intAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%08ld", intAsParameter));
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%.2d", intAsParameter));
@@ -3165,26 +3179,21 @@ private:
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%1.5x", intAsParameter));
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%5.1x", intAsParameter));
 
-        std::list<const Token*> floatAsParameter;
         Token floatTok(0);
         floatTok.str("1.12345f");
-        floatAsParameter.push_back(&floatTok);
+        std::list<const Token*> floatAsParameter(1, &floatTok);
         TODO_ASSERT_EQUALS(5, 3, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%8.2f", floatAsParameter));
         TODO_ASSERT_EQUALS(5, 3, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter));
 
-        std::list<const Token*> floatAsParameter2;
         Token floatTok2(0);
         floatTok2.str("100.12345f");
-        floatAsParameter2.push_back(&floatTok2);
+        std::list<const Token*> floatAsParameter2(1, &floatTok2);
         TODO_ASSERT_EQUALS(7, 3, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter2));
         TODO_ASSERT_EQUALS(7, 3, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
         TODO_ASSERT_EQUALS(7, 5, CheckBufferOverrun::countSprintfLength("%4.2f", floatAsParameter));
 
-        std::list<const Token*> multipleParams;
-        multipleParams.push_back(&strTok);
-        multipleParams.push_back(0);
-        multipleParams.push_back(&numTok);
+        std::list<const Token*> multipleParams = { &strTok, nullptr, &numTok };
         ASSERT_EQUALS(15, CheckBufferOverrun::countSprintfLength("str%s%d%d", multipleParams));
         ASSERT_EQUALS(26, CheckBufferOverrun::countSprintfLength("str%-6s%08ld%08ld", multipleParams));
     }

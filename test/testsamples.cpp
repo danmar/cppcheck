@@ -44,7 +44,7 @@ public:
 
 private:
 
-    void run() {
+    void run() override {
         TEST_CASE(runSamples);
         TEST_CASE(runConsoleCodePageTranslationOnWindows);
     }
@@ -81,7 +81,7 @@ private:
                 CppCheckExecutor exec;
                 exec.check(7, argv);
                 std::string expected_filename = Path::getPathFromFilename(i->first) + "out.txt";
-                std::ifstream ifs(expected_filename.c_str());
+                std::ifstream ifs(expected_filename);
                 std::string expected((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
                 std::string actual = GET_REDIRECT_ERROUT;
                 // We need some uniformization to make this work on Unix and Windows
@@ -105,14 +105,15 @@ private:
     void runConsoleCodePageTranslationOnWindows() const {
         REDIRECT;
 
-        std::vector<std::string> msgs;
-        msgs.push_back("ASCII");     // first entry should be using only ASCII
-        msgs.push_back("kääk");
-        msgs.push_back("Português");
-//      msgs.push_back("日本語");
-//      msgs.push_back("한국어");
-//      msgs.push_back("Русский");
-//      msgs.push_back("中文");
+        std::vector<std::string> msgs = {
+            "ASCII",     // first entry should be using only ASCII
+            "kääk",
+            "Português"
+            //      "日本語",
+            //      "한국어",
+            //      "Русский",
+            //      "中文",
+        };
 
         Settings set1;
         Settings setXML;

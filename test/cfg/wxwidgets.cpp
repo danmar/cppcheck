@@ -44,12 +44,39 @@ void validGuiCode()
 }
 #endif
 
-void nullPointer(void)
+void nullPointer(const wxString &str)
 {
     // cppcheck-suppress nullPointer
     wxLogGeneric(wxLOG_Message, (char*)NULL);
     // cppcheck-suppress nullPointer
     wxLogMessage((char*)NULL);
+
+    double *doublePtr = NULL;
+    // cppcheck-suppress nullPointer
+    (void)str.ToDouble(doublePtr);
+    // cppcheck-suppress nullPointer
+    (void)str.ToCDouble(doublePtr);
+
+    long * longPtr = NULL;
+    // cppcheck-suppress nullPointer
+    (void)str.ToLong(longPtr);
+    // cppcheck-suppress nullPointer
+    (void)str.ToCLong(longPtr);
+
+    unsigned long * ulongPtr = NULL;
+    // cppcheck-suppress nullPointer
+    (void)str.ToULong(ulongPtr);
+    // cppcheck-suppress nullPointer
+    (void)str.ToCULong(ulongPtr);
+
+    long long * longLongPtr = NULL;
+    // cppcheck-suppress nullPointer
+    (void)str.ToLongLong(longLongPtr);
+
+    unsigned long long * ulongLongPtr = NULL;
+    // cppcheck-suppress nullPointer
+    (void)str.ToULongLong(ulongLongPtr);
+
 }
 
 void ignoredReturnValue(const wxString &s)
@@ -64,7 +91,7 @@ void ignoredReturnValue(const wxString &s)
     wxAtof(s);
 }
 
-void invalidFunctionArg(void)
+void invalidFunctionArg(const wxString &str)
 {
 #if wxUSE_SPINCTRL==1
     extern wxSpinCtrl spinCtrlInstance;
@@ -73,6 +100,14 @@ void invalidFunctionArg(void)
     // cppcheck-suppress invalidFunctionArg
     spinCtrlInstance.SetBase(5);
 #endif
+
+    long l;
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.ToLong(&l, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.ToLong(&l, 1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.ToLong(&l, 37);
 }
 
 void uninitvar(void)
@@ -80,19 +115,35 @@ void uninitvar(void)
     wxLogLevel logLevelUninit;
     char cBufUninit[10];
     char *pcUninit;
-    wxString emptyString;
     // cppcheck-suppress uninitvar
     wxLogGeneric(logLevelUninit, "test");
     // cppcheck-suppress uninitvar
     wxLogMessage(cBufUninit);
     // cppcheck-suppress uninitvar
     wxLogMessage(pcUninit);
+}
+
+void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)
+{
+    int uninitInteger;
+    long l;
+    long long ll;
+    unsigned long ul;
+    unsigned long long ull;
+
     // cppcheck-suppress uninitvar
-    (void)wxAtoi(emptyString);
+    (void)str.ToLong(&l, uninitInteger);
     // cppcheck-suppress uninitvar
-    (void)wxAtol(emptyString);
+    (void)str.ToLongLong(&ll, uninitInteger);
     // cppcheck-suppress uninitvar
-    (void)wxAtof(emptyString);
+    (void)str.ToULong(&ul, uninitInteger);
+    // cppcheck-suppress uninitvar
+    (void)str.ToULongLong(&ull, uninitInteger);
+
+    // cppcheck-suppress uninitvar
+    (void)str.ToCLong(&l, uninitInteger);
+    // cppcheck-suppress uninitvar
+    (void)str.ToCULong(&ul, uninitInteger);
 }
 
 void uninitvar_SetMenuBar(wxFrame * const framePtr, wxMenuBar * const menuBarPtr)

@@ -162,16 +162,16 @@ protected:
     ErrorPath getErrorPath(const Token *errtok, const ValueFlow::Value *value, const std::string &bug) const {
         ErrorPath errorPath;
         if (!value) {
-            errorPath.push_back(ErrorPathItem(errtok,bug));
-        } else if (_settings->verbose || _settings->xml || _settings->outputFormat == "daca2") {
+            errorPath.emplace_back(errtok,bug);
+        } else if (_settings->verbose || _settings->xml || !_settings->templateLocation.empty()) {
             errorPath = value->errorPath;
-            errorPath.push_back(ErrorPathItem(errtok,bug));
+            errorPath.emplace_back(errtok,bug);
         } else {
             if (value->condition)
-                errorPath.push_back(ErrorPathItem(value->condition, "condition '" + value->condition->expressionString() + "'"));
+                errorPath.emplace_back(value->condition, "condition '" + value->condition->expressionString() + "'");
             //else if (!value->isKnown() || value->defaultArg)
             //    errorPath = value->callstack;
-            errorPath.push_back(ErrorPathItem(errtok,bug));
+            errorPath.emplace_back(errtok,bug);
         }
         return errorPath;
     }

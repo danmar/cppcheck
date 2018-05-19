@@ -38,7 +38,7 @@ def isUnpackedStruct(token):
         return False;
     if token.valueType.typeScope.type != "Struct":
         return False
-    startToken = token.valueType.typeScope.classStart
+    startToken = token.valueType.typeScope.bodyStart
 
     linenr = int(startToken.linenr)
     for line in open(startToken.file):
@@ -113,14 +113,15 @@ def exp05(data):
                     continue
                 if not argvar.isPointer:
                     continue
+                if (argvar.constness % 2) == 1: # data is const
+                    continue
                 argtok = arguments[argnr - 1]
                 if not argtok.valueType:
                     continue
                 if argtok.valueType.pointer == 0:
                     continue
-                const1 = argvar.isConst
                 const2 = arguments[argnr - 1].valueType.constness
-                if (const1 % 2) < (const2 % 2):
+                if (const2 % 2) == 1:
                     reportError(token, 'style', "Attempt to cast away const", 'cert-EXP05-C')
 
 

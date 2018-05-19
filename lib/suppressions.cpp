@@ -18,13 +18,32 @@
 
 #include "suppressions.h"
 
+#include "errorlogger.h"
+#include "mathlib.h"
 #include "path.h"
+
+#include <tinyxml2.h>
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <stack>
 #include <sstream>
 #include <utility>
+
+class ErrorLogger;
+
+static bool isValidGlobPattern(const std::string &pattern)
+{
+    for (std::string::const_iterator i = pattern.begin(); i != pattern.end(); ++i) {
+        if (*i == '*' || *i == '?') {
+            std::string::const_iterator j = i + 1;
+            if (j != pattern.end() && (*j == '*' || *j == '?')) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 std::string Suppressions::parseFile(std::istream &istr)
 {
@@ -54,48 +73,277 @@ std::string Suppressions::parseFile(std::istream &istr)
     return "";
 }
 
+
+std::string Suppressions::parseXmlFile(const char *filename)
+{
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLError error = doc.LoadFile(filename);
+    if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+        return "File not found";
+    if (error != tinyxml2::XML_SUCCESS)
+        return "Failed to parse XML file";
+
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    for (const tinyxml2::XMLElement * e = rootnode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (std::strcmp(e->Name(), "suppress") != 0)
+            return "Invalid suppression xml file format, expected <suppress> element but got a <" + std::string(e->Name()) + '>';
+
+        Suppression s;
+        for (const tinyxml2::XMLElement * e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
+            const char *text = e2->GetText() ? e2->GetText() : "";
+            if (std::strcmp(e2->Name(), "id") == 0)
+                s.errorId = text;
+            else if (std::strcmp(e2->Name(), "fileName") == 0)
+                s.fileName = text;
+            else if (std::strcmp(e2->Name(), "lineNumber") == 0)
+                s.lineNumber = std::atoi(text);
+            else if (std::strcmp(e2->Name(), "symbolName") == 0)
+                s.symbolName = text;
+            else
+                return "Unknown suppression element <" + std::string(e2->Name()) + ">, expected <id>/<fileName>/<lineNumber>/<symbolName>";
+        }
+
+        const std::string err = addSuppression(s);
+        if (!err.empty())
+            return err;
+    }
+
+    return "";
+}
+
 std::string Suppressions::addSuppressionLine(const std::string &line)
 {
     std::istringstream lineStream(line);
-    std::string id;
-    std::string file;
-    unsigned int lineNumber = 0;
-    if (std::getline(lineStream, id, ':')) {
-        if (std::getline(lineStream, file)) {
+    Suppressions::Suppression suppression;
+    if (std::getline(lineStream, suppression.errorId, ':')) {
+        if (std::getline(lineStream, suppression.fileName)) {
             // If there is not a dot after the last colon in "file" then
             // the colon is a separator and the contents after the colon
             // is a line number..
 
             // Get position of last colon
-            const std::string::size_type pos = file.rfind(':');
+            const std::string::size_type pos = suppression.fileName.rfind(':');
 
             // if a colon is found and there is no dot after it..
             if (pos != std::string::npos &&
-                file.find('.', pos) == std::string::npos) {
+                suppression.fileName.find('.', pos) == std::string::npos) {
                 // Try to parse out the line number
                 try {
-                    std::istringstream istr1(file.substr(pos+1));
-                    istr1 >> lineNumber;
+                    std::istringstream istr1(suppression.fileName.substr(pos+1));
+                    istr1 >> suppression.lineNumber;
                 } catch (...) {
-                    lineNumber = 0;
+                    suppression.lineNumber = 0;
                 }
 
-                if (lineNumber > 0) {
-                    file.erase(pos);
+                if (suppression.lineNumber > 0) {
+                    suppression.fileName.erase(pos);
                 }
             }
         }
     }
 
-    // We could perhaps check if the id is valid and return error if it is not
-    const std::string errmsg(addSuppression(id, Path::fromNativeSeparators(file), lineNumber));
-    if (!errmsg.empty())
-        return errmsg;
+    suppression.fileName = Path::simplifyPath(suppression.fileName);
+
+    return addSuppression(suppression);
+}
+
+std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
+{
+    // Check that errorId is valid..
+    if (suppression.errorId.empty()) {
+        return "Failed to add suppression. No id.";
+    }
+    if (suppression.errorId != "*") {
+        for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
+            if (suppression.errorId[pos] < 0 || (!std::isalnum(suppression.errorId[pos]) && suppression.errorId[pos] != '_')) {
+                return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
+            }
+            if (pos == 0 && std::isdigit(suppression.errorId[pos])) {
+                return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
+            }
+        }
+    }
+
+    if (!isValidGlobPattern(suppression.errorId))
+        return "Failed to add suppression. Invalid glob pattern '" + suppression.errorId + "'.";
+    if (!isValidGlobPattern(suppression.fileName))
+        return "Failed to add suppression. Invalid glob pattern '" + suppression.fileName + "'.";
+
+    _suppressions.push_back(suppression);
 
     return "";
 }
 
-bool Suppressions::FileMatcher::match(const std::string &pattern, const std::string &name)
+void Suppressions::ErrorMessage::setFileName(const std::string &s)
+{
+    _fileName = Path::simplifyPath(s);
+}
+
+bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)
+{
+    if (comment.size() < 2)
+        return false;
+
+    if (comment.find(";") != std::string::npos)
+        comment.erase(comment.find(";"));
+
+    if (comment.find("//", 2) != std::string::npos)
+        comment.erase(comment.find("//",2));
+
+    if (comment.compare(comment.size() - 2, 2, "*/") == 0)
+        comment.erase(comment.size() - 2, 2);
+
+    std::istringstream iss(comment.substr(2));
+    std::string word;
+    iss >> word;
+    if (word != "cppcheck-suppress")
+        return false;
+    iss >> errorId;
+    if (!iss)
+        return false;
+    while (iss) {
+        iss >> word;
+        if (!iss)
+            break;
+        if (word.compare(0,11,"symbolName=")==0)
+            symbolName = word.substr(11);
+        else if (errorMessage && errorMessage->empty())
+            *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
+    }
+    return true;
+}
+
+bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
+{
+    if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
+        return false;
+    if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
+        return false;
+    if (lineNumber > 0 && lineNumber != errmsg.lineNumber)
+        return false;
+    if (!symbolName.empty()) {
+        for (std::string::size_type pos = 0; pos < errmsg.symbolNames.size();) {
+            const std::string::size_type pos2 = errmsg.symbolNames.find('\n',pos);
+            std::string symname;
+            if (pos2 == std::string::npos) {
+                symname = errmsg.symbolNames.substr(pos);
+                pos = pos2;
+            } else {
+                symname = errmsg.symbolNames.substr(pos,pos2-pos);
+                pos = pos2+1;
+            }
+            if (matchglob(symbolName, symname))
+                return true;
+        }
+        return false;
+    }
+    return true;
+}
+
+bool Suppressions::Suppression::isMatch(const Suppressions::ErrorMessage &errmsg)
+{
+    if (!isSuppressed(errmsg))
+        return false;
+    matched = true;
+    return true;
+}
+
+std::string Suppressions::Suppression::getText() const
+{
+    std::string ret;
+    if (!errorId.empty())
+        ret = errorId;
+    if (!fileName.empty())
+        ret += " fileName=" + fileName;
+    if (lineNumber > 0)
+        ret += " lineNumber=" + MathLib::toString(lineNumber);
+    if (!symbolName.empty())
+        ret += " symbolName=" + symbolName;
+    if (ret.compare(0,1," ")==0)
+        return ret.substr(1);
+    return ret;
+}
+
+bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
+{
+    const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
+    for (std::list<Suppression>::iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+        Suppression &s = *it;
+        if (unmatchedSuppression && s.errorId != errmsg.errorId)
+            continue;
+        if (s.isMatch(errmsg))
+            return true;
+    }
+    return false;
+}
+
+bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
+{
+    const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
+    for (std::list<Suppression>::iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+        Suppression &s = *it;
+        if (!s.isLocal())
+            continue;
+        if (unmatchedSuppression && s.errorId != errmsg.errorId)
+            continue;
+        if (s.isMatch(errmsg))
+            return true;
+    }
+    return false;
+}
+
+void Suppressions::dump(std::ostream & out)
+{
+    out << "  <suppressions>" << std::endl;
+    for (const Suppression &suppression : _suppressions) {
+        out << "    <suppression";
+        out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
+        if (!suppression.fileName.empty())
+            out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
+        if (suppression.lineNumber > 0)
+            out << " lineNumber=\"" << suppression.lineNumber << '"';
+        if (!suppression.symbolName.empty())
+            out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
+        out << " />" << std::endl;
+    }
+    out << "  </suppressions>" << std::endl;
+}
+
+#include <iostream>
+
+std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
+{
+    std::list<Suppression> result;
+    for (std::list<Suppression>::const_iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+        const Suppression &s = *it;
+        if (s.matched)
+            continue;
+        if (!unusedFunctionChecking && s.errorId == "unusedFunction")
+            continue;
+        if (file.empty() || !s.isLocal() || s.fileName != file)
+            continue;
+        result.push_back(s);
+    }
+    return result;
+}
+
+std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
+{
+    std::list<Suppression> result;
+    for (std::list<Suppression>::const_iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+        const Suppression &s = *it;
+        if (s.matched)
+            continue;
+        if (!unusedFunctionChecking && s.errorId == "unusedFunction")
+            continue;
+        if (s.isLocal())
+            continue;
+        result.push_back(s);
+    }
+    return result;
+}
+
+bool Suppressions::matchglob(const std::string &pattern, const std::string &name)
 {
     const char *p = pattern.c_str();
     const char *n = name.c_str();
@@ -127,6 +375,10 @@ bool Suppressions::FileMatcher::match(const std::string &pattern, const std::str
                 // Non-wildcard characters match literally
                 if (*n == *p) {
                     n++;
+                } else if (*n == '\\' && *p == '/') {
+                    n++;
+                } else if (*n == '/' && *p == '\\') {
+                    n++;
                 } else {
                     matching = false;
                 }
@@ -153,150 +405,4 @@ bool Suppressions::FileMatcher::match(const std::string &pattern, const std::str
         // Advance name pointer by one because the current position didn't work
         n++;
     }
-}
-
-std::string Suppressions::FileMatcher::addFile(const std::string &name, unsigned int line)
-{
-    if (name.find_first_of("*?") != std::string::npos) {
-        for (std::string::const_iterator i = name.begin(); i != name.end(); ++i) {
-            if (*i == '*') {
-                const std::string::const_iterator j = i + 1;
-                if (j != name.end() && (*j == '*' || *j == '?')) {
-                    return "Failed to add suppression. Syntax error in glob.";
-                }
-            }
-        }
-        _globs[name][line] = false;
-    } else if (name.empty()) {
-        _globs["*"][0U] = false;
-    } else {
-        _files[Path::simplifyPath(name)][line] = false;
-    }
-    return "";
-}
-
-bool Suppressions::FileMatcher::isSuppressed(const std::string &file, unsigned int line)
-{
-    if (isSuppressedLocal(file, line))
-        return true;
-
-    for (std::map<std::string, std::map<unsigned int, bool> >::iterator g = _globs.begin(); g != _globs.end(); ++g) {
-        if (match(g->first, file)) {
-            std::map<unsigned int, bool>::iterator l = g->second.find(0U);
-            if (l != g->second.end()) {
-                l->second = true;
-                return true;
-            }
-            l = g->second.find(line);
-            if (l != g->second.end()) {
-                l->second = true;
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-bool Suppressions::FileMatcher::isSuppressedLocal(const std::string &file, unsigned int line)
-{
-    std::map<std::string, std::map<unsigned int, bool> >::iterator f = _files.find(Path::fromNativeSeparators(file));
-    if (f != _files.end()) {
-        std::map<unsigned int, bool>::iterator l = f->second.find(0U);
-        if (l != f->second.end()) {
-            l->second = true;
-            return true;
-        }
-        l = f->second.find(line);
-        if (l != f->second.end()) {
-            l->second = true;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-std::string Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
-{
-    // Check that errorId is valid..
-    if (errorId.empty()) {
-        return "Failed to add suppression. No id.";
-    }
-    if (errorId != "*") {
-        for (std::string::size_type pos = 0; pos < errorId.length(); ++pos) {
-            if (errorId[pos] < 0 || (!std::isalnum(errorId[pos]) && errorId[pos] != '_')) {
-                return "Failed to add suppression. Invalid id \"" + errorId + "\"";
-            }
-            if (pos == 0 && std::isdigit(errorId[pos])) {
-                return "Failed to add suppression. Invalid id \"" + errorId + "\"";
-            }
-        }
-    }
-
-    return _suppressions[errorId].addFile(file, line);
-}
-
-bool Suppressions::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
-{
-    if (errorId != "unmatchedSuppression" && _suppressions.find("*") != _suppressions.end())
-        if (_suppressions["*"].isSuppressed(file, line))
-            return true;
-
-    std::map<std::string, FileMatcher>::iterator suppression = _suppressions.find(errorId);
-    if (suppression == _suppressions.end())
-        return false;
-
-    return suppression->second.isSuppressed(file, line);
-}
-
-bool Suppressions::isSuppressedLocal(const std::string &errorId, const std::string &file, unsigned int line)
-{
-    if (errorId != "unmatchedSuppression" && _suppressions.find("*") != _suppressions.end())
-        if (_suppressions["*"].isSuppressedLocal(file, line))
-            return true;
-
-    std::map<std::string, FileMatcher>::iterator suppression = _suppressions.find(errorId);
-    if (suppression == _suppressions.end())
-        return false;
-
-    return suppression->second.isSuppressedLocal(file, line);
-}
-
-std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
-{
-    std::list<SuppressionEntry> result;
-    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
-        if (!unusedFunctionChecking && i->first == "unusedFunction")
-            continue;
-
-        const std::map<std::string, std::map<unsigned int, bool> >::const_iterator f = i->second._files.find(Path::fromNativeSeparators(file));
-        if (f != i->second._files.end()) {
-            for (std::map<unsigned int, bool>::const_iterator l = f->second.begin(); l != f->second.end(); ++l) {
-                if (!l->second) {
-                    result.push_back(SuppressionEntry(i->first, f->first, l->first));
-                }
-            }
-        }
-    }
-    return result;
-}
-
-std::list<Suppressions::SuppressionEntry> Suppressions::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
-{
-    std::list<SuppressionEntry> result;
-    for (std::map<std::string, FileMatcher>::const_iterator i = _suppressions.begin(); i != _suppressions.end(); ++i) {
-        if (!unusedFunctionChecking && i->first == "unusedFunction")
-            continue;
-
-        // global suppressions..
-        for (std::map<std::string, std::map<unsigned int, bool> >::const_iterator g = i->second._globs.begin(); g != i->second._globs.end(); ++g) {
-            for (std::map<unsigned int, bool>::const_iterator l = g->second.begin(); l != g->second.end(); ++l) {
-                if (!l->second) {
-                    result.push_back(SuppressionEntry(i->first, g->first, l->first));
-                }
-            }
-        }
-    }
-    return result;
 }

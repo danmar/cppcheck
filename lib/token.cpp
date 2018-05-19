@@ -49,6 +49,7 @@ Token::Token(Token **tokens) :
     _progressValue(0),
     _tokType(eNone),
     _flags(0),
+    _bits(0),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
     _astParent(nullptr),
@@ -65,18 +66,19 @@ Token::~Token()
     delete _values;
 }
 
-static const std::set<std::string> controlFlowKeywords = make_container< std::set<std::string> > () <<
-        "goto" <<
-        "do" <<
-        "if" <<
-        "else" <<
-        "for" <<
-        "while" <<
-        "switch" <<
-        "case" <<
-        "break" <<
-        "continue" <<
-        "return";
+static const std::set<std::string> controlFlowKeywords = {
+    "goto",
+    "do",
+    "if",
+    "else",
+    "for",
+    "while",
+    "switch",
+    "case",
+    "break",
+    "continue",
+    "return"
+};
 
 void Token::update_property_info()
 {
@@ -133,18 +135,18 @@ void Token::update_property_info()
     update_property_isStandardType();
 }
 
-static const std::set<std::string> stdTypes =
-    make_container<std::set<std::string> >() << "bool"
-    << "_Bool"
-    << "char"
-    << "double"
-    << "float"
-    << "int"
-    << "long"
-    << "short"
-    << "size_t"
-    << "void"
-    << "wchar_t";
+static const std::set<std::string> stdTypes = { "bool"
+                                                , "_Bool"
+                                                , "char"
+                                                , "double"
+                                                , "float"
+                                                , "int"
+                                                , "long"
+                                                , "short"
+                                                , "size_t"
+                                                , "void"
+                                                , "wchar_t"
+                                              };
 
 void Token::update_property_isStandardType()
 {
@@ -908,11 +910,12 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
-    newToken->_linenr = _linenr;
-    newToken->_fileIndex = _fileIndex;
-    newToken->_progressValue = _progressValue;
 
     if (newToken != this) {
+        newToken->_linenr = _linenr;
+        newToken->_fileIndex = _fileIndex;
+        newToken->_progressValue = _progressValue;
+
         if (prepend) {
             /*if (this->previous())*/ {
                 newToken->previous(this->previous());

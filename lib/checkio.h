@@ -50,14 +50,14 @@ public:
     }
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
     }
 
     /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkCoutCerrMisusage();
@@ -139,7 +139,7 @@ private:
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
     static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckIO c(nullptr, settings, errorLogger);
 
         c.coutCerrMisusageError(nullptr,  "cout");
@@ -169,7 +169,7 @@ private:
         return "IO using format string";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Check format string input/output operations.\n"
                "- Bad usage of the function 'sprintf' (overlapping data)\n"
                "- Missing or wrong width specifiers in 'scanf' format string\n"

@@ -79,14 +79,14 @@ const char * CppCheck::extraVersion()
 
 unsigned int CppCheck::check(const std::string &path)
 {
-    std::ifstream fin(path.c_str());
-    return processFile(Path::simplifyPath(path), emptyString, fin);
+    std::ifstream fin(path);
+    return checkFile(Path::simplifyPath(path), emptyString, fin);
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
     std::istringstream iss(content);
-    return processFile(Path::simplifyPath(path), emptyString, iss);
+    return checkFile(Path::simplifyPath(path), emptyString, iss);
 }
 
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
@@ -101,11 +101,11 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     if (fs.platformType != Settings::Unspecified) {
         temp._settings.platform(fs.platformType);
     }
-    std::ifstream fin(fs.filename.c_str());
-    return temp.processFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
+    std::ifstream fin(fs.filename);
+    return temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
 }
 
-unsigned int CppCheck::processFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
+unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     exitcode = 0;
 
@@ -166,8 +166,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
             if (err) {
                 const ErrorLogger::ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
-                std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-                callstack.push_back(loc1);
+                std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
 
                 ErrorLogger::ErrorMessage errmsg(callstack,
                                                  "",
@@ -197,7 +196,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
         std::ofstream fdump;
         if (_settings.dump) {
             const std::string dumpfile(_settings.dumpFile.empty() ? (filename + ".dump") : _settings.dumpFile);
-            fdump.open(dumpfile.c_str());
+            fdump.open(dumpfile);
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
                 fdump << "<dumps>" << std::endl;
@@ -217,7 +216,7 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                     fdump << "    <tok "
                           << "fileIndex=\"" << tok->location.fileIndex << "\" "
                           << "linenr=\"" << tok->location.line << "\" "
-                          << "str=\"" << ErrorLogger::toxml(tok->str) << "\""
+                          << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
                           << "/>" << std::endl;
                 }
                 fdump << "  </rawtokens>" << std::endl;
@@ -226,6 +225,9 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1);
+        if (_settings.dump && fdump.is_open()) {
+            _settings.nomsg.dump(fdump);
+        }
         tokens1.removeComments();
         preprocessor.removeComments();
 
@@ -301,6 +303,8 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
 
         std::set<unsigned long long> checksums;
         unsigned int checkCount = 0;
+        bool hasValidConfig = false;
+        std::list<std::string> configurationError;
         for (std::set<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
             // bail out if terminated
             if (_settings.terminated())
@@ -312,13 +316,6 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 break;
 
             cfg = *it;
-
-            // If only errors are printed, print filename after the check
-            if (!_settings.quiet && (!cfg.empty() || it != configurations.begin())) {
-                std::string fixedpath = Path::simplifyPath(filename);
-                fixedpath = Path::toNativeSeparators(fixedpath);
-                _errorLogger.reportOut("Checking " + fixedpath + ": " + cfg + "...");
-            }
 
             if (!_settings.userDefines.empty()) {
                 if (!cfg.empty())
@@ -358,6 +355,15 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                 const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files);
                 _tokenizer.createTokens(&tokensP);
                 timer.Stop();
+                hasValidConfig = true;
+
+                // If only errors are printed, print filename after the check
+                if (!_settings.quiet && (!cfg.empty() || it != configurations.begin())) {
+                    std::string fixedpath = Path::simplifyPath(filename);
+                    fixedpath = Path::toNativeSeparators(fixedpath);
+                    _errorLogger.reportOut("Checking " + fixedpath + ": " + cfg + "...");
+                }
+
                 if (tokensP.empty())
                     continue;
 
@@ -414,6 +420,12 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
                     checkSimplifiedTokens(_tokenizer);
                 }
 
+            } catch (const simplecpp::Output &o) {
+                // #error etc during preprocessing
+                configurationError.push_back((cfg.empty() ? "\'\'" : cfg) + " : [" + o.location.file() + ':' + MathLib::toString(o.location.line) + "] " + o.msg);
+                --checkCount; // don't count invalid configurations
+                continue;
+
             } catch (const InternalError &e) {
                 internalErrorFound=true;
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -440,6 +452,26 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
             }
         }
 
+        if (!hasValidConfig && configurations.size() > 1 && _settings.isEnabled(Settings::INFORMATION)) {
+            std::string msg;
+            msg = "This file is not analyzed. Cppcheck failed to extract a valid configuration. Use -v for more details.";
+            msg += "\nThis file is not analyzed. Cppcheck failed to extract a valid configuration. The tested configurations have these preprocessor errors:";
+            for (const std::string &s : configurationError)
+                msg += '\n' + s;
+
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            ErrorLogger::ErrorMessage::FileLocation loc;
+            loc.setfile(Path::toNativeSeparators(filename));
+            locationList.push_back(loc);
+            ErrorLogger::ErrorMessage errmsg(locationList,
+                                             loc.getfile(),
+                                             Severity::information,
+                                             msg,
+                                             "noValidConfiguration",
+                                             false);
+            reportErr(errmsg);
+        }
+
         // dumped all configs, close root </dumps> element now
         if (_settings.dump && fdump.is_open())
             fdump << "</dumps>" << std::endl;
@@ -451,6 +483,9 @@ unsigned int CppCheck::processFile(const std::string& filename, const std::strin
     } catch (const InternalError &e) {
         internalError(filename, e.errorMessage);
         exitcode=1; // e.g. reflect a syntax error
+    } catch (const simplecpp::Output &o) {
+        internalError(std::string(o.location.file() + ':' + MathLib::toString(o.location.line)), o.msg);
+        exitcode=1; // e.g. reflect an error during preprocessing
     }
 
     analyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
@@ -476,8 +511,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 
     if (_settings.isEnabled(Settings::INFORMATION)) {
         const ErrorLogger::ErrorMessage::FileLocation loc1(filename, 0);
-        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
-        callstack.push_back(loc1);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
 
         ErrorLogger::ErrorMessage errmsg(callstack,
                                          emptyString,
@@ -728,22 +762,17 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
         return;
 
-    std::string file;
-    unsigned int line(0);
-    if (!msg._callStack.empty()) {
-        file = msg._callStack.back().getfile(false);
-        line = msg._callStack.back().line;
-    }
+    const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
     if (_useGlobalSuppressions) {
-        if (_settings.nomsg.isSuppressed(msg._id, file, line))
+        if (_settings.nomsg.isSuppressed(errorMessage))
             return;
     } else {
-        if (_settings.nomsg.isSuppressedLocal(msg._id, file, line))
+        if (_settings.nomsg.isSuppressedLocal(errorMessage))
             return;
     }
 
-    if (!_settings.nofail.isSuppressed(msg._id, file, line) && !_settings.nomsg.isSuppressed(msg._id, file, line))
+    if (!_settings.nofail.isSuppressed(errorMessage) && (_useGlobalSuppressions || !_settings.nomsg.isSuppressed(errorMessage)))
         exitcode = 1;
 
     _errorList.push_back(errmsg);
@@ -767,22 +796,9 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
 
 void CppCheck::reportInfo(const ErrorLogger::ErrorMessage &msg)
 {
-    // Suppressing info message?
-    std::string file;
-    unsigned int line(0);
-    if (!msg._callStack.empty()) {
-        file = msg._callStack.back().getfile(false);
-        line = msg._callStack.back().line;
-    }
-    if (_useGlobalSuppressions) {
-        if (_settings.nomsg.isSuppressed(msg._id, file, line))
-            return;
-    } else {
-        if (_settings.nomsg.isSuppressedLocal(msg._id, file, line))
-            return;
-    }
-
-    _errorLogger.reportInfo(msg);
+    const Suppressions::ErrorMessage &errorMessage = msg.toSuppressionsErrorMessage();
+    if (!_settings.nomsg.isSuppressed(errorMessage))
+        _errorLogger.reportInfo(msg);
 }
 
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
@@ -831,7 +847,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 
     // Load all analyzer info data..
     const std::string filesTxt(buildDir + "/files.txt");
-    std::ifstream fin(filesTxt.c_str());
+    std::ifstream fin(filesTxt);
     std::string filesTxtLine;
     while (std::getline(fin, filesTxtLine)) {
         const std::string::size_type firstColon = filesTxtLine.find(':');

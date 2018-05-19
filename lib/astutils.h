@@ -71,9 +71,13 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
  */
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure);
 
+bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure);
+
 bool isConstExpression(const Token *tok, const Library& library, bool pure);
 
 bool isWithoutSideEffects(bool cpp, const Token* tok);
+
+bool isUniqueExpression(const Token* tok);
 
 /** Is scope a return scope (scope will unconditionally return) */
 bool isReturnScope(const Token *endToken);
@@ -100,7 +104,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings);
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp);
 
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
@@ -120,5 +124,12 @@ std::vector<const Token *> getArguments(const Token *ftok);
  * \return nullptr or the }
  */
 const Token *findLambdaEndToken(const Token *first);
+
+/**
+ * do we see a likely write of rhs through overloaded operator
+ *   s >> x;
+ *   a & x;
+ */
+bool isLikelyStreamRead(bool cpp, const Token *op);
 
 #endif // astutilsH

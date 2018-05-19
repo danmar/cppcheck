@@ -44,7 +44,7 @@ private:
         checkAssert.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() {
+    void run() override {
         settings.addEnabled("warning");
 
         TEST_CASE(assignmentInAssert);

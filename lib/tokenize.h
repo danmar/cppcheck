@@ -682,6 +682,16 @@ private:
     bool simplifyStrlen();
 
     /**
+     * Convert namespace aliases
+     */
+    void simplifyNamespaceAliases();
+
+    /**
+     * Convert C++17 style nested namespace to older style
+     */
+    void simplifyNestedNamespace();
+
+    /**
     * Prepare ternary operators with parentheses so that the AST can be created
     * */
     void prepareTernaryOpForAST();

@@ -34,7 +34,7 @@ public:
     }
 
 private:
-    void run() {
+    void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
         TEST_CASE(varid3);

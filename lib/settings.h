@@ -158,7 +158,11 @@ public:
 
     /** @brief The output format in which the errors are printed in text mode,
         e.g. "{severity} {file}:{line} {message} {id}" */
-    std::string outputFormat;
+    std::string templateFormat;
+
+    /** @brief The output format in which the error locations are printed in
+     *  text mode, e.g. "{file}:{line} {info}" */
+    std::string templateLocation;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES showtime;

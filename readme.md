@@ -22,7 +22,7 @@ A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
 
 ## Compiling
 
-Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2010 then it will work. If nullptr is not supported by your compiler then this can be emulated using the header lib/cxx11emu.h.
+Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.6 then it will work.
 
 To build the GUI, you need Qt.
 
@@ -91,13 +91,13 @@ Flags:
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 ```
 
 If you want to use `--rule` and `--rule-file` then dependencies are needed:
 
 ```shell
-g++ -o cppcheck -std=c++0x -include lib/cxx11emu.h -lpcre -DHAVE_RULES -Ilib -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 ```
 
 ### MinGW

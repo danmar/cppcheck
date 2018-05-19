@@ -26,6 +26,11 @@ void exp05()
     dostuff(data); // cert-EXP05-C
 }
 
+void print(const char *p);
+void exp05_fp() {
+    print("hello");
+}
+
 void exp42()
 {
     struct S s1 = {1,2};

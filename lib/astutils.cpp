@@ -28,6 +28,7 @@
 #include "valueflow.h"
 
 #include <list>
+#include <functional>
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
@@ -162,8 +163,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return false;
     if (tok1->isSigned() != tok2->isSigned())
         return false;
-    if (tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
-        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && pure && !library.isFunctionConst(tok1->str(), true) && !tok1->isAttributeConst() && !tok1->isAttributePure())
+    if (pure && tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
+        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && !library.isFunctionConst(tok1->str(), true) && !tok1->isAttributeConst() && !tok1->isAttributePure())
             return false;
         else if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
             return false;
@@ -248,6 +249,24 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
     return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values();
 }
 
+static bool isZeroBoundCond(const Token * const cond)
+{
+    if (cond == nullptr)
+        return false;
+    // Assume unsigned
+    // TODO: Handle reverse conditions
+    const bool isZero = cond->astOperand2()->getValue(0);
+    if (cond->str() == "==" || cond->str() == ">=")
+        return isZero;
+    if (cond->str() == "<=")
+        return true;
+    if (cond->str() == "<")
+        return !isZero;
+    if (cond->str() == ">")
+        return false;
+    return false;
+}
+
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure)
 {
     if (!cond1 || !cond2)
@@ -273,16 +292,17 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
-        if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") && 
-            Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size") && 
+        // TODO: Handle reverse conditions
+        if (Library::isContainerYield(cond1, Library::Container::EMPTY, "empty") &&
+            Library::isContainerYield(cond2->astOperand1(), Library::Container::SIZE, "size") &&
             cond1->astOperand1()->astOperand1()->varId() == cond2->astOperand1()->astOperand1()->astOperand1()->varId()) {
-            return !(cond2->str() == "==" && cond2->astOperand2()->getValue(0));
+            return !isZeroBoundCond(cond2);
         }
 
-        if (Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") && 
+        if (Library::isContainerYield(cond2, Library::Container::EMPTY, "empty") &&
             Library::isContainerYield(cond1->astOperand1(), Library::Container::SIZE, "size") &&
             cond2->astOperand1()->astOperand1()->varId() == cond1->astOperand1()->astOperand1()->astOperand1()->varId()) {
-            return !(cond1->str() == "==" && cond1->astOperand2()->getValue(0));
+            return !isZeroBoundCond(cond1);
         }
     }
 
@@ -359,6 +379,19 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                         (comp1 == ">" && comp2 == "<"))));
 }
 
+bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure)
+{
+    if (!tok1 || !tok2)
+        return false;
+    if (isOppositeCond(true, cpp, tok1, tok2, library, pure))
+        return true;
+    if (tok1->str() == "-" && !tok1->astOperand2())
+        return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure);
+    if (tok2->str() == "-" && !tok2->astOperand2())
+        return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure);
+    return false;
+}
+
 bool isConstExpression(const Token *tok, const Library& library, bool pure)
 {
     if (!tok)
@@ -389,6 +422,61 @@ bool isWithoutSideEffects(bool cpp, const Token* tok)
         return var && (!var->isClass() || var->isPointer() || var->isStlType());
     }
     return true;
+}
+
+bool isUniqueExpression(const Token* tok)
+{
+    if (!tok)
+        return true;
+    if (tok->function()) {
+        const Function * fun = tok->function();
+        const Scope * scope = fun->nestedIn;
+        if (!scope)
+            return true;
+        for (const Function& f:scope->functionList) {
+            if (f.argumentList.size() == fun->argumentList.size() && f.name() != fun->name()) {
+                return false;
+            }
+        }
+    } else if (tok->variable()) {
+        const Variable * var = tok->variable();
+        const Scope * scope = var->scope();
+        if (!scope)
+            return true;
+        const Type * varType = var->type();
+        // Iterate over the variables in scope and the parameters of the function if possible
+        const Function * fun = scope->function;
+        const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
+        if (varType) {
+            for (const std::list<Variable>* vars:setOfVars) {
+                if (!vars)
+                    continue;
+                for (const Variable& v:*vars) {
+                    if (v.type() && v.type()->name() == varType->name() && v.name() != var->name()) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            for (const std::list<Variable>* vars:setOfVars) {
+                if (!vars)
+                    continue;
+                for (const Variable& v:*vars) {
+                    if (v.isFloatingType() == var->isFloatingType() &&
+                        v.isEnumType() == var->isEnumType() &&
+                        v.isClass() == var->isClass() &&
+                        v.isArray() == var->isArray() &&
+                        v.isPointer() == var->isPointer() &&
+                        v.name() != var->name())
+                        return false;
+                }
+            }
+        }
+    } else if (!isUniqueExpression(tok->astOperand1())) {
+        return false;
+    }
+
+    return isUniqueExpression(tok->astOperand2());
 }
 
 bool isReturnScope(const Token * const endToken)
@@ -490,7 +578,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (tok->variable() && tok->variable()->nameToken() == tok) {
         // Find constructor..
         const unsigned int argCount = numberOfArguments(tok);
-        const ::Scope *typeScope = tok->variable()->typeScope();
+        const Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
             for (std::list<Function>::const_iterator it = typeScope->functionList.begin(); it != typeScope->functionList.end(); ++it) {
                 if (!it->isConstructor() || it->argCount() < argCount)
@@ -528,7 +616,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings)
+bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
@@ -544,14 +632,8 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         if (Token::Match(tok->previous(), "++|-- %name%"))
             return true;
 
-        if (Token::simpleMatch(tok->previous(), ">>")) {
-            const Token *shr = tok->previous();
-            if (Token::simpleMatch(shr->astParent(), ">>"))
-                return true;
-            const Token *lhs = shr->astOperand1();
-            if (!lhs || !lhs->valueType() || !lhs->valueType()->isIntegral())
-                return true;
-        }
+        if (isLikelyStreamRead(cpp, tok->previous()))
+            return true;
 
         const Token *ftok = tok;
         while (ftok && !Token::Match(ftok, "[({[]"))
@@ -625,3 +707,27 @@ const Token *findLambdaEndToken(const Token *first)
         return tok->link();
     return nullptr;
 }
+
+bool isLikelyStreamRead(bool cpp, const Token *op)
+{
+    if (!cpp)
+        return false;
+
+    if (!Token::Match(op, "&|>>") || !op->astOperand2())
+        return false;
+
+    if (!Token::Match(op->astOperand2(), "%name%|.|*|[") && op->str() != op->astOperand2()->str())
+        return false;
+
+    const Token *parent = op;
+    while (parent->astParent() && parent->astParent()->str() == op->str())
+        parent = parent->astParent();
+    if (parent->astParent() && !Token::Match(parent->astParent(), "%oror%|&&|(|,|!"))
+        return false;
+    if (op->str() == "&" && parent->astParent())
+        return false;
+    if (!parent->astOperand1() || !parent->astOperand2())
+        return false;
+    return (!parent->astOperand1()->valueType() || !parent->astOperand1()->valueType()->isIntegral());
+}
+

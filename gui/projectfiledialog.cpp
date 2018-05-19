@@ -27,12 +27,11 @@
 #include <QSettings>
 #include <QProcess>
 #include "common.h"
+#include "newsuppressiondialog.h"
 #include "projectfiledialog.h"
 #include "checkthread.h"
 #include "projectfile.h"
 #include "library.h"
-#include "cppcheck.h"
-#include "errorlogger.h"
 #include "platforms.h"
 
 /** Platforms shown in the platform combobox */
@@ -484,17 +483,6 @@ QStringList ProjectFileDialog::getLibraries() const
     return libraries;
 }
 
-QStringList ProjectFileDialog::getSuppressions() const
-{
-    QStringList suppressions;
-    const int count = mUI.mListSuppressions->count();
-    for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = mUI.mListSuppressions->item(i);
-        suppressions << item->text();
-    }
-    return suppressions;
-}
-
 void ProjectFileDialog::setRootPath(const QString &root)
 {
     mUI.mEditProjectRoot->setText(QDir::toNativeSeparators(root));
@@ -553,10 +541,17 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
     }
 }
 
-void ProjectFileDialog::setSuppressions(const QStringList &suppressions)
+void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
 {
+    mSuppressions = suppressions;
+
+    QStringList s;
+    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+        s << QString::fromStdString(suppression.getText());
+    }
+
     mUI.mListSuppressions->clear();
-    mUI.mListSuppressions->addItems(suppressions);
+    mUI.mListSuppressions->addItems(s);
     mUI.mListSuppressions->sortItems();
 }
 
@@ -641,26 +636,9 @@ void ProjectFileDialog::moveIncludePathDown()
 
 void ProjectFileDialog::addSuppression()
 {
-    class QErrorLogger : public ErrorLogger {
-    public:
-        virtual void reportOut(const std::string &/*outmsg*/) {}
-        virtual void reportErr(const ErrorLogger::ErrorMessage &msg) {
-            errorIds << QString::fromStdString(msg._id);
-        }
-        QStringList errorIds;
-    };
-
-    QErrorLogger errorLogger;
-    CppCheck cppcheck(errorLogger,false);
-    cppcheck.getErrorMessages();
-    errorLogger.errorIds.sort();
-
-    bool ok;
-    QString item = QInputDialog::getItem(this, tr("Add Suppression"),
-                                         tr("Select error id suppress:"), errorLogger.errorIds, 0, false, &ok);
-    if (ok && !item.isEmpty()) {
-        mUI.mListSuppressions->addItem(item);
-        mUI.mListSuppressions->sortItems();
+    NewSuppressionDialog dlg;
+    if (dlg.exec() == QDialog::Accepted) {
+        setSuppressions(mSuppressions << dlg.getSuppression());
     }
 }
 
@@ -668,7 +646,14 @@ void ProjectFileDialog::removeSuppression()
 {
     const int row = mUI.mListSuppressions->currentRow();
     QListWidgetItem *item = mUI.mListSuppressions->takeItem(row);
+    const std::string s = item->text().toStdString();
     delete item;
+    for (int i = 0; i < mSuppressions.size(); ++i) {
+        if (mSuppressions[i].getText() == s) {
+            mSuppressions.removeAt(i);
+            break;
+        }
+    }
 }
 
 void ProjectFileDialog::browseMisraFile()

@@ -36,7 +36,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings0.library, "qt.cfg");
 
         settings0.addEnabled("style");
@@ -87,7 +87,10 @@ private:
         TEST_CASE(oppositeInnerConditionAnd);
         TEST_CASE(oppositeInnerConditionEmpty);
 
+        TEST_CASE(identicalInnerCondition);
+
         TEST_CASE(identicalConditionAfterEarlyExit);
+        TEST_CASE(innerConditionModified);
 
         TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
         TEST_CASE(clarifyCondition2);     // if (a & b == c)
@@ -112,8 +115,7 @@ private:
         settings0.inconclusive = inconclusive;
 
         // Raw tokens..
-        std::vector<std::string> files;
-        files.push_back(filename);
+        std::vector<std::string> files(1, filename);
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, files[0]);
 
@@ -1849,6 +1851,12 @@ private:
         check("void f1(const std::string &s) { if(s.size() > 42) if(s.empty()) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
+        check("void f1(const std::string &s) { if(s.size() > 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
@@ -1875,6 +1883,34 @@ private:
 
         check("void f1(const std::string v[10]) { if(v[0].size() > 42) if(v[1].empty()) {}} ");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() <= 1) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() <= 2) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() < 2) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        // TODO: These are identical condition since size cannot be negative
+        check("void f1(const std::string &s) { if(s.size() <= 0) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+
+        // TODO: These are identical condition since size cannot be negative
+        check("void f1(const std::string &s) { if(s.size() < 1) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void identicalInnerCondition() {
+        check("void f1(int a, int b) { if(a==b) if(a==b) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+
+        check("void f2(int a, int b) { if(a!=b) if(a!=b) {}}");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
     }
 
     void identicalConditionAfterEarlyExit() {
@@ -1980,6 +2016,32 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void innerConditionModified() {
+        check("void f(int x, int y) {\n"
+              "  if (x == 0) {\n"
+              "    x += y;\n"
+              "    if (x == 0) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x == 0) {\n"
+              "    x += y;\n"
+              "    if (x == 1) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int * x, int * y) {\n"
+              "  if (x[*y] == 0) {\n"
+              "    (*y)++;\n"
+              "    if (x[*y] == 0) {}\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     // clarify conditions with = and comparison
     void clarifyCondition1() {
         check("void f() {\n"
@@ -2079,13 +2141,16 @@ private:
               "    if (x & 3 == 2) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
+                      "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n"
                       "[test.cpp:2]: (style) Condition 'x&3==2' is always false\n"
                       "[test.cpp:2]: (style) Condition '3==2' is always false\n", errout.str());
 
         check("void f() {\n"
               "    if (a & fred1.x == fred2.y) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
+                      "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n"
+                      , errout.str());
     }
 
     // clarify condition that uses ! operator and then bitwise operator
@@ -2129,6 +2194,12 @@ private:
 
         check("void f() {\n"
               "    if (result != (char *)&inline_result) { }\n" // don't simplify and verify cast
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8495
+        check("void f(bool a, bool b) {\n"
+              "    C & a & b;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

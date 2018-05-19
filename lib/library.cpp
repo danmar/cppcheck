@@ -36,7 +36,7 @@ static std::vector<std::string> getnames(const char *names)
 {
     std::vector<std::string> ret;
     while (const char *p = std::strchr(names,',')) {
-        ret.push_back(std::string(names, p-names));
+        ret.emplace_back(names, p-names);
         names = p + 1;
     }
     ret.push_back(names);
@@ -626,7 +626,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
                     ac.minsizes.reserve(type == ArgumentChecks::MinSize::MUL ? 2 : 1);
-                    ac.minsizes.push_back(ArgumentChecks::MinSize(type,argattr[0]-'0'));
+                    ac.minsizes.emplace_back(type,argattr[0]-'0');
                     if (type == ArgumentChecks::MinSize::MUL) {
                         const char *arg2attr = argnode->Attribute("arg2");
                         if (!arg2attr)
@@ -770,7 +770,7 @@ std::string Library::getFunctionName(const Token *ftok, bool *error) const
 
 std::string Library::getFunctionName(const Token *ftok) const
 {
-    if (!Token::Match(ftok, "%name% ("))
+    if (!Token::Match(ftok, "%name% (") && (ftok->strAt(-1) != "&" || ftok->previous()->astOperand2()))
         return "";
 
     // Lookup function name using AST..

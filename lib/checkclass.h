@@ -53,7 +53,7 @@ public:
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (tokenizer->isC())
             return;
 
@@ -65,7 +65,7 @@ public:
     }
 
     /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (tokenizer->isC())
             return;
 
@@ -90,6 +90,8 @@ public:
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
+
+        checkClass.checkOverride();
     }
 
 
@@ -155,6 +157,9 @@ public:
     /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
     void checkUnsafeClassDivZero(bool test=false);
 
+    /** @brief Check that the override keyword is used when overriding virtual methods */
+    void checkOverride();
+
 private:
     const SymbolDatabase *symbolDatabase;
 
@@ -163,7 +168,9 @@ private:
     void noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     //void copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& var_name);
     void copyConstructorShallowCopyError(const Token *tok, const std::string& varname);
-    void noCopyConstructorError(const Token *tok, const std::string &classname, bool isStruct);
+    void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
+    void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
+    void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
     void uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool inconclusive);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
@@ -189,14 +196,17 @@ private:
     void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
+    void overrideError(const Function *funcInBase, const Function *funcInDerived);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckClass c(nullptr, settings, errorLogger);
         c.noConstructorError(nullptr, "classname", false);
         c.noExplicitConstructorError(nullptr, "classname", false);
         //c.copyConstructorMallocError(nullptr, 0, "var");
         c.copyConstructorShallowCopyError(nullptr, "var");
-        c.noCopyConstructorError(nullptr, "class", false);
+        c.noCopyConstructorError(nullptr, false, nullptr, false);
+        c.noOperatorEqError(nullptr, false, nullptr, false);
+        c.noDestructorError(nullptr, false, nullptr);
         c.uninitVarError(nullptr, false, "classname", "varname", false);
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
@@ -222,13 +232,14 @@ private:
         c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
+        c.overrideError(nullptr, nullptr);
     }
 
     static std::string myName() {
         return "Class";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Check the code for each class.\n"
                "- Missing constructors and copy constructors\n"
                //"- Missing allocation of memory in copy constructor\n"
@@ -249,7 +260,8 @@ private:
                "- Call of pure virtual function in constructor/destructor\n"
                "- Duplicated inherited data members\n"
                "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
-               "- Check that arbitrary usage of public interface does not result in division by zero\n";
+               "- Check that arbitrary usage of public interface does not result in division by zero\n"
+               "- Check that the 'override' keyword is used when overriding virtual methods\n";
     }
 
     // operatorEqRetRefThis helper functions

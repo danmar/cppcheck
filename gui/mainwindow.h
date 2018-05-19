@@ -54,7 +54,9 @@ public:
     enum { MaxRecentProjects = 5 };
 
     MainWindow(TranslationHandler* th, QSettings* settings);
+    MainWindow(const MainWindow &) = delete;
     virtual ~MainWindow();
+    MainWindow &operator=(const MainWindow &) = delete;
 
     /**
       * List of checked platforms.
@@ -76,6 +78,12 @@ public slots:
 
     /** @brief Slot to reanalyze all files */
     void reAnalyzeAll();
+
+    /** @brief Slot to reanalyze with checking library configuration */
+    void checkLibrary();
+
+    /** @brief Slot to check configuration */
+    void checkConfiguration();
 
     /**
      * @brief Slot to reanalyze selected files
@@ -234,8 +242,10 @@ private:
     /**
       * @brief Analyze the project.
       * @param projectFile Pointer to the project to analyze.
+      * @param checkLibrary Flag to indicate if the library should be checked.
+      * @param checkConfiguration Flag to indicate if the configuration should be checked.
       */
-    void analyzeProject(const ProjectFile *projectFile);
+    void analyzeProject(const ProjectFile *projectFile, const bool checkLibrary = false, const bool checkConfiguration = false);
 
     /**
      * @brief Set current language
@@ -255,6 +265,9 @@ private:
     /** @brief Helper function to enable/disable all check,recheck buttons */
     void enableCheckButtons(bool enable);
 
+    /** @brief Helper function to enable/disable results buttons (clear,save,print) */
+    void enableResultsButtons();
+
     /**
      * @brief Select files/or directory to analyze.
      * Helper function to open a dialog to ask user to select files or
@@ -268,15 +281,19 @@ private:
     /**
      * @brief Analyze project
      * @param p imported project
+     * @param checkLibrary Flag to indicate if library should be checked
+     * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void doAnalyzeProject(ImportProject p);
+    void doAnalyzeProject(ImportProject p, const bool checkLibrary = false, const bool checkConfiguration = false);
 
     /**
      * @brief Analyze all files specified in parameter files
      *
      * @param files List of files and/or directories to analyze
+     * @param checkLibrary Flag to indicate if library should be checked
+     * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void doAnalyzeFiles(const QStringList &files);
+    void doAnalyzeFiles(const QStringList &files, const bool checkLibrary = false, const bool checkConfiguration = false);
 
     /**
      * @brief Get our default cppcheck settings and read project file.

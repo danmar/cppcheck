@@ -54,7 +54,7 @@ public:
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -84,7 +84,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -238,6 +238,8 @@ private:
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
+    void duplicateAssignExpressionError(const Token *tok1, const Token *tok2);
+    void oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
     void duplicateValueTernaryError(const Token *tok);
     void duplicateExpressionTernaryError(const Token *tok);
@@ -262,7 +264,7 @@ private:
     void funcArgNamesDifferent(const std::string & functionName, size_t index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
 
         // error
@@ -283,7 +285,7 @@ private:
         c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
-        c.passedByValueError(nullptr,  "parametername", false);
+        c.passedByValueError(nullptr, "parametername", false);
         c.constStatementError(nullptr,  "type");
         c.signedCharArrayIndexError(nullptr);
         c.unknownSignCharArrayIndexError(nullptr);
@@ -297,6 +299,7 @@ private:
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
         c.duplicateBranchError(nullptr, nullptr);
+        c.oppositeExpressionError(nullptr, nullptr, "&&");
         c.duplicateExpressionError(nullptr, nullptr, "&&");
         c.duplicateValueTernaryError(nullptr);
         c.duplicateExpressionTernaryError(nullptr);
@@ -326,7 +329,7 @@ private:
         return "Other";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Other checks\n"
 
                // error

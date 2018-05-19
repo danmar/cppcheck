@@ -55,9 +55,9 @@ void CheckVaarg::va_start_argument()
         const Function* function = scope->function;
         if (!function)
             continue;
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->scope()->isExecutable())
-                tok = tok->scope()->classEnd;
+                tok = tok->scope()->bodyEnd;
             else if (Token::simpleMatch(tok, "va_start (")) {
                 const Token* param2 = tok->tokAt(2)->nextArgument();
                 if (!param2)
@@ -96,8 +96,7 @@ void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string&
 void CheckVaarg::va_list_usage()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int varid = 1; varid < symbolDatabase->getVariableListSize(); varid++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isPointer() || var->isReference() || var->isArray() || !var->scope() || var->typeStartToken()->str() != "va_list")
             continue;
         if (!var->isLocal() && !var->isArgument()) // Check only local variables and arguments
@@ -107,7 +106,7 @@ void CheckVaarg::va_list_usage()
         bool exitOnEndOfStatement = false;
 
         const Token* tok = var->nameToken()->next();
-        for (;  tok && tok != var->scope()->classEnd; tok = tok->next()) {
+        for (;  tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "va_start ( %varid%", var->declarationId())) {
                 if (open)
                     va_start_subsequentCallsError(tok, var->name());
@@ -137,7 +136,7 @@ void CheckVaarg::va_list_usage()
                 const Scope* scope = tok->scope();
                 while (scope->nestedIn && scope->type != Scope::eFor && scope->type != Scope::eWhile && scope->type != Scope::eDo && scope->type != Scope::eSwitch)
                     scope = scope->nestedIn;
-                tok = scope->classEnd;
+                tok = scope->bodyEnd;
                 if (!tok)
                     return;
             } else if (tok->str() == "goto" || (_tokenizer->isCPP() && tok->str() == "try")) {

@@ -144,10 +144,11 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
 }
 
 namespace {
-    const std::set<std::string> stl_stream = make_container< std::set<std::string> >() <<
-            "fstream" << "ifstream" << "iostream" << "istream" <<
-            "istringstream" << "ofstream" << "ostream" << "ostringstream" <<
-            "stringstream" << "wistringstream" << "wostringstream" << "wstringstream";
+    const std::set<std::string> stl_stream = {
+        "fstream", "ifstream", "iostream", "istream",
+        "istringstream", "ofstream", "ostream", "ostringstream",
+        "stringstream", "wistringstream", "wostringstream", "wstringstream"
+    };
 }
 
 /**
@@ -296,8 +297,8 @@ void CheckNullPointer::nullPointerLinkedList()
                         // Make sure there is a "break" or "return" inside the loop.
                         // Without the "break" a null pointer could be dereferenced in the
                         // for statement.
-                        for (const Token *tok4 = scope->classStart; tok4; tok4 = tok4->next()) {
-                            if (tok4 == i->classEnd) {
+                        for (const Token *tok4 = scope->bodyStart; tok4; tok4 = tok4->next()) {
+                            if (tok4 == i->bodyEnd) {
                                 const ValueFlow::Value v(scope->classDef, 0LL);
                                 nullPointerError(tok1, var->name(), &v, false);
                                 break;
@@ -375,9 +376,10 @@ void CheckNullPointer::nullPointer()
 }
 
 namespace {
-    const std::set<std::string> stl_istream = make_container< std::set<std::string> >() <<
-            "fstream" << "ifstream" << "iostream" << "istream" <<
-            "istringstream" << "stringstream" << "wistringstream" << "wstringstream";
+    const std::set<std::string> stl_istream = {
+        "fstream", "ifstream", "iostream", "istream",
+        "istringstream", "stringstream", "wistringstream", "wstringstream"
+    };
 }
 
 /** Dereferencing null constant (simplified token list) */
@@ -391,12 +393,12 @@ void CheckNullPointer::nullConstantDereference()
         if (scope->function == nullptr || !scope->function->hasBody()) // We only look for functions with a body
             continue;
 
-        const Token *tok = scope->classStart;
+        const Token *tok = scope->bodyStart;
 
         if (scope->function->isConstructor())
             tok = scope->function->token; // Check initialization list
 
-        for (; tok != scope->classEnd; tok = tok->next()) {
+        for (; tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "sizeof|decltype|typeid|typeof ("))
                 tok = tok->next()->link();
 
@@ -478,8 +480,8 @@ void CheckNullPointer::nullConstantDereference()
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
 {
-    const std::string errmsgcond(ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible null pointer dereference: " + varname + ".");
-    const std::string errmsgdefarg("Possible null pointer dereference if the default parameter value is used: " + varname);
+    const std::string errmsgcond("$symbol:" + varname + '\n' + ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible null pointer dereference: $symbol.");
+    const std::string errmsgdefarg("$symbol:" + varname + "\nPossible null pointer dereference if the default parameter value is used: $symbol");
 
     if (!tok) {
         reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE476, false);
@@ -506,7 +508,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
         if (!varname.empty())
-            errmsg += ": " + varname;
+            errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
         reportError(errorPath,
                     value->isKnown() ? Severity::error : Severity::warning,
@@ -522,15 +524,20 @@ void CheckNullPointer::arithmetic()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "-|+|+=|-=|++|--"))
                 continue;
             const Token *pointerOperand;
-            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer != 0)
+            const Token *numericOperand;
+            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer != 0) {
                 pointerOperand = tok->astOperand1();
-            else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0)
+                numericOperand = tok->astOperand2();
+            } else if (tok->astOperand2() && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer != 0) {
                 pointerOperand = tok->astOperand2();
-            else
+                numericOperand = tok->astOperand1();
+            } else
+                continue;
+            if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
                 continue;
             MathLib::bigint checkValue = 0;
             // When using an assign op, the value read from
@@ -557,25 +564,30 @@ void CheckNullPointer::arithmetic()
 
 void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value *value)
 {
+    std::string arithmetic;
+    if (tok && tok->str()[0] == '-')
+        arithmetic = "subtraction";
+    else if (tok && tok->str()[0] == '+')
+        arithmetic = "addition";
+    else
+        arithmetic = "arithmetic";
+
     std::string errmsg;
-    if (tok && tok->str().front() == '-') {
+    if (tok && tok->str()[0] == '-') {
         if (value && value->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer subtraction.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer " + arithmetic + ".";
         else
             errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
     } else {
         if (value && value->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is pointer arithmetic with NULL pointer.";
         else
-            errmsg = "Pointer arithmetic with NULL pointer.";
+            errmsg = "Pointer " + arithmetic + " with NULL pointer.";
     }
 
-    std::list<const Token*> callstack;
-    callstack.push_back(tok);
-    if (value && value->condition)
-        callstack.push_back(value->condition);
+    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
 
-    reportError(callstack,
+    reportError(errorPath,
                 (value && value->condition) ? Severity::warning : Severity::error,
                 (value && value->condition) ? "nullPointerArithmeticRedundantCheck" : "nullPointerArithmetic",
                 errmsg,

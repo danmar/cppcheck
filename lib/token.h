@@ -423,6 +423,16 @@ public:
         setFlag(fIsEnumType, value);
     }
 
+    bool isBitfield() const {
+        return _bits > 0;
+    }
+    unsigned char bits() const {
+        return _bits;
+    }
+    void setBits(unsigned char b) {
+        _bits = b;
+    }
+
     /**
      * @brief Is current token a template argument?
      *
@@ -955,6 +965,9 @@ private:
 
     /** Update internal property cache about isStandardType() */
     void update_property_isStandardType();
+
+    /** Bitfield bit count. */
+    unsigned char _bits;
 
     // AST..
     Token *_astOperand1;

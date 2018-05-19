@@ -117,14 +117,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         ErrorLogger::ErrorMessage msg;
         msg.deserialize(buf);
 
-        std::string file;
-        unsigned int line(0);
-        if (!msg._callStack.empty()) {
-            file = msg._callStack.back().getfile(false);
-            line = msg._callStack.back().line;
-        }
-
-        if (!_settings.nomsg.isSuppressed(msg._id, file, line)) {
+        if (!_settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
             // Alert only about unique errors
             std::string errmsg = msg.toString(_settings.verbose);
             if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end()) {
@@ -301,7 +294,7 @@ unsigned int ThreadExecutor::check()
                     oss << "Internal error: Child process crashed with signal " << WTERMSIG(stat);
 
                     std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
-                    locations.push_back(ErrorLogger::ErrorMessage::FileLocation(childname, 0));
+                    locations.emplace_back(childname, 0);
                     const ErrorLogger::ErrorMessage errmsg(locations,
                                                            emptyString,
                                                            Severity::error,
@@ -309,7 +302,7 @@ unsigned int ThreadExecutor::check()
                                                            "cppcheckError",
                                                            false);
 
-                    if (!_settings.nomsg.isSuppressed(errmsg._id, childname, 0))
+                    if (!_settings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
                         _errorLogger.reportErr(errmsg);
                 }
             }
@@ -502,14 +495,7 @@ void ThreadExecutor::reportInfo(const ErrorLogger::ErrorMessage &msg)
 
 void ThreadExecutor::report(const ErrorLogger::ErrorMessage &msg, MessageType msgType)
 {
-    std::string file;
-    unsigned int line(0);
-    if (!msg._callStack.empty()) {
-        file = msg._callStack.back().getfile(false);
-        line = msg._callStack.back().line;
-    }
-
-    if (_settings.nomsg.isSuppressed(msg._id, file, line))
+    if (_settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
         return;
 
     // Alert only about unique errors

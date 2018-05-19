@@ -42,6 +42,12 @@ void bufferAccessOutOfBounds(int fd)
     sendto(fd,a,6,0,0x0,0x0);
     // cppcheck-suppress constStatement
     0;
+    readlink("path", a, 5);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    readlink("path", a, 6);
+    readlinkat(1, "path", a, 5);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    readlinkat(1, "path", a, 6);
 }
 
 void nullPointer(char *p, int fd)

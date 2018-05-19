@@ -92,10 +92,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 {
     Settings& settings = cppcheck->settings();
     CmdLineParser parser(&settings);
-    const bool success = parser.ParseFromArgs(argc, argv);
+    const bool success = parser.parseFromArgs(argc, argv);
 
     if (success) {
-        if (parser.GetShowVersion() && !parser.GetShowErrorMessages()) {
+        if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
             const char * const extraVersion = cppcheck->extraVersion();
             if (*extraVersion != 0)
                 std::cout << "Cppcheck " << cppcheck->version() << " ("
@@ -104,14 +104,14 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                 std::cout << "Cppcheck " << cppcheck->version() << std::endl;
         }
 
-        if (parser.GetShowErrorMessages()) {
+        if (parser.getShowErrorMessages()) {
             errorlist = true;
             std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
             cppcheck->getErrorMessages();
             std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
         }
 
-        if (parser.ExitAfterPrinting()) {
+        if (parser.exitAfterPrinting()) {
             settings.terminate();
             return true;
         }
@@ -138,9 +138,9 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Output a warning for the user if he tries to exclude headers
     bool warn = false;
-    const std::vector<std::string>& ignored = parser.GetIgnoredPaths();
-    for (std::vector<std::string>::const_iterator i = ignored.cbegin(); i != ignored.cend(); ++i) {
-        if (Path::isHeader(*i)) {
+    const std::vector<std::string>& ignored = parser.getIgnoredPaths();
+    for (const std::string &i : ignored) {
+        if (Path::isHeader(i)) {
             warn = true;
             break;
         }
@@ -150,7 +150,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
     }
 
-    const std::vector<std::string>& pathnames = parser.GetPathNames();
+    const std::vector<std::string>& pathnames = parser.getPathNames();
 
 #if defined(_WIN32)
     // For Windows we want case-insensitive path matching
@@ -319,21 +319,21 @@ static bool IsAddressOnStack(const void* ptr)
  * For now we only want to detect abnormal behaviour for a few selected signals:
  */
 
-#define DECLARE_SIGNAL(x) << std::make_pair(x, #x)
+#define DECLARE_SIGNAL(x) std::make_pair(x, #x)
 typedef std::map<int, std::string> Signalmap_t;
-static const Signalmap_t listofsignals = make_container< Signalmap_t > ()
-        DECLARE_SIGNAL(SIGABRT)
-        DECLARE_SIGNAL(SIGBUS)
-        DECLARE_SIGNAL(SIGFPE)
-        DECLARE_SIGNAL(SIGILL)
-        DECLARE_SIGNAL(SIGINT)
-        DECLARE_SIGNAL(SIGQUIT)
-        DECLARE_SIGNAL(SIGSEGV)
-        DECLARE_SIGNAL(SIGSYS)
-        // don't care: SIGTERM
-        DECLARE_SIGNAL(SIGUSR1)
-        //DECLARE_SIGNAL(SIGUSR2) no usage currently
-        ;
+static const Signalmap_t listofsignals = {
+    DECLARE_SIGNAL(SIGABRT),
+    DECLARE_SIGNAL(SIGBUS),
+    DECLARE_SIGNAL(SIGFPE),
+    DECLARE_SIGNAL(SIGILL),
+    DECLARE_SIGNAL(SIGINT),
+    DECLARE_SIGNAL(SIGQUIT),
+    DECLARE_SIGNAL(SIGSEGV),
+    DECLARE_SIGNAL(SIGSYS),
+    // don't care: SIGTERM
+    DECLARE_SIGNAL(SIGUSR1),
+    //DECLARE_SIGNAL(SIGUSR2) no usage currently
+};
 #undef DECLARE_SIGNAL
 /*
  * Entry pointer for signal handlers
@@ -581,7 +581,7 @@ namespace {
         const HANDLE hThread    = GetCurrentThread();
         BOOL result = pSymInitialize(
                           hProcess,
-                          0,
+                          nullptr,
                           TRUE
                       );
         CONTEXT             context = *(ex->ContextRecord);
@@ -642,7 +642,7 @@ namespace {
         }
 
         FreeLibrary(hLibDbgHelp);
-        hLibDbgHelp=0;
+        hLibDbgHelp=nullptr;
     }
 
     void writeMemoryErrorDetails(FILE* outputFile, PEXCEPTION_POINTERS ex, const char* description)
@@ -963,7 +963,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
         // ansi code page characters to wide characters
         MultiByteToWideChar(CP_ACP, 0, msg.data(), msglength, wcContainer.data(), msglength);
         // wide characters to oem codepage characters
-        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, NULL, NULL);
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, nullptr, nullptr);
 
         return result; // hope for return value optimization
     }
@@ -1040,7 +1040,7 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     } else if (_settings->xml) {
         reportErr(msg.toXML());
     } else {
-        reportErr(msg.toString(_settings->verbose, _settings->outputFormat));
+        reportErr(msg.toString(_settings->verbose, _settings->templateFormat, _settings->templateLocation));
     }
 }
 

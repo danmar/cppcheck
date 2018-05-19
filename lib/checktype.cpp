@@ -249,8 +249,8 @@ void CheckType::signConversionError(const Token *tok, const bool constvalue)
                 Severity::warning,
                 "signConversion",
                 (constvalue) ?
-                "Suspicious code: sign conversion of " + varname + " in calculation because '" + varname + "' has a negative value" :
-                "Suspicious code: sign conversion of " + varname + " in calculation, even though " + varname + " can have a negative value", CWE195, false);
+                "$symbol:" + varname + "\nSuspicious code: sign conversion of $symbol in calculation because '$symbol' has a negative value" :
+                "$symbol:" + varname + "\nSuspicious code: sign conversion of $symbol in calculation, even though $symbol can have a negative value", CWE195, false);
 }
 
 
@@ -306,7 +306,7 @@ void CheckType::checkLongCast()
 
         // return statements
         const Token *ret = nullptr;
-        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "return") {
                 if (Token::Match(tok->astOperand1(), "<<|*")) {
                     const ValueType *type = tok->astOperand1()->valueType();

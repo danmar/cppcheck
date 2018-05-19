@@ -53,15 +53,15 @@ def doSearch(path,arguments):
 
 def summary(path, arguments):
   count = {}
+  pattern = re.compile(r'.*: (error|warning|style|performance|portability):.*\[([a-zA-Z0-9]+)\]$')
   for g in getfiles(path, arguments):
     for line in readlines(g):
-      line = trimline(line)
-      res = re.match(r'.*: (error|warning|style|performance|portability):.*\[([a-zA-Z0-9]+)\]$', line)
+      res = pattern.match(trimline(line))
       if res is None:
         continue
       id = res.group(2)
       if id in count:
-        count[id] = count[id] + 1
+        count[id] += 1
       else:
         count[id] = 1
   print('<table>')
@@ -69,8 +69,8 @@ def summary(path, arguments):
     print('<tr><td>' + id +'</td><td><a href="/cgi-bin/daca2-search.cgi?id='+id+'">'+str(count[id])+'</a></td></tr>')
   print('</table>')
 
-sys.stdout.write('Content-type: text/html\r\n\r\n')
-sys.stdout.write('<html><body>\n')
+sys.stdout.write('Content-type: text/html\r\n\r\n'
+                 '<html><body>\n')
 
 cgitb.enable()
 arguments = cgi.FieldStorage()

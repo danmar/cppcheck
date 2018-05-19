@@ -32,7 +32,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         int id = 0;
         while (!settings.library.ismemory(++id));
         settings.library.setalloc("malloc", id, -1);
@@ -72,6 +72,9 @@ private:
         TEST_CASE(doublefree5); // #5522
         TEST_CASE(doublefree6); // #7685
         TEST_CASE(doublefree7);
+        TEST_CASE(doublefree8);
+        TEST_CASE(doublefree9);
+
 
         // exit
         TEST_CASE(exit1);
@@ -105,6 +108,9 @@ private:
         // mismatching allocation/deallocation
         TEST_CASE(mismatchAllocDealloc);
 
+        TEST_CASE(smartPointerDeleter);
+        TEST_CASE(smartPointerRelease);
+
         // Execution reaches a 'return'
         TEST_CASE(return1);
         TEST_CASE(return2);
@@ -135,6 +141,8 @@ private:
         TEST_CASE(testKeywords); // #6767
 
         TEST_CASE(inlineFunction); // #3989
+
+        TEST_CASE(smartPtrInContainer); // #8262
     }
 
     void check(const char code[], bool cpp = false) {
@@ -889,6 +897,69 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree8() {
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    delete i;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x{i};\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x{i};\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        // Check for use-after-free FP
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::shared_ptr<int> x{i};\n"
+              "    *i = 123;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int[1];\n"
+              "    std::unique_ptr<int[]> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+    }
+
+    void doublefree9() {
+        check("struct foo {\n"
+              "    int* get(int) { return new int(); }\n"
+              "};\n"
+              "void f(foo* b) {\n"
+              "    std::unique_ptr<int> x(b->get(0));\n"
+              "    std::unique_ptr<int> y(b->get(1));\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1129,6 +1200,77 @@ private:
               "    char *cPtr = new (buf) char[100];\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int[1];\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int[]> x(i);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
+    }
+
+    void smartPointerDeleter() {
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE> fp{f};\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE, decltype(&fclose)> fp{f, &fclose};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, &fclose};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct deleter { void operator()(FILE* f) { fclose(f); }};\n"
+              "void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::unique_ptr<FILE, deleter> fp{f};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int * create();\n"
+              "void destroy(int * x);\n"
+              "void f() {\n"
+              "    int x * = create()\n"
+              "    std::unique_ptr<int, decltype(&destroy)> xp{x, &destroy()};\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int * create();\n"
+              "void destroy(int * x);\n"
+              "void f() {\n"
+              "    int x * = create()\n"
+              "    std::unique_ptr<int, decltype(&destroy)> xp(x, &destroy());\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+    void smartPointerRelease() {
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "    x.release();\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int * i = new int;\n"
+              "    std::unique_ptr<int> x(i);\n"
+              "    x.release();\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: i\n", errout.str());
     }
 
     void return1() {
@@ -1380,6 +1522,19 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    // #8262
+    void smartPtrInContainer() {
+        check("std::list< std::shared_ptr<int> > mList;\n"
+              "void test(){\n"
+              "  int *pt = new int(1);\n"
+              "  mList.push_back(std::shared_ptr<int>(pt));\n"
+              "}\n",
+              true
+             );
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Memory leak: pt\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestLeakAutoVar)
@@ -1411,7 +1566,7 @@ private:
         checkLeak.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(heapDoubleFree);

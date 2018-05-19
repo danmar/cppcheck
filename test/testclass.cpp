@@ -34,9 +34,25 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() {
+    void run() override {
         settings0.addEnabled("style");
         settings1.addEnabled("warning");
+
+        // Load std.cfg configuration
+        {
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "  <memory>\n"
+                                   "    <alloc init=\"false\">malloc</alloc>\n"
+                                   "    <dealloc>free</dealloc>\n"
+                                   "  </memory>\n"
+                                   "</def>";
+            tinyxml2::XMLDocument doc;
+            doc.Parse(xmldata, sizeof(xmldata));
+            settings0.library.load(doc);
+            settings1.library.load(doc);
+        }
+
 
         TEST_CASE(virtualDestructor1);      // Base class not found => no error
         TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
@@ -52,6 +68,9 @@ private:
 
         TEST_CASE(copyConstructor1);
         TEST_CASE(copyConstructor2); // ticket #4458
+        TEST_CASE(copyConstructor3); // defaulted/deleted
+        TEST_CASE(noOperatorEq); // class with memory management should have operator eq
+        TEST_CASE(noDestructor); // class with memory management should have destructor
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEq2);
@@ -191,6 +210,8 @@ private:
         TEST_CASE(copyCtorAndEqOperator);
 
         TEST_CASE(unsafeClassDivZero);
+
+        TEST_CASE(override1);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -546,6 +567,8 @@ private:
                              "      p=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,str);\n"
                              "   }\n"
+                             "   F&operator=(const F&);\n"
+                             "   ~F();\n"
                              "};");
         ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n", errout.str());
 
@@ -557,6 +580,8 @@ private:
                              "   F(char *str) {\n"
                              "      p = malloc(strlen(str)+1);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            "[test.cpp:3] -> [test.cpp:7]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
@@ -575,6 +600,8 @@ private:
                              "      p=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,str);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
                            "[test.cpp:5] -> [test.cpp:10]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
@@ -603,6 +630,8 @@ private:
                              "      d=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,f.p);\n"
                              "   }\n"
+                             "   ~kalci();\n"
+                             "   kalci& operator=(const kalci&kalci);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -626,6 +655,8 @@ private:
                              "      c=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(p,f.p);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:14] -> [test.cpp:11]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", "", errout.str());
 
@@ -638,6 +669,8 @@ private:
                              "      : p(malloc(size))\n"
                              "   {\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -650,6 +683,8 @@ private:
                              "   F(const F &f)\n"
                              "   {\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", "", errout.str());
 
@@ -663,8 +698,10 @@ private:
                              "      c=(char *)malloc(100);\n"
                              "      d=(char*)malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) class 'F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -685,6 +722,8 @@ private:
                              "      c=(char *)malloc(strlen(str)+1);\n"
                              "      strcpy(d,f.p);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -694,6 +733,8 @@ private:
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -704,6 +745,8 @@ private:
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -713,23 +756,29 @@ private:
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) 'class F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
                              "   F() {\n"
                              "      p = malloc(100);\n"
                              "   }\n"
-                             "   F(F& f);\n" // non-copyable
+                             "   F(F& f);\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
                              "   F() : p(malloc(100)) {}\n"
+                             "   ~F();\n"
+                             "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) class 'F' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
 
         // #7198
         checkCopyConstructor("struct F {\n"
@@ -741,7 +790,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
     void copyConstructor2() { // ticket #4458
         checkCopyConstructor("template <class _Tp>\n"
                              "class Vector\n"
@@ -752,11 +800,118 @@ private:
                              "    }\n"
                              "    Vector( const Vector<_Tp>& v ) {\n"
                              "    }\n"
+                             "     ~Vector();\n"
+                             "     Vector& operator=(const Vector&v);\n"
                              "    _Tp* _M_finish;\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
+    void copyConstructor3() {
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f) = delete;\n"
+                             "   F&operator=(const F &f);\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f) = default;\n"
+                             "   F&operator=(const F &f);\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The copy constructor is explicitly defaulted but the default copy constructor does not work well. It is recommended to define or delete the copy constructor.\n", errout.str());
+    }
+
+    void noOperatorEq() {
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+
+        // defaulted operator=
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   F &operator=(const F &f) = default;\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The operator= is explicitly defaulted but the default operator= does not work well. It is recommended to define or delete the operator=.\n", errout.str());
+
+        // deleted operator=
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   F &operator=(const F &f) = delete;\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // base class deletes operator=
+        checkCopyConstructor("struct F : NonCopyable {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   ~F();\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noDestructor() {
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   F&operator=(const F&);"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+
+        checkCopyConstructor("struct F {\n"
+                             "   C* c;\n"
+                             "   F() { c = new C; }\n"
+                             "   F(const F &f);\n"
+                             "   F&operator=(const F&);"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("struct Data { int x; int y; };\n"
+                             "struct F {\n"
+                             "   Data* c;\n"
+                             "   F() { c = new Data; }\n"
+                             "   F(const F &f);\n"
+                             "   F&operator=(const F&);"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+
+        // defaulted destructor
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   F &operator=(const F &f);\n"
+                             "   ~F() = default;\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The destructor is explicitly defaulted but the default destructor does not work well. It is recommended to define the destructor.\n", errout.str());
+
+        // deleted destructor
+        checkCopyConstructor("struct F {\n"
+                             "   char* c;\n"
+                             "   F() { c = malloc(100); }\n"
+                             "   F(const F &f);\n"
+                             "   F &operator=(const F &f);\n"
+                             "   ~F() = delete;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     // Check the operator Equal
     void checkOpertorEq(const char code[]) {
@@ -6595,6 +6750,36 @@ private:
                                 "  void operator/(int x);\n"
                                 "}\n"
                                 "void A::operator/(int x) { int a = 1000 / x; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkOverride(const char code[]) {
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.addEnabled("style");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkOverride();
+    }
+
+    void override1() {
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { virtual void f(); };");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { virtual void f() override; };");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { virtual void f() final; };");
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -57,7 +57,6 @@ static const struct CWE CWE825(825U);
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator scope;
 
     std::set<std::string> arrayTypeDefs;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
@@ -66,7 +65,7 @@ void CheckUninitVar::check()
     }
 
     // check every executable scope
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (scope->isExecutable()) {
             checkScope(&*scope, arrayTypeDefs);
         }
@@ -144,7 +143,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             const Variable *arg = scope->function->getArgumentVar(i);
             if (arg && arg->declarationId() && Token::Match(arg->typeStartToken(), "%type% * %name% [,)]")) {
                 // Treat the pointer as initialized until it is assigned by malloc
-                for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+                for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
                     if (Token::Match(tok, "[;{}] %varid% = %name% (", arg->declarationId()) &&
                         _settings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
                         if (arg->typeStartToken()->strAt(-1) == "struct" || (arg->type() && arg->type()->isStructType()))
@@ -176,15 +175,14 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 
                 // is the variable declared in a inner union?
                 bool innerunion = false;
-                for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {
-                    const Scope &innerScope = *it2;
-                    if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
-                        if (var.typeStartToken()->linenr() >= innerScope.classStart->linenr() &&
-                            var.typeStartToken()->linenr() <= innerScope.classEnd->linenr()) {
+                for (auto it2 = scope2->nestedList.cbegin(); it2 != scope2->nestedList.cend(); ++it2) {
+                    const Scope &innerScope = **it2;
+                    if (innerScope.type == Scope::eUnion) {
+                        if (var.typeStartToken()->linenr() >= innerScope.bodyStart->linenr() &&
+                            var.typeStartToken()->linenr() <= innerScope.bodyEnd->linenr()) {
                             innerunion = true;
                             break;
                         }
-
                     }
                 }
 
@@ -886,7 +884,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
 
 bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc) const
 {
-    if (alloc == NO_ALLOC && ((Token::Match(vartok->previous(), "return|delete") && vartok->strAt(1) != "=") || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
+    if (alloc == NO_ALLOC && ((Token::Match(vartok->previous(), "return|delete %var% !!=")) || (vartok->strAt(-1) == "]" && vartok->linkAt(-1)->strAt(-1) == "delete")))
         return true;
 
     // Passing variable to typeof/__alignof__
@@ -894,7 +892,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         return false;
 
     // Accessing Rvalue member using "." or "->"
-    if (vartok->strAt(1) == "." && vartok->strAt(-1) != "&") {
+    if (Token::Match(vartok->previous(), "!!& %var% .")) {
         // Is struct member passed to function?
         if (!pointer && Token::Match(vartok->previous(), "[,(] %name% . %name%")) {
             // TODO: there are FN currently:
@@ -940,20 +938,21 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         if (_tokenizer->isCPP() && alloc == ARRAY && Token::Match(vartok->tokAt(-4), "& %var% =|( *"))
             return false;
 
-        if (_tokenizer->isCPP() && Token::Match(vartok->previous(), ">>|<<")) {
+        if (isLikelyStreamRead(_tokenizer->isCPP(), vartok->previous()))
+            return false;
+
+        if (_tokenizer->isCPP() && Token::simpleMatch(vartok->previous(), "<<")) {
             const Token* tok2 = vartok->previous();
-            if (Token::simpleMatch(tok2->astOperand1(), ">>"))
-                return false; // Looks like stream operator, initializes the variable
-            if (Token::simpleMatch(tok2, "<<")) {
-                // Looks like stream operator, but could also initialize the variable. Check lhs.
-                do {
-                    tok2 = tok2->astOperand1();
-                } while (Token::simpleMatch(tok2, "<<"));
-                if (tok2 && tok2->strAt(-1) == "::")
-                    tok2 = tok2->previous();
-                if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType() || tok2->isEnumType()))
-                    return true;
-            }
+
+            // Looks like stream operator, but could also initialize the variable. Check lhs.
+            do {
+                tok2 = tok2->astOperand1();
+            } while (Token::simpleMatch(tok2, "<<"));
+            if (tok2 && tok2->strAt(-1) == "::")
+                tok2 = tok2->previous();
+            if (tok2 && (Token::simpleMatch(tok2->previous(), "std ::") || (tok2->variable() && tok2->variable()->isStlType()) || tok2->isStandardType() || tok2->isEnumType()))
+                return true;
+
             const Variable *var = vartok->tokAt(-2)->variable();
             return (var && (var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType()));
         }
@@ -1012,7 +1011,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         return true;
     }
 
-    if (_tokenizer->isCPP() && Token::Match(vartok->next(), "<<|>>")) {
+    if (_tokenizer->isCPP() && Token::simpleMatch(vartok->next(), "<<")) {
         // Is this calculation done in rhs?
         const Token *tok = vartok;
         while (Token::Match(tok, "%name%|.|::"))
@@ -1022,8 +1021,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
 
         // Is variable a known POD type then this is a variable usage,
         // otherwise we assume it's not.
-        const Variable *var = vartok->variable();
-        return (var && (var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType()));
+        return (vartok->valueType() && vartok->valueType()->isIntegral());
     }
 
     if (alloc == NO_ALLOC && vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())
@@ -1111,7 +1109,7 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             return true;
         else if (Token::Match(tok->tokAt(-2), "[(,=] &"))
             return true;
-        else if (Token::Match(tok->tokAt(-2), "%name% >>") && Token::Match(tok->tokAt(3), ";|>>")) // #6680
+        else if (isLikelyStreamRead(_tokenizer->isCPP(), tok->previous()))
             return true;
         else if ((tok->previous() && tok->previous()->isConstOp()) || Token::Match(tok->previous(), "[|="))
             ; // member variable usage
@@ -1202,17 +1200,17 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
 
 void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
 {
-    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "'" + (strncpy_ ? " (strncpy doesn't always null-terminate it)." : " (not null-terminated)."), CWE676, false);
+    reportError(tok, Severity::error, "uninitstring", "$symbol:" + varname + "\nDangerous usage of '$symbol'" + (strncpy_ ? " (strncpy doesn't always null-terminate it)." : " (not null-terminated)."), CWE676, false);
 }
 
 void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "uninitdata", "Memory is allocated but not initialized: " + varname, CWE908, false);
+    reportError(tok, Severity::error, "uninitdata", "$symbol:" + varname + "\nMemory is allocated but not initialized: $symbol", CWE908, false);
 }
 
 void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "uninitvar", "Uninitialized variable: " + varname, CWE908, false);
+    reportError(tok, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE908, false);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
@@ -1220,19 +1218,18 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
     reportError(tok,
                 Severity::error,
                 "uninitStructMember",
-                "Uninitialized struct member: " + membername, CWE908, false);
+                "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE908, false);
 }
 
 void CheckUninitVar::valueFlowUninit()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator scope;
 
     // check every executable scope
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (!scope->isExecutable())
             continue;
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;
@@ -1252,14 +1249,13 @@ void CheckUninitVar::valueFlowUninit()
 void CheckUninitVar::deadPointer()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator scope;
 
     // check every executable scope
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
         if (!scope->isExecutable())
             continue;
         // Dead pointers..
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->variable() &&
                 tok->variable()->isPointer() &&
                 isVariableUsage(tok, true, NO_ALLOC)) {
@@ -1280,5 +1276,5 @@ void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
     reportError(pointer,
                 Severity::error,
                 "deadpointer",
-                "Dead pointer usage. Pointer '" + strpointer + "' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
+                "$symbol:" + strpointer + "\nDead pointer usage. Pointer '$symbol' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
 }

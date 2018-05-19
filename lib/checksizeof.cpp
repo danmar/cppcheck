@@ -49,7 +49,7 @@ void CheckSizeof::checkSizeofForNumericParameter()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "sizeof ( %num% )") ||
                 Token::Match(tok, "sizeof %num%")) {
                 sizeofForNumericParameterError(tok);
@@ -78,7 +78,7 @@ void CheckSizeof::checkSizeofForArrayParameter()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "sizeof ( %var% )") ||
                 Token::Match(tok, "sizeof %var% !![")) {
                 const Token* varTok = tok->next();
@@ -119,7 +119,7 @@ void CheckSizeof::checkSizeofForPointerSize()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             const Token* tokSize;
             const Token* tokFunc;
             const Token *variable = nullptr;

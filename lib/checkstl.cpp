@@ -52,29 +52,32 @@ static const struct CWE CWE834(834U);   // Excessive Iteration
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
-    reportError(tok, Severity::error, "invalidIterator1", "Invalid iterator: " + iteratorName, CWE664, false);
+    reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, false);
 }
 
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
 {
-    reportError(tok, Severity::error, "iterators", "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.", CWE664, false);
+    reportError(tok, Severity::error, "iterators",
+                "$symbol:" + container1 + "\n"
+                "$symbol:" + container2 + "\n"
+                "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.", CWE664, false);
 }
 
 // Error message used when dereferencing an iterator that has been erased..
 void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, const std::string &itername, bool inconclusive)
 {
     if (erased) {
-        std::list<const Token*> callstack;
-        callstack.push_back(deref);
-        callstack.push_back(erased);
+        std::list<const Token*> callstack = { deref, erased };
         reportError(callstack, Severity::error, "eraseDereference",
-                    "Iterator '" + itername + "' used after element has been erased.\n"
-                    "The iterator '" + itername + "' is invalid after the element it pointed to has been erased. "
+                    "$symbol:" + itername + "\n"
+                    "Iterator '$symbol' used after element has been erased.\n"
+                    "The iterator '$symbol' is invalid after the element it pointed to has been erased. "
                     "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
     } else {
         reportError(deref, Severity::error, "eraseDereference",
-                    "Invalid iterator '" + itername + "' used.\n"
-                    "The iterator '" + itername + "' is invalid before being assigned. "
+                    "$symbol:" + itername + "\n"
+                    "Invalid iterator '$symbol' used.\n"
+                    "The iterator '$symbol' is invalid before being assigned. "
                     "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
     }
 }
@@ -127,15 +130,15 @@ void CheckStl::iterators()
 {
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
 
-    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
-
+    for (const Variable* var : symbolDatabase->variableList()) {
         bool inconclusiveType=false;
         if (!isIterator(var, inconclusiveType))
             continue;
 
+        const unsigned int iteratorId = var->declarationId();
+
         // the validIterator flag says if the iterator has a valid value or not
-        bool validIterator = Token::Match(var->nameToken()->next(), "[(=:]");
+        bool validIterator = Token::Match(var->nameToken()->next(), "[(=:{]");
         const Scope* invalidationScope = nullptr;
 
         // The container this iterator can be used with
@@ -149,10 +152,10 @@ void CheckStl::iterators()
 
         // Scan through the rest of the code and see if the iterator is
         // used against other containers.
-        for (const Token *tok2 = var->nameToken(); tok2 && tok2 != var->scope()->classEnd; tok2 = tok2->next()) {
-            if (invalidationScope && tok2 == invalidationScope->classEnd)
+        for (const Token *tok2 = var->nameToken(); tok2 && tok2 != var->scope()->bodyEnd; tok2 = tok2->next()) {
+            if (invalidationScope && tok2 == invalidationScope->bodyEnd)
                 validIterator = true; // Assume that the iterator becomes valid again
-            if (containerAssignScope && tok2 == containerAssignScope->classEnd)
+            if (containerAssignScope && tok2 == containerAssignScope->bodyEnd)
                 containerToken = nullptr; // We don't know which containers might be used with the iterator
 
             if (tok2 == validatingToken) {
@@ -301,20 +304,23 @@ void CheckStl::mismatchingContainersError(const Token *tok)
     reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.", CWE664, false);
 }
 
-static const std::set<std::string> algorithm2 = make_container< std::set<std::string> >() // func(begin1, end1
-        << "binary_search" << "copy" << "copy_if" << "equal_range"
-        << "generate" << "is_heap" << "is_heap_until" << "is_partitioned"
-        << "is_permutation" << "is_sorted" << "is_sorted_until" << "lower_bound" << "make_heap" << "max_element" << "minmax_element"
-        << "min_element" << "mismatch" << "move" << "move_backward" << "next_permutation" << "partition" << "partition_copy"
-        << "partition_point" << "pop_heap" << "prev_permutation" << "push_heap" << "random_shuffle" << "remove" << "remove_copy"
-        << "remove_copy_if" << "remove_if" << "replace" << "replace_copy" << "replace_copy_if" << "replace_if" << "reverse" << "reverse_copy"
-        << "shuffle" << "sort" << "sort_heap" << "stable_partition" << "stable_sort" << "swap_ranges" << "transform" << "unique"
-        << "unique_copy" << "upper_bound" << "string" << "wstring" << "u16string" << "u32string";
-static const std::set<std::string> algorithm22 = make_container< std::set<std::string> >() // func(begin1 << end1 << begin2 << end2
-        << "includes" << "lexicographical_compare" << "merge" << "partial_sort_copy"
-        << "set_difference" << "set_intersection" << "set_symmetric_difference" << "set_union";
-static const std::set<std::string> algorithm1x1 = make_container< std::set<std::string> >()  // func(begin1 << x << end1
-        << "nth_element" << "partial_sort" << "rotate" << "rotate_copy";
+static const std::set<std::string> algorithm2 = { // func(begin1, end1
+    "binary_search", "copy", "copy_if", "equal_range"
+    , "generate", "is_heap", "is_heap_until", "is_partitioned"
+    , "is_permutation", "is_sorted", "is_sorted_until", "lower_bound", "make_heap", "max_element", "minmax_element"
+    , "min_element", "mismatch", "move", "move_backward", "next_permutation", "partition", "partition_copy"
+    , "partition_point", "pop_heap", "prev_permutation", "push_heap", "random_shuffle", "remove", "remove_copy"
+    , "remove_copy_if", "remove_if", "replace", "replace_copy", "replace_copy_if", "replace_if", "reverse", "reverse_copy"
+    , "shuffle", "sort", "sort_heap", "stable_partition", "stable_sort", "swap_ranges", "transform", "unique"
+    , "unique_copy", "upper_bound", "string", "wstring", "u16string", "u32string"
+};
+static const std::set<std::string> algorithm22 = { // func(begin1, end1, begin2, end2
+    "includes", "lexicographical_compare", "merge", "partial_sort_copy"
+    , "set_difference", "set_intersection", "set_symmetric_difference", "set_union"
+};
+static const std::set<std::string> algorithm1x1 = {  // func(begin1, x, end1
+    "nth_element", "partial_sort", "rotate", "rotate_copy"
+};
 
 static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
 static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
@@ -342,7 +348,7 @@ void CheckStl::mismatchingContainers()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const ftok = tok;
@@ -383,8 +389,7 @@ void CheckStl::mismatchingContainers()
             }
         }
     }
-    for (unsigned int varid = 0; varid < symbolDatabase->getVariableListSize(); varid++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(varid);
+    for (const Variable *var : symbolDatabase->variableList()) {
         if (var && var->isStlStringType() && Token::Match(var->nameToken(), "%var% (") && Token::Match(var->nameToken()->tokAt(2), pattern2.c_str())) {
             if (var->nameToken()->strAt(2) != var->nameToken()->strAt(8)) {
                 mismatchingContainersError(var->nameToken());
@@ -437,7 +442,7 @@ void CheckStl::stlOutOfBounds()
         // variable id for the container variable
         const unsigned int declarationId = var->declarationId();
 
-        for (const Token *tok3 = i->classStart; tok3 && tok3 != i->classEnd; tok3 = tok3->next()) {
+        for (const Token *tok3 = i->bodyStart; tok3 && tok3 != i->bodyEnd; tok3 = tok3->next()) {
             if (tok3->varId() == declarationId) {
                 tok3 = tok3->next();
                 if (Token::Match(tok3, ". %name% ( )")) {
@@ -458,9 +463,9 @@ void CheckStl::stlOutOfBounds()
 void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var, bool at)
 {
     if (at)
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + ".at(" + num + ") is out of bounds.", CWE788, false);
+        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol.at(" + num + ") is out of bounds.", CWE788, false);
     else
-        reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds.", CWE788, false);
+        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol[" + num + "] is out of bounds.", CWE788, false);
 }
 
 void CheckStl::negativeIndex()
@@ -470,7 +475,7 @@ void CheckStl::negativeIndex()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%var% [") || WRONG_DATA(!tok->next()->astOperand2(), tok))
                 continue;
             const Variable * const var = tok->variable();
@@ -523,7 +528,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
     bool inconclusiveType=false;
     if (!isIterator(var, inconclusiveType))
         return;
-    for (const Token *tok = scope.classStart; tok != scope.classEnd; tok = tok->next()) {
+    for (const Token *tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
         if (tok->str() != "(")
             continue;
         if (!Token::Match(tok->tokAt(-2), ". erase ( ++| %varid% )", var->declarationId()))
@@ -533,7 +538,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
         // Iterator is invalid..
         unsigned int indentlevel = 0U;
         const Token *tok2 = tok->link();
-        for (; tok2 != scope.classEnd; tok2 = tok2->next()) {
+        for (; tok2 != scope.bodyEnd; tok2 = tok2->next()) {
             if (tok2->str() == "{") {
                 ++indentlevel;
                 continue;
@@ -554,7 +559,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
             if (indentlevel == 0U && Token::Match(tok2, "break|return|goto"))
                 break;
         }
-        if (tok2 == scope.classEnd)
+        if (tok2 == scope.bodyEnd)
             dereferenceErasedError(tok, scope.classDef, var->nameToken()->str(), inconclusiveType);
     }
 }
@@ -566,7 +571,7 @@ void CheckStl::pushback()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% = & %var% [")) {
                 // Skip it directly if it is a pointer or an array
                 const Token* containerTok = tok->tokAt(3);
@@ -578,7 +583,7 @@ void CheckStl::pushback()
 
                 bool invalidPointer = false;
                 const Token* function = nullptr;
-                const Token* end2 = tok->scope()->classEnd;
+                const Token* end2 = tok->scope()->bodyEnd;
                 for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
                     // push_back on vector..
                     if (Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve|resize|clear", containerTok->varId())) {
@@ -599,12 +604,12 @@ void CheckStl::pushback()
     }
 
     // Iterator becomes invalid after reserve, resize, insert, push_back or push_front..
-    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
-
+    for (const Variable* var : symbolDatabase->variableList()) {
         // Check that its an iterator
         if (!var || !var->isLocal() || !Token::Match(var->typeEndToken(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator"))
             continue;
+
+        const unsigned int iteratorId = var->declarationId();
 
         // ... on std::vector
         if (!Token::Match(var->typeStartToken(), "std| ::| vector <"))
@@ -616,7 +621,7 @@ void CheckStl::pushback()
         const Token* validatingToken = nullptr;
 
         std::string invalidIterator;
-        const Token* end2 = var->scope()->classEnd;
+        const Token* end2 = var->scope()->bodyEnd;
         for (const Token *tok2 = var->nameToken(); tok2 != end2; tok2 = tok2->next()) {
 
             if (validatingToken == tok2) {
@@ -700,22 +705,27 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
-    reportError(tok, Severity::error, "invalidIterator2", "After " + func + "(), the iterator '" + iterator_name + "' may be invalid.", CWE664, false);
+    reportError(tok, Severity::error, "invalidIterator2",
+                "$symbol:" + func + "\n"
+                "$symbol:" + iterator_name + "\n"
+                "After " + func + "(), the iterator '" + iterator_name + "' may be invalid.", CWE664, false);
 }
 
 
 // Error message for bad iterator usage..
 void CheckStl::invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name)
 {
-    reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after " + func + "().", CWE664, false);
+    reportError(tok, Severity::error, "invalidPointer",
+                "$symbol:" + func + "\n"
+                "$symbol:" + pointer_name + "\n"
+                "Invalid pointer '" + pointer_name + "' after " + func + "().", CWE664, false);
 }
 
 
 void CheckStl::stlBoundaries()
 {
     const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int iteratorId = 1; iteratorId < symbolDatabase->getVariableListSize(); iteratorId++) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(iteratorId);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->scope() || !var->scope()->isExecutable())
             continue;
 
@@ -723,7 +733,7 @@ void CheckStl::stlBoundaries()
         if (!container || container->opLessAllowed)
             continue;
 
-        const Token* const end = var->scope()->classEnd;
+        const Token* const end = var->scope()->bodyEnd;
         for (const Token *tok = var->nameToken(); tok != end; tok = tok->next()) {
             if (Token::Match(tok, "!!* %varid% <", var->declarationId())) {
                 stlBoundariesError(tok);
@@ -865,7 +875,7 @@ void CheckStl::size()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%var% . size ( )") ||
                 Token::Match(tok, "%name% . %var% . size ( )")) {
                 // get the variable
@@ -906,10 +916,11 @@ void CheckStl::sizeError(const Token *tok)
 {
     const std::string varname = tok ? tok->str() : std::string("list");
     reportError(tok, Severity::performance, "stlSize",
-                "Possible inefficient checking for '" + varname + "' emptiness.\n"
-                "Checking for '" + varname + "' emptiness might be inefficient. "
-                "Using " + varname + ".empty() instead of " + varname + ".size() can be faster. " +
-                varname + ".size() can take linear time but " + varname + ".empty() is "
+                "$symbol:" + varname + "\n"
+                "Possible inefficient checking for '$symbol' emptiness.\n"
+                "Checking for '$symbol' emptiness might be inefficient. "
+                "Using $symbol.empty() instead of $symbol.size() can be faster. "
+                "$symbol.size() can take linear time but $symbol.empty() is "
                 "guaranteed to take constant time.", CWE398, false);
 }
 
@@ -963,7 +974,7 @@ void CheckStl::missingComparison()
         if (i->type != Scope::eFor || !i->classDef)
             continue;
 
-        for (const Token *tok2 = i->classDef->tokAt(2); tok2 != i->classStart; tok2 = tok2->next()) {
+        for (const Token *tok2 = i->classDef->tokAt(2); tok2 != i->bodyStart; tok2 = tok2->next()) {
             if (tok2->str() == ";")
                 break;
 
@@ -989,7 +1000,7 @@ void CheckStl::missingComparison()
             const Token *incrementToken = nullptr;
 
             // Parse loop..
-            for (const Token *tok3 = i->classStart; tok3 != i->classEnd; tok3 = tok3->next()) {
+            for (const Token *tok3 = i->bodyStart; tok3 != i->bodyEnd; tok3 = tok3->next()) {
                 if (Token::Match(tok3, "%varid% ++", iteratorId))
                     incrementToken = tok3;
                 else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
@@ -1013,9 +1024,7 @@ void CheckStl::missingComparison()
 
 void CheckStl::missingComparisonError(const Token *incrementToken1, const Token *incrementToken2)
 {
-    std::list<const Token*> callstack;
-    callstack.push_back(incrementToken1);
-    callstack.push_back(incrementToken2);
+    std::list<const Token*> callstack = { incrementToken1,incrementToken2 };
 
     std::ostringstream errmsg;
     errmsg << "Missing bounds check for extra iterator increment in loop.\n"
@@ -1040,8 +1049,9 @@ static bool isLocal(const Token *tok)
 }
 
 namespace {
-    const std::set<std::string> stl_string_stream = make_container< std::set<std::string> >() <<
-            "istringstream" <<  "ostringstream" <<  "stringstream" <<  "wstringstream" ;
+    const std::set<std::string> stl_string_stream = {
+        "istringstream", "ostringstream", "stringstream", "wstringstream"
+    };
 }
 
 void CheckStl::string_c_str()
@@ -1085,7 +1095,7 @@ void CheckStl::string_c_str()
         else if (Token::Match(scope->function->tokenDef->tokAt(-3), "std :: string|wstring !!&"))
             returnType = stdString;
 
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Invalid usage..
             if (Token::Match(tok, "throw %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
                 tok->next()->variable() && tok->next()->variable()->isStlStringType()) {
@@ -1369,17 +1379,18 @@ void CheckStl::autoPointerArrayError(const Token *tok)
 
 void CheckStl::autoPointerMallocError(const Token *tok, const std::string& allocFunction)
 {
-    const std::string summary = "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function '" + allocFunction + "'.";
-    const std::string verbose = summary + " This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes use C library allocation functions (for example '" + allocFunction + "'), which must be deallocated by the appropriate C library function.";
-    reportError(tok, Severity::error, "useAutoPointerMalloc", summary + "\n" + verbose, CWE762, false);
+    const std::string summary = "Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function '$symbol'.";
+    const std::string verbose = summary + " This means that you should only use 'auto_ptr' for pointers obtained with operator 'new'. This excludes use C library allocation functions (for example '$symbol'), which must be deallocated by the appropriate C library function.";
+    reportError(tok, Severity::error, "useAutoPointerMalloc", "$symbol:" + allocFunction + '\n' + summary + '\n' + verbose, CWE762, false);
 }
 
 namespace {
-    const std::set<std::string> stl_containers_with_empty_and_clear = make_container< std::set<std::string> >() <<
-            "deque" <<  "forward_list" <<  "list" <<
-            "map" <<  "multimap" <<  "multiset" <<  "set" <<  "string" <<
-            "unordered_map" <<  "unordered_multimap" <<  "unordered_multiset" <<
-            "unordered_set" <<  "vector" <<  "wstring";
+    const std::set<std::string> stl_containers_with_empty_and_clear = {
+        "deque",  "forward_list",  "list",
+        "map",  "multimap",  "multiset",  "set",  "string",
+        "unordered_map",  "unordered_multimap",  "unordered_multiset",
+        "unordered_set",  "vector",  "wstring"
+    };
 
 }
 
@@ -1395,7 +1406,7 @@ void CheckStl::uselessCalls()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (printWarning && Token::Match(tok, "%var% . compare|find|rfind|find_first_not_of|find_first_of|find_last_not_of|find_last_of ( %name% [,)]") &&
                 tok->varId() == tok->tokAt(4)->varId()) {
                 const Variable* var = tok->variable();
@@ -1430,6 +1441,8 @@ void CheckStl::uselessCalls()
 void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string &varname, const std::string &function)
 {
     std::ostringstream errmsg;
+    errmsg << "$symbol:" << varname << '\n';
+    errmsg << "$symbol:" << function << '\n';
     errmsg << "It is inefficient to call '" << varname << "." << function << "(" << varname << ")' as it always returns 0.\n"
            << "'std::string::" << function << "()' returns zero when given itself as parameter "
            << "(" << varname << "." << function << "(" << varname << ")). As it is currently the "
@@ -1440,12 +1453,12 @@ void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string 
 
 void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varname)
 {
-    std::ostringstream errmsg;
-    errmsg << "It is inefficient to swap a object with itself by calling '" << varname << ".swap(" << varname << ")'\n"
-           << "The 'swap()' function has no logical effect when given itself as parameter "
-           << "(" << varname << ".swap(" << varname << ")). As it is currently the "
-           << "code is inefficient. Is the object or the parameter wrong here?";
-    reportError(tok, Severity::performance, "uselessCallsSwap", errmsg.str(), CWE628, false);
+    reportError(tok, Severity::performance, "uselessCallsSwap",
+                "$symbol:" + varname + "\n"
+                "It is inefficient to swap a object with itself by calling '$symbol.swap($symbol)'\n"
+                "The 'swap()' function has no logical effect when given itself as parameter "
+                "($symbol.swap($symbol)). As it is currently the "
+                "code is inefficient. Is the object or the parameter wrong here?", CWE628, false);
 }
 
 void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
@@ -1463,8 +1476,10 @@ void CheckStl::uselessCallsEmptyError(const Token *tok)
 
 void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& function)
 {
-    reportError(tok, Severity::warning, "uselessCallsRemove", "Return value of std::" + function + "() ignored. Elements remain in container.\n"
-                "The return value of std::" + function + "() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
+    reportError(tok, Severity::warning, "uselessCallsRemove",
+                "$symbol:" + function + "\n"
+                "Return value of std::$symbol() ignored. Elements remain in container.\n"
+                "The return value of std::$symbol() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
                 "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.", CWE762, false);
 }
 
@@ -1535,8 +1550,10 @@ void CheckStl::checkDereferenceInvalidIterator()
 void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::string &iterName)
 {
     reportError(deref, Severity::warning,
-                "derefInvalidIterator", "Possible dereference of an invalid iterator: " + iterName + "\n" +
-                "Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, false);
+                "derefInvalidIterator",
+                "$symbol:" + iterName + "\n"
+                "Possible dereference of an invalid iterator: $symbol\n"
+                "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, false);
 }
 
 
@@ -1598,7 +1615,7 @@ void CheckStl::readingEmptyStlContainer()
         if (i->type != Scope::eFunction)
             continue;
 
-        for (const Token *tok = i->classStart->next(); tok != i->classEnd; tok = tok->next()) {
+        for (const Token *tok = i->bodyStart->next(); tok != i->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "for|while")) { // Loops and end of scope clear the sets.
                 const Token* tok2 = tok->linkAt(1);
                 if (!tok2)
@@ -1663,5 +1680,6 @@ void CheckStl::readingEmptyStlContainer()
 
 void CheckStl::readingEmptyStlContainerError(const Token *tok)
 {
-    reportError(tok, Severity::style, "reademptycontainer", "Reading from empty STL container '" + (tok ? tok->str() : std::string("var")) + "'", CWE398, true);
+    const std::string varname = tok ? tok->str() : std::string("var");
+    reportError(tok, Severity::style, "reademptycontainer", "$symbol:" + varname +"\nReading from empty STL container '$symbol'", CWE398, true);
 }

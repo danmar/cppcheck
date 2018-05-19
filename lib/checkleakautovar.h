@@ -38,11 +38,19 @@ class Tokenizer;
 
 class CPPCHECKLIB VarInfo {
 public:
-    enum AllocStatus { DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
+    enum AllocStatus { OWNED = -2, DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
     struct AllocInfo {
         AllocStatus status;
+        /** Allocation type. If it is a positive value then it corresponds to
+         * a Library allocation id. A negative value is a builtin
+         * checkleakautovar allocation type.
+         */
         int type;
         AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC) : status(status_), type(type_) {}
+
+        bool managed() const {
+            return status < 0;
+        }
     };
     std::map<unsigned int, AllocInfo> alloctype;
     std::map<unsigned int, std::string> possibleUsage;
@@ -96,7 +104,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
         checkLeakAutoVar.check();
     }
@@ -132,7 +140,7 @@ private:
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::string &functionName);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
         c.deallocReturnError(nullptr, "p");
         c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
@@ -143,7 +151,7 @@ private:
         return "Leaks (auto variables)";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Detect when a auto variable is allocated but not deallocated or deallocated twice.\n";
     }
 };

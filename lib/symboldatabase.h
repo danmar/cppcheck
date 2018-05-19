@@ -53,16 +53,16 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
 struct Dimension {
     Dimension() : start(nullptr), end(nullptr), num(0), known(true) { }
 
-    const Token *start;  // size start token
-    const Token *end;    // size end token
-    MathLib::bigint num; // (assumed) dimension length when size is a number, 0 if not known
-    bool known;          // Known size
+    const Token *start;  ///< size start token
+    const Token *end;    ///< size end token
+    MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
+    bool known;          ///< Known size
 };
 
 /** @brief Information about a class type. */
 class CPPCHECKLIB Type {
 public:
-    const Token* classDef; // Points to "class" token
+    const Token* classDef;     ///< Points to "class" token
     const Scope* classScope;
     const Scope* enclosingScope;
     enum NeedInitialization {
@@ -93,12 +93,11 @@ public:
 
         const Token* nameStart;
         const Token* nameEnd;
-        std::string name;
         const Type* type;
     };
 
     std::vector<BaseInfo> derivedFrom;
-    std::list<FriendInfo> friendList;
+    std::vector<FriendInfo> friendList;
 
     const Token * typeStart;
     const Token * typeEnd;
@@ -229,6 +228,7 @@ public:
           _index(index_),
           _access(access_),
           _flags(0),
+          _constness(0),
           _type(type_),
           _scope(scope_) {
         evaluate(lib);
@@ -599,6 +599,10 @@ public:
 
     void setFlags(const ValueType &valuetype);
 
+    unsigned int constness() const {
+        return _constness;
+    }
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;
@@ -629,6 +633,9 @@ private:
     /** @brief flags */
     unsigned int _flags;
 
+    /** @brief constness (same encoding as ValueType::constness) */
+    unsigned int _constness;
+
     /** @brief pointer to user defined type info (for known types) */
     const Type *_type;
 
@@ -645,24 +652,27 @@ private:
 class CPPCHECKLIB Function {
     /** @brief flags mask used to access specific bit. */
     enum {
-        fHasBody        = (1 << 0),  /** @brief has implementation */
-        fIsInline       = (1 << 1),  /** @brief implementation in class definition */
-        fIsConst        = (1 << 2),  /** @brief is const */
-        fIsVirtual      = (1 << 3),  /** @brief is virtual */
-        fIsPure         = (1 << 4),  /** @brief is pure virtual */
-        fIsStatic       = (1 << 5),  /** @brief is static */
-        fIsStaticLocal  = (1 << 6),  /** @brief is static local */
-        fIsExtern       = (1 << 7),  /** @brief is extern */
-        fIsFriend       = (1 << 8),  /** @brief is friend */
-        fIsExplicit     = (1 << 9),  /** @brief is explicit */
-        fIsDefault      = (1 << 10), /** @brief is default */
-        fIsDelete       = (1 << 11), /** @brief is delete */
-        fIsNoExcept     = (1 << 12), /** @brief is noexcept */
-        fIsThrow        = (1 << 13), /** @brief is throw */
-        fIsOperator     = (1 << 14), /** @brief is operator */
-        fHasLvalRefQual = (1 << 15), /** @brief has & lvalue ref-qualifier */
-        fHasRvalRefQual = (1 << 16), /** @brief has && rvalue ref-qualifier */
-        fIsVariadic     = (1 << 17)  /** @brief is variadic */
+        fHasBody              = (1 << 0),  ///< @brief has implementation
+        fIsInline             = (1 << 1),  ///< @brief implementation in class definition
+        fIsConst              = (1 << 2),  ///< @brief is const
+        fIsVirtual            = (1 << 3),  ///< @brief is virtual
+        fIsPure               = (1 << 4),  ///< @brief is pure virtual
+        fIsStatic             = (1 << 5),  ///< @brief is static
+        fIsStaticLocal        = (1 << 6),  ///< @brief is static local
+        fIsExtern             = (1 << 7),  ///< @brief is extern
+        fIsFriend             = (1 << 8),  ///< @brief is friend
+        fIsExplicit           = (1 << 9),  ///< @brief is explicit
+        fIsDefault            = (1 << 10), ///< @brief is default
+        fIsDelete             = (1 << 11), ///< @brief is delete
+        fHasOverrideSpecifier = (1 << 12), ///< @brief does declaration contain 'override' specifier?
+        fHasFinalSpecifier    = (1 << 13), ///< @brief does declaration contain 'final' specifier?
+        fIsNoExcept           = (1 << 14), ///< @brief is noexcept
+        fIsThrow              = (1 << 15), ///< @brief is throw
+        fIsOperator           = (1 << 16), ///< @brief is operator
+        fHasLvalRefQual       = (1 << 17), ///< @brief has & lvalue ref-qualifier
+        fHasRvalRefQual       = (1 << 18), ///< @brief has && rvalue ref-qualifier
+        fIsVariadic           = (1 << 19), ///< @brief is variadic
+        fIsVolatile           = (1 << 20)  ///< @brief is volatile
     };
 
     /**
@@ -686,22 +696,7 @@ class CPPCHECKLIB Function {
 public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
-    Function()
-        : tokenDef(nullptr),
-          argDef(nullptr),
-          token(nullptr),
-          arg(nullptr),
-          retDef(nullptr),
-          retType(nullptr),
-          functionScope(nullptr),
-          nestedIn(nullptr),
-          initArgCount(0),
-          type(eFunction),
-          access(Public),
-          noexceptArg(nullptr),
-          throwArg(nullptr),
-          flags(0) {
-    }
+    Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
 
     const std::string &name() const {
         return tokenDef->str();
@@ -718,8 +713,12 @@ public:
         return initArgCount;
     }
     void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
+
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
+
+    /** @brief get function in base class that is overridden */
+    const Function *getOverridenFunction(bool *foundAllBaseClasses = nullptr) const;
 
     bool isConstructor() const {
         return type==eConstructor ||
@@ -791,6 +790,12 @@ public:
     bool isThrow() const {
         return getFlag(fIsThrow);
     }
+    bool hasOverrideSpecifier() const {
+        return getFlag(fHasOverrideSpecifier);
+    }
+    bool hasFinalSpecifier() const {
+        return getFlag(fHasFinalSpecifier);
+    }
     bool isOperator() const {
         return getFlag(fIsOperator);
     }
@@ -803,10 +808,43 @@ public:
     bool isVariadic() const {
         return getFlag(fIsVariadic);
     }
+    bool isVolatile() const {
+        return getFlag(fIsVolatile);
+    }
 
     void hasBody(bool state) {
         setFlag(fHasBody, state);
     }
+
+    const Token *tokenDef;            ///< function name token in class definition
+    const Token *argDef;              ///< function argument start '(' in class definition
+    const Token *token;               ///< function name token in implementation
+    const Token *arg;                 ///< function argument start '('
+    const Token *retDef;              ///< function return type token
+    const ::Type *retType;            ///< function return type
+    const Scope *functionScope;       ///< scope of function body
+    const Scope* nestedIn;            ///< Scope the function is declared in
+    std::list<Variable> argumentList; ///< argument list
+    unsigned int initArgCount;        ///< number of args with default values
+    Type type;                        ///< constructor, destructor, ...
+    AccessControl access;             ///< public/protected/private
+    const Token *noexceptArg;         ///< noexcept token
+    const Token *throwArg;            ///< throw token
+
+    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int path_length);
+
+    /**
+     * @return token to ":" if the function is a constructor
+     * and it contains member initialization otherwise a nullptr is returned
+     */
+    const Token * constructorMemberInitialization() const;
+
+private:
+    /** Recursively determine if this function overrides a virtual method in a base class */
+    const Function * getOverridenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
+
+    unsigned int flags;
+
     void isInline(bool state) {
         setFlag(fIsInline, state);
     }
@@ -858,34 +896,9 @@ public:
     void isVariadic(bool state) {
         setFlag(fIsVariadic, state);
     }
-
-    const Token *tokenDef; // function name token in class definition
-    const Token *argDef;   // function argument start '(' in class definition
-    const Token *token;    // function name token in implementation
-    const Token *arg;      // function argument start '('
-    const Token *retDef;   // function return type token
-    const ::Type *retType; // function return type
-    const Scope *functionScope; // scope of function body
-    const Scope* nestedIn; // Scope the function is declared in
-    std::list<Variable> argumentList; // argument list
-    unsigned int initArgCount; // number of args with default values
-    Type type;             // constructor, destructor, ...
-    AccessControl access;  // public/protected/private
-    const Token *noexceptArg;
-    const Token *throwArg;
-
-    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int depth);
-
-    /**
-     * @return token to ":" if the function is a constructor
-     * and it contains member initialization otherwise a nullptr is returned
-     */
-    const Token * constructorMemberInitialization() const;
-
-private:
-    bool isImplicitlyVirtual_rec(const ::Type* baseType, bool& safe) const;
-
-    unsigned int flags;
+    void isVolatile(bool state) {
+        setFlag(fIsVolatile, state);
+    }
 };
 
 class CPPCHECKLIB Scope {
@@ -905,9 +918,9 @@ public:
 
     const SymbolDatabase *check;
     std::string className;
-    const Token *classDef;   // class/struct/union/namespace token
-    const Token *classStart; // '{' token
-    const Token *classEnd;   // '}' token
+    const Token *classDef;   ///< class/struct/union/namespace token
+    const Token *bodyStart;  ///< '{' token
+    const Token *bodyEnd;    ///< '}' token
     std::list<Function> functionList;
     std::multimap<std::string, const Function *> functionMap;
     std::list<Variable> varlist;
@@ -921,8 +934,8 @@ public:
     std::map<std::string, Type*> definedTypesMap;
 
     // function specific fields
-    const Scope *functionOf; // scope this function belongs to
-    Function *function; // function info for this function
+    const Scope *functionOf; ///< scope this function belongs to
+    Function *function; ///< function info for this function
 
     // enum specific fields
     const Token * enumType;
@@ -993,9 +1006,9 @@ public:
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
                      const Scope *scope_, const Library* lib) {
-        varlist.push_back(Variable(token_, start_, end_, varlist.size(),
-                                   access_,
-                                   type_, scope_, lib));
+        varlist.emplace_back(token_, start_, end_, varlist.size(),
+                             access_,
+                             type_, scope_, lib);
     }
 
     /** @brief initialize varlist */
@@ -1055,17 +1068,19 @@ private:
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
-    unsigned int pointer; // 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
-    unsigned int constness;  // bit 0=data, bit 1=*, bit 2=**
-    const Scope *typeScope;
-    const Library::Container *container;
-    std::string originalTypeName;
+    unsigned int bits;                    ///< bitfield bitcount
+    unsigned int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    unsigned int constness;               ///< bit 0=data, bit 1=*, bit 2=**
+    const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
+    const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
+    const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
+    std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
 
-    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr) {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), pointer(p), constness(0U), typeScope(nullptr), container(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), pointer(p), constness(c), typeScope(nullptr), container(nullptr), originalTypeName(otn) {}
+    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
@@ -1091,6 +1106,7 @@ public:
 
 
 class CPPCHECKLIB SymbolDatabase {
+    friend class TestSymbolDatabase;
 public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
@@ -1138,8 +1154,8 @@ public:
         return _variableList.at(varId);
     }
 
-    std::size_t getVariableListSize() const {
-        return _variableList.size();
+    const std::vector<const Variable *> & variableList() const {
+        return _variableList;
     }
 
     /**
@@ -1202,7 +1218,7 @@ private:
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
-    Function *findFunctionInScope(const Token *func, const Scope *ns);
+    Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, unsigned int path_length);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
     typedef std::map<unsigned int, unsigned int> MemberIdMap;

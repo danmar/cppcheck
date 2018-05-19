@@ -94,6 +94,7 @@ for severity in ['error', 'warning', 'style', 'portability', 'performance']:
     categories[severity] = []
 
 daca2 = daca2folder
+pattern = re.compile(r'.*: (error|warning|style|performance|portability):.* \[([a-zA-Z0-9_\\-]+)\]')
 for lib in (False, True):
     for a in "0123456789abcdefghijklmnopqrstuvwxyz":
         if lib:
@@ -120,18 +121,12 @@ for lib in (False, True):
             datestr = ''
 
         for line in data.split('\n'):
-            res = re.match(r'.*: (error|warning|style|performance|style|portability):.* \[([a-zA-Z0-9_\\-]+)\]', line)
+            res = pattern.match(line)
             if res is None:
                 continue
             severity = res.group(1)
             messageId = res.group(2)
-            if messageId == 'cppcheckError':
-                continue
-            if messageId == 'internalAstError':
-                continue
-            if messageId == 'preprocessorErrorDirective':
-                continue
-            if messageId == 'syntaxError':
+            if messageId in ['cppcheckError', 'internalAstError', 'preprocessorErrorDirective', 'syntaxError']:
                 continue
             totalNumber[severity] = totalNumber[severity] + 1
             if messageId not in categories[severity]:
@@ -153,7 +148,6 @@ for lib in (False, True):
         data = data.replace('&', '&amp;')
         data = data.replace('<', '&lt;')
         data = data.replace('>', '&gt;')
-        data = data.replace('\n', '\n')
 
         f = open(path + 'daca2-' + a + '.html', 'wt')
         f.write('<!DOCTYPE html>\n')

@@ -29,7 +29,7 @@ public:
 
 private:
 
-    void run() {
+    void run() override {
         TEST_CASE(removeQuotationMarks);
         TEST_CASE(acceptFile);
         TEST_CASE(getCurrentPath);
@@ -82,6 +82,8 @@ private:
         ASSERT_EQUALS(false, Path::isAbsolute("foo.cpp"));
         ASSERT_EQUALS(false, Path::isAbsolute("C:foo.cpp"));
         ASSERT_EQUALS(false, Path::isAbsolute("C:foo\\bar.cpp"));
+        ASSERT_EQUALS(false, Path::isAbsolute("bar.cpp"));
+        TODO_ASSERT_EQUALS(true, false, Path::isAbsolute("\\"));
 #else
         ASSERT_EQUALS(true, Path::isAbsolute("/foo/bar"));
         ASSERT_EQUALS(true, Path::isAbsolute("/"));
@@ -91,11 +93,12 @@ private:
     }
 
     void getRelative() const {
-        std::vector<std::string> basePaths;
-        basePaths.push_back(""); // Don't crash with empty paths
-        basePaths.push_back("C:/foo");
-        basePaths.push_back("C:/bar/");
-        basePaths.push_back("C:/test.cpp");
+        const std::vector<std::string> basePaths = {
+            "", // Don't crash with empty paths
+            "C:/foo",
+            "C:/bar/",
+            "C:/test.cpp"
+        };
 
         ASSERT_EQUALS("x.c", Path::getRelativePath("C:/foo/x.c", basePaths));
         ASSERT_EQUALS("y.c", Path::getRelativePath("C:/bar/y.c", basePaths));

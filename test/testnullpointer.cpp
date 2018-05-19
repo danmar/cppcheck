@@ -38,7 +38,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -81,6 +81,7 @@ private:
         TEST_CASE(nullpointer27); // #6568
         TEST_CASE(nullpointer28); // #6491
         TEST_CASE(nullpointer30); // #6392
+        TEST_CASE(nullpointer31); // #8482
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -136,8 +137,7 @@ private:
         settings.inconclusive = false;
 
         // Raw tokens..
-        std::vector<std::string> files;
-        files.push_back("test.cpp");
+        std::vector<std::string> files(1, "test.cpp");
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, files[0]);
 
@@ -1361,6 +1361,21 @@ private:
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (warning, inconclusive) Either the condition 'if(values)' is redundant or there is possible null pointer dereference: values.\n", errout.str());
     }
 
+    void nullpointer31() { // #8482
+        check("struct F\n"
+              "{\n"
+              "    int x;\n"
+              "};\n"
+              " \n"
+              "static void foo(F* f)\n"
+              "{\n"
+              "    if( f ) {}\n"
+              "    else { return; }\n"
+              "    (void)f->x;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -2571,7 +2586,7 @@ private:
               "  if (!s) {}\n"
               "  p = s - 20;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
 
         check("void foo(char *s) {\n"
               "  s -= 20;\n"
@@ -2583,7 +2598,7 @@ private:
               "  if (!s) {}\n"
               "  s -= 20;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
 
         check("int* f8() { int *x = NULL; return --x; }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
@@ -2597,43 +2612,48 @@ private:
               "  char * p = s + 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
               "  char * p = s + 20;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
 
         check("void foo(char *s) {\n"
               "  char * p = 20 + s;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
               "  char * p = 20 + s;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
 
         check("void foo(char *s) {\n"
               "  s += 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
               "  s += 20;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!s' is redundant or there is pointer arithmetic with NULL pointer.\n", errout.str());
 
         check("int* f7() { int *x = NULL; return ++x; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Pointer addition with NULL pointer.\n", errout.str());
 
         check("int* f10() { int *x = NULL; return x++; } ");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Pointer arithmetic with NULL pointer.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Pointer addition with NULL pointer.\n", errout.str());
+
+        check("class foo {};\n"
+              "const char* get() const { return 0; }\n"
+              "void f(foo x) { if (get()) x += get(); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

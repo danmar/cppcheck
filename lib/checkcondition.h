@@ -51,7 +51,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
@@ -63,7 +63,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
@@ -133,6 +133,8 @@ private:
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
 
+    void identicalInnerConditionError(const Token *tok1, const Token* tok2);
+
     void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2);
 
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
@@ -147,7 +149,7 @@ private:
     void invalidTestForOverflow(const Token* tok, bool result);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckCondition c(nullptr, settings, errorLogger);
 
         c.assignIfError(nullptr, nullptr, emptyString, false);
@@ -156,6 +158,7 @@ private:
         c.multiConditionError(nullptr,1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
         c.oppositeInnerConditionError(nullptr, nullptr);
+        c.identicalInnerConditionError(nullptr, nullptr);
         c.identicalConditionAfterEarlyExitError(nullptr, nullptr);
         c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
@@ -170,7 +173,7 @@ private:
         return "Condition";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Match conditions with assignments and other conditions:\n"
                "- Mismatching assignment and comparison => comparison is always true/false\n"
                "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"

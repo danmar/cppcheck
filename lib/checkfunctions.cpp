@@ -56,9 +56,8 @@ void CheckFunctions::checkProhibitedFunctions()
     const bool checkAlloca = _settings->isEnabled(Settings::WARNING) && ((_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11);
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    for (unsigned int i = 0; i < symbolDatabase->functionScopes.size(); i++) {
-        const Scope* scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
                 continue;
             // alloca() is special as it depends on the code being C or C++, so it is not in Library
@@ -66,12 +65,14 @@ void CheckFunctions::checkProhibitedFunctions()
                 if (_tokenizer->isC()) {
                     if (_settings->standards.c > Standards::C89)
                         reportError(tok, Severity::warning, "allocaCalled",
+                                    "$symbol:alloca\n"
                                     "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
                                     "The obsolete function 'alloca' is called. In C99 and later it is recommended to use a variable length array or "
                                     "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
                                     "(http://stackoverflow.com/questions/1018853/why-is-alloca-not-considered-good-practice and http://linux.die.net/man/3/alloca).");
                 } else
                     reportError(tok, Severity::warning, "allocaCalled",
+                                "$symbol:alloca\n"
                                 "Obsolete function 'alloca' called.\n"
                                 "The obsolete function 'alloca' is called. In C++11 and later it is recommended to use std::array<> or "
                                 "a dynamically allocated array instead. The function 'alloca' is dangerous for many reasons "
@@ -97,10 +98,8 @@ void CheckFunctions::checkProhibitedFunctions()
 void CheckFunctions::invalidFunctionUsage()
 {
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const functionToken = tok;
@@ -133,12 +132,12 @@ void CheckFunctions::invalidFunctionUsage()
 void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr)
 {
     std::ostringstream errmsg;
+    errmsg << "$symbol:" << functionName << '\n';
     if (invalidValue && invalidValue->condition)
         errmsg << ValueFlow::eitherTheConditionIsRedundant(invalidValue->condition)
-               << " or " << functionName << "() argument nr " << argnr
-               << " can have invalid value.";
+               << " or $symbol() argument nr " << argnr << " can have invalid value.";
     else
-        errmsg << "Invalid " << functionName << "() argument nr " << argnr << '.';
+        errmsg << "Invalid $symbol() argument nr " << argnr << '.';
     if (invalidValue)
         errmsg << " The value is " << invalidValue->intvalue << " but the valid values are '" << validstr << "'.";
     else
@@ -162,7 +161,8 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
 void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)
 {
     std::ostringstream errmsg;
-    errmsg << "Invalid " << functionName << "() argument nr " << argnr << ". A non-boolean value is required.";
+    errmsg << "$symbol:" << functionName << '\n';
+    errmsg << "Invalid $symbol() argument nr " << argnr << ". A non-boolean value is required.";
     reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), CWE628, false);
 }
 
@@ -175,10 +175,8 @@ void CheckFunctions::checkIgnoredReturnValue()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip c++11 initialization, ({...})
             if (Token::Match(tok, "%var%|(|, {"))
                 tok = tok->linkAt(1);
@@ -192,7 +190,7 @@ void CheckFunctions::checkIgnoredReturnValue()
                 continue;
 
             if (!tok->scope()->isExecutable()) {
-                tok = tok->scope()->classEnd;
+                tok = tok->scope()->bodyEnd;
                 continue;
             }
 
@@ -205,7 +203,7 @@ void CheckFunctions::checkIgnoredReturnValue()
 void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string& function)
 {
     reportError(tok, Severity::warning, "ignoredReturnValue",
-                "Return value of function " + function + "() is not used.", CWE252, false);
+                "$symbol:" + function + "\nReturn value of function $symbol() is not used.", CWE252, false);
 }
 
 
@@ -218,10 +216,8 @@ void CheckFunctions::checkMathFunctions()
     const bool printWarnings = _settings->isEnabled(Settings::WARNING);
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
             if (printWarnings && Token::Match(tok, "%name% ( !!)")) {
@@ -289,9 +285,9 @@ void CheckFunctions::mathfunctionCallWarning(const Token *tok, const unsigned in
 {
     if (tok) {
         if (numParam == 1)
-            reportError(tok, Severity::warning, "wrongmathcall", "Passing value " + tok->strAt(2) + " to " + tok->str() + "() leads to implementation-defined result.", CWE758, false);
+            reportError(tok, Severity::warning, "wrongmathcall", "$symbol:" + tok->str() + "\nPassing value " + tok->strAt(2) + " to $symbol() leads to implementation-defined result.", CWE758, false);
         else if (numParam == 2)
-            reportError(tok, Severity::warning, "wrongmathcall", "Passing values " + tok->strAt(2) + " and " + tok->strAt(4) + " to " + tok->str() + "() leads to implementation-defined result.", CWE758, false);
+            reportError(tok, Severity::warning, "wrongmathcall", "$symbol:" + tok->str() + "\nPassing values " + tok->strAt(2) + " and " + tok->strAt(4) + " to $symbol() leads to implementation-defined result.", CWE758, false);
     } else
         reportError(tok, Severity::warning, "wrongmathcall", "Passing value '#' to #() leads to implementation-defined result.", CWE758, false);
 }
@@ -317,10 +313,8 @@ void CheckFunctions::memsetZeroBytes()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
                 const std::vector<const Token *> &arguments = getArguments(tok);
                 if (WRONG_DATA(arguments.size() != 3U, tok))
@@ -358,10 +352,8 @@ void CheckFunctions::memsetInvalid2ndParam()
         return;
 
     const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok && (tok != scope->classEnd); tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
             if (!Token::simpleMatch(tok, "memset ("))
                 continue;
 

@@ -3019,6 +3019,17 @@ void uninivar_istream_read(std::istream &f)
     f.read(buffer, size);
 }
 
+void uninitvar_string_compare(std::string &teststr, std::wstring &testwstr)
+{
+    char *pStrUninit;
+    // cppcheck-suppress uninitvar
+    (void)teststr.compare(pStrUninit);
+
+    wchar_t *pWStrUninit;
+    // cppcheck-suppress uninitvar
+    (void)testwstr.compare(pWStrUninit);
+}
+
 void invalidFunctionArgBool_abs(bool b, double x, double y)
 {
     // cppcheck-suppress invalidFunctionArgBool
@@ -3035,6 +3046,20 @@ void ignoredReturnValue_abs(int i)
     std::abs(i);
     // cppcheck-suppress ignoredReturnValue
     std::abs(-199);
+}
+
+void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwstr)
+{
+    // cppcheck-suppress ignoredReturnValue
+    teststr.compare("test");
+    // cppcheck-suppress ignoredReturnValue
+    testwstr.compare(L"wtest");
+}
+
+void ignoredReturnValue_make_pair()
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::make_pair(1, 2);
 }
 
 void nullPointer_ifstream_read(std::ifstream &f)
@@ -3248,7 +3273,40 @@ void stdstring()
 
 void stdvector()
 {
+    int uninit;
     std::vector<int> v;
     // cppcheck-suppress ignoredReturnValue
     v.size();
+    // cppcheck-suppress ignoredReturnValue
+    v.capacity();
+    // cppcheck-suppress uselessCallsEmpty
+    // cppcheck-suppress ignoredReturnValue
+    v.empty();
+    // cppcheck-suppress ignoredReturnValue
+    v.max_size();
+    // cppcheck-suppress uninitvar
+    v.push_back(uninit);
+    // cppcheck-suppress uninitvar
+    v.reserve(uninit);
+    // cppcheck-suppress invalidFunctionArg
+    v.reserve(-1);
+    // no warning is expected for capacity 0 as it simply has no effect
+    v.reserve(0);
+    // cppcheck-suppress uninitvar
+    v.resize(uninit);
+    // cppcheck-suppress invalidFunctionArg
+    v.resize(-1);
+
+    v.clear();
+    v.shrink_to_fit();
+
+    // no warning is expected for pop_back()
+    v.push_back(42);
+    v.pop_back();
+
+    v.push_back(42);
+    // cppcheck-suppress ignoredReturnValue
+    v.back();
+    // cppcheck-suppress ignoredReturnValue
+    v.front();
 }

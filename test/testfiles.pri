@@ -19,7 +19,6 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testerrorlogger.cpp \
            $${BASEPATH}/testexceptionsafety.cpp \
            $${BASEPATH}/testfilelister.cpp \
-           $${BASEPATH}/testforeach.cpp \
            $${BASEPATH}/testfunctions.cpp \
            $${BASEPATH}/testgarbage.cpp \
            $${BASEPATH}/testimportproject.cpp \
@@ -35,6 +34,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testother.cpp \
            $${BASEPATH}/testpath.cpp \
            $${BASEPATH}/testpathmatch.cpp \
+           $${BASEPATH}/testplatform.cpp \
            $${BASEPATH}/testpostfixoperator.cpp \
            $${BASEPATH}/testpreprocessor.cpp \
            $${BASEPATH}/testrunner.cpp \

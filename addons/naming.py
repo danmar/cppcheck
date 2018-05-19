@@ -44,4 +44,4 @@ for arg in sys.argv[1:]:
                     res = re.match(RE_FUNCTIONNAME, scope.className)
                     if not res:
                         reportError(
-                            scope.classStart, 'style', 'Function ' + scope.className + ' violates naming convention')
+                            scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention')

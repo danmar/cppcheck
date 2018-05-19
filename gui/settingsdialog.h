@@ -41,7 +41,9 @@ public:
     SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
                    QWidget *parent = 0);
+    SettingsDialog(const SettingsDialog &) = delete;
     virtual ~SettingsDialog();
+    SettingsDialog &operator=(const SettingsDialog &) = delete;
 
     /**
     * @brief Save all values to QSettings

@@ -62,7 +62,7 @@ public:
     }
 
     /** Checks that uses the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (tokenizer->isC())
             return;
 
@@ -129,7 +129,7 @@ private:
     /** Missing exception specification */
     void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname) {
         const std::string str1(tok1 ? tok1->str() : "foo");
-        const std::list<const Token*> locationList = make_container< std::list<const Token*> > () << tok1 << tok2;
+        const std::list<const Token*> locationList = { tok1, tok2 };
         reportError(locationList, Severity::style, "unhandledExceptionSpecification",
                     "Unhandled exception specification when calling function " + str1 + "().\n"
                     "Unhandled exception specification when calling function " + str1 + "(). "
@@ -137,7 +137,7 @@ private:
     }
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckExceptionSafety c(nullptr, settings, errorLogger);
         c.destructorsError(nullptr, "Class");
         c.deallocThrowError(nullptr, "p");
@@ -153,7 +153,7 @@ private:
     }
 
     /** wiki formatted description of the class (for --doc) */
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Checking exception safety\n"
                "- Throwing exceptions in destructors\n"
                "- Throwing exception during invalid state\n"

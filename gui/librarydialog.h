@@ -35,7 +35,9 @@ class LibraryDialog : public QDialog {
 
 public:
     explicit LibraryDialog(QWidget *parent = 0);
+    LibraryDialog(const LibraryDialog &) = delete;
     ~LibraryDialog();
+    LibraryDialog &operator=(const LibraryDialog &) = delete;
 
 private slots:
     void openCfg();

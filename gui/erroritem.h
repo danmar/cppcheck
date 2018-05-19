@@ -89,6 +89,7 @@ public:
     QString message;
     int cwe;
     QList<QErrorPathItem> errorPath;
+    QString symbolNames;
 
     // Special GUI properties
     QString sinceDate;

@@ -46,7 +46,7 @@ void MainWindow::loadFile()
                 allErrors << (url + "\n" + errorMessage);
             url = line;
             errorMessage.clear();
-        } else if (!url.isEmpty() && QRegExp(".*: (error|warning|note):.*").exactMatch(line)) {
+        } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
             if (!errorMessage.isEmpty())
                 errorMessage += '\n';
             errorMessage += line;
@@ -62,6 +62,7 @@ void MainWindow::loadFile()
         }
         std::random_shuffle(allErrors.begin(), allErrors.end());
         ui->results->addItems(allErrors.mid(0,100));
+        ui->results->sortItems();
     } else {
         ui->results->addItems(allErrors);
     }

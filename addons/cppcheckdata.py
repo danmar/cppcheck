@@ -8,6 +8,7 @@ License: No restrictions, use this as you need.
 
 import xml.etree.ElementTree as ET
 import argparse
+from fnmatch import fnmatch
 
 
 class Directive:
@@ -45,6 +46,7 @@ class ValueType:
 
     type = None
     sign = None
+    bits = 0
     constness = 0
     pointer = 0
     typeScopeId = None
@@ -54,6 +56,9 @@ class ValueType:
     def __init__(self, element):
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
+        bits = element.get('valueType-bits')
+        if bits:
+            self.bits = int(bits)
         self.typeScopeId = element.get('valueType-typeScope')
         self.originalTypeName = element.get('valueType-originalTypeName')
         constness = element.get('valueType-constness')
@@ -267,8 +272,8 @@ class Scope:
     C++ class: http://cppcheck.net/devinfo/doxyoutput/classScope.html
 
     Attributes
-        classStart     The { Token for this scope
-        classEnd       The } Token for this scope
+        bodyStart      The { Token for this scope
+        bodyEnd        The } Token for this scope
         className      Name of this scope.
                        For a function scope, this is the function name;
                        For a class scope, this is the class name.
@@ -276,11 +281,10 @@ class Scope:
     """
 
     Id = None
-    classStartId = None
-
-    classStart = None
-    classEndId = None
-    classEnd = None
+    bodyStartId = None
+    bodyStart = None
+    bodyEndId = None
+    bodyEnd = None
     className = None
     nestedInId = None
     nestedIn = None
@@ -289,17 +293,17 @@ class Scope:
     def __init__(self, element):
         self.Id = element.get('id')
         self.className = element.get('className')
-        self.classStartId = element.get('classStart')
-        self.classStart = None
-        self.classEndId = element.get('classEnd')
-        self.classEnd = None
+        self.bodyStartId = element.get('bodyStart')
+        self.bodyStart = None
+        self.bodyEndId = element.get('bodyEnd')
+        self.bodyEnd = None
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
 
     def setId(self, IdMap):
-        self.classStart = IdMap[self.classStartId]
-        self.classEnd = IdMap[self.classEndId]
+        self.bodyStart = IdMap[self.bodyStartId]
+        self.bodyEnd = IdMap[self.bodyEndId]
         self.nestedIn = IdMap[self.nestedInId]
 
 
@@ -316,11 +320,20 @@ class Function:
     tokenDef = None
     tokenDefId = None
     name = None
+    type = None
+    isVirtual = None
+    isImplicitlyVirtual = None
 
     def __init__(self, element):
         self.Id = element.get('id')
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
+        self.type = element.get('type')
+        isVirtual = element.get('isVirtual')
+        self.isVirtual = (isVirtual and isVirtual == 'true')
+        isImplicitlyVirtual = element.get('isImplicitlyVirtual')
+        self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
+
         self.argument = {}
         self.argumentId = {}
         for arg in element:
@@ -351,6 +364,7 @@ class Variable:
         isPointer       Is this variable a pointer
         isReference     Is this variable a reference
         isStatic        Is this variable static?
+        constness       Variable constness (same encoding as ValueType::constness)
     """
 
     Id = None
@@ -369,6 +383,7 @@ class Variable:
     isPointer = False
     isReference = False
     isStatic = False
+    constness = 0
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -387,6 +402,9 @@ class Variable:
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
+        self.constness = element.get('constness')
+        if self.constness:
+            self.constness = int(self.constness)
 
     def setId(self, IdMap):
         self.nameToken = IdMap[self.nameTokenId]
@@ -438,12 +456,43 @@ class ValueFlow:
         for value in element:
             self.values.append(ValueFlow.Value(value))
 
+class Suppression:
+    """
+    Suppression class
+    This class contains a suppression entry to suppress a warning.
+
+    Attributes
+      errorId     The id string of the error to suppress, can be a wildcard
+      fileName    The name of the file to suppress warnings for, can include wildcards
+      lineNumber  The number of the line to suppress warnings from, can be 0 to represent any line
+      symbolName  The name of the symbol to match warnings for, can include wildcards
+    """
+
+    errorId = None
+    fileName = None
+    lineNumber = None
+    symbolName = None
+
+    def __init__(self, element):
+        self.errorId = element.get('errorId')
+        self.fileName = element.get('fileName')
+        self.lineNumber = element.get('lineNumber')
+        self.symbolName = element.get('symbolName')
+
+    def isMatch(file, line, message, errorId):
+        if (fnmatch(file, self.fileName)
+            and (self.lineNumber is None or line == self.lineNumber)
+            and fnmatch(message, '*'+self.symbolName+'*')
+            and fnmatch(errorId, self.errorId)):
+            return true
+        else:
+            return false
 
 class Configuration:
     """
     Configuration class
     This class contains the directives, tokens, scopes, functions,
-    variables and value flows for one configuration.
+    variables, value flows, and suppressions for one configuration.
 
     Attributes:
         name          Name of the configuration, "" for default
@@ -453,6 +502,7 @@ class Configuration:
         functions     List of Function items
         variables     List of Variable items
         valueflow     List of ValueFlow values
+        suppressions  List of warning suppressions
     """
 
     name = ''
@@ -462,6 +512,7 @@ class Configuration:
     functions = []
     variables = []
     valueflow = []
+    suppressions = []
 
     def __init__(self, confignode):
         self.name = confignode.get('cfg')
@@ -471,6 +522,8 @@ class Configuration:
         self.functions = []
         self.variables = []
         self.valueflow = []
+        self.suppressions = []
+        arguments = []
 
         for element in confignode:
             if element.tag == 'directivelist':
@@ -497,10 +550,17 @@ class Configuration:
                                 self.functions.append(Function(function))
             if element.tag == 'variables':
                 for variable in element:
-                    self.variables.append(Variable(variable))
+                    var = Variable(variable)
+                    if var.nameTokenId:
+                        self.variables.append(var)
+                    else:
+                        arguments.append(var)
             if element.tag == 'valueflow':
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
+            if element.tag == "suppressions":
+                for suppression in element:
+                    self.suppressions.append(Suppression(suppression))
 
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
@@ -510,6 +570,8 @@ class Configuration:
         for function in self.functions:
             IdMap[function.Id] = function
         for variable in self.variables:
+            IdMap[variable.Id] = variable
+        for variable in arguments:
             IdMap[variable.Id] = variable
         for values in self.valueflow:
             IdMap[values.Id] = values.values
@@ -521,6 +583,8 @@ class Configuration:
         for function in self.functions:
             function.setId(IdMap)
         for variable in self.variables:
+            variable.setId(IdMap)
+        for variable in arguments:
             variable.setId(IdMap)
 
 
@@ -690,7 +754,7 @@ def ArgumentParser():
     return parser
 
 
-def reportError(template, callstack=(), severity='', message='', id=''):
+def reportError(template, callstack=(), severity='', message='', errorId='', suppressions=None, outputFunc=None):
     """
         Format an error message according to the template.
 
@@ -711,6 +775,13 @@ def reportError(template, callstack=(), severity='', message='', id=''):
     stack = ' -> '.join('[' + f + ':' + str(l) + ']' for (f, l) in callstack)
     file = callstack[-1][0]
     line = str(callstack[-1][1])
+
+    if suppressions is not None and any(suppression.isMatch(file, line, message, errorId) for suppression in suppressions):
+        return None
+
+    outputLine = template.format(callstack=stack, file=file, line=line,
+                           severity=severity, message=message, id=errorId)
+    if outputFunc is not None:
+        outputFunc(outputLine)
     # format message
-    return template.format(callstack=stack, file=file, line=line,
-                           severity=severity, message=message, id=id)
+    return outputLine

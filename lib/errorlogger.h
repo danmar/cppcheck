@@ -256,11 +256,13 @@ public:
         /**
          * Format the error message into a string.
          * @param verbose use verbose message
-         * @param outputFormat Empty string to use default output format
+         * @param templateFormat Empty string to use default output format
          * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
+         * @param templateLocation Format Empty string to use default output format
+         * or template to be used. E.g. "{file}:{line},{info}"
         * @return formatted string
          */
-        std::string toString(bool verbose, const std::string &outputFormat = emptyString) const;
+        std::string toString(bool verbose, const std::string &templateFormat = emptyString, const std::string &templateLocation = emptyString) const;
 
         std::string serialize() const;
         bool deserialize(const std::string &data);
@@ -288,6 +290,13 @@ public:
             return _verboseMessage;
         }
 
+        /** Symbol names */
+        const std::string &symbolNames() const {
+            return _symbolNames;
+        }
+
+        Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
+
     private:
         /**
          * Replace all occurrences of searchFor with replaceWith in the
@@ -305,6 +314,9 @@ public:
 
         /** Verbose message */
         std::string _verboseMessage;
+
+        /** symbol names */
+        std::string _symbolNames;
     };
 
     ErrorLogger() { }
@@ -355,7 +367,7 @@ public:
      * Report list of unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      */
-    void reportUnmatchedSuppressions(const std::list<Suppressions::SuppressionEntry> &unmatched);
+    void reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 

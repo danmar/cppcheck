@@ -42,8 +42,13 @@ private:
     std::vector<std::string> extendedOps;
     std::vector<std::string> assignmentOps;
 
-    void run() {
-        initOps();
+    void run() override {
+        arithmeticalOps = { "+", "-", "*", "/", "%", "<<", ">>" };
+        logicalOps = { "&&", "||", "!" };
+        comparisonOps = { "==", "!=", "<", "<=", ">", ">=" };
+        bitOps = { "&", "|", "^", "~" };
+        extendedOps = { ",", "[", "]", "(", ")", "?", ":" };
+        assignmentOps = { "=", "+=", "-=", "*=", "/=", "%=", "&=", "^=", "|=", "<<=", ">>=" };
 
         TEST_CASE(nextprevious);
         TEST_CASE(multiCompare);
@@ -544,50 +549,6 @@ private:
 
     static void append_vector(std::vector<std::string> &dest, const std::vector<std::string> &src) {
         dest.insert(dest.end(), src.begin(), src.end());
-    }
-
-    void initOps() {
-        arithmeticalOps.push_back("+");
-        arithmeticalOps.push_back("-");
-        arithmeticalOps.push_back("*");
-        arithmeticalOps.push_back("/");
-        arithmeticalOps.push_back("%");
-        arithmeticalOps.push_back("<<");
-        arithmeticalOps.push_back(">>");
-
-        logicalOps.push_back("&&");
-        logicalOps.push_back("||");
-        logicalOps.push_back("!");
-        comparisonOps.push_back("==");
-        comparisonOps.push_back("!=");
-        comparisonOps.push_back("<");
-        comparisonOps.push_back("<=");
-        comparisonOps.push_back(">");
-        comparisonOps.push_back(">=");
-        bitOps.push_back("&");
-        bitOps.push_back("|");
-        bitOps.push_back("^");
-        bitOps.push_back("~");
-
-        extendedOps.push_back(",");
-        extendedOps.push_back("[");
-        extendedOps.push_back("]");
-        extendedOps.push_back("(");
-        extendedOps.push_back(")");
-        extendedOps.push_back("?");
-        extendedOps.push_back(":");
-
-        assignmentOps.push_back("=");
-        assignmentOps.push_back("+=");
-        assignmentOps.push_back("-=");
-        assignmentOps.push_back("*=");
-        assignmentOps.push_back("/=");
-        assignmentOps.push_back("%=");
-        assignmentOps.push_back("&=");
-        assignmentOps.push_back("^=");
-        assignmentOps.push_back("|=");
-        assignmentOps.push_back("<<=");
-        assignmentOps.push_back(">>=");
     }
 
     void matchOp() {

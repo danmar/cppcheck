@@ -1,0 +1,26 @@
+
+==========
+Benchmarks
+==========
+
+In this file we can document some good code repos / code samples to use when working on optimisations.
+
+Trac tickets
+------------
+
+http://trac.cppcheck.net/ticket/2435 -- Tokenizer::simplifyTypedef
+http://trac.cppcheck.net/ticket/8355 -- TokenList::createAst
+
+
+Repos
+-----
+
+cppcheck/lib
+
+C++ code with lots of templates:
+http://github.com/weidai11/cryptopp
+The TemplateSimplifier is heavily used for instance on this file : cryptopp/test.cpp
+
+
+
+

@@ -28,9 +28,11 @@
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
+    <ClCompile Include="..\lib\astutils.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testassert.cpp" />
+    <ClCompile Include="testastutils.cpp" />
     <ClCompile Include="testautovariables.cpp" />
     <ClCompile Include="testbool.cpp" />
     <ClCompile Include="testboost.cpp" />
@@ -59,6 +61,7 @@
     <ClCompile Include="testother.cpp" />
     <ClCompile Include="testpath.cpp" />
     <ClCompile Include="testpathmatch.cpp" />
+    <ClCompile Include="testplatform.cpp" />
     <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />

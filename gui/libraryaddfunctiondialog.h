@@ -16,7 +16,9 @@ class LibraryAddFunctionDialog : public QDialog {
 
 public:
     explicit LibraryAddFunctionDialog(QWidget *parent = 0);
+    LibraryAddFunctionDialog(const LibraryAddFunctionDialog &) = delete;
     ~LibraryAddFunctionDialog();
+    LibraryAddFunctionDialog &operator=(const LibraryAddFunctionDialog &) = delete;
 
     QString functionName() const;
     int     numberOfArguments() const;

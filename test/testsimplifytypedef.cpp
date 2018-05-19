@@ -38,7 +38,7 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void run() {
+    void run() override {
         settings0.addEnabled("style");
         settings2.addEnabled("style");
 
@@ -1187,7 +1187,7 @@ private:
     void simplifyTypedef39() {
         const char code[] = "typedef int A;\n"
                             "template <const A, volatile A> struct S{};";
-        const char expected[] = "template < const int , int > struct S { } ;";
+        const char expected[] = "template < const int , volatile int > struct S { } ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -1478,7 +1478,7 @@ private:
                             "_Iterator v3;";
 
         // The expected result..
-        const char expected[] = "long * const v1 ; "
+        const char expected[] = "volatile long * const v1 ; "
                                 "void * const v2 [ 2 ] ; "
                                 "int * const * v3 ;";
         ASSERT_EQUALS(expected, tok(code));
@@ -2931,16 +2931,16 @@ private:
         // The expected result..
         const char expected[] = "int * t1 ; " // simplified to regular pointer
                                 "int * const t2 ; "
-                                "int * t3 ; " // volatile removed, gets simplified to regular pointer
-                                "int * const t4 ; " // volatile removed
+                                "int * volatile t3 ; "
+                                "int * const volatile t4 ; "
                                 "int * t5 ; "
                                 "int * const t6 ; "
-                                "int * t7 ; " // volatile removed
-                                "int * const t8 ; " // volatile removed
+                                "int * volatile t7 ; "
+                                "int * const volatile t8 ; "
                                 "int ( :: C :: * t9 ) ( float ) ; "
                                 "int ( :: C :: * const t10 ) ( float ) ; "
-                                "int ( :: C :: * t11 ) ( float ) ; " // volatile removed
-                                "int ( :: C :: * const t12 ) ( float ) ;"; // volatile removed
+                                "int ( :: C :: * volatile t11 ) ( float ) ; "
+                                "int ( :: C :: * const volatile t12 ) ( float ) ;";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -3005,8 +3005,8 @@ private:
             // The expected result..
             const char expected[] = ":: C ( :: C :: * f1 ) ( ) ; "
                                     ":: C ( :: C :: * f2 ) ( ) const ; "
-                                    ":: C ( :: C :: * f3 ) ( ) ; "
-                                    ":: C ( :: C :: * f4 ) ( ) const ;";
+                                    ":: C ( :: C :: * f3 ) ( ) volatile ; "
+                                    ":: C ( :: C :: * f4 ) ( ) const volatile ;";
             ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
@@ -3043,8 +3043,8 @@ private:
             // The expected result..
             const char expected[] = ":: B :: C ( :: B :: C :: * f1 ) ( ) ; "
                                     ":: B :: C ( :: B :: C :: * f2 ) ( ) const ; "
-                                    ":: B :: C ( :: B :: C :: * f3 ) ( ) ; "
-                                    ":: B :: C ( :: B :: C :: * f4 ) ( ) const ;";
+                                    ":: B :: C ( :: B :: C :: * f3 ) ( ) volatile ; "
+                                    ":: B :: C ( :: B :: C :: * f4 ) ( ) const volatile ;";
             ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout.str());
         }

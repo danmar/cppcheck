@@ -14,42 +14,126 @@ typedef unsigned long long u64;
 
 //// 3.1
 
+extern int misra_5_1_extern_var_hides_var_x;
+extern int misra_5_1_extern_var_hides_var_y; //5.1
+
+extern int misra_5_2_var_hides_var______31x;
+static int misra_5_2_var_hides_var______31y;//5.2
+static int misra_5_2_function_hides_var_31x;
+void misra_5_2_function_hides_var_31y(void) {}//5.2
+void foo(void) 
+{
+  int i;
+  switch(misra_5_2_func1()) //16.4 16.6
+  {
+    case 1: 
+    {
+      do
+      {
+        for(i = 0; i < 10; i++) 
+        {
+          if(misra_5_2_func3()) //14.4
+          {
+            int misra_5_2_var_hides_var_1____31x;
+            int misra_5_2_var_hides_var_1____31y;//5.2
+          }
+        }
+      } while(misra_5_2_func2()); //14.4
+    } 
+  }
+}
+
+union misra_5_2_field_hides_field__63x { //19.2
+int misra_5_2_field_hides_field__31x;
+int misra_5_2_field_hides_field__31y;//5.2
+};
+struct misra_5_2_field_hides_field__63y { //5.2
+int misra_5_2_field_hides_field1_31x;
+int misra_5_2_field_hides_field1_31y;//5.2
+};
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
 
-void misra_5_1() {
-  int a123456789012345678901234567890; // no-warning
-  int a1234567890123456789012345678901; // 5.1
+extern int misra_5_3_var_hides_var______31x;
+void misra_5_3_var_hides_function_31x (void) {}
+enum misra_5_3_Enum {
+misra_5_3_var_hidesenumconst_31x = 2,misra_5_3_enum_hidesfunction_31x = 5
+};
+void misra_5_3_func1(void)
+{
+  int misra_5_3_var_hides_var______31y; //5.3
+  int misra_5_3_var_hides_function_31y; //5.3
+  int misra_5_3_var_hidesenumconst_31y; //5.3
+  switch(misra_5_3_func2()) //16.4 16.6
+  {
+    case 1:
+    {
+      do 
+      {
+        int misra_5_3_var_hides_var_1____31x;
+        if(misra_5_3_func3()) //14.4
+        {
+          int misra_5_3_var_hides_var_1____31y = 1; //5.3
+        }
+      } while(misra_5_3_func2()); //14.4
+    }
+  }
+}
+void misra_5_3_enum_hidesfunction_31y(void) {} //5.3
+
+
+#define misra_5_4_macro_hides_macro__31x 1
+#define misra_5_4_param_hides_macro__31x 1
+#define misra_5_4_macro_hides_macro__31y 2 //5.4
+#define m1(misra_5_4_param_hides_macro__31y) 1 //5.4
+#define m2(misra_5_4_param_hides_param__31x,misra_5_4_param_hides_param__31y) 1 //5.4
+
+#define misra_5_5_var_hides_macro____31x 1
+#define misra_5_5_functionhides_macro31x 1
+#define misra_5_5_param_hides_macro__31x 1
+#define misra_5_5_tag_hides_macro____31x 1
+#define misra_5_5_hides_macro________31x 1
+
+int misra_5_5_var_hides_macro____31y; //5.5
+void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){} //5.5
+struct misra_5_5_tag_hides_macro____31y { //5.5
+int x;
+};
+void misra_5_5_func1() 
+{
+  switch(misra_5_5_func2()) //16.4 16.6
+  {
+    case 1:
+    {
+      do 
+      {
+        if(misra_5_5_func3()) //14.4
+        {
+          int misra_5_5_hides_macro________31y; //5.5
+        }
+      } while(misra_5_5_func2()); //14.4
+    }
+  }
 }
 
-void misra_5_3() {
-  u8 x=1;
-  if (y!=0) {
-    u8 x=2; // 5.3
-  } else {}
-}
-
-#define m54_123456789012345678901234567890123456789012345678901234567890    1 // 5.4
-#define m54_1234567890123456789012345678901234567890123456789012345678901   2 // 5.4
-
-#define m55(x,y) (x+y)
-int m55; // 5.5
 
 void misra_7_1() {
   int x = 066; // 7.1
 }
 
 void misra_7_3() {
-  int x = 12l; // 7.3
-  int x = 12lu; // 7.3
-}
+  long misra_7_3_a = 0l; //7.3       
+  long misra_7_3_b = 0lU; //7.3     
+  long long misra_7_3_c = 0Ull; //7.3     
+  long long misra_7_3_d = 0ll; //7.3     
+  long double misra_7_3_e = 7.3l; //7.3  
+  }
+
 
 extern int a811[]; // 8.11
 
-enum e812 {
-  A=3,
-  B=3 // 8.12
-};
+enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
+enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 
 void misra_8_14(char * restrict str) {} // 8.14
 
@@ -153,9 +237,18 @@ void misra_14_2() {
   // TODO check more variants
 }
 
-void misra_14_4() {
+struct {
+  unsigned int x:1;
+  unsigned int y:1;
+} _14_4_struct;
+void misra_14_4(bool b) {
   if (x+4){} // 14.4
   else {}
+
+  if (b) {}
+  else {}
+
+  if (_14_4_struct.x) {}
 }
 
 void misra_15_1() {
@@ -236,6 +329,8 @@ void misra_16_3() {
     case 10:  // 16.3
       return; // 15.5
     case 11:
+    { break; }
+    case 12:
     default: break;
   }
 }
@@ -270,6 +365,14 @@ void misra_16_6() {
   case 1: break;
   case 2: break;
   default: break;
+  }
+
+  // No 16 6 in this switch:
+  switch (x) {
+  case A: return 1; // 15.5
+  case B: return 1; // 15.5
+  case C: return 1; // 15.5
+  default: return 2; // 15.5
   }
 }
 
@@ -313,6 +416,8 @@ union misra_19_2 { }; // 19.2
 #define int short // 20.4
 #undef X  // 20.5
 
+#else1 // 20.13
+
 void misra_21_3() {
   p1=malloc(10); // 21.3
   p2=calloc(10); // 21.3
@@ -331,6 +436,7 @@ void misra_21_8() {
   abort(); // 21.8
   getenv("foo"); // 21.8
   system(""); // 21.8
+  exit(-1); // 21.8
 }
 
 void misra_21_9() {

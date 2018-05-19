@@ -64,10 +64,10 @@ public:
     bool check(ErrorLogger * const errorLogger, const Settings& settings);
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
+    bool analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     static CheckUnusedFunctions instance;
 
@@ -78,7 +78,7 @@ public:
 
 private:
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckUnusedFunctions c(nullptr, settings, errorLogger);
         c.unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
@@ -93,14 +93,14 @@ private:
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) {
+    void runSimplifiedChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) override {
     }
 
     static std::string myName() {
         return "Unused functions";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Check for functions that are never called\n";
     }
 

@@ -149,13 +149,13 @@ private:
     void internalError(const std::string &filename, const std::string &msg);
 
     /**
-     * @brief Process one file.
+     * @brief Check a file using stream
      * @param filename file name
      * @param cfgname  cfg name
      * @param fileStream stream the file content can be read from
-     * @return amount of errors found
+     * @return number of errors found
      */
-    unsigned int processFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
+    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
 
     /**
      * @brief Check raw tokens
@@ -189,24 +189,24 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
 
     /**
      * @brief Information about progress is directed here.
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg);
+    virtual void reportOut(const std::string &outmsg) override;
 
     std::list<std::string> _errorList;
     Settings _settings;
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) override;
 
     ErrorLogger &_errorLogger;
 

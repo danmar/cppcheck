@@ -35,7 +35,7 @@ private:
     const ErrorLogger::ErrorMessage::FileLocation fooCpp5;
     const ErrorLogger::ErrorMessage::FileLocation barCpp8;
 
-    void run() {
+    void run() override {
         TEST_CASE(PatternSearchReplace);
         TEST_CASE(FileLocationDefaults);
         TEST_CASE(FileLocationSetFile);
@@ -120,9 +120,7 @@ private:
     }
 
     void ErrorMessageConstructLocations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -142,9 +140,7 @@ private:
     }
 
     void ErrorMessageVerboseLocations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -175,9 +171,7 @@ private:
 
     void CustomFormatLocations() const {
         // Check that first location from location stack is used in template
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         ASSERT_EQUALS(2, (int)msg._callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
@@ -202,9 +196,7 @@ private:
     }
 
     void ToXmlV2Locations() const {
-        std::list<ErrorLogger::ErrorMessage::FileLocation> locs;
-        locs.push_back(fooCpp5);
-        locs.push_back(barCpp8);
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "    <cppcheck version=\"";
@@ -297,7 +289,7 @@ private:
     }
 
     void suppressUnmatchedSuppressions() {
-        std::list<Suppressions::SuppressionEntry> suppressions;
+        std::list<Suppressions::Suppression> suppressions;
 
         // No unmatched suppression
         errout.str("");
@@ -308,40 +300,40 @@ private:
         // suppress all unmatchedSuppression
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "*", 0U));
+        suppressions.emplace_back("abc", "a.c", 10U);
+        suppressions.emplace_back("unmatchedSuppression", "*", 0U);
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
         // suppress all unmatchedSuppression in a.c
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "a.c", 0U));
+        suppressions.emplace_back("abc", "a.c", 10U);
+        suppressions.emplace_back("unmatchedSuppression", "a.c", 0U);
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
         // suppress unmatchedSuppression in a.c at line 10
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "a.c", 10U));
+        suppressions.emplace_back("abc", "a.c", 10U);
+        suppressions.emplace_back("unmatchedSuppression", "a.c", 10U);
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
         // don't suppress unmatchedSuppression when file is mismatching
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "b.c", 0U));
+        suppressions.emplace_back("abc", "a.c", 10U);
+        suppressions.emplace_back("unmatchedSuppression", "b.c", 0U);
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
 
         // don't suppress unmatchedSuppression when line is mismatching
         errout.str("");
         suppressions.clear();
-        suppressions.push_back(Suppressions::SuppressionEntry("abc", "a.c", 10U));
-        suppressions.push_back(Suppressions::SuppressionEntry("unmatchedSuppression", "a.c", 1U));
+        suppressions.emplace_back("abc", "a.c", 10U);
+        suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
     }

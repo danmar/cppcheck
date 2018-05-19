@@ -283,7 +283,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
 
-        std::string str = tok->str;
+        std::string str = tok->str();
 
         // Replace hexadecimal value with decimal
         // TODO: Remove this
@@ -599,7 +599,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::simpleMatch(tok, "} ,")) {
+            if (Token::Match(tok, "} ,|:")) {
                 tok = tok->next();
             }
         } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
@@ -1183,7 +1183,7 @@ void TokenList::validateAst() const
             throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::AST);
 
         // Check for endless recursion
-        const Token* parent=tok->astParent();
+        const Token* parent = tok->astParent();
         if (parent) {
             std::set < const Token* > astTokens; // list of anchestors
             astTokens.insert(tok);
@@ -1195,8 +1195,11 @@ void TokenList::validateAst() const
                 astTokens.insert(parent);
             } while ((parent = parent->astParent()) != nullptr);
             safeAstTokens.insert(astTokens.begin(), astTokens.end());
-        } else
+        } else if (tok->str() == ";") {
+            safeAstTokens.clear();
+        } else {
             safeAstTokens.insert(tok);
+        }
     }
 }
 

@@ -10,8 +10,9 @@ env:
   global:
 #   unfortunately we need this to stay within 50min timelimit given by travis.
 #   this also turns off the debug/warning cxxflags
-    - ORIGINAL_CXXFLAGS="-include lib/cxx11emu.h -pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
+    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
+    - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
   matrix:
 #    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_CLANG is the var that controls if we download and check clang in that travis job
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
@@ -38,15 +39,15 @@ matrix:
 before_install:
 # install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip
+ - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
   - set -e
 # download clang git, compile cppcheck, run cppcheck on clang code to look for crashes in cppcheck. if this is done, terminate build
-  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/clang/archive/bcaf7f2abe47b0dab055f1a0ec011ed9c2a3d3ea.zip" & make -j 4 & wait; unzip bcaf7f2abe47b0dab055f1a0ec011ed9c2a3d3ea.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-bcaf7f2abe47b0dab055f1a0ec011ed9c2a3d3ea ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c -j 2 |& tee /tmp/clang.cppcheck; cd ../ ; echo "CLANG" ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
+  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/clang/archive/3aeb17c0c83af34fee9afb3efe3122bad77f557f.zip" & make -j 4 & wait; unzip 3aeb17c0c83af34fee9afb3efe3122bad77f557f.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-3aeb17c0c83af34fee9afb3efe3122bad77f557f ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/clang.cppcheck; cd ../ ; echo "CLANG" ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
 # check llvm as well
-  - if [[  "$CHECK_LLVM" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/llvm/archive/7733e74e5454d6f18da28c06be917c1e73d12d01.zip"  & make -j 4 & wait; unzip 7733e74e5454d6f18da28c06be917c1e73d12d01.zip > /dev/null;  touch /tmp/llvm.cppcheck;  cd ./llvm-7733e74e5454d6f18da28c06be917c1e73d12d01 ; ../cppcheck . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -j 2 |& tee /tmp/llvm.cppcheck; cd ../ ; echo "LLVM"  ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck; exit; fi
+  - if [[  "$CHECK_LLVM" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/llvm/archive/c31146b17944a1d56df72a70a1ed0e3b63795168.zip"  & make -j 4 & wait; unzip c31146b17944a1d56df72a70a1ed0e3b63795168.zip > /dev/null;  touch /tmp/llvm.cppcheck;  cd ./llvm-c31146b17944a1d56df72a70a1ed0e3b63795168 ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/llvm.cppcheck; cd ../ ; echo "LLVM"  ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck; exit; fi
 # check if dmake needs to be rerun but if yes, don't fail the build but notify us.
 # to update dmake: "make dmake; ./dmake; and commit
   - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
@@ -68,19 +69,21 @@ script:
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
-  - ./cppcheck --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - ${CPPCHECK} --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
 # check gui with qt settings
-  - ./cppcheck --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui -igui/test |& tee --append /tmp/cppcheck.cppcheck
+  - ${CPPCHECK} --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test |& tee --append /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # run extra tests
   - tools/generate_and_run_more_tests.sh
+# Validate XML
+#  - make validateXMLV2
 # check test/cfg
   - make checkcfg
   - make validateCFG
   - cd ./gui
 # clean rebuild
   - git clean -dfx .
-#     can't set this as env flags, so try again with HAVE_RULES=yes
+# can't set this as env flags, so try again with HAVE_RULES=yes
   - qmake HAVE_RULES=yes
   - echo $CXXFLAGS
   - make -s -j4
@@ -115,11 +118,20 @@ script:
 # check matchcompiler
   - ./tools/test_matchcompiler.py
 # check --dump
-  - ./cppcheck test/testpreprocessor.cpp --dump
+  - ${CPPCHECK} test/testpreprocessor.cpp --dump
   - xmllint --noout test/testpreprocessor.cpp.dump
 # check addons/misra.py
-#  - ./cppcheck --dump addons/misra-test.c
-#  - python addons/misra.py -verify addons/misra-test.c.dump
+  - cd addons/test
+  - ${CPPCHECK} --dump misc-test.cpp
+  - python3 ../misc.py -verify misc-test.cpp.dump
+  - ${CPPCHECK} --dump cert-test.c
+  - python3 ../cert.py -verify cert-test.c.dump
+  - ${CPPCHECK} --dump misra-test.c
+  - python3 ../misra.py -verify misra-test.c.dump
+  - ${CPPCHECK} --dump misra-test.cpp
+  - python3 ../misra.py -verify misra-test.cpp.dump
+  - cd ../../
+
 
 notifications:
   irc:

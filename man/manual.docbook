@@ -5,7 +5,7 @@
   <bookinfo>
     <title>Cppcheck 1.84 dev</title>
 
-    <date>2018-01-21</date>
+    <date>2018-04-23</date>
   </bookinfo>
 
   <chapter>
@@ -661,93 +661,287 @@ cppcheck -DA --force file.c</programlisting>
     <para>If you want to reformat the output so it looks different you can use
     templates.</para>
 
-    <para>To get Visual Studio compatible output you can use <parameter
-    class="command">--template=vs</parameter>:</para>
+    <section>
+      <title>Predefined output formats</title>
 
-    <programlisting>cppcheck --template=vs gui/test.cpp</programlisting>
+      <para>To get Visual Studio compatible output you can use <parameter
+      class="command">--template=vs</parameter>:</para>
 
-    <para>This output will look like this:</para>
+      <programlisting>cppcheck --template=vs samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-    <programlisting>Checking gui/test.cpp...
-gui/test.cpp(31): error: Memory leak: b
-gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
+      <para>This output will look like this:</para>
 
-    <para>To get gcc compatible output you can use <parameter
-    class="command">--template=gcc</parameter>:</para>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c(6): error: Array 'a[2]' accessed at index 2, which is out of bounds.</programlisting>
 
-    <programlisting>cppcheck --template=gcc gui/test.cpp</programlisting>
+      <para>To get <literal>gcc</literal> compatible output you can use
+      <parameter class="command">--template=gcc</parameter>:</para>
 
-    <para>The output will look like this:</para>
+      <programlisting>cppcheck --template=gcc samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-    <programlisting>Checking gui/test.cpp...
-gui/test.cpp:31: error: Memory leak: b
-gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisting>
+      <para>The output will look like this:</para>
 
-    <para>You can write your own pattern (for example a comma-separated
-    format):</para>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c:6:6: warning: Array 'a[2]' accessed at index 2, which is out of bounds. [arrayIndexOutOfBounds]
+    a[2] = 0;
+     ^</programlisting>
+    </section>
 
-    <programlisting>cppcheck --template="{file},{line},{severity},{id},{message}" gui/test.cpp</programlisting>
+    <section>
+      <title>User defined output format (single line)</title>
 
-    <para>The output will look like this:</para>
+      <para>You can write your own pattern. For instance, to get warning
+      messages that are formatted like old <literal>gcc</literal> such format
+      can be used:</para>
 
-    <programlisting>Checking gui/test.cpp...
-gui/test.cpp,31,error,memleak,Memory leak: b
-gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
+      <programlisting>cppcheck --template="{file}:{line}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-    <para>The following format specifiers are supported:</para>
+      <para>The output will look like this:</para>
 
-    <variablelist>
-      <varlistentry>
-        <term>callstack</term>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c:6: error: Array 'a[2]' accessed at index 2, which is out of bounds.</programlisting>
 
-        <listitem>
-          <para>callstack - if available</para>
-        </listitem>
-      </varlistentry>
+      <para>A comma separated format:</para>
 
-      <varlistentry>
-        <term>file</term>
+      <programlisting>cppcheck --template="{file},{line},{severity},{id},{message}" samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-        <listitem>
-          <para>filename</para>
-        </listitem>
-      </varlistentry>
+      <para>The output will look like this:</para>
 
-      <varlistentry>
-        <term>id</term>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c,6,error,arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.</programlisting>
+    </section>
 
-        <listitem>
-          <para>message id</para>
-        </listitem>
-      </varlistentry>
+    <section>
+      <title>User defined output format (multi line)</title>
 
-      <varlistentry>
-        <term>line</term>
+      <para>Many warnings have multiple locations. Example code:</para>
 
-        <listitem>
-          <para>line number</para>
-        </listitem>
-      </varlistentry>
+      <programlisting>void f(int *p)
+{
+    *p = 3;       // line 3
+}
 
-      <varlistentry>
-        <term>message</term>
+int main()
+{
+    int *p = 0;   // line 8
+    f(p);         // line 9
+    return 0;
+}</programlisting>
 
-        <listitem>
-          <para>verbose message text</para>
-        </listitem>
-      </varlistentry>
+      <para>There is a possible null pointer dereference at line 3. Cppcheck
+      can show how it came to that conclusion by showing extra location
+      information. You need to use both <literal>--template</literal> and
+      <literal>--template-location</literal> at the command line.</para>
 
-      <varlistentry>
-        <term>severity</term>
+      <para>Example command:</para>
 
-        <listitem>
-          <para>a type/rank of message</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
+      <programlisting>cppcheck --template="{file}:{line}: {severity}: {message}\n{code}" --template-location="{file}:{line}: note: {info}\n{code}" multiline.c</programlisting>
 
-    <para>The escape sequences \b (backspace), \n (newline), \r (formfeed) and
-    \t (horizontal tab) are supported.</para>
+      <para>The output from Cppcheck is:</para>
+
+      <programlisting>Checking multiline.c ...
+multiline.c:3: warning: Possible null pointer dereference: p
+    *p = 3;
+     ^
+multiline.c:8: note: Assignment 'p=0', assigned value is 0
+    int *p = 0;
+             ^
+multiline.c:9: note: Calling function 'f', 1st argument 'p' value is 0
+    f(p);
+      ^
+multiline.c:3: note: Null pointer dereference
+    *p = 3;
+     ^</programlisting>
+
+      <para>The first line in the warning is formatted by the
+      <literal>--template</literal> format.</para>
+
+      <para>The other lines in the warning are formatted by the
+      <literal>--template-location</literal> format.</para>
+    </section>
+
+    <section>
+      <title>Format specifiers for --template</title>
+
+      <para>The available specifiers for <literal>--template</literal>
+      are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>{file}</term>
+
+          <listitem>
+            <para>File name</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{line}</term>
+
+          <listitem>
+            <para>Line number</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{column}</term>
+
+          <listitem>
+            <para>Column number</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{callstack}</term>
+
+          <listitem>
+            <para>Write all locations. Each location is written in
+            [{file}:{line}] format and the locations are separated by -&gt;.
+            For instance it might look like: [multiline.c:8] -&gt;
+            [multiline.c:9] -&gt; [multiline.c:3]</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{inconclusive:text}</term>
+
+          <listitem>
+            <para>If warning is inconclusive then the given text is written.
+            The given text can be any arbitrary text that does not contain }.
+            Example: {inconclusive:inconclusive,}</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{severity}</term>
+
+          <listitem>
+            <para>error/warning/style/performance/portability/information</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{message}</term>
+
+          <listitem>
+            <para>The warning message</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{id}</term>
+
+          <listitem>
+            <para>Warning id</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{code}</term>
+
+          <listitem>
+            <para>The real code.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\t</term>
+
+          <listitem>
+            <para>Tab</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\t</term>
+
+          <listitem>
+            <para>Newline</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\r</term>
+
+          <listitem>
+            <para>Carriage return</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>Format specifiers for --template-location</title>
+
+      <para>The available specifiers for
+      <literal>--template-location</literal> are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>{file}</term>
+
+          <listitem>
+            <para>File name</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{line}</term>
+
+          <listitem>
+            <para>Line number</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{column}</term>
+
+          <listitem>
+            <para>Column number</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{info}</term>
+
+          <listitem>
+            <para>Information message about current location</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{code}</term>
+
+          <listitem>
+            <para>The real code.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\t</term>
+
+          <listitem>
+            <para>Tab</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\t</term>
+
+          <listitem>
+            <para>Newline</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\r</term>
+
+          <listitem>
+            <para>Carriage return</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
   </chapter>
 
   <chapter>
@@ -816,7 +1010,7 @@ Rule text
     these.</para>
 
     <section>
-      <title>Suppressing a certain error type</title>
+      <title>Plain text suppressions</title>
 
       <para>You can suppress certain types of errors. The format for such a
       suppression is one of:</para>
@@ -870,6 +1064,25 @@ uninitvar</programlisting>
     </section>
 
     <section>
+      <title>XML suppressions</title>
+
+      <para>You can specify suppressions in a XML file. Example file:</para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;suppressions&gt;
+  &lt;suppression&gt;
+    &lt;id&gt;uninitvar&lt;/id&gt;
+    &lt;fileName&gt;src/file1.c&lt;/fileName&gt;
+    &lt;lineNumber&gt;10&lt;/lineNumber&gt;
+    &lt;symbolName&gt;var&lt;/symbolName&gt;
+  &lt;/suppression&gt;
+&lt;/suppressions&gt;</programlisting>
+
+      <para>The xml format is extensible and may be extended with further
+      attributes in the future.</para>
+    </section>
+
+    <section>
       <title>Inline suppressions</title>
 
       <para>Suppressions can also be added directly in the code by adding
@@ -902,6 +1115,17 @@ Checking test.c...
       No error is reported when invoking cppcheck this way:</para>
 
       <programlisting>cppcheck --inline-suppr test.c</programlisting>
+
+      <para>you can specify that the inline suppression only applies to a
+      specific symbol:</para>
+
+      <programlisting>// cppcheck-suppress arrayIndexOutOfBounds symbolName=arr</programlisting>
+
+      <para>You can write comments for the suppress, however is recommended to
+      use ; or // to specify where they start:</para>
+
+      <programlisting>// cppcheck-suppress arrayIndexOutOfBounds ; some comment
+// cppcheck-suppress arrayIndexOutOfBounds // some comment</programlisting>
     </section>
   </chapter>
 

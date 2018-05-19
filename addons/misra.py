@@ -11,7 +11,7 @@
 #
 # The MISRA standard documents may be obtained from https://www.misra.org.uk
 #
-# Total number of rules: 153
+# Total number of rules: 143
 
 import cppcheckdata
 import sys
@@ -214,7 +214,11 @@ def hasSideEffectsRecursive(expr):
 
 
 def isBoolExpression(expr):
-    return expr and expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1']
+    if not expr:
+        return False
+    if expr.valueType and (expr.valueType.type == 'bool' or expr.valueType.bits == 1):
+        return True
+    return expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1']
 
 
 def isConstantExpression(expr):
@@ -276,7 +280,40 @@ def getPrecedence(expr):
     return -1
 
 
-def noParentheses(tok1, tok2):
+def findRawLink(token):
+    tok1 = None
+    tok2 = None
+    forward = False
+
+    if token.str in '{([':
+        tok1 = token.str
+        tok2 = '})]'['{(['.find(token.str)]
+        forward = True
+    elif token.str in '})]':
+        tok1 = token.str
+        tok2 = '{(['['})]'.find(token.str)]
+        forward = False
+    else:
+        return None
+
+    # try to find link
+    indent = 0
+    while token:
+        if token.str == tok1:
+            indent = indent + 1
+        elif token.str == tok2:
+            if indent <= 1:
+                return token
+            indent = indent - 1
+        if forward == True:
+            token = token.next
+        else:
+            token = token.previous
+
+    # raw link not found
+    return None
+
+def numberOfParentheses(tok1, tok2):
     while tok1 and tok1 != tok2:
         if tok1.str == '(' or tok1.str == ')':
             return False
@@ -325,6 +362,22 @@ def isHexDigit(c):
 def isOctalDigit(c):
     return (c >= '0' and c <= '7')
 
+def isNoReturnScope(tok):
+    if tok is None or tok.str != '}':
+        return False
+    if tok.previous is None or tok.previous.str != ';':
+        return False
+    if simpleMatch(tok.previous.previous, 'break ;'):
+        return True
+    prev = tok.previous.previous
+    while prev and prev.str not in ';{}':
+        if prev.str in '])':
+            prev = prev.link
+        prev = prev.previous
+    if prev and prev.next.str in ['throw', 'return']:
+        return True
+    return False
+
 def misra_3_1(rawTokens):
     for token in rawTokens:
         if token.str.startswith('/*') or token.str.startswith('//'):
@@ -367,25 +420,88 @@ def misra_4_1(rawTokens):
 
 
 def misra_5_1(data):
-    for token in data.tokenlist:
-        if token.isName and len(token.str) > 31:
-            reportError(token, 5, 1)
-
-
-def misra_5_3(data):
     scopeVars = {}
     for var in data.variables:
         if var.isArgument:
-            # TODO
             continue
         if var.nameToken.scope not in scopeVars:
             scopeVars[var.nameToken.scope] = []
         scopeVars[var.nameToken.scope].append(var)
+    for scope in scopeVars:
+        for i, variable1 in enumerate(scopeVars[scope]):
+            for variable2 in scopeVars[scope][i + 1:]:
+                if (variable1.isExtern and variable2.isExtern and
+                    variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
+                        variable1.Id != variable2.Id):
+                    if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
+                        reportError(variable1.nameToken, 5, 1)
+                    else:
+                        reportError(variable2.nameToken, 5, 1)
 
+def misra_5_2(data):
+    scopeVars = {}
+    for var in data.variables:
+        if var.nameToken.scope not in scopeVars:
+            scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
+            scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
+        scopeVars[var.nameToken.scope]["varlist"].append(var)
+    for scope in data.scopes:
+        if scope.nestedIn and scope.className:
+            if scope.nestedIn not in scopeVars:
+                scopeVars.setdefault(scope.nestedIn, {})["varlist"] = []
+                scopeVars.setdefault(scope.nestedIn, {})["scopelist"] = []
+            scopeVars[scope.nestedIn]["scopelist"].append(scope)
+    for scope in scopeVars:
+        if len(scopeVars[scope]["varlist"]) <= 1:
+            continue
+        for i, variable1 in enumerate(scopeVars[scope]["varlist"]):
+            for variable2 in scopeVars[scope]["varlist"][i + 1:]:
+                if variable1.isArgument and variable2.isArgument:
+                    continue
+                if variable1.isExtern and variable2.isExtern:
+                    continue
+                if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
+                        variable1.Id != variable2.Id):
+                    if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
+                        reportError(variable1.nameToken, 5, 2)
+                    else:
+                        reportError(variable2.nameToken, 5, 2)
+            for innerscope in scopeVars[scope]["scopelist"]:
+                if (variable1.nameToken.str[:31] == innerscope.className[:31]):
+                    if int(variable1.nameToken.linenr) > int(innerscope.bodyStart.linenr):
+                        reportError(variable1.nameToken, 5, 2)
+                    else:
+                        reportError(innerscope.bodyStart, 5, 2)
+        if len(scopeVars[scope]["scopelist"]) <= 1:
+            continue
+        for i, scopename1 in enumerate(scopeVars[scope]["scopelist"]):
+            for scopename2 in scopeVars[scope]["scopelist"][i + 1:]:
+                if (scopename1.className[:31] == scopename2.className[:31]):
+                    if int(scopename1.bodyStart.linenr) > int(scopename2.bodyStart.linenr):
+                        reportError(scopename1.bodyStart, 5, 2)
+                    else:
+                        reportError(scopename2.bodyStart, 5, 2)
+
+
+
+def misra_5_3(data):
+    enum = []
+    scopeVars = {}
+    for var in data.variables:
+        if var.nameToken.scope not in scopeVars:
+            scopeVars[var.nameToken.scope] = []
+        scopeVars[var.nameToken.scope].append(var)
     for innerScope in data.scopes:
-        if innerScope.type == 'Global':
+        if innerScope.type == "Enum":
+            enum_token = innerScope.bodyStart.next
+            while enum_token != innerScope.bodyEnd:
+                if enum_token.values and enum_token.isName:
+                    enum.append(enum_token.str)
+                enum_token = enum_token.next
             continue
         if innerScope not in scopeVars:
+            continue
+        if innerScope.type == "Global":
             continue
         for innerVar in scopeVars[innerScope]:
             outerScope = innerScope.nestedIn
@@ -393,43 +509,99 @@ def misra_5_3(data):
                 if outerScope not in scopeVars:
                     outerScope = outerScope.nestedIn
                     continue
-                found = False
                 for outerVar in scopeVars[outerScope]:
-                    if innerVar.nameToken.str == outerVar.nameToken.str:
-                        found = True
-                        break
-                if found:
-                    reportError(innerVar.nameToken, 5, 3)
-                    break
+                    if innerVar.nameToken.str[:31] == outerVar.nameToken.str[:31]:
+                        if outerVar.isArgument and outerScope.type == "Global" and not innerVar.isArgument:
+                            continue
+                        if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
+                            reportError(innerVar.nameToken, 5, 3)
+                        else:
+                            reportError(outerVar.nameToken, 5, 3)
                 outerScope = outerScope.nestedIn
+            for scope in data.scopes:
+                if (scope.className and innerVar.nameToken.str[:31] == scope.className[:31]):
+                    if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
+                        reportError(innerVar.nameToken, 5, 3)
+                    else:
+                        reportError(scope.bodyStart, 5, 3)
 
+            for e in enum:
+                if scope.className and innerVar.nameToken.str[:31] == e[:31]:
+                    if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
+                        reportError(innerVar.nameToken, 5, 3)
+                    else:
+                        reportError(innerScope.bodyStart, 5, 3)
+    for e in enum:
+        for scope in data.scopes:
+            if (scope.className and scope.className[:31] == e[:31]):
+                reportError(scope.bodyStart, 5, 3)
 
 def misra_5_4(data):
+    macro = {}
+    compile_name = re.compile(r'#define ([a-zA-Z0-9_]+)')
+    compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[\(]([a-zA-Z0-9_, ]+)[\)]')
     for dir in data.directives:
-        if re.match(r'#define [a-zA-Z0-9_]{64,}', dir.str):
-            reportError(dir, 5, 4)
+        res1 = compile_name.match(dir.str)
+        if res1:
+            if dir not in macro:
+                macro.setdefault(dir, {})["name"] = []
+                macro.setdefault(dir, {})["params"] = []
+            macro[dir]["name"] = res1.group(1)
+        res2 = compile_param.match(dir.str)
+        if res2:
+            res_gp2 = res2.group(2).split(",")
+            res_gp2 = [macroname.replace(" ", "") for macroname in res_gp2]
+            macro[dir]["params"].extend(res_gp2)
+    for mvar in macro:
+        if len(macro[mvar]["params"]) > 0:
+            for i, macroparam1 in enumerate(macro[mvar]["params"]):
+                for j, macroparam2 in enumerate(macro[mvar]["params"]):
+                    if j > i and macroparam1[:31] == macroparam2[:31]:
+                        reportError(mvar, 5, 4)
+
+    for x, m_var1 in enumerate(macro):
+        for y, m_var2 in enumerate(macro):
+            if x < y and macro[m_var1]["name"][:31] == macro[m_var2]["name"][:31]:
+                if m_var1.linenr > m_var2.linenr:
+                    reportError(m_var1, 5, 4)
+                else:
+                    reportError(m_var2, 5, 4)
+            for param in macro[m_var2]["params"]:
+                if macro[m_var1]["name"][:31] == param[:31]:
+                    if m_var1.linenr > m_var2.linenr:
+                        reportError(m_var1, 5, 4)
+                    else:
+                        reportError(m_var2, 5, 4)
 
 
 def misra_5_5(data):
     macroNames = []
+    compiled = re.compile(r'#define ([A-Za-z0-9_]+)')
     for dir in data.directives:
-        res = re.match(r'#define ([A-Za-z0-9_]+)', dir.str)
+        res = compiled.match(dir.str)
         if res:
             macroNames.append(res.group(1))
     for var in data.variables:
-        if var.nameToken.str in macroNames:
-            reportError(var.nameToken, 5, 5)
+        for macro in macroNames:
+            if var.nameToken.str[:31] == macro[:31]:
+                reportError(var.nameToken, 5, 5)
+    for scope in data.scopes:
+        for macro in macroNames:
+            if scope.className and scope.className[:31] == macro[:31]:
+                reportError(scope.bodyStart, 5, 5)
 
 
 def misra_7_1(rawTokens):
+    compiled = re.compile(r'^0[0-7]+$')
     for tok in rawTokens:
-        if re.match(r'^0[0-7]+$', tok.str):
+        if compiled.match(tok.str):
             reportError(tok, 7, 1)
 
 
 def misra_7_3(rawTokens):
+    compiled = re.compile(r'^[0-9.uU]+l')
     for tok in rawTokens:
-        if re.match(r'^[0-9]+l', tok.str):
+        if compiled.match(tok.str):
             reportError(tok, 7, 3)
 
 
@@ -440,24 +612,22 @@ def misra_8_11(data):
 
 
 def misra_8_12(data):
-    for token in data.tokenlist:
-        if token.str != '{':
+    for scope in data.scopes:
+        enum = []
+        implicit_enum = []
+        if scope.type != 'Enum':
             continue
-        if not token.scope or token.scope.type != 'Enum':
-            continue
-        etok = token
-        values = []
-        while etok:
-            if etok.str == '}':
-                break
-            if etok.str == '=':
-                rhsValues = etok.astOperand2.values
-                if rhsValues and len(rhsValues) == 1:
-                    if rhsValues[0].intvalue in values:
-                        reportError(etok, 8, 12)
-                        break
-                    values.append(rhsValues[0].intvalue)
-            etok = etok.next
+        e_token = scope.bodyStart.next
+        while e_token != scope.bodyEnd:
+            if e_token.values:
+                enum.append(e_token.str)
+            if (e_token.values and e_token.isName and e_token.next.str != "="):
+                for v in e_token.values:
+                    implicit_enum.append(v.intvalue)
+            e_token = e_token.next
+        for implicit_enum_value in implicit_enum:
+            if str(implicit_enum_value) in enum:
+                reportError(scope.bodyStart, 8, 12)
 
 
 def misra_8_14(rawTokens):
@@ -637,8 +807,9 @@ def misra_11_8(data):
 
 
 def misra_11_9(data):
+    compiled = re.compile(r'#define ([A-Za-z_][A-Za-z_0-9]*) (.*)')
     for directive in data.directives:
-        res1 = re.match(r'#define ([A-Za-z_][A-Za-z_0-9]*) (.*)', directive.str)
+        res1 = compiled.match(directive.str)
         if not res1:
             continue
         name = res1.group(1)
@@ -651,13 +822,14 @@ def misra_11_9(data):
 
 def misra_12_1_sizeof(rawTokens):
     state = 0
+    compiled = re.compile(r'^[a-zA-Z_]')
     for tok in rawTokens:
         if tok.str.startswith('//') or tok.str.startswith('/*'):
             continue
         if tok.str == 'sizeof':
             state = 1
         elif state == 1:
-            if re.match(r'^[a-zA-Z_]', tok.str):
+            if compiled.match(tok.str):
                 state = 2
             else:
                 state = 0
@@ -674,11 +846,11 @@ def misra_12_1(data):
         if p < 2 or p > 12:
             continue
         p1 = getPrecedence(token.astOperand1)
-        if p < p1 <= 12 and noParentheses(token.astOperand1, token):
+        if p < p1 <= 12 and numberOfParentheses(token.astOperand1, token):
             reportError(token, 12, 1)
             continue
         p2 = getPrecedence(token.astOperand2)
-        if p < p2 <= 12 and noParentheses(token, token.astOperand2):
+        if p < p2 <= 12 and numberOfParentheses(token, token.astOperand2):
             reportError(token, 12, 1)
             continue
 
@@ -930,8 +1102,11 @@ def misra_16_3(rawTokens):
             state = STATE_BREAK
         elif token.str == '{':
             state = STATE_OK
-        elif token.str == '}':
-            state = STATE_NONE
+        elif token.str == '}' and state == STATE_OK:
+            # is this {} an unconditional block of code?
+            link = findRawLink(token)
+            if (link is None) or (link.previous is None) or (link.previous.str not in ':;{}'):
+                state = STATE_NONE
         elif token.str == 'case' or token.str == 'default':
             if state != STATE_OK:
                 reportError(token, 16, 3)
@@ -982,11 +1157,11 @@ def misra_16_6(data):
         tok = token.next.link.next.next
         count = 0
         while tok:
-            if tok.str == 'break':
+            if tok.str in ['break', 'return', 'throw']:
                 count = count + 1
             elif tok.str == '{':
                 tok = tok.link
-                if simpleMatch(tok.previous.previous, 'break ;'):
+                if isNoReturnScope(tok):
                     count = count + 1
             elif tok.str == '}':
                 break
@@ -1107,6 +1282,35 @@ def misra_20_5(data):
         if directive.str.startswith('#undef '):
             reportError(directive, 20, 5)
 
+def misra_20_13(data):
+    for directive in data.directives:
+        dir = directive.str
+        if dir.find(' ') > 0:
+            dir = dir[:dir.find(' ')]
+        if dir.find('(') > 0:
+            dir = dir[:dir.find('(')]
+        if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include', '#pragma', '#undef', '#warning']:
+            reportError(directive, 20, 13)
+
+def misra_20_14(data):
+    # stack for #if blocks. contains the #if directive until the corresponding #endif is seen.
+    # the size increases when there are inner #if directives.
+    ifStack = []
+    for directive in data.directives:
+        if directive.str.startswith('#if '):
+            ifStack.append(directive)
+        elif directive.str == '#else' or directive.str.startswith('#elif '):
+            if len(ifStack)==0:
+                reportError(directive, 20, 14)
+                ifStack.append(directive)
+            elif directive.file != ifStack[-1].file:
+                reportError(directive, 20, 14)
+        elif directive.str == '#endif':
+            if len(ifStack) == 0:
+                reportError(directive, 20, 14)
+            elif  directive.file != ifStack[-1].file:
+                reportError(directive, 20, 14)
+                ifStack.pop()
 
 def misra_21_3(data):
     for token in data.tokenlist:
@@ -1134,7 +1338,7 @@ def misra_21_7(data):
 
 def misra_21_8(data):
     for token in data.tokenlist:
-        if isFunctionCall(token) and (token.astOperand1.str in {'abort', 'getenv', 'system'}):
+        if isFunctionCall(token) and (token.astOperand1.str in {'abort', 'exit', 'getenv', 'system'}):
             reportError(token, 21, 8)
 
 
@@ -1156,6 +1360,10 @@ def loadRuleTexts(filename):
     appendixA = False
     ruleText = False
     global ruleTexts
+    Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
+    Choice_pattern = re.compile(r'^[ ]*(Advisory|Required|Mandatory)$')
+    xA_Z_pattern = re.compile(r'^[#A-Z].*')
+    a_z_pattern = re.compile(r'^[a-z].*')
     for line in open(filename, 'rt'):
         line = line.replace('\r', '').replace('\n', '')
         if len(line) == 0:
@@ -1170,21 +1378,21 @@ def loadRuleTexts(filename):
             continue
         if line.find('Appendix B') >= 0:
             break
-        res = re.match(r'^Rule ([0-9]+).([0-9]+)', line)
+        res = Rule_pattern.match(line)
         if res:
             num1 = int(res.group(1))
             num2 = int(res.group(2))
             ruleText = False
             continue
-        if re.match(r'^[ ]*(Advisory|Required|Mandatory)$', line):
+        if Choice_pattern.match(line):
             ruleText = False
-        elif re.match(r'^[#A-Z].*', line):
+        elif xA_Z_pattern.match(line):
             if ruleText:
                 num2 = num2 + 1
             num = num1 * 100 + num2
             ruleTexts[num] = line
             ruleText = True
-        elif ruleText and re.match(r'^[a-z].*', line):
+        elif ruleText and a_z_pattern.match(line):
             num = num1 * 100 + num2
             ruleTexts[num] = ruleTexts[num] + ' ' + line
             continue
@@ -1246,14 +1454,15 @@ def generateTable():
 
     # what rules are handled by this addon?
     addon = []
+    compiled = re.compile(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*')
     for line in open('misra.py'):
-        res = re.match(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*', line)
+        res = compiled.match(line)
         if res is None:
             continue
         addon.append(res.group(1) + '.' + res.group(2))
 
     # rules handled by cppcheck
-    cppcheck = ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6', '17.5', '18.1', '18.6', '22.1', '22.2', '22.4', '22.6']
+    cppcheck = ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6', '17.5', '18.1', '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
 
     # rules that can be checked with compilers
     compiler = ['1.1', '1.2']
@@ -1306,8 +1515,9 @@ for arg in sys.argv[1:]:
         VERIFY_EXPECTED = []
         for tok in data.rawTokens:
             if tok.str.startswith('//') and 'TODO' not in tok.str:
+                compiled = re.compile(r'[0-9]+\.[0-9]+')
                 for word in tok.str[2:].split(' '):
-                    if re.match(r'[0-9]+\.[0-9]+', word):
+                    if compiled.match(word):
                         VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
     else:
         print('Checking ' + arg + '...')
@@ -1323,6 +1533,7 @@ for arg in sys.argv[1:]:
             misra_3_1(data.rawTokens)
             misra_4_1(data.rawTokens)
         misra_5_1(cfg)
+        misra_5_2(cfg)
         misra_5_3(cfg)
         misra_5_4(cfg)
         misra_5_5(cfg)
@@ -1387,6 +1598,8 @@ for arg in sys.argv[1:]:
             misra_20_3(data.rawTokens)
         misra_20_4(cfg)
         misra_20_5(cfg)
+        misra_20_13(cfg)
+        misra_20_14(cfg)
         misra_21_3(cfg)
         misra_21_4(cfg)
         misra_21_5(cfg)
@@ -1394,7 +1607,7 @@ for arg in sys.argv[1:]:
         misra_21_8(cfg)
         misra_21_9(cfg)
         misra_21_11(cfg)
-
+        # 22.4 is already covered by Cppcheck writeReadOnlyFile
     if VERIFY:
         exitCode = 0
         for expected in VERIFY_EXPECTED:

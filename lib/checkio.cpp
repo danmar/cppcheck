@@ -65,7 +65,7 @@ void CheckIO::checkCoutCerrMisusage()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token *tok = scope->classStart; tok && tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "std :: cout|cerr !!.") && tok->next()->astParent() && tok->next()->astParent()->astOperand1() == tok->next()) {
                 const Token* tok2 = tok->next();
                 while (tok2->astParent() && tok2->astParent()->str() == "<<") {
@@ -114,8 +114,7 @@ struct Filepointer {
 };
 
 namespace {
-    const std::set<std::string> whitelist = make_container< std::set<std::string> > ()
-                                            << "clearerr" << "feof" << "ferror" << "fgetpos" << "ftell" << "setbuf" << "setvbuf" << "ungetc" << "ungetwc";
+    const std::set<std::string> whitelist = { "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc", "ungetwc" };
 }
 
 void CheckIO::checkFileUsage()
@@ -127,9 +126,7 @@ void CheckIO::checkFileUsage()
     std::map<unsigned int, Filepointer> filepointers;
 
     const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
-    const std::size_t varListSize = symbolDatabase->getVariableListSize();
-    for (std::size_t i = 1; i < varListSize; ++i) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(i);
+    for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->declarationId() || var->isArray() || !Token::simpleMatch(var->typeStartToken(), "FILE *"))
             continue;
 
@@ -144,11 +141,9 @@ void CheckIO::checkFileUsage()
         }
     }
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t j = 0; j < functions; ++j) {
-        const Scope * scope = symbolDatabase->functionScopes[j];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         unsigned int indent = 0;
-        for (const Token *tok = scope->classStart; tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "{")
                 indent++;
             else if (tok->str() == "}") {
@@ -390,7 +385,7 @@ void CheckIO::invalidScanf()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
         const Scope * scope = symbolDatabase->functionScopes[j];
-        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             const Token *formatToken = nullptr;
             if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
                 formatToken = tok->tokAt(2);
@@ -505,7 +500,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t j = 0; j < functions; ++j) {
         const Scope * scope = symbolDatabase->functionScopes[j];
-        for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isName()) continue;
 
             const Token* argListTok = nullptr; // Points to first va_list argument
@@ -1230,19 +1225,15 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
                                 const bool isSecondCharAvailable = ((i + 1) != formatString.end());
                                 if (i != formatString.end() && isSecondCharAvailable && *(i + 1) == *i) {
-                                    if (isSecondCharAvailable) {
-                                        if (!isalpha(*(i + 2))) {
-                                            std::string modifier;
-                                            modifier += *i;
-                                            modifier += *(i + 1);
-                                            invalidLengthModifierError(tok, numFormat, modifier);
-                                            done = true;
-                                        } else {
-                                            specifier = *i++;
-                                            specifier += *i++;
-                                        }
-                                    } else {
+                                    if (!isalpha(*(i + 2))) {
+                                        std::string modifier;
+                                        modifier += *i;
+                                        modifier += *(i + 1);
+                                        invalidLengthModifierError(tok, numFormat, modifier);
                                         done = true;
+                                    } else {
+                                        specifier = *i++;
+                                        specifier += *i++;
                                     }
                                 } else {
                                     if (i != formatString.end()) {
@@ -1548,8 +1539,8 @@ CheckIO::ArgumentInfo::~ArgumentInfo()
 }
 
 namespace {
-    const std::set<std::string> stl_vector = make_container< std::set<std::string> >() << "array" << "vector";
-    const std::set<std::string> stl_string = make_container< std::set<std::string> >() << "string" << "u16string" << "u32string" << "wstring";
+    const std::set<std::string> stl_vector = { "array", "vector" };
+    const std::set<std::string> stl_string = { "string", "u16string", "u32string", "wstring" };
 }
 
 bool CheckIO::ArgumentInfo::isStdVectorOrString()
@@ -1593,8 +1584,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
     } else if (variableInfo->type()) {
         const Scope * classScope = variableInfo->type()->classScope;
         if (classScope) {
-            std::list<Function>::const_iterator functions;
-            for (functions = classScope->functionList.begin();
+            for (std::list<Function>::const_iterator functions = classScope->functionList.begin();
                  functions != classScope->functionList.end(); ++functions) {
                 if (functions->name() == "operator[]") {
                     if (Token::Match(functions->retDef, "%type% &")) {
@@ -1610,13 +1600,13 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
 }
 
 namespace {
-    const std::set<std::string> stl_container = make_container< std::set<std::string> >() <<
-            "array" << "bitset" << "deque" << "forward_list" <<
-            "hash_map" << "hash_multimap" << "hash_set" <<
-            "list" << "map" << "multimap" << "multiset" <<
-            "priority_queue" << "queue" << "set" << "stack" <<
-            "unordered_map" << "unordered_multimap" << "unordered_multiset" << "unordered_set" << "vector"
-            ;
+    const std::set<std::string> stl_container = {
+        "array", "bitset", "deque", "forward_list",
+        "hash_map", "hash_multimap", "hash_set",
+        "list", "map", "multimap", "multiset",
+        "priority_queue", "queue", "set", "stack",
+        "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set", "vector"
+    };
 }
 
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
@@ -1697,7 +1687,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
         unsigned int numFormat,
         unsigned int numFunction)
 {
-    Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
+    const Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
     if (severity != Severity::error && !_settings->isEnabled(Settings::WARNING))
         return;
 

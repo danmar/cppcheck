@@ -419,7 +419,20 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     foreach (const ErrorItem &e, errorItems) {
         if (e.errorPath.isEmpty())
             continue;
-        if (mSuppressions.contains(e.errorId))
+        Suppressions::ErrorMessage errorMessage;
+        errorMessage.setFileName(e.errorPath.back().file.toStdString());
+        errorMessage.lineNumber = e.errorPath.back().line;
+        errorMessage.errorId = e.errorId.toStdString();
+        errorMessage.symbolNames = e.symbolNames.toStdString();
+
+        bool isSuppressed = false;
+        foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+            if (suppression.isSuppressed(errorMessage)) {
+                isSuppressed = true;
+                break;
+            }
+        }
+        if (isSuppressed)
             continue;
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         foreach (const QErrorPathItem &path, e.errorPath) {
@@ -509,15 +522,17 @@ QString CheckThread::getAddonFilePath(const QString &dataDir, const QString &add
 
     if (!dataDir.isEmpty()) {
         foreach (const QString p, paths) {
-            if (QFileInfo(dataDir + p + addonFile).exists())
-                return dataDir + p + addonFile;
+            const QString filePath(dataDir + p + addonFile);
+            if (QFileInfo(filePath).exists())
+                return filePath;
         }
     }
 
     const QString appPath = QApplication::applicationDirPath();
     foreach (const QString p, paths) {
-        if (QFileInfo(dataDir + p + addonFile).exists())
-            return appPath + p + addonFile;
+        const QString filePath(appPath + p + addonFile);
+        if (QFileInfo(filePath).exists())
+            return filePath;
     }
 
     return QString();

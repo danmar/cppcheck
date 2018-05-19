@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 #
-# 1. Create a folder daca2-addons in your HOME folder
-# 2. Put cppcheck-O2 in daca2-addons. It should be built with all optimisations.
-# 3. Optional: Put a file called "suppressions.txt" in the daca2-addons folder.
-# 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
-# 5. Run the daca2-addons script:  python daca2-addons.py FOLDER
+# 1. Create the folder ~/daca2-addons
+# 2. Put cppcheck-O2 in ~/daca2-addons. It should be built with all optimisations.
+# 3. Optional: tweak FTPSERVER and FTPPATH in this script below.
+# 4. Run the daca2-addons script:  python daca2-addons.py FOLDER
 
 import subprocess
 import sys
@@ -218,20 +217,15 @@ if not FOLDER:
     print('no folder given')
     sys.exit(1)
 
+workdir = os.path.expanduser('~/daca2-addons/')
+if not os.path.isdir(workdir + FOLDER):
+    os.makedirs(workdir + FOLDER)
+os.chdir(workdir + FOLDER)
+
 archives = getpackages(FOLDER)
 if len(archives) == 0:
     print('failed to load packages')
     sys.exit(1)
-
-print('Sleep for 10 seconds..')
-time.sleep(10)
-
-workdir = os.path.expanduser('~/daca2/')
-
-print('~/daca2/' + FOLDER)
-if not os.path.isdir(workdir + FOLDER):
-    os.makedirs(workdir + FOLDER)
-os.chdir(workdir + FOLDER)
 
 try:
     results = open('results.txt', 'wt')

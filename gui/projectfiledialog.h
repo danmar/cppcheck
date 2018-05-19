@@ -24,6 +24,8 @@
 #include <QStringList>
 #include <QCheckBox>
 
+#include "suppressions.h"
+
 #include "ui_projectfiledialog.h"
 
 class QWidget;
@@ -95,7 +97,9 @@ private:
     * @brief Return suppressions from the dialog control.
     * @return List of suppressions.
     */
-    QStringList getSuppressions() const;
+    QList<Suppressions::Suppression> getSuppressions() const {
+        return mSuppressions;
+    }
 
     /**
     * @brief Set project root path to dialog control.
@@ -142,7 +146,7 @@ private:
     * @brief Set suppressions to dialog control.
     * @param suppressions List of suppressions to set to dialog control.
     */
-    void setSuppressions(const QStringList &suppressions);
+    void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
 
 protected slots:
 
@@ -277,6 +281,8 @@ private:
     QList<QCheckBox*> mLibraryCheckboxes;
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
+
+    QList<Suppressions::Suppression> mSuppressions;
 };
 
 /// @}

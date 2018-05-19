@@ -42,7 +42,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         TEST_CASE(testFunctionReturnType);
         TEST_CASE(open);
     }
@@ -153,7 +153,7 @@ private:
     }
 
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "posix.cfg");
         LOAD_LIB_2(settings2.library, "std.cfg");
@@ -398,14 +398,13 @@ private:
         const Token * start = tokenizer.tokens();
         const SymbolDatabase * db = tokenizer.getSymbolDatabase();
         if (db && db->functionScopes.size())
-            start = db->functionScopes[0]->classStart->next();
+            start = db->functionScopes[0]->bodyStart->next();
 
         const unsigned int varId(Token::findmatch(start, varname)->varId());
 
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings2, nullptr);
-        std::list<const Token *> callstack;
-        callstack.push_back(0);
+        std::list<const Token *> callstack(1, nullptr);
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
         Token *tokens = checkMemoryLeak.getcode(start, callstack, varId, allocType, deallocType, classfunc, 1);
@@ -4109,7 +4108,7 @@ private:
         checkMemoryLeak.check();
     }
 
-    void run() {
+    void run() override {
         settings.addEnabled("warning");
         settings.addEnabled("style");
 
@@ -5283,7 +5282,7 @@ private:
         checkMemoryLeakStructMember.check();
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
 
@@ -5731,7 +5730,7 @@ private:
         checkMemoryLeakNoVar.check();
     }
 
-    void run() {
+    void run() override {
         settings.inconclusive = true;
         settings.standards.posix = true;
         settings.addEnabled("warning");
@@ -6041,8 +6040,7 @@ private:
         errout.str("");
 
         std::istringstream istr(code);
-        std::vector<std::string> files;
-        files.push_back("test.cpp");
+        std::vector<std::string> files(1, "test.cpp");
         const simplecpp::TokenList tokens1(istr, files, files[0]);
 
         // Preprocess...
@@ -6067,7 +6065,7 @@ private:
         checkMemoryLeak4.check();
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "gtk.cfg");
         settings.addEnabled("all");
 
@@ -6182,7 +6180,7 @@ private:
         checkMemoryLeak.check();
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(openfileNoLeak);

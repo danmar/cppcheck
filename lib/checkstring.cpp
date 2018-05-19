@@ -59,7 +59,7 @@ void CheckString::stringLiteralWrite()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->variable() || !tok->variable()->isPointer())
                 continue;
             const Token *str = tok->getValueTokenMinStrSize();
@@ -172,7 +172,7 @@ void CheckString::checkSuspiciousStringCompare()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->tokType() != Token::eComparisonOp)
                 continue;
 
@@ -228,13 +228,13 @@ void CheckString::checkSuspiciousStringCompare()
 void CheckString::suspiciousStringCompareError(const Token* tok, const std::string& var)
 {
     reportError(tok, Severity::warning, "literalWithCharPtrCompare",
-                "String literal compared with variable '" + var + "'. Did you intend to use strcmp() instead?", CWE595, false);
+                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use strcmp() instead?", CWE595, false);
 }
 
 void CheckString::suspiciousStringCompareError_char(const Token* tok, const std::string& var)
 {
     reportError(tok, Severity::warning, "charLiteralWithCharPtrCompare",
-                "Char literal compared with pointer '" + var + "'. Did you intend to dereference it?", CWE595, false);
+                "$symbol:" + var + "\nChar literal compared with pointer '$symbol'. Did you intend to dereference it?", CWE595, false);
 }
 
 
@@ -253,7 +253,7 @@ void CheckString::strPlusChar()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "+") {
                 if (tok->astOperand1() && (tok->astOperand1()->tokType() == Token::eString)) { // string literal...
                     if (tok->astOperand2() && (tok->astOperand2()->tokType() == Token::eChar || isChar(tok->astOperand2()->variable()))) // added to char variable or char constant
@@ -282,7 +282,7 @@ void CheckString::checkIncorrectStringCompare()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip "assert(str && ..)" and "assert(.. && str)"
             if ((endsWith(tok->str(), "assert", 6) || endsWith(tok->str(), "ASSERT", 6)) &&
                 Token::Match(tok, "%name% (") &&
@@ -324,7 +324,7 @@ void CheckString::checkIncorrectStringCompare()
 
 void CheckString::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string)
 {
-    reportError(tok, Severity::warning, "incorrectStringCompare", "String literal " + string + " doesn't match length argument for " + func + "().", CWE570, false);
+    reportError(tok, Severity::warning, "incorrectStringCompare", "$symbol:" + func + "\nString literal " + string + " doesn't match length argument for $symbol().", CWE570, false);
 }
 
 void CheckString::incorrectStringBooleanError(const Token *tok, const std::string& string)
@@ -345,7 +345,7 @@ void CheckString::overlappingStrcmp()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() != "||")
                 continue;
             std::list<const Token *> equals0;
@@ -428,7 +428,7 @@ void CheckString::sprintfOverlappingData()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-        for (const Token* tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "sprintf|snprintf|swprintf ("))
                 continue;
 
@@ -453,8 +453,9 @@ void CheckString::sprintfOverlappingData()
 void CheckString::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "sprintfOverlappingData",
-                "Undefined behavior: Variable '" + varname + "' is used as parameter and destination in s[n]printf().\n"
-                "The variable '" + varname + "' is used both as a parameter and as destination in "
+                "$symbol:" + varname + "\n"
+                "Undefined behavior: Variable '$symbol' is used as parameter and destination in s[n]printf().\n"
+                "The variable '$symbol' is used both as a parameter and as destination in "
                 "s[n]printf(). The origin and destination buffers overlap. Quote from glibc (C-library) "
                 "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
                 "\"If copying takes place between objects that overlap as a result of a call "

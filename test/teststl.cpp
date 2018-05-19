@@ -34,7 +34,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         settings.addEnabled("warning");
         settings.addEnabled("style");
         settings.addEnabled("performance");
@@ -553,6 +553,14 @@ private:
               "        waitingPackets.erase(wpi);\n"
               "        for (unsigned pos = 0; pos < buf.size(); ) {     }\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8509 Uniform initialization ignored for iterator
+        check("void f() {\n"
+              "  std::vector<int> ints;\n"
+              "  std::vector<int>::const_iterator iter {ints.cbegin()};\n"
+              "  std::cout << (*iter) << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

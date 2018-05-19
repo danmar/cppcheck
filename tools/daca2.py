@@ -163,6 +163,10 @@ def scanarchive(filepath, jobs, cpulimit):
     if p.returncode == 0:
         logging.info(comm[1] + strfCurrTime('[%H:%M]'))
     elif 'cppcheck: error: could not find or open any of the paths given.' not in comm[0]:
+        stdout = comm[0]
+        pos1 = stdout.rfind('Checking ')
+        if pos1 > 0:
+            logging.error(stdout[pos1:])
         logging.error(comm[1] + strfCurrTime('[%H:%M]'))
         logging.error('Exit code is not zero! Crash?\n')
 

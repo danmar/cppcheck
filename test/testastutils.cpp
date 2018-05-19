@@ -32,7 +32,7 @@ public:
 
 private:
 
-    void run() {
+    void run() override {
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);
         TEST_CASE(isVariableChangedByFunctionCall);
@@ -64,16 +64,15 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern);
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern);
-        return ::isVariableChanged(tok1,tok2,1,false,&settings);
+        return ::isVariableChanged(tok1,tok2,1,false,&settings,true);
     }
 
     void isVariableChanged() {
         // #8211 - no lhs for >> , do not crash
-        ASSERT_EQUALS(true,
-                      isVariableChanged("void f() {\n"
-                                        "  int b;\n"
-                                        "  if (b) { (int)((INTOF(8))result >> b); }\n"
-                                        "}", "if", "}"));
+        isVariableChanged("void f() {\n"
+                          "  int b;\n"
+                          "  if (b) { (int)((INTOF(8))result >> b); }\n"
+                          "}", "if", "}");
     }
 
     bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool *inconclusive) {

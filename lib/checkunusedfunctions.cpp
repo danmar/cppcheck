@@ -57,7 +57,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* func = scope->function;
-        if (!func || !func->token || scope->classStart->fileIndex() != 0)
+        if (!func || !func->token || scope->bodyStart->fileIndex() != 0)
             continue;
 
         // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
@@ -65,10 +65,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             continue;
 
         // Don't care about templates
-        if (tokenizer.isCPP() && func->retDef->str() == "template")
-            continue;
+        if (tokenizer.isCPP()) {
+            const Token *retDef = func->retDef;
+            while (retDef && retDef->isName())
+                retDef = retDef->previous();
+            if (retDef && retDef->str() == ">")
+                continue;
+        }
 
-        _functionDecl.push_back(FunctionDecl(func));
+        _functionDecl.emplace_back(func);
 
         FunctionUsage &usage = _functions[func->name()];
 
@@ -243,7 +248,7 @@ static bool isOperatorFunction(const std::string & funcName)
      * Conversion functions must be a member function (at least for gcc), so no
      * need to cover them for unused functions.
      *
-     * To speed up the comparision, not the whole list of operators is used.
+     * To speed up the comparison, not the whole list of operators is used.
      * Instead only the character after the operator prefix is checked to be a
      * none alpa numeric value, but the '_', to cover function names like
      * "operator_unused". In addition the following valid operators are checked:
@@ -271,11 +276,9 @@ static bool isOperatorFunction(const std::string & funcName)
         return true;
     }
 
-    const std::vector<std::string> additionalOperators = make_container< std::vector<std::string> >()
-            << "new"
-            << "new[]"
-            << "delete"
-            << "delete[]";
+    const std::vector<std::string> additionalOperators = {
+        "new", "new[]", "delete", "delete[]"
+    };
 
 
     return std::find(additionalOperators.begin(), additionalOperators.end(), funcName.substr(operatorPrefix.length())) != additionalOperators.end();;
@@ -327,7 +330,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         locationList.push_back(fileLoc);
     }
 
-    const ErrorLogger::ErrorMessage errmsg(locationList, emptyString, Severity::style, "The function '" + funcname + "' is never used.", "unusedFunction", CWE561, false);
+    const ErrorLogger::ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, false);
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
@@ -389,11 +392,11 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
         const std::string::size_type firstColon = filesTxtLine.find(':');
         if (firstColon == std::string::npos)
             continue;
-        const std::string::size_type lastColon = filesTxtLine.rfind(':');
-        if (firstColon == lastColon)
+        const std::string::size_type secondColon = filesTxtLine.find(':', firstColon+1);
+        if (secondColon == std::string::npos)
             continue;
         const std::string xmlfile = buildDir + '/' + filesTxtLine.substr(0,firstColon);
-        const std::string sourcefile = filesTxtLine.substr(lastColon+1);
+        const std::string sourcefile = filesTxtLine.substr(secondColon+1);
 
         tinyxml2::XMLDocument doc;
         const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());

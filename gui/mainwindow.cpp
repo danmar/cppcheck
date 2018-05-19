@@ -114,6 +114,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     connect(mUI.mActionReanalyzeModified, &QAction::triggered, this, &MainWindow::reAnalyzeModified);
     connect(mUI.mActionReanalyzeAll, &QAction::triggered, this, &MainWindow::reAnalyzeAll);
+    connect(mUI.mActionCheckLibrary, &QAction::triggered, this, &MainWindow::checkLibrary);
+    connect(mUI.mActionCheckConfiguration, &QAction::triggered, this, &MainWindow::checkConfiguration);
 
     connect(mUI.mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
     connect(mUI.mActionSave, &QAction::triggered, this, &MainWindow::save);
@@ -158,10 +160,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     enableCheckButtons(true);
 
     mUI.mActionPrint->setShortcut(QKeySequence::Print);
-    mUI.mActionPrint->setEnabled(false);
-    mUI.mActionPrintPreview->setEnabled(false);
-    mUI.mActionClearResults->setEnabled(false);
-    mUI.mActionSave->setEnabled(false);
+    enableResultsButtons();
     enableProjectOpenActions(true);
     enableProjectActions(false);
 
@@ -387,7 +386,7 @@ void MainWindow::saveSettings() const
     mUI.mResults->saveSettings(mSettings);
 }
 
-void MainWindow::doAnalyzeProject(ImportProject p)
+void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
 {
     clearResults();
 
@@ -445,6 +444,8 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
+    checkSettings.checkLibrary = checkLibrary;
+    checkSettings.checkConfiguration = checkConfiguration;
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
@@ -465,7 +466,7 @@ void MainWindow::doAnalyzeProject(ImportProject p)
     mThread->check(checkSettings);
 }
 
-void MainWindow::doAnalyzeFiles(const QStringList &files)
+void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrary, const bool checkConfiguration)
 {
     if (files.isEmpty()) {
         return;
@@ -498,7 +499,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
     mUI.mResults->checkingStarted(fileNames.count());
 
     mThread->setFiles(fileNames);
-    if (mProjectFile)
+    if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
@@ -508,6 +509,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files)
 
     mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
+    checkSettings.checkLibrary = checkLibrary;
+    checkSettings.checkConfiguration = checkConfiguration;
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
@@ -533,9 +536,9 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     connect(&result, SIGNAL(error(const ErrorItem &)),
             mUI.mResults, SLOT(error(const ErrorItem &)));
     connect(&result, SIGNAL(log(const QString &)),
-            this, SLOT(log(const QString &)));
+            mUI.mResults, SLOT(log(const QString &)));
     connect(&result, SIGNAL(debugError(const ErrorItem &)),
-            this, SLOT(debugError(const ErrorItem &)));
+            mUI.mResults, SLOT(debugError(const ErrorItem &)));
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true);
@@ -832,9 +835,9 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        const QStringList suppressions = mProjectFile->getSuppressions();
-        foreach (QString suppression, suppressions) {
-            result.nomsg.addSuppressionLine(suppression.toStdString());
+        const QList<Suppressions::Suppression> &suppressions = mProjectFile->getSuppressions();
+        foreach (const Suppressions::Suppression &suppression, suppressions) {
+            result.nomsg.addSuppression(suppression);
         }
 
         // Only check the given -D configuration
@@ -962,12 +965,7 @@ void MainWindow::analysisDone()
         }
     }
 
-    if (mUI.mResults->hasResults()) {
-        mUI.mActionClearResults->setEnabled(true);
-        mUI.mActionSave->setEnabled(true);
-        mUI.mActionPrint->setEnabled(true);
-        mUI.mActionPrintPreview->setEnabled(true);
-    }
+    enableResultsButtons();
 
     for (int i = 0; i < MaxRecentProjects + 1; i++) {
         if (mRecentProjectActs[i] != nullptr)
@@ -1030,6 +1028,18 @@ void MainWindow::reAnalyzeAll()
         reAnalyze(true);
 }
 
+void MainWindow::checkLibrary()
+{
+    if (mProjectFile)
+        analyzeProject(mProjectFile, true);
+}
+
+void MainWindow::checkConfiguration()
+{
+    if (mProjectFile)
+        analyzeProject(mProjectFile, false, true);
+}
+
 void MainWindow::reAnalyzeSelected(QStringList files)
 {
     if (files.empty())
@@ -1086,10 +1096,8 @@ void MainWindow::reAnalyze(bool all)
 void MainWindow::clearResults()
 {
     mUI.mResults->clear(true);
-    mUI.mActionClearResults->setEnabled(false);
-    mUI.mActionSave->setEnabled(false);
-    mUI.mActionPrint->setEnabled(false);
-    mUI.mActionPrintPreview->setEnabled(false);
+    Q_ASSERT(false == mUI.mResults->hasResults());
+    enableResultsButtons();
 }
 
 void MainWindow::openResults()
@@ -1136,6 +1144,7 @@ void MainWindow::loadResults(const QString selectedFile)
     mUI.mActionReanalyzeAll->setEnabled(false);
     mUI.mResults->readErrorsXml(selectedFile);
     setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
+    formatAndSetTitle(selectedFile);
 }
 
 void MainWindow::loadResults(const QString selectedFile, const QString sourceDirectory)
@@ -1158,6 +1167,15 @@ void MainWindow::enableCheckButtons(bool enable)
     }
 
     mUI.mActionAnalyzeDirectory->setEnabled(enable);
+}
+
+void MainWindow::enableResultsButtons()
+{
+    bool enabled = mUI.mResults->hasResults();
+    mUI.mActionClearResults->setEnabled(enabled);
+    mUI.mActionSave->setEnabled(enabled);
+    mUI.mActionPrint->setEnabled(enabled);
+    mUI.mActionPrintPreview->setEnabled(enabled);
 }
 
 void MainWindow::showStyle(bool checked)
@@ -1442,10 +1460,11 @@ bool MainWindow::loadLastResults()
     mUI.mResults->readErrorsXml(lastResults);
     mUI.mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
     mUI.mActionViewStats->setEnabled(true);
+    enableResultsButtons();
     return true;
 }
 
-void MainWindow::analyzeProject(const ProjectFile *projectFile)
+void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool checkLibrary, const bool checkConfiguration)
 {
     Settings::terminate(false);
 
@@ -1500,7 +1519,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
             msg.exec();
             return;
         }
-        doAnalyzeProject(p);
+        doAnalyzeProject(p, checkLibrary, checkConfiguration);
         return;
     }
 
@@ -1522,7 +1541,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile)
             paths[i] = QDir::cleanPath(path);
         }
     }
-    doAnalyzeFiles(paths);
+    doAnalyzeFiles(paths, checkLibrary, checkConfiguration);
 }
 
 void MainWindow::newProjectFile()
@@ -1617,6 +1636,8 @@ void MainWindow::enableProjectActions(bool enable)
 {
     mUI.mActionCloseProjectFile->setEnabled(enable);
     mUI.mActionEditProjectFile->setEnabled(enable);
+    mUI.mActionCheckLibrary->setEnabled(enable);
+    mUI.mActionCheckConfiguration->setEnabled(enable);
 }
 
 void MainWindow::enableProjectOpenActions(bool enable)
@@ -1729,13 +1750,26 @@ void MainWindow::tagged()
 
 void MainWindow::suppressIds(QStringList ids)
 {
-    if (mProjectFile) {
-        QStringList suppressions = mProjectFile->getSuppressions();
-        foreach (QString s, ids) {
-            if (!suppressions.contains(s))
-                suppressions << s;
+    if (!mProjectFile)
+        return;
+    ids.removeDuplicates();
+
+    QList<Suppressions::Suppression> suppressions = mProjectFile->getSuppressions();
+    foreach (QString id, ids) {
+        // Remove all matching suppressions
+        std::string id2 = id.toStdString();
+        for (int i = 0; i < suppressions.size();) {
+            if (suppressions[i].errorId == id2)
+                suppressions.removeAt(i);
+            else
+                ++i;
         }
-        mProjectFile->setSuppressions(suppressions);
-        mProjectFile->write();
+
+        Suppressions::Suppression newSuppression;
+        newSuppression.errorId = id2;
+        suppressions << newSuppression;
     }
+
+    mProjectFile->setSuppressions(suppressions);
+    mProjectFile->write();
 }
