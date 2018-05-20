@@ -5310,6 +5310,13 @@ void SymbolDatabase::setValueTypeInTokenList()
                 }
             }
 
+            // function style cast
+            else if (tok->previous() && tok->previous()->isStandardType()) {
+                ValueType valuetype;
+                valuetype.type = ValueType::typeFromString(tok->previous()->str(), tok->previous()->isLong());
+                setValueType(tok, valuetype);
+            }
+
             // library function
             else if (tok->previous()) {
                 const std::string& typestr(_settings->library.returnValueType(tok->previous()));

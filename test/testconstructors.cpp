@@ -1088,6 +1088,16 @@ private:
               "\n"
               "A::A() noexcept: A(0) {}");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #8581
+        check("class A {\n"
+              "private:\n"
+              "    int _a;\n"
+              "public:\n"
+              "    A(int a) : _a(a) {}\n"
+              "    A(float a) : A(int(a)) {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
