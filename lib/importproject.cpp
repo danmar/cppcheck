@@ -77,7 +77,7 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     }
     while (defs.find(";;") != std::string::npos)
         defs.erase(defs.find(";;"),1);
-    while (!defs.empty() && defs.at(0) == ';')
+    while (!defs.empty() && defs[0] == ';')
         defs.erase(0, 1);
     while (!defs.empty() && endsWith(defs,';'))
         defs.erase(defs.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
