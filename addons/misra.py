@@ -1308,7 +1308,7 @@ def misra_20_14(data):
         elif directive.str == '#endif':
             if len(ifStack) == 0:
                 reportError(directive, 20, 14)
-            elif  directive.file != ifStack[-1].file:
+            elif directive.file != ifStack[-1].file:
                 reportError(directive, 20, 14)
                 ifStack.pop()
 
@@ -1330,6 +1330,15 @@ def misra_21_5(data):
         reportError(directive, 21, 5)
 
 
+def misra_21_6(data):
+    dir_stdio = findInclude(data.directives, '<stdio.h>')
+    dir_wchar = findInclude(data.directives, '<wchar.h>')
+    if dir_stdio:
+        reportError(dir_stdio, 21, 6)
+    if dir_wchar:
+        reportError(dir_wchar, 21, 6)
+
+
 def misra_21_7(data):
     for token in data.tokenlist:
         if isFunctionCall(token) and (token.astOperand1.str in {'atof', 'atoi', 'atol', 'atoll'}):
@@ -1346,6 +1355,16 @@ def misra_21_9(data):
     for token in data.tokenlist:
         if (token.str in {'bsearch', 'qsort'}) and token.next and token.next.str == '(':
             reportError(token, 21, 9)
+
+
+def misra_21_10(data):
+    directive = findInclude(data.directives, '<time.h>')
+    if directive:
+        reportError(directive, 21, 10)
+
+    for token in data.tokenlist:
+        if (token.str == 'wcsftime') and token.next and token.next.str == '(':
+            reportError(token, 21, 10)
 
 
 def misra_21_11(data):
@@ -1603,9 +1622,11 @@ for arg in sys.argv[1:]:
         misra_21_3(cfg)
         misra_21_4(cfg)
         misra_21_5(cfg)
+        misra_21_6(cfg)
         misra_21_7(cfg)
         misra_21_8(cfg)
         misra_21_9(cfg)
+        misra_21_10(cfg)
         misra_21_11(cfg)
         # 22.4 is already covered by Cppcheck writeReadOnlyFile
     if VERIFY:
