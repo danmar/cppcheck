@@ -5311,7 +5311,7 @@ void SymbolDatabase::setValueTypeInTokenList()
             }
 
             // function style cast
-            else if (Token::Match(tok->previous(), "bool|char|short|int|long|float|double")) {
+            else if (tok->previous() && tok->previous()->isStandardType()) {
                 ValueType valuetype;
                 valuetype.type = ValueType::typeFromString(tok->previous()->str(), tok->previous()->isLong());
                 setValueType(tok, valuetype);
