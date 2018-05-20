@@ -1297,7 +1297,7 @@ def misra_20_14(data):
     # the size increases when there are inner #if directives.
     ifStack = []
     for directive in data.directives:
-        if directive.str.startswith('#if '):
+        if directive.str.startswith('#if ') or directive.str.startswith('#ifdef ') or directive.str.startswith('#ifndef '):
             ifStack.append(directive)
         elif directive.str == '#else' or directive.str.startswith('#elif '):
             if len(ifStack)==0:
