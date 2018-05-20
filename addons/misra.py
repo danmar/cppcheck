@@ -1455,7 +1455,7 @@ def generateTable():
     # what rules are handled by this addon?
     addon = []
     compiled = re.compile(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open('misra.py'):
+    for line in open('__file__'):
         res = compiled.match(line)
         if res is None:
             continue
