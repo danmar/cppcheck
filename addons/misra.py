@@ -780,7 +780,9 @@ def misra_11_4(data):
         vt2 = token.astOperand1.valueType
         if not vt1 or not vt2:
             continue
-        if vt1.pointer == 0 and vt2.pointer > 0 and vt2.type != 'void':
+        if vt2.pointer > 0 and vt1.pointer == 0 and (vt1.isIntegral() or vt1.isEnum()) and vt2.type != 'void':
+            reportError(token, 11, 4)
+        elif vt1.pointer > 0 and vt2.pointer == 0 and (vt2.isIntegral() or vt2.isEnum())and vt1.type != 'void':
             reportError(token, 11, 4)
 
 
