@@ -38,8 +38,7 @@ const std::list<ValueFlow::Value> Token::emptyValueList;
 Token::Token() : Token(nullptr, nullptr) { }
 
 Token::Token(Token **backTokens, Token** frontTokens) :
-    tokensBack(backTokens),
-    tokensFront(frontTokens),
+    tokensFrontBack(new TokensFrontBack{frontTokens, backTokens}),
     _next(nullptr),
     _previous(nullptr),
     _link(nullptr),
@@ -222,8 +221,8 @@ void Token::deleteNext(unsigned long index)
 
     if (_next)
         _next->previous(this);
-    else if (tokensBack)
-        *tokensBack = this;
+    else if (tokensFrontBack->back)
+        *tokensFrontBack->back = this;
 }
 
 void Token::deletePrevious(unsigned long index)
@@ -242,8 +241,8 @@ void Token::deletePrevious(unsigned long index)
 
     if (_previous)
         _previous->next(this);
-    else if (tokensFront)
-        *tokensFront = this;
+    else if (tokensFrontBack->front)
+        *tokensFrontBack->front = this;
 }
 
 void Token::swapWithNext()
@@ -335,10 +334,10 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
-    if (end->tokensBack && *(end->tokensBack) == end) {
-        while (end->next())
-            end = end->next();
-        *(end->tokensBack) = end;
+	if (end->tokensFrontBack->back && *(end->tokensFrontBack->back) == end) {
+		while (end->next())
+			end = end->next();
+		*(end->tokensFrontBack->back) = end;
     }
 
     // Update _progressValue, fileIndex and linenr
@@ -929,7 +928,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     if (_str.empty())
         newToken = this;
     else
-        newToken = new Token(tokensBack, tokensFront);
+        newToken = new Token(tokensFrontBack->back, tokensFrontBack->front);
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
@@ -952,8 +951,8 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             if (this->next()) {
                 newToken->next(this->next());
                 newToken->next()->previous(newToken);
-            } else if (tokensBack) {
-                *tokensBack = newToken;
+            } else if (tokensFrontBack->back) {
+                *tokensFrontBack->back = newToken;
             }
             this->next(newToken);
             newToken->previous(this);
