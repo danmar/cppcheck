@@ -210,21 +210,21 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, un
     func(arg) 
  or func<templ_arg>(arg)
 
-    @return opening bracket token or NULL if not a function call
+    @return opening parenthesis token or NULL if not a function call
 */
 static const Token * isFunctionCall(const Token * const nameToken) {
-    const Token * brTok = nameToken;
+    const Token * parenthesisTok = nameToken;
     if (nameToken->isName()) {
-        brTok = nameToken->next();
+        parenthesisTok = nameToken->next();
         // check if function is a template
-        if (brTok && brTok->link() && brTok->str() == "<") {
+        if (parenthesisTok && parenthesisTok->link() && parenthesisTok->str() == "<") {
             // skip template arguments
-            brTok = brTok->link()->next();
+            parenthesisTok = parenthesisTok->link()->next();
         }
         // check for '('
-        if (brTok && brTok->link() && brTok->str() == "(") {
-            // returning opening bracket pointer
-            return brTok;
+        if (parenthesisTok && parenthesisTok->link() && parenthesisTok->str() == "(") {
+            // returning opening parenthesis pointer
+            return parenthesisTok;
         }
     }
     return nullptr;
@@ -360,8 +360,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         else if (Token::simpleMatch(tok, "if (")) {
             // Parse function calls inside the condition
 
-            const Token * closingBr = tok->linkAt(1); ///< closing bracket ')'
-            for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingBr; innerTok = innerTok->next()) {
+            const Token * closingParenthesis = tok->linkAt(1); ///< closing parenthesis ')'
+            for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
                 
                 if (Token::Match(innerTok, "%var% =")) {
@@ -392,7 +392,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
             }
 
-            if (Token::simpleMatch(closingBr, ") {")) {
+            if (Token::simpleMatch(closingParenthesis, ") {")) {
                 VarInfo varInfo1(*varInfo);  // VarInfo for if code
                 VarInfo varInfo2(*varInfo);  // VarInfo for else code
 
@@ -448,13 +448,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
                 }
 
-                checkScope(closingBr->next(), &varInfo1, notzero);
-                closingBr = closingBr->linkAt(1);
-                if (Token::simpleMatch(closingBr, "} else {")) {
-                    checkScope(closingBr->tokAt(2), &varInfo2, notzero);
-                    tok = closingBr->linkAt(2)->previous();
+                checkScope(closingParenthesis->next(), &varInfo1, notzero);
+                closingParenthesis = closingParenthesis->linkAt(1);
+                if (Token::simpleMatch(closingParenthesis, "} else {")) {
+                    checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero);
+                    tok = closingParenthesis->linkAt(2)->previous();
                 } else {
-                    tok = closingBr->previous();
+                    tok = closingParenthesis->previous();
                 }
 
                 VarInfo old;
