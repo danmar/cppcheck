@@ -682,21 +682,6 @@ def misra_9_5(rawTokens):
             reportError(token, 9, 5)
 
 
-# def misra_10_4(data):
-#     for token in data.tokenlist:
-#         if token.str not in {'+', '-', '*', '/', '%', '&', '|', '^'} and not token.isComparisonOp:
-#             continue
-#         if not token.astOperand1 or not token.astOperand2:
-#             continue
-#         if not token.astOperand1.valueType or not token.astOperand2.valueType:
-#             continue
-#         if not token.astOperand1.valueType.isIntegral() or not token.astOperand2.valueType.isIntegral():
-#             continue
-#         e1 = getEssentialType(token.astOperand1)
-#         e2 = getEssentialType(token.astOperand2)
-#         if e1 and e2 and e1 != e2:
-#             reportError(token, 10, 4)
-
 def misra_10_4(data):
     op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', '?', ':'}
     for token in data.tokenlist:
@@ -729,9 +714,6 @@ def misra_10_4(data):
             continue
         if e1 and e2 and e1 != e2:
             reportError(token, 10, 4)
-
-
-
 
 
 def misra_10_6(data):
