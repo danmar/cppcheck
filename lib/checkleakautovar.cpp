@@ -612,12 +612,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     const Token * tscopeStart = nullptr;
                     const Token * tscopeEnd = nullptr;
                     // If the deleter is a lambda, check if it calls the dealloc function
-                    if (deleterToken->str() == "[" && 
-                        deleterToken->link() && 
-                        deleterToken->link()->strAt(1) == "(" &&
-                        deleterToken->link()->linkAt(1) &&
+                    if (deleterToken->str() == "[" &&
+                        Token::simpleMatch(deleterToken->link(), "] (") &&
                         // TODO: Check for mutable keyword
-                        deleterToken->link()->linkAt(1)->strAt(1) == "{") {
+                        Token::simpleMatch(deleterToken->link()->linkAt(1), ") {")) {
                         tscopeStart = deleterToken->link()->linkAt(1)->tokAt(1);
                         tscopeEnd = tscopeStart->link();
                     // If the deleter is a class, check if class calls the dealloc function
