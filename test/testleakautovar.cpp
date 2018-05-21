@@ -1255,6 +1255,44 @@ private:
               "    std::unique_ptr<int, decltype(&destroy)> xp(x, &destroy());\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, [](FILE* x) { fclose(x); }};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, +[](FILE* x) { fclose(x); }};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, [](FILE* x) { free(f); }};\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, [](FILE* x) {}};\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("class C;\n"
+              "void f() {\n"
+              "  C* c = new C{};\n"
+              "  std::shared_ptr<C> a{c, [](C*) {}};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C;\n"
+              "void f() {\n"
+              "  C* c = new C{};\n"
+              "  std::shared_ptr<C> a{c, [](C* x) { delete x; }};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
     void smartPointerRelease() {
         check("void f() {\n"
