@@ -288,6 +288,7 @@ private:
         TEST_CASE(symboldatabase68); // #8560
         TEST_CASE(symboldatabase69);
         TEST_CASE(symboldatabase70);
+        TEST_CASE(symboldatabase71);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3915,6 +3916,13 @@ private:
             ASSERT(db != nullptr);
             ASSERT(db && db->scopeList.size() == 2);
         }
+    }
+
+    void symboldatabase71() {
+        GET_SYMBOL_DB("class A { };\n"
+                      "class B final : public A { };");
+        ASSERT(db && db->scopeList.size() == 3);
+        ASSERT(db && db->typeList.size() == 2);
     }
 
     void enum1() {
