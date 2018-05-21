@@ -66,6 +66,7 @@ Token::~Token()
     delete _originalName;
     delete valuetype;
     delete _values;
+    delete tokensFrontBack;
 }
 
 static const std::set<std::string> controlFlowKeywords = {
