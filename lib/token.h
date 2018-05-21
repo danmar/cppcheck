@@ -43,6 +43,14 @@ class Variable;
 /// @{
 
 /**
+ * @brief This struct stores pointers to the front and back tokens of the list this token is in.
+ */
+struct TokensFrontBack {
+    Token **front;
+    Token **back;
+};
+
+/**
  * @brief The token list that the TokenList generates is a linked-list of this class.
  *
  * Tokens are stored as strings. The "if", "while", etc are stored in plain text.
@@ -54,8 +62,7 @@ class Variable;
  */
 class CPPCHECKLIB Token {
 private:
-    Token **tokensBack;
-    Token **tokensFront;
+    TokensFrontBack* tokensFrontBack;
 
     // Not implemented..
     Token(const Token &);
