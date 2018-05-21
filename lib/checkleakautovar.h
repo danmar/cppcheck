@@ -119,9 +119,10 @@ private:
                     VarInfo *varInfo,
                     std::set<unsigned int> notzero);
 
-    /** Check token inside expression. 
-        
-        @return next token to process (if no other checks needed for this token). NULL if other checks could be performend.
+    /** Check token inside expression.
+    * @param tok token inside expression.
+    * @param varInfo Variable info
+    * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
     */
     const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
 

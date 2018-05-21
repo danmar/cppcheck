@@ -206,25 +206,26 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, un
     return false;
 }
 
-/** checks if token is a name of a function in a function call:
-    func(arg) 
- or func<templ_arg>(arg)
-
-    @return opening parenthesis token or NULL if not a function call
+/** checks if nameToken is a name of a function in a function call:
+*     func(arg)
+* or
+*     func<temp1_arg>(arg)
+* @param nameToken Function name token
+* @return opening parenthesis token or NULL if not a function call
 */
-static const Token * isFunctionCall(const Token * const nameToken) {
-    const Token * parenthesisTok = nameToken;
+
+static const Token * isFunctionCall(const Token * nameToken) {
     if (nameToken->isName()) {
-        parenthesisTok = nameToken->next();
+        nameToken = nameToken->next();
         // check if function is a template
-        if (parenthesisTok && parenthesisTok->link() && parenthesisTok->str() == "<") {
+        if (nameToken && nameToken->link() && nameToken->str() == "<") {
             // skip template arguments
-            parenthesisTok = parenthesisTok->link()->next();
+            nameToken = nameToken->link()->next();
         }
         // check for '('
-        if (parenthesisTok && parenthesisTok->link() && parenthesisTok->str() == "(") {
+        if (nameToken && nameToken->link() && nameToken->str() == "(") {
             // returning opening parenthesis pointer
-            return parenthesisTok;
+            return nameToken;
         }
     }
     return nullptr;
@@ -360,7 +361,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         else if (Token::simpleMatch(tok, "if (")) {
             // Parse function calls inside the condition
 
-            const Token * closingParenthesis = tok->linkAt(1); ///< closing parenthesis ')'
+            const Token * closingParenthesis = tok->linkAt(1);
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
                 
@@ -383,12 +384,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // check for function call
-                const Token * const openingBr = isFunctionCall(innerTok);
-                if (openingBr) {
+                const Token * const openingPar = isFunctionCall(innerTok);
+                if (openingPar) {
                     // innerTok is a function name
                     const VarInfo::AllocInfo allocation(0, VarInfo::NOALLOC);
-                    functionCall(innerTok, openingBr, varInfo, allocation, nullptr);
-                    innerTok = openingBr->link();
+                    functionCall(innerTok, openingPar, varInfo, allocation, nullptr);
+                    innerTok = openingPar->link();
                 }
             }
 
@@ -540,12 +541,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // Function call..
         else if (isFunctionCall(ftok)) {
-            const Token * openingBr = isFunctionCall(ftok);
+            const Token * openingPar = isFunctionCall(ftok);
             const Library::AllocFunc* af = _settings->library.dealloc(ftok);
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
-            functionCall(ftok, openingBr, varInfo, allocation, af);
+            functionCall(ftok, openingPar, varInfo, allocation, af);
 
             tok = ftok->next()->link();
 
@@ -670,14 +671,14 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
     }
 
     // check for function call
-    const Token * const openingBr = isFunctionCall(tok);
-    if (openingBr) {
+    const Token * const openingPar = isFunctionCall(tok);
+    if (openingPar) {
         const Library::AllocFunc* allocFunc = _settings->library.dealloc(tok);
         VarInfo::AllocInfo alloc(allocFunc ? allocFunc->groupId : 0, VarInfo::DEALLOC);
         if (alloc.type == 0)
             alloc.status = VarInfo::NOALLOC;
-        functionCall(tok, openingBr, varInfo, alloc, nullptr);
-        return openingBr->link();
+        functionCall(tok, openingPar, varInfo, alloc, nullptr);
+        return openingPar->link();
     }
 
     return nullptr;
@@ -711,13 +712,13 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
     }
 }
 
-void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpeningBr, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
+void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
     if (_settings->library.isLeakIgnore(tokName->str()))
         return;
 
-    const Token * const tokFirstArg = tokOpeningBr->next();
+    const Token * const tokFirstArg = tokOpeningPar->next();
     if (!tokFirstArg || tokFirstArg->str() == ")") {
         // no arguments
         return;
@@ -747,8 +748,6 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         }
         // Check smart pointer
         else if (Token::Match(arg, "auto_ptr|unique_ptr|shared_ptr < %type%")) {
-
-
             const Token * typeEndTok = arg->linkAt(1);
             if (!Token::Match(typeEndTok, "> {|( %var% ,|)|}"))
                 continue;
@@ -756,7 +755,6 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             bool arrayDelete = false;
             if (Token::findsimplematch(arg->next(), "[ ]", typeEndTok))
                 arrayDelete = true;
-
 
             // Check deleter
             const Token * deleterToken = nullptr;
