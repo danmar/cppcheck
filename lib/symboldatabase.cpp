@@ -123,6 +123,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok2 = tok2->tokAt(2);
             }
 
+            // skip over final
+            if (_tokenizer->isCPP() && Token::Match(tok2, "final"))
+                tok2 = tok2->next();
+
             // make sure we have valid code
             if (!Token::Match(tok2, "{|:")) {
                 // check for qualified variable
