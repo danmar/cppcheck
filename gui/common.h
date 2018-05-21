@@ -106,6 +106,7 @@
 #define SETTINGS_LAST_INCLUDE_PATH      "Last include path"
 #define SETTINGS_LAST_APP_PATH          "Last application path"
 
+#define SETTINGS_LAST_ANALYZE_FILES_FILTER  "Last analyze files filter"
 
 /**
  * @brief Obtains the path of specified type
