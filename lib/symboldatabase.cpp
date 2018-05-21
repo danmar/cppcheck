@@ -124,7 +124,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // skip over final
-            if (_tokenizer->isCPP() && Token::Match(tok2, "final"))
+            if (_tokenizer->isCPP() && Token::simpleMatch(tok2, "final"))
                 tok2 = tok2->next();
 
             // make sure we have valid code
