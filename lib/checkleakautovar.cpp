@@ -753,8 +753,6 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             if (!Token::Match(typeEndTok, "> {|( %var% ,|)|}"))
                 continue;
 
-            const Token * const nextTok = typeEndTok->linkAt(1);
-
             bool arrayDelete = false;
             if (Token::findsimplematch(arg->next(), "[ ]", typeEndTok))
                 arrayDelete = true;
@@ -795,13 +793,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             const Token * vtok = typeEndTok->tokAt(2);
             const VarInfo::AllocInfo sp_allocation(sp_af ? sp_af->groupId : (arrayDelete ? NEW_ARRAY : NEW), VarInfo::OWNED);
             changeAllocStatus(varInfo, sp_allocation, vtok, vtok);
-
-            arg = nextTok;
         } else {
-            const Token * nextTok = checkTokenInsideExpression(arg, varInfo);
-            if (nextTok) {
-                arg = nextTok;
-            }
+            checkTokenInsideExpression(arg, varInfo);
         }
         // TODO: check each token in argument expression (could contain multiple variables)
         argNr++;
