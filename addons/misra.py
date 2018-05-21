@@ -103,6 +103,43 @@ KEYWORDS = {
 }
 
 
+def getEssentialTypeCategory(expr):
+    if not expr:
+        return None
+    if expr.valueType.typeScope:
+        return "enum<" + expr.valueType.typeScope.className + ">"
+    if expr.variable:
+        typeToken = expr.variable.typeStartToken
+        while typeToken:
+            if typeToken.valueType:
+                if typeToken.valueType.type in {'bool'}:
+                    return typeToken.valueType.type
+                if typeToken.valueType.type in {'float', 'double', 'long double'}:
+                    return "float"
+                if typeToken.valueType.sign:
+                    return typeToken.valueType.sign
+            typeToken = typeToken.next
+    if expr.valueType:
+        return expr.valueType.sign
+
+
+def getEssentialCategorylist(operand1, operand2):
+    if not operand1 or not operand2:
+        print "loop1"
+        return None, None
+    if (operand1.str in {'++', '--'} or
+            operand2.str in {'++', '--'}):
+        print 'loop2'
+        return None, None
+    if (operand1.valueType.pointer or
+            operand2.valueType.pointer):
+        print 'loop3'
+        return None, None
+    e1 = getEssentialTypeCategory(operand1)
+    e2 = getEssentialTypeCategory(operand2)
+    return e1, e2
+
+
 def getEssentialType(expr):
     if not expr:
         return None
@@ -645,20 +682,56 @@ def misra_9_5(rawTokens):
             reportError(token, 9, 5)
 
 
+# def misra_10_4(data):
+#     for token in data.tokenlist:
+#         if token.str not in {'+', '-', '*', '/', '%', '&', '|', '^'} and not token.isComparisonOp:
+#             continue
+#         if not token.astOperand1 or not token.astOperand2:
+#             continue
+#         if not token.astOperand1.valueType or not token.astOperand2.valueType:
+#             continue
+#         if not token.astOperand1.valueType.isIntegral() or not token.astOperand2.valueType.isIntegral():
+#             continue
+#         e1 = getEssentialType(token.astOperand1)
+#         e2 = getEssentialType(token.astOperand2)
+#         if e1 and e2 and e1 != e2:
+#             reportError(token, 10, 4)
+
 def misra_10_4(data):
+    op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', '?', ':'}
     for token in data.tokenlist:
-        if token.str not in {'+', '-', '*', '/', '%', '&', '|', '^'} and not token.isComparisonOp:
+        if token.str not in op and not token.isComparisonOp:
             continue
         if not token.astOperand1 or not token.astOperand2:
             continue
         if not token.astOperand1.valueType or not token.astOperand2.valueType:
             continue
-        if not token.astOperand1.valueType.isIntegral() or not token.astOperand2.valueType.isIntegral():
+        if ((token.astOperand1.str in op or token.astOperand1.isComparisonOp) and
+                (token.astOperand2.str in op or token.astOperand1.isComparisonOp)):
+            e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2.astOperand1)
+        elif token.astOperand1.str in op or token.astOperand1.isComparisonOp:
+            e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2)
+        elif token.astOperand2.str in op or token.astOperand2.isComparisonOp:
+            e1, e2 = getEssentialCategorylist(token.astOperand1, token.astOperand2.astOperand1)
+        else:
+            e1, e2 = getEssentialCategorylist(token.astOperand1, token.astOperand2)
+        if token.str == "+=" or token.str == "+":
+            if e1 == "char" and (e2 == "signed" or e2 == "unsigned"):
+                continue
+            if e2 == "char" and (e1 == "signed" or e1 == "unsigned"):
+                continue
+        if token.str == "-=" or token.str == "-":
+            if e1 == "char" and (e2 == "signed" or e2 == "unsigned"):
+                continue
+        if e1 and e2 and (e1.find('Anonymous') != -1 and (e2 == "signed" or e2 == "unsigned")):
             continue
-        e1 = getEssentialType(token.astOperand1)
-        e2 = getEssentialType(token.astOperand2)
+        if e1 and e2 and (e2.find('Anonymous') != -1 and (e1 == "signed" or e1 == "unsigned")):
+            continue
         if e1 and e2 and e1 != e2:
             reportError(token, 10, 4)
+
+
+
 
 
 def misra_10_6(data):
