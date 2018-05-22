@@ -127,7 +127,7 @@ private:
     const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
 
     /** parse function call */
-    void functionCall(const Token *tokName, const Token *tokOpeningBr, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
+    void functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
 
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
