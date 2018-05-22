@@ -39,16 +39,16 @@ class Type;
 class ValueType;
 class Variable;
 
-/// @addtogroup Core
-/// @{
-
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
  */
 struct TokensFrontBack {
-    Token **front;
-    Token **back;
+    Token *front;
+    Token *back;
 };
+
+/// @addtogroup Core
+/// @{
 
 /**
  * @brief The token list that the TokenList generates is a linked-list of this class.
@@ -79,7 +79,8 @@ public:
     };
 
     Token();
-    Token(Token **tokens, Token** frontTokens);
+    Token(TokensFrontBack *tokensFrontBack);
+    Token::Token(TokensFrontBack listEnds);
     ~Token();
 
     template<typename T>
