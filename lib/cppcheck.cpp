@@ -124,8 +124,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (_settings.verbose) {
             _errorLogger.reportOut("Defines: " + _settings.userDefines);
             std::string includePaths;
-            for (std::list<std::string>::const_iterator I = _settings.includePaths.begin(); I != _settings.includePaths.end(); ++I)
-                includePaths += " -I" + *I;
+            for (const std::string &I : _settings.includePaths)
+                includePaths += " -I" + I;
             _errorLogger.reportOut("Includes:" + includePaths);
             _errorLogger.reportOut(std::string("Platform:") + _settings.platformString());
         }
@@ -269,22 +269,22 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         if (_settings.checkConfiguration) {
-            for (std::set<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it)
-                (void)preprocessor.getcode(tokens1, *it, files, true);
+            for (const std::string &config : configurations)
+                (void)preprocessor.getcode(tokens1, config, files, true);
 
             return 0;
         }
 
         // Run define rules on raw code
-        for (std::list<Settings::Rule>::const_iterator it = _settings.rules.begin(); it != _settings.rules.end(); ++it) {
-            if (it->tokenlist != "define")
+        for (const Settings::Rule &rule : _settings.rules) {
+            if (rule.tokenlist != "define")
                 continue;
 
             std::string code;
             const std::list<Directive> &directives = preprocessor.getDirectives();
-            for (std::list<Directive>::const_iterator dir = directives.begin(); dir != directives.end(); ++dir) {
-                if (dir->str.compare(0,8,"#define ") == 0)
-                    code += "#line " + MathLib::toString(dir->linenr) + " \"" + dir->file + "\"\n" + dir->str + '\n';
+            for (const Directive &dir : directives) {
+                if (dir.str.compare(0,8,"#define ") == 0)
+                    code += "#line " + MathLib::toString(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             Tokenizer tokenizer2(&_settings, this);
             std::istringstream istr2(code);
