@@ -35,10 +35,12 @@
 
 const std::list<ValueFlow::Value> Token::emptyValueList;
 
-Token::Token() : Token(nullptr, nullptr) { }
+Token::Token() : Token(TokensFrontBack{0, 0}) { }
 
-Token::Token(Token **backTokens, Token** frontTokens) :
-    tokensFrontBack(new TokensFrontBack{frontTokens, backTokens}),
+Token::Token(TokensFrontBack listEnds) : Token(&listEnds) {}
+
+Token::Token(TokensFrontBack *listEnds) :
+    tokensFrontBack(listEnds),
     _next(nullptr),
     _previous(nullptr),
     _link(nullptr),
@@ -66,7 +68,6 @@ Token::~Token()
     delete _originalName;
     delete valuetype;
     delete _values;
-    delete tokensFrontBack;
 }
 
 static const std::set<std::string> controlFlowKeywords = {
@@ -222,8 +223,8 @@ void Token::deleteNext(unsigned long index)
 
     if (_next)
         _next->previous(this);
-    else if (tokensFrontBack->back)
-        *tokensFrontBack->back = this;
+    else if (tokensFrontBack)
+        tokensFrontBack->back = this;
 }
 
 void Token::deletePrevious(unsigned long index)
@@ -242,8 +243,8 @@ void Token::deletePrevious(unsigned long index)
 
     if (_previous)
         _previous->next(this);
-    else if (tokensFrontBack->front)
-        *tokensFrontBack->front = this;
+    else if (tokensFrontBack)
+        tokensFrontBack->front = this;
 }
 
 void Token::swapWithNext()
@@ -335,10 +336,10 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
-	if (end->tokensFrontBack->back && *(end->tokensFrontBack->back) == end) {
-		while (end->next())
-			end = end->next();
-		*(end->tokensFrontBack->back) = end;
+    if (end->tokensFrontBack->back && end->tokensFrontBack->back == end) {
+        while (end->next())
+            end = end->next();
+        end->tokensFrontBack->back = end;
     }
 
     // Update _progressValue, fileIndex and linenr
@@ -929,7 +930,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     if (_str.empty())
         newToken = this;
     else
-        newToken = new Token(tokensFrontBack->back, tokensFrontBack->front);
+        newToken = new Token(tokensFrontBack);
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
@@ -944,8 +945,8 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 newToken->previous(this->previous());
                 newToken->previous()->next(newToken);
             } /*else if (tokensFront?) {
-                *tokensFront? = newToken;
-            }*/
+              *tokensFront? = newToken;
+              }*/
             this->previous(newToken);
             newToken->next(this);
         } else {
@@ -953,7 +954,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 newToken->next(this->next());
                 newToken->next()->previous(newToken);
             } else if (tokensFrontBack->back) {
-                *tokensFrontBack->back = newToken;
+                tokensFrontBack->back = newToken;
             }
             this->next(newToken);
             newToken->previous(this);
