@@ -1504,7 +1504,7 @@ void Tokenizer::simplifyTypedef()
                             if (!tok2->next())
                                 syntaxError(tok2); // can't recover so quit
 
-                            if (!inCast && !inSizeof)
+                            if (!inCast && !inSizeof && !inTemplate)
                                 tok2 = tok2->next();
 
                             if (tok2->str() == "const")
