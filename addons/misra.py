@@ -20,8 +20,15 @@ import os
 import argparse
 
 ruleTexts = {}
-ignoreList = {}
-typeBits = {}
+suppressRules = {}
+typeBits = {
+    'CHAR': None,
+    'SHORT': None,
+    'INT': None,
+    'LONG': None,
+    'LONG_LONG': None,
+    'POINTER': None
+}
 
 VERIFY = False
 VERIFY_EXPECTED = []
@@ -31,7 +38,7 @@ VERIFY_ACTUAL = []
 def reportError(location, num1, num2):
     if VERIFY:
         VERIFY_ACTUAL.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
-    elif num1 in ignoreList and num2 in ignoreList[num1]:
+    elif num1 in suppressRules and num2 in suppressRules[num1]:
         # ignore error
         return
     else:
@@ -1337,24 +1344,24 @@ def misra_21_11(data):
         reportError(directive, 21, 11)
 
 
-def setIgnoreList(ignorelist):
+def setSuppressionList(suppressionlist):
     num1 = 0
     num2 = 0
-    global ignoreList
+    global suppressRules
     rule_pattern = re.compile(r'([0-9]+).([0-9]+)')
-    strlist = ignorelist.split(",")
+    strlist = suppressionlist.split(",")
 
     # build ignore list
-    ignoreList = {}
+    suppressRules = {}
     for item in strlist:
         res = rule_pattern.match(item)
         if res:
             num1 = int(res.group(1))
             num2 = int(res.group(2))
-            if num1 in ignoreList:
-                ignoreList[num1][num2] = True
+            if num1 in suppressRules:
+                suppressRules[num1][num2] = True
             else:
-                ignoreList[num1] = {num2: True}
+                suppressRules[num1] = {num2: True}
 
 
 def loadRuleTexts(filename):
@@ -1612,8 +1619,8 @@ def parseDump(dumpfile):
 parser = argparse.ArgumentParser()
 parser.add_argument("--rule-texts", type=str, help="Path to text file of MISRA rules")
 parser.add_argument("--suppress-rules", type=str, help="MISRA rules to suppress (comma-separated)")
-parser.add_argument("-verify", help="Verify check", action="store_true")
-parser.add_argument("-generate-table", help="Generate rule table", action="store_true")
+parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
+parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("file", help="Path of dump file from cppcheck")
 args = parser.parse_args()
 
@@ -1629,6 +1636,6 @@ else:
             sys.exit(1)
         loadRuleTexts(filename)
     if args.suppress_rules:
-        setIgnoreList(args.suppress_rules)
+        setSuppressionList(args.suppress_rules)
     if args.file:
         parseDump(args.file)
