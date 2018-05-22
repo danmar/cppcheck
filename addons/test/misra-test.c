@@ -218,10 +218,12 @@ void misra_12_4() {
   x = 123456u * 123456u; // 12.4
 }
 
+struct misra_13_1_t { int a; int b; };
 void misra_13_1(int *p) {
   volatile int v;
   int a[3] = {0, (*p)++, 2}; // 13.1
-  int b[2] = {v,1}; // TODO
+  int b[2] = {v,1};
+  struct misra_13_1_t c = { .a=4, .b=5 }; // no fp
 }
 
 void misra_13_3() {

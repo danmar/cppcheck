@@ -968,10 +968,10 @@ def misra_12_4(data):
 
 def misra_13_1(data):
     for token in data.tokenlist:
-        if token.str != '=':
+        if not simpleMatch(token, '] = {'):
             continue
-        init = token.next
-        if init and init.str == '{' and hasSideEffectsRecursive(init):
+        init = token.next.next
+        if hasSideEffectsRecursive(init):
             reportError(init, 13, 1)
 
 
