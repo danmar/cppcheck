@@ -45,6 +45,7 @@
 #include "filelist.h"
 #include "showtypes.h"
 #include "librarydialog.h"
+#include "filterstringbuilder.h"
 
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -569,47 +570,6 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     }
 
     QStringList selected;
-
-    // TODO move to own file
-    class FilterStringBuilder
-    {
-        QMap<QString,QString> m_filters;
-        bool m_displayAll = false;
-        bool m_displayAllSupported = false;
-    public:
-        FilterStringBuilder& add(const QString& key, const QString& value) {
-            m_filters.insert(key, value);
-            return *this;
-        }
-
-        FilterStringBuilder& addAll() {
-            m_displayAll = true;
-            return *this;
-        }
-
-        FilterStringBuilder& addAllSupported() {
-            m_displayAllSupported = true;
-            return *this;
-        }
-
-        QString toFilterString() const {
-            QStringList entries;
-
-            if (m_displayAll) {
-                entries << tr("All files (%1)").arg("*.*");
-            }
-
-            if (m_displayAllSupported) {
-                entries << tr("All supported files (%1)").arg(QStringList(m_filters.values()).join(" "));
-            }
-
-            for (auto k: m_filters.keys()) {
-                entries << QString("%1 (%2)").arg(k).arg(m_filters.value(k));
-            }
-
-            return entries.join(";;");
-        }
-    };
 
     // NOTE: we use QFileDialog::getOpenFileNames() and
     // QFileDialog::getExistingDirectory() because they show native Windows
