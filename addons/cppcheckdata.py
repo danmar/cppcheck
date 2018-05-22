@@ -82,10 +82,7 @@ class ValueType:
         return self.type in {'float', 'double', 'long double'}
 
     def isEnum(self):
-        if self.typeScope and self.typeScope.type == "Enum":
-            return True
-        else:
-            return False
+        return self.typeScope and self.typeScope.type == "Enum"
 
 
 
