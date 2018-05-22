@@ -179,7 +179,9 @@ void misra_11_4(u8*p) {
 }
 
 void misra_11_5(void *p) {
+  u16 *p16;
   x = (u8 *)p; // 11.5
+  p16 = p; //11.5
 }
 
 void misra_11_6() {

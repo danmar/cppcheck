@@ -802,6 +802,15 @@ def misra_11_4(data):
 def misra_11_5(data):
     for token in data.tokenlist:
         if not isCast(token):
+            if token.str == "=" and token.next.str != "(":
+                vt1 = token.astOperand1.valueType
+                vt2 = token.astOperand2.valueType
+                if not vt1 or not vt2:
+                    continue
+                if vt1.pointer > 0 and vt1.type != 'void' and vt2.pointer == vt1.pointer and vt2.type == 'void':
+                    reportError(token, 11, 5)
+            continue
+        if token.astOperand1.astOperand1 and token.astOperand1.astOperand1.str in {'malloc', 'calloc', 'realloc', 'free'}:
             continue
         vt1 = token.valueType
         vt2 = token.astOperand1.valueType
