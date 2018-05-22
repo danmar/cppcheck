@@ -251,6 +251,12 @@ def hasSideEffectsRecursive(expr):
         prev = expr.astOperand1.previous
         if prev and (prev.str == '{' or prev.str == '{'):
             return hasSideEffectsRecursive(expr.astOperand2)
+    if expr.str == '=' and expr.astOperand1 and expr.astOperand1.str == '.':
+        e = expr.astOperand1
+        while e and e.str == '.' and e.astOperand2:
+            e = e.astOperand1
+        if e and e.str == '.':
+            return False
     if expr.str in {'++', '--', '='}:
         return True
     # Todo: Check function calls
@@ -968,9 +974,9 @@ def misra_12_4(data):
 
 def misra_13_1(data):
     for token in data.tokenlist:
-        if not simpleMatch(token, '] = {'):
+        if not simpleMatch(token, '= {'):
             continue
-        init = token.next.next
+        init = token.next
         if hasSideEffectsRecursive(init):
             reportError(init, 13, 1)
 
