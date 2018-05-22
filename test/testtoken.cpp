@@ -320,23 +320,25 @@ private:
 
 
     void deleteLast() const {
-        Token *tokensBack = 0;
-        Token tok(&tokensBack, nullptr);
+        TokensFrontBack listEnds{ 0 };
+        Token **tokensBack = &(listEnds.back);
+        Token tok(&listEnds);
         tok.insertToken("aba");
-        ASSERT_EQUALS(true, tokensBack == tok.next());
+        ASSERT_EQUALS(true, *tokensBack == tok.next());
         tok.deleteNext();
-        ASSERT_EQUALS(true, tokensBack == &tok);
+        ASSERT_EQUALS(true, *tokensBack == &tok);
     }
-    
+
     void deleteFirst() const {
-        Token *tokensFront = 0;
-        Token tok(nullptr, &tokensFront);
-        
+        TokensFrontBack listEnds{ 0 };
+        Token **tokensFront = &(listEnds.front);
+        Token tok(&listEnds);
+
         tok.insertToken("aba");
-        
-        ASSERT_EQUALS(true, tokensFront == tok.previous());
+
+        ASSERT_EQUALS(true, *tokensFront == tok.previous());
         tok.deletePrevious();
-        ASSERT_EQUALS(true, tokensFront == &tok);
+        ASSERT_EQUALS(true, *tokensFront == &tok);
     }
 
     void nextArgument() const {
