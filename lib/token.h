@@ -80,7 +80,7 @@ public:
 
     Token();
     Token(TokensFrontBack *tokensFrontBack);
-    Token::Token(TokensFrontBack listEnds);
+    Token(TokensFrontBack listEnds);
     ~Token();
 
     template<typename T>
