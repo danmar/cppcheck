@@ -38,8 +38,7 @@ static const unsigned int AST_MAX_DEPTH = 50U;
 
 
 TokenList::TokenList(const Settings* settings) :
-    _front(nullptr),
-    _back(nullptr),
+    _listEnds(),
     _settings(settings),
     _isC(false),
     _isCPP(false)
@@ -66,9 +65,9 @@ const std::string& TokenList::getSourceFilePath() const
 // Deallocate lists..
 void TokenList::deallocateTokens()
 {
-    deleteTokens(_front);
-    _front = nullptr;
-    _back = nullptr;
+    deleteTokens(_listEnds.front);
+    _listEnds.front = nullptr;
+    _listEnds.back = nullptr;
     _files.clear();
 }
 
@@ -142,18 +141,18 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
         str = MathLib::value(str).str() + suffix;
     }
 
-    if (_back) {
-        _back->insertToken(str);
+    if (_listEnds.back) {
+        _listEnds.back->insertToken(str);
     } else {
-        _front = new Token(&_back, &_front);
-        _back = _front;
-        _back->str(str);
+        _listEnds.front = new Token(&_listEnds);
+        _listEnds.back = _listEnds.front;
+        _listEnds.back->str(str);
     }
 
     if (isCPP() && str == "delete")
-        _back->isKeyword(true);
-    _back->linenr(lineno);
-    _back->fileIndex(fileno);
+        _listEnds.back->isKeyword(true);
+    _listEnds.back->linenr(lineno);
+    _listEnds.back->fileIndex(fileno);
 }
 
 void TokenList::addtoken(const Token * tok, const unsigned int lineno, const unsigned int fileno)
@@ -161,19 +160,19 @@ void TokenList::addtoken(const Token * tok, const unsigned int lineno, const uns
     if (tok == nullptr)
         return;
 
-    if (_back) {
-        _back->insertToken(tok->str(), tok->originalName());
+    if (_listEnds.back) {
+        _listEnds.back->insertToken(tok->str(), tok->originalName());
     } else {
-        _front = new Token(&_back, &_front);
-        _back = _front;
-        _back->str(tok->str());
+        _listEnds.front = new Token(&_listEnds);
+        _listEnds.back = _listEnds.front;
+        _listEnds.back->str(tok->str());
         if (!tok->originalName().empty())
-            _back->originalName(tok->originalName());
+            _listEnds.back->originalName(tok->originalName());
     }
 
-    _back->linenr(lineno);
-    _back->fileIndex(fileno);
-    _back->flags(tok->flags());
+    _listEnds.back->linenr(lineno);
+    _listEnds.back->fileIndex(fileno);
+    _listEnds.back->flags(tok->flags());
 }
 
 
@@ -283,7 +282,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
 
-        std::string str = tok->str();
+        std::string str = tok->str;
 
         // Replace hexadecimal value with decimal
         // TODO: Remove this
@@ -305,20 +304,20 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
         if (str.size() > 1 && str[0] == '.' && std::isdigit(str[1]))
             str = '0' + str;
 
-        if (_back) {
-            _back->insertToken(str);
+        if (_listEnds.back) {
+            _listEnds.back->insertToken(str);
         } else {
-            _front = new Token(&_back, &_front);
-            _back = _front;
-            _back->str(str);
+            _listEnds.front = new Token(&_listEnds);
+            _listEnds.back = _listEnds.front;
+            _listEnds.back->str(str);
         }
 
-        if (isCPP() && _back->str() == "delete")
-            _back->isKeyword(true);
-        _back->fileIndex(tok->location.fileIndex);
-        _back->linenr(tok->location.line);
-        _back->col(tok->location.col);
-        _back->isExpandedMacro(!tok->macro.empty());
+        if (isCPP() && _listEnds.back->str() == "delete")
+            _listEnds.back->isKeyword(true);
+        _listEnds.back->fileIndex(tok->location.fileIndex);
+        _listEnds.back->linenr(tok->location.line);
+        _listEnds.back->col(tok->location.col);
+        _listEnds.back->isExpandedMacro(!tok->macro.empty());
     }
 
     if (_settings && _settings->relativePaths) {
@@ -326,7 +325,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
             _files[i] = Path::getRelativePath(_files[i], _settings->basePaths);
     }
 
-    Token::assignProgressValues(_front);
+    Token::assignProgressValues(_listEnds.front);
 }
 
 //---------------------------------------------------------------------------
@@ -1164,7 +1163,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
 void TokenList::createAst()
 {
-    for (Token *tok = _front; tok; tok = tok ? tok->next() : nullptr) {
+    for (Token *tok = _listEnds.front; tok; tok = tok ? tok->next() : nullptr) {
         tok = createAstAtToken(tok, isCPP());
     }
 }
@@ -1173,7 +1172,7 @@ void TokenList::validateAst() const
 {
     // Check for some known issues in AST to avoid crash/hang later on
     std::set < const Token* > safeAstTokens; // list of "safe" AST tokens without endless recursion
-    for (const Token *tok = _front; tok; tok = tok->next()) {
+    for (const Token *tok = _listEnds.front; tok; tok = tok->next()) {
         // Syntax error if binary operator only has 1 operand
         if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2())
             throw InternalError(tok, "Syntax Error: AST broken, binary operator has only one operand.", InternalError::AST);
@@ -1217,7 +1216,7 @@ bool TokenList::validateToken(const Token* tok) const
 {
     if (!tok)
         return true;
-    for (const Token *t = _front; t; t = t->next()) {
+    for (const Token *t = _listEnds.front; t; t = t->next()) {
         if (tok==t)
             return true;
     }
