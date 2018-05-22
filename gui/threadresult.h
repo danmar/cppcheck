@@ -72,8 +72,8 @@ public:
     /**
     * ErrorLogger methods
     */
-    void reportOut(const std::string &outmsg);
-    void reportErr(const ErrorLogger::ErrorMessage &msg);
+    void reportOut(const std::string &outmsg) override;
+    void reportErr(const ErrorLogger::ErrorMessage &msg) override;
 
 public slots:
 

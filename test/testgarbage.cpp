@@ -34,7 +34,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         settings.debugwarnings = true;
         settings.addEnabled("style");
         settings.addEnabled("warning");

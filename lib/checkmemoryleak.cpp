@@ -671,8 +671,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     return (eq || _settings->experimental) ? nullptr : "callfunc";
 }
 
-
-static void addtoken(Token **rettail, const Token *tok, const std::string &str)
+template<typename T>
+static void addtoken(Token **rettail, const Token *tok, T&& str)
 {
     (*rettail)->insertToken(str);
     (*rettail) = (*rettail)->next();

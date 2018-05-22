@@ -1243,12 +1243,8 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 // should be moved away.
 bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
 {
-    bool ret = false, goback = false;
+    bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next()) {
-        if (goback) {
-            tok = tok->previous();
-            goback = false;
-        }
         // Remove parentheses around variable..
         // keep parentheses here: dynamic_cast<Fred *>(p);
         // keep parentheses here: A operator * (int);
@@ -1405,14 +1401,9 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok->str(result);
                     tok->deleteNext(2);
                     ret = true;
-                    goback = true;
+                    tok = tok->previous();
                 }
             }
-        }
-        // Division where result is a whole number
-        else if (Token::Match(tok->previous(), "* %num% /") &&
-                 tok->str() == MathLib::multiply(tok->strAt(2), MathLib::divide(tok->str(), tok->strAt(2)))) {
-            tok->deleteNext(2);
         }
 
         else if (simplifyNumericCalculations(tok)) {
@@ -1580,7 +1571,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typeForNewName.clear();
                 break;
             }
-            if (Token::Match(tok3->tokAt(-2), "[<,] %name% <") && templateParameters(tok3) > 0)
+            if (Token::Match(tok3->tokAt(-2), "<|,|:: %name% <") && templateParameters(tok3) > 0)
                 ++indentlevel;
             else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
                 --indentlevel;

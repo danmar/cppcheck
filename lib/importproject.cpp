@@ -77,7 +77,9 @@ void ImportProject::FileSettings::setDefines(std::string defs)
     }
     while (defs.find(";;") != std::string::npos)
         defs.erase(defs.find(";;"),1);
-    if (!defs.empty() && endsWith(defs,';'))
+    while (!defs.empty() && defs[0] == ';')
+        defs.erase(0, 1);
+    while (!defs.empty() && endsWith(defs,';'))
         defs.erase(defs.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
     bool eq = false;
     for (std::size_t pos = 0; pos < defs.size(); ++pos) {
@@ -180,6 +182,8 @@ void ImportProject::import(const std::string &filename)
     } else if (filename.find(".vcxproj") != std::string::npos) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString);
+    } else if (filename.find(".bpr") != std::string::npos) {
+        importBcb6Prj(filename);
     }
 }
 
@@ -567,5 +571,265 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
             fileSettings.push_back(fs);
         }
+    }
+}
+
+void ImportProject::importBcb6Prj(const std::string &projectFilename)
+{
+    tinyxml2::XMLDocument doc;
+    const tinyxml2::XMLError error = doc.LoadFile(projectFilename.c_str());
+    if (error != tinyxml2::XML_SUCCESS)
+        return;
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    if (rootnode == nullptr)
+        return;
+
+    const std::string& projectDir = Path::simplifyPath(Path::getPathFromFilename(projectFilename));
+
+    std::list<std::string> compileList;
+    std::string includePath;
+    std::string userdefines;
+    std::string sysdefines;
+    std::string cflag1;
+
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (std::strcmp(node->Name(), "FILELIST") == 0) {
+            for (const tinyxml2::XMLElement *f = node->FirstChildElement(); f; f = f->NextSiblingElement()) {
+                if (std::strcmp(f->Name(), "FILE") == 0) {
+                    const char *filename = f->Attribute("FILENAME");
+                    if (filename && Path::acceptFile(filename))
+                        compileList.push_back(filename);
+                }
+            }
+        } else if (std::strcmp(node->Name(), "MACROS") == 0) {
+            for (const tinyxml2::XMLElement *m = node->FirstChildElement(); m; m = m->NextSiblingElement()) {
+                if (std::strcmp(m->Name(), "INCLUDEPATH") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        includePath = v;
+                } else if (std::strcmp(m->Name(), "USERDEFINES") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        userdefines = v;
+                } else if (std::strcmp(m->Name(), "SYSDEFINES") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        sysdefines = v;
+                }
+            }
+        } else if (std::strcmp(node->Name(), "OPTIONS") == 0) {
+            for (const tinyxml2::XMLElement *m = node->FirstChildElement(); m; m = m->NextSiblingElement()) {
+                if (std::strcmp(m->Name(), "CFLAG1") == 0) {
+                    const char *v = m->Attribute("value");
+                    if (v)
+                        cflag1 = v;
+                }
+            }
+        }
+    }
+
+    std::set<std::string> cflags;
+
+    // parse cflag1 and fill the cflags set
+    {
+        std::string arg;
+
+        for (int i = 0; i < cflag1.size(); ++i) {
+            if (cflag1.at(i) == ' ' && !arg.empty()) {
+                cflags.insert(arg);
+                arg.clear();
+                continue;
+            }
+            arg += cflag1.at(i);
+        }
+
+        if (!arg.empty()) {
+            cflags.insert(arg);
+        }
+
+        // cleanup: -t is "An alternate name for the -Wxxx switches; there is no difference"
+        // -> Remove every known -txxx argument and replace it with its -Wxxx counterpart.
+        //    This way, we know what we have to check for later on.
+        static const std::map<std::string, std::string> synonyms = {
+            { "-tC","-WC" },
+            { "-tCDR","-WCDR" },
+            { "-tCDV","-WCDV" },
+            { "-tW","-W" },
+            { "-tWC","-WC" },
+            { "-tWCDR","-WCDR" },
+            { "-tWCDV","-WCDV" },
+            { "-tWD","-WD" },
+            { "-tWDR","-WDR" },
+            { "-tWDV","-WDV" },
+            { "-tWM","-WM" },
+            { "-tWP","-WP" },
+            { "-tWR","-WR" },
+            { "-tWU","-WU" },
+            { "-tWV","-WV" }
+        };
+
+        for (std::map<std::string, std::string>::const_iterator i = synonyms.begin(); i != synonyms.end(); ++i) {
+            if (cflags.erase(i->first) > 0) {
+                cflags.insert(i->second);
+            }
+        }
+    }
+
+    std::string predefines;
+    std::string cppPredefines;
+
+    // Collecting predefines. See BCB6 help topic "Predefined macros"
+    {
+        cppPredefines +=
+            // Defined if you've selected C++ compilation; will increase in later releases.
+            // value 0x0560 (but 0x0564 for our BCB6 SP4)
+            // @see http://docwiki.embarcadero.com/RADStudio/Tokyo/en/Predefined_Macros#C.2B.2B_Compiler_Versions_in_Predefined_Macros
+            ";__BCPLUSPLUS__=0x0560"
+
+            // Defined if in C++ mode; otherwise, undefined.
+            ";__cplusplus=1"
+
+            // Defined as 1 for C++ files(meaning that templates are supported); otherwise, it is undefined.
+            ";__TEMPLATES__=1"
+
+            // Defined only for C++ programs to indicate that wchar_t is an intrinsically defined data type.
+            ";_WCHAR_T"
+
+            // Defined only for C++ programs to indicate that wchar_t is an intrinsically defined data type.
+            ";_WCHAR_T_DEFINED"
+
+            // Defined in any compiler that has an optimizer.
+            ";__BCOPT__=1"
+
+            // Version number.
+            // BCB6 is 0x056X (SP4 is 0x0564)
+            // @see http://docwiki.embarcadero.com/RADStudio/Tokyo/en/Predefined_Macros#C.2B.2B_Compiler_Versions_in_Predefined_Macros
+            ";__BORLANDC__=0x0560"
+            ";__TCPLUSPLUS__=0x0560"
+            ";__TURBOC__=0x0560";
+
+        // Defined if Calling Convention is set to cdecl; otherwise undefined.
+        const bool useCdecl = (cflags.find("-p") == cflags.end()
+                               && cflags.find("-pm") == cflags.end()
+                               && cflags.find("-pr") == cflags.end()
+                               && cflags.find("-ps") == cflags.end());
+        if (useCdecl)
+            predefines += ";__CDECL=1";
+
+        // Defined by default indicating that the default char is unsigned char. Use the -K compiler option to undefine this macro.
+        const bool treatCharAsUnsignedChar = (cflags.find("-K") != cflags.end());
+        if (treatCharAsUnsignedChar)
+            predefines += ";_CHAR_UNSIGNED=1";
+
+        // Defined whenever one of the CodeGuard compiler options is used; otherwise it is undefined.
+        const bool codeguardUsed = (cflags.find("-vGd") != cflags.end()
+                                    || cflags.find("-vGt") != cflags.end()
+                                    || cflags.find("-vGc") != cflags.end());
+        if (codeguardUsed)
+            predefines += ";__CODEGUARD__";
+
+        // When defined, the macro indicates that the program is a console application.
+        const bool isConsoleApp = (cflags.find("-WC") != cflags.end());
+        if (isConsoleApp)
+            predefines += ";__CONSOLE__=1";
+
+        // Enable stack unwinding. This is true by default; use -xd- to disable.
+        const bool enableStackUnwinding = (cflags.find("-xd-") == cflags.end());
+        if (enableStackUnwinding)
+            predefines += ";_CPPUNWIND=1";
+
+        // Defined whenever the -WD compiler option is used; otherwise it is undefined.
+        const bool isDLL = (cflags.find("-WD") != cflags.end());
+        if (isDLL)
+            predefines += ";__DLL__=1";
+
+        // Defined when compiling in 32-bit flat memory model.
+        // TODO: not sure how to switch to another memory model or how to read configuration from project file
+        predefines += ";__FLAT__=1";
+
+        // Always defined. The default value is 300. You can change the value to 400 or 500 by using the /4 or /5 compiler options.
+        if (cflags.find("-6") != cflags.end())
+            predefines += ";_M_IX86=600";
+        else if (cflags.find("-5") != cflags.end())
+            predefines += ";_M_IX86=500";
+        else if (cflags.find("-4") != cflags.end())
+            predefines += ";_M_IX86=400";
+        else
+            predefines += ";_M_IX86=300";
+
+        // Defined only if the -WM option is used. It specifies that the multithread library is to be linked.
+        const bool linkMtLib = (cflags.find("-WM") != cflags.end());
+        if (linkMtLib)
+            predefines += ";__MT__=1";
+
+        // Defined if Calling Convention is set to Pascal; otherwise undefined.
+        const bool usePascalCallingConvention = (cflags.find("-p") != cflags.end());
+        if (usePascalCallingConvention)
+            predefines += ";__PASCAL__=1";
+
+        // Defined if you compile with the -A compiler option; otherwise, it is undefined.
+        const bool useAnsiKeywordExtensions = (cflags.find("-A") != cflags.end());
+        if (useAnsiKeywordExtensions)
+            predefines += ";__STDC__=1";
+
+        // Thread Local Storage. Always true in C++Builder.
+        predefines += ";__TLC__=1";
+
+        // Defined for Windows-only code.
+        const bool isWindowsTarget = (cflags.find("-WC") != cflags.end()
+                                      || cflags.find("-WCDR") != cflags.end()
+                                      || cflags.find("-WCDV") != cflags.end()
+                                      || cflags.find("-WD") != cflags.end()
+                                      || cflags.find("-WDR") != cflags.end()
+                                      || cflags.find("-WDV") != cflags.end()
+                                      || cflags.find("-WM") != cflags.end()
+                                      || cflags.find("-WP") != cflags.end()
+                                      || cflags.find("-WR") != cflags.end()
+                                      || cflags.find("-WU") != cflags.end()
+                                      || cflags.find("-WV") != cflags.end());
+        if (isWindowsTarget)
+            predefines += ";_Windows";
+
+        // Defined for console and GUI applications.
+        // TODO: I'm not sure about the difference to define "_Windows".
+        //       From description, I would assume __WIN32__ is only defined for
+        //       executables, while _Windows would also be defined for DLLs, etc.
+        //       However, in a newly created DLL project, both __WIN32__ and
+        //       _Windows are defined. -> treating them the same for now.
+        //       Also boost uses __WIN32__ for OS identification.
+        const bool isConsoleOrGuiApp = isWindowsTarget;
+        if (isConsoleOrGuiApp)
+            predefines += ";__WIN32__=1";
+    }
+
+    // Include paths may contain variables like "$(BCB)\include" or "$(BCB)\include\vcl".
+    // Those get resolved by ImportProject::FileSettings::setIncludePaths by
+    // 1. checking the provided variables map ("BCB" => "C:\\Program Files (x86)\\Borland\\CBuilder6")
+    // 2. checking env variables as a fallback
+    // Setting env is always possible. Configuring the variables via cli might be an addition.
+    // Reading the BCB6 install location from registry in windows environments would also be possible,
+    // but I didn't see any such functionality around the source. Not in favor of adding it only
+    // for the BCB6 project loading.
+    std::map<std::string, std::string, cppcheck::stricmp> variables;
+    const std::string defines = predefines + ";" + sysdefines + ";" + userdefines;
+    const std::string cppDefines  = cppPredefines + ";" + defines;
+    const bool forceCppMode = (cflags.find("-P") != cflags.end());
+
+    for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
+        // C++ compilation is selected by file extension by default, so these
+        // defines have to be configured on a per-file base.
+        //
+        // > Files with the .CPP extension compile as C++ files. Files with a .C
+        // > extension, with no extension, or with extensions other than .CPP,
+        // > .OBJ, .LIB, or .ASM compile as C files.
+        // (http://docwiki.embarcadero.com/RADStudio/Tokyo/en/BCC32.EXE,_the_C%2B%2B_32-bit_Command-Line_Compiler)
+        //
+        // We can also force C++ compilation for all files using the -P command line switch.
+        const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(*c) == ".cpp";
+        FileSettings fs;
+        fs.setIncludePaths(projectDir, toStringList(includePath), variables);
+        fs.setDefines(cppMode ? cppDefines : defines);
+        fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : projectDir + *c);
+        fileSettings.push_back(fs);
     }
 }

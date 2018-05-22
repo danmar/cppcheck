@@ -189,24 +189,24 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
 
     /**
      * @brief Information about progress is directed here.
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg);
+    virtual void reportOut(const std::string &outmsg) override;
 
     std::list<std::string> _errorList;
     Settings _settings;
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) override;
 
     ErrorLogger &_errorLogger;
 

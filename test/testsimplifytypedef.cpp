@@ -38,7 +38,7 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void run() {
+    void run() override {
         settings0.addEnabled("style");
         settings2.addEnabled("style");
 
@@ -160,6 +160,7 @@ private:
         TEST_CASE(simplifyTypedef120); // ticket #8357
         TEST_CASE(simplifyTypedef121); // ticket #5766
         TEST_CASE(simplifyTypedef122); // segmentation fault
+        TEST_CASE(simplifyTypedef123); // ticket #7406
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2498,6 +2499,15 @@ private:
         tok(code);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void simplifyTypedef123() { // ticket #7406
+        const char code[] = "typedef int intvec[1];\n"
+                            "Dummy<intvec> y;";
+        const char exp [] = "Dummy < int [ 1 ] > y ;";
+        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void simplifyTypedefFunction1() {
         {

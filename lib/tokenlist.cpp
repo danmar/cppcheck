@@ -283,7 +283,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
 
-        std::string str = tok->str;
+        std::string str = tok->str();
 
         // Replace hexadecimal value with decimal
         // TODO: Remove this

@@ -110,7 +110,7 @@ private:
         return 0;
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
         settings2.platform(Settings::Unspecified);
 
@@ -287,6 +287,8 @@ private:
         TEST_CASE(symboldatabase67); // #8538
         TEST_CASE(symboldatabase68); // #8560
         TEST_CASE(symboldatabase69);
+        TEST_CASE(symboldatabase70);
+        TEST_CASE(symboldatabase71);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -1579,8 +1581,8 @@ private:
             ASSERT(bar2 != nullptr);
 
             if (foo && bar1 && bar2) {
-                ASSERT(bar1->definedType->friendList.size() == 1 && bar1->definedType->friendList.front().name == "Foo" && bar1->definedType->friendList.front().type == foo->definedType);
-                ASSERT(bar2->definedType->friendList.size() == 1 && bar2->definedType->friendList.front().name == "Foo" && bar2->definedType->friendList.front().type == foo->definedType);
+                ASSERT(bar1->definedType->friendList.size() == 1 && bar1->definedType->friendList.front().nameEnd->str() == "Foo" && bar1->definedType->friendList.front().type == foo->definedType);
+                ASSERT(bar2->definedType->friendList.size() == 1 && bar2->definedType->friendList.front().nameEnd->str() == "Foo" && bar2->definedType->friendList.front().type == foo->definedType);
             }
         }
     }
@@ -3893,6 +3895,34 @@ private:
         ASSERT(f && f->function() && f->function()->token->linenr() == 6);
         ASSERT(f && f->function() && !f->function()->isVolatile());
         ASSERT(f && f->function() && !f->function()->isConst());
+    }
+
+    void symboldatabase70() {
+        {
+            GET_SYMBOL_DB("class Map<String,Entry>::Entry* e;");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 1);
+            ASSERT(db && db->variableList().size() == 2);
+        }
+        {
+            GET_SYMBOL_DB("template class boost::token_iterator_generator<boost::offset_separator>::type; void foo() { }");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 2);
+        }
+        {
+            GET_SYMBOL_DB("void foo() {\n"
+                          "    return class Arm_relocate_functions<big_endian>::thumb32_branch_offset(upper_insn, lower_insn);\n"
+                          "}");
+            ASSERT(db != nullptr);
+            ASSERT(db && db->scopeList.size() == 2);
+        }
+    }
+
+    void symboldatabase71() {
+        GET_SYMBOL_DB("class A { };\n"
+                      "class B final : public A { };");
+        ASSERT(db && db->scopeList.size() == 3);
+        ASSERT(db && db->typeList.size() == 2);
     }
 
     void enum1() {

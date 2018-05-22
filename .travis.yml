@@ -75,6 +75,10 @@ script:
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # run extra tests
   - tools/generate_and_run_more_tests.sh
+# Validate XML
+#  - make validateXMLV2
+  - ${CPPCHECK} --errorlist >/tmp/errorlist.xml
+  - xmllint --noout --relaxng xmlV2.rng /tmp/errorlist.xml
 # check test/cfg
   - make checkcfg
   - make validateCFG
@@ -124,10 +128,8 @@ script:
   - python3 ../misc.py -verify misc-test.cpp.dump
   - ${CPPCHECK} --dump cert-test.c
   - python3 ../cert.py -verify cert-test.c.dump
-# these are broken right now.
-# uncomment as soon as it gets fixed
-#  - ${CPPCHECK} --dump misra-test.c
-#  - python3 ../misra.py -verify misra-test.c.dump
+  - ${CPPCHECK} --dump misra-test.c
+  - python3 ../misra.py -verify misra-test.c.dump
   - ${CPPCHECK} --dump misra-test.cpp
   - python3 ../misra.py -verify misra-test.cpp.dump
   - cd ../../

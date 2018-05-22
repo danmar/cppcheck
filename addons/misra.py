@@ -13,6 +13,8 @@
 #
 # Total number of rules: 143
 
+from __future__ import print_function
+
 import cppcheckdata
 import sys
 import re
@@ -31,8 +33,16 @@ typeBits = {
 }
 
 VERIFY = False
+SHOW_SUMMARY = True
+QUIET = False
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
+VIOLATIONS = []
+
+
+def printStatus(*args, **kwargs):
+    if not QUIET:
+        print(*args, **kwargs)
 
 
 def reportError(location, num1, num2):
@@ -51,6 +61,8 @@ def reportError(location, num1, num2):
         else:
             errmsg = 'misra violation (no description found for rule) [' + id + ']'
         sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] (style): ' + errmsg + '\n')
+
+        VIOLATIONS.append(errmsg)
 
 
 def simpleMatch(token, pattern):
@@ -111,6 +123,40 @@ KEYWORDS = {
     'volatile',
     'while'
 }
+
+
+def getEssentialTypeCategory(expr):
+    if not expr:
+        return None
+    if expr.valueType.typeScope:
+        return "enum<" + expr.valueType.typeScope.className + ">"
+    if expr.variable:
+        typeToken = expr.variable.typeStartToken
+        while typeToken:
+            if typeToken.valueType:
+                if typeToken.valueType.type in {'bool'}:
+                    return typeToken.valueType.type
+                if typeToken.valueType.type in {'float', 'double', 'long double'}:
+                    return "float"
+                if typeToken.valueType.sign:
+                    return typeToken.valueType.sign
+            typeToken = typeToken.next
+    if expr.valueType:
+        return expr.valueType.sign
+
+
+def getEssentialCategorylist(operand1, operand2):
+    if not operand1 or not operand2:
+        return None, None
+    if (operand1.str in {'++', '--'} or
+            operand2.str in {'++', '--'}):
+        return None, None
+    if (operand1.valueType.pointer or
+            operand2.valueType.pointer):
+        return None, None
+    e1 = getEssentialTypeCategory(operand1)
+    e2 = getEssentialTypeCategory(operand2)
+    return e1, e2
 
 
 def getEssentialType(expr):
@@ -220,6 +266,12 @@ def hasSideEffectsRecursive(expr):
         prev = expr.astOperand1.previous
         if prev and (prev.str == '{' or prev.str == '{'):
             return hasSideEffectsRecursive(expr.astOperand2)
+    if expr.str == '=' and expr.astOperand1 and expr.astOperand1.str == '.':
+        e = expr.astOperand1
+        while e and e.str == '.' and e.astOperand2:
+            e = e.astOperand1
+        if e and e.str == '.':
+            return False
     if expr.str in {'++', '--', '='}:
         return True
     # Todo: Check function calls
@@ -439,9 +491,23 @@ def misra_4_1(rawTokens):
 
 
 def misra_5_1(data):
-    for token in data.tokenlist:
-        if token.isName and len(token.str) > 31:
-            reportError(token, 5, 1)
+    scopeVars = {}
+    for var in data.variables:
+        if var.isArgument:
+            continue
+        if var.nameToken.scope not in scopeVars:
+            scopeVars[var.nameToken.scope] = []
+        scopeVars[var.nameToken.scope].append(var)
+    for scope in scopeVars:
+        for i, variable1 in enumerate(scopeVars[scope]):
+            for variable2 in scopeVars[scope][i + 1:]:
+                if (variable1.isExtern and variable2.isExtern and
+                    variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
+                        variable1.Id != variable2.Id):
+                    if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
+                        reportError(variable1.nameToken, 5, 1)
+                    else:
+                        reportError(variable2.nameToken, 5, 1)
 
 
 def misra_5_2(data):
@@ -463,6 +529,8 @@ def misra_5_2(data):
         for i, variable1 in enumerate(scopeVars[scope]["varlist"]):
             for variable2 in scopeVars[scope]["varlist"][i + 1:]:
                 if variable1.isArgument and variable2.isArgument:
+                    continue
+                if variable1.isExtern and variable2.isExtern:
                     continue
                 if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
                         variable1.Id != variable2.Id):
@@ -488,19 +556,23 @@ def misra_5_2(data):
 
 
 def misra_5_3(data):
+    enum = []
     scopeVars = {}
     for var in data.variables:
-        if var.isArgument:
-            # TODO
-            continue
         if var.nameToken.scope not in scopeVars:
             scopeVars[var.nameToken.scope] = []
         scopeVars[var.nameToken.scope].append(var)
-
     for innerScope in data.scopes:
-        if innerScope.type == 'Global':
+        if innerScope.type == "Enum":
+            enum_token = innerScope.bodyStart.next
+            while enum_token != innerScope.bodyEnd:
+                if enum_token.values and enum_token.isName:
+                    enum.append(enum_token.str)
+                enum_token = enum_token.next
             continue
         if innerScope not in scopeVars:
+            continue
+        if innerScope.type == "Global":
             continue
         for innerVar in scopeVars[innerScope]:
             outerScope = innerScope.nestedIn
@@ -508,15 +580,32 @@ def misra_5_3(data):
                 if outerScope not in scopeVars:
                     outerScope = outerScope.nestedIn
                     continue
-                found = False
                 for outerVar in scopeVars[outerScope]:
-                    if innerVar.nameToken.str == outerVar.nameToken.str:
-                        found = True
-                        break
-                if found:
-                    reportError(innerVar.nameToken, 5, 3)
-                    break
+                    if innerVar.nameToken.str[:31] == outerVar.nameToken.str[:31]:
+                        if outerVar.isArgument and outerScope.type == "Global" and not innerVar.isArgument:
+                            continue
+                        if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
+                            reportError(innerVar.nameToken, 5, 3)
+                        else:
+                            reportError(outerVar.nameToken, 5, 3)
                 outerScope = outerScope.nestedIn
+            for scope in data.scopes:
+                if (scope.className and innerVar.nameToken.str[:31] == scope.className[:31]):
+                    if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
+                        reportError(innerVar.nameToken, 5, 3)
+                    else:
+                        reportError(scope.bodyStart, 5, 3)
+
+            for e in enum:
+                if scope.className and innerVar.nameToken.str[:31] == e[:31]:
+                    if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
+                        reportError(innerVar.nameToken, 5, 3)
+                    else:
+                        reportError(innerScope.bodyStart, 5, 3)
+    for e in enum:
+        for scope in data.scopes:
+            if (scope.className and scope.className[:31] == e[:31]):
+                reportError(scope.bodyStart, 5, 3)
 
 
 def misra_5_4(data):
@@ -582,7 +671,7 @@ def misra_7_1(rawTokens):
 
 
 def misra_7_3(rawTokens):
-    compiled = re.compile(r'^[0-9]+l')
+    compiled = re.compile(r'^[0-9.uU]+l')
     for tok in rawTokens:
         if compiled.match(tok.str):
             reportError(tok, 7, 3)
@@ -595,24 +684,22 @@ def misra_8_11(data):
 
 
 def misra_8_12(data):
-    for token in data.tokenlist:
-        if token.str != '{':
+    for scope in data.scopes:
+        enum = []
+        implicit_enum = []
+        if scope.type != 'Enum':
             continue
-        if not token.scope or token.scope.type != 'Enum':
-            continue
-        etok = token
-        values = []
-        while etok:
-            if etok.str == '}':
-                break
-            if etok.str == '=':
-                rhsValues = etok.astOperand2.values
-                if rhsValues and len(rhsValues) == 1:
-                    if rhsValues[0].intvalue in values:
-                        reportError(etok, 8, 12)
-                        break
-                    values.append(rhsValues[0].intvalue)
-            etok = etok.next
+        e_token = scope.bodyStart.next
+        while e_token != scope.bodyEnd:
+            if e_token.values:
+                enum.append(e_token.str)
+            if (e_token.values and e_token.isName and e_token.next.str != "="):
+                for v in e_token.values:
+                    implicit_enum.append(v.intvalue)
+            e_token = e_token.next
+        for implicit_enum_value in implicit_enum:
+            if str(implicit_enum_value) in enum:
+                reportError(scope.bodyStart, 8, 12)
 
 
 def misra_8_14(rawTokens):
@@ -628,17 +715,35 @@ def misra_9_5(rawTokens):
 
 
 def misra_10_4(data):
+    op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', '?', ':'}
     for token in data.tokenlist:
-        if token.str not in {'+', '-', '*', '/', '%', '&', '|', '^'} and not token.isComparisonOp:
+        if token.str not in op and not token.isComparisonOp:
             continue
         if not token.astOperand1 or not token.astOperand2:
             continue
         if not token.astOperand1.valueType or not token.astOperand2.valueType:
             continue
-        if not token.astOperand1.valueType.isIntegral() or not token.astOperand2.valueType.isIntegral():
+        if ((token.astOperand1.str in op or token.astOperand1.isComparisonOp) and
+                (token.astOperand2.str in op or token.astOperand1.isComparisonOp)):
+            e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2.astOperand1)
+        elif token.astOperand1.str in op or token.astOperand1.isComparisonOp:
+            e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2)
+        elif token.astOperand2.str in op or token.astOperand2.isComparisonOp:
+            e1, e2 = getEssentialCategorylist(token.astOperand1, token.astOperand2.astOperand1)
+        else:
+            e1, e2 = getEssentialCategorylist(token.astOperand1, token.astOperand2)
+        if token.str == "+=" or token.str == "+":
+            if e1 == "char" and (e2 == "signed" or e2 == "unsigned"):
+                continue
+            if e2 == "char" and (e1 == "signed" or e1 == "unsigned"):
+                continue
+        if token.str == "-=" or token.str == "-":
+            if e1 == "char" and (e2 == "signed" or e2 == "unsigned"):
+                continue
+        if e1 and e2 and (e1.find('Anonymous') != -1 and (e2 == "signed" or e2 == "unsigned")):
             continue
-        e1 = getEssentialType(token.astOperand1)
-        e2 = getEssentialType(token.astOperand2)
+        if e1 and e2 and (e2.find('Anonymous') != -1 and (e1 == "signed" or e1 == "unsigned")):
+            continue
         if e1 and e2 and e1 != e2:
             reportError(token, 10, 4)
 
@@ -710,13 +815,24 @@ def misra_11_4(data):
         vt2 = token.astOperand1.valueType
         if not vt1 or not vt2:
             continue
-        if vt1.pointer == 0 and vt2.pointer > 0 and vt2.type != 'void':
+        if vt2.pointer > 0 and vt1.pointer == 0 and (vt1.isIntegral() or vt1.isEnum()) and vt2.type != 'void':
+            reportError(token, 11, 4)
+        elif vt1.pointer > 0 and vt2.pointer == 0 and (vt2.isIntegral() or vt2.isEnum())and vt1.type != 'void':
             reportError(token, 11, 4)
 
 
 def misra_11_5(data):
     for token in data.tokenlist:
         if not isCast(token):
+            if token.str == "=" and token.next.str != "(":
+                vt1 = token.astOperand1.valueType
+                vt2 = token.astOperand2.valueType
+                if not vt1 or not vt2:
+                    continue
+                if vt1.pointer > 0 and vt1.type != 'void' and vt2.pointer == vt1.pointer and vt2.type == 'void':
+                    reportError(token, 11, 5)
+            continue
+        if token.astOperand1.astOperand1 and token.astOperand1.astOperand1.str in {'malloc', 'calloc', 'realloc', 'free'}:
             continue
         vt1 = token.valueType
         vt2 = token.astOperand1.valueType
@@ -890,10 +1006,10 @@ def misra_12_4(data):
 
 def misra_13_1(data):
     for token in data.tokenlist:
-        if token.str != '=':
+        if not simpleMatch(token, '= {'):
             continue
         init = token.next
-        if init and init.str == '{' and hasSideEffectsRecursive(init):
+        if hasSideEffectsRecursive(init):
             reportError(init, 13, 1)
 
 
@@ -1286,7 +1402,7 @@ def misra_20_14(data):
     # the size increases when there are inner #if directives.
     ifStack = []
     for directive in data.directives:
-        if directive.str.startswith('#if '):
+        if directive.str.startswith('#if ') or directive.str.startswith('#ifdef ') or directive.str.startswith('#ifndef '):
             ifStack.append(directive)
         elif directive.str == '#else' or directive.str.startswith('#elif '):
             if len(ifStack) == 0:
@@ -1320,6 +1436,15 @@ def misra_21_5(data):
         reportError(directive, 21, 5)
 
 
+def misra_21_6(data):
+    dir_stdio = findInclude(data.directives, '<stdio.h>')
+    dir_wchar = findInclude(data.directives, '<wchar.h>')
+    if dir_stdio:
+        reportError(dir_stdio, 21, 6)
+    if dir_wchar:
+        reportError(dir_wchar, 21, 6)
+
+
 def misra_21_7(data):
     for token in data.tokenlist:
         if isFunctionCall(token) and (token.astOperand1.str in {'atof', 'atoi', 'atol', 'atoll'}):
@@ -1336,6 +1461,16 @@ def misra_21_9(data):
     for token in data.tokenlist:
         if (token.str in {'bsearch', 'qsort'}) and token.next and token.next.str == '(':
             reportError(token, 21, 9)
+
+
+def misra_21_10(data):
+    directive = findInclude(data.directives, '<time.h>')
+    if directive:
+        reportError(directive, 21, 10)
+
+    for token in data.tokenlist:
+        if (token.str == 'wcsftime') and token.next and token.next.str == '(':
+            reportError(token, 21, 10)
 
 
 def misra_21_11(data):
@@ -1435,6 +1570,8 @@ OPTIONS:
                         Rule 1.2
                         Rule text for 1.2
                         <...>
+
+--quiet               Only print something when there is an error
 """)
     sys.exit(1)
 
@@ -1467,7 +1604,7 @@ def generateTable():
     # what rules are handled by this addon?
     addon = []
     compiled = re.compile(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open('misra.py'):
+    for line in open('__file__'):
         res = compiled.match(line)
         if res is None:
             continue
@@ -1598,13 +1735,16 @@ def parseDump(dumpfile):
         misra_21_3(cfg)
         misra_21_4(cfg)
         misra_21_5(cfg)
+        misra_21_6(cfg)
         misra_21_7(cfg)
         misra_21_8(cfg)
         misra_21_9(cfg)
+        misra_21_10(cfg)
         misra_21_11(cfg)
         # 22.4 is already covered by Cppcheck writeReadOnlyFile
+
+    exitCode = 0
     if VERIFY:
-        exitCode = 0
         for expected in VERIFY_EXPECTED:
             if expected not in VERIFY_ACTUAL:
                 print('Expected but not seen: ' + expected)
@@ -1613,7 +1753,13 @@ def parseDump(dumpfile):
             if actual not in VERIFY_EXPECTED:
                 print('Not expected: ' + actual)
                 exitCode = 1
-        sys.exit(exitCode)
+    else:
+        if len(VIOLATIONS) > 0:
+            if SHOW_SUMMARY:
+                print("\nRule violations found: %d\n" % (len(VIOLATIONS)))
+            exitCode = 1
+
+    sys.exit(exitCode)
 
 
 parser = argparse.ArgumentParser()

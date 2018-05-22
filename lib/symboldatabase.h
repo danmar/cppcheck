@@ -93,12 +93,11 @@ public:
 
         const Token* nameStart;
         const Token* nameEnd;
-        std::string name;
         const Type* type;
     };
 
     std::vector<BaseInfo> derivedFrom;
-    std::list<FriendInfo> friendList;
+    std::vector<FriendInfo> friendList;
 
     const Token * typeStart;
     const Token * typeEnd;

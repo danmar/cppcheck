@@ -33,7 +33,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         settings.addEnabled("warning");
         settings.addEnabled("portability");
         settings.inconclusive = true;

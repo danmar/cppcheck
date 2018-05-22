@@ -104,7 +104,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
         checkLeakAutoVar.check();
     }
@@ -119,8 +119,15 @@ private:
                     VarInfo *varInfo,
                     std::set<unsigned int> notzero);
 
+    /** Check token inside expression.
+    * @param tok token inside expression.
+    * @param varInfo Variable info
+    * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
+    */
+    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
+
     /** parse function call */
-    void functionCall(const Token *tok, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
+    void functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
 
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
@@ -140,7 +147,7 @@ private:
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::string &functionName);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
         c.deallocReturnError(nullptr, "p");
         c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
@@ -151,7 +158,7 @@ private:
         return "Leaks (auto variables)";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Detect when a auto variable is allocated but not deallocated or deallocated twice.\n";
     }
 };

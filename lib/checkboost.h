@@ -49,7 +49,7 @@ public:
     }
 
     /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (!tokenizer->isCPP())
             return;
 
@@ -64,7 +64,7 @@ public:
 private:
     void boostForeachError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckBoost c(nullptr, settings, errorLogger);
         c.boostForeachError(nullptr);
     }
@@ -73,7 +73,7 @@ private:
         return "Boost usage";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Check for invalid usage of Boost:\n"
                "- container modification during BOOST_FOREACH\n";
     }

@@ -50,14 +50,14 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (tokenizer->isC())
             return;
 
         CheckPostfixOperator checkPostfixOperator(tokenizer, settings, errorLogger);
         checkPostfixOperator.postfixOperator();
     }
-    void runSimplifiedChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) {
+    void runSimplifiedChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) override {
     }
 
     /** Check postfix operators */
@@ -67,7 +67,7 @@ private:
     /** Report Error */
     void postfixOperatorError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckPostfixOperator c(nullptr, settings, errorLogger);
         c.postfixOperatorError(nullptr);
     }
@@ -76,7 +76,7 @@ private:
         return "Using postfix operators";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Warn if using postfix operators ++ or -- rather than prefix operator\n";
     }
 };
