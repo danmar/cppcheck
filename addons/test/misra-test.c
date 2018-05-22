@@ -154,7 +154,7 @@ void misra_10_4(u32 x, s32 y) {
    {
       ; 
    }
-   z = x + y //10.4
+   z = x + y; //10.4
 }
 
 void misra_10_6(u8 x) {
@@ -172,6 +172,10 @@ void misra_11_3(u8* p) {
 
 void misra_11_4(u8*p) {
   u64 y = (u64)p; // 11.4
+  u8 *misra_11_4_A = ( u8 * ) 0x0005;// 11.4
+  s32 misra_11_4_B;
+  u8 *q = ( u8 * ) misra_11_4_B; // 11.4
+
 }
 
 void misra_11_5(void *p) {
