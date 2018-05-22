@@ -3963,6 +3963,9 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
 
 static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
 {
+    if (valuetype->typeScope && type->type() && type->type()->classScope == valuetype->typeScope)
+        return true;
+
     return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
               (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
               (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
@@ -5318,6 +5321,14 @@ void SymbolDatabase::setValueTypeInTokenList()
             else if (tok->previous() && tok->previous()->isStandardType()) {
                 ValueType valuetype;
                 valuetype.type = ValueType::typeFromString(tok->previous()->str(), tok->previous()->isLong());
+                setValueType(tok, valuetype);
+            }
+
+            // constructor
+            else if (tok->previous() && tok->previous()->type() && tok->previous()->type()->classScope) {
+                ValueType valuetype;
+                valuetype.type = ValueType::RECORD;
+                valuetype.typeScope = tok->previous()->type()->classScope;
                 setValueType(tok, valuetype);
             }
 
