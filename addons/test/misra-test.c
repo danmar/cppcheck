@@ -203,7 +203,20 @@ char * misra_11_8(const char *str) {
   return (char *)str; // 11.8
 }
 
-#define MISRA_11_9  ((void*)0)  // 11.9
+#define MISRA_11_9_NULL_1 (1-1)
+#define MISRA_11_9_NULL_2 ( void * ) 0
+#define MISRA_11_9_NULL_3 NULL
+void misra_11_9(){
+  int *p1 = (5-5); //11.9
+  int *p2 = MISRA_11_9_NULL_2 ; // no-warning
+  int *p3 = MISRA_11_9_NULL_3 ; // no-warning
+  if ( p1 == MISRA_11_9_NULL_1 ) //11.9
+   {
+    ;
+   }
+
+}
+
 
 void misra_12_1() {
   sz = sizeof x + y; // 12.1

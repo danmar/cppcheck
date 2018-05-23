@@ -808,7 +808,7 @@ def misra_11_4(data):
 def misra_11_5(data):
     for token in data.tokenlist:
         if not isCast(token):
-            if token.str == "=" and token.next.str != "(":
+            if token.astOperand1 and token.astOperand2 and token.str == "=" and token.next.str != "(":
                 vt1 = token.astOperand1.valueType
                 vt2 = token.astOperand2.valueType
                 if not vt1 or not vt2:
@@ -901,18 +901,19 @@ def misra_11_8(data):
 
 
 def misra_11_9(data):
-    compiled = re.compile(r'#define ([A-Za-z_][A-Za-z_0-9]*) (.*)')
-    for directive in data.directives:
-        res1 = compiled.match(directive.str)
-        if not res1:
-            continue
-        name = res1.group(1)
-        if name == 'NULL':
-            continue
-        value = res1.group(2).replace(' ', '')
-        if value == '((void*)0)':
-            reportError(directive, 11, 9)
-
+    for token in data.tokenlist:
+        if token.astOperand1 and token.astOperand2 and token.str in ["=", "==", "!=", "?", ":"]:
+            vt1 = token.astOperand1.valueType
+            vt2 = token.astOperand2.valueType
+            if not vt1 or not vt2:
+                continue
+            if vt1.pointer > 0 and vt2.pointer == 0 and token.astOperand2.str == "NULL":
+                continue
+            if (token.astOperand2.values and vt1.pointer > 0 and
+                    vt2.pointer == 0 and token.astOperand2.values):
+                for val in token.astOperand2.values:
+                    if val.intvalue == 0:
+                        reportError(token, 11, 9)
 
 def misra_12_1_sizeof(rawTokens):
     state = 0
