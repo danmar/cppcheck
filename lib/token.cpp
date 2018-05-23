@@ -35,9 +35,30 @@
 
 const std::list<ValueFlow::Value> Token::emptyValueList;
 
-Token::Token() : Token(TokensFrontBack{0, 0}) { }
+Token::Token() : 
+    tokensFrontBack(nullptr),
+    _next(nullptr),
+    _previous(nullptr),
+    _link(nullptr),
+    _scope(nullptr),
+    _function(nullptr), // Initialize whole union
+    _varId(0),
+    _fileIndex(0),
+    _linenr(0),
+    _col(0),
+    _progressValue(0),
+    _tokType(eNone),
+    _flags(0),
+    _bits(0),
+    _astOperand1(nullptr),
+    _astOperand2(nullptr),
+    _astParent(nullptr),
+    _originalName(nullptr),
+    valuetype(nullptr),
+    _values(nullptr)  
+{
+}
 
-Token::Token(TokensFrontBack listEnds) : Token(&listEnds) {}
 
 Token::Token(TokensFrontBack *listEnds) :
     tokensFrontBack(listEnds),
