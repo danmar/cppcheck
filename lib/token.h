@@ -79,7 +79,7 @@ public:
     };
 
     Token();
-    Token(TokensFrontBack *tokensFrontBack);
+    explicit Token(TokensFrontBack *tokensFrontBack);
     ~Token();
 
     template<typename T>
