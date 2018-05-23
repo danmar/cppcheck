@@ -23,40 +23,40 @@
 
 FilterStringBuilder& FilterStringBuilder::add(const QString& desc, const QString& patterns)
 {
-   mFilters.insert(desc, patterns);
-   return *this;
+    mFilters.insert(desc, patterns);
+    return *this;
 }
 
 FilterStringBuilder& FilterStringBuilder::addAll()
 {
-   mDisplayAll = true;
-   return *this;
+    mDisplayAll = true;
+    return *this;
 }
 
 FilterStringBuilder& FilterStringBuilder::addAllSupported()
 {
-   mDisplayAllSupported = true;
-   return *this;
+    mDisplayAllSupported = true;
+    return *this;
 }
 
 QString FilterStringBuilder::toFilterString() const
 {
-   QStringList entries;
+    QStringList entries;
 
-   if (mDisplayAllSupported) {
-      entries << tr("All supported files (%1)").arg(QStringList(mFilters.values()).join(" "));
-   }
+    if (mDisplayAllSupported) {
+        entries << tr("All supported files (%1)").arg(QStringList(mFilters.values()).join(" "));
+    }
 
-   if (mDisplayAll) {
-      entries << tr("All files (%1)").arg("*.*");
-   }
+    if (mDisplayAll) {
+        entries << tr("All files (%1)").arg("*.*");
+    }
 
-   // We're using the description of the filters as the map keys, the file
-   // name patterns are our values. The generated filter string list will
-   // thus be sorted alphabetically over the descriptions.
-   for (auto k: mFilters.keys()) {
-      entries << QString("%1 (%2)").arg(k).arg(mFilters.value(k));
-   }
+    // We're using the description of the filters as the map keys, the file
+    // name patterns are our values. The generated filter string list will
+    // thus be sorted alphabetically over the descriptions.
+    for (auto k: mFilters.keys()) {
+        entries << QString("%1 (%2)").arg(k).arg(mFilters.value(k));
+    }
 
-   return entries.join(";;");
+    return entries.join(";;");
 }
