@@ -19,6 +19,7 @@
 #ifndef FILTERSTRINGBUILDER_H
 #define FILTERSTRINGBUILDER_H
 
+#include <QCoreApplication>
 #include <QMap>
 #include <QString>
 
