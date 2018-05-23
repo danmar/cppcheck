@@ -146,6 +146,11 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
+void misra_10_1() {
+  int32_t i;
+  i = 3 << 1; // 10.1
+}
+
 void misra_10_4(u32 x, s32 y) {
   z = x + 3; // 10.4
   enum misra_10_4_enuma { misra_10_4_A1, misra_10_4_A2, misra_10_4_A3 };

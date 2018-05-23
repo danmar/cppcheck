@@ -113,7 +113,7 @@ KEYWORDS = {
 def getEssentialTypeCategory(expr):
     if not expr:
         return None
-    if expr.valueType.typeScope:
+    if expr.valueType and expr.valueType.typeScope:
         return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
         typeToken = expr.variable.typeStartToken
@@ -128,6 +128,7 @@ def getEssentialTypeCategory(expr):
             typeToken = typeToken.next
     if expr.valueType:
         return expr.valueType.sign
+    return None
 
 
 def getEssentialCategorylist(operand1, operand2):
@@ -691,6 +692,20 @@ def misra_9_5(rawTokens):
         if simpleMatch(token, '[ ] = { ['):
             reportError(token, 9, 5)
 
+
+def misra_10_1(data):
+    for token in data.tokenlist:
+        if not token.isOp:
+            continue
+        e1 = getEssentialTypeCategory(token.astOperand1)
+        e2 = getEssentialTypeCategory(token.astOperand2)
+        if not e1 or not e2:
+            continue
+        if token.str in ['<<', '>>']:
+            if e1 != 'unsigned':
+                reportError(token, 10, 1)
+            elif e2 != 'unsigned' and not token.astOperand2.isNumber:
+                reportError(token, 10, 1)
 
 def misra_10_4(data):
     op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', '?', ':'}
@@ -1668,6 +1683,7 @@ for arg in sys.argv[1:]:
         if cfgNumber == 1:
             misra_8_14(data.rawTokens)
             misra_9_5(data.rawTokens)
+        misra_10_1(cfg)
         misra_10_4(cfg)
         misra_10_6(cfg)
         misra_10_8(cfg)
