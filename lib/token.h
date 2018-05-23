@@ -80,7 +80,6 @@ public:
 
     Token();
     Token(TokensFrontBack *tokensFrontBack);
-    Token(TokensFrontBack listEnds);
     ~Token();
 
     template<typename T>
