@@ -45,7 +45,6 @@
 #include "filelist.h"
 #include "showtypes.h"
 #include "librarydialog.h"
-#include "filterstringbuilder.h"
 
 static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -575,19 +574,16 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     // QFileDialog::getExistingDirectory() because they show native Windows
     // selection dialog which is a lot more usable than Qt:s own dialog.
     if (mode == QFileDialog::ExistingFiles) {
-        const QString filter = FilterStringBuilder()
-                               .addAll()
-                               .addAllSupported()
-                               .add(tr("C/C++ Source"), FileList::getDefaultFilters().join(" "))
-                               .add(tr("Compile database"), compile_commands_json)
-                               .add(tr("Visual Studio"), "*.sln *.vcxproj")
-                               .add(tr("Borland C++ Builder 6"), "*.bpr")
-                               .toFilterString();
+        QMap<QString,QString> filters;
+        filters[tr("C/C++ Source")] = FileList::getDefaultFilters().join(" ");
+        filters[tr("Compile database")] = compile_commands_json;
+        filters[tr("Visual Studio")] = "*.sln *.vcxproj";
+        filters[tr("Borland C++ Builder 6")] = "*.bpr";
         QString lastFilter = mSettings->value(SETTINGS_LAST_ANALYZE_FILES_FILTER).toString();
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to analyze"),
                    getPath(SETTINGS_LAST_CHECK_PATH),
-                   filter,
+                   toFilterString(filters),
                    &lastFilter);
         mSettings->setValue(SETTINGS_LAST_ANALYZE_FILES_FILTER, lastFilter);
 

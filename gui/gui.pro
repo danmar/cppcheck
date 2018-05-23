@@ -96,7 +96,6 @@ HEADERS += aboutdialog.h \
            erroritem.h \
            filelist.h \
            fileviewdialog.h \
-           filterstringbuilder.h \
            mainwindow.h \
            platforms.h \
            printablereport.h \
@@ -133,7 +132,6 @@ SOURCES += aboutdialog.cpp \
            erroritem.cpp \
            filelist.cpp \
            fileviewdialog.cpp \
-           filterstringbuilder.cpp \
            main.cpp \
            mainwindow.cpp\
            platforms.cpp \

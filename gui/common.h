@@ -125,5 +125,31 @@ QString getPath(const QString &type);
  */
 void setPath(const QString &type, const QString &value);
 
+/**
+ * @brief Creates a string suitable for passing as the filter argument to
+ * methods like QFileDialog::getOpenFileName.
+ * @param filters A map of filter descriptions to the associated file name
+ * patterns.
+ * @param addAllSupported If set to true (the default), the function will
+ * include a filter entry containing all the file name patterns found in
+ * \p filters. This entry will be the first in the resulting filter string.
+ * @param addAll If set to true (the default), the function will
+ * include a filter entry displaying all files. This entry will be placed
+ * after the entry for \p addAllSupported files.
+ *
+ * Example usage:
+ *
+ * @code
+ * QMap<QString,QString> filters;
+ * filters[tr("Supported images")] = "*.bmp *.jpg *.png";
+ * filters[tr("Plain text")] = "*.txt";
+ *
+ * const QString filterString = toFilterString(filters);
+ *
+ * // filterString contains "All supported files (*.txt *.bmp *.jpg *.png);;All files (*.*);;Plain text (*.txt);;Supported images (*.bmp *.jpg *.png)"
+ * @endcode
+ */
+QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupported=true, bool addAll=true);
+
 /// @}
 #endif
