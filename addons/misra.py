@@ -1729,35 +1729,38 @@ def parseDump(dumpfile):
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 
-    If you have the tool 'pdftotext' you might be able
-    to generate this textfile with such command:
+If you have the tool 'pdftotext' you might be able
+to generate this textfile with such command:
 
-      $ pdftotext MISRA_C_2012.pdf MISRA_C_2012.txt
+    pdftotext MISRA_C_2012.pdf MISRA_C_2012.txt
 
-    Otherwise you can more or less copy/paste the chapter
-    Appendix A Summary of guidelines
-    from the MISRA pdf. You can buy the MISRA pdf from
-    http://www.misra.org.uk/
+Otherwise you can more or less copy/paste the chapter
+Appendix A Summary of guidelines
+from the MISRA pdf. You can buy the MISRA pdf from
+http://www.misra.org.uk/
 
-    Format:
+Format:
 
-    <..arbitrary text..>
-    Appendix A Summary of guidelines
-    Rule 1.1
-    Rule text for 1.1
-    Rule 1.2
-    Rule text for 1.2
-    <...>
+<..arbitrary text..>
+Appendix A Summary of guidelines
+Rule 1.1
+Rule text for 1.1
+Rule 1.2
+Rule text for 1.2
+<...>
+
 '''
 
 SUPPRESS_RULES_HELP = '''MISRA rules to suppress (comma-separated)
 
-    For example, if you'd like to suppress rules 15.1, 11.3, and 20.13, run:
+For example, if you'd like to suppress rules 15.1, 11.3,
+and 20.13, run:
 
-    misra.py --suppress-rules 15.1,11.3,20.13 ...
+    python misra.py --suppress-rules 15.1,11.3,20.13 ...
+
 '''
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
 parser.add_argument("--suppress-rules", type=str, help=SUPPRESS_RULES_HELP)
 parser.add_argument("--quiet", help="Only print something when there is an error", action="store_true")
