@@ -786,7 +786,7 @@ def misra_11_3(data):
             vt2.pointer > 0 and vt2.type == 'record' and
                 vt1.typeScopeId != vt2.typeScopeId):
             reportError(token, 11, 3)
-        if (vt1.pointer == vt2.pointer and vt1.pointer > 0 and
+        elif (vt1.pointer == vt2.pointer and vt1.pointer > 0 and
                 vt1.type != vt2.type and vt1.type != 'char'):
             reportError(token, 11, 3)
 
