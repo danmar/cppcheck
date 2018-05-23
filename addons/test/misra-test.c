@@ -190,6 +190,7 @@ void misra_11_6() {
   void *p;
   p = (void*)123; // 11.6
   x = (u64)p;     // 11.6
+  p = ( void * )0 // no-warning
 }
 
 

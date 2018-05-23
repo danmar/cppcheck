@@ -830,11 +830,13 @@ def misra_11_6(data):
     for token in data.tokenlist:
         if not isCast(token):
             continue
+        if token.astOperand1.astOperand1:
+            continue
         vt1 = token.valueType
         vt2 = token.astOperand1.valueType
         if not vt1 or not vt2:
             continue
-        if vt1.pointer == 1 and vt1.type == 'void' and vt2.pointer == 0:
+        if vt1.pointer == 1 and vt1.type == 'void' and vt2.pointer == 0 and token.astOperand1.str != "0":
             reportError(token, 11, 6)
         elif vt1.pointer == 0 and vt2.pointer == 1 and vt2.type == 'void':
             reportError(token, 11, 6)
