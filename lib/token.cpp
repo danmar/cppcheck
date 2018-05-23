@@ -974,7 +974,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             if (this->next()) {
                 newToken->next(this->next());
                 newToken->next()->previous(newToken);
-            } else if (tokensFrontBack->back) {
+            } else if (tokensFrontBack) {
                 tokensFrontBack->back = newToken;
             }
             this->next(newToken);
