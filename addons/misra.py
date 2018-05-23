@@ -59,7 +59,7 @@ def reportError(location, num1, num2):
         elif len(ruleTexts) == 0:
             errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
         else:
-            errmsg = 'misra violation (no description found for rule) [' + id + ']'
+            return
         sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] (style): ' + errmsg + '\n')
 
         VIOLATIONS.append(errmsg)
