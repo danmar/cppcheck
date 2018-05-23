@@ -19,6 +19,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <QMap>
 #include <QString>
 
 /// @addtogroup GUI
