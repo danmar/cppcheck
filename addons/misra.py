@@ -34,6 +34,7 @@ typeBits = {
 
 VERIFY = False
 QUIET = False
+SHOW_SUMMARY = True
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
 VIOLATIONS = []
@@ -1721,7 +1722,8 @@ def parseDump(dumpfile):
                 exitCode = 1
     else:
         if len(VIOLATIONS) > 0:
-            print("\nRule violations found: %d\n" % (len(VIOLATIONS)))
+            if SHOW_SUMMARY:
+                print("\nRule violations found: %d\n" % (len(VIOLATIONS)))
             exitCode = 1
 
     sys.exit(exitCode)
@@ -1764,6 +1766,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
 parser.add_argument("--suppress-rules", type=str, help=SUPPRESS_RULES_HELP)
 parser.add_argument("--quiet", help="Only print something when there is an error", action="store_true")
+parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
 parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("file", help="Path of dump file from cppcheck")
@@ -1784,5 +1787,7 @@ else:
         setSuppressionList(args.suppress_rules)
     if args.quiet:
         QUIET = True
+    if args.no_summary:
+        SHOW_SUMMARY = False
     if args.file:
         parseDump(args.file)
