@@ -175,15 +175,14 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 
                 // is the variable declared in a inner union?
                 bool innerunion = false;
-                for (std::list<Scope>::const_iterator it2 = symbolDatabase->scopeList.begin(); it2 != symbolDatabase->scopeList.end(); ++it2) {
-                    const Scope &innerScope = *it2;
-                    if (innerScope.type == Scope::eUnion && innerScope.nestedIn == scope2) {
+                for (auto it2 = scope2->nestedList.cbegin(); it2 != scope2->nestedList.cend(); ++it2) {
+                    const Scope &innerScope = **it2;
+                    if (innerScope.type == Scope::eUnion) {
                         if (var.typeStartToken()->linenr() >= innerScope.bodyStart->linenr() &&
                             var.typeStartToken()->linenr() <= innerScope.bodyEnd->linenr()) {
                             innerunion = true;
                             break;
                         }
-
                     }
                 }
 

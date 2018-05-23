@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <element name="results">
+      <attribute name="version">
+        <data type="integer"/>
+      </attribute>
+      <element name="cppcheck">
+        <attribute name="version"/>
+      </element>
+      <element name="errors">
+        <oneOrMore>
+          <element name="error">
+            <optional>
+              <attribute name="cwe">
+                <data type="integer"/>
+              </attribute>
+            </optional>
+            <attribute name="id">
+              <data type="NCName"/>
+            </attribute>
+            <optional>
+              <attribute name="inconclusive">
+                <data type="boolean"/>
+              </attribute>
+            </optional>
+            <attribute name="msg"/>
+            <attribute name="severity">
+              <data type="NCName"/>
+            </attribute>
+            <attribute name="verbose"/>
+            <choice>
+              <element name="location">
+                <attribute name="file"/>
+                <attribute name="line">
+                  <data type="integer"/>
+                </attribute>
+              </element>
+              <zeroOrMore>
+                <element name="symbol">
+                  <data type="string"/>
+                </element>
+              </zeroOrMore>
+            </choice>
+          </element>
+        </oneOrMore>
+      </element>
+    </element>
+  </start>
+</grammar>

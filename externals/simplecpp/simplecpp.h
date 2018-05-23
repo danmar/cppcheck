@@ -87,7 +87,7 @@ namespace simplecpp {
         unsigned int line;
         unsigned int col;
     private:
-        const std::string emptyFileName;
+        static const std::string emptyFileName;
     };
 
     /**
@@ -97,22 +97,23 @@ namespace simplecpp {
     class SIMPLECPP_LIB Token {
     public:
         Token(const TokenString &s, const Location &loc) :
-            str(string), location(loc), previous(NULL), next(NULL), string(s) {
+            location(loc), previous(NULL), next(NULL), string(s) {
             flags();
         }
 
         Token(const Token &tok) :
-            str(string), macro(tok.macro), location(tok.location), previous(NULL), next(NULL), string(tok.str) {
+            macro(tok.macro), location(tok.location), previous(NULL), next(NULL), string(tok.string) {
             flags();
         }
 
         void flags() {
-            name = (std::isalpha((unsigned char)str[0]) || str[0] == '_' || str[0] == '$');
-            comment = (str.compare(0, 2, "//") == 0 || str.compare(0, 2, "/*") == 0);
-            number = std::isdigit((unsigned char)str[0]) || (str.size() > 1U && str[0] == '-' && std::isdigit((unsigned char)str[1]));
-            op = (str.size() == 1U) ? str[0] : '\0';
+            name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$');
+            comment = (string.compare(0, 2, "//") == 0 || string.compare(0, 2, "/*") == 0);
+            number = std::isdigit((unsigned char)string[0]) || (string.size() > 1U && string[0] == '-' && std::isdigit((unsigned char)string[1]));
+            op = (string.size() == 1U) ? string[0] : '\0';
         }
 
+        const TokenString& str() const { return string; }
         void setstr(const std::string &s) {
             string = s;
             flags();
@@ -122,7 +123,6 @@ namespace simplecpp {
         bool startsWithOneOf(const char c[]) const;
         bool endsWithOneOf(const char c[]) const;
 
-        const TokenString &str;
         TokenString macro;
         char op;
         bool comment;

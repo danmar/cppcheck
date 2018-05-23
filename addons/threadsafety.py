@@ -22,7 +22,7 @@ def checkstatic(data):
             else:
                 type = 'variable'
             if var.isConst:
-                reportError(var.typeStartToken, 'warning', 'Local constant static ' + type + ' \'' + var.nameToken.str + '\', dangerous if it is initialized in parallell threads', 'threadsafety')
+                reportError(var.typeStartToken, 'warning', 'Local constant static ' + type + ' \'' + var.nameToken.str + '\', dangerous if it is initialized in parallel threads', 'threadsafety')
             else:
                 reportError(var.typeStartToken, 'warning', 'Local static ' + type + ': ' + var.nameToken.str, 'threadsafety')
 

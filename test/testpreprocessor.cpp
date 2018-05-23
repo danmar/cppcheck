@@ -68,7 +68,7 @@ private:
     Settings settings0;
     Preprocessor preprocessor0;
 
-    void run() {
+    void run() override {
 
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);
@@ -262,6 +262,8 @@ private:
             try {
                 const std::string &cfgcode = preprocessor0.getcode(tokens, *it, files, std::string(code).find("#file") != std::string::npos);
                 actual[*it] = cfgcode;
+            } catch (const simplecpp::Output &o) {
+                actual[*it] = "";
             } catch (...) {
             }
         }

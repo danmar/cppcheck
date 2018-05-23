@@ -248,7 +248,7 @@ static bool isOperatorFunction(const std::string & funcName)
      * Conversion functions must be a member function (at least for gcc), so no
      * need to cover them for unused functions.
      *
-     * To speed up the comparision, not the whole list of operators is used.
+     * To speed up the comparison, not the whole list of operators is used.
      * Instead only the character after the operator prefix is checked to be a
      * none alpa numeric value, but the '_', to cover function names like
      * "operator_unused". In addition the following valid operators are checked:

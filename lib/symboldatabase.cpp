@@ -100,7 +100,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          tok->progressValue());
         // Locate next class
         if ((_tokenizer->isCPP() && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
-                                      !Token::Match(tok->previous(), "new|friend|const|enum|)|(|<")) ||
+                                      !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|)|(|<")) ||
                                      (Token::Match(tok, "enum class| %name% {") ||
                                       Token::Match(tok, "enum class| %name% : %name% {"))))
             || (_tokenizer->isC() && Token::Match(tok, "struct|union|enum %name% {"))) {
@@ -123,6 +123,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok2 = tok2->tokAt(2);
             }
 
+            // skip over final
+            if (_tokenizer->isCPP() && Token::simpleMatch(tok2, "final"))
+                tok2 = tok2->next();
+
             // make sure we have valid code
             if (!Token::Match(tok2, "{|:")) {
                 // check for qualified variable
@@ -143,9 +147,22 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     else if (Token::Match(tok2, "%name% ["))
                         continue;
                     // skip template
-                    else if (Token::Match(tok->previous(), "template class|struct") &&
-                             Token::simpleMatch(tok2->previous(), "> ;")) {
+                    else if (Token::simpleMatch(tok2, ";") &&
+                             Token::Match(tok->previous(), "template|> class|struct")) {
                         tok = tok2;
+                        continue;
+                    }
+                    // forward declaration
+                    else if (Token::simpleMatch(tok2, ";") &&
+                             Token::Match(tok, "class|struct|union")) {
+                        // TODO: see if it can be used
+                        tok = tok2;
+                        continue;
+                    }
+                    // skip constructor
+                    else if (Token::simpleMatch(tok2, "(") &&
+                             Token::simpleMatch(tok2->link(), ") ;")) {
+                        tok = tok2->link()->next();
                         continue;
                     } else
                         throw InternalError(tok2, "SymbolDatabase bailout; unhandled code", InternalError::SYNTAX);
@@ -531,10 +548,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 while (friendInfo.nameEnd && friendInfo.nameEnd->strAt(1) == "::")
                     friendInfo.nameEnd = friendInfo.nameEnd->tokAt(2);
 
-                // save the name
-                if (friendInfo.nameEnd)
-                    friendInfo.name = friendInfo.nameEnd->str();
-
                 // fill this in after parsing is complete
                 friendInfo.type = nullptr;
 
@@ -692,7 +705,7 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
 
     // fill in friend info
     for (std::list<Type>::iterator it = typeList.begin(); it != typeList.end(); ++it) {
-        for (std::list<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
+        for (std::vector<Type::FriendInfo>::iterator i = it->friendList.begin(); i != it->friendList.end(); ++i) {
             i->type = findType(i->nameStart, it->enclosingScope);
         }
     }
@@ -2871,19 +2884,17 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << " )" << std::endl;
 
         std::cout << "    friendList[" << type->friendList.size() << "] = (";
-
-        std::list<Type::FriendInfo>::const_iterator fii;
-
-        count = type->friendList.size();
-        for (fii = type->friendList.begin(); fii != type->friendList.end(); ++fii) {
-            if (fii->type)
-                std::cout << fii->type;
+        for (size_t i = 0; i < type->friendList.size(); i++) {
+            if (type->friendList[i].type)
+                std::cout << type->friendList[i].type;
             else
                 std::cout << " Unknown";
 
-            std::cout << " " << fii->name;
-            if (count-- > 1)
-                std::cout << ",";
+            std::cout << ' ';
+            if (type->friendList[i].nameEnd)
+                std::cout << type->friendList[i].nameEnd->str();
+            if (i+1 < type->friendList.size())
+                std::cout << ',';
         }
 
         std::cout << " )" << std::endl;
@@ -3952,6 +3963,9 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
 
 static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
 {
+    if (valuetype->typeScope && type->type() && type->type()->classScope == valuetype->typeScope)
+        return true;
+
     return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
               (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
               (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
@@ -4037,7 +4051,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 checkVariableCallMatch(callarg, funcarg, same, fallback1, fallback2);
             }
 
-            // check for a match with refrence of a variable
+            // check for a match with reference of a variable
             else if (Token::Match(arguments[j], "* %var% ,|)")) {
                 const Variable * callarg = check->getVariableFromVarId(arguments[j]->next()->varId());
                 if (callarg) {
@@ -5301,6 +5315,21 @@ void SymbolDatabase::setValueTypeInTokenList()
                         setValueType(tok->next(), vt);
                     }
                 }
+            }
+
+            // function style cast
+            else if (tok->previous() && tok->previous()->isStandardType()) {
+                ValueType valuetype;
+                valuetype.type = ValueType::typeFromString(tok->previous()->str(), tok->previous()->isLong());
+                setValueType(tok, valuetype);
+            }
+
+            // constructor
+            else if (tok->previous() && tok->previous()->type() && tok->previous()->type()->classScope) {
+                ValueType valuetype;
+                valuetype.type = ValueType::RECORD;
+                valuetype.typeScope = tok->previous()->type()->classScope;
+                setValueType(tok, valuetype);
             }
 
             // library function

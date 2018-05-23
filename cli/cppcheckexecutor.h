@@ -69,17 +69,17 @@ public:
      *
      * @param outmsg Progress message e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg);
+    virtual void reportOut(const std::string &outmsg) override;
 
     /** xml output of errors */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value);
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
      * Output information messages.
      */
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg);
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) override;
 
     /**
      * Information about how many files have been checked

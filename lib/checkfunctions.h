@@ -58,7 +58,7 @@ public:
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
         // Checks
@@ -69,7 +69,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
         checkFunctions.checkProhibitedFunctions();
@@ -117,7 +117,7 @@ private:
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckFunctions c(nullptr, settings, errorLogger);
 
         for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
@@ -138,7 +138,7 @@ private:
         return "Check function usage";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Check function usage:\n"
                "- return value of certain functions not used\n"
                "- invalid input values for functions\n"

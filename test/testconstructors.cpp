@@ -48,7 +48,7 @@ private:
         checkClass.constructors();
     }
 
-    void run() {
+    void run() override {
         settings.addEnabled("style");
         settings.addEnabled("warning");
 
@@ -1087,6 +1087,28 @@ private:
               "};\n"
               "\n"
               "A::A() noexcept: A(0) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #8581
+        check("class A {\n"
+              "private:\n"
+              "    int _a;\n"
+              "public:\n"
+              "    A(int a) : _a(a) {}\n"
+              "    A(float a) : A(int(a)) {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // Ticket #8258
+        check("struct F{};\n"
+              "struct Foo {\n"
+              "    Foo(int a, F&& f, int b = 21) : _a(a), _b(b), _f(f) {}\n"
+              "    Foo(int x, const char* value) : Foo(x, F(), 42) {}\n"
+              "    Foo(int x, int* value) : Foo(x, F()) {}\n"
+              "    int _a;\n"
+              "    int _b;\n"
+              "    F _f;\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

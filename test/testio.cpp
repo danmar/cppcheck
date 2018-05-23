@@ -32,7 +32,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "windows.cfg");
         LOAD_LIB_2(settings.library, "qt.cfg");

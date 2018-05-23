@@ -54,7 +54,7 @@ public:
     }
 
     /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) {
+    void runSimplifiedChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) override {
         if (!tokenizer->isCPP()) {
             return;
         }
@@ -205,7 +205,7 @@ private:
 
     void readingEmptyStlContainerError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckStl c(nullptr, settings, errorLogger);
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
@@ -241,7 +241,7 @@ private:
         return "STL usage";
     }
 
-    std::string classInfo() const {
+    std::string classInfo() const override {
         return "Check for invalid usage of STL:\n"
                "- out of bounds errors\n"
                "- misuse of iterators when iterating through a container\n"

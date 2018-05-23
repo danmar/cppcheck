@@ -38,7 +38,7 @@ public:
 private:
     Settings _settings;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(_settings.library, "std.cfg");
 
 
@@ -133,6 +133,7 @@ private:
         TEST_CASE(duplicateExpressionTemplate); // #6930
         TEST_CASE(oppositeExpression);
         TEST_CASE(duplicateVarExpression);
+        TEST_CASE(duplicateVarExpressionUnique);
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -3971,13 +3972,22 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
-        check("struct Foo { int f() const; };\n"
+        check("struct Foo { int f() const; int g() const; };\n"
               "void test() {\n"
               "    Foo f = Foo{};\n"
               "    int i = f.f();\n"
               "    int j = f.f();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("struct Foo { int f() const; int g() const; };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    Foo f2 = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f() __attribute__((pure));\n"
               "void test() {\n"
@@ -3994,19 +4004,20 @@ private:
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f(int) __attribute__((pure));\n"
+              "int g(int) __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f(0);\n"
               "    int j = f(0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
-        check("void test(int * p) {\n"
+        check("void test(int * p, int * q) {\n"
               "    int i = *p;\n"
               "    int j = *p;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
-        check("struct A { int x; };"
+        check("struct A { int x; int y; };"
               "void test(A a) {\n"
               "    int i = a.x;\n"
               "    int j = a.x;\n"
@@ -4080,6 +4091,50 @@ private:
         check("void test(int x) {\n"
               "    int i = x--;\n"
               "    int j = x--;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateVarExpressionUnique() {
+        check("struct SW { int first; };\n"
+              "void foo(SW* x) {\n"
+              "    int start = x->first;\n"
+              "    int end   = x->first;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct SW { int first; };\n"
+              "void foo(SW* x, int i, int j) {\n"
+              "    int start = x->first;\n"
+              "    int end   = x->first;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("struct Foo { int f() const; };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int * p) {\n"
+              "    int i = *p;\n"
+              "    int j = *p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { int f() const; int g(int) const; };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { int f() const; };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

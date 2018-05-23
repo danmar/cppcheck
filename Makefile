@@ -316,6 +316,13 @@ PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))
 	xmllint --noout --relaxng platforms/cppcheck-platforms.rng $<
 validatePlatforms: ${PlatformFilesCHECKED}
 
+# Validate XML output (to detect regressions)
+/tmp/errorlist.xml: cppcheck
+	cppcheck --errorlist >$@
+.PHONY: validateXMLV2
+validateXMLV2: /tmp/errorlist.xml
+	xmllint --noout --relaxng xmlV2.rng $<
+
 
 ###### Build
 

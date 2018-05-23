@@ -32,7 +32,7 @@ public:
 private:
     Settings settings;
 
-    void run() {
+    void run() override {
         int id = 0;
         while (!settings.library.ismemory(++id));
         settings.library.setalloc("malloc", id, -1);
@@ -141,6 +141,8 @@ private:
         TEST_CASE(testKeywords); // #6767
 
         TEST_CASE(inlineFunction); // #3989
+
+        TEST_CASE(smartPtrInContainer); // #8262
     }
 
     void check(const char code[], bool cpp = false) {
@@ -1253,6 +1255,44 @@ private:
               "    std::unique_ptr<int, decltype(&destroy)> xp(x, &destroy());\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, [](FILE* x) { fclose(x); }};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, +[](FILE* x) { fclose(x); }};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, [](FILE* x) { free(f); }};\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    std::shared_ptr<FILE> fp{f, [](FILE* x) {}};\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("class C;\n"
+              "void f() {\n"
+              "  C* c = new C{};\n"
+              "  std::shared_ptr<C> a{c, [](C*) {}};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C;\n"
+              "void f() {\n"
+              "  C* c = new C{};\n"
+              "  std::shared_ptr<C> a{c, [](C* x) { delete x; }};\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
     void smartPointerRelease() {
         check("void f() {\n"
@@ -1520,6 +1560,19 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    // #8262
+    void smartPtrInContainer() {
+        check("std::list< std::shared_ptr<int> > mList;\n"
+              "void test(){\n"
+              "  int *pt = new int(1);\n"
+              "  mList.push_back(std::shared_ptr<int>(pt));\n"
+              "}\n",
+              true
+             );
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestLeakAutoVar)
@@ -1551,7 +1604,7 @@ private:
         checkLeak.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(heapDoubleFree);

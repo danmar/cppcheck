@@ -44,7 +44,7 @@ public:
 
 private:
 
-    void run() {
+    void run() override {
         TEST_CASE(runSamples);
         TEST_CASE(runConsoleCodePageTranslationOnWindows);
     }

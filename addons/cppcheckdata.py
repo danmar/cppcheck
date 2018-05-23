@@ -81,6 +81,10 @@ class ValueType:
     def isFloat(self):
         return self.type in {'float', 'double', 'long double'}
 
+    def isEnum(self):
+        return self.typeScope and self.typeScope.type == "Enum"
+
+
 
 class Token:
     """

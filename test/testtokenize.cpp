@@ -44,7 +44,7 @@ private:
     Settings settings2;
     Settings settings_windows;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
         TEST_CASE(tokenize1);
@@ -860,16 +860,16 @@ private:
 
     void tokenize37() { // #8550
         const char codeC[] = "class name { public: static void init ( ) {} } ; "
-                            "typedef class name N; "
-                            "void foo ( ) { return N :: init ( ) ; }";
+                             "typedef class name N; "
+                             "void foo ( ) { return N :: init ( ) ; }";
         const char expC [] = "class name { public: static void init ( ) { } } ; "
-                            "void foo ( ) { return name :: init ( ) ; }";
+                             "void foo ( ) { return name :: init ( ) ; }";
         ASSERT_EQUALS(expC, tokenizeAndStringify(codeC));
         const char codeS[] = "class name { public: static void init ( ) {} } ; "
-                            "typedef struct name N; "
-                            "void foo ( ) { return N :: init ( ) ; }";
+                             "typedef struct name N; "
+                             "void foo ( ) { return N :: init ( ) ; }";
         const char expS [] = "class name { public: static void init ( ) { } } ; "
-                            "void foo ( ) { return name :: init ( ) ; }";
+                             "void foo ( ) { return name :: init ( ) ; }";
         ASSERT_EQUALS(expS, tokenizeAndStringify(codeS));
     }
 
@@ -6222,7 +6222,18 @@ private:
                             "DWORD64 dword64;"
                             "ULONG64 ulong64;"
                             "LPWSTR lpcwstr;"
-                            "LPCWSTR lpcwstr;";
+                            "LPCWSTR lpcwstr;"
+                            "LPHANDLE lpHandle;"
+                            "PCWSTR pcwStr;"
+                            "PDWORDLONG pdWordLong;"
+                            "PDWORD_PTR pdWordPtr;"
+                            "PDWORD32 pdWord32;"
+                            "PDWORD64 pdWord64;"
+                            "LONGLONG ll;"
+                            "USN usn;"
+                            "PULONG64 puLong64;"
+                            "PULONG32 puLong32;"
+                            "PFLOAT ptrToFloat;";
 
         const char expected[] = "int f ; "
                                 "unsigned char g ; "
@@ -6292,10 +6303,21 @@ private:
                                 "unsigned long long dword64 ; "
                                 "unsigned long long ulong64 ; "
                                 "wchar_t * lpcwstr ; "
-                                "const wchar_t * lpcwstr ;";
+                                "const wchar_t * lpcwstr ; "
+                                "void * lpHandle ; "
+                                "const wchar_t * pcwStr ; "
+                                "long * pdWordLong ; "
+                                "long * pdWordPtr ; "
+                                "unsigned int * pdWord32 ; "
+                                "unsigned long * pdWord64 ; "
+                                "long long ll ; "
+                                "long long usn ; "
+                                "unsigned long long * puLong64 ; "
+                                "unsigned int * puLong32 ; "
+                                "float * ptrToFloat ;";
 
         // These types should be defined the same on all Windows platforms
-        std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
+        const std::string win32A = tokenizeAndStringifyWindows(code, true, true, Settings::Win32A);
         ASSERT_EQUALS(expected, win32A);
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win32W));
         ASSERT_EQUALS(win32A, tokenizeAndStringifyWindows(code, true, true, Settings::Win64));

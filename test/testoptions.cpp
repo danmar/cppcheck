@@ -26,7 +26,7 @@ public:
 
 
 private:
-    void run() {
+    void run() override {
         TEST_CASE(which_test);
         TEST_CASE(which_test_method);
         TEST_CASE(no_test_method);

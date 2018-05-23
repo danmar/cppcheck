@@ -36,7 +36,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() {
+    void run() override {
         LOAD_LIB_2(settings0.library, "qt.cfg");
 
         settings0.addEnabled("style");
