@@ -1610,8 +1610,6 @@ def parseDump(dumpfile):
     typeBits['POINTER'] = data.platform.pointer_bit
 
     if VERIFY:
-        VERIFY_ACTUAL = []
-        VERIFY_EXPECTED = []
         for tok in data.rawTokens:
             if tok.str.startswith('//') and 'TODO' not in tok.str:
                 compiled = re.compile(r'[0-9]+\.[0-9]+')
