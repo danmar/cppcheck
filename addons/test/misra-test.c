@@ -166,8 +166,10 @@ void misra_10_8(u8 x) {
   y = (u16)(x+x); // 10.8
 }
 
-void misra_11_3(u8* p) {
+struct Fred {}; struct Wilma {};
+void misra_11_3(u8* p, struct Fred *fred) {
   x = (u64*)p; // 11.3
+  struct Wilma *wilma = (struct Wilma *)fred; // 11.3
 }
 
 void misra_11_4(u8*p) {
@@ -181,18 +183,19 @@ void misra_11_4(u8*p) {
 void misra_11_5(void *p) {
   u16 *p16;
   x = (u8 *)p; // 11.5
-  p16 = p; //11.5
+  p16 = p;     // 11.5
 }
 
 void misra_11_6() {
   void *p;
   p = (void*)123; // 11.6
-  x = (u64)p; // 11.6
+  x = (u64)p;     // 11.6
 }
 
-struct Fred {}; struct Wilma {};
-void misra_11_7(struct Fred *fred) {
-  struct Wilma *wilma = (struct Wilma *)fred; // 11.7
+
+void misra_11_7(int *p, float f) {
+  x = ( float ) p; //11.7
+  y = ( int * ) f; //11.7
 }
 
 char * misra_11_8(const char *str) {

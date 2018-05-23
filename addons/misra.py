@@ -780,8 +780,14 @@ def misra_11_3(data):
         vt2 = token.astOperand1.valueType
         if not vt1 or not vt2:
             continue
-        if vt1.pointer == vt2.pointer and vt1.pointer > 0 and vt1.type != vt2.type and\
-           vt1.isIntegral() and vt2.isIntegral() and vt1.type != 'char':
+        if vt1.type == 'void' or vt2.type == 'void':
+            continue
+        if (vt1.pointer > 0 and vt1.type == 'record' and
+            vt2.pointer > 0 and vt2.type == 'record' and
+                vt1.typeScopeId != vt2.typeScopeId):
+            reportError(token, 11, 3)
+        elif (vt1.pointer == vt2.pointer and vt1.pointer > 0 and
+                vt1.type != vt2.type and vt1.type != 'char'):
             reportError(token, 11, 3)
 
 
@@ -842,8 +848,15 @@ def misra_11_7(data):
         vt2 = token.astOperand1.valueType
         if not vt1 or not vt2:
             continue
-        if vt1.pointer > 0 and vt1.type == 'record' and\
-           vt2.pointer > 0 and vt2.type == 'record' and vt1.typeScopeId != vt2.typeScopeId:
+        if token.astOperand1.astOperand1:
+            continue
+        if (vt2.pointer > 0 and vt1.pointer == 0 and
+                not vt1.isIntegral() and not vt1.isEnum() and
+                vt2.type != 'void'):
+            reportError(token, 11, 7)
+        elif (vt1.pointer > 0 and vt2.pointer == 0 and
+                not vt2.isIntegral() and not vt2.isEnum() and
+                vt1.type != 'void'):
             reportError(token, 11, 7)
 
 
