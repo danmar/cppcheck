@@ -170,7 +170,11 @@ def getEssentialType(expr):
                 return typeToken.str
             typeToken = typeToken.next
 
-    elif expr.astOperand1 and expr.astOperand2 and expr.str in {'+', '-', '*', '/', '%', '&', '|', '^'}:
+    elif expr.astOperand1 and expr.astOperand2 and expr.str in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"}:
+        if expr.astOperand1.valueType and expr.astOperand1.valueType.pointer > 0:
+            return None
+        if expr.astOperand2.valueType and expr.astOperand2.valueType.pointer > 0:
+            return None
         e1 = getEssentialType(expr.astOperand1)
         e2 = getEssentialType(expr.astOperand2)
         if not e1 or not e2:
@@ -184,6 +188,9 @@ def getEssentialType(expr):
             return types[i1]
         except ValueError:
             return None
+    elif expr.str == "~":
+        e1 = getEssentialType(expr.astOperand1)
+        return e1
 
     return None
 
@@ -767,6 +774,9 @@ def misra_10_6(data):
     for token in data.tokenlist:
         if token.str != '=' or not token.astOperand1 or not token.astOperand2:
             continue
+        if (token.astOperand2.str not in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~'} and
+                not isCast(token.astOperand2)):
+            continue
         vt1 = token.astOperand1.valueType
         vt2 = token.astOperand2.valueType
         if not vt1 or vt1.pointer > 0:
@@ -776,7 +786,10 @@ def misra_10_6(data):
         try:
             intTypes = ['char', 'short', 'int', 'long', 'long long']
             index1 = intTypes.index(vt1.type)
-            e = getEssentialType(token.astOperand2)
+            if isCast(token.astOperand2):
+                e = vt2.type
+            else:
+                e = getEssentialType(token.astOperand2)
             if not e:
                 continue
             index2 = intTypes.index(e)
@@ -784,7 +797,6 @@ def misra_10_6(data):
                 reportError(token, 10, 6)
         except ValueError:
             pass
-
 
 def misra_10_8(data):
     for token in data.tokenlist:
