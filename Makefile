@@ -319,10 +319,13 @@ validatePlatforms: ${PlatformFilesCHECKED}
 # Validate XML output (to detect regressions)
 /tmp/errorlist.xml: cppcheck
 	cppcheck --errorlist >$@
+/tmp/example.xml: cppcheck
+	cppcheck --xml --inconclusive -j 4 cli externals gui lib test 2>/tmp/example.xml
+createXMLExamples:/tmp/errorlist.xml /tmp/example.xml
 .PHONY: validateXMLV2
-validateXMLV2: /tmp/errorlist.xml
-	xmllint --noout --relaxng xmlV2.rng $<
-
+validateXMLV2: createXMLExamples
+	xmllint --noout --relaxng xmlV2.rng /tmp/errorlist.xml
+	xmllint --noout --relaxng xmlV2.rng /tmp/example.xml
 
 ###### Build
 

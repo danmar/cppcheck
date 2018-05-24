@@ -417,9 +417,13 @@ int main(int argc, char **argv)
     fout << "# Validate XML output (to detect regressions)\n";
     fout << "/tmp/errorlist.xml: cppcheck\n";
     fout << "\tcppcheck --errorlist >$@\n";
+    fout << "/tmp/example.xml: cppcheck\n";
+    fout << "\tcppcheck --xml --inconclusive -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
+    fout << "createXMLExamples:/tmp/errorlist.xml /tmp/example.xml\n";
     fout << ".PHONY: validateXMLV2\n";
-    fout << "validateXMLV2: /tmp/errorlist.xml\n";
-    fout << "\txmllint --noout --relaxng xmlV2.rng $<\n\n";
+    fout << "validateXMLV2: createXMLExamples\n";
+    fout << "\txmllint --noout --relaxng xmlV2.rng /tmp/errorlist.xml\n";
+    fout << "\txmllint --noout --relaxng xmlV2.rng /tmp/example.xml\n";
 
     fout << "\n###### Build\n\n";
 
