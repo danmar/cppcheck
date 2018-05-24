@@ -126,18 +126,18 @@ public:
     }
 
     /** is allocation type memory? */
-    static bool ismemory(int id) {
+    static bool ismemory(const int id) {
         return ((id > 0) && ((id & 1) == 0));
     }
-    static bool ismemory(const AllocFunc* func) {
+    static bool ismemory(const AllocFunc* const func) {
         return ((func->groupId > 0) && ((func->groupId & 1) == 0));
     }
 
     /** is allocation type resource? */
-    static bool isresource(int id) {
+    static bool isresource(const int id) {
         return ((id > 0) && ((id & 1) == 1));
     }
-    static bool isresource(const AllocFunc* func) {
+    static bool isresource(const AllocFunc* const func) {
         return ((func->groupId > 0) && ((func->groupId & 1) == 1));
     }
 
