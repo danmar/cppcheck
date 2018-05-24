@@ -78,8 +78,7 @@ public:
         eNone
     };
 
-    Token();
-    explicit Token(TokensFrontBack *tokensFrontBack);
+    explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
 
     template<typename T>
