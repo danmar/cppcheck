@@ -706,3 +706,12 @@ void uninitvar_towupper(_locale_t l)
     // cppcheck-suppress uninitvar
     (void)_towupper_l(i, l);
 }
+
+void oppositeInnerCondition_SUCCEEDED_FAILED(HRESULT hr)
+{
+    if (SUCCEEDED(hr)) {
+        // TODO ticket #8596 cppcheck-suppress oppositeInnerCondition
+        if (FAILED(hr)) {
+        }
+    }
+}
