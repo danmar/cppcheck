@@ -674,3 +674,35 @@ void allocDealloc_GetModuleHandleEx()
     HMODULE hModule2;
     GetModuleHandleEx(0, NULL, &hModule2);
 }
+
+void uninitvar_tolower(_locale_t l)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)_tolower(c);
+    // cppcheck-suppress uninitvar
+    (void)_tolower_l(c, l);
+}
+
+void uninitvar_toupper(_locale_t l)
+{
+    int c;
+    // cppcheck-suppress uninitvar
+    (void)_toupper(c);
+    // cppcheck-suppress uninitvar
+    (void)_toupper_l(c, l);
+}
+
+void uninitvar_towlower(_locale_t l)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)_towlower_l(i, l);
+}
+
+void uninitvar_towupper(_locale_t l)
+{
+    wint_t i;
+    // cppcheck-suppress uninitvar
+    (void)_towupper_l(i, l);
+}
