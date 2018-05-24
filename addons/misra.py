@@ -170,7 +170,11 @@ def getEssentialType(expr):
                 return typeToken.str
             typeToken = typeToken.next
 
-    elif expr.astOperand1 and expr.astOperand2 and expr.str in {'+', '-', '*', '/', '%', '&', '|', '^'}:
+    elif expr.astOperand1 and expr.astOperand2 and expr.str in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"}:
+        if expr.astOperand1.valueType and expr.astOperand1.valueType.pointer > 0:
+            return None
+        if expr.astOperand2.valueType and expr.astOperand2.valueType.pointer > 0:
+            return None
         e1 = getEssentialType(expr.astOperand1)
         e2 = getEssentialType(expr.astOperand2)
         if not e1 or not e2:
@@ -184,6 +188,9 @@ def getEssentialType(expr):
             return types[i1]
         except ValueError:
             return None
+    elif expr.str == "~":
+        e1 = getEssentialType(expr.astOperand1)
+        return e1
 
     return None
 
@@ -766,6 +773,8 @@ def misra_10_4(data):
 def misra_10_6(data):
     for token in data.tokenlist:
         if token.str != '=' or not token.astOperand1 or not token.astOperand2:
+            continue
+        if token.astOperand2.str not in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~'}:
             continue
         vt1 = token.astOperand1.valueType
         vt2 = token.astOperand2.valueType

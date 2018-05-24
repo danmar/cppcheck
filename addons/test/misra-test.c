@@ -164,6 +164,7 @@ void misra_10_4(u32 x, s32 y) {
 
 void misra_10_6(u8 x) {
   u16 y = x+x; // 10.6
+  u16 a = ~u8 x //10.6
 }
 
 void misra_10_8(u8 x) {
