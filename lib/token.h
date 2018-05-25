@@ -39,6 +39,14 @@ class Type;
 class ValueType;
 class Variable;
 
+/**
+ * @brief This struct stores pointers to the front and back tokens of the list this token is in.
+ */
+struct TokensFrontBack {
+    Token *front;
+    Token *back;
+};
+
 /// @addtogroup Core
 /// @{
 
@@ -54,10 +62,9 @@ class Variable;
  */
 class CPPCHECKLIB Token {
 private:
-    Token **tokensBack;
+    TokensFrontBack* tokensFrontBack;
 
     // Not implemented..
-    Token();
     Token(const Token &);
     Token operator=(const Token &);
 
@@ -71,7 +78,7 @@ public:
         eNone
     };
 
-    explicit Token(Token **tokens);
+    explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
 
     template<typename T>
@@ -96,6 +103,11 @@ public:
      * Unlink and delete the next 'index' tokens.
      */
     void deleteNext(unsigned long index = 1);
+
+    /**
+    * Unlink and delete the previous 'index' tokens.
+    */
+    void deletePrevious(unsigned long index = 1);
 
     /**
      * Swap the contents of this token with the next token.

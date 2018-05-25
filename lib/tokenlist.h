@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "token.h"
 
 #include <string>
 #include <vector>
@@ -104,18 +105,18 @@ public:
 
     /** get first token of list */
     const Token *front() const {
-        return _front;
+        return _tokensFrontBack.front;
     }
     Token *front() {
-        return _front;
+        return _tokensFrontBack.front;
     }
 
     /** get last token of list */
     const Token *back() const {
-        return _back;
+        return _tokensFrontBack.back;
     }
     Token *back() {
-        return _back;
+        return _tokensFrontBack.back;
     }
 
     /**
@@ -181,7 +182,7 @@ private:
     TokenList &operator=(const TokenList &);
 
     /** Token list */
-    Token *_front, *_back;
+    TokensFrontBack _tokensFrontBack;
 
     /** filenames for the tokenized source code (source + included) */
     std::vector<std::string> _files;

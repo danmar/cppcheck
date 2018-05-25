@@ -858,7 +858,7 @@ private:
     unsigned int sizeofFromTokenizer(const char type[]) {
         Tokenizer tokenizer(&settings0, this);
         tokenizer.fillTypeSizes();
-        Token tok1(0);
+        Token tok1;
         tok1.str(type);
         return tokenizer.sizeOfType(&tok1);
     }

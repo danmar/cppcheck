@@ -3372,7 +3372,7 @@ bool Tokenizer::simplifySizeof()
 
             else if (Token::Match(tok->previous(), "%type% %name% [ %num% ] [,)]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %name% [ %num% ] [,)]")) {
-                Token tempTok(nullptr);
+                Token tempTok;
                 tempTok.str("*");
                 sizeOfVar[varId] = sizeOfType(&tempTok);
                 declTokOfVar[varId] = tok;
@@ -6445,7 +6445,16 @@ bool Tokenizer::simplifyKnownVariables()
                 while (startTok->next()->str() != ";")
                     startTok->deleteNext();
                 startTok->deleteNext();
-                startTok->deleteThis();
+
+                // #8579 if we can we want another token to delete startTok. if we can't it doesn't matter
+                if (startTok->previous()) {
+                    startTok->previous()->deleteNext();
+                } else if (startTok->next()) {
+                    startTok->next()->deletePrevious();
+                } else {
+                    startTok->deleteThis();
+                }
+                startTok = nullptr;
 
                 constantVar->second = nullptr;
                 ret = true;

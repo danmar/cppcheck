@@ -61,6 +61,7 @@ private:
         TEST_CASE(strValue);
 
         TEST_CASE(deleteLast);
+        TEST_CASE(deleteFirst);
         TEST_CASE(nextArgument);
         TEST_CASE(eraseTokens);
 
@@ -107,7 +108,7 @@ private:
     }
 
     void nextprevious() const {
-        Token *token = new Token(0);
+        Token *token = new Token();
         token->str("1");
         token->insertToken("2");
         token->next()->insertToken("3");
@@ -139,49 +140,49 @@ private:
 
     void multiCompare() const {
         // Test for found
-        Token one(0);
+        Token one;
         one.str("one");
         ASSERT_EQUALS(1, Token::multiCompare(&one, "one|two", 0));
 
-        Token two(0);
+        Token two;
         two.str("two");
         ASSERT_EQUALS(1, Token::multiCompare(&two, "one|two", 0));
         ASSERT_EQUALS(1, Token::multiCompare(&two, "verybig|two|", 0));
 
         // Test for empty string found
-        Token notfound(0);
+        Token notfound;
         notfound.str("notfound");
         ASSERT_EQUALS(0, Token::multiCompare(&notfound, "one|two|", 0));
 
         // Test for not found
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&notfound, "one|two", 0)));
 
-        Token s(0);
+        Token s;
         s.str("s");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&s, "verybig|two", 0)));
 
-        Token ne(0);
+        Token ne;
         ne.str("ne");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&ne, "one|two", 0)));
 
-        Token a(0);
+        Token a;
         a.str("a");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&a, "abc|def", 0)));
 
-        Token abcd(0);
+        Token abcd;
         abcd.str("abcd");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&abcd, "abc|def", 0)));
 
-        Token def(0);
+        Token def;
         def.str("default");
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare(&def, "abc|def", 0)));
 
         // %op%
-        Token plus(0);
+        Token plus;
         plus.str("+");
         ASSERT_EQUALS(1, Token::multiCompare(&plus, "one|%op%", 0));
         ASSERT_EQUALS(1, Token::multiCompare(&plus, "%op%|two", 0));
-        Token x(0);
+        Token x;
         x.str("x");
         ASSERT_EQUALS(-1, Token::multiCompare(&x, "one|%op%", 0));
         ASSERT_EQUALS(-1, Token::multiCompare(&x, "%op%|two", 0));
@@ -257,13 +258,13 @@ private:
     }
 
     void multiCompare5() const {
-        Token tok(0);
+        Token tok;
         tok.str("||");
         ASSERT_EQUALS(true, Token::multiCompare(&tok, "+|%or%|%oror%", 0) >= 0);
     }
 
     void getStrLength() const {
-        Token tok(0);
+        Token tok;
 
         tok.str("\"\"");
         ASSERT_EQUALS(0, (int)Token::getStrLength(&tok));
@@ -279,7 +280,7 @@ private:
     }
 
     void getStrSize() const {
-        Token tok(0);
+        Token tok;
 
         tok.str("\"abc\"");
         ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok));
@@ -292,7 +293,7 @@ private:
     }
 
     void strValue() const {
-        Token tok(0);
+        Token tok;
 
         tok.str("\"\"");
         ASSERT_EQUALS("", tok.strValue());
@@ -319,12 +320,25 @@ private:
 
 
     void deleteLast() const {
-        Token *tokensBack = 0;
-        Token tok(&tokensBack);
+        TokensFrontBack listEnds{ 0 };
+        Token **tokensBack = &(listEnds.back);
+        Token tok(&listEnds);
         tok.insertToken("aba");
-        ASSERT_EQUALS(true, tokensBack == tok.next());
+        ASSERT_EQUALS(true, *tokensBack == tok.next());
         tok.deleteNext();
-        ASSERT_EQUALS(true, tokensBack == &tok);
+        ASSERT_EQUALS(true, *tokensBack == &tok);
+    }
+
+    void deleteFirst() const {
+        TokensFrontBack listEnds{ 0 };
+        Token **tokensFront = &(listEnds.front);
+        Token tok(&listEnds);
+
+        tok.insertToken("aba");
+
+        ASSERT_EQUALS(true, *tokensFront == tok.previous());
+        tok.deletePrevious();
+        ASSERT_EQUALS(true, *tokensFront == &tok);
     }
 
     void nextArgument() const {
@@ -362,7 +376,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(singleChar.tokens(), "[a|bc]"));
         ASSERT_EQUALS(false, Token::Match(singleChar.tokens(), "[d|ef]"));
 
-        Token multiChar(0);
+        Token multiChar;
         multiChar.str("[ab");
         ASSERT_EQUALS(false, Token::Match(&multiChar, "[ab|def]"));
     }
@@ -601,7 +615,7 @@ private:
     void isArithmeticalOp() const {
         std::vector<std::string>::const_iterator test_op, test_ops_end = arithmeticalOps.end();
         for (test_op = arithmeticalOps.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isArithmeticalOp());
         }
@@ -616,7 +630,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isArithmeticalOp(), "Failing arithmetical operator: " + *other_op);
         }
@@ -632,7 +646,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isOp());
         }
@@ -643,7 +657,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isOp(), "Failing normal operator: " + *other_op);
         }
@@ -658,7 +672,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isConstOp());
         }
@@ -670,7 +684,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isConstOp(), "Failing normal operator: " + *other_op);
         }
@@ -686,7 +700,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isExtendedOp());
         }
@@ -694,7 +708,7 @@ private:
         // Negative test against assignment operators
         std::vector<std::string>::const_iterator other_op, other_ops_end = assignmentOps.end();
         for (other_op = assignmentOps.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isExtendedOp(), "Failing assignment operator: " + *other_op);
         }
@@ -703,7 +717,7 @@ private:
     void isAssignmentOp() const {
         std::vector<std::string>::const_iterator test_op, test_ops_end = assignmentOps.end();
         for (test_op = assignmentOps.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(true, tok.isAssignmentOp());
         }
@@ -718,7 +732,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*other_op);
             ASSERT_EQUALS_MSG(false, tok.isAssignmentOp(), "Failing assignment operator: " + *other_op);
         }
@@ -727,26 +741,26 @@ private:
     void operators() const {
         std::vector<std::string>::const_iterator test_op;
         for (test_op = extendedOps.begin(); test_op != extendedOps.end(); ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eExtendedOp, tok.tokType());
         }
         for (test_op = logicalOps.begin(); test_op != logicalOps.end(); ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eLogicalOp, tok.tokType());
         }
         for (test_op = bitOps.begin(); test_op != bitOps.end(); ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eBitOp, tok.tokType());
         }
         for (test_op = comparisonOps.begin(); test_op != comparisonOps.end(); ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS(Token::eComparisonOp, tok.tokType());
         }
-        Token tok(nullptr);
+        Token tok;
         tok.str("++");
         ASSERT_EQUALS(Token::eIncDecOp, tok.tokType());
         tok.str("--");
@@ -754,7 +768,7 @@ private:
     }
 
     void literals() const {
-        Token tok(nullptr);
+        Token tok;
 
         tok.str("\"foo\"");
         ASSERT(tok.tokType() == Token::eString);
@@ -785,13 +799,13 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = standard_types.end();
         for (test_op = standard_types.begin(); test_op != test_ops_end; ++test_op) {
-            Token tok(nullptr);
+            Token tok;
             tok.str(*test_op);
             ASSERT_EQUALS_MSG(true, tok.isStandardType(), "Failing standard type: " + *test_op);
         }
 
         // Negative test
-        Token tok(nullptr);
+        Token tok;
         tok.str("string");
         ASSERT_EQUALS(false, tok.isStandardType());
 
@@ -807,7 +821,7 @@ private:
     }
 
     void updateProperties() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("foobar");
 
         ASSERT_EQUALS(true, tok.isName());
@@ -820,7 +834,7 @@ private:
     }
 
     void updatePropertiesConcatStr() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("true");
 
         ASSERT_EQUALS(true, tok.isBoolean());
@@ -832,39 +846,39 @@ private:
     }
 
     void isNameGuarantees1() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("Name");
         ASSERT_EQUALS(true, tok.isName());
     }
 
     void isNameGuarantees2() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("_name");
         ASSERT_EQUALS(true, tok.isName());
     }
 
     void isNameGuarantees3() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("_123");
         ASSERT_EQUALS(true, tok.isName());
     }
 
     void isNameGuarantees4() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("123456");
         ASSERT_EQUALS(false, tok.isName());
         ASSERT_EQUALS(true, tok.isNumber());
     }
 
     void isNameGuarantees5() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("a123456");
         ASSERT_EQUALS(true, tok.isName());
         ASSERT_EQUALS(false, tok.isNumber());
     }
 
     void isNameGuarantees6() const {
-        Token tok(nullptr);
+        Token tok;
         tok.str("$f");
         ASSERT_EQUALS(true, tok.isName());
     }
