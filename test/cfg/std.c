@@ -2840,20 +2840,34 @@ void uninitvar_setvbuf(void)
     (void)setvbuf(stream,buf,mode,size);
 }
 
-void uninitvar_strcat(void)
+void uninitvar_strcat(char *dest, const char * const source)
 {
     char *deststr;
     char *srcstr;
     // cppcheck-suppress uninitvar
     (void)strcat(deststr,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)strcat(dest,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)strcat(deststr,source);
+
+    // no warning shall be shown for
+    (void)strcat(dest,source);
 }
 
-void uninitvar_wcscat(void)
+void uninitvar_wcscat(wchar_t *dest, const wchar_t * const source)
 {
     wchar_t *deststr;
     wchar_t *srcstr;
     // cppcheck-suppress uninitvar
     (void)wcscat(deststr,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)wcscat(dest,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)wcscat(deststr,source);
+
+    // no warning shall be shown for
+    (void)wcscat(dest,source);
 }
 
 void uninitvar_wcrtomb(void)
