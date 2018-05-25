@@ -214,7 +214,8 @@ static bool isPointerReleased(const Token *startToken, const Token *endToken, un
 * @return opening parenthesis token or NULL if not a function call
 */
 
-static const Token * isFunctionCall(const Token * nameToken) {
+static const Token * isFunctionCall(const Token * nameToken)
+{
     if (nameToken->isName()) {
         nameToken = nameToken->next();
         // check if function is a template
@@ -364,7 +365,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             const Token * closingParenthesis = tok->linkAt(1);
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
-                
+
                 if (Token::Match(innerTok, "%var% =")) {
                     // allocation?
                     if (Token::Match(innerTok->tokAt(2), "%type% (")) {
@@ -639,16 +640,16 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         Token::simpleMatch(deleterToken->link()->linkAt(1), ") {")) {
                         tscopeStart = deleterToken->link()->linkAt(1)->tokAt(1);
                         tscopeEnd = tscopeStart->link();
-                    // If the deleter is a class, check if class calls the dealloc function
+                        // If the deleter is a class, check if class calls the dealloc function
                     } else if ((dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken)) && dtok->type()) {
-                            const Scope * tscope = dtok->type()->classScope;
-                            if(tscope) {
-                                tscopeStart = tscope->bodyStart;
-                                tscopeEnd = tscope->bodyEnd;
-                            }
+                        const Scope * tscope = dtok->type()->classScope;
+                        if (tscope) {
+                            tscopeStart = tscope->bodyStart;
+                            tscopeEnd = tscope->bodyEnd;
+                        }
                     }
 
-                    if(tscopeStart && tscopeEnd) {
+                    if (tscopeStart && tscopeEnd) {
                         for (const Token *tok2 = tscopeStart; tok2 != tscopeEnd; tok2 = tok2->next()) {
                             af = _settings->library.dealloc(tok2);
                             if (af)
@@ -666,7 +667,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 }
 
 
-const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo){
+const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo)
+{
     std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
 
     // Deallocation and then dereferencing pointer..
@@ -676,15 +678,12 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
             bool unknown = false;
             if (var->second.status == VarInfo::DEALLOC && CheckNullPointer::isPointerDeRef(tok, unknown) && !unknown) {
                 deallocUseError(tok, tok->str());
-            }
-            else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
+            } else if (Token::simpleMatch(tok->tokAt(-2), "= &")) {
+                varInfo->erase(tok->varId());
+            } else if (tok->strAt(-1) == "=") {
                 varInfo->erase(tok->varId());
             }
-            else if (tok->strAt(-1) == "=") {
-                varInfo->erase(tok->varId());
-            }
-        }
-        else if (Token::Match(tok->previous(), "& %name% = %var% ;")) {
+        } else if (Token::Match(tok->previous(), "& %name% = %var% ;")) {
             varInfo->referenced.insert(tok->tokAt(2)->varId());
         }
     }
@@ -782,8 +781,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             if (Token::Match(arg, "unique_ptr < %type% ,")) {
                 deleterToken = arg->tokAt(4);
                 endDeleterToken = typeEndTok;
-            }
-            else if (Token::Match(typeEndTok, "> {|( %var% ,")) {
+            } else if (Token::Match(typeEndTok, "> {|( %var% ,")) {
                 deleterToken = typeEndTok->tokAt(4);
                 endDeleterToken = typeEndTok->linkAt(1);
             }
@@ -792,8 +790,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                 const Token * dtok = Token::findmatch(deleterToken, "& %name%", endDeleterToken);
                 if (dtok) {
                     sp_af = _settings->library.dealloc(dtok->tokAt(1));
-                }
-                else {
+                } else {
                     // If the deleter is a class, check if class calls the dealloc function
                     dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken);
                     if (dtok && dtok->type()) {
