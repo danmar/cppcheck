@@ -574,13 +574,19 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     // QFileDialog::getExistingDirectory() because they show native Windows
     // selection dialog which is a lot more usable than Qt:s own dialog.
     if (mode == QFileDialog::ExistingFiles) {
-
+        QMap<QString,QString> filters;
+        filters[tr("C/C++ Source")] = FileList::getDefaultFilters().join(" ");
+        filters[tr("Compile database")] = compile_commands_json;
+        filters[tr("Visual Studio")] = "*.sln *.vcxproj";
+        filters[tr("Borland C++ Builder 6")] = "*.bpr";
+        QString lastFilter = mSettings->value(SETTINGS_LAST_ANALYZE_FILES_FILTER).toString();
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to analyze"),
                    getPath(SETTINGS_LAST_CHECK_PATH),
-                   tr("C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)")
-                   .arg(FileList::getDefaultFilters().join(" "))
-                   .arg(compile_commands_json));
+                   toFilterString(filters),
+                   &lastFilter);
+        mSettings->setValue(SETTINGS_LAST_ANALYZE_FILES_FILTER, lastFilter);
+
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         else {
@@ -613,7 +619,10 @@ void MainWindow::analyzeFiles()
     QStringList selected = selectFilesToAnalyze(QFileDialog::ExistingFiles);
 
     const QString file0 = (selected.size() ? selected[0].toLower() : QString());
-    if (file0.endsWith(".sln") || file0.endsWith(".vcxproj") || file0.endsWith(compile_commands_json)) {
+    if (file0.endsWith(".sln")
+        || file0.endsWith(".vcxproj")
+        || file0.endsWith(compile_commands_json)
+        || file0.endsWith(".bpr")) {
         ImportProject p;
         p.import(selected[0].toStdString());
 

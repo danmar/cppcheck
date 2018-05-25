@@ -27,7 +27,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
-          <string>Import Project (Visual studio / compile database)</string>
+          <string>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
