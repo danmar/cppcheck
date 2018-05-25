@@ -715,3 +715,53 @@ void oppositeInnerCondition_SUCCEEDED_FAILED(HRESULT hr)
         }
     }
 }
+
+/*HANDLE WINAPI CreateThread(
+  _In_opt_  LPSECURITY_ATTRIBUTES  lpThreadAttributes,
+  _In_      SIZE_T                 dwStackSize,
+  _In_      LPTHREAD_START_ROUTINE lpStartAddress,
+  _In_opt_  LPVOID                 lpParameter,
+  _In_      DWORD                  dwCreationFlags,
+  _Out_opt_ LPDWORD                lpThreadId
+);*/
+HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES  lpThreadAttributes,
+                         SIZE_T                 dwStackSize,
+                         LPTHREAD_START_ROUTINE lpStartAddress,
+                         LPVOID                 lpParameter,
+                         DWORD                  dwCreationFlags,
+                         LPDWORD                lpThreadId)
+{
+    // Create uninitialized variables
+    LPSECURITY_ATTRIBUTES  uninit_lpThreadAttributes;
+    SIZE_T                 uninit_dwStackSize;
+    LPTHREAD_START_ROUTINE uninit_lpStartAddress;
+    LPVOID                 uninit_lpParameter;
+    DWORD                  uninit_dwCreationFlags;
+
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress uninitvar
+    (void) CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, uninit_dwCreationFlags, lpThreadId);
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress uninitvar
+    (void) CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, uninit_lpParameter, dwCreationFlags, lpThreadId);
+    // @todo uninitvar shall be reported
+    // cppcheck-suppress leakReturnValNotUsed
+    (void) CreateThread(lpThreadAttributes, dwStackSize, uninit_lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress uninitvar
+    (void) CreateThread(lpThreadAttributes, uninit_dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    // @todo uninitvar shall be reported
+    // cppcheck-suppress leakReturnValNotUsed
+    (void) CreateThread(uninit_lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress nullPointer
+    (void) CreateThread(lpThreadAttributes, dwStackSize, 0, lpParameter, dwCreationFlags, lpThreadId);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    // cppcheck-suppress invalidFunctionArg
+    (void) CreateThread(lpThreadAttributes, -1, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+
+    // no warning shall be shown for
+    return CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+}
