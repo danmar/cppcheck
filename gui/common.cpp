@@ -50,7 +50,7 @@ QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupporte
 
     if (addAllSupported) {
         entries << QCoreApplication::translate("toFilterString", "All supported files (%1)")
-                   .arg(QStringList(filters.values()).join(" "));
+                .arg(QStringList(filters.values()).join(" "));
     }
 
     if (addAll) {
@@ -61,7 +61,7 @@ QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupporte
     // name patterns are our values. The generated filter string list will
     // thus be sorted alphabetically over the descriptions.
     for (auto k: filters.keys()) {
-       entries << QString("%1 (%2)").arg(k).arg(filters.value(k));
+        entries << QString("%1 (%2)").arg(k).arg(filters.value(k));
     }
 
     return entries.join(";;");
