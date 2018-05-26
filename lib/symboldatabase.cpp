@@ -3790,6 +3790,10 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 
     // check if type does not have a namespace
     if (typeTok->strAt(-1) != "::" && typeTok->strAt(1) != "::") {
+        // check if type same as scope
+        if (start->isClassOrStruct() && typeTok->str() == start->className)
+            return start->definedType;
+
         while (scope) {
             // look for type in this scope
             const Type * type = scope->findType(typeTok->str());

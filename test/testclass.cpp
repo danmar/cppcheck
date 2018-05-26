@@ -413,6 +413,14 @@ private:
                                   "  return 0;\n"
                                   "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8600
+        checkExplicitConstructors("struct A { struct B; };\n"
+                                  "struct A::B {\n"
+                                  "    B() = default;\n"
+                                  "    B(const B&) {}\n"
+                                  "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
