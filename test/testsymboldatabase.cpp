@@ -289,6 +289,7 @@ private:
         TEST_CASE(symboldatabase69);
         TEST_CASE(symboldatabase70);
         TEST_CASE(symboldatabase71);
+        TEST_CASE(symboldatabase72); // #8600
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3923,6 +3924,21 @@ private:
                       "class B final : public A { };");
         ASSERT(db && db->scopeList.size() == 3);
         ASSERT(db && db->typeList.size() == 2);
+    }
+
+    void symboldatabase72() { // #8600
+        GET_SYMBOL_DB("struct A { struct B; };\n"
+                      "struct A::B {\n"
+                      "    B() = default;\n"
+                      "    B(const B&) {}\n"
+                      "};");
+
+        ASSERT(db && db->scopeList.size() == 4);
+        ASSERT(db && db->typeList.size() == 2);
+        const Token * f = db ? Token::findsimplematch(tokenizer.tokens(), "B ( const B & ) { }") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->token->linenr() == 4);
+        ASSERT(f && f->function() && f->function()->type == Function::eCopyConstructor);
     }
 
     void enum1() {
