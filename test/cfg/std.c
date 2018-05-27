@@ -2855,6 +2855,20 @@ void uninitvar_strcat(char *dest, const char * const source)
     (void)strcat(dest,source);
 }
 
+void bufferAccessOutOfBounds_strcat(char *dest, const char * const source)
+{
+    char buf4[4] = {0};
+    const char * const srcstr3 = "123";
+    const char * const srcstr4 = "1234";
+    // @todo #8599 cppcheck-suppress bufferAccessOutOfBounds
+	(void)strcat(buf4,srcstr4); // off by one issue: strcat is appends \0' at the end
+
+    // no warning shall be shown for
+    (void)strcat(dest,source);
+    (void)strcat(buf4,srcstr3); // strcat appends '\0' at the end
+    (void)strcat(dest,srcstr4); // Cppcheck does not know the length of 'dest'
+}
+
 void uninitvar_wcscat(wchar_t *dest, const wchar_t * const source)
 {
     wchar_t *deststr;

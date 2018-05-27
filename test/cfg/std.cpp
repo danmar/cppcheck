@@ -2192,21 +2192,36 @@ void uninivar_setvbuf(void)
     (void)std::setvbuf(stream,buf,mode,size);
 }
 
-void uninivar_strcat(void)
+void uninitvar_strcat(char *dest, const char * const source)
 {
     char *deststr;
     char *srcstr;
     // cppcheck-suppress uninitvar
     (void)std::strcat(deststr,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)std::strcat(dest,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)std::strcat(deststr,source);
+
+    // no warning shall be shown for
+    (void)std::strcat(dest,source);
 }
 
-void uninivar_wcscat(void)
+void uninitvar_wcscat(wchar_t *dest, const wchar_t * const source)
 {
     wchar_t *deststr;
     wchar_t *srcstr;
     // cppcheck-suppress uninitvar
     (void)std::wcscat(deststr,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)std::wcscat(dest,srcstr);
+    // cppcheck-suppress uninitvar
+    (void)std::wcscat(deststr,source);
+
+    // no warning shall be shown for
+    (void)std::wcscat(dest,source);
 }
+
 void uninivar_wcrtomb(void)
 {
     char *s;
