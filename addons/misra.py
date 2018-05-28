@@ -808,17 +808,31 @@ def misra_10_8(data):
             continue
         if not token.astOperand1.astOperand1:
             continue
-        try:
-            intTypes = ['char', 'short', 'int', 'long', 'long long']
-            index1 = intTypes.index(token.valueType.type)
-            e = getEssentialType(token.astOperand1)
-            if not e:
+        if token.astOperand1.str not in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~'}:
+            continue
+        if token.astOperand1.str != '~' and not token.astOperand1.astOperand2:
+            continue
+        if token.astOperand1.str == '~':
+            e2 = getEssentialTypeCategory(token.astOperand1.astOperand1)
+        else:
+            e2, e3 = getEssentialCategorylist(token.astOperand1.astOperand1, token.astOperand1.astOperand2)
+            if e2 != e3:
                 continue
-            index2 = intTypes.index(e)
-            if index1 > index2:
-                reportError(token, 10, 8)
-        except ValueError:
-            pass
+        e1 = getEssentialTypeCategory(token)
+        if e1 != e2:
+            reportError(token, 10, 8)
+        else:
+            try:
+                intTypes = ['char', 'short', 'int', 'long', 'long long']
+                index1 = intTypes.index(token.valueType.type)
+                e = getEssentialType(token.astOperand1)
+                if not e:
+                    continue
+                index2 = intTypes.index(e)
+                if index1 > index2:
+                    reportError(token, 10, 8)
+            except ValueError:
+                pass
 
 
 def misra_11_3(data):

@@ -168,9 +168,10 @@ void misra_10_6(u8 x, u32 a, u32 b) {
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
 }
 
-void misra_10_8(u8 x) {
+void misra_10_8(u8 x, s32 a, s32 b) {
   y = (u16)x;
   y = (u16)(x+x); // 10.8
+  y = (u16) (a + b) //10.8
 }
 
 struct Fred {}; struct Wilma {};
