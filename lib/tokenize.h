@@ -817,11 +817,11 @@ public:
     }
 
 private:
-    /** Disable copy constructor, no implementation */
-    Tokenizer(const Tokenizer &);
+    /** Disable copy constructor */
+    Tokenizer(const Tokenizer &) = delete;
 
-    /** Disable assignment operator, no implementation */
-    Tokenizer &operator=(const Tokenizer &);
+    /** Disable assignment operator */
+    Tokenizer &operator=(const Tokenizer &) = delete;
 
     Token *processFunc(Token *tok2, bool inOperator) const;
 

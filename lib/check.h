@@ -185,8 +185,8 @@ private:
     const std::string _name;
 
     /** disabled assignment operator and copy constructor */
-    void operator=(const Check &);
-    Check(const Check &);
+    void operator=(const Check &) = delete;
+    Check(const Check &) = delete;
 };
 
 /// @}
