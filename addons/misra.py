@@ -810,6 +810,8 @@ def misra_10_8(data):
             continue
         if token.astOperand1.str not in {'+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~'}:
             continue
+        if token.astOperand1.str != '~' and not token.astOperand1.astOperand2:
+            continue
         if token.astOperand1.str == '~':
             e2 = getEssentialTypeCategory(token.astOperand1.astOperand1)
         else:
