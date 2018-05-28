@@ -793,3 +793,33 @@ unsigned char * nullPointer_mbscat(unsigned char *strDestination, const unsigned
     // no warning shall be shown for
     return _mbscat(strDestination,strSource);
 }
+
+// errno_t _mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource );
+error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
+{
+    unsigned char *uninit_strDestination;
+    size_t uninit_numberOfElements;
+    unsigned char *uninit_strSource;
+
+    // cppcheck-suppress uninitvar
+    (void)_mbscat_s(uninit_strDestination, numberOfElements, strSource);
+    // cppcheck-suppress uninitvar
+    (void)_mbscat_s(strDestination, uninit_numberOfElements, strSource);
+    // cppcheck-suppress uninitvar
+    (void)_mbscat_s(strDestination, numberOfElements, uninit_strSource);
+
+    // no warning shall be shown for
+    return _mbscat_s(strDestination, numberOfElements, strSource);
+}
+
+// errno_t _mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource );
+error_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
+{
+    // cppcheck-suppress nullPointer
+    (void)_mbscat_s(0, numberOfElements, strSource);
+    // cppcheck-suppress nullPointer
+    (void)_mbscat_s(strDestination, numberOfElements, 0);
+
+    // no warning shall be shown for
+    return _mbscat_s(strDestination, numberOfElements, strSource);
+}
