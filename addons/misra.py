@@ -291,7 +291,7 @@ def isBoolExpression(expr):
         return False
     if expr.valueType and (expr.valueType.type == 'bool' or expr.valueType.bits == 1):
         return True
-    return expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1']
+    return expr.str in ['!', '==', '!=', '<', '<=', '>', '>=', '&&', '||', '0', '1', 'true', 'false']
 
 
 def isConstantExpression(expr):
