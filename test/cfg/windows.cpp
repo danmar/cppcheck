@@ -765,3 +765,31 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES  lpThreadAttributes,
     // no warning shall be shown for
     return CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
 }
+
+// unsigned char *_mbscat(unsigned char *strDestination, const unsigned char *strSource);
+unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned char *strSource)
+{
+    unsigned char *uninit_deststr;
+    unsigned char *uninit_srcstr;
+    // cppcheck-suppress uninitvar
+    (void)_mbscat(uninit_deststr,uninit_srcstr);
+    // cppcheck-suppress uninitvar
+    (void)_mbscat(strDestination,uninit_srcstr);
+    // cppcheck-suppress uninitvar
+    (void)_mbscat(uninit_deststr,uninit_deststr);
+
+    // no warning shall be shown for
+    return _mbscat(strDestination,strSource);
+}
+
+// unsigned char *_mbscat(unsigned char *strDestination, const unsigned char *strSource);
+unsigned char * nullPointer_mbscat(unsigned char *strDestination, const unsigned char *strSource)
+{
+    // cppcheck-suppress nullPointer
+    (void)_mbscat(0,strSource);
+    // cppcheck-suppress nullPointer
+    (void)_mbscat(strDestination,0);
+
+    // no warning shall be shown for
+    return _mbscat(strDestination,strSource);
+}
