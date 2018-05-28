@@ -255,6 +255,36 @@ def getForLoopExpressions(forToken):
             lpar.astOperand2.astOperand2.astOperand1,
             lpar.astOperand2.astOperand2.astOperand2]
 
+def getWhileLoopExpressions(whileToken):
+    if not whileToken or whileToken.str != 'while':
+        return None
+    lpar = whileToken.next
+    if not lpar or lpar.str != '(':
+        return None
+    if not lpar.astOperand2.astOperand1:
+        return None
+    counter = lpar.astOperand2.astOperand1.str
+    token = lpar
+    while (token and token.str != "{"):
+        token = token.next
+    token_link = token
+    if token_link:
+        while (token and token != token_link.link):
+            token = token.next
+            if token.isAssignmentOp and token.astOperand1.str == counter:
+                return lpar.astOperand2
+            elif token.str == counter and token.astParent and token.astParent.str in {'++', '--'}:
+                return lpar.astOperand2
+    elif not token_link and whileToken.previous.str == '}':
+        token = whileToken.previous
+        while (token != whileToken.previous.link):
+            token = token.previous
+            if token.isAssignmentOp and token.astOperand1.str == counter:
+                return lpar.astOperand2
+            elif token.str == counter and token.astParent and token.astParent.str in {'++', '--'}:
+                return lpar.astOperand2
+    return None
+
 
 def hasFloatComparison(expr):
     if not expr:
@@ -1107,11 +1137,16 @@ def misra_13_6(data):
 
 def misra_14_1(data):
     for token in data.tokenlist:
-        if token.str != 'for':
+        if token.str != 'for' and token.str != 'while':
             continue
-        exprs = getForLoopExpressions(token)
-        if exprs and hasFloatComparison(exprs[1]):
-            reportError(token, 14, 1)
+        if token.str == 'for':
+            exprs = getForLoopExpressions(token)
+            if exprs and hasFloatComparison(exprs[1]):
+                reportError(token, 14, 1)
+        if token.str == 'while':
+            exprs = getWhileLoopExpressions(token)
+            if exprs and hasFloatComparison(exprs):
+                reportError(token, 14, 1)
 
 
 def misra_14_2(data):
