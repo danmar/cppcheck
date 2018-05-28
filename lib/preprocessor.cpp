@@ -608,7 +608,7 @@ void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
     tokens->sizeOfType["long double *"] = _settings.sizeof_pointer;
 }
 
-simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files)
+simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
 {
     const simplecpp::DUI dui = createDUI(_settings, cfg, files[0]);
 
@@ -619,7 +619,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
 
     const bool showerror = (!_settings.userDefines.empty() && !_settings.force);
     reportOutput(outputList, showerror);
-    if (hasErrors(outputList)) {
+    if (throwError && hasErrors(outputList)) {
         for (const simplecpp::Output &output : outputList) {
             switch (output.type) {
             case simplecpp::Output::ERROR:
@@ -646,7 +646,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
 
 std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
 {
-    simplecpp::TokenList tokens2 = preprocess(tokens1, cfg, files);
+    simplecpp::TokenList tokens2 = preprocess(tokens1, cfg, files, false);
     unsigned int prevfile = 0;
     unsigned int line = 1;
     std::ostringstream ret;

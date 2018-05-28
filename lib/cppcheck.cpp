@@ -352,7 +352,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Create tokens, skip rest of iteration if failed
                 Timer timer("Tokenizer::createTokens", _settings.showtime, &S_timerResults);
-                const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files);
+                const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files, true);
                 _tokenizer.createTokens(&tokensP);
                 timer.Stop();
                 hasValidConfig = true;
@@ -483,9 +483,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     } catch (const InternalError &e) {
         internalError(filename, e.errorMessage);
         exitcode=1; // e.g. reflect a syntax error
-    } catch (const simplecpp::Output &o) {
-        internalError(std::string(o.location.file() + ':' + MathLib::toString(o.location.line)), o.msg);
-        exitcode=1; // e.g. reflect an error during preprocessing
     }
 
     analyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
