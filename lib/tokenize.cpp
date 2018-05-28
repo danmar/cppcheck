@@ -2585,13 +2585,15 @@ void Tokenizer::setVarIdPass1()
 
     scopeStack.push(VarIdScopeInfo());
     std::stack<const Token *> functionDeclEndStack;
+    const Token *functionDeclEndToken = nullptr;
     bool initlist = false;
     bool inlineFunction = false;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isOp())
             continue;
-        if (!functionDeclEndStack.empty() && tok == functionDeclEndStack.top()) {
+        if (tok == functionDeclEndToken) {
             functionDeclEndStack.pop();
+            functionDeclEndToken = functionDeclEndStack.empty() ? nullptr : functionDeclEndStack.top();
             if (tok->str() == ":")
                 initlist = true;
             else if (tok->str() == ";") {
@@ -2610,9 +2612,9 @@ void Tokenizer::setVarIdPass1()
                 if (tokenLinkNext && tokenLinkNext->str() == "{") // might be for- or while-loop or if-statement
                     newFunctionDeclEnd = tokenLinkNext;
             }
-            if (newFunctionDeclEnd &&
-                (functionDeclEndStack.empty() || newFunctionDeclEnd != functionDeclEndStack.top())) {
+            if (newFunctionDeclEnd && newFunctionDeclEnd != functionDeclEndToken) {
                 functionDeclEndStack.push(newFunctionDeclEnd);
+                functionDeclEndToken = newFunctionDeclEnd;
                 scopeInfo.push(variableId);
             }
         } else if (Token::Match(tok, "{|}")) {
