@@ -251,16 +251,16 @@ public:
     void tokType(Token::Type t) {
         _tokType = t;
 
-        bool memoizedIsName = (_tokType == eName || _tokType == eType || _tokType == eVariable ||
+        const bool memoizedIsName = (_tokType == eName || _tokType == eType || _tokType == eVariable ||
                                _tokType == eFunction || _tokType == eKeyword || _tokType == eBoolean ||
                                _tokType == eEnumerator); // TODO: "true"/"false" aren't really a name...
         setFlag(fIsName, memoizedIsName);
 
-        bool memoizedIsLiteral = (_tokType == eNumber || _tokType == eString || _tokType == eChar ||
+        const bool memoizedIsLiteral = (_tokType == eNumber || _tokType == eString || _tokType == eChar ||
                                   _tokType == eBoolean || _tokType == eLiteral || _tokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
     }
-    void isKeyword(bool kwd) {
+    void isKeyword(const bool kwd) {
         if (kwd)
             tokType(eKeyword);
         else if (_tokType == eKeyword)
@@ -314,25 +314,25 @@ public:
     unsigned int flags() const {
         return _flags;
     }
-    void flags(unsigned int flags_) {
+    void flags(const unsigned int flags_) {
         _flags = flags_;
     }
     bool isUnsigned() const {
         return getFlag(fIsUnsigned);
     }
-    void isUnsigned(bool sign) {
+    void isUnsigned(const bool sign) {
         setFlag(fIsUnsigned, sign);
     }
     bool isSigned() const {
         return getFlag(fIsSigned);
     }
-    void isSigned(bool sign) {
+    void isSigned(const bool sign) {
         setFlag(fIsSigned, sign);
     }
     bool isPointerCompare() const {
         return getFlag(fIsPointerCompare);
     }
-    void isPointerCompare(bool b) {
+    void isPointerCompare(const bool b) {
         setFlag(fIsPointerCompare, b);
     }
     bool isLong() const {
@@ -344,13 +344,13 @@ public:
     bool isStandardType() const {
         return getFlag(fIsStandardType);
     }
-    void isStandardType(bool b) {
+    void isStandardType(const bool b) {
         setFlag(fIsStandardType, b);
     }
     bool isExpandedMacro() const {
         return getFlag(fIsExpandedMacro);
     }
-    void isExpandedMacro(bool m) {
+    void isExpandedMacro(const bool m) {
         setFlag(fIsExpandedMacro, m);
     }
     bool isCast() const {
@@ -362,13 +362,13 @@ public:
     bool isAttributeConstructor() const {
         return getFlag(fIsAttributeConstructor);
     }
-    void isAttributeConstructor(bool ac) {
+    void isAttributeConstructor(const bool ac) {
         setFlag(fIsAttributeConstructor, ac);
     }
     bool isAttributeDestructor() const {
         return getFlag(fIsAttributeDestructor);
     }
-    void isAttributeDestructor(bool value) {
+    void isAttributeDestructor(const bool value) {
         setFlag(fIsAttributeDestructor, value);
     }
     bool isAttributeUnused() const {
@@ -380,13 +380,13 @@ public:
     bool isAttributeUsed() const {
         return getFlag(fIsAttributeUsed);
     }
-    void isAttributeUsed(bool unused) {
+    void isAttributeUsed(const bool unused) {
         setFlag(fIsAttributeUsed, unused);
     }
     bool isAttributePure() const {
         return getFlag(fIsAttributePure);
     }
-    void isAttributePure(bool value) {
+    void isAttributePure(const bool value) {
         setFlag(fIsAttributePure, value);
     }
     bool isAttributeConst() const {
@@ -398,19 +398,19 @@ public:
     bool isAttributeNoreturn() const {
         return getFlag(fIsAttributeNoreturn);
     }
-    void isAttributeNoreturn(bool value) {
+    void isAttributeNoreturn(const bool value) {
         setFlag(fIsAttributeNoreturn, value);
     }
     bool isAttributeNothrow() const {
         return getFlag(fIsAttributeNothrow);
     }
-    void isAttributeNothrow(bool value) {
+    void isAttributeNothrow(const bool value) {
         setFlag(fIsAttributeNothrow, value);
     }
     bool isAttributePacked() const {
         return getFlag(fIsAttributePacked);
     }
-    void isAttributePacked(bool value) {
+    void isAttributePacked(const bool value) {
         setFlag(fIsAttributePacked, value);
     }
     bool isControlFlowKeyword() const {
@@ -419,19 +419,19 @@ public:
     bool isOperatorKeyword() const {
         return getFlag(fIsOperatorKeyword);
     }
-    void isOperatorKeyword(bool value) {
+    void isOperatorKeyword(const bool value) {
         setFlag(fIsOperatorKeyword, value);
     }
     bool isComplex() const {
         return getFlag(fIsComplex);
     }
-    void isComplex(bool value) {
+    void isComplex(const bool value) {
         setFlag(fIsComplex, value);
     }
     bool isEnumType() const {
         return getFlag(fIsEnumType);
     }
-    void isEnumType(bool value) {
+    void isEnumType(const bool value) {
         setFlag(fIsEnumType, value);
     }
 
@@ -441,7 +441,7 @@ public:
     unsigned char bits() const {
         return _bits;
     }
-    void setBits(unsigned char b) {
+    void setBits(const unsigned char b) {
         _bits = b;
     }
 
@@ -465,7 +465,7 @@ public:
     bool isTemplateArg() const {
         return getFlag(fIsTemplateArg);
     }
-    void isTemplateArg(bool value) {
+    void isTemplateArg(const bool value) {
         setFlag(fIsTemplateArg, value);
     }
 
