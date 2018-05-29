@@ -691,7 +691,7 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::string ret;
     try {
         ret = getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
-    } catch (const simplecpp::Output &o) {
+    } catch (const simplecpp::Output &) {
         ret.clear();
     }
     return ret;
