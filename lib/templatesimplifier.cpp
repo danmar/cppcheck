@@ -1782,13 +1782,13 @@ void TemplateSimplifier::simplifyTemplates(
             }
 
             const bool instantiated = TemplateSimplifier::simplifyTemplateInstantiations(tokenlist,
-                                errorlogger,
-                                _settings,
-                                *iter1,
-                                specializations,
-                                maxtime,
-                                templateInstantiations,
-                                expandedtemplates);
+                                      errorlogger,
+                                      _settings,
+                                      *iter1,
+                                      specializations,
+                                      maxtime,
+                                      templateInstantiations,
+                                      expandedtemplates);
             if (instantiated)
                 instantiatedTemplates.push_back(*iter1);
         }
