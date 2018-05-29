@@ -29,6 +29,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <stack>
 
 class Settings;
 class SymbolDatabase;
@@ -49,6 +50,34 @@ class CPPCHECKLIB Tokenizer {
     friend class TestSimplifyTypedef;
     friend class TestTokenizer;
     friend class SymbolDatabase;
+
+    /** Class used in Tokenizer::setVarIdPass1 */
+    class VariableMap {
+    private:
+        std::map<std::string, unsigned int> variableId;
+        std::stack<std::list<std::pair<std::string, unsigned int> > > scopeInfo;
+        mutable unsigned int varId;
+    public:
+        VariableMap();
+        void enterScope();
+        bool leaveScope();
+        void addVariable(const std::string &varname);
+        bool hasVariable(const std::string &varname) const;
+        std::map<std::string, unsigned int>::const_iterator find(const std::string &varname) const {
+            return variableId.find(varname);
+        }
+        std::map<std::string, unsigned int>::const_iterator end() const {
+            return variableId.end();
+        }
+        const std::map<std::string, unsigned int> &map() const {
+            return variableId;
+        }
+        unsigned int *getVarId() const {
+            return &varId;
+        }
+    };
+
+
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
@@ -712,7 +741,7 @@ private:
     void unsupportedTypedef(const Token *tok) const;
 
     void setVarIdClassDeclaration(const Token * const startToken,
-                                  const std::map<std::string, unsigned int> &variableId,
+                                  const VariableMap &variableMap,
                                   const unsigned int scopeStartVarId,
                                   std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers);
 
