@@ -2620,7 +2620,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                         continue;
                     }
 
-                    bool dead_if = isReturnScope(after);
+                    const bool dead_if = isReturnScope(after);
                     bool dead_else = false;
 
                     if (Token::simpleMatch(after, "} else {")) {

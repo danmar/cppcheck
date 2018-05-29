@@ -1775,13 +1775,13 @@ void TemplateSimplifier::simplifyTemplates(
             for (std::list<TokenAndName>::const_iterator iter2 = templateDeclarations.begin(); iter2 != templateDeclarations.end(); ++iter2) {
                 if (iter1->name == iter2->name) {
                     const Token *tok = iter2->token->next()->findClosingBracket();
-                    int namepos = getTemplateNamePosition(tok);
+                    const int namepos = getTemplateNamePosition(tok);
                     if (namepos > 0)
                         specializations.push_back(tok->tokAt(namepos));
                 }
             }
 
-            bool instantiated = TemplateSimplifier::simplifyTemplateInstantiations(tokenlist,
+            const bool instantiated = TemplateSimplifier::simplifyTemplateInstantiations(tokenlist,
                                 errorlogger,
                                 _settings,
                                 *iter1,
