@@ -256,33 +256,46 @@ def getForLoopExpressions(forToken):
             lpar.astOperand2.astOperand2.astOperand2]
 
 def getWhileLoopExpressions(whileToken):
-    if not whileToken or whileToken.str != 'while':
+    counter = []
+    if not simpleMatch(whileToken, 'while ('):
         return None
     lpar = whileToken.next
-    if not lpar or lpar.str != '(':
-        return None
     if not lpar.astOperand2.astOperand1:
         return None
-    counter = lpar.astOperand2.astOperand1.str
-    token = lpar
-    while (token and token.str != "{"):
-        token = token.next
-    token_link = token
-    if token_link:
-        while (token and token != token_link.link):
+    rpar = lpar.link
+    counter_token = lpar.next
+    while (counter_token != rpar):
+        if counter_token.isName and counter_token.astParent and counter_token.astParent.astOperand1 == counter_token:
+            counter.append(counter_token)
+        counter_token = counter_token.next
+    if len(counter) == 0:
+        return None
+    if simpleMatch(rpar, ') {'):
+        token = rpar.next
+        while (token != rpar.next.link):
             token = token.next
-            if token.isAssignmentOp and token.astOperand1.str == counter:
-                return lpar.astOperand2
-            elif token.str == counter and token.astParent and token.astParent.str in {'++', '--'}:
-                return lpar.astOperand2
-    elif not token_link and whileToken.previous.str == '}':
+            for counter_str in counter:
+                if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
+                    expr = hasFloatComparison(counter_str.astParent)
+                    if expr:
+                        return True
+                elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
+                    expr = hasFloatComparison(counter_str.astParent)
+                    if expr:
+                        return True
+    elif simpleMatch(whileToken.previous, '} while'):
         token = whileToken.previous
         while (token != whileToken.previous.link):
             token = token.previous
-            if token.isAssignmentOp and token.astOperand1.str == counter:
-                return lpar.astOperand2
-            elif token.str == counter and token.astParent and token.astParent.str in {'++', '--'}:
-                return lpar.astOperand2
+            for counter_str in counter:
+                if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
+                    expr = hasFloatComparison(counter_str.astParent)
+                    if expr:
+                        return True
+                elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
+                    expr = hasFloatComparison(counter_str.astParent)
+                    if expr:
+                        return True
     return None
 
 
@@ -1145,7 +1158,7 @@ def misra_14_1(data):
                 reportError(token, 14, 1)
         if token.str == 'while':
             exprs = getWhileLoopExpressions(token)
-            if exprs and hasFloatComparison(exprs):
+            if exprs:
                 reportError(token, 14, 1)
 
 
