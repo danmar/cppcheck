@@ -2732,6 +2732,8 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << " constructor ";
             if (func->isAttributeDestructor())
                 std::cout << " destructor ";
+            if (func->isAttributeNodiscard())
+                std::cout << " nodiscard ";
             std::cout << std::endl;
             std::cout << "        noexceptArg: " << (func->noexceptArg ? func->noexceptArg->str() : "none") << std::endl;
             std::cout << "        throwArg: " << (func->throwArg ? func->throwArg->str() : "none") << std::endl;

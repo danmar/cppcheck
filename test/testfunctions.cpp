@@ -926,6 +926,20 @@ private:
         check("void foo() {\n" // don't crash
               "  DEBUG(123)(mystrcmp(a,b))(fd);\n"
               "}", "test.c", &settings2);
+        check("struct teststruct {\n"
+              "    int testfunc1() __attribute__ ((warn_unused_result)) { return 1; }\n"
+              "    [[nodiscard]] int testfunc2() { return 1; }\n"
+              "    void foo() { testfunc1(); testfunc2(); }\n"
+              "};\n"
+              "int main() {\n"
+              "    teststruct TestStruct1;\n"
+              "    TestStruct1.testfunc1();\n"
+              "    TestStruct1.testfunc2();\n"
+              "}", "test.cpp", &settings2);
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Return value of function testfunc1() is not used.\n"
+                      "[test.cpp:4]: (warning) Return value of function testfunc2() is not used.\n"
+                      "[test.cpp:8]: (warning) Return value of function TestStruct1.testfunc1() is not used.\n"
+                      "[test.cpp:9]: (warning) Return value of function TestStruct1.testfunc2() is not used.\n", errout.str());
     }
 
     void memsetZeroBytes() {
