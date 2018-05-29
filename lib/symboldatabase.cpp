@@ -910,7 +910,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 
         // add all variables
         for (std::list<Variable>::iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-            unsigned int varId = var->declarationId();
+            const unsigned int varId = var->declarationId();
             if (varId)
                 _variableList[varId] = &(*var);
             // fix up variables without type

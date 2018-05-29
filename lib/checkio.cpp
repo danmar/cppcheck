@@ -202,7 +202,7 @@ void CheckIO::checkFileUsage()
                         if (fileTok->str() == "stdin")
                             fflushOnInputStreamError(tok, fileTok->str());
                         else {
-                            Filepointer& f = filepointers[fileTok->varId()];
+                            const Filepointer& f = filepointers[fileTok->varId()];
                             if (f.mode == READ_MODE)
                                 fflushOnInputStreamError(tok, fileTok->str());
                         }

@@ -77,7 +77,7 @@ std::string Suppressions::parseFile(std::istream &istr)
 std::string Suppressions::parseXmlFile(const char *filename)
 {
     tinyxml2::XMLDocument doc;
-    tinyxml2::XMLError error = doc.LoadFile(filename);
+    const tinyxml2::XMLError error = doc.LoadFile(filename);
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         return "File not found";
     if (error != tinyxml2::XML_SUCCESS)

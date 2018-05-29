@@ -1441,7 +1441,7 @@ void CheckOther::checkPassByReference()
         if (inconclusive && !_settings->inconclusive)
             continue;
 
-        bool isConst = var->isConst();
+        const bool isConst = var->isConst();
         if (isConst) {
             passedByValueError(tok, var->name(), inconclusive);
             continue;

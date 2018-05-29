@@ -434,7 +434,7 @@ static std::string noMemberErrorMessage(const Scope *scope, const char function[
 {
     const std::string &classname = scope ? scope->className : "class";
     const std::string type = (scope && scope->type == Scope::eStruct) ? "Struct" : "Class";
-    bool isDestructor = (function[0] == 'd');
+    const bool isDestructor = (function[0] == 'd');
     std::string errmsg = "$symbol:" + classname + '\n';
 
     if (isdefault) {
@@ -1300,7 +1300,7 @@ void CheckClass::operatorEq()
                         returnSelfRef = true;
                     } else {
                         // We might have "Self<template_parameters>&""
-                        Token *tok = func->retDef->next();
+                        const Token * const tok = func->retDef->next();
                         if (tok && tok->str() == "<" && tok->link() && tok->link()->next() && tok->link()->next()->str() == "&")
                             returnSelfRef = true;
                     }

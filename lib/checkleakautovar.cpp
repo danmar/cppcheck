@@ -602,7 +602,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             tok = typeEndTok->linkAt(2);
 
-            unsigned varid = typeEndTok->next()->varId();
+            const unsigned varid = typeEndTok->next()->varId();
             if (isPointerReleased(typeEndTok->tokAt(2), endToken, varid))
                 continue;
 

@@ -1048,7 +1048,7 @@ std::string MathLib::getSuffix(const std::string& value)
     bool isUnsigned = false;
     unsigned int longState = 0;
     for (std::size_t i = 1U; i < value.size(); ++i) {
-        char c = value[value.size() - i];
+        const char c = value[value.size() - i];
         if (c == 'u' || c == 'U')
             isUnsigned = true;
         else if (c == 'L' || c == 'l')
