@@ -413,6 +413,12 @@ public:
     void isAttributePacked(const bool value) {
         setFlag(fIsAttributePacked, value);
     }
+    bool isAttributeNodiscard() const {
+        return getFlag(fIsAttributeNodiscard);
+    }
+    void isAttributeNodiscard(const bool value) {
+        setFlag(fIsAttributeNodiscard, value);
+    }
     bool isControlFlowKeyword() const {
         return getFlag(fIsControlFlowKeyword);
     }
@@ -949,6 +955,7 @@ private:
         fIsName                 = (1 << 20),
         fIsLiteral              = (1 << 21),
         fIsTemplateArg          = (1 << 22),
+        fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
     };
 
     unsigned int _flags;

@@ -194,8 +194,11 @@ void CheckFunctions::checkIgnoredReturnValue()
                 continue;
             }
 
-            if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) && _settings->library.isUseRetVal(tok) && !WRONG_DATA(!tok->next()->astOperand1(), tok))
+            if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
+                (_settings->library.isUseRetVal(tok) || (tok->function() && tok->function()->isAttributeNodiscard())) &&
+                !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
                 ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
+            }
         }
     }
 }

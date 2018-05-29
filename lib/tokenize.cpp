@@ -8950,7 +8950,7 @@ void Tokenizer::simplifyAttribute()
                 }
             }
 
-            else if (Token::Match(tok->tokAt(2), "( pure|__pure__|const|__const__|noreturn|__noreturn__|nothrow|__nothrow__ )")) {
+            else if (Token::Match(tok->tokAt(2), "( pure|__pure__|const|__const__|noreturn|__noreturn__|nothrow|__nothrow__|warn_unused_result )")) {
                 Token *functok = nullptr;
 
                 // type func(...) __attribute__((attribute));
@@ -8976,6 +8976,8 @@ void Tokenizer::simplifyAttribute()
                         functok->isAttributeNoreturn(true);
                     else if (attribute.find("nothrow") != std::string::npos)
                         functok->isAttributeNothrow(true);
+                    else if (attribute.find("warn_unused_result") != std::string::npos)
+                        functok->isAttributeNodiscard(true);
                 }
             }
 
@@ -8997,12 +8999,16 @@ void Tokenizer::simplifyCPPAttribute()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!tok->link() || !Token::Match(tok, "[ [ %name%"))
             continue;
-        if (tok->strAt(2) == "noreturn") {
+        if (Token::Match(tok->tokAt(2), "noreturn|nodiscard")) {
             const Token * head = tok->link()->next();
             while (Token::Match(head, "%name%|::|*|&"))
                 head = head->next();
-            if (head && head->str() == "(" && isFunctionHead(head, "{|;"))
-                head->previous()->isAttributeNoreturn(true);
+            if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
+                if (tok->strAt(2) == "noreturn")
+                    head->previous()->isAttributeNoreturn(true);
+                else
+                    head->previous()->isAttributeNodiscard(true);
+            }
         }
         Token::eraseTokens(tok, tok->link()->next());
         tok->deleteThis();

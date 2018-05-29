@@ -747,6 +747,9 @@ public:
     bool isAttributeNothrow() const {
         return tokenDef->isAttributeNothrow();
     }
+    bool isAttributeNodiscard() const {
+        return tokenDef->isAttributeNodiscard();
+    }
 
     bool hasBody() const {
         return getFlag(fHasBody);
