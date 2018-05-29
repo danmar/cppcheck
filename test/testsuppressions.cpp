@@ -402,16 +402,16 @@ private:
 
     void inlinesuppress() {
         Suppressions::Suppression s;
-        std::string errmsg;
-        ASSERT_EQUALS(false, s.parseComment("/* some text */", &errmsg));
-        ASSERT_EQUALS(false, s.parseComment("/* cppcheck-suppress */", &errmsg));
+        std::string msg;
+        ASSERT_EQUALS(false, s.parseComment("/* some text */", &msg));
+        ASSERT_EQUALS(false, s.parseComment("/* cppcheck-suppress */", &msg));
 
-        errmsg.clear();
-        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id */", &errmsg));
-        ASSERT_EQUALS("", errmsg);
+        msg.clear();
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id */", &msg));
+        ASSERT_EQUALS("", msg);
 
-        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id some text */", &errmsg));
-        ASSERT_EQUALS("Bad suppression attribute 'some'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym", errmsg);
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id some text */", &msg));
+        ASSERT_EQUALS("Bad suppression attribute 'some'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym", msg);
     }
 
     void inlinesuppress_symbolname() {
@@ -516,21 +516,20 @@ private:
         s.errorId = "foo";
         s.symbolName = "array*";
 
-        Suppressions::ErrorMessage errmsg;
-        errmsg.errorId = "foo";
-        errmsg.setFileName("test.cpp");
-        errmsg.lineNumber = 123;
-        errmsg.symbolNames = "";
-        ASSERT_EQUALS(false, s.isSuppressed(errmsg));
-        errmsg.symbolNames = "x\n";
-        ASSERT_EQUALS(false, s.isSuppressed(errmsg));
-        errmsg.symbolNames = "array1\n";
-        ASSERT_EQUALS(true, s.isSuppressed(errmsg));
-        errmsg.symbolNames = "x\narray2\n";
-        ASSERT_EQUALS(true, s.isSuppressed(errmsg));
-        errmsg.symbolNames = "array3\nx\n";
-        ASSERT_EQUALS(true, s.isSuppressed(errmsg));
-
+        Suppressions::ErrorMessage errorMsg;
+		errorMsg.errorId = "foo";
+		errorMsg.setFileName("test.cpp");
+		errorMsg.lineNumber = 123;
+		errorMsg.symbolNames = "";
+        ASSERT_EQUALS(false, s.isSuppressed(errorMsg));
+		errorMsg.symbolNames = "x\n";
+        ASSERT_EQUALS(false, s.isSuppressed(errorMsg));
+		errorMsg.symbolNames = "array1\n";
+        ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
+		errorMsg.symbolNames = "x\narray2\n";
+        ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
+		errorMsg.symbolNames = "array3\nx\n";
+        ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
     }
 
     void unusedFunction() {

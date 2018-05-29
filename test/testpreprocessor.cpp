@@ -262,7 +262,7 @@ private:
             try {
                 const std::string &cfgcode = preprocessor0.getcode(tokens, *it, files, std::string(code).find("#file") != std::string::npos);
                 actual[*it] = cfgcode;
-            } catch (const simplecpp::Output &o) {
+            } catch (const simplecpp::Output &) {
                 actual[*it] = "";
             } catch (...) {
             }
