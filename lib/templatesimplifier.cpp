@@ -1151,19 +1151,22 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
     bool ret = false;
     // (1-2)
     while (tok->tokAt(4) && tok->next()->isNumber() && tok->tokAt(3)->isNumber()) { // %any% %num% %any% %num% %any%
+        const Token *before = tok;
         const Token* op = tok->tokAt(2);
         const Token* after = tok->tokAt(4);
-        if (Token::Match(tok, "* %num% /") && (op->strAt(1) != "0") && tok->next()->str() == MathLib::multiply(op->strAt(1), MathLib::divide(tok->next()->str(), op->strAt(1)))) {
+        const std::string &num1 = op->previous()->str();
+        const std::string &num2 = op->next()->str();
+        if (Token::Match(before, "* %num% /") && (num2 != "0") && num1 == MathLib::multiply(num2, MathLib::divide(num1, num2))) {
             // Division where result is a whole number
-        } else if (!((op->str() == "*" && (isLowerThanMulDiv(tok) || tok->str() == "*") && isLowerEqualThanMulDiv(after)) || // associative
-                     (Token::Match(op, "[/%]") && isLowerThanMulDiv(tok) && isLowerEqualThanMulDiv(after)) || // NOT associative
-                     (Token::Match(op, "[+-]") && isLowerThanMulDiv(tok) && isLowerThanMulDiv(after)) || // Only partially (+) associative, but handled later
-                     (Token::Match(op, ">>|<<") && isLowerThanShift(tok) && isLowerThanPlusMinus(after)) || // NOT associative
-                     (op->str() == "&" && isLowerThanShift(tok) && isLowerThanShift(after)) || // associative
-                     (op->str() == "^" && isLowerThanAnd(tok) && isLowerThanAnd(after)) || // associative
-                     (op->str() == "|" && isLowerThanXor(tok) && isLowerThanXor(after)) || // associative
-                     (op->str() == "&&" && isLowerThanOr(tok) && isLowerThanOr(after)) ||
-                     (op->str() == "||" && isLowerThanLogicalAnd(tok) && isLowerThanLogicalAnd(after))))
+        } else if (!((op->str() == "*" && (isLowerThanMulDiv(before) || before->str() == "*") && isLowerEqualThanMulDiv(after)) || // associative
+                     (Token::Match(op, "[/%]") && isLowerThanMulDiv(before) && isLowerEqualThanMulDiv(after)) || // NOT associative
+                     (Token::Match(op, "[+-]") && isLowerThanMulDiv(before) && isLowerThanMulDiv(after)) || // Only partially (+) associative, but handled later
+                     (Token::Match(op, ">>|<<") && isLowerThanShift(before) && isLowerThanPlusMinus(after)) || // NOT associative
+                     (op->str() == "&" && isLowerThanShift(before) && isLowerThanShift(after)) || // associative
+                     (op->str() == "^" && isLowerThanAnd(before) && isLowerThanAnd(after)) || // associative
+                     (op->str() == "|" && isLowerThanXor(before) && isLowerThanXor(after)) || // associative
+                     (op->str() == "&&" && isLowerThanOr(before) && isLowerThanOr(after)) ||
+                     (op->str() == "||" && isLowerThanLogicalAnd(before) && isLowerThanLogicalAnd(after))))
             break;
 
         tok = tok->next();
@@ -1180,8 +1183,8 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             if (MathLib::isNegative(tok->str()) || MathLib::isNegative(tok->strAt(2)))
                 continue;
 
-            const MathLib::value v1(tok->str());
-            const MathLib::value v2(tok->strAt(2));
+            const MathLib::value v1(num1);
+            const MathLib::value v2(num2);
 
             if (!v1.isInt() || !v2.isInt())
                 continue;
@@ -1207,19 +1210,19 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
         // Logical operations
         else if (Token::Match(op, "%oror%|&&")) {
-            const bool op1 = !MathLib::isNullValue(tok->str());
-            const bool op2 = !MathLib::isNullValue(tok->strAt(2));
+            const bool op1 = !MathLib::isNullValue(num1);
+            const bool op2 = !MathLib::isNullValue(num2);
             const bool result = (op->str() == "||") ? (op1 || op2) : (op1 && op2);
             tok->str(result ? "1" : "0");
         }
 
         else if (Token::Match(tok->previous(), "- %num% - %num%"))
-            tok->str(MathLib::add(tok->str(), tok->strAt(2)));
+            tok->str(MathLib::add(num1, num2));
         else if (Token::Match(tok->previous(), "- %num% + %num%"))
-            tok->str(MathLib::subtract(tok->str(), tok->strAt(2)));
+            tok->str(MathLib::subtract(num1, num2));
         else {
             try {
-                tok->str(MathLib::calculate(tok->str(), tok->strAt(2), op->str()[0]));
+                tok->str(MathLib::calculate(num1, num2, op->str()[0]));
             } catch (InternalError &e) {
                 e.token = tok;
                 throw;
