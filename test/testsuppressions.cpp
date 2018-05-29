@@ -517,18 +517,18 @@ private:
         s.symbolName = "array*";
 
         Suppressions::ErrorMessage errorMsg;
-		errorMsg.errorId = "foo";
-		errorMsg.setFileName("test.cpp");
-		errorMsg.lineNumber = 123;
-		errorMsg.symbolNames = "";
+        errorMsg.errorId = "foo";
+        errorMsg.setFileName("test.cpp");
+        errorMsg.lineNumber = 123;
+        errorMsg.symbolNames = "";
         ASSERT_EQUALS(false, s.isSuppressed(errorMsg));
-		errorMsg.symbolNames = "x\n";
+        errorMsg.symbolNames = "x\n";
         ASSERT_EQUALS(false, s.isSuppressed(errorMsg));
-		errorMsg.symbolNames = "array1\n";
+        errorMsg.symbolNames = "array1\n";
         ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
-		errorMsg.symbolNames = "x\narray2\n";
+        errorMsg.symbolNames = "x\narray2\n";
         ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
-		errorMsg.symbolNames = "array3\nx\n";
+        errorMsg.symbolNames = "array3\nx\n";
         ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
     }
 
