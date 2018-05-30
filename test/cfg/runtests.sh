@@ -31,6 +31,9 @@ ${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
 ${CXX} ${CXX_OPT} ${DIR}qt.cpp
 ${CPPCHECK} --enable=style --enable=information --inconclusive --inline-suppr --error-exitcode=1 --library=qt ${DIR}qt.cpp
 
+# bsd.c
+${CPPCHECK} ${CPPCHECK_OPT} --library=bsd ${DIR}bsd.c
+
 # std.c
 ${CC} ${CC_OPT} ${DIR}std.c
 ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
