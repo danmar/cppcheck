@@ -901,7 +901,7 @@ def misra_11_6(data):
             continue
         if vt1.pointer == 1 and vt1.type == 'void' and vt2.pointer == 0 and token.astOperand1.str != "0":
             reportError(token, 11, 6)
-        elif vt1.pointer == 0 and vt2.pointer == 1 and vt2.type == 'void':
+        elif vt1.pointer == 0 and vt1.type != 'void' and vt2.pointer == 1 and vt2.type == 'void':
             reportError(token, 11, 6)
 
 
