@@ -1668,7 +1668,7 @@ void Variable::evaluate(const Library* lib)
         std::string strtype = _start->str();
         for (const Token *typeToken = _start; Token::Match(typeToken, "%type% :: %type%"); typeToken = typeToken->tokAt(2))
             strtype += "::" + typeToken->strAt(2);
-        setFlag(fIsClass, !lib->podtype(strtype) && !_start->isStandardType() && !isPointer() && !isReference());
+        setFlag(fIsClass, !lib->podtype(strtype) && !_start->isStandardType() && !isEnumType() && !isPointer() && !isReference());
         setFlag(fIsStlType, Token::simpleMatch(_start, "std ::"));
         setFlag(fIsStlString, isStlType() && (Token::Match(_start->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(_start->tokAt(2), "basic_string <") && !Token::simpleMatch(_start->linkAt(3), "> ::"))));
     }

@@ -144,7 +144,8 @@ private:
         TEST_CASE(uninitVar29);
         TEST_CASE(uninitVar30); // ticket #6417
         TEST_CASE(uninitVar31); // ticket #8271
-        TEST_CASE(uninitVarEnum);
+        TEST_CASE(uninitVarEnum1);
+        TEST_CASE(uninitVarEnum2); // ticket #8146
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
         TEST_CASE(uninitVarMemset);
@@ -2821,7 +2822,7 @@ private:
 
     }
 
-    void uninitVarEnum() {
+    void uninitVarEnum1() {
         check("class Fred\n"
               "{\n"
               "public:\n"
@@ -2832,6 +2833,17 @@ private:
               "};");
 
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVarEnum2() { // ticket #8146
+        check("enum E { E1 };\n"
+              "struct X { E e = E1; };\n"
+              "struct Y {\n"
+              "    Y() {}\n"
+              "    X x;\n"
+              "};");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarStream() {
