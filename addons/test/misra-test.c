@@ -283,6 +283,14 @@ void misra_14_1() {
     ;
   } while ( f < 10.0f );  // no-warning
 
+  while((d*10.0f)< (c-(a*b))) //14.1
+  {
+    a = a-1;
+  }
+  while((a*b) < 10.0f) //14.1
+  {
+    a++;
+  }
 }
 
 void misra_14_2() {
