@@ -1797,13 +1797,13 @@ void TemplateSimplifier::simplifyTemplates(
         }
 
         for (std::list<TokenAndName>::const_iterator it = instantiatedTemplates.begin(); it != instantiatedTemplates.end(); ++it) {
-            std::list<TokenAndName>::iterator it1;
-            for (it1 = templateDeclarations.begin(); it1 != templateDeclarations.end(); ++it1) {
-                if (it1->token == it->token)
+            std::list<TokenAndName>::iterator decl;
+            for (decl = templateDeclarations.begin(); decl != templateDeclarations.end(); ++decl) {
+                if (decl->token == it->token)
                     break;
             }
-            if (it1 != templateDeclarations.end()) {
-                templateDeclarations.erase(it1);
+            if (decl != templateDeclarations.end()) {
+                templateDeclarations.erase(decl);
                 removeTemplate(it->token);
             }
         }
