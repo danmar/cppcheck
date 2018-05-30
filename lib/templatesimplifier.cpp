@@ -1518,7 +1518,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
     bool instantiated = false;
 
-    for (std::list<TokenAndName>::const_iterator iter2 = templateInstantiations.begin(); iter2 != templateInstantiations.end(); ++iter2) {
+    for (const TokenAndName &instantiation : templateInstantiations) {
         if (numberOfTemplateInstantiations != templateInstantiations.size()) {
             numberOfTemplateInstantiations = templateInstantiations.size();
             simplifyCalculations(tokenlist.front());
@@ -1530,16 +1530,16 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
 
         // already simplified
-        if (!Token::Match(iter2->token, "%name% <"))
+        if (!Token::Match(instantiation.token, "%name% <"))
             continue;
 
-        if (iter2->name != templateDeclaration.name)
+        if (instantiation.name != templateDeclaration.name)
             continue;
 
-        if (!matchSpecialization(tok->tokAt(namepos), iter2->token, specializations))
+        if (!matchSpecialization(tok->tokAt(namepos), instantiation.token, specializations))
             continue;
 
-        Token * const tok2 = iter2->token;
+        Token * const tok2 = instantiation.token;
         if (errorlogger && !tokenlist.getFiles().empty())
             errorlogger->reportProgress(tokenlist.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 #ifdef MAXTIME
@@ -1602,7 +1602,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             if (printDebug && errorlogger) {
                 std::list<const Token *> callstack(1, tok2);
                 errorlogger->reportErr(ErrorLogger::ErrorMessage(callstack, &tokenlist, Severity::debug, "debug",
-                                       "Failed to instantiate template \"" + iter2->name + "\". The checking continues anyway.", false));
+                                       "Failed to instantiate template \"" + instantiation.name + "\". The checking continues anyway.", false));
             }
             if (typeForNewName.empty())
                 continue;
@@ -1614,12 +1614,12 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
-            TemplateSimplifier::expandTemplate(tokenlist, tok, iter2->name, typeParametersInDeclaration, newName, typesUsedInTemplateInstantiation, templateInstantiations);
+            TemplateSimplifier::expandTemplate(tokenlist, tok, instantiation.name, typeParametersInDeclaration, newName, typesUsedInTemplateInstantiation, templateInstantiations);
             instantiated = true;
         }
 
         // Replace all these template usages..
-        replaceTemplateUsage(tok2, iter2->name, typeStringsUsedInTemplateInstantiation, newName, typesUsedInTemplateInstantiation, templateInstantiations);
+        replaceTemplateUsage(tok2, instantiation.name, typeStringsUsedInTemplateInstantiation, newName, typesUsedInTemplateInstantiation, templateInstantiations);
     }
 
     // Template has been instantiated .. then remove the template declaration
