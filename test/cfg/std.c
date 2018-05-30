@@ -3027,7 +3027,7 @@ void uninitvar_strncat(char *Ct, char *S, size_t N)
 }
 
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
-errno_t uninitvar_strcat_s(char *Ct, size_t N, char *S)
+void uninitvar_strcat_s(char *Ct, size_t N, char *S)
 {
     char *ct;
     char *s;
@@ -3042,15 +3042,15 @@ errno_t uninitvar_strcat_s(char *Ct, size_t N, char *S)
     (void)strcat_s(Ct,n,S);
 
     // no warning is expected for
-    return strcat_s(Ct,N,S);
+    (void) strcat_s(Ct,N,S);
 }
 
 // errno_t wcscat_s(wchar_t *restrict dest, rsize_t destsz, const wchar_t *restrict src); // since C11
-errno_t uninitvar_wcscat_s(wchar_t *Ct, rsize_t N, wchar_t *S)
+void uninitvar_wcscat_s(wchar_t *Ct, size_t N, wchar_t *S)
 {
     wchar_t *ct;
     wchar_t *s;
-    rsize_t n;
+    size_t n;
     // cppcheck-suppress uninitvar
     (void)wcscat_s(ct,n,s);
     // cppcheck-suppress uninitvar
@@ -3061,7 +3061,7 @@ errno_t uninitvar_wcscat_s(wchar_t *Ct, rsize_t N, wchar_t *S)
     (void)wcscat_s(Ct,n,S);
 
     // no warning is expected for
-    return wcscat_s(Ct,N,S);
+    (void) wcscat_s(Ct,N,S);
 }
 
 void uninitvar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
