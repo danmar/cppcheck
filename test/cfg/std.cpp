@@ -3071,6 +3071,12 @@ void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwst
     testwstr.compare(L"wtest");
 }
 
+void ignoredReturnValue_locale_global(const std::locale& loc)
+{
+    // no ignoredReturnValue shall be shown for
+    std::locale::global(loc);
+}
+
 void ignoredReturnValue_make_pair()
 {
     // cppcheck-suppress ignoredReturnValue
