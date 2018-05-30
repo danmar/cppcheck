@@ -3026,6 +3026,24 @@ void uninitvar_strncat(char *Ct, char *S, size_t N)
     (void)strncat(Ct,S,N);
 }
 
+void uninitvar_strcat_s(char *Ct, size_t N, char *S)
+{
+    char *ct;
+    char *s;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)strcat_s(ct,n,s);
+    // cppcheck-suppress uninitvar
+    (void)strcat_s(ct,N,S);
+    // cppcheck-suppress uninitvar
+    (void)strcat_s(Ct,N,s);
+    // cppcheck-suppress uninitvar
+    (void)strcat_s(Ct,n,S);
+
+    // no warning is expected for
+    (void)strcat_s(Ct,N,S);
+}
+
 void uninitvar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
 {
     char *ct;
