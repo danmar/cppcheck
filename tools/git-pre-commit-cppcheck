@@ -38,7 +38,7 @@ fi
 
 # We should pass only added or modified C/C++ source files to cppcheck.
 changed_files=$(git diff-index --cached $against | \
-	grep -E '[MA]	.*\.(c|cpp|cc|cxx)$' | cut -d'	' -f 2)
+	grep -E '[MA]	.*\.(c|cpp|cc|cxx)$' | cut -f 2)
 
 if [ -n "$changed_files" ]; then
 	cppcheck --error-exitcode=1 $changed_files
