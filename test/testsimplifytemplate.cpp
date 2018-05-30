@@ -130,6 +130,7 @@ private:
 
         // Test TemplateSimplifier::instantiateMatch
         TEST_CASE(instantiateMatch);
+        TEST_CASE(templateParameterWithoutName); // #8602 Template default parameter without name yields syntax error
     }
 
     std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -1655,6 +1656,15 @@ private:
                       instantiateMatch("integral_constant < bool, sizeof ( ns :: ConvertHelper < From, To > :: Create ( ) ) > ;",
                                        2, ":: %name% ("));
     }
+
+	void templateParameterWithoutName()
+	{
+        ASSERT_EQUALS(1U, templateParameters("template<typename = void> struct s;"));
+        ASSERT_EQUALS(1U, templateParameters("template<template<typename = float> typename T> struct A {\n"
+                                             "    void f();n"
+                                             "    void g();\n"
+                                             "};n"));
+	}
 };
 
 REGISTER_TEST(TestSimplifyTemplate)
