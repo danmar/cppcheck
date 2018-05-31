@@ -945,42 +945,44 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
     const bool printWarning = _settings->isEnabled(Settings::WARNING);
     const bool printInconclusive = _settings->inconclusive;
 
+    const Token *astParent = tok->astParent();
+
     if (tok->strAt(1) == "[") {
         valueFlowCheckArrayIndex(tok->next(), arrayInfo);
     }
 
-    else if (printPortability && !tok->isCast() && tok->astParent() && tok->astParent()->str() == "+") {
+    else if (printPortability && !tok->isCast() && astParent && astParent->str() == "+") {
         // undefined behaviour: result of pointer arithmetic is out of bounds
         const Token *index;
-        if (tok == tok->astParent()->astOperand1())
-            index = tok->astParent()->astOperand2();
+        if (tok == astParent->astOperand1())
+            index = astParent->astOperand2();
         else
-            index = tok->astParent()->astOperand1();
+            index = astParent->astOperand1();
         if (index) {
             const ValueFlow::Value *value = index->getValueGE(arrayInfo.num(0) + 1U, _settings);
             if (!value)
                 value = index->getValueLE(-1, _settings);
             if (value)
-                pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
+                pointerOutOfBoundsError(astParent, index, value->intvalue);
         }
     }
 
-    else if (printPortability && tok->astParent() && tok->astParent()->str() == "-") {
+    else if (printPortability && astParent && astParent->str() == "-") {
         const Variable *var = symbolDatabase->getVariableFromVarId(arrayInfo.declarationId());
         if (var && var->isArray()) {
-            const Token *index = tok->astParent()->astOperand2();
+            const Token *index = astParent->astOperand2();
             const ValueFlow::Value *value = index ? index->getValueGE(1,_settings) : nullptr;
             if (index && !value)
                 value = index->getValueLE(-1 - arrayInfo.num(0), _settings);
             if (value)
-                pointerOutOfBoundsError(tok->astParent(), index, value->intvalue);
+                pointerOutOfBoundsError(astParent, index, value->intvalue);
         }
     }
 
     if (!tok->scope()->isExecutable()) // No executable code outside of executable scope - continue to increase performance
         return;
 
-    const Token* tok2 = tok->astParent();
+    const Token* tok2 = astParent;
     if (tok2) {
         while (tok2->astParent() && !Token::Match(tok2->astParent(), "[,(]"))
             tok2 = tok2->astParent();
