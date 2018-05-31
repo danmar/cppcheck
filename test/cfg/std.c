@@ -2980,15 +2980,13 @@ void uninitvar_strncpy(void)
 
 void uninitvar_strncpy_s(char *Ct, size_t N1, char *S, size_t N2)
 {
-    char *ct;
+    char dest[42];
     char *s;
     size_t n1;
     size_t n2;
 
     // cppcheck-suppress uninitvar
-    (void)strncpy_s(ct,n1,s,n2);
-    // cppcheck-suppress uninitvar
-    (void)strncpy_s(ct,N1,S,N2);
+    (void)strncpy_s(dest,n1,s,n2);
     // cppcheck-suppress uninitvar
     (void)strncpy_s(Ct,n1,S,N2);
     // cppcheck-suppress uninitvar
@@ -2998,6 +2996,7 @@ void uninitvar_strncpy_s(char *Ct, size_t N1, char *S, size_t N2)
 
     // no warning is expected for
     (void)strncpy_s(Ct,N1,S,N2);
+    (void)strncpy_s(dest,N1,S,N2);
 }
 
 void uninitvar_strpbrk(void)
