@@ -1235,10 +1235,6 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
         ret = true;
     }
 
-    if (Token::Match(tok, "%oror%|&& %num% %oror%|&&|,|)") || Token::Match(tok, "[(,] %num% %oror%|&&")) {
-        tok->next()->str(MathLib::isNullValue(tok->next()->str()) ? "0" : "1");
-    }
-
     return ret;
 }
 
@@ -1273,6 +1269,19 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         }
 
         if (tok->isNumber()) {
+            if (simplifyNumericCalculations(tok->previous())) {
+                ret = true;
+                tok = tok->previous();
+                while (Token::Match(tok->tokAt(-2), "%cop%|,|( %num% %cop% %num% %cop%|,|)")) {
+                    Token *before = tok->tokAt(-2);
+                    if (simplifyNumericCalculations(before))
+                        tok = before;
+                    else
+                        break;
+                }
+                tok = tok->next();
+            }
+
             // Remove redundant conditions (0&&x) (1||x)
             if (Token::Match(tok->previous(), "[(=,] 0 &&") ||
                 Token::Match(tok->previous(), "[(=,] 1 %oror%")) {
@@ -1406,17 +1415,6 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     ret = true;
                     tok = tok->previous();
                 }
-            }
-        }
-
-        else if (simplifyNumericCalculations(tok)) {
-            ret = true;
-            while (Token::Match(tok->tokAt(-2), "%cop%|,|( %num% %cop% %num% %cop%|,|)")) {
-                Token *before = tok->tokAt(-2);
-                if (simplifyNumericCalculations(before))
-                    tok = before;
-                else
-                    break;
             }
         }
     }
