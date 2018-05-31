@@ -1657,14 +1657,13 @@ private:
                                        2, ":: %name% ("));
     }
 
-	void templateParameterWithoutName()
-	{
+    void templateParameterWithoutName() {
         ASSERT_EQUALS(1U, templateParameters("template<typename = void> struct s;"));
         ASSERT_EQUALS(1U, templateParameters("template<template<typename = float> typename T> struct A {\n"
                                              "    void f();n"
                                              "    void g();\n"
                                              "};n"));
-	}
+    }
 };
 
 REGISTER_TEST(TestSimplifyTemplate)
