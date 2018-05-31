@@ -262,53 +262,20 @@ def findCounterTokens(cond):
         c.extend(findCounterTokens(cond.astOperand2))
         return c
     ret = []
-    if cond.isArithmeticalOp:
-        if cond.astOperand1.isName and cond.astOperand2.isNumber:
+    if ((cond.isArithmeticalOp and cond.astOperand1 and cond.astOperand2) or
+            (cond.isComparisonOp and cond.astOperand1 and cond.astOperand2)):
+        if cond.astOperand1.isName:
             ret.append(cond.astOperand1)
-        elif cond.astOperand2.isName and cond.astOperand1.isNumber:
+        if cond.astOperand2.isName:
             ret.append(cond.astOperand2)
-        elif cond.astOperand2.isName and cond.astOperand1.isName:
-            ret.extend([cond.astOperand2, cond.astOperand1])
-        elif cond.astOperand1.isOp and cond.astOperand2.isName:
+        if cond.astOperand1.isOp:
             ret.extend(findCounterTokens(cond.astOperand1))
-            ret.append(cond.astOperand2)
-        elif cond.astOperand2.isOp and cond.astOperand1.isName:
+        if cond.astOperand2.isOp:
             ret.extend(findCounterTokens(cond.astOperand2))
-            ret.append(cond.astOperand1)
-        elif cond.astOperand2.isOp and cond.astOperand1.isOp:
-            ret.extend(findCounterTokens(cond.astOperand1))
-            ret.extend(findCounterTokens(cond.astOperand2))
-        elif cond.astOperand1.isOp and cond.astOperand2.isNumber:
-            ret.extend(findCounterTokens(cond.astOperand1))
-        elif cond.astOperand2.isOp and cond.astOperand1.isNumber:
-            ret.extend(findCounterTokens(cond.astOperand2))
-
-    if cond.isComparisonOp:
-        if cond.astOperand1.isName and cond.astOperand2.isNumber:
-            ret.append(cond.astOperand1)
-        elif cond.astOperand2.isName and cond.astOperand1.isNumber:
-            ret.append(cond.astOperand2)
-        elif cond.astOperand2.isOp and cond.astOperand1.isOp:
-            ret.extend(findCounterTokens(cond.astOperand1))
-            ret.extend(findCounterTokens(cond.astOperand2))
-        elif cond.astOperand1.isOp and cond.astOperand2.isNumber:
-            ret.extend(findCounterTokens(cond.astOperand1))
-        elif cond.astOperand2.isOp and cond.astOperand1.isNumber:
-            ret.extend(findCounterTokens(cond.astOperand2))
-
     return ret
 
 
-def getFloatComparision(floatCompOperator):
-    while not floatCompOperator.isComparisonOp:
-        floatCompOperator = floatCompOperator.astParent
-    expr = hasFloatComparison(floatCompOperator)
-    if expr:
-        return True
-    return False
-
-
-def getWhileLoopExpressions(whileToken):
+def isFloatCounterInWhileLoop(whileToken):
     if not simpleMatch(whileToken, 'while ('):
         return None
     lpar = whileToken.next
@@ -324,38 +291,23 @@ def getWhileLoopExpressions(whileToken):
             token = token.next
             for counter_str in counter:
                 if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
-                    return getFloatComparision(counter_str.astParent)
+                    if counter_str.valueType and counter_str.valueType.isFloat():
+                        return True
                 elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
-                    return getFloatComparision(counter_str.astParent)
+                    if counter_str.valueType and counter_str.valueType.isFloat():
+                        return True
     elif simpleMatch(whileToken.previous, '} while') and simpleMatch(whileToken.previous.link.previous, 'do {'):
         token = whileToken.previous
         while (token != whileToken.previous.link):
             token = token.previous
             for counter_str in counter:
                 if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
-                    return getFloatComparision(counter_str.astParent)
+                    if counter_str.valueType and counter_str.valueType.isFloat():
+                        return True
                 elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
-                    return getFloatComparision(counter_str.astParent)
+                    if counter_str.valueType and counter_str.valueType.isFloat():
+                        return True
     return None
-
-
-def hasFloatComparison(expr):
-    if not expr:
-        return False
-    if expr.isLogicalOp:
-        return hasFloatComparison(expr.astOperand1) or hasFloatComparison(expr.astOperand2)
-    if expr.isArithmeticalOp:
-        if expr.astOperand1.isFloat or expr.astOperand2.isFloat:
-            return expr.astOperand1.isFloat or expr.astOperand2.isFloat
-        if expr.astOperand1.isArithmeticalOp or expr.astOperand2.isArithmeticalOp:
-            return hasFloatComparison(expr.astOperand1) or hasFloatComparison(expr.astOperand2)
-    if expr.isComparisonOp:
-        if expr.astOperand1.isFloat or expr.astOperand2.isFloat:
-            return expr.astOperand1.isFloat or expr.astOperand2.isFloat
-
-        if expr.astOperand1.isArithmeticalOp or expr.astOperand2.isArithmeticalOp:
-            return hasFloatComparison(expr.astOperand1) or hasFloatComparison(expr.astOperand2)
-    return False
 
 
 def hasSideEffectsRecursive(expr):
@@ -1202,10 +1154,11 @@ def misra_14_1(data):
             continue
         if token.str == 'for':
             exprs = getForLoopExpressions(token)
-            if exprs and hasFloatComparison(exprs[1]):
-                reportError(token, 14, 1)
+            for counter in findCounterTokens(exprs[1]):
+                if counter.valueType and counter.valueType.isFloat():
+                    reportError(token, 14, 1)
         if token.str == 'while':
-            exprs = getWhileLoopExpressions(token)
+            exprs = isFloatCounterInWhileLoop(token)
             if exprs:
                 reportError(token, 14, 1)
 
