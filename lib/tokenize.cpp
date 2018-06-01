@@ -3648,7 +3648,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 const Token * const end = tok;
                 for (tok = lt; tok != end; tok = tok->next()) {
                     if (tok->isNumber())
-                        TemplateSimplifier::simplifyNumericCalculations(tok->previous());
+                        TemplateSimplifier::simplifyNumericCalculations(tok);
                 }
                 lt = tok->next();
             }

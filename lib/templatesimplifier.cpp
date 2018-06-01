@@ -1150,10 +1150,12 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 {
     bool ret = false;
     // (1-2)
-    while (tok->tokAt(4) && tok->next()->isNumber() && tok->tokAt(3)->isNumber()) { // %any% %num% %any% %num% %any%
-        const Token *before = tok;
-        const Token* op = tok->tokAt(2);
-        const Token* after = tok->tokAt(4);
+    while (tok->tokAt(3) && tok->isNumber() && tok->tokAt(2)->isNumber()) { // %any% %num% %any% %num% %any%
+        const Token *before = tok->previous();
+        if (!before)
+            break;
+        const Token* op = tok->next();
+        const Token* after = tok->tokAt(3);
         const std::string &num1 = op->previous()->str();
         const std::string &num2 = op->next()->str();
         if (Token::Match(before, "* %num% /") && (num2 != "0") && num1 == MathLib::multiply(num2, MathLib::divide(num1, num2))) {
@@ -1169,25 +1171,23 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
                      (op->str() == "||" && isLowerThanLogicalAnd(before) && isLowerThanLogicalAnd(after))))
             break;
 
-        tok = tok->next();
-
         // Don't simplify "%num% / 0"
         if (Token::Match(op, "[/%] 0"))
-            continue;
+            break;
 
         // Integer operations
         if (Token::Match(op, ">>|<<|&|^|%or%")) {
             // Don't simplify if operand is negative, shifting with negative
             // operand is UB. Bitmasking with negative operand is implementation
             // defined behaviour.
-            if (MathLib::isNegative(tok->str()) || MathLib::isNegative(tok->strAt(2)))
-                continue;
+            if (MathLib::isNegative(num1) || MathLib::isNegative(num2))
+                break;
 
             const MathLib::value v1(num1);
             const MathLib::value v2(num2);
 
             if (!v1.isInt() || !v2.isInt())
-                continue;
+                break;
 
             switch (op->str()[0]) {
             case '<':
@@ -1230,7 +1230,6 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
         }
 
         tok->deleteNext(2);
-        tok = tok->previous();
 
         ret = true;
     }
@@ -1269,17 +1268,13 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
         }
 
         if (tok->isNumber()) {
-            if (simplifyNumericCalculations(tok->previous())) {
+            if (simplifyNumericCalculations(tok)) {
                 ret = true;
-                tok = tok->previous();
-                while (Token::Match(tok->tokAt(-2), "%cop%|,|( %num% %cop% %num% %cop%|,|)")) {
-                    Token *before = tok->tokAt(-2);
-                    if (simplifyNumericCalculations(before))
-                        tok = before;
-                    else
-                        break;
+                Token *prev = tok->tokAt(-2);
+                while (prev && simplifyNumericCalculations(prev)) {
+                    tok = prev;
+                    prev = prev->tokAt(-2);
                 }
-                tok = tok->next();
             }
 
             // Remove redundant conditions (0&&x) (1||x)
