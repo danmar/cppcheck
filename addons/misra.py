@@ -257,6 +257,8 @@ def getForLoopExpressions(forToken):
 
 
 def findCounterTokens(cond):
+    if not cond:
+        return []
     if cond.str in ['&&', '||']:
         c = findCounterTokens(cond.astOperand1)
         c.extend(findCounterTokens(cond.astOperand2))
@@ -277,37 +279,28 @@ def findCounterTokens(cond):
 
 def isFloatCounterInWhileLoop(whileToken):
     if not simpleMatch(whileToken, 'while ('):
-        return None
+        return False
     lpar = whileToken.next
-    if not lpar.astOperand2.astOperand1:
-        return None
     rpar = lpar.link
-    counter = findCounterTokens(lpar.astOperand2)
-    if len(counter) == 0:
-        return None
+    counterTokens = findCounterTokens(lpar.astOperand2)
+    whileBodyStart = None
     if simpleMatch(rpar, ') {'):
-        token = rpar.next
-        while (token != rpar.next.link):
-            token = token.next
-            for counter_str in counter:
-                if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
-                    if counter_str.valueType and counter_str.valueType.isFloat():
-                        return True
-                elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
-                    if counter_str.valueType and counter_str.valueType.isFloat():
-                        return True
+        whileBodyStart = rpar.next
     elif simpleMatch(whileToken.previous, '} while') and simpleMatch(whileToken.previous.link.previous, 'do {'):
-        token = whileToken.previous
-        while (token != whileToken.previous.link):
-            token = token.previous
-            for counter_str in counter:
-                if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
-                    if counter_str.valueType and counter_str.valueType.isFloat():
-                        return True
-                elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
-                    if counter_str.valueType and counter_str.valueType.isFloat():
-                        return True
-    return None
+        whileBodyStart = whileToken.previous.link
+    else:
+        return False
+    token = whileBodyStart
+    while (token != whileBodyStart.link):
+        token = token.next
+        for counter_str in counterTokens:
+            if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
+                if counter_str.valueType and counter_str.valueType.isFloat():
+                    return True
+            elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
+                if counter_str.valueType and counter_str.valueType.isFloat():
+                    return True
+    return False
 
 
 def hasSideEffectsRecursive(expr):
@@ -1150,14 +1143,14 @@ def misra_13_6(data):
 
 def misra_14_1(data):
     for token in data.tokenlist:
-        if token.str != 'for' and token.str != 'while':
-            continue
         if token.str == 'for':
             exprs = getForLoopExpressions(token)
+            if not exprs:
+                continue
             for counter in findCounterTokens(exprs[1]):
                 if counter.valueType and counter.valueType.isFloat():
                     reportError(token, 14, 1)
-        if token.str == 'while':
+        elif token.str == 'while':
             exprs = isFloatCounterInWhileLoop(token)
             if exprs:
                 reportError(token, 14, 1)
