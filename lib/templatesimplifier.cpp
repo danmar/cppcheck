@@ -492,7 +492,10 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
     std::list<ScopeInfo2> scopeInfo;
     std::list<TokenAndName> declarations;
     for (Token *tok = tokens; tok; tok = tok->next()) {
-        setScopeInfo(tok, &scopeInfo);
+        if (Token::Match(tok, "}|namespace|class|struct")) {
+            setScopeInfo(tok, &scopeInfo);
+            continue;
+        }
         if (!Token::simpleMatch(tok, "template <"))
             continue;
         // Some syntax checks, see #6865
@@ -530,7 +533,10 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateInsta
     std::list<ScopeInfo2> scopeList;
 
     for (Token *tok = tokens; tok; tok = tok->next()) {
-        setScopeInfo(tok, &scopeList);
+        if (Token::Match(tok, "}|namespace|class|struct")) {
+            setScopeInfo(tok, &scopeList);
+            continue;
+        }
         // template definition.. skip it
         if (Token::simpleMatch(tok, "template <")) {
             tok = tok->next()->findClosingBracket();
@@ -949,7 +955,10 @@ void TemplateSimplifier::expandTemplate(
     const Token *endOfTemplateDefinition = nullptr;
     const Token * const templateDeclarationNameToken = templateDeclarationToken->tokAt(getTemplateNamePosition(templateDeclarationToken));
     for (const Token *tok3 = tokenlist.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
-        setScopeInfo(const_cast<Token *>(tok3), &scopeInfo);
+        if (Token::Match(tok3, "}|namespace|class|struct")) {
+            setScopeInfo(tok3, &scopeInfo);
+            continue;
+        }
         if (inTemplateDefinition) {
             if (!endOfTemplateDefinition && tok3->str() == "{")
                 endOfTemplateDefinition = tok3->link();
@@ -1640,7 +1649,10 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
     std::list<ScopeInfo2> scopeInfo;
     std::list< std::pair<Token *, Token *> > removeTokens;
     for (Token *nameTok = instantiationToken; nameTok; nameTok = nameTok->next()) {
-        setScopeInfo(nameTok, &scopeInfo);
+        if (Token::Match(nameTok, "}|namespace|class|struct")) {
+            setScopeInfo(nameTok, &scopeInfo);
+            continue;
+        }
         if (!Token::Match(nameTok, "%name% <"))
             continue;
         if (!matchTemplateParameters(nameTok, typeStringsUsedInTemplateInstantiation))
