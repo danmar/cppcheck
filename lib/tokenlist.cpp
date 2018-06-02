@@ -391,10 +391,11 @@ static bool iscast(const Token *tok)
     if (!Token::Match(tok, "( ::| %name%"))
         return false;
 
-    if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return")
+    const Token *prevTok = tok->previous();
+    if (prevTok && prevTok->isName() && prevTok->str() != "return")
         return false;
 
-    if (Token::simpleMatch(tok->previous(), ">") && tok->previous()->link())
+    if (Token::simpleMatch(prevTok, ">") && prevTok->link())
         return false;
 
     if (Token::Match(tok, "( (| typeof (") && Token::Match(tok->link(), ") %num%"))
@@ -406,7 +407,7 @@ static bool iscast(const Token *tok)
     if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~]"))
         return false;
 
-    if (Token::Match(tok->previous(), "= ( %name% ) {") && tok->next()->varId() == 0)
+    if (Token::Match(prevTok, "= ( %name% ) {") && tok->next()->varId() == 0)
         return true;
 
     bool type = false;
