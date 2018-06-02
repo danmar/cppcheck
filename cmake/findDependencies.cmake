@@ -1,6 +1,8 @@
 if (BUILD_GUI)
-    set(GUI_QT_COMPONENTS Core Gui Widgets PrintSupport)
-    find_package(Qt5 COMPONENTS ${GUI_QT_COMPONENTS})
+    find_package(Qt5Core)
+    find_package(Qt5Gui)
+    find_package(Qt5Widgets)
+    find_package(Qt5PrintSupport)
     find_package(Qt5LinguistTools)
 endif()
 
@@ -21,4 +23,3 @@ if (NOT ${USE_MATCHCOMPILER_OPT} STREQUAL "Off")
         set(USE_MATCHCOMPILER_OPT "Off")
     endif()
 endif()
-
