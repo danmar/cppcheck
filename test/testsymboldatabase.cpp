@@ -290,6 +290,7 @@ private:
         TEST_CASE(symboldatabase70);
         TEST_CASE(symboldatabase71);
         TEST_CASE(symboldatabase72); // #8600
+        TEST_CASE(symboldatabase73); // #8603
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3939,6 +3940,26 @@ private:
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 4);
         ASSERT(f && f->function() && f->function()->type == Function::eCopyConstructor);
+    }
+
+    void symboldatabase73() { // #8603
+        GET_SYMBOL_DB("namespace swizzle {\n"
+                      "  template <comp> void swizzle(tvec2<f16>) {}\n"
+                      "  template <comp x, comp y> void swizzle(tvec2<f16> v) {}\n"
+                      "}");
+
+        ASSERT_EQUALS(4, db->scopeList.size());
+        ASSERT_EQUALS(2, db->functionScopes.size());
+
+        const Scope *f1 = db->functionScopes[0];
+        ASSERT_EQUALS(2, f1->bodyStart->linenr());
+        ASSERT_EQUALS(2, f1->bodyEnd->linenr());
+        ASSERT_EQUALS(2, f1->function->token->linenr());
+
+        const Scope *f2 = db->functionScopes[1];
+        ASSERT_EQUALS(3, f2->bodyStart->linenr());
+        ASSERT_EQUALS(3, f2->bodyEnd->linenr());
+        ASSERT_EQUALS(3, f2->function->token->linenr());
     }
 
     void enum1() {

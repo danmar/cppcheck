@@ -2046,7 +2046,10 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 {
     Function* function = nullptr;
     for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-        if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), emptyString, 0)) {
+        const Function *f = i->second;
+        if (f->hasBody())
+            continue;
+        if (Function::argsMatch(scope, f->argDef->next(), argStart->next(), emptyString, 0)) {
             function = const_cast<Function *>(i->second);
             break;
         }
