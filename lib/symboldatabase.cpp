@@ -82,9 +82,6 @@ static const Token* skipScopeIdentifiers(const Token* tok)
 
 void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 {
-    const bool isCPP = _tokenizer->isCPP();
-    const bool isC = _tokenizer->isC();
-
     // create global scope
     scopeList.emplace_back(this, nullptr, nullptr);
 
@@ -102,16 +99,16 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          "SymbolDatabase",
                                          tok->progressValue());
         // Locate next class
-        if ((isCPP && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
+        if ((_tokenizer->isCPP() && ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
                                       !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|)|(|<")) ||
                                      (Token::Match(tok, "enum class| %name% {") ||
                                       Token::Match(tok, "enum class| %name% : %name% {"))))
-            || (isC && Token::Match(tok, "struct|union|enum %name% {"))) {
+            || (_tokenizer->isC() && Token::Match(tok, "struct|union|enum %name% {"))) {
             const Token *tok2 = tok->tokAt(2);
 
             if (tok->strAt(1) == "::")
                 tok2 = tok2->next();
-            else if (isCPP && tok->strAt(1) == "class")
+            else if (_tokenizer->isCPP() && tok->strAt(1) == "class")
                 tok2 = tok2->next();
 
             while (Token::Match(tok2, ":: %name%"))
@@ -127,7 +124,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // skip over final
-            if (isCPP && Token::simpleMatch(tok2, "final"))
+            if (_tokenizer->isCPP() && Token::simpleMatch(tok2, "final"))
                 tok2 = tok2->next();
 
             // make sure we have valid code
@@ -195,7 +192,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
 
                 // definition may be different than declaration
-                if (isCPP && tok->str() == "class") {
+                if (_tokenizer->isCPP() && tok->str() == "class") {
                     access[new_scope] = Private;
                     new_scope->type = Scope::eClass;
                 } else if (tok->str() == "struct") {
@@ -272,7 +269,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // Namespace and unknown macro (#3854)
-        else if (isCPP &&
+        else if (_tokenizer->isCPP() &&
                  Token::Match(tok, "namespace %name% %type% (") &&
                  tok->tokAt(2)->isUpperCaseName() &&
                  Token::simpleMatch(tok->linkAt(3), ") {")) {
@@ -312,7 +309,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // using namespace
-        else if (isCPP && Token::Match(tok, "using namespace ::| %type% ;|::")) {
+        else if (_tokenizer->isCPP() && Token::Match(tok, "using namespace ::| %type% ;|::")) {
             Scope::UsingInfo using_info;
 
             using_info.start = tok; // save location
@@ -332,7 +329,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         }
 
         // using type alias
-        else if (isCPP && Token::Match(tok, "using %name% =")) {
+        else if (_tokenizer->isCPP() && Token::Match(tok, "using %name% =")) {
             if (tok->strAt(-1) != ">" && !findType(tok->next(), scope)) {
                 // fill typeList..
                 typeList.emplace_back(tok, nullptr, scope);
@@ -536,7 +533,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // friend class declaration?
-            else if (isCPP && Token::Match(tok, "friend class| ::| %any% ;|::")) {
+            else if (_tokenizer->isCPP() && Token::Match(tok, "friend class| ::| %any% ;|::")) {
                 Type::FriendInfo friendInfo;
 
                 // save the name start
