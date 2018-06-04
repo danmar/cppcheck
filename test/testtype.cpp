@@ -232,6 +232,12 @@ private:
               "}\n", &settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout.str());
 
+        check("long f() {\n"
+              "  const long long ret = 256 * (1 << 10);\n"
+              "  return ret;\n"
+              "}\n", &settings);
+        ASSERT_EQUALS("", errout.str());
+
         // typedef
         check("long f(int x, int y) {\n"
               "  const size_t ret = x * y;\n"

@@ -268,6 +268,12 @@ void CheckType::checkLongCast()
         if (tok->str() != "=" || !Token::Match(tok->astOperand2(), "*|<<"))
             continue;
 
+        if (tok->astOperand2()->hasKnownIntValue()) {
+            const ValueFlow::Value &v = tok->astOperand2()->values().front();
+            if (_settings->isIntValue(v.intvalue))
+                continue;
+        }
+
         const ValueType *lhstype = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
         const ValueType *rhstype = tok->astOperand2()->valueType();
 
