@@ -274,6 +274,17 @@ void misra_13_6() {
 
 void misra_14_1() {
   for (float f=0.1f; f<1.0f; f += 0.1f){} // 14.1
+  float a = 0.0f;
+  int b = 10;
+  while ((a<100.0f) || (b > 100)) //14.1
+  {
+    a++;
+  }
+  do
+  {
+    ;
+  } while ( a < 10.0f );  // no-warning
+
 }
 
 void misra_14_2() {

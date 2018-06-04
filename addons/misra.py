@@ -256,14 +256,50 @@ def getForLoopExpressions(forToken):
             lpar.astOperand2.astOperand2.astOperand2]
 
 
-def hasFloatComparison(expr):
-    if not expr:
+def findCounterTokens(cond):
+    if not cond:
+        return []
+    if cond.str in ['&&', '||']:
+        c = findCounterTokens(cond.astOperand1)
+        c.extend(findCounterTokens(cond.astOperand2))
+        return c
+    ret = []
+    if ((cond.isArithmeticalOp and cond.astOperand1 and cond.astOperand2) or
+            (cond.isComparisonOp and cond.astOperand1 and cond.astOperand2)):
+        if cond.astOperand1.isName:
+            ret.append(cond.astOperand1)
+        if cond.astOperand2.isName:
+            ret.append(cond.astOperand2)
+        if cond.astOperand1.isOp:
+            ret.extend(findCounterTokens(cond.astOperand1))
+        if cond.astOperand2.isOp:
+            ret.extend(findCounterTokens(cond.astOperand2))
+    return ret
+
+
+def isFloatCounterInWhileLoop(whileToken):
+    if not simpleMatch(whileToken, 'while ('):
         return False
-    if expr.isLogicalOp:
-        return hasFloatComparison(expr.astOperand1) or hasFloatComparison(expr.astOperand2)
-    if expr.isComparisonOp:
-        # TODO: Use ValueType
-        return cppcheckdata.astIsFloat(expr.astOperand1) or cppcheckdata.astIsFloat(expr.astOperand2)
+    lpar = whileToken.next
+    rpar = lpar.link
+    counterTokens = findCounterTokens(lpar.astOperand2)
+    whileBodyStart = None
+    if simpleMatch(rpar, ') {'):
+        whileBodyStart = rpar.next
+    elif simpleMatch(whileToken.previous, '} while') and simpleMatch(whileToken.previous.link.previous, 'do {'):
+        whileBodyStart = whileToken.previous.link
+    else:
+        return False
+    token = whileBodyStart
+    while (token != whileBodyStart.link):
+        token = token.next
+        for counterToken in counterTokens:
+            if not counterToken.valueType or not counterToken.valueType.isFloat():
+                continue
+            if token.isAssignmentOp and token.astOperand1.str == counterToken.str:
+                return True
+            if token.str == counterToken.str and token.astParent and token.astParent.str in {'++', '--'}:
+                return True
     return False
 
 
@@ -1107,11 +1143,16 @@ def misra_13_6(data):
 
 def misra_14_1(data):
     for token in data.tokenlist:
-        if token.str != 'for':
-            continue
-        exprs = getForLoopExpressions(token)
-        if exprs and hasFloatComparison(exprs[1]):
-            reportError(token, 14, 1)
+        if token.str == 'for':
+            exprs = getForLoopExpressions(token)
+            if not exprs:
+                continue
+            for counter in findCounterTokens(exprs[1]):
+                if counter.valueType and counter.valueType.isFloat():
+                    reportError(token, 14, 1)
+        elif token.str == 'while':
+            if isFloatCounterInWhileLoop(token):
+                reportError(token, 14, 1)
 
 
 def misra_14_2(data):
