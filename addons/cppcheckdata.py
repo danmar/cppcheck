@@ -483,14 +483,14 @@ class Suppression:
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
 
-    def isMatch(file, line, message, errorId):
+    def isMatch(self, file, line, message, errorId):
         if (fnmatch(file, self.fileName)
             and (self.lineNumber is None or line == self.lineNumber)
-            and fnmatch(message, '*'+self.symbolName+'*')
+            and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
             and fnmatch(errorId, self.errorId)):
-            return true
+            return True
         else:
-            return false
+            return False
 
 class Configuration:
     """
