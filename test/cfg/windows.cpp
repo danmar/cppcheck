@@ -823,3 +823,38 @@ error_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfEleme
     // no warning shall be shown for
     return _mbscat_s(strDestination, numberOfElements, strSource);
 }
+
+// errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
+error_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
+{
+    size_t uninit_numberOfElements;
+    const char *uninit_strSource;
+    size_t uninit_count;
+    _locale_t uninit_locale;
+
+    // cppcheck-suppress uninitvar
+    (void)_strncpy_s_l(strDest, uninit_numberOfElements, strSource, count, locale);
+    // cppcheck-suppress uninitvar
+    (void)_strncpy_s_l(strDest, numberOfElements, uninit_strSource, count, locale);
+    // cppcheck-suppress uninitvar
+    (void)_strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
+    // cppcheck-suppress uninitvar
+    (void)_strncpy_s_l(strDest, numberOfElements, strSource, uninit_count, locale);
+    // cppcheck-suppress uninitvar
+    (void)_strncpy_s_l(strDest, numberOfElements, strSource, uninit_count, uninit_locale);
+
+    // no warning shall be shown for
+    return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
+}
+
+// errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
+error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
+{
+    // cppcheck-suppress nullPointer
+    (void)_strncpy_s_l(0, numberOfElements, strSource, count, locale);
+    // cppcheck-suppress nullPointer
+    (void)_strncpy_s_l(strDest, numberOfElements, 0, count, locale);
+
+    // no warning shall be shown for
+    return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
+}
