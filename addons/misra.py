@@ -293,13 +293,13 @@ def isFloatCounterInWhileLoop(whileToken):
     token = whileBodyStart
     while (token != whileBodyStart.link):
         token = token.next
-        for counter_str in counterTokens:
-            if token.isAssignmentOp and token.astOperand1.str == counter_str.str:
-                if counter_str.valueType and counter_str.valueType.isFloat():
-                    return True
-            elif token.str == counter_str.str and token.astParent and token.astParent.str in {'++', '--'}:
-                if counter_str.valueType and counter_str.valueType.isFloat():
-                    return True
+        for counterToken in counterTokens:
+            if not counterToken.valueType or not counterToken.valueType.isFloat():
+                continue
+            if token.isAssignmentOp and token.astOperand1.str == counterToken.str:
+                return True
+            if token.str == counterToken.str and token.astParent and token.astParent.str in {'++', '--'}:
+                return True
     return False
 
 
@@ -1151,8 +1151,7 @@ def misra_14_1(data):
                 if counter.valueType and counter.valueType.isFloat():
                     reportError(token, 14, 1)
         elif token.str == 'while':
-            exprs = isFloatCounterInWhileLoop(token)
-            if exprs:
+            if isFloatCounterInWhileLoop(token):
                 reportError(token, 14, 1)
 
 
