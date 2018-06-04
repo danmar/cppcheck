@@ -23,6 +23,7 @@ import argparse
 
 ruleTexts = {}
 suppressRules = {}
+suppressions = None
 typeBits = {
     'CHAR': None,
     'SHORT': None,
@@ -60,9 +61,14 @@ def reportError(location, num1, num2):
             errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
         else:
             return
-        sys.stderr.write('[' + location.file + ':' + str(location.linenr) + '] (style): ' + errmsg + '\n')
-
-        VIOLATIONS.append(errmsg)
+        if not cppcheckdata.reportError('[{file}:{line}] {severity}: {message}',
+                                        callstack=[(location.file, location.linenr)],
+                                        severity='style',
+                                        message = errmsg,
+                                        errorId = id,
+                                        suppressions = suppressions,
+                                        outputFunc = sys.stderr.write) is None:
+            VIOLATIONS.append(errmsg)
 
 
 def simpleMatch(token, pattern):
@@ -1699,6 +1705,9 @@ def generateTable():
 def parseDump(dumpfile):
 
     data = cppcheckdata.parsedump(dumpfile)
+
+    global suppressions
+    suppressions = data.suppressions
 
     typeBits['CHAR'] = data.platform.char_bit
     typeBits['SHORT'] = data.platform.short_bit

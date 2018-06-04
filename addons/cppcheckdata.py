@@ -483,14 +483,14 @@ class Suppression:
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
 
-    def isMatch(file, line, message, errorId):
+    def isMatch(self, file, line, message, errorId):
         if (fnmatch(file, self.fileName)
             and (self.lineNumber is None or line == self.lineNumber)
-            and fnmatch(message, '*'+self.symbolName+'*')
+            and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
             and fnmatch(errorId, self.errorId)):
-            return true
+            return True
         else:
-            return false
+            return False
 
 class Configuration:
     """
@@ -506,7 +506,6 @@ class Configuration:
         functions     List of Function items
         variables     List of Variable items
         valueflow     List of ValueFlow values
-        suppressions  List of warning suppressions
     """
 
     name = ''
@@ -516,7 +515,6 @@ class Configuration:
     functions = []
     variables = []
     valueflow = []
-    suppressions = []
 
     def __init__(self, confignode):
         self.name = confignode.get('cfg')
@@ -526,7 +524,6 @@ class Configuration:
         self.functions = []
         self.variables = []
         self.valueflow = []
-        self.suppressions = []
         arguments = []
 
         for element in confignode:
@@ -562,9 +559,6 @@ class Configuration:
             if element.tag == 'valueflow':
                 for values in element:
                     self.valueflow.append(ValueFlow(values))
-            if element.tag == "suppressions":
-                for suppression in element:
-                    self.suppressions.append(Suppression(suppression))
 
         IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
         for token in self.tokenlist:
@@ -664,6 +658,7 @@ class CppcheckData:
     rawTokens = []
     platform = None
     configurations = []
+    suppressions = []
 
     def __init__(self, filename):
         self.configurations = []
@@ -688,6 +683,13 @@ class CppcheckData:
             for i in range(len(self.rawTokens) - 1):
                 self.rawTokens[i + 1].previous = self.rawTokens[i]
                 self.rawTokens[i].next = self.rawTokens[i + 1]
+
+
+        for suppressionsNode in data.getroot():
+            if suppressionsNode.tag == "suppressions":
+                for suppression in suppressionsNode:
+                    self.suppressions.append(Suppression(suppression))
+
 
         # root is 'dumps' node, each config has its own 'dump' subnode.
         for cfgnode in data.getroot():
