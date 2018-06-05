@@ -322,10 +322,10 @@ validatePlatforms: ${PlatformFilesCHECKED}
 /tmp/example.xml: cppcheck
 	cppcheck --xml --inconclusive -j 4 cli externals gui lib test 2>/tmp/example.xml
 createXMLExamples:/tmp/errorlist.xml /tmp/example.xml
-.PHONY: validateXMLV2
-validateXMLV2: createXMLExamples
-	xmllint --noout --relaxng xmlV2.rng /tmp/errorlist.xml
-	xmllint --noout --relaxng xmlV2.rng /tmp/example.xml
+.PHONY: validateXML
+validateXML: createXMLExamples
+	xmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml
+	xmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml
 
 ###### Build
 

@@ -420,10 +420,10 @@ int main(int argc, char **argv)
     fout << "/tmp/example.xml: cppcheck\n";
     fout << "\tcppcheck --xml --inconclusive -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
     fout << "createXMLExamples:/tmp/errorlist.xml /tmp/example.xml\n";
-    fout << ".PHONY: validateXMLV2\n";
-    fout << "validateXMLV2: createXMLExamples\n";
-    fout << "\txmllint --noout --relaxng xmlV2.rng /tmp/errorlist.xml\n";
-    fout << "\txmllint --noout --relaxng xmlV2.rng /tmp/example.xml\n";
+    fout << ".PHONY: validateXML\n";
+    fout << "validateXML: createXMLExamples\n";
+    fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
+    fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
 
     fout << "\n###### Build\n\n";
 
