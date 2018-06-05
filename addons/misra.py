@@ -61,10 +61,10 @@ def reportError(location, num1, num2):
             errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
         else:
             return
-        if not cppcheckdata.reportError('[{file}:{line}] {severity}: {message}',
+        if not cppcheckdata.reportError('[{file}:{line}] ({severity}): {message}',
                                         callstack=[(location.file, location.linenr)],
                                         severity='style',
-                                        message = errmsg,
+                                        message = errmsg + '\n',
                                         errorId = id,
                                         suppressions = suppressions,
                                         outputFunc = sys.stderr.write) is None:
