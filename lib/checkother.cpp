@@ -135,7 +135,7 @@ void CheckOther::checkCastIntToCharAndBackError(const Token *tok, const std::str
         "$symbol:" + strFunctionName + "\n"
         "Storing $symbol() return value in char variable and then comparing with EOF.\n"
         "When saving $symbol() return value in char variable there is loss of precision. "
-        " When $symnol() returns EOF this value is truncated. Comparing the char "
+        " When $symbol() returns EOF this value is truncated. Comparing the char "
         "variable with EOF can have unexpected results. For instance a loop \"while (EOF != (c = $symbol());\" "
         "loops forever on some compilers/platforms and on other compilers/platforms it will stop "
         "when the file contains a matching character.", CWE197, false
