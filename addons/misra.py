@@ -61,13 +61,15 @@ def reportError(location, num1, num2):
             errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
         else:
             return
-        if not cppcheckdata.reportError('[{file}:{line}] ({severity}): {message}',
-                                        callstack=[(location.file, location.linenr)],
-                                        severity='style',
-                                        message = errmsg + '\n',
-                                        errorId = id,
-                                        suppressions = suppressions,
-                                        outputFunc = sys.stderr.write) is None:
+        formattedMsg = cppcheckdata.reportError(args.template,
+                                                callstack=[(location.file, location.linenr)],
+                                                severity='style',
+                                                message = errmsg,
+                                                errorId = id,
+                                                suppressions = suppressions)
+        if formattedMsg:
+            sys.stderr.write(formattedMsg)
+            sys.stderr.write('\n')
             VIOLATIONS.append(errmsg)
 
 
@@ -1868,7 +1870,7 @@ and 20.13, run:
 
 '''
 
-parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+parser = cppcheckdata.ArgumentParser()
 parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
 parser.add_argument("--suppress-rules", type=str, help=SUPPRESS_RULES_HELP)
 parser.add_argument("--quiet", help="Only print something when there is an error", action="store_true")
