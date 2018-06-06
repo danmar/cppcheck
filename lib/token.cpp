@@ -36,7 +36,7 @@
 const std::list<ValueFlow::Value> Token::emptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
-    tokensFrontBack(tokensFrontBack),
+    _tokensFrontBack(tokensFrontBack),
     _next(nullptr),
     _previous(nullptr),
     _link(nullptr),
@@ -54,7 +54,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     _astOperand2(nullptr),
     _astParent(nullptr),
     _originalName(nullptr),
-    valuetype(nullptr),
+    _valuetype(nullptr),
     _values(nullptr)
 {
 }
@@ -62,7 +62,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
 Token::~Token()
 {
     delete _originalName;
-    delete valuetype;
+    delete _valuetype;
     delete _values;
 }
 
@@ -219,8 +219,8 @@ void Token::deleteNext(unsigned long index)
 
     if (_next)
         _next->previous(this);
-    else if (tokensFrontBack)
-        tokensFrontBack->back = this;
+    else if (_tokensFrontBack)
+        _tokensFrontBack->back = this;
 }
 
 void Token::deletePrevious(unsigned long index)
@@ -239,8 +239,8 @@ void Token::deletePrevious(unsigned long index)
 
     if (_previous)
         _previous->next(this);
-    else if (tokensFrontBack)
-        tokensFrontBack->front = this;
+    else if (_tokensFrontBack)
+        _tokensFrontBack->front = this;
 }
 
 void Token::swapWithNext()
@@ -261,7 +261,7 @@ void Token::swapWithNext()
         std::swap(_function, _next->_function);
         std::swap(_originalName, _next->_originalName);
         std::swap(_values, _next->_values);
-        std::swap(valuetype, _next->valuetype);
+        std::swap(_valuetype, _next->_valuetype);
         std::swap(_progressValue, _next->_progressValue);
     }
 }
@@ -285,9 +285,9 @@ void Token::takeData(Token *fromToken)
     delete _values;
     _values = fromToken->_values;
     fromToken->_values = nullptr;
-    delete valuetype;
-    valuetype = fromToken->valuetype;
-    fromToken->valuetype = nullptr;
+    delete _valuetype;
+    _valuetype = fromToken->_valuetype;
+    fromToken->_valuetype = nullptr;
     if (_link)
         _link->link(this);
 }
@@ -332,10 +332,10 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
-    if (end->tokensFrontBack && end->tokensFrontBack->back == end) {
+    if (end->_tokensFrontBack && end->_tokensFrontBack->back == end) {
         while (end->next())
             end = end->next();
-        end->tokensFrontBack->back = end;
+        end->_tokensFrontBack->back = end;
     }
 
     // Update _progressValue, fileIndex and linenr
@@ -926,7 +926,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     if (_str.empty())
         newToken = this;
     else
-        newToken = new Token(tokensFrontBack);
+        newToken = new Token(_tokensFrontBack);
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
@@ -949,8 +949,8 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             if (this->next()) {
                 newToken->next(this->next());
                 newToken->next()->previous(newToken);
-            } else if (tokensFrontBack) {
-                tokensFrontBack->back = newToken;
+            } else if (_tokensFrontBack) {
+                _tokensFrontBack->back = newToken;
             }
             this->next(newToken);
             newToken->previous(this);
@@ -1334,8 +1334,8 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
     if (isExpandedMacro())
         ret += '$';
     ret += _str;
-    if (valuetype)
-        ret += " \'" + valuetype->str() + '\'';
+    if (_valuetype)
+        ret += " \'" + _valuetype->str() + '\'';
     ret += '\n';
 
     if (_astOperand1) {
@@ -1658,9 +1658,9 @@ void Token::assignProgressValues(Token *tok)
 
 void Token::setValueType(ValueType *vt)
 {
-    if (vt != valuetype) {
-        delete valuetype;
-        valuetype = vt;
+    if (vt != _valuetype) {
+        delete _valuetype;
+        _valuetype = vt;
     }
 }
 

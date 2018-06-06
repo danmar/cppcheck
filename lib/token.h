@@ -62,7 +62,7 @@ struct TokensFrontBack {
  */
 class CPPCHECKLIB Token {
 private:
-    TokensFrontBack* tokensFrontBack;
+    TokensFrontBack* _tokensFrontBack;
 
     // Not implemented..
     Token(const Token &);
@@ -234,7 +234,7 @@ public:
     static std::string getCharAt(const Token *tok, std::size_t index);
 
     const ValueType *valueType() const {
-        return valuetype;
+        return _valuetype;
     }
     void setValueType(ValueType *vt);
 
@@ -242,7 +242,7 @@ public:
         const Token *top = this;
         while (top && !Token::Match(top->astParent(), ",|("))
             top = top->astParent();
-        return top ? top->valuetype : nullptr;
+        return top ? top->_valuetype : nullptr;
     }
 
     Token::Type tokType() const {
@@ -997,7 +997,7 @@ private:
     std::string* _originalName;
 
     // ValueType
-    ValueType *valuetype;
+    ValueType *_valuetype;
 
     // ValueFlow
     std::list<ValueFlow::Value>* _values;
