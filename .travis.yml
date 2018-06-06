@@ -76,9 +76,9 @@ script:
 # run extra tests
   - tools/generate_and_run_more_tests.sh
 # Validate XML
-#  - make validateXMLV2
+#  - make validateXML doesn't work in this context unfortunately
   - ${CPPCHECK} --errorlist >/tmp/errorlist.xml
-  - xmllint --noout --relaxng xmlV2.rng /tmp/errorlist.xml
+  - xmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml
 # check test/cfg
   - make checkcfg
   - make validateCFG
