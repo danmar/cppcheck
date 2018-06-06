@@ -327,7 +327,7 @@ void CheckThread::parseAddonErrors(QString err, QString tool)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegExp r1("\\[([a-zA-Z]?:?[^:]+):([0-9]+)\\][ ][(]([a-z]+)[)]: (.+) \\[([a-zA-Z0-9_\\-\\.]+)\\]");
+        QRegExp r1("\\[([a-zA-Z]?:?[^:]+):([0-9]+)\\]:?[ ][(]([a-z]+)[)]:? (.+) \\[([a-zA-Z0-9_\\-\\.]+)\\]");
         if (!r1.exactMatch(line))
             continue;
         const std::string &filename = r1.cap(1).toStdString();
