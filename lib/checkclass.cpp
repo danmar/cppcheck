@@ -285,6 +285,9 @@ static bool isNonCopyable(const Scope *scope, bool *unknown)
             continue;
         }
 
+        if (isNonCopyable(baseInfo.type->classScope, &u))
+            return true;
+
         for (const Function &func : baseInfo.type->classScope->functionList) {
             if (func.type != Function::eCopyConstructor)
                 continue;

@@ -69,6 +69,7 @@ private:
         TEST_CASE(copyConstructor1);
         TEST_CASE(copyConstructor2); // ticket #4458
         TEST_CASE(copyConstructor3); // defaulted/deleted
+        TEST_CASE(copyConstructor4); // base class with private constructor
         TEST_CASE(noOperatorEq); // class with memory management should have operator eq
         TEST_CASE(noDestructor); // class with memory management should have destructor
 
@@ -833,6 +834,29 @@ private:
                              "   ~F();\n"
                              "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'F' has dynamic memory/resource allocation(s). The copy constructor is explicitly defaulted but the default copy constructor does not work well. It is recommended to define or delete the copy constructor.\n", errout.str());
+    }
+
+    void copyConstructor4() {
+        checkCopyConstructor("class noncopyable {\n"
+                             "protected:\n"
+                             "    noncopyable() {}\n"
+                             "    ~noncopyable() {}\n"
+                             "\n"
+                             "private:\n"
+                             "    noncopyable( const noncopyable& );\n"
+                             "    const noncopyable& operator=( const noncopyable& );\n"
+                             "};\n"
+                             "\n"
+                             "class Base : private noncopyable {};\n"
+                             "\n"
+                             "class Foo : public Base {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void noOperatorEq() {
