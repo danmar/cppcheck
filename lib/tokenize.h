@@ -884,7 +884,7 @@ private:
     /** variable count */
     unsigned int _varId;
 
-    /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", .. */
+    /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", ... */
     unsigned int _unnamedCount;
 
     /**

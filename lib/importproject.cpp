@@ -116,7 +116,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
         if (it1 == variables.end()) {
             const char *envValue = std::getenv(var.c_str());
             if (!envValue) {
-                //! @TODO generate a debug/info message about undefined variable
+                //! \todo generate a debug/info message about undefined variable
                 break;
             }
             variables[var] = std::string(envValue);

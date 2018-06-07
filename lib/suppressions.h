@@ -125,9 +125,7 @@ public:
     /**
      * @brief Don't show this error. File and/or line are optional. In which case
      * the errorId alone is used for filtering.
-     * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
-     * @param file File name with the path, e.g. "src/main.cpp"
-     * @param line number, e.g. "123"
+     * @param suppression suppression details
      * @return error message. empty upon success
      */
     std::string addSuppression(const Suppression &suppression);
