@@ -1378,6 +1378,9 @@ private:
         check("void f(std::unique_ptr<std::string> ptr) {}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(const std::shared_ptr<std::string> ptr) {}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(const std::string::size_type x) {}");
         ASSERT_EQUALS("", errout.str());
 
