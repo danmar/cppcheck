@@ -1384,6 +1384,14 @@ private:
         check("void f(const std::function<F> ptr) {}");
         ASSERT_EQUALS("", errout.str());
 
+        {
+            check("void f(const std::pair<int,int> x) {}");
+            ASSERT_EQUALS("", errout.str());
+
+            check("void f(const std::pair<std::string,std::string> x) {}");
+            TODO_ASSERT_EQUALS("error", "", errout.str());
+        }
+
         check("void f(const std::string::size_type x) {}");
         ASSERT_EQUALS("", errout.str());
 
