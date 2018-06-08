@@ -837,8 +837,6 @@ error_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const cha
     // cppcheck-suppress uninitvar
     (void)_strncpy_s_l(strDest, numberOfElements, uninit_strSource, count, locale);
     // cppcheck-suppress uninitvar
-    (void)_strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
-    // cppcheck-suppress uninitvar
     (void)_strncpy_s_l(strDest, numberOfElements, strSource, uninit_count, locale);
     // cppcheck-suppress uninitvar
     (void)_strncpy_s_l(strDest, numberOfElements, strSource, uninit_count, uninit_locale);
