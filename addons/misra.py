@@ -54,7 +54,7 @@ def reportError(location, num1, num2):
         return
     else:
         num = num1 * 100 + num2
-        id = 'misra-c2012-' + str(num1) + '.' + str(num2)
+        id = 'misra2012_' + str(num1) + '_' + str(num2)
         if num in ruleTexts:
             errmsg = ruleTexts[num] + ' [' + id + ']'
         elif len(ruleTexts) == 0:
