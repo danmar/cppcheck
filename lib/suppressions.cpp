@@ -205,6 +205,8 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
         iss >> word;
         if (!iss)
             break;
+        if (word.find_first_not_of("+-*/%#;") == std::string::npos)
+            break;
         if (word.compare(0,11,"symbolName=")==0)
             symbolName = word.substr(11);
         else if (errorMessage && errorMessage->empty())

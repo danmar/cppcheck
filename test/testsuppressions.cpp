@@ -49,6 +49,7 @@ private:
 
         TEST_CASE(inlinesuppress);
         TEST_CASE(inlinesuppress_symbolname);
+        TEST_CASE(inlinesuppress_comment);
 
         TEST_CASE(globalSuppressions); // Testing that global suppressions work (#8515)
 
@@ -432,6 +433,17 @@ private:
                          "}\n",
                          "");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+    }
+
+    void inlinesuppress_comment() {
+        Suppressions::Suppression s;
+        std::string errmsg;
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errmsg));
+        ASSERT_EQUALS("", errmsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc // some comment", &errmsg));
+        ASSERT_EQUALS("", errmsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errmsg));
+        ASSERT_EQUALS("", errmsg);
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
