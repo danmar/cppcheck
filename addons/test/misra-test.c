@@ -153,13 +153,15 @@ void misra_10_1() {
 
 void misra_10_4(u32 x, s32 y) {
   z = x + 3; // 10.4
-  enum misra_10_4_enuma { misra_10_4_A1, misra_10_4_A2, misra_10_4_A3 };
+  enum misra_10_4_enuma { misra_10_4_A1, misra_10_4_A2, misra_10_4_A3 } a;
   enum misra_10_4_enumb { misra_10_4_B1, misra_10_4_B2, misra_10_4_B3 };
   if ( misra_10_4_B1 > misra_10_4_A1 ) //10.4
    {
       ; 
    }
-   z = x + y; //10.4
+  z = x + y; //10.4
+  z = (a == misra_10_4_A3) ? x : y; //10.4
+  z = (a == misra_10_4_A3) ? y : y; // no-warning
 }
 
 void misra_10_6(u8 x, u32 a, u32 b) {

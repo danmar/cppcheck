@@ -781,7 +781,7 @@ def misra_10_1(data):
                 reportError(token, 10, 1)
 
 def misra_10_4(data):
-    op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', '?', ':'}
+    op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
     for token in data.tokenlist:
         if token.str not in op and not token.isComparisonOp:
             continue
