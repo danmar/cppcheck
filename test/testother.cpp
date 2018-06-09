@@ -3980,11 +3980,12 @@ private:
 
     void duplicateVarExpression() {
         check("int f() __attribute__((pure));\n"
+              "int g() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f();\n"
               "    int j = f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("struct Foo { int f() const; int g() const; };\n"
               "void test() {\n"
@@ -4004,18 +4005,20 @@ private:
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f() __attribute__((pure));\n"
+              "int g() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = 1 + f();\n"
               "    int j = 1 + f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f() __attribute__((pure));\n"
+              "int g() __attribute__((pure));\n"
               "void test() {\n"
               "    int i = f() + f();\n"
               "    int j = f() + f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("int f(int) __attribute__((pure));\n"
               "int g(int) __attribute__((pure));\n"
@@ -4058,6 +4061,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("int f();\n"
+              "int g();\n"
               "void test() {\n"
               "    int i = f() || f();\n"
               "    int j = f() && f();\n"
@@ -4075,6 +4079,22 @@ private:
               "void test() {\n"
               "    Foo i = Foo{};\n"
               "    Foo j = Foo{};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { int f() const; float g() const; };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { int f(); int g(); };\n"
+              "void test() {\n"
+              "    Foo f = Foo{};\n"
+              "    int i = f.f();\n"
+              "    int j = f.f();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
