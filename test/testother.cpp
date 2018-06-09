@@ -134,6 +134,7 @@ private:
         TEST_CASE(oppositeExpression);
         TEST_CASE(duplicateVarExpression);
         TEST_CASE(duplicateVarExpressionUnique);
+        TEST_CASE(duplicateVarExpressionAssign);
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -4170,6 +4171,57 @@ private:
               "    int i = f.f();\n"
               "    int j = f.f();\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateVarExpressionAssign() {
+        check("struct A { int x; int y; };"
+              "void use(int);\n"
+              "void test(A a) {\n"
+              "    int i = a.x;\n"
+              "    int j = a.x;\n"
+              "    use(i);\n"
+              "    i = j;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; int y; };"
+              "void use(int);\n"
+              "void test(A a) {\n"
+              "    int i = a.x;\n"
+              "    int j = a.x;\n"
+              "    use(j);\n"
+              "    j = i;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // Issue #8612
+        check("struct P\n"
+              "{\n"
+              "    void func();\n"
+              "    bool operator==(const P&) const;\n"
+              "};\n"
+              "struct X\n"
+              "{\n"
+              "    P first;\n"
+              "    P second;\n"
+              "};\n"
+              "bool bar();\n"
+              "void baz(const P&);\n"
+              "void foo(const X& x)\n"
+              "{\n"
+              "    P current = x.first;\n"
+              "    P previous = x.first;\n"
+              "    while (true)\n"
+              "    {\n"
+              "        baz(current);\n"
+              "        if (bar() && previous == current)\n"
+              "        {\n"
+              "            current.func();\n"
+              "        }\n"
+              "        previous = current;\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
