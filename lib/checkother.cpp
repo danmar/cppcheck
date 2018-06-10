@@ -1952,14 +1952,14 @@ void CheckOther::checkDuplicateExpression()
                         bool assigned = false;
                         const Scope * varScope = var1->scope() ? var1->scope() : &*scope;
                         for (const Token *assignTok = Token::findsimplematch(var2, ";"); assignTok && assignTok != varScope->bodyEnd; assignTok = assignTok->next()) {
-                            if(Token::Match(assignTok, "%varid% = %var%", var1->varId()) && Token::Match(assignTok, "%var% = %varid%", var2->varId())) {
+                            if (Token::Match(assignTok, "%varid% = %var%", var1->varId()) && Token::Match(assignTok, "%var% = %varid%", var2->varId())) {
                                 assigned = true;
                             }
-                            if(Token::Match(assignTok, "%varid% = %var%", var2->varId()) && Token::Match(assignTok, "%var% = %varid%", var1->varId())) {
+                            if (Token::Match(assignTok, "%varid% = %var%", var2->varId()) && Token::Match(assignTok, "%var% = %varid%", var1->varId())) {
                                 assigned = true;
                             }
                         }
-                        if(!assigned)
+                        if (!assigned)
                             duplicateAssignExpressionError(var1, var2);
                     }
                 }
