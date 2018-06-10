@@ -2332,21 +2332,21 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
 void CheckClass::getFirstVirtualFunctionCallStack(
     std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap,
     const Token * callToken,
-    std::list<const Token *> & callstack)
+    std::list<const Token *> & pureFuncStack)
 {
     const Function *callFunction = callToken->function();
     if (callFunction->isVirtual() && (!callFunction->isPure() || !callFunction->hasBody())) {
-        callstack.push_back(callFunction->tokenDef);
+        pureFuncStack.push_back(callFunction->tokenDef);
         return;
     }
     std::map<const Function *, std::list<const Token *> >::const_iterator found = virtualFunctionCallsMap.find(callFunction);
     if (found == virtualFunctionCallsMap.end() || found->second.empty()) {
-        callstack.clear();
+        pureFuncStack.clear();
         return;
     }
     const Token * firstCall = *found->second.begin();
-    callstack.push_back(firstCall);
-    getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, firstCall, callstack);
+    pureFuncStack.push_back(firstCall);
+    getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, firstCall, pureFuncStack);
 }
 
 void CheckClass::virtualFunctionCallInConstructorError(
