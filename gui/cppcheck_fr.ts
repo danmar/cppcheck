@@ -788,10 +788,6 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Select configuration</source>
         <translation type="unfinished"></translation>
     </message>
@@ -976,6 +972,53 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Project files (*.cppcheck)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Reanalyze and check library</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check configuration (defines, includes)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>C/C++ Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Borland C++ Builder 6</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NewSuppressionDialog</name>
+    <message>
+        <source>New suppression</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line number</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symbol name</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -1102,10 +1145,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Import Project (Visual studio / compile database)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1201,6 +1240,10 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>External tools</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProjectFileDialog</name>
@@ -1221,23 +1264,11 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation>Selectionner un répertoire à vérifier</translation>
     </message>
     <message>
-        <source>Add Suppression</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select error id suppress:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Select Cppcheck build dir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Import Project</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Visual Studio (*.sln *.vcxproj);;Compile database (compile_commands.json)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1254,6 +1285,18 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Misra rule texts file (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1338,15 +1381,15 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Copy filename</source>
-        <translation>Copier le nom du fichier</translation>
+        <translation type="vanished">Copier le nom du fichier</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation>Copier le chemin complet</translation>
+        <translation type="vanished">Copier le chemin complet</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation>Copier le message</translation>
+        <translation type="vanished">Copier le message</translation>
     </message>
     <message>
         <source>Cppcheck</source>
@@ -1413,10 +1456,6 @@ Veuillez sélectionner le répertoire où est situé le fichier.</translation>
         <translation>débogage</translation>
     </message>
     <message>
-        <source>[Inconclusive]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -1434,7 +1473,7 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Copy message id</source>
-        <translation>Copier l&apos;identifiant du message</translation>
+        <translation type="vanished">Copier l&apos;identifiant du message</translation>
     </message>
     <message>
         <source>Hide all with id</source>
@@ -1473,10 +1512,6 @@ Please select the default editor application in preferences/Applications.</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy line nr</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Could not find file:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1490,6 +1525,10 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Please select the directory where file is located.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1992,6 +2031,17 @@ The user interface language has been reset to English. Open the Preferences-dial
     <name>TxtReport</name>
     <message>
         <source>inconclusive</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>toFilterString</name>
+    <message>
+        <source>All supported files (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All files (%1)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
