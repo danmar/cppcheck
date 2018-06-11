@@ -484,7 +484,7 @@ class Suppression:
         self.symbolName = element.get('symbolName')
 
     def isMatch(self, file, line, message, errorId):
-        if (fnmatch(file, self.fileName)
+        if ((self.fileName is None or fnmatch(file, self.fileName))
             and (self.lineNumber is None or line == self.lineNumber)
             and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
             and fnmatch(errorId, self.errorId)):
