@@ -737,20 +737,22 @@ def misra_8_11(data):
 
 def misra_8_12(data):
     for scope in data.scopes:
-        enum = []
-        implicit_enum = []
+        enum_values = []
+        implicit_enum_values = []
         if scope.type != 'Enum':
             continue
         e_token = scope.bodyStart.next
         while e_token != scope.bodyEnd:
-            if e_token.values:
-                enum.append(e_token.str)
-            if (e_token.values and e_token.isName and e_token.next.str != "="):
-                for v in e_token.values:
-                    implicit_enum.append(v.intvalue)
+            if e_token.isName and \
+               e_token.values and \
+               e_token.valueType and e_token.valueType.typeScope == scope:
+                token_values = [v.intvalue for v in e_token.values]
+                enum_values += token_values
+                if e_token.next.str != "=":
+                    implicit_enum_values += token_values
             e_token = e_token.next
-        for implicit_enum_value in implicit_enum:
-            if str(implicit_enum_value) in enum:
+        for implicit_enum_value in implicit_enum_values:
+            if enum_values.count(implicit_enum_value) != 1:
                 reportError(scope.bodyStart, 8, 12)
 
 
