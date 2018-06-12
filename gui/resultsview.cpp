@@ -30,10 +30,9 @@
 #include <QDate>
 #include <QMenu>
 #include <QClipboard>
+#include "resultsview.h"
 #include "common.h"
 #include "erroritem.h"
-#include "resultsview.h"
-#include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"
 #include "xmlreportv2.h"
