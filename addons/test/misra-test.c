@@ -211,6 +211,7 @@ void misra_11_7(int *p, float f) {
 }
 
 char * misra_11_8(const char *str) {
+  misra_11_8(str); // no-warning
   return (char *)str; // 11.8
 }
 
