@@ -819,6 +819,10 @@ public:
         setFlag(fHasBody, state);
     }
 
+    std::string getReturnTypeName() const {
+        return retType ? retType->name() : retDef ? retDef->stringifyList(tokenDef) : "";
+    }
+
     const Token *tokenDef;            ///< function name token in class definition
     const Token *argDef;              ///< function argument start '(' in class definition
     const Token *token;               ///< function name token in implementation

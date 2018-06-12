@@ -433,9 +433,9 @@ bool isUniqueExpression(const Token* tok)
         const Scope * scope = fun->nestedIn;
         if (!scope)
             return true;
-        std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
+        std::string returnType = fun->getReturnTypeName();
         for (const Function& f:scope->functionList) {
-            std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.tokenDef);
+            std::string freturnType = f.getReturnTypeName();
             if (f.argumentList.size() == fun->argumentList.size() &&
                 f.type == Function::eFunction &&
                 returnType == freturnType &&
