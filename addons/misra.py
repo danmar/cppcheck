@@ -1001,7 +1001,7 @@ def misra_11_8(data):
                     continue
                 if argtok.valueType.pointer == 0:
                     continue
-                const1 = argvar.isConst
+                const1 = argvar.constness
                 const2 = arguments[argnr - 1].valueType.constness
                 if (const1 % 2) < (const2 % 2):
                     reportError(token, 11, 8)
