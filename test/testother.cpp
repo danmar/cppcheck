@@ -135,6 +135,7 @@ private:
         TEST_CASE(duplicateVarExpression);
         TEST_CASE(duplicateVarExpressionUnique);
         TEST_CASE(duplicateVarExpressionAssign);
+        TEST_CASE(duplicateVarExpressionCrash);
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -4221,6 +4222,22 @@ private:
               "        }\n"
               "        previous = current;\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateVarExpressionCrash() {
+        // Issue #8624
+        check("struct  X {\n"
+              "    X();\n"
+              "    int f() const;\n"
+              "};\n"
+              "void run() {\n"
+              "        X x;\n"
+              "        int a = x.f();\n"
+              "        int b = x.f();\n"
+              "        (void)a;\n"
+              "        (void)b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -433,11 +433,13 @@ bool isUniqueExpression(const Token* tok)
         const Scope * scope = fun->nestedIn;
         if (!scope)
             return true;
-        std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
+        const std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
         for (const Function& f:scope->functionList) {
-            std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.tokenDef);
+            if (f.type != Function::eFunction)
+                continue;
+
+            const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.tokenDef);
             if (f.argumentList.size() == fun->argumentList.size() &&
-                f.type == Function::eFunction &&
                 returnType == freturnType &&
                 f.name() != fun->name()) {
                 return false;
