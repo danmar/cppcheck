@@ -765,7 +765,7 @@ public:
 
     /** Get progressValue */
     unsigned int progressValue() const {
-        return _progressValue;
+        return mProgressValue;
     }
 
     /** Calculate progress values for all tokens */
@@ -927,7 +927,7 @@ private:
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
      */
-    unsigned int _progressValue;
+    unsigned int mProgressValue;
 
     Token::Type mTokType;
 

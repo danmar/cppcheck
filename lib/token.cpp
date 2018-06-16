@@ -46,7 +46,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     _fileIndex(0),
     _linenr(0),
     _col(0),
-    _progressValue(0),
+    mProgressValue(0),
     mTokType(eNone),
     mFlags(0),
     _bits(0),
@@ -262,7 +262,7 @@ void Token::swapWithNext()
         std::swap(_originalName, mNext->_originalName);
         std::swap(_values, mNext->_values);
         std::swap(_valuetype, mNext->_valuetype);
-        std::swap(_progressValue, mNext->_progressValue);
+        std::swap(mProgressValue, mNext->mProgressValue);
     }
 }
 
@@ -338,9 +338,9 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
         end->mTokensFrontBack->back = end;
     }
 
-    // Update _progressValue, fileIndex and linenr
+    // Update mProgressValue, fileIndex and linenr
     for (Token *tok = start; tok != end->next(); tok = tok->next())
-        tok->_progressValue = replaceThis->_progressValue;
+        tok->mProgressValue = replaceThis->mProgressValue;
 
     // Delete old token, which is replaced
     delete replaceThis;
@@ -796,7 +796,7 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
 
     // Update _progressValue
     for (Token *tok = srcStart; tok != srcEnd->next(); tok = tok->next())
-        tok->_progressValue = newLocation->_progressValue;
+        tok->mProgressValue = newLocation->mProgressValue;
 }
 
 Token* Token::nextArgument() const
@@ -934,7 +934,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     if (newToken != this) {
         newToken->_linenr = _linenr;
         newToken->_fileIndex = _fileIndex;
-        newToken->_progressValue = _progressValue;
+        newToken->mProgressValue = mProgressValue;
 
         if (prepend) {
             /*if (this->previous())*/ {
@@ -1653,7 +1653,7 @@ void Token::assignProgressValues(Token *tok)
         ++total_count;
     unsigned int count = 0;
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-        tok2->_progressValue = count++ * 100 / total_count;
+        tok2->mProgressValue = count++ * 100 / total_count;
 }
 
 void Token::setValueType(ValueType *vt)
