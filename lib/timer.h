@@ -42,11 +42,11 @@ public:
 
 struct TimerResultsData {
     std::clock_t _clocks;
-    long _numberOfResults;
+    long mNumberOfResults;
 
     TimerResultsData()
         : _clocks(0)
-        , _numberOfResults(0) {
+        , mNumberOfResults(0) {
     }
 
     double seconds() const {
