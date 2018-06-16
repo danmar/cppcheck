@@ -188,8 +188,8 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     if (type->tokType() == Token::eString)
         return Token::getStrLength(type) + 1U;
 
-    const std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->str());
-    if (it == _typeSize.end()) {
+    const std::map<std::string, unsigned int>::const_iterator it = mTypeSize.find(type->str());
+    if (it == mTypeSize.end()) {
         const Library::PodType* podtype = mSettings->library.podtype(type->str());
         if (!podtype)
             return 0;
@@ -1733,7 +1733,7 @@ void Tokenizer::createTokens(const simplecpp::TokenList *tokenList)
 
 bool Tokenizer::simplifyTokens1(const std::string &configuration)
 {
-    // Fill the map _typeSize..
+    // Fill the map mTypeSize..
     fillTypeSizes();
 
     _configuration = configuration;
@@ -1798,18 +1798,18 @@ void Tokenizer::checkForEnumsWithTypedef()
 
 void Tokenizer::fillTypeSizes()
 {
-    _typeSize.clear();
-    _typeSize["char"] = 1;
-    _typeSize["_Bool"] = mSettings->sizeof_bool;
-    _typeSize["bool"] = mSettings->sizeof_bool;
-    _typeSize["short"] = mSettings->sizeof_short;
-    _typeSize["int"] = mSettings->sizeof_int;
-    _typeSize["long"] = mSettings->sizeof_long;
-    _typeSize["float"] = mSettings->sizeof_float;
-    _typeSize["double"] = mSettings->sizeof_double;
-    _typeSize["wchar_t"] = mSettings->sizeof_wchar_t;
-    _typeSize["size_t"] = mSettings->sizeof_size_t;
-    _typeSize["*"] = mSettings->sizeof_pointer;
+    mTypeSize.clear();
+    mTypeSize["char"] = 1;
+    mTypeSize["_Bool"] = mSettings->sizeof_bool;
+    mTypeSize["bool"] = mSettings->sizeof_bool;
+    mTypeSize["short"] = mSettings->sizeof_short;
+    mTypeSize["int"] = mSettings->sizeof_int;
+    mTypeSize["long"] = mSettings->sizeof_long;
+    mTypeSize["float"] = mSettings->sizeof_float;
+    mTypeSize["double"] = mSettings->sizeof_double;
+    mTypeSize["wchar_t"] = mSettings->sizeof_wchar_t;
+    mTypeSize["size_t"] = mSettings->sizeof_size_t;
+    mTypeSize["*"] = mSettings->sizeof_pointer;
 }
 
 void Tokenizer::combineOperators()
@@ -5183,7 +5183,7 @@ void Tokenizer::simplifyCasts()
         // #4164 : ((unsigned char)1) => (1)
         if (Token::Match(tok->next(), "( %type% ) %num%") && tok->next()->link()->previous()->isStandardType()) {
             const MathLib::bigint value = MathLib::toLongNumber(tok->next()->link()->next()->str());
-            unsigned int bits = mSettings->char_bit * _typeSize[tok->next()->link()->previous()->str()];
+            unsigned int bits = mSettings->char_bit * mTypeSize[tok->next()->link()->previous()->str()];
             if (!tok->tokAt(2)->isUnsigned() && bits > 0)
                 bits--;
             if (bits < 31 && value >= 0 && value < (1LL << bits)) {

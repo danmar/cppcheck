@@ -879,7 +879,7 @@ private:
     std::string _configuration;
 
     /** sizeof information for known types */
-    std::map<std::string, unsigned int> _typeSize;
+    std::map<std::string, unsigned int> mTypeSize;
 
     /** variable count */
     unsigned int mVarId;
