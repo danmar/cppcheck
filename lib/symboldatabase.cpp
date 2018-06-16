@@ -38,7 +38,7 @@
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger)
 {
-    cpp = isCPP();
+    mIsCpp = isCPP();
 
     if (mSettings->defaultSign == 's' || mSettings->defaultSign == 'S')
         mDefaultSignedness = ValueType::SIGNED;
@@ -4845,7 +4845,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
 
     if (vt1 && Token::Match(parent, "<<|>>")) {
-        if (!cpp || (vt2 && vt2->isIntegral()))
+        if (!mIsCpp || (vt2 && vt2->isIntegral()))
             setValueType(parent, *vt1);
         return;
     }
@@ -4853,7 +4853,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     if (parent->isAssignmentOp()) {
         if (vt1)
             setValueType(parent, *vt1);
-        else if (cpp && ((Token::Match(parent->tokAt(-3), "%var% ; %var% =") && parent->strAt(-3) == parent->strAt(-1)) ||
+        else if (mIsCpp && ((Token::Match(parent->tokAt(-3), "%var% ; %var% =") && parent->strAt(-3) == parent->strAt(-1)) ||
                          Token::Match(parent->tokAt(-1), "%var% ="))) {
             Token *var1Tok = parent->strAt(-2) == ";" ? parent->tokAt(-3) : parent->tokAt(-1);
             Token *autoTok = nullptr;
@@ -4885,7 +4885,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
-    if (parent->str() == "[" && (!cpp || parent->astOperand1() == tok) && valuetype.pointer > 0U && !Token::Match(parent->previous(), "[{,]")) {
+    if (parent->str() == "[" && (!mIsCpp || parent->astOperand1() == tok) && valuetype.pointer > 0U && !Token::Match(parent->previous(), "[{,]")) {
         const Token *op1 = parent->astOperand1();
         while (op1 && op1->str() == "[")
             op1 = op1->astOperand1();
@@ -5271,7 +5271,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                 setValueType(tok, ValueType(sign, type, 0U));
             }
         } else if (tok->isComparisonOp() || tok->tokType() == Token::eLogicalOp) {
-            if (cpp && tok->isComparisonOp() && (getClassScope(tok->astOperand1()) || getClassScope(tok->astOperand2()))) {
+            if (mIsCpp && tok->isComparisonOp() && (getClassScope(tok->astOperand1()) || getClassScope(tok->astOperand2()))) {
                 const Function *function = getOperatorFunction(tok);
                 if (function) {
                     ValueType vt;
@@ -5380,7 +5380,7 @@ void SymbolDatabase::setValueTypeInTokenList()
             setValueType(tok, *tok->variable());
         } else if (tok->enumerator()) {
             setValueType(tok, *tok->enumerator());
-        } else if (cpp && tok->str() == "new") {
+        } else if (mIsCpp && tok->str() == "new") {
             const Token *typeTok = tok->next();
             if (Token::Match(typeTok, "( std| ::| nothrow )"))
                 typeTok = typeTok->link()->next();

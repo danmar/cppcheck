@@ -1248,7 +1248,7 @@ private:
     /** list for missing types */
     std::list<Type> mBlankTypes;
 
-    bool cpp;
+    bool mIsCpp;
     ValueType::Sign mDefaultSignedness;
 
     /** "negative cache" list of tokens that we find are not enumeration values */
