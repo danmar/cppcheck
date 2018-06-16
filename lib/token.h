@@ -638,7 +638,7 @@ public:
      * to.
      */
     void link(Token *linkToToken) {
-        _link = linkToToken;
+        mLink = linkToToken;
         if (_str == "<" || _str == ">")
             update_property_info();
     }
@@ -653,7 +653,7 @@ public:
      * @return The token where this token links to.
      */
     Token *link() const {
-        return _link;
+        return mLink;
     }
 
     /**
@@ -907,7 +907,7 @@ private:
 
     Token *mNext;
     Token *mPrevious;
-    Token *_link;
+    Token *mLink;
 
     // symbol database information
     const Scope *mScope;

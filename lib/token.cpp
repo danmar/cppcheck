@@ -39,7 +39,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     mTokensFrontBack(tokensFrontBack),
     mNext(nullptr),
     mPrevious(nullptr),
-    _link(nullptr),
+    mLink(nullptr),
     mScope(nullptr),
     mFunction(nullptr), // Initialize whole union
     mVarId(0),
@@ -112,7 +112,7 @@ void Token::update_property_info()
                   _str == "||" ||
                   _str == "!"))
             tokType(eLogicalOp);
-        else if (_str.size() <= 2 && !_link &&
+        else if (_str.size() <= 2 && !mLink &&
                  (_str == "==" ||
                   _str == "!=" ||
                   _str == "<"  ||
@@ -124,7 +124,7 @@ void Token::update_property_info()
                  (_str == "++" ||
                   _str == "--"))
             tokType(eIncDecOp);
-        else if (_str.size() == 1 && (_str.find_first_of("{}") != std::string::npos || (_link && _str.find_first_of("<>") != std::string::npos)))
+        else if (_str.size() == 1 && (_str.find_first_of("{}") != std::string::npos || (mLink && _str.find_first_of("<>") != std::string::npos)))
             tokType(eBracket);
         else
             tokType(eOther);
@@ -209,8 +209,8 @@ void Token::deleteNext(unsigned long index)
         Token *n = mNext;
 
         // #8154 we are about to be unknown -> destroy the link to us
-        if (n->_link && n->_link->_link == n)
-            n->_link->link(nullptr);
+        if (n->mLink && n->mLink->mLink == n)
+            n->mLink->link(nullptr);
 
         mNext = n->next();
         delete n;
@@ -229,8 +229,8 @@ void Token::deletePrevious(unsigned long index)
         Token *p = mPrevious;
 
         // #8154 we are about to be unknown -> destroy the link to us
-        if (p->_link && p->_link->_link == p)
-            p->_link->link(nullptr);
+        if (p->mLink && p->mLink->mLink == p)
+            p->mLink->link(nullptr);
 
         mPrevious = p->previous();
         delete p;
@@ -252,11 +252,11 @@ void Token::swapWithNext()
         std::swap(mVarId, mNext->mVarId);
         std::swap(mFileIndex, mNext->mFileIndex);
         std::swap(mLineNumber, mNext->mLineNumber);
-        if (mNext->_link)
-            mNext->_link->_link = this;
-        if (this->_link)
-            this->_link->_link = mNext;
-        std::swap(_link, mNext->_link);
+        if (mNext->mLink)
+            mNext->mLink->mLink = this;
+        if (this->mLink)
+            this->mLink->mLink = mNext;
+        std::swap(mLink, mNext->mLink);
         std::swap(mScope, mNext->mScope);
         std::swap(mFunction, mNext->mFunction);
         std::swap(_originalName, mNext->_originalName);
@@ -274,7 +274,7 @@ void Token::takeData(Token *fromToken)
     mVarId = fromToken->mVarId;
     mFileIndex = fromToken->mFileIndex;
     mLineNumber = fromToken->mLineNumber;
-    _link = fromToken->_link;
+    mLink = fromToken->mLink;
     mScope = fromToken->mScope;
     mFunction = fromToken->mFunction;
     if (fromToken->_originalName) {
@@ -288,8 +288,8 @@ void Token::takeData(Token *fromToken)
     delete _valuetype;
     _valuetype = fromToken->_valuetype;
     fromToken->_valuetype = nullptr;
-    if (_link)
-        _link->link(this);
+    if (mLink)
+        mLink->link(this);
 }
 
 void Token::deleteThis()
