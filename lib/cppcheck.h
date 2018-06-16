@@ -198,7 +198,7 @@ private:
      */
     virtual void reportOut(const std::string &outmsg) override;
 
-    std::list<std::string> _errorList;
+    std::list<std::string> mErrorList;
     Settings mSettings;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;

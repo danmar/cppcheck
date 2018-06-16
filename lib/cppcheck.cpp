@@ -494,7 +494,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()));
     }
 
-    _errorList.clear();
+    mErrorList.clear();
     if (internalErrorFound && (exitcode==0)) {
         exitcode=1;
     }
@@ -756,7 +756,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         return;
 
     // Alert only about unique errors
-    if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
+    if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) != mErrorList.end())
         return;
 
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
@@ -772,7 +772,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     if (!mSettings.nofail.isSuppressed(errorMessage) && (_useGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))
         exitcode = 1;
 
-    _errorList.push_back(errmsg);
+    mErrorList.push_back(errmsg);
 
     mErrorLogger.reportErr(msg);
     analyzerInformation.reportErr(msg, mSettings.verbose);
