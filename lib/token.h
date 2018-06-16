@@ -804,7 +804,7 @@ public:
      * @return the original name.
      */
     const std::string & originalName() const {
-        return _originalName ? *_originalName : emptyString;
+        return mOriginalName ? *mOriginalName : emptyString;
     }
 
     const std::list<ValueFlow::Value>& values() const {
@@ -816,10 +816,10 @@ public:
      */
     template<typename T>
     void originalName(T&& name) {
-        if (!_originalName)
-            _originalName = new std::string(name);
+        if (!mOriginalName)
+            mOriginalName = new std::string(name);
         else
-            *_originalName = name;
+            *mOriginalName = name;
     }
 
     bool hasKnownIntValue() const {
@@ -994,7 +994,7 @@ private:
     Token *mAstParent;
 
     // original name like size_t
-    std::string* _originalName;
+    std::string* mOriginalName;
 
     // ValueType
     ValueType *_valuetype;

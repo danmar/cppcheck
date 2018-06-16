@@ -53,7 +53,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     mAstOperand1(nullptr),
     mAstOperand2(nullptr),
     mAstParent(nullptr),
-    _originalName(nullptr),
+    mOriginalName(nullptr),
     _valuetype(nullptr),
     _values(nullptr)
 {
@@ -61,7 +61,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
 
 Token::~Token()
 {
-    delete _originalName;
+    delete mOriginalName;
     delete _valuetype;
     delete _values;
 }
@@ -259,7 +259,7 @@ void Token::swapWithNext()
         std::swap(mLink, mNext->mLink);
         std::swap(mScope, mNext->mScope);
         std::swap(mFunction, mNext->mFunction);
-        std::swap(_originalName, mNext->_originalName);
+        std::swap(mOriginalName, mNext->mOriginalName);
         std::swap(_values, mNext->_values);
         std::swap(_valuetype, mNext->_valuetype);
         std::swap(mProgressValue, mNext->mProgressValue);
@@ -277,10 +277,10 @@ void Token::takeData(Token *fromToken)
     mLink = fromToken->mLink;
     mScope = fromToken->mScope;
     mFunction = fromToken->mFunction;
-    if (fromToken->_originalName) {
-        delete _originalName;
-        _originalName = fromToken->_originalName;
-        fromToken->_originalName = nullptr;
+    if (fromToken->mOriginalName) {
+        delete mOriginalName;
+        mOriginalName = fromToken->mOriginalName;
+        fromToken->mOriginalName = nullptr;
     }
     delete _values;
     _values = fromToken->_values;
