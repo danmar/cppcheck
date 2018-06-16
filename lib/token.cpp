@@ -55,7 +55,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     mAstParent(nullptr),
     mOriginalName(nullptr),
     mValueType(nullptr),
-    _values(nullptr)
+    mValues(nullptr)
 {
 }
 
@@ -63,7 +63,7 @@ Token::~Token()
 {
     delete mOriginalName;
     delete mValueType;
-    delete _values;
+    delete mValues;
 }
 
 static const std::set<std::string> controlFlowKeywords = {
@@ -260,7 +260,7 @@ void Token::swapWithNext()
         std::swap(mScope, mNext->mScope);
         std::swap(mFunction, mNext->mFunction);
         std::swap(mOriginalName, mNext->mOriginalName);
-        std::swap(_values, mNext->_values);
+        std::swap(mValues, mNext->mValues);
         std::swap(mValueType, mNext->mValueType);
         std::swap(mProgressValue, mNext->mProgressValue);
     }
@@ -282,9 +282,9 @@ void Token::takeData(Token *fromToken)
         mOriginalName = fromToken->mOriginalName;
         fromToken->mOriginalName = nullptr;
     }
-    delete _values;
-    _values = fromToken->_values;
-    fromToken->_values = nullptr;
+    delete mValues;
+    mValues = fromToken->mValues;
+    fromToken->mValues = nullptr;
     delete mValueType;
     mValueType = fromToken->mValueType;
     fromToken->mValueType = nullptr;
@@ -1362,19 +1362,19 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
     else
         out << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
-        if (!tok->_values)
+        if (!tok->mValues)
             continue;
         if (xml)
-            out << "    <values id=\"" << tok->_values << "\">" << std::endl;
+            out << "    <values id=\"" << tok->mValues << "\">" << std::endl;
         else if (line != tok->linenr())
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
         if (!xml) {
-            out << "  " << tok->str() << (tok->_values->front().isKnown() ? " always " : " possible ");
-            if (tok->_values->size() > 1U)
+            out << "  " << tok->str() << (tok->mValues->front().isKnown() ? " always " : " possible ");
+            if (tok->mValues->size() > 1U)
                 out << '{';
         }
-        for (std::list<ValueFlow::Value>::const_iterator it=tok->_values->begin(); it!=tok->_values->end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it=tok->mValues->begin(); it!=tok->mValues->end(); ++it) {
             if (xml) {
                 out << "      <value ";
                 switch (it->valueType) {
@@ -1409,7 +1409,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             }
 
             else {
-                if (it != tok->_values->begin())
+                if (it != tok->mValues->begin())
                     out << ",";
                 switch (it->valueType) {
                 case ValueFlow::Value::INT:
@@ -1435,7 +1435,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         }
         if (xml)
             out << "    </values>" << std::endl;
-        else if (tok->_values->size() > 1U)
+        else if (tok->mValues->size() > 1U)
             out << '}' << std::endl;
         else
             out << std::endl;
@@ -1446,11 +1446,11 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 
 const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const
 {
-    if (!_values)
+    if (!mValues)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+    for (it = mValues->begin(); it != mValues->end(); ++it) {
         if (it->isIntValue() && it->intvalue <= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1469,11 +1469,11 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
 
 const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
 {
-    if (!_values)
+    if (!mValues)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+    for (it = mValues->begin(); it != mValues->end(); ++it) {
         if (it->isIntValue() && it->intvalue >= val) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1492,11 +1492,11 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
 
 const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int argnr, const Settings *settings) const
 {
-    if (!_values || !settings)
+    if (!mValues || !settings)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+    for (it = mValues->begin(); it != mValues->end(); ++it) {
         if (it->isIntValue() && !settings->library.isargvalid(ftok, argnr, it->intvalue)) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
@@ -1515,12 +1515,12 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int 
 
 const Token *Token::getValueTokenMinStrSize() const
 {
-    if (!_values)
+    if (!mValues)
         return nullptr;
     const Token *ret = nullptr;
     std::size_t minsize = ~0U;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+    for (it = mValues->begin(); it != mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const std::size_t size = getStrSize(it->tokvalue);
             if (!ret || size < minsize) {
@@ -1534,12 +1534,12 @@ const Token *Token::getValueTokenMinStrSize() const
 
 const Token *Token::getValueTokenMaxStrLength() const
 {
-    if (!_values)
+    if (!mValues)
         return nullptr;
     const Token *ret = nullptr;
     std::size_t maxlength = 0U;
     std::list<ValueFlow::Value>::const_iterator it;
-    for (it = _values->begin(); it != _values->end(); ++it) {
+    for (it = mValues->begin(); it != mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const std::size_t length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
@@ -1593,20 +1593,20 @@ const Token *Token::getValueTokenDeadPointer() const
 
 bool Token::addValue(const ValueFlow::Value &value)
 {
-    if (value.isKnown() && _values) {
+    if (value.isKnown() && mValues) {
         // Clear all other values since value is known
-        _values->clear();
+        mValues->clear();
     }
 
-    if (_values) {
+    if (mValues) {
         // Don't handle more than 10 values for performance reasons
         // TODO: add setting?
-        if (_values->size() >= 10U)
+        if (mValues->size() >= 10U)
             return false;
 
         // if value already exists, don't add it again
         std::list<ValueFlow::Value>::iterator it;
-        for (it = _values->begin(); it != _values->end(); ++it) {
+        for (it = mValues->begin(); it != mValues->end(); ++it) {
             // different intvalue => continue
             if (it->intvalue != value.intvalue)
                 continue;
@@ -1630,17 +1630,17 @@ bool Token::addValue(const ValueFlow::Value &value)
         }
 
         // Add value
-        if (it == _values->end()) {
+        if (it == mValues->end()) {
             ValueFlow::Value v(value);
             if (v.varId == 0)
                 v.varId = mVarId;
-            _values->push_back(v);
+            mValues->push_back(v);
         }
     } else {
         ValueFlow::Value v(value);
         if (v.varId == 0)
             v.varId = mVarId;
-        _values = new std::list<ValueFlow::Value>(1, v);
+        mValues = new std::list<ValueFlow::Value>(1, v);
     }
 
     return true;

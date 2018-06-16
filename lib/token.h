@@ -808,7 +808,7 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return _values ? *_values : emptyValueList;
+        return mValues ? *mValues : emptyValueList;
     }
 
     /**
@@ -823,17 +823,17 @@ public:
     }
 
     bool hasKnownIntValue() const {
-        return _values && _values->size() == 1U && _values->front().isKnown() && _values->front().isIntValue();
+        return mValues && mValues->size() == 1U && mValues->front().isKnown() && mValues->front().isIntValue();
     }
 
     bool hasKnownValue() const {
-        return _values && _values->size() == 1U && _values->front().isKnown();
+        return mValues && mValues->size() == 1U && mValues->front().isKnown();
     }
 
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
-        if (!_values)
+        if (!mValues)
             return nullptr;
-        for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it = mValues->begin(); it != mValues->end(); ++it) {
             if (it->isIntValue() && it->intvalue == val)
                 return &(*it);
         }
@@ -841,10 +841,10 @@ public:
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
-        if (!_values)
+        if (!mValues)
             return nullptr;
         const ValueFlow::Value *ret = nullptr;
-        for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it = mValues->begin(); it != mValues->end(); ++it) {
             if (!it->isIntValue())
                 continue;
             if ((!ret || it->intvalue > ret->intvalue) &&
@@ -855,9 +855,9 @@ public:
     }
 
     const ValueFlow::Value * getMovedValue() const {
-        if (!_values)
+        if (!mValues)
             return nullptr;
-        for (std::list<ValueFlow::Value>::const_iterator it = _values->begin(); it != _values->end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it = mValues->begin(); it != mValues->end(); ++it) {
             if (it->isMovedValue() && it->moveKind != ValueFlow::Value::NonMovedVariable)
                 return &(*it);
         }
@@ -1000,7 +1000,7 @@ private:
     ValueType *mValueType;
 
     // ValueFlow
-    std::list<ValueFlow::Value>* _values;
+    std::list<ValueFlow::Value>* mValues;
     static const std::list<ValueFlow::Value> emptyValueList;
 
 public:
@@ -1037,8 +1037,8 @@ public:
     }
 
     void clearValueFlow() {
-        delete _values;
-        _values = nullptr;
+        delete mValues;
+        mValues = nullptr;
     }
 
     std::string astString(const char *sep = "") const {
