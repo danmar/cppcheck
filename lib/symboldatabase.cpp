@@ -1617,7 +1617,7 @@ const Token * Variable::declEndToken() const
 void Variable::evaluate(const Library* lib)
 {
     unsigned int pointer = 0;
-    _constness = 0;
+    mConstness = 0;
 
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(lib));
@@ -1639,7 +1639,7 @@ void Variable::evaluate(const Library* lib)
             setFlag(fIsMutable, true);
         else if (tok->str() == "const") {
             setFlag(fIsConst, true);
-            _constness |= 1 << pointer;
+            mConstness |= 1 << pointer;
         } else if (tok->str() == "*") {
             setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
