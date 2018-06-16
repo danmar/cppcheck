@@ -40,8 +40,8 @@ static const unsigned int AST_MAX_DEPTH = 50U;
 TokenList::TokenList(const Settings* settings) :
     mTokensFrontBack(),
     mSettings(settings),
-    _isC(false),
-    _isCPP(false)
+    mIsC(false),
+    mIsCpp(false)
 {
 }
 
@@ -81,14 +81,14 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(Path::simplifyPath(fileName));
 
-    // Update _isC and _isCPP properties
+    // Update mIsC and mIsCpp properties
     if (mFiles.size() == 1) { // Update only useful if first file added to _files
         if (!mSettings) {
-            _isC = Path::isC(getSourceFilePath());
-            _isCPP = Path::isCPP(getSourceFilePath());
+            mIsC = Path::isC(getSourceFilePath());
+            mIsCpp = Path::isCPP(getSourceFilePath());
         } else {
-            _isC = mSettings->enforcedLang == Settings::C || (mSettings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
-            _isCPP = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
+            mIsC = mSettings->enforcedLang == Settings::C || (mSettings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
+            mIsCpp = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
         }
     }
     return mFiles.size() - 1U;
@@ -270,14 +270,14 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
     else
         mFiles.clear();
 
-    _isC = _isCPP = false;
+    mIsC = mIsCpp = false;
     if (!mFiles.empty()) {
-        _isC = Path::isC(getSourceFilePath());
-        _isCPP = Path::isCPP(getSourceFilePath());
+        mIsC = Path::isC(getSourceFilePath());
+        mIsCpp = Path::isCPP(getSourceFilePath());
     }
     if (mSettings && mSettings->enforcedLang != Settings::None) {
-        _isC = (mSettings->enforcedLang == Settings::C);
-        _isCPP = (mSettings->enforcedLang == Settings::CPP);
+        mIsC = (mSettings->enforcedLang == Settings::C);
+        mIsCpp = (mSettings->enforcedLang == Settings::CPP);
     }
 
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {

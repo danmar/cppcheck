@@ -55,12 +55,12 @@ public:
 
     /** Is the code C. Used for bailouts */
     bool isC() const {
-        return _isC;
+        return mIsC;
     }
 
     /** Is the code CPP. Used for bailouts */
     bool isCPP() const {
-        return _isCPP;
+        return mIsCpp;
     }
 
     /**
@@ -191,7 +191,7 @@ private:
     const Settings* mSettings;
 
     /** File is known to be C/C++ code */
-    bool _isC, _isCPP;
+    bool mIsC, mIsCpp;
 };
 
 /// @}
