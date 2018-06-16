@@ -52,7 +52,7 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), _name(aname) {
+        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(aname) {
     }
 
     virtual ~Check() {
@@ -75,7 +75,7 @@ public:
 
     /** class name, used to generate documentation */
     const std::string& name() const {
-        return _name;
+        return mName;
     }
 
     /** get information about this class, used to generate documentation */
@@ -182,7 +182,7 @@ protected:
      */
     bool wrongData(const Token *tok, bool condition, const char *str);
 private:
-    const std::string _name;
+    const std::string mName;
 
     /** disabled assignment operator and copy constructor */
     void operator=(const Check &) = delete;
