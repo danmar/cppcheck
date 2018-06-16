@@ -510,7 +510,7 @@ public:
      * @return array dimensions vector
      */
     const std::vector<Dimension> &dimensions() const {
-        return _dimensions;
+        return mDimensions;
     }
 
     /**
@@ -518,7 +518,7 @@ public:
      * @return length of dimension
      */
     MathLib::bigint dimension(std::size_t index_) const {
-        return _dimensions[index_].num;
+        return mDimensions[index_].num;
     }
 
     /**
@@ -526,7 +526,7 @@ public:
      * @return length of dimension known
      */
     bool dimensionKnown(std::size_t index_) const {
-        return _dimensions[index_].known;
+        return mDimensions[index_].known;
     }
 
     /**
@@ -643,7 +643,7 @@ private:
     const Scope *_scope;
 
     /** @brief array dimensions */
-    std::vector<Dimension> _dimensions;
+    std::vector<Dimension> mDimensions;
 
     /** @brief fill in information, depending on Tokens given at instantiation */
     void evaluate(const Library* lib);

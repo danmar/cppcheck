@@ -2465,7 +2465,7 @@ bool Variable::arrayDimensions(const Library* lib)
                 }
             }
             assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
-            _dimensions.push_back(dimension_);
+            mDimensions.push_back(dimension_);
             return true;
         }
     }
@@ -2496,7 +2496,7 @@ bool Variable::arrayDimensions(const Library* lib)
             }
         }
         assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
-        _dimensions.push_back(dimension_);
+        mDimensions.push_back(dimension_);
         dim = dim->link()->next();
         arr = true;
     }
@@ -2664,7 +2664,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
 
     std::cout << indent << "_scope: " << scopeToString(var->scope(), mTokenizer) << std::endl;
 
-    std::cout << indent << "_dimensions:";
+    std::cout << indent << "mDimensions:";
     for (std::size_t i = 0; i < var->dimensions().size(); i++) {
         std::cout << " " << var->dimension(i);
         if (!var->dimensions()[i].known)
