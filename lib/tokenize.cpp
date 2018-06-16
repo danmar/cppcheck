@@ -142,7 +142,7 @@ Tokenizer::Tokenizer() :
     list(nullptr),
     mSettings(nullptr),
     mErrorLogger(nullptr),
-    _symbolDatabase(nullptr),
+    mSymbolDatabase(nullptr),
     _varId(0),
     _unnamedCount(0),
     _codeWithTemplates(false), //is there any templates?
@@ -157,7 +157,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     list(settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
-    _symbolDatabase(nullptr),
+    mSymbolDatabase(nullptr),
     _varId(0),
     _unnamedCount(0),
     _codeWithTemplates(false), //is there any templates?
@@ -172,7 +172,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
 
 Tokenizer::~Tokenizer()
 {
-    delete _symbolDatabase;
+    delete mSymbolDatabase;
 }
 
 
@@ -1747,7 +1747,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     createSymbolDatabase();
 
     // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
-    for (const Variable* var : _symbolDatabase->variableList()) {
+    for (const Variable* var : mSymbolDatabase->variableList()) {
         if (var && var->isRValueReference()) {
             Token* endTok = const_cast<Token*>(var->typeEndToken());
             endTok->str("&");
@@ -1758,8 +1758,8 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
-    _symbolDatabase->setValueTypeInTokenList();
-    ValueFlow::setValues(&list, _symbolDatabase, mErrorLogger, mSettings);
+    mSymbolDatabase->setValueTypeInTokenList();
+    ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
 
     printDebugOutput(1);
 
@@ -4023,9 +4023,9 @@ bool Tokenizer::simplifyTokenList2()
 
     // Create symbol database and then remove const keywords
     createSymbolDatabase();
-    _symbolDatabase->setValueTypeInTokenList();
+    mSymbolDatabase->setValueTypeInTokenList();
 
-    ValueFlow::setValues(&list, _symbolDatabase, mErrorLogger, mSettings);
+    ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
 
     if (mSettings->terminated())
         return false;
@@ -4047,11 +4047,11 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
         if (mSettings->xml)
             std::cout << "<debug>" << std::endl;
 
-        if (_symbolDatabase) {
+        if (mSymbolDatabase) {
             if (mSettings->xml)
-                _symbolDatabase->printXml(std::cout);
+                mSymbolDatabase->printXml(std::cout);
             else if (mSettings->verbose) {
-                _symbolDatabase->printOut("Symbol database");
+                mSymbolDatabase->printOut("Symbol database");
             }
         }
 
@@ -4064,11 +4064,11 @@ void Tokenizer::printDebugOutput(unsigned int simplification) const
             std::cout << "</debug>" << std::endl;
     }
 
-    if (_symbolDatabase && simplification == 2U && mSettings->debugwarnings) {
+    if (mSymbolDatabase && simplification == 2U && mSettings->debugwarnings) {
         printUnknownTypes();
 
         // the typeStartToken() should come before typeEndToken()
-        for (const Variable *var : _symbolDatabase->variableList()) {
+        for (const Variable *var : mSymbolDatabase->variableList()) {
             if (!var)
                 continue;
 
@@ -4156,7 +4156,7 @@ void Tokenizer::dump(std::ostream &out) const
     }
     out << "  </tokenlist>" << std::endl;
 
-    _symbolDatabase->printXml(out);
+    mSymbolDatabase->printXml(out);
     if (list.front())
         list.front()->printValueFlow(true, out);
 }
@@ -9701,15 +9701,15 @@ void Tokenizer::simplifyQtSignalsSlots()
 
 void Tokenizer::createSymbolDatabase()
 {
-    if (!_symbolDatabase)
-        _symbolDatabase = new SymbolDatabase(this, mSettings, mErrorLogger);
-    _symbolDatabase->validate();
+    if (!mSymbolDatabase)
+        mSymbolDatabase = new SymbolDatabase(this, mSettings, mErrorLogger);
+    mSymbolDatabase->validate();
 }
 
 void Tokenizer::deleteSymbolDatabase()
 {
-    delete _symbolDatabase;
-    _symbolDatabase = nullptr;
+    delete mSymbolDatabase;
+    mSymbolDatabase = nullptr;
 }
 
 static bool operatorEnd(const Token * tok)
@@ -9932,13 +9932,13 @@ void Tokenizer::simplifyReturnStrncat()
 
 void Tokenizer::printUnknownTypes() const
 {
-    if (!_symbolDatabase)
+    if (!mSymbolDatabase)
         return;
 
     std::multimap<std::string, const Token *> unknowns;
 
     for (unsigned int i = 1; i <= _varId; ++i) {
-        const Variable *var = _symbolDatabase->getVariableFromVarId(i);
+        const Variable *var = mSymbolDatabase->getVariableFromVarId(i);
         if (!var)
             continue;
         // is unknown type?

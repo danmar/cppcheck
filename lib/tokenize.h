@@ -774,7 +774,7 @@ public:
     }
 
     const SymbolDatabase *getSymbolDatabase() const {
-        return _symbolDatabase;
+        return mSymbolDatabase;
     }
     void createSymbolDatabase();
     void deleteSymbolDatabase();
@@ -872,7 +872,7 @@ private:
     ErrorLogger* const mErrorLogger;
 
     /** Symbol database that all checks etc can use */
-    SymbolDatabase *_symbolDatabase;
+    SymbolDatabase *mSymbolDatabase;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
