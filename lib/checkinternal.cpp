@@ -35,7 +35,7 @@ namespace {
 
 void CheckInternal::checkTokenMatchPatterns()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -87,7 +87,7 @@ void CheckInternal::checkTokenMatchPatterns()
 
 void CheckInternal::checkRedundantTokCheck()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "&& Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
             // in code like
             // if (tok->previous() && Token::match(tok->previous(), "bla")) {}
@@ -123,7 +123,7 @@ void CheckInternal::checkRedundantTokCheckError(const Token* tok)
 
 void CheckInternal::checkTokenSimpleMatchPatterns()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -212,7 +212,7 @@ namespace {
 
 void CheckInternal::checkMissingPercentCharacter()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -255,7 +255,7 @@ void CheckInternal::checkMissingPercentCharacter()
 
 void CheckInternal::checkUnknownPattern()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -290,7 +290,7 @@ void CheckInternal::checkUnknownPattern()
 
 void CheckInternal::checkRedundantNextPrevious()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -322,7 +322,7 @@ void CheckInternal::checkRedundantNextPrevious()
 
 void CheckInternal::checkExtraWhitespace()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -349,7 +349,7 @@ void CheckInternal::checkExtraWhitespace()
 
 void CheckInternal::checkStlUsage()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, ". emplace ("))

@@ -39,7 +39,7 @@ static const unsigned int AST_MAX_DEPTH = 50U;
 
 TokenList::TokenList(const Settings* settings) :
     _tokensFrontBack(),
-    _settings(settings),
+    mSettings(settings),
     _isC(false),
     _isCPP(false)
 {
@@ -83,12 +83,12 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
 
     // Update _isC and _isCPP properties
     if (_files.size() == 1) { // Update only useful if first file added to _files
-        if (!_settings) {
+        if (!mSettings) {
             _isC = Path::isC(getSourceFilePath());
             _isCPP = Path::isCPP(getSourceFilePath());
         } else {
-            _isC = _settings->enforcedLang == Settings::C || (_settings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
-            _isCPP = _settings->enforcedLang == Settings::CPP || (_settings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
+            _isC = mSettings->enforcedLang == Settings::C || (mSettings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
+            _isCPP = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
         }
     }
     return _files.size() - 1U;
@@ -133,7 +133,7 @@ void TokenList::addtoken(std::string str, const unsigned int lineno, const unsig
         // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
         std::string suffix;
         if (isHex &&
-            str.size() == (2 + _settings->int_bit / 4) &&
+            str.size() == (2 + mSettings->int_bit / 4) &&
             (str[2] >= '8') &&  // includes A-F and a-f
             MathLib::getSuffix(str).empty()
            )
@@ -275,9 +275,9 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
         _isC = Path::isC(getSourceFilePath());
         _isCPP = Path::isCPP(getSourceFilePath());
     }
-    if (_settings && _settings->enforcedLang != Settings::None) {
-        _isC = (_settings->enforcedLang == Settings::C);
-        _isCPP = (_settings->enforcedLang == Settings::CPP);
+    if (mSettings && mSettings->enforcedLang != Settings::None) {
+        _isC = (mSettings->enforcedLang == Settings::C);
+        _isCPP = (mSettings->enforcedLang == Settings::CPP);
     }
 
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
@@ -291,8 +291,8 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
             // TODO: It would be better if TokenList didn't simplify hexadecimal numbers
             std::string suffix;
             if (isHex &&
-                _settings &&
-                str.size() == (2 + _settings->int_bit / 4) &&
+                mSettings &&
+                str.size() == (2 + mSettings->int_bit / 4) &&
                 (str[2] >= '8') &&  // includes A-F and a-f
                 MathLib::getSuffix(str).empty()
                )
@@ -320,9 +320,9 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
         _tokensFrontBack.back->isExpandedMacro(!tok->macro.empty());
     }
 
-    if (_settings && _settings->relativePaths) {
+    if (mSettings && mSettings->relativePaths) {
         for (std::size_t i = 0; i < _files.size(); i++)
-            _files[i] = Path::getRelativePath(_files[i], _settings->basePaths);
+            _files[i] = Path::getRelativePath(_files[i], mSettings->basePaths);
     }
 
     Token::assignProgressValues(_tokensFrontBack.front);
@@ -1226,7 +1226,7 @@ bool TokenList::validateToken(const Token* tok) const
 void TokenList::simplifyStdType()
 {
     for (Token *tok = front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (_settings->standards.c >= Standards::C99 && Token::Match(tok, "complex|_Complex"))) {
+        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (mSettings->standards.c >= Standards::C99 && Token::Match(tok, "complex|_Complex"))) {
             bool isFloat= false;
             bool isSigned = false;
             bool isUnsigned = false;
@@ -1249,7 +1249,7 @@ void TokenList::simplifyStdType()
                 else if (Token::Match(tok2, "float|double")) {
                     isFloat = true;
                     typeSpec = tok2;
-                } else if (_settings->standards.c >= Standards::C99 && Token::Match(tok2, "complex|_Complex"))
+                } else if (mSettings->standards.c >= Standards::C99 && Token::Match(tok2, "complex|_Complex"))
                     isComplex = !isFloat || tok2->str() == "_Complex" || Token::Match(tok2->next(), "*|&|%name%"); // Ensure that "complex" is not the variables name
                 else if (Token::Match(tok2, "char|int")) {
                     if (!typeSpec)

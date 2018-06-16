@@ -732,7 +732,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::pointerPointer;
             else if (i->isPointer())
                 type = Variables::pointer;
-            else if (_tokenizer->isC() ||
+            else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
                      (i->isStlType() &&
@@ -858,7 +858,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // C++11 std::for_each
         // No warning should be written if a variable is first read and
         // then written in the body.
-        else if (_tokenizer->isCPP() && Token::simpleMatch(tok, "for_each (") && Token::simpleMatch(tok->linkAt(1), ") ;")) {
+        else if (mTokenizer->isCPP() && Token::simpleMatch(tok, "for_each (") && Token::simpleMatch(tok->linkAt(1), ") ;")) {
             const Token *end = tok->linkAt(1);
             if (end->previous()->str() == "}") {
                 std::set<unsigned int> readvar;
@@ -912,7 +912,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
         // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
         if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||
-            (_tokenizer->isCPP() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
+            (mTokenizer->isCPP() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
             unsigned int varid = 0;
             if (tok->str() != "delete") {
                 const Token *varTok = tok->tokAt(2);
@@ -1020,7 +1020,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         const Token *type = start->tokAt(3);
 
                         // skip nothrow
-                        if (_tokenizer->isCPP() && (Token::simpleMatch(type, "( nothrow )") ||
+                        if (mTokenizer->isCPP() && (Token::simpleMatch(type, "( nothrow )") ||
                                                     Token::simpleMatch(type, "( std :: nothrow )")))
                             type = type->link()->next();
 
@@ -1112,7 +1112,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
 
-        else if (_tokenizer->isCPP() && Token::Match(tok, "[;{}] %var% <<")) {
+        else if (mTokenizer->isCPP() && Token::Match(tok, "[;{}] %var% <<")) {
             variables.erase(tok->next()->varId());
         }
 
@@ -1122,13 +1122,13 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             } else // addressof
                 variables.use(tok->next()->varId(), tok); // use = read + write
         } else if (Token::Match(tok, ">>|>>= %name%")) {
-            if (isLikelyStreamRead(_tokenizer->isCPP(), tok))
+            if (isLikelyStreamRead(mTokenizer->isCPP(), tok))
                 variables.use(tok->next()->varId(), tok); // use = read + write
             else
                 variables.read(tok->next()->varId(), tok);
         } else if (Token::Match(tok, "%var% >>|&") && Token::Match(tok->previous(), "[{};:]")) {
             variables.read(tok->varId(), tok);
-        } else if (isLikelyStreamRead(_tokenizer->isCPP(),tok->previous())) {
+        } else if (isLikelyStreamRead(mTokenizer->isCPP(),tok->previous())) {
             variables.use(tok->varId(), tok);
         }
 
@@ -1213,11 +1213,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
 void CheckUnusedVar::checkFunctionVariableUsage()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     // Parse all executing scopes..
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // only check functions
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -1306,10 +1306,10 @@ void CheckUnusedVar::unassignedVariableError(const Token *tok, const std::string
 //---------------------------------------------------------------------------
 void CheckUnusedVar::checkStructMemberUsage()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.cbegin(); scope != symbolDatabase->scopeList.cend(); ++scope) {
         if (scope->type != Scope::eStruct && scope->type != Scope::eUnion)
@@ -1382,7 +1382,7 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
-            if (Token::findsimplematch(_tokenizer->tokens(), (". " + var->name()).c_str()))
+            if (Token::findsimplematch(mTokenizer->tokens(), (". " + var->name()).c_str()))
                 continue;
 
             unusedStructMemberError(var->nameToken(), scope->className, var->name(), scope->type == Scope::eUnion);

@@ -53,17 +53,17 @@ static const CWE CWE688(688U);  // Function Call With Incorrect Variable or Refe
 
 void CheckFunctions::checkProhibitedFunctions()
 {
-    const bool checkAlloca = _settings->isEnabled(Settings::WARNING) && ((_settings->standards.c >= Standards::C99 && _tokenizer->isC()) || _settings->standards.cpp >= Standards::CPP11);
+    const bool checkAlloca = mSettings->isEnabled(Settings::WARNING) && ((mSettings->standards.c >= Standards::C99 && mTokenizer->isC()) || mSettings->standards.cpp >= Standards::CPP11);
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
                 continue;
             // alloca() is special as it depends on the code being C or C++, so it is not in Library
             if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
-                if (_tokenizer->isC()) {
-                    if (_settings->standards.c > Standards::C89)
+                if (mTokenizer->isC()) {
+                    if (mSettings->standards.c > Standards::C89)
                         reportError(tok, Severity::warning, "allocaCalled",
                                     "$symbol:alloca\n"
                                     "Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n"
@@ -81,9 +81,9 @@ void CheckFunctions::checkProhibitedFunctions()
                 if (tok->function() && tok->function()->hasBody())
                     continue;
 
-                const Library::WarnInfo* wi = _settings->library.getWarnInfo(tok);
+                const Library::WarnInfo* wi = mSettings->library.getWarnInfo(tok);
                 if (wi) {
-                    if (_settings->isEnabled(wi->severity) && _settings->standards.c >= wi->standards.c && _settings->standards.cpp >= wi->standards.cpp) {
+                    if (mSettings->isEnabled(wi->severity) && mSettings->standards.c >= wi->standards.c && mSettings->standards.cpp >= wi->standards.cpp) {
                         reportError(tok, wi->severity, tok->str() + "Called", wi->message, CWE477, false);
                     }
                 }
@@ -97,7 +97,7 @@ void CheckFunctions::checkProhibitedFunctions()
 //---------------------------------------------------------------------------
 void CheckFunctions::invalidFunctionUsage()
 {
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% ( !!)"))
@@ -108,21 +108,21 @@ void CheckFunctions::invalidFunctionUsage()
                 const Token * const argtok = arguments[argnr-1];
 
                 // check <valid>...</valid>
-                const ValueFlow::Value *invalidValue = argtok->getInvalidValue(functionToken,argnr,_settings);
+                const ValueFlow::Value *invalidValue = argtok->getInvalidValue(functionToken,argnr,mSettings);
                 if (invalidValue) {
-                    invalidFunctionArgError(argtok, functionToken->next()->astOperand1()->expressionString(), argnr, invalidValue, _settings->library.validarg(functionToken, argnr));
+                    invalidFunctionArgError(argtok, functionToken->next()->astOperand1()->expressionString(), argnr, invalidValue, mSettings->library.validarg(functionToken, argnr));
                 }
 
                 if (astIsBool(argtok)) {
                     // check <not-bool>
-                    if (_settings->library.isboolargbad(functionToken, argnr))
+                    if (mSettings->library.isboolargbad(functionToken, argnr))
                         invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
 
                     // Are the values 0 and 1 valid?
-                    else if (!_settings->library.isargvalid(functionToken, argnr, 0))
-                        invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, _settings->library.validarg(functionToken, argnr));
-                    else if (!_settings->library.isargvalid(functionToken, argnr, 1))
-                        invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, _settings->library.validarg(functionToken, argnr));
+                    else if (!mSettings->library.isargvalid(functionToken, argnr, 0))
+                        invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
+                    else if (!mSettings->library.isargvalid(functionToken, argnr, 1))
+                        invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
             }
         }
@@ -171,10 +171,10 @@ void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::st
 //---------------------------------------------------------------------------
 void CheckFunctions::checkIgnoredReturnValue()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip c++11 initialization, ({...})
@@ -195,7 +195,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             }
 
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
-                (_settings->library.isUseRetVal(tok) || (tok->function() && tok->function()->isAttributeNodiscard())) &&
+                (mSettings->library.isUseRetVal(tok) || (tok->function() && tok->function()->isAttributeNodiscard())) &&
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
                 ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
             }
@@ -215,10 +215,10 @@ void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string
 //---------------------------------------------------------------------------
 void CheckFunctions::checkMathFunctions()
 {
-    const bool styleC99 = _settings->isEnabled(Settings::STYLE) && _settings->standards.c != Standards::C89 && _settings->standards.cpp != Standards::CPP03;
-    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
+    const bool styleC99 = mSettings->isEnabled(Settings::STYLE) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
+    const bool printWarnings = mSettings->isEnabled(Settings::WARNING);
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId())
@@ -312,10 +312,10 @@ void CheckFunctions::memsetZeroBytes()
 //       <warn knownIntValue="0" severity="warning" msg="..."/>
 //     </arg>
 
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
@@ -349,12 +349,12 @@ void CheckFunctions::memsetInvalid2ndParam()
 //       <warn possibleIntValue=":-129,256:" severity="warning" msg="..."/>
 //     </arg>
 
-    const bool printPortability = _settings->isEnabled(Settings::PORTABILITY);
-    const bool printWarning = _settings->isEnabled(Settings::WARNING);
+    const bool printPortability = mSettings->isEnabled(Settings::PORTABILITY);
+    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
     if (!printWarning && !printPortability)
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
             if (!Token::simpleMatch(tok, "memset ("))
@@ -376,8 +376,8 @@ void CheckFunctions::memsetInvalid2ndParam()
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
                 const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                const long long sCharMin = _settings->signedCharMin();
-                const long long uCharMax = _settings->unsignedCharMax();
+                const long long sCharMin = mSettings->signedCharMin();
+                const long long uCharMax = mSettings->unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)
                     memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
             }
@@ -407,11 +407,11 @@ void CheckFunctions::memsetValueOutOfRangeError(const Token *tok, const std::str
 
 void CheckFunctions::checkLibraryMatchFunctions()
 {
-    if (!_settings->checkLibrary || !_settings->isEnabled(Settings::INFORMATION))
+    if (!mSettings->checkLibrary || !mSettings->isEnabled(Settings::INFORMATION))
         return;
 
     bool New = false;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->scope() || !tok->scope()->isExecutable())
             continue;
 
@@ -431,11 +431,11 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (tok->linkAt(1)->strAt(1) == "(")
             continue;
 
-        if (!_settings->library.isNotLibraryFunction(tok))
+        if (!mSettings->library.isNotLibraryFunction(tok))
             continue;
 
-        const std::string &functionName = _settings->library.getFunctionName(tok);
-        if (functionName.empty() || _settings->library.functions.find(functionName) != _settings->library.functions.end())
+        const std::string &functionName = mSettings->library.getFunctionName(tok);
+        if (functionName.empty() || mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
             continue;
 
         reportError(tok,

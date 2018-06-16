@@ -769,7 +769,7 @@ public:
 
 
     void setSettings(const Settings *settings) {
-        _settings = settings;
+        mSettings = settings;
         list.setSettings(settings);
     }
 
@@ -866,10 +866,10 @@ private:
     void setPodTypes();
 
     /** settings */
-    const Settings * _settings;
+    const Settings * mSettings;
 
     /** errorlogger */
-    ErrorLogger* const _errorLogger;
+    ErrorLogger* const mErrorLogger;
 
     /** Symbol database that all checks etc can use */
     SymbolDatabase *_symbolDatabase;

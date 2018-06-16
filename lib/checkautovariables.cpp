@@ -179,12 +179,12 @@ static bool variableIsUsedInScope(const Token* start, unsigned int varId, const 
 
 void CheckAutoVariables::assignFunctionArg()
 {
-    const bool printStyle = _settings->isEnabled(Settings::STYLE);
-    const bool printWarning = _settings->isEnabled(Settings::WARNING);
+    const bool printStyle = mSettings->isEnabled(Settings::STYLE);
+    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
     if (!printStyle && !printWarning)
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // TODO: What happens if this is removed?
@@ -224,8 +224,8 @@ static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVar
 
 void CheckAutoVariables::autoVariables()
 {
-    const bool printInconclusive = _settings->inconclusive;
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const bool printInconclusive = mSettings->inconclusive;
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Critical assignment
@@ -235,7 +235,7 @@ void CheckAutoVariables::autoVariables()
             } else if (Token::Match(tok, "[;{}] * %var% = & %var%") && isPtrArg(tok->tokAt(2)) && isAutoVar(tok->tokAt(5))) {
                 if (checkRvalueExpression(tok->tokAt(5)))
                     errorAutoVariableAssignment(tok->next(), false);
-            } else if (_settings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = &| %var% ;") && isGlobalPtr(tok->next())) {
+            } else if (mSettings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = &| %var% ;") && isGlobalPtr(tok->next())) {
                 const Token * const pointer = tok->next();
                 if (isAutoVarArray(tok->tokAt(3))) {
                     const Token * const array = tok->tokAt(3);
@@ -281,7 +281,7 @@ void CheckAutoVariables::autoVariables()
                 for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
                     if (!it->isTokValue())
                         continue;
-                    if (!_settings->inconclusive && it->isInconclusive())
+                    if (!mSettings->inconclusive && it->isInconclusive())
                         continue;
                     if (!Token::Match(it->tokvalue->previous(), "= & %var%"))
                         continue;
@@ -306,13 +306,13 @@ void CheckAutoVariables::autoVariables()
                 }
             }
             // Invalid pointer deallocation
-            else if ((Token::Match(tok, "%name% ( %var% ) ;") && _settings->library.dealloc(tok)) ||
-                     (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
+            else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.dealloc(tok)) ||
+                     (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVarArray(tok))
                     errorInvalidDeallocation(tok);
-            } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && _settings->library.dealloc(tok)) ||
-                       (_tokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
+            } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && mSettings->library.dealloc(tok)) ||
+                       (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVar(tok))
                     errorInvalidDeallocation(tok);
@@ -325,7 +325,7 @@ void CheckAutoVariables::autoVariables()
 
 void CheckAutoVariables::returnPointerToLocalArray()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
@@ -506,10 +506,10 @@ static bool astHasAutoResult(const Token *tok)
 
 void CheckAutoVariables::returnReference()
 {
-    if (_tokenizer->isC())
+    if (mTokenizer->isC())
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)

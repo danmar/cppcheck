@@ -1480,7 +1480,7 @@ static bool matchSpecialization(const Token *templateDeclarationNameToken, const
 bool TemplateSimplifier::simplifyTemplateInstantiations(
     TokenList& tokenlist,
     ErrorLogger* errorlogger,
-    const Settings *_settings,
+    const Settings *mSettings,
     const TokenAndName &templateDeclaration,
     const std::list<const Token *> &specializations,
     const std::time_t maxtime,
@@ -1499,7 +1499,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     if (!tok)
         return false;
 
-    const bool printDebug = _settings->debugwarnings;
+    const bool printDebug = mSettings->debugwarnings;
 
     // get the position of the template name
     const int namepos = TemplateSimplifier::getTemplateNamePosition(tok);
@@ -1733,7 +1733,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
 void TemplateSimplifier::simplifyTemplates(
     TokenList& tokenlist,
     ErrorLogger* errorlogger,
-    const Settings *_settings,
+    const Settings *mSettings,
     const std::time_t maxtime,
     bool &_codeWithTemplates
 )
@@ -1791,7 +1791,7 @@ void TemplateSimplifier::simplifyTemplates(
 
             const bool instantiated = TemplateSimplifier::simplifyTemplateInstantiations(tokenlist,
                                       errorlogger,
-                                      _settings,
+                                      mSettings,
                                       *iter1,
                                       specializations,
                                       maxtime,

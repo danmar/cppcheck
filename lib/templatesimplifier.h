@@ -164,7 +164,7 @@ public:
      * @todo It seems that inner templates should be instantiated recursively
      * @param tokenlist token list
      * @param errorlogger error logger
-     * @param _settings settings
+     * @param mSettings settings
      * @param templateDeclaration template declaration
      * @param specializations template specializations (list each template name token)
      * @param maxtime time when the simplification will stop
@@ -175,7 +175,7 @@ public:
     static bool simplifyTemplateInstantiations(
         TokenList& tokenlist,
         ErrorLogger* errorlogger,
-        const Settings *_settings,
+        const Settings *mSettings,
         const TokenAndName &templateDeclaration,
         const std::list<const Token *> &specializations,
         const std::time_t maxtime,
@@ -202,14 +202,14 @@ public:
      * Simplify templates
      * @param tokenlist token list
      * @param errorlogger error logger
-     * @param _settings settings
+     * @param mSettings settings
      * @param maxtime time when the simplification should be stopped
      * @param _codeWithTemplates output parameter that is set if code contains templates
      */
     static void simplifyTemplates(
         TokenList& tokenlist,
         ErrorLogger* errorlogger,
-        const Settings *_settings,
+        const Settings *mSettings,
         const std::time_t maxtime,
         bool &_codeWithTemplates);
 

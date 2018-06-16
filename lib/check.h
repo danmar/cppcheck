@@ -52,11 +52,11 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger), _name(aname) {
+        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), _name(aname) {
     }
 
     virtual ~Check() {
-        if (!_tokenizer)
+        if (!mTokenizer)
             instances().remove(this);
     }
 
@@ -118,9 +118,9 @@ public:
     }
 
 protected:
-    const Tokenizer * const _tokenizer;
-    const Settings * const _settings;
-    ErrorLogger * const _errorLogger;
+    const Tokenizer * const mTokenizer;
+    const Settings * const mSettings;
+    ErrorLogger * const mErrorLogger;
 
     /** report an error */
     template<typename T, typename U>
@@ -144,17 +144,17 @@ protected:
     /** report an error */
     template<typename T, typename U>
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer ? &_tokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-        if (_errorLogger)
-            _errorLogger->reportErr(errmsg);
+        const ErrorLogger::ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
+        if (mErrorLogger)
+            mErrorLogger->reportErr(errmsg);
         else
             reportError(errmsg);
     }
 
     void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(errorPath, _tokenizer ? &_tokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-        if (_errorLogger)
-            _errorLogger->reportErr(errmsg);
+        const ErrorLogger::ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
+        if (mErrorLogger)
+            mErrorLogger->reportErr(errmsg);
         else
             reportError(errmsg);
     }
@@ -163,7 +163,7 @@ protected:
         ErrorPath errorPath;
         if (!value) {
             errorPath.emplace_back(errtok,bug);
-        } else if (_settings->verbose || _settings->xml || !_settings->templateLocation.empty()) {
+        } else if (mSettings->verbose || mSettings->xml || !mSettings->templateLocation.empty()) {
             errorPath = value->errorPath;
             errorPath.emplace_back(errtok,bug);
         } else {

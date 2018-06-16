@@ -80,12 +80,12 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 
 void CheckClass::constructors()
 {
-    const bool printStyle = _settings->isEnabled(Settings::STYLE);
-    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
+    const bool printStyle = mSettings->isEnabled(Settings::STYLE);
+    const bool printWarnings = mSettings->isEnabled(Settings::WARNING);
     if (!printStyle && !printWarnings)
         return;
 
-    const bool printInconclusive = _settings->inconclusive;
+    const bool printInconclusive = mSettings->inconclusive;
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
 
         bool usedInUnion = false;
@@ -210,7 +210,7 @@ void CheckClass::constructors()
 
                     if (classNameUsed)
                         operatorEqVarError(func->token, scope->className, var->name(), inconclusive);
-                } else if (func->access != Private || _settings->standards.cpp >= Standards::CPP11) {
+                } else if (func->access != Private || mSettings->standards.cpp >= Standards::CPP11) {
                     const Scope *varType = var->typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
                         if (func->type == Function::eConstructor &&
@@ -232,7 +232,7 @@ void CheckClass::constructors()
 
 void CheckClass::checkExplicitConstructors()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -252,7 +252,7 @@ void CheckClass::checkExplicitConstructors()
 
         // Abstract classes can't be instantiated. But if there is C++11
         // "misuse" by derived classes then these constructors must be explicit.
-        if (isAbstractClass && _settings->standards.cpp != Standards::CPP11)
+        if (isAbstractClass && mSettings->standards.cpp != Standards::CPP11)
             continue;
 
         for (const Function &func : scope->functionList) {
@@ -301,7 +301,7 @@ static bool isNonCopyable(const Scope *scope, bool *unknown)
 
 void CheckClass::copyconstructors()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -313,7 +313,7 @@ void CheckClass::copyconstructors()
             const Token* tok = func.token->linkAt(1);
             for (const Token* const end = func.functionScope->bodyStart; tok != end; tok = tok->next()) {
                 if (Token::Match(tok, "%var% ( new") ||
-                    (Token::Match(tok, "%var% ( %name% (") && _settings->library.alloc(tok->tokAt(2)))) {
+                    (Token::Match(tok, "%var% ( %name% (") && mSettings->library.alloc(tok->tokAt(2)))) {
                     const Variable* var = tok->variable();
                     if (var && var->isPointer() && var->scope() == scope)
                         allocatedVars[tok->varId()] = tok;
@@ -321,7 +321,7 @@ void CheckClass::copyconstructors()
             }
             for (const Token* const end = func.functionScope->bodyEnd; tok != end; tok = tok->next()) {
                 if (Token::Match(tok, "%var% = new") ||
-                    (Token::Match(tok, "%var% = %name% (") && _settings->library.alloc(tok->tokAt(2)))) {
+                    (Token::Match(tok, "%var% = %name% (") && mSettings->library.alloc(tok->tokAt(2)))) {
                     const Variable* var = tok->variable();
                     if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
                         allocatedVars[tok->varId()] = tok;
@@ -914,7 +914,7 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
 
 void CheckClass::initializationListUsage()
 {
-    if (!_settings->isEnabled(Settings::PERFORMANCE))
+    if (!mSettings->isEnabled(Settings::PERFORMANCE))
         return;
 
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -1027,7 +1027,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
 
 void CheckClass::privateFunctions()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -1095,7 +1095,7 @@ static const Scope* findFunctionOf(const Scope* scope)
 
 void CheckClass::checkMemset()
 {
-    const bool printWarnings = _settings->isEnabled(Settings::WARNING);
+    const bool printWarnings = mSettings->isEnabled(Settings::WARNING);
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|memcpy|memmove (")) {
@@ -1180,7 +1180,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
         return;
     parsedTypes.insert(type);
 
-    const bool printPortability = _settings->isEnabled(Settings::PORTABILITY);
+    const bool printPortability = mSettings->isEnabled(Settings::PORTABILITY);
 
     // recursively check all parent classes
     for (std::size_t i = 0; i < type->definedType->derivedFrom.size(); i++) {
@@ -1215,7 +1215,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             const Scope *typeScope = var->typeScope();
 
             // check for std:: type
-            if (var->isStlType() && tok1->strAt(2) != "array" && !_settings->library.podtype(tok1->strAt(2)))
+            if (var->isStlType() && tok1->strAt(2) != "array" && !mSettings->library.podtype(tok1->strAt(2)))
                 if (allocation)
                     mallocOnClassError(tok, tok->str(), type->classDef, "'std::" + tok1->strAt(2) + "'");
                 else
@@ -1287,7 +1287,7 @@ void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
 
 void CheckClass::operatorEq()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -1340,7 +1340,7 @@ void CheckClass::operatorEqReturnError(const Token *tok, const std::string &clas
 
 void CheckClass::operatorEqRetRefThis()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -1426,7 +1426,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         }
         return;
     }
-    if (_settings->library.isScopeNoReturn(last, nullptr)) {
+    if (mSettings->library.isScopeNoReturn(last, nullptr)) {
         // Typical wrong way to prohibit default assignment operator
         // by always throwing an exception or calling a noreturn function
         operatorEqShouldBeLeftUnimplementedError(func->token);
@@ -1471,7 +1471,7 @@ void CheckClass::operatorEqMissingReturnStatementError(const Token *tok, bool er
 
 void CheckClass::operatorEqToSelf()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -1594,7 +1594,7 @@ void CheckClass::virtualDestructor()
     // * base class is deleted
     // unless inconclusive in which case:
     // * base class has virtual members but doesn't have virtual destructor
-    const bool printInconclusive = _settings->inconclusive;
+    const bool printInconclusive = mSettings->inconclusive;
 
     std::list<const Function *> inconclusiveErrors;
 
@@ -1659,7 +1659,7 @@ void CheckClass::virtualDestructor()
                     // No deletion of derived class instance through base class pointer found => the code is ok
                     bool ok = true;
 
-                    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+                    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
                         if (Token::Match(tok, "[;{}] %var% =") &&
                             baseClassPointers.find(tok->next()->varId()) != baseClassPointers.end()) {
                             // new derived class..
@@ -1720,7 +1720,7 @@ void CheckClass::virtualDestructor()
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
 {
     if (inconclusive) {
-        if (_settings->isEnabled(Settings::WARNING))
+        if (mSettings->isEnabled(Settings::WARNING))
             reportError(tok, Severity::warning, "virtualDestructor", "$symbol:" + Base + "\nClass '$symbol' which has virtual members does not have a virtual destructor.", CWE404, true);
     } else {
         reportError(tok, Severity::error, "virtualDestructor",
@@ -1740,10 +1740,10 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
 
 void CheckClass::thisSubtraction()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const Token *tok = _tokenizer->tokens();
+    const Token *tok = mTokenizer->tokens();
     for (;;) {
         tok = Token::findmatch(tok, "this - %name%");
         if (!tok)
@@ -1768,10 +1768,10 @@ void CheckClass::thisSubtractionError(const Token *tok)
 void CheckClass::checkConst()
 {
     // This is an inconclusive check. False positives: #3322.
-    if (!_settings->inconclusive)
+    if (!mSettings->inconclusive)
         return;
 
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -2147,14 +2147,14 @@ namespace { // avoid one-definition-rule violation
 
 void CheckClass::initializerListOrder()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     // This check is not inconclusive.  However it only determines if the initialization
     // order is incorrect.  It does not determine if being out of order causes
     // a real error.  Out of order is not necessarily an error but you can never
     // have an error if the list is in order so this enforces defensive programming.
-    if (!_settings->inconclusive)
+    if (!mSettings->inconclusive)
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -2248,7 +2248,7 @@ void CheckClass::selfInitializationError(const Token* tok, const std::string& va
 
 void CheckClass::checkVirtualFunctionCallInConstructor()
 {
-    if (! _settings->isEnabled(Settings::WARNING))
+    if (! mSettings->isEnabled(Settings::WARNING))
         return;
     std::map<const Function *, std::list<const Token *> > virtualFunctionCallsMap;
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -2310,8 +2310,8 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
             tok->previous()->str() == "(") {
             const Token * prev = tok->previous();
             if (prev->previous() &&
-                (_settings->library.ignorefunction(tok->str())
-                 || _settings->library.ignorefunction(prev->previous()->str())))
+                (mSettings->library.ignorefunction(tok->str())
+                 || mSettings->library.ignorefunction(prev->previous()->str())))
                 continue;
         }
 
@@ -2410,7 +2410,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
 
 void CheckClass::checkDuplInheritedMembers()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     // Iterate over all classes
@@ -2470,7 +2470,7 @@ enum CtorType {
 
 void CheckClass::checkCopyCtorAndEqOperator()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
@@ -2535,7 +2535,7 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
     // style severity: it is a style decision if classes should be safe or
     // if users should be required to be careful. I expect that many users
     // will disagree about these reports.
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
     for (const Scope * classScope : symbolDatabase->classAndStructScopes) {
@@ -2576,9 +2576,9 @@ void CheckClass::unsafeClassDivZeroError(const Token *tok, const std::string &cl
 
 void CheckClass::checkOverride()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
-    if (_settings->standards.cpp < Standards::CPP11)
+    if (mSettings->standards.cpp < Standards::CPP11)
         return;
     for (const Scope * classScope : symbolDatabase->classAndStructScopes) {
         if (!classScope->definedType || classScope->definedType->derivedFrom.empty())

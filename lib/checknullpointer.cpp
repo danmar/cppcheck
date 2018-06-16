@@ -252,10 +252,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
 void CheckNullPointer::nullPointerLinkedList()
 {
 
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // looping through items in a linked list in a inner loop.
     // Here is an example:
@@ -318,9 +318,9 @@ void CheckNullPointer::nullPointerLinkedList()
 
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
-    const bool printInconclusive = (_settings->inconclusive);
+    const bool printInconclusive = (mSettings->inconclusive);
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
             tok = tok->next()->link();
             continue;
@@ -349,7 +349,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
             if (!ftok || !ftok->previous())
                 continue;
             std::list<const Token *> varlist;
-            parseFunctionCall(*ftok->previous(), varlist, &_settings->library);
+            parseFunctionCall(*ftok->previous(), varlist, &mSettings->library);
             if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
                 nullPointerError(tok, tok->str(), value, value->isInconclusive());
             }
@@ -384,7 +384,7 @@ namespace {
 /** Dereferencing null constant (simplified token list) */
 void CheckNullPointer::nullConstantDereference()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody()) // We only look for functions with a body
@@ -415,7 +415,7 @@ void CheckNullPointer::nullConstantDereference()
                         nullPointerError(tok);
                 } else { // function call
                     std::list<const Token *> var;
-                    parseFunctionCall(*tok, var, &_settings->library);
+                    parseFunctionCall(*tok, var, &mSettings->library);
 
                     // is one of the var items a NULL pointer?
                     for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
@@ -435,7 +435,7 @@ void CheckNullPointer::nullConstantDereference()
                         continue;
                     if (argtok->values().front().intvalue != 0)
                         continue;
-                    if (_settings->library.isnullargbad(tok, argnr+1))
+                    if (mSettings->library.isnullargbad(tok, argnr+1))
                         nullPointerError(argtok);
                 }
             }
@@ -492,7 +492,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         return;
     }
 
-    if (!_settings->isEnabled(value, inconclusive))
+    if (!mSettings->isEnabled(value, inconclusive))
         return;
 
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
@@ -517,7 +517,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 
 void CheckNullPointer::arithmetic()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "-|+|+=|-=|++|--"))
@@ -548,9 +548,9 @@ void CheckNullPointer::arithmetic()
             const ValueFlow::Value *value = pointerOperand->getValue(checkValue);
             if (!value)
                 continue;
-            if (!_settings->inconclusive && value->isInconclusive())
+            if (!mSettings->inconclusive && value->isInconclusive())
                 continue;
-            if (value->condition && !_settings->isEnabled(Settings::WARNING))
+            if (value->condition && !mSettings->isEnabled(Settings::WARNING))
                 continue;
             arithmeticError(tok,value);
         }

@@ -113,7 +113,7 @@ public:
      * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
     void terminate() {
-        _settings.terminate();
+        mSettings.terminate();
     }
 
     /**
@@ -199,7 +199,7 @@ private:
     virtual void reportOut(const std::string &outmsg) override;
 
     std::list<std::string> _errorList;
-    Settings _settings;
+    Settings mSettings;
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
@@ -208,7 +208,7 @@ private:
      */
     virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) override;
 
-    ErrorLogger &_errorLogger;
+    ErrorLogger &mErrorLogger;
 
     /** @brief Current preprocessor configuration */
     std::string cfg;

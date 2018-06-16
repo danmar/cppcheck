@@ -43,10 +43,10 @@ namespace {
 
 void Check64BitPortability::pointerassignment()
 {
-    if (!_settings->isEnabled(Settings::PORTABILITY))
+    if (!mSettings->isEnabled(Settings::PORTABILITY))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Check return values
     for (const Scope * scope : symbolDatabase->functionScopes) {

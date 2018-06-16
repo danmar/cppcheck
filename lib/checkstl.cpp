@@ -128,7 +128,7 @@ static std::string getContainerName(const Token *containerToken)
 
 void CheckStl::iterators()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Variable* var : symbolDatabase->variableList()) {
         bool inconclusiveType=false;
@@ -344,7 +344,7 @@ static const Variable *getContainer(const Token *argtok)
 void CheckStl::mismatchingContainers()
 {
     // Check if different containers are used in various calls of standard functions
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
@@ -357,7 +357,7 @@ void CheckStl::mismatchingContainers()
             int argnr = 1;
             std::map<const Variable *, unsigned int> containerNr;
             for (const Token *argTok = arg1; argTok; argTok = argTok->nextArgument()) {
-                const Library::ArgumentChecks::IteratorInfo *i = _settings->library.getArgIteratorInfo(ftok,argnr++);
+                const Library::ArgumentChecks::IteratorInfo *i = mSettings->library.getArgIteratorInfo(ftok,argnr++);
                 if (!i)
                     continue;
                 const Variable *c = getContainer(argTok);
@@ -376,7 +376,7 @@ void CheckStl::mismatchingContainers()
                     mismatchingContainersError(argTok);
                 }
             }
-            const int ret = _settings->library.returnValueContainer(ftok);
+            const int ret = mSettings->library.returnValueContainer(ftok);
             if (ret != -1 && Token::Match(ftok->next()->astParent(), "==|!=")) {
                 const Token *parent = ftok->next()->astParent();
                 const Token *other = (parent->astOperand1() == ftok->next()) ? parent->astOperand2() : parent->astOperand1();
@@ -401,7 +401,7 @@ void CheckStl::mismatchingContainers()
 
 void CheckStl::stlOutOfBounds()
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Scan through all scopes..
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
@@ -429,7 +429,7 @@ void CheckStl::stlOutOfBounds()
         if (!var)
             continue;
 
-        const Library::Container* container = _settings->library.detectContainer(var->typeStartToken());
+        const Library::Container* container = mSettings->library.detectContainer(var->typeStartToken());
         if (!container)
             continue;
 
@@ -471,7 +471,7 @@ void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, con
 void CheckStl::negativeIndex()
 {
     // Negative index is out of bounds..
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t ii = 0; ii < functions; ++ii) {
         const Scope * scope = symbolDatabase->functionScopes[ii];
@@ -481,10 +481,10 @@ void CheckStl::negativeIndex()
             const Variable * const var = tok->variable();
             if (!var || tok == var->nameToken())
                 continue;
-            const Library::Container * const container = _settings->library.detectContainer(var->typeStartToken());
+            const Library::Container * const container = mSettings->library.detectContainer(var->typeStartToken());
             if (!container || !container->arrayLike_indexOp)
                 continue;
-            const ValueFlow::Value *index = tok->next()->astOperand2()->getValueLE(-1, _settings);
+            const ValueFlow::Value *index = tok->next()->astOperand2()->getValueLE(-1, mSettings);
             if (!index)
                 continue;
             negativeIndexError(tok, *index);
@@ -506,7 +506,7 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
 
 void CheckStl::erase()
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if (i->type == Scope::eFor && Token::simpleMatch(i->classDef, "for (")) {
@@ -567,7 +567,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
 void CheckStl::pushback()
 {
     // Pointer can become invalid after push_back, push_front, reserve or resize..
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -724,12 +724,12 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &func, co
 
 void CheckStl::stlBoundaries()
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->scope() || !var->scope()->isExecutable())
             continue;
 
-        const Library::Container* container = _settings->library.detectContainer(var->typeStartToken(), true);
+        const Library::Container* container = mSettings->library.detectContainer(var->typeStartToken(), true);
         if (!container || container->opLessAllowed)
             continue;
 
@@ -771,12 +771,12 @@ static bool if_findCompare(const Token * const tokBack)
 
 void CheckStl::if_find()
 {
-    const bool printWarning = _settings->isEnabled(Settings::WARNING);
-    const bool printPerformance = _settings->isEnabled(Settings::PERFORMANCE);
+    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
+    const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
     if (!printWarning && !printPerformance)
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if ((i->type != Scope::eIf && i->type != Scope::eWhile) || !i->classDef)
@@ -790,7 +790,7 @@ void CheckStl::if_find()
                 tok = tok->linkAt(1);
 
             else if (tok->variable() && Token::Match(tok, "%var% . %name% (")) {
-                container = _settings->library.detectContainer(tok->variable()->typeStartToken());
+                container = mSettings->library.detectContainer(tok->variable()->typeStartToken());
                 funcTok = tok->tokAt(2);
             }
 
@@ -804,16 +804,16 @@ void CheckStl::if_find()
                 funcTok = tok2->astParent()->next();
 
                 if (tok->variable()->isArrayOrPointer())
-                    container = _settings->library.detectContainer(tok->variable()->typeStartToken());
+                    container = mSettings->library.detectContainer(tok->variable()->typeStartToken());
                 else { // Container of container - find the inner container
-                    container = _settings->library.detectContainer(tok->variable()->typeStartToken()); // outer container
+                    container = mSettings->library.detectContainer(tok->variable()->typeStartToken()); // outer container
                     tok2 = Token::findsimplematch(tok->variable()->typeStartToken(), "<", tok->variable()->typeEndToken());
                     if (container && container->type_templateArgNo >= 0 && tok2) {
                         tok2 = tok2->next();
                         for (int j = 0; j < container->type_templateArgNo; j++)
                             tok2 = tok2->nextTemplateArgument();
 
-                        container = _settings->library.detectContainer(tok2); // innner container
+                        container = mSettings->library.detectContainer(tok2); // innner container
                     } else
                         container = nullptr;
                 }
@@ -865,13 +865,13 @@ static bool isCpp03ContainerSizeSlow(const Token *tok)
 
 void CheckStl::size()
 {
-    if (!_settings->isEnabled(Settings::PERFORMANCE))
+    if (!mSettings->isEnabled(Settings::PERFORMANCE))
         return;
 
-    if (_settings->standards.cpp == Standards::CPP11)
+    if (mSettings->standards.cpp == Standards::CPP11)
         return;
 
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -926,10 +926,10 @@ void CheckStl::sizeError(const Token *tok)
 
 void CheckStl::redundantCondition()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if (i->type != Scope::eIf)
@@ -965,10 +965,10 @@ void CheckStl::redundantIfRemoveError(const Token *tok)
 
 void CheckStl::missingComparison()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
         if (i->type != Scope::eFor || !i->classDef)
@@ -1056,10 +1056,10 @@ namespace {
 
 void CheckStl::string_c_str()
 {
-    const bool printInconclusive = _settings->inconclusive;
-    const bool printPerformance = _settings->isEnabled(Settings::PERFORMANCE);
+    const bool printInconclusive = mSettings->inconclusive;
+    const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
 
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Find all functions that take std::string as argument
     std::multimap<std::string, unsigned int> c_strFuncParam;
@@ -1272,10 +1272,10 @@ void CheckStl::checkAutoPointer()
     std::set<unsigned int> autoPtrVarId;
     std::map<unsigned int, const std::string> mallocVarId; // variables allocated by the malloc-like function
     const char STL_CONTAINER_LIST[] = "array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset|basic_string";
-    const int malloc = _settings->library.allocId("malloc"); // allocation function, which are not compatible with auto_ptr
-    const bool printStyle = _settings->isEnabled(Settings::STYLE);
+    const int malloc = mSettings->library.allocId("malloc"); // allocation function, which are not compatible with auto_ptr
+    const bool printStyle = mSettings->isEnabled(Settings::STYLE);
 
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "auto_ptr <")) {
             if ((tok->strAt(-1) == "<" && Token::Match(tok->tokAt(-2), STL_CONTAINER_LIST)) ||
                 (Token::simpleMatch(tok->tokAt(-3), "< std :: auto_ptr") && Token::Match(tok->tokAt(-4), STL_CONTAINER_LIST))) {
@@ -1288,7 +1288,7 @@ void CheckStl::checkAutoPointer()
                     if (Token::Match(tok3, "( new %type%") && hasArrayEndParen(tok3)) {
                         autoPointerArrayError(tok2->next());
                     }
-                    if (Token::Match(tok3, "( %name% (") && malloc && _settings->library.alloc(tok3->next(), -1) == malloc) {
+                    if (Token::Match(tok3, "( %name% (") && malloc && mSettings->library.alloc(tok3->next(), -1) == malloc) {
                         // malloc-like function allocated memory passed to the auto_ptr constructor -> error
                         autoPointerMallocError(tok2->next(), tok3->next()->str());
                     }
@@ -1307,7 +1307,7 @@ void CheckStl::checkAutoPointer()
                         if (Token::simpleMatch(tok3->previous(), "[ ] )")) {
                             autoPointerArrayError(tok2->next());
                         } else if (tok3->varId()) {
-                            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid% = new %type%", tok3->varId());
+                            const Token *decltok = Token::findmatch(mTokenizer->tokens(), "%varid% = new %type%", tok3->varId());
                             if (decltok && hasArrayEnd(decltok)) {
                                 autoPointerArrayError(tok2->next());
                             }
@@ -1332,7 +1332,7 @@ void CheckStl::checkAutoPointer()
                 if (iter != autoPtrVarId.end()) {
                     autoPointerArrayError(tok);
                 }
-            } else if (Token::Match(tok, "%var% = %name% (") && malloc && _settings->library.alloc(tok->tokAt(2), -1) == malloc) {
+            } else if (Token::Match(tok, "%var% = %name% (") && malloc && mSettings->library.alloc(tok->tokAt(2), -1) == malloc) {
                 // C library function like 'malloc' used together with auto pointer -> error
                 const std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
@@ -1341,7 +1341,7 @@ void CheckStl::checkAutoPointer()
                     // it is not an auto pointer variable and it is allocated by malloc like function.
                     mallocVarId.insert(std::make_pair(tok->varId(), tok->strAt(2)));
                 }
-            } else if (Token::Match(tok, "%var% . reset ( %name% (") && malloc && _settings->library.alloc(tok->tokAt(4), -1) == malloc) {
+            } else if (Token::Match(tok, "%var% . reset ( %name% (") && malloc && mSettings->library.alloc(tok->tokAt(4), -1) == malloc) {
                 // C library function like 'malloc' used when resetting auto pointer -> error
                 const std::set<unsigned int>::const_iterator iter = autoPtrVarId.find(tok->varId());
                 if (iter != autoPtrVarId.end()) {
@@ -1396,13 +1396,13 @@ namespace {
 
 void CheckStl::uselessCalls()
 {
-    const bool printPerformance = _settings->isEnabled(Settings::PERFORMANCE);
-    const bool printWarning = _settings->isEnabled(Settings::WARNING);
+    const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
+    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
     if (!printPerformance && !printWarning)
         return;
 
 
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -1487,12 +1487,12 @@ void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& func
 // E.g.  if (*i && i != str.end()) { }
 void CheckStl::checkDereferenceInvalidIterator()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     // Iterate over "if", "while", and "for" conditions where there may
     // be an iterator that is dereferenced before being checked for validity.
-    const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
+    const std::list<Scope>& scopeList = mTokenizer->getSymbolDatabase()->scopeList;
     for (std::list<Scope>::const_iterator i = scopeList.begin(); i != scopeList.end(); ++i) {
         if (!(i->type == Scope::eIf || i->type == Scope::eDo || i->type == Scope::eWhile || i->type == Scope::eFor))
             continue;
@@ -1601,15 +1601,15 @@ void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, const Libra
 
 void CheckStl::readingEmptyStlContainer()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    if (!_settings->inconclusive)
+    if (!mSettings->inconclusive)
         return;
 
     std::map<unsigned int, const Library::Container*> emptyContainer;
 
-    const std::list<Scope>& scopeList = _tokenizer->getSymbolDatabase()->scopeList;
+    const std::list<Scope>& scopeList = mTokenizer->getSymbolDatabase()->scopeList;
 
     for (std::list<Scope>::const_iterator i = scopeList.begin(); i != scopeList.end(); ++i) {
         if (i->type != Scope::eFunction)
@@ -1639,7 +1639,7 @@ void CheckStl::readingEmptyStlContainer()
             // function call
             if (Token::Match(tok, "!!. %name% (") && !Token::simpleMatch(tok->linkAt(2), ") {")) {
                 for (std::map<unsigned int, const Library::Container*>::iterator it = emptyContainer.begin(); it != emptyContainer.end();) {
-                    const Variable *var = _tokenizer->getSymbolDatabase()->getVariableFromVarId(it->first);
+                    const Variable *var = mTokenizer->getSymbolDatabase()->getVariableFromVarId(it->first);
                     if (var && (var->isLocal() || var->isArgument()))
                         ++it;
                     else
@@ -1661,7 +1661,7 @@ void CheckStl::readingEmptyStlContainer()
                 }
 
                 if (insert) {
-                    const Library::Container* container = _settings->library.detectContainer(var->typeStartToken());
+                    const Library::Container* container = mSettings->library.detectContainer(var->typeStartToken());
                     if (container)
                         emptyContainer[var->declarationId()] = container;
                     continue;

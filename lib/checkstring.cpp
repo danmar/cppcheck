@@ -55,7 +55,7 @@ static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, o
 //---------------------------------------------------------------------------
 void CheckString::stringLiteralWrite()
 {
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -98,10 +98,10 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
 //---------------------------------------------------------------------------
 void CheckString::checkAlwaysTrueOrFalseStringCompare()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    for (const Token* tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->isName() && tok->strAt(1) == "(" && Token::Match(tok, "memcmp|strncmp|strcmp|stricmp|strverscmp|bcmp|strcmpi|strcasecmp|strncasecmp|strncasecmp_l|strcasecmp_l|wcsncasecmp|wcscasecmp|wmemcmp|wcscmp|wcscasecmp_l|wcsncasecmp_l|wcsncmp|_mbscmp|_memicmp|_memicmp_l|_stricmp|_wcsicmp|_mbsicmp|_stricmp_l|_wcsicmp_l|_mbsicmp_l")) {
             if (Token::Match(tok->tokAt(2), "%str% , %str% ,|)")) {
                 const std::string &str1 = tok->strAt(2);
@@ -165,10 +165,10 @@ void CheckString::alwaysTrueStringVariableCompareError(const Token *tok, const s
 //-----------------------------------------------------------------------------
 void CheckString::checkSuspiciousStringCompare()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -186,7 +186,7 @@ void CheckString::checkSuspiciousStringCompare()
                 continue;
 
             // Pointer addition?
-            if (varTok->str() == "+" && _tokenizer->isC()) {
+            if (varTok->str() == "+" && mTokenizer->isC()) {
                 const Token * const tokens[2] = { varTok->astOperand1(), varTok->astOperand2() };
                 for (int nr = 0; nr < 2; nr++) {
                     const Token *t = tokens[nr];
@@ -198,7 +198,7 @@ void CheckString::checkSuspiciousStringCompare()
             }
 
             if (varTok->str() == "*") {
-                if (!_tokenizer->isC() || varTok->astOperand2() != nullptr || litTok->tokType() != Token::eString)
+                if (!mTokenizer->isC() || varTok->astOperand2() != nullptr || litTok->tokType() != Token::eString)
                     continue;
                 varTok = varTok->astOperand1();
             }
@@ -216,7 +216,7 @@ void CheckString::checkSuspiciousStringCompare()
 
             const bool ischar(litTok->tokType() == Token::eChar);
             if (litTok->tokType() == Token::eString) {
-                if (_tokenizer->isC() || (var && var->isArrayOrPointer()))
+                if (mTokenizer->isC() || (var && var->isArrayOrPointer()))
                     suspiciousStringCompareError(tok, varname);
             } else if (ischar && var && var->isPointer()) {
                 suspiciousStringCompareError_char(tok, varname);
@@ -249,7 +249,7 @@ static bool isChar(const Variable* var)
 
 void CheckString::strPlusChar()
 {
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -275,10 +275,10 @@ void CheckString::strPlusCharError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckString::checkIncorrectStringCompare()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -338,10 +338,10 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 //---------------------------------------------------------------------------
 void CheckString::overlappingStrcmp()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -397,7 +397,7 @@ void CheckString::overlappingStrcmp()
                     if (args1[1]->isLiteral() &&
                         args2[1]->isLiteral() &&
                         args1[1]->str() != args2[1]->str() &&
-                        isSameExpression(_tokenizer->isCPP(), true, args1[0], args2[0], _settings->library, true))
+                        isSameExpression(mTokenizer->isCPP(), true, args1[0], args2[0], mSettings->library, true))
                         overlappingStrcmpError(tok1, tok2);
                 }
             }
@@ -424,7 +424,7 @@ void CheckString::overlappingStrcmpError(const Token *eq0, const Token *ne0)
 //---------------------------------------------------------------------------
 void CheckString::sprintfOverlappingData()
 {
-    const SymbolDatabase* symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -436,11 +436,11 @@ void CheckString::sprintfOverlappingData()
 
             const int formatString = Token::simpleMatch(tok, "sprintf") ? 1 : 2;
             for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {
-                const bool same = isSameExpression(_tokenizer->isCPP(),
+                const bool same = isSameExpression(mTokenizer->isCPP(),
                                                    false,
                                                    args[0],
                                                    args[argnr],
-                                                   _settings->library,
+                                                   mSettings->library,
                                                    true);
                 if (same) {
                     sprintfOverlappingDataError(args[argnr], args[argnr]->expressionString());

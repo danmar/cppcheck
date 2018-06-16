@@ -310,7 +310,7 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             /*
             std::ostringstream errmsg;
             errmsg << "The function '" << it->first << "' is only used in the file it was declared in so it should have local linkage.";
-            _errorLogger->reportErr( errmsg.str() );
+            mErrorLogger->reportErr( errmsg.str() );
             errors = true;
             */
         }

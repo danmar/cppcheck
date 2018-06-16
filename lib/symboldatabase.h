@@ -696,7 +696,7 @@ class CPPCHECKLIB Function {
 public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
 
-    Function(const Tokenizer *_tokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
+    Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
 
     const std::string &name() const {
         return tokenDef->str();
@@ -1238,9 +1238,9 @@ private:
     void setValueType(Token *tok, const Variable &var);
     void setValueType(Token *tok, const Enumerator &enumerator);
 
-    const Tokenizer *_tokenizer;
-    const Settings *_settings;
-    ErrorLogger *_errorLogger;
+    const Tokenizer *mTokenizer;
+    const Settings *mSettings;
+    ErrorLogger *mErrorLogger;
 
     /** variable symbol table */
     std::vector<const Variable *> _variableList;

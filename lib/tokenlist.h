@@ -43,11 +43,11 @@ public:
     ~TokenList();
 
     void setSettings(const Settings *settings) {
-        _settings = settings;
+        mSettings = settings;
     }
 
     const Settings *getSettings() const {
-        return _settings;
+        return mSettings;
     }
 
     /** @return the source file path. e.g. "file.cpp" */
@@ -188,7 +188,7 @@ private:
     std::vector<std::string> _files;
 
     /** settings */
-    const Settings* _settings;
+    const Settings* mSettings;
 
     /** File is known to be C/C++ code */
     bool _isC, _isCPP;

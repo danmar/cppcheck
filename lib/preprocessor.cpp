@@ -57,7 +57,7 @@ bool Preprocessor::missingSystemIncludeFlag;
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
+Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
 {
 }
 
@@ -75,7 +75,7 @@ namespace {
     };
 }
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_settings, std::list<BadInlineSuppression> *bad)
+static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
 {
     std::list<Suppressions::Suppression> inlineSuppressions;
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
@@ -96,9 +96,9 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_se
 
         // Relative filename
         std::string relativeFilename(tok->location.file());
-        if (_settings.relativePaths) {
-            for (std::size_t j = 0U; j < _settings.basePaths.size(); ++j) {
-                const std::string bp = _settings.basePaths[j] + "/";
+        if (mSettings.relativePaths) {
+            for (std::size_t j = 0U; j < mSettings.basePaths.size(); ++j) {
+                const std::string bp = mSettings.basePaths[j] + "/";
                 if (relativeFilename.compare(0,bp.size(),bp)==0) {
                     relativeFilename = relativeFilename.substr(bp.size());
                 }
@@ -110,7 +110,7 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_se
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
-            _settings.nomsg.addSuppression(suppr);
+            mSettings.nomsg.addSuppression(suppr);
         }
         inlineSuppressions.clear();
     }
@@ -118,13 +118,13 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &_se
 
 void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
 {
-    if (!_settings.inlineSuppressions)
+    if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::inlineSuppressions(tokens, _settings, &err);
+    ::inlineSuppressions(tokens, mSettings, &err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
         if (it->second)
-            ::inlineSuppressions(*it->second, _settings, &err);
+            ::inlineSuppressions(*it->second, mSettings, &err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -430,11 +430,11 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 
     std::set<std::string> defined = { "__cplusplus" };
 
-    ::getConfigs(tokens, defined, _settings.userDefines, _settings.userUndefs, ret);
+    ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
 
     for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
-        if (!_settings.configurationExcluded(it->first))
-            ::getConfigs(*(it->second), defined, _settings.userDefines, _settings.userUndefs, ret);
+        if (!mSettings.configurationExcluded(it->first))
+            ::getConfigs(*(it->second), defined, mSettings.userDefines, mSettings.userUndefs, ret);
     }
 
     return ret;
@@ -452,7 +452,7 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     const std::set<std::string> configs = getConfigs(tokens1);
 
     for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
-        if (_settings.userUndefs.find(*it) == _settings.userUndefs.end()) {
+        if (mSettings.userUndefs.find(*it) == mSettings.userUndefs.end()) {
             result[ *it ] = getcode(tokens1, *it, files, false);
         }
     }
@@ -520,15 +520,15 @@ static void splitcfg(const std::string &cfg, std::list<std::string> &defines, co
     }
 }
 
-static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cfg, const std::string &filename)
+static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cfg, const std::string &filename)
 {
     simplecpp::DUI dui;
 
-    splitcfg(_settings.userDefines, dui.defines, "1");
+    splitcfg(mSettings.userDefines, dui.defines, "1");
     if (!cfg.empty())
         splitcfg(cfg, dui.defines, emptyString);
 
-    for (std::vector<std::string>::const_iterator it = _settings.library.defines.begin(); it != _settings.library.defines.end(); ++it) {
+    for (std::vector<std::string>::const_iterator it = mSettings.library.defines.begin(); it != mSettings.library.defines.end(); ++it) {
         if (it->compare(0,8,"#define ")!=0)
             continue;
         std::string s = it->substr(8);
@@ -548,9 +548,9 @@ static simplecpp::DUI createDUI(const Settings &_settings, const std::string &cf
     if (Path::isCPP(filename))
         dui.defines.push_back("__cplusplus");
 
-    dui.undefined = _settings.userUndefs; // -U
-    dui.includePaths = _settings.includePaths; // -I
-    dui.includes = _settings.userIncludes;  // --include
+    dui.undefined = mSettings.userUndefs; // -U
+    dui.includePaths = mSettings.includePaths; // -I
+    dui.includes = mSettings.userIncludes;  // --include
     return dui;
 }
 
@@ -575,7 +575,7 @@ static bool hasErrors(const simplecpp::OutputList &outputList)
 
 void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
 {
-    const simplecpp::DUI dui = createDUI(_settings, emptyString, files[0]);
+    const simplecpp::DUI dui = createDUI(mSettings, emptyString, files[0]);
 
     tokenlists = simplecpp::load(rawtokens, files, dui, nullptr);
 }
@@ -590,34 +590,34 @@ void Preprocessor::removeComments()
 
 void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
 {
-    tokens->sizeOfType["bool"]          = _settings.sizeof_bool;
-    tokens->sizeOfType["short"]         = _settings.sizeof_short;
-    tokens->sizeOfType["int"]           = _settings.sizeof_int;
-    tokens->sizeOfType["long"]          = _settings.sizeof_long;
-    tokens->sizeOfType["long long"]     = _settings.sizeof_long_long;
-    tokens->sizeOfType["float"]         = _settings.sizeof_float;
-    tokens->sizeOfType["double"]        = _settings.sizeof_double;
-    tokens->sizeOfType["long double"]   = _settings.sizeof_long_double;
-    tokens->sizeOfType["bool *"]        = _settings.sizeof_pointer;
-    tokens->sizeOfType["short *"]       = _settings.sizeof_pointer;
-    tokens->sizeOfType["int *"]         = _settings.sizeof_pointer;
-    tokens->sizeOfType["long *"]        = _settings.sizeof_pointer;
-    tokens->sizeOfType["long long *"]   = _settings.sizeof_pointer;
-    tokens->sizeOfType["float *"]       = _settings.sizeof_pointer;
-    tokens->sizeOfType["double *"]      = _settings.sizeof_pointer;
-    tokens->sizeOfType["long double *"] = _settings.sizeof_pointer;
+    tokens->sizeOfType["bool"]          = mSettings.sizeof_bool;
+    tokens->sizeOfType["short"]         = mSettings.sizeof_short;
+    tokens->sizeOfType["int"]           = mSettings.sizeof_int;
+    tokens->sizeOfType["long"]          = mSettings.sizeof_long;
+    tokens->sizeOfType["long long"]     = mSettings.sizeof_long_long;
+    tokens->sizeOfType["float"]         = mSettings.sizeof_float;
+    tokens->sizeOfType["double"]        = mSettings.sizeof_double;
+    tokens->sizeOfType["long double"]   = mSettings.sizeof_long_double;
+    tokens->sizeOfType["bool *"]        = mSettings.sizeof_pointer;
+    tokens->sizeOfType["short *"]       = mSettings.sizeof_pointer;
+    tokens->sizeOfType["int *"]         = mSettings.sizeof_pointer;
+    tokens->sizeOfType["long *"]        = mSettings.sizeof_pointer;
+    tokens->sizeOfType["long long *"]   = mSettings.sizeof_pointer;
+    tokens->sizeOfType["float *"]       = mSettings.sizeof_pointer;
+    tokens->sizeOfType["double *"]      = mSettings.sizeof_pointer;
+    tokens->sizeOfType["long double *"] = mSettings.sizeof_pointer;
 }
 
 simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
 {
-    const simplecpp::DUI dui = createDUI(_settings, cfg, files[0]);
+    const simplecpp::DUI dui = createDUI(mSettings, cfg, files[0]);
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, tokens1, files, tokenlists, dui, &outputList, &macroUsage);
 
-    const bool showerror = (!_settings.userDefines.empty() && !_settings.force);
+    const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
     reportOutput(outputList, showerror);
     if (throwError && hasErrors(outputList)) {
         for (const simplecpp::Output &output : outputList) {
@@ -731,7 +731,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         const ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
         locationList.push_back(loc);
     }
-    _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
+    mErrorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
                             file0,
                             Severity::error,
                             msg,
@@ -747,17 +747,17 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     errorMessage.errorId = "missingInclude";
     errorMessage.setFileName(fname);
     errorMessage.lineNumber = linenr;
-    if (_settings.nomsg.isSuppressed(errorMessage))
+    if (mSettings.nomsg.isSuppressed(errorMessage))
         return;
     errorMessage.errorId = "missingIncludeSystem";
-    if (headerType == SystemHeader && _settings.nomsg.isSuppressed(errorMessage))
+    if (headerType == SystemHeader && mSettings.nomsg.isSuppressed(errorMessage))
         return;
 
     if (headerType == SystemHeader)
         missingSystemIncludeFlag = true;
     else
         missingIncludeFlag = true;
-    if (_errorLogger && _settings.checkConfiguration) {
+    if (mErrorLogger && mSettings.checkConfiguration) {
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         if (!filename.empty()) {
@@ -772,7 +772,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                                          "Include file: \"" + header + "\" not found.",
                                          (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                                          false);
-        _errorLogger->reportInfo(errmsg);
+        mErrorLogger->reportInfo(errmsg);
     }
 }
 
@@ -797,7 +797,7 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
                 }
             }
             if (!directiveLocation) {
-                if (_settings.isEnabled(Settings::INFORMATION))
+                if (mSettings.isEnabled(Settings::INFORMATION))
                     validateCfgError(mu.useLocation.file(), mu.useLocation.line, cfg, macroName);
                 ret = false;
             }
@@ -814,7 +814,7 @@ void Preprocessor::validateCfgError(const std::string &file, const unsigned int 
     const ErrorLogger::ErrorMessage::FileLocation loc(file, line);
     locationList.push_back(loc);
     const ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
-    _errorLogger->reportInfo(errmsg);
+    mErrorLogger->reportInfo(errmsg);
 }
 
 void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)

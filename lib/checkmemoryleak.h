@@ -234,7 +234,7 @@ public:
     const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz);
 
     /**
-     * Extract a new tokens list that is easier to parse than the "_tokenizer->tokens()", the
+     * Extract a new tokens list that is easier to parse than the "mTokenizer->tokens()", the
      * extracted tokens list describes how the given variable is used.
      * The getcode and call_func are recursive
      * @param tok start parse token
