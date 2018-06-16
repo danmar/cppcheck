@@ -47,7 +47,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     _linenr(0),
     _col(0),
     _progressValue(0),
-    _tokType(eNone),
+    mTokType(eNone),
     mFlags(0),
     _bits(0),
     mAstOperand1(nullptr),
@@ -90,7 +90,7 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)_str[0]) || _str[0] == '_' || _str[0] == '$') { // Name
             if (mVarId)
                 tokType(eVariable);
-            else if (_tokType != eVariable && _tokType != eFunction && _tokType != eType && _tokType != eKeyword)
+            else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
         } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
             tokType(eNumber);
@@ -183,7 +183,7 @@ void Token::concatStr(std::string const& b)
 
 std::string Token::strValue() const
 {
-    assert(_tokType == eString);
+    assert(mTokType == eString);
     std::string ret(_str.substr(1, _str.length() - 2));
     std::string::size_type pos = 0U;
     while ((pos = ret.find('\\', pos)) != std::string::npos) {
@@ -247,7 +247,7 @@ void Token::swapWithNext()
 {
     if (mNext) {
         std::swap(_str, mNext->_str);
-        std::swap(_tokType, mNext->_tokType);
+        std::swap(mTokType, mNext->mTokType);
         std::swap(mFlags, mNext->mFlags);
         std::swap(mVarId, mNext->mVarId);
         std::swap(_fileIndex, mNext->_fileIndex);
@@ -269,7 +269,7 @@ void Token::swapWithNext()
 void Token::takeData(Token *fromToken)
 {
     _str = fromToken->_str;
-    tokType(fromToken->_tokType);
+    tokType(fromToken->mTokType);
     mFlags = fromToken->mFlags;
     mVarId = fromToken->mVarId;
     _fileIndex = fromToken->_fileIndex;
@@ -710,7 +710,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 std::size_t Token::getStrLength(const Token *tok)
 {
     assert(tok != nullptr);
-    assert(tok->_tokType == eString);
+    assert(tok->mTokType == eString);
 
     std::size_t len = 0;
     std::string::const_iterator it = tok->str().begin() + 1U;
@@ -1001,7 +1001,7 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
         if (isComplex())
             os << "_Complex ";
         if (isLong()) {
-            if (_tokType == eString || _tokType == eChar)
+            if (mTokType == eString || mTokType == eChar)
                 os << "L";
             else
                 os << "long ";
@@ -1670,7 +1670,7 @@ void Token::type(const ::Type *t)
     if (t) {
         tokType(eType);
         isEnumType(_type->isEnumType());
-    } else if (_tokType == eType)
+    } else if (mTokType == eType)
         tokType(eName);
 }
 

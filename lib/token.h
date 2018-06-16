@@ -246,28 +246,28 @@ public:
     }
 
     Token::Type tokType() const {
-        return _tokType;
+        return mTokType;
     }
     void tokType(Token::Type t) {
-        _tokType = t;
+        mTokType = t;
 
-        const bool memoizedIsName = (_tokType == eName || _tokType == eType || _tokType == eVariable ||
-                                     _tokType == eFunction || _tokType == eKeyword || _tokType == eBoolean ||
-                                     _tokType == eEnumerator); // TODO: "true"/"false" aren't really a name...
+        const bool memoizedIsName = (mTokType == eName || mTokType == eType || mTokType == eVariable ||
+                                     mTokType == eFunction || mTokType == eKeyword || mTokType == eBoolean ||
+                                     mTokType == eEnumerator); // TODO: "true"/"false" aren't really a name...
         setFlag(fIsName, memoizedIsName);
 
-        const bool memoizedIsLiteral = (_tokType == eNumber || _tokType == eString || _tokType == eChar ||
-                                        _tokType == eBoolean || _tokType == eLiteral || _tokType == eEnumerator);
+        const bool memoizedIsLiteral = (mTokType == eNumber || mTokType == eString || mTokType == eChar ||
+                                        mTokType == eBoolean || mTokType == eLiteral || mTokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
     }
     void isKeyword(const bool kwd) {
         if (kwd)
             tokType(eKeyword);
-        else if (_tokType == eKeyword)
+        else if (mTokType == eKeyword)
             tokType(eName);
     }
     bool isKeyword() const {
-        return _tokType == eKeyword;
+        return mTokType == eKeyword;
     }
     bool isName() const {
         return getFlag(fIsName);
@@ -277,37 +277,37 @@ public:
         return getFlag(fIsLiteral);
     }
     bool isNumber() const {
-        return _tokType == eNumber;
+        return mTokType == eNumber;
     }
     bool isEnumerator() const {
-        return _tokType == eEnumerator;
+        return mTokType == eEnumerator;
     }
     bool isOp() const {
         return (isConstOp() ||
                 isAssignmentOp() ||
-                _tokType == eIncDecOp);
+                mTokType == eIncDecOp);
     }
     bool isConstOp() const {
         return (isArithmeticalOp() ||
-                _tokType == eLogicalOp ||
-                _tokType == eComparisonOp ||
-                _tokType == eBitOp);
+                mTokType == eLogicalOp ||
+                mTokType == eComparisonOp ||
+                mTokType == eBitOp);
     }
     bool isExtendedOp() const {
         return isConstOp() ||
-               _tokType == eExtendedOp;
+               mTokType == eExtendedOp;
     }
     bool isArithmeticalOp() const {
-        return _tokType == eArithmeticalOp;
+        return mTokType == eArithmeticalOp;
     }
     bool isComparisonOp() const {
-        return _tokType == eComparisonOp;
+        return mTokType == eComparisonOp;
     }
     bool isAssignmentOp() const {
-        return _tokType == eAssignmentOp;
+        return mTokType == eAssignmentOp;
     }
     bool isBoolean() const {
-        return _tokType == eBoolean;
+        return mTokType == eBoolean;
     }
     bool isUnaryPreOp() const;
 
@@ -679,7 +679,7 @@ public:
         _function = f;
         if (f)
             tokType(eFunction);
-        else if (_tokType == eFunction)
+        else if (mTokType == eFunction)
             tokType(eName);
     }
 
@@ -687,7 +687,7 @@ public:
      * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return _tokType == eFunction ? _function : nullptr;
+        return mTokType == eFunction ? _function : nullptr;
     }
 
     /**
@@ -698,7 +698,7 @@ public:
         _variable = v;
         if (v || mVarId)
             tokType(eVariable);
-        else if (_tokType == eVariable)
+        else if (mTokType == eVariable)
             tokType(eName);
     }
 
@@ -706,7 +706,7 @@ public:
      * @return a pointer to the variable associated with this token.
      */
     const Variable *variable() const {
-        return _tokType == eVariable ? _variable : nullptr;
+        return mTokType == eVariable ? _variable : nullptr;
     }
 
     /**
@@ -719,14 +719,14 @@ public:
     * @return a pointer to the type associated with this token.
     */
     const ::Type *type() const {
-        return _tokType == eType ? _type : nullptr;
+        return mTokType == eType ? _type : nullptr;
     }
 
     /**
     * @return a pointer to the Enumerator associated with this token.
     */
     const Enumerator *enumerator() const {
-        return _tokType == eEnumerator ? _enumerator : nullptr;
+        return mTokType == eEnumerator ? _enumerator : nullptr;
     }
 
     /**
@@ -737,7 +737,7 @@ public:
         _enumerator = e;
         if (e)
             tokType(eEnumerator);
-        else if (_tokType == eEnumerator)
+        else if (mTokType == eEnumerator)
             tokType(eName);
     }
 
@@ -929,7 +929,7 @@ private:
      */
     unsigned int _progressValue;
 
-    Token::Type _tokType;
+    Token::Type mTokType;
 
     enum {
         fIsUnsigned             = (1 << 0),
