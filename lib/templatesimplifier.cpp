@@ -1735,12 +1735,12 @@ void TemplateSimplifier::simplifyTemplates(
     ErrorLogger* errorlogger,
     const Settings *mSettings,
     const std::time_t maxtime,
-    bool &_codeWithTemplates
+    bool &codeWithTemplates
 )
 {
     std::set<std::string> expandedtemplates(TemplateSimplifier::expandSpecialized(tokenlist.front()));
 
-    if (TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates).empty())
+    if (TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), codeWithTemplates).empty())
         return;
 
     // There are templates..
@@ -1757,7 +1757,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    std::list<TokenAndName> templateDeclarations(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), _codeWithTemplates));
+    std::list<TokenAndName> templateDeclarations(TemplateSimplifier::getTemplateDeclarations(tokenlist.front(), codeWithTemplates));
 
     // Locate possible instantiations of templates..
     std::list<TokenAndName> templateInstantiations(TemplateSimplifier::getTemplateInstantiations(tokenlist.front(), templateDeclarations));

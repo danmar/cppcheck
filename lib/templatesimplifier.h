@@ -204,14 +204,14 @@ public:
      * @param errorlogger error logger
      * @param mSettings settings
      * @param maxtime time when the simplification should be stopped
-     * @param _codeWithTemplates output parameter that is set if code contains templates
+     * @param codeWithTemplates output parameter that is set if code contains templates
      */
     static void simplifyTemplates(
         TokenList& tokenlist,
         ErrorLogger* errorlogger,
         const Settings *mSettings,
         const std::time_t maxtime,
-        bool &_codeWithTemplates);
+        bool &codeWithTemplates);
 
     /**
      * Simplify constant calculations such as "1+2" => "3"

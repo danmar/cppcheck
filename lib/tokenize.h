@@ -764,7 +764,7 @@ public:
 
     /** Was there templates in the code? */
     bool codeWithTemplates() const {
-        return _codeWithTemplates;
+        return mCodeWithTemplates;
     }
 
 
@@ -891,7 +891,7 @@ private:
      * was there any templates? templates that are "unused" are
      * removed from the token list
      */
-    bool _codeWithTemplates;
+    bool mCodeWithTemplates;
 
     /**
      * TimerResults

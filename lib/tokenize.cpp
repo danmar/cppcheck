@@ -145,7 +145,7 @@ Tokenizer::Tokenizer() :
     mSymbolDatabase(nullptr),
     mVarId(0),
     _unnamedCount(0),
-    _codeWithTemplates(false), //is there any templates?
+    mCodeWithTemplates(false), //is there any templates?
     _timerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
@@ -160,7 +160,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mSymbolDatabase(nullptr),
     mVarId(0),
     _unnamedCount(0),
-    _codeWithTemplates(false), //is there any templates?
+    mCodeWithTemplates(false), //is there any templates?
     _timerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
@@ -2299,7 +2299,7 @@ void Tokenizer::simplifyTemplates()
 #else
         0, // ignored
 #endif
-        _codeWithTemplates);
+        mCodeWithTemplates);
 }
 //---------------------------------------------------------------------------
 
