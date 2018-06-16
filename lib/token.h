@@ -989,9 +989,9 @@ private:
     unsigned char _bits;
 
     // AST..
-    Token *_astOperand1;
-    Token *_astOperand2;
-    Token *_astParent;
+    Token *mAstOperand1;
+    Token *mAstOperand2;
+    Token *mAstParent;
 
     // original name like size_t
     std::string* _originalName;
@@ -1008,18 +1008,18 @@ public:
     void astOperand2(Token *tok);
 
     const Token * astOperand1() const {
-        return _astOperand1;
+        return mAstOperand1;
     }
     const Token * astOperand2() const {
-        return _astOperand2;
+        return mAstOperand2;
     }
     const Token * astParent() const {
-        return _astParent;
+        return mAstParent;
     }
     const Token *astTop() const {
         const Token *ret = this;
-        while (ret->_astParent)
-            ret = ret->_astParent;
+        while (ret->mAstParent)
+            ret = ret->mAstParent;
         return ret;
     }
 
@@ -1033,7 +1033,7 @@ public:
     bool isCalculation() const;
 
     void clearAst() {
-        _astOperand1 = _astOperand2 = _astParent = nullptr;
+        mAstOperand1 = mAstOperand2 = mAstParent = nullptr;
     }
 
     void clearValueFlow() {
@@ -1043,10 +1043,10 @@ public:
 
     std::string astString(const char *sep = "") const {
         std::string ret;
-        if (_astOperand1)
-            ret = _astOperand1->astString(sep);
-        if (_astOperand2)
-            ret += _astOperand2->astString(sep);
+        if (mAstOperand1)
+            ret = mAstOperand1->astString(sep);
+        if (mAstOperand2)
+            ret += mAstOperand2->astString(sep);
         return ret + sep + _str;
     }
 

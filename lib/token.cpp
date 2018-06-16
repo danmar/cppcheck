@@ -50,9 +50,9 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     _tokType(eNone),
     mFlags(0),
     _bits(0),
-    _astOperand1(nullptr),
-    _astOperand2(nullptr),
-    _astParent(nullptr),
+    mAstOperand1(nullptr),
+    mAstOperand2(nullptr),
+    mAstParent(nullptr),
     _originalName(nullptr),
     _valuetype(nullptr),
     _values(nullptr)
@@ -1101,37 +1101,37 @@ std::string Token::stringifyList(bool varid) const
 
 void Token::astOperand1(Token *tok)
 {
-    if (_astOperand1)
-        _astOperand1->_astParent = nullptr;
+    if (mAstOperand1)
+        mAstOperand1->mAstParent = nullptr;
     // goto parent operator
     if (tok) {
         std::set<Token*> visitedParents;
-        while (tok->_astParent) {
-            if (!visitedParents.insert(tok->_astParent).second) // #6838/#6726/#8352 avoid hang on garbage code
+        while (tok->mAstParent) {
+            if (!visitedParents.insert(tok->mAstParent).second) // #6838/#6726/#8352 avoid hang on garbage code
                 throw InternalError(this, "Internal error. Token::astOperand1() cyclic dependency.");
-            tok = tok->_astParent;
+            tok = tok->mAstParent;
         }
-        tok->_astParent = this;
+        tok->mAstParent = this;
     }
-    _astOperand1 = tok;
+    mAstOperand1 = tok;
 }
 
 void Token::astOperand2(Token *tok)
 {
-    if (_astOperand2)
-        _astOperand2->_astParent = nullptr;
+    if (mAstOperand2)
+        mAstOperand2->mAstParent = nullptr;
     // goto parent operator
     if (tok) {
         std::set<Token*> visitedParents;
-        while (tok->_astParent) {
-            //std::cout << tok << " -> " << tok->_astParent ;
-            if (!visitedParents.insert(tok->_astParent).second) // #6838/#6726 avoid hang on garbage code
+        while (tok->mAstParent) {
+            //std::cout << tok << " -> " << tok->mAstParent ;
+            if (!visitedParents.insert(tok->mAstParent).second) // #6838/#6726 avoid hang on garbage code
                 throw InternalError(this, "Internal error. Token::astOperand2() cyclic dependency.");
-            tok = tok->_astParent;
+            tok = tok->mAstParent;
         }
-        tok->_astParent = this;
+        tok->mAstParent = this;
     }
-    _astOperand2 = tok;
+    mAstOperand2 = tok;
 }
 
 bool Token::isCalculation() const
@@ -1179,9 +1179,9 @@ bool Token::isUnaryPreOp() const
     const Token *tokbefore = mPrevious;
     const Token *tokafter = mNext;
     for (int distance = 1; distance < 10 && tokbefore; distance++) {
-        if (tokbefore == _astOperand1)
+        if (tokbefore == mAstOperand1)
             return false;
-        if (tokafter == _astOperand1)
+        if (tokafter == mAstOperand1)
             return true;
         tokbefore = tokbefore->mPrevious;
         tokafter  = tokafter->mPrevious;
@@ -1298,7 +1298,7 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
 {
     std::set<const Token *> printed;
     for (const Token *tok = this; tok; tok = tok->next()) {
-        if (!tok->_astParent && tok->_astOperand1) {
+        if (!tok->mAstParent && tok->mAstOperand1) {
             if (printed.empty() && !xml)
                 out << "\n\n##AST" << std::endl;
             else if (printed.find(tok) != printed.end())
@@ -1338,17 +1338,17 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
         ret += " \'" + _valuetype->str() + '\'';
     ret += '\n';
 
-    if (_astOperand1) {
+    if (mAstOperand1) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
-        if (indent1==indent2 && !_astOperand2)
+        if (indent1==indent2 && !mAstOperand2)
             i1 += 2;
-        ret += indent(indent1,indent2) + (_astOperand2 ? "|-" : "`-") + _astOperand1->astStringVerbose(i1,i2);
+        ret += indent(indent1,indent2) + (mAstOperand2 ? "|-" : "`-") + mAstOperand1->astStringVerbose(i1,i2);
     }
-    if (_astOperand2) {
+    if (mAstOperand2) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
         if (indent1==indent2)
             i1 += 2;
-        ret += indent(indent1,indent2) + "`-" + _astOperand2->astStringVerbose(i1,i2);
+        ret += indent(indent1,indent2) + "`-" + mAstOperand2->astStringVerbose(i1,i2);
     }
     return ret;
 }
