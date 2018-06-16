@@ -143,7 +143,7 @@ Tokenizer::Tokenizer() :
     mSettings(nullptr),
     mErrorLogger(nullptr),
     mSymbolDatabase(nullptr),
-    _varId(0),
+    mVarId(0),
     _unnamedCount(0),
     _codeWithTemplates(false), //is there any templates?
     _timerResults(nullptr)
@@ -158,7 +158,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mSettings(settings),
     mErrorLogger(errorLogger),
     mSymbolDatabase(nullptr),
-    _varId(0),
+    mVarId(0),
     _unnamedCount(0),
     _codeWithTemplates(false), //is there any templates?
     _timerResults(nullptr)
@@ -2525,7 +2525,7 @@ static void setVarIdClassFunction(const std::string &classname,
                                   const Token * const endToken,
                                   const std::map<std::string, unsigned int> &varlist,
                                   std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
-                                  unsigned int *_varId)
+                                  unsigned int *varId_)
 {
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (tok2->varId() != 0 || !tok2->isName())
@@ -2540,7 +2540,7 @@ static void setVarIdClassFunction(const std::string &classname,
         const std::map<std::string,unsigned int>::const_iterator it = varlist.find(tok2->str());
         if (it != varlist.end()) {
             tok2->varId(it->second);
-            setVarIdStructMembers(&tok2, structMembers, _varId);
+            setVarIdStructMembers(&tok2, structMembers, varId_);
         }
     }
 }
@@ -2842,7 +2842,7 @@ void Tokenizer::setVarIdPass1()
         }
     }
 
-    _varId = *variableMap.getVarId();
+    mVarId = *variableMap.getVarId();
 }
 
 namespace {
@@ -3057,7 +3057,7 @@ void Tokenizer::setVarIdPass2()
             if (tok2->link()) {
                 if (tok2->str() == "{") {
                     if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
-                        setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &_varId);
+                        setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &mVarId);
                     tok2 = tok2->link();
                 } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
                     tok2 = tok2->link();
@@ -3097,7 +3097,7 @@ void Tokenizer::setVarIdPass2()
             // If this is a function implementation.. add it to funclist
             Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
             if (start) {
-                setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &_varId);
+                setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &mVarId);
             }
 
             if (Token::Match(tok2, ") %name% ("))
@@ -3131,7 +3131,7 @@ void Tokenizer::setVarIdPass2()
                     tok3 = tok3->linkAt(1);
             }
             if (Token::Match(tok3, ")|} {")) {
-                setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &_varId);
+                setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &mVarId);
             }
         }
     }
@@ -8658,7 +8658,7 @@ void Tokenizer::simplifyFuncInWhile()
         Token *var = tok->tokAt(4);
         Token *end = tok->next()->link()->next()->link();
 
-        const unsigned int varid = ++_varId; // Create new variable
+        const unsigned int varid = ++mVarId; // Create new variable
         const std::string varname("cppcheck:r" + MathLib::toString(++count));
         tok->str("int");
         tok->next()->insertToken(varname);
@@ -9937,7 +9937,7 @@ void Tokenizer::printUnknownTypes() const
 
     std::multimap<std::string, const Token *> unknowns;
 
-    for (unsigned int i = 1; i <= _varId; ++i) {
+    for (unsigned int i = 1; i <= mVarId; ++i) {
         const Variable *var = mSymbolDatabase->getVariableFromVarId(i);
         if (!var)
             continue;

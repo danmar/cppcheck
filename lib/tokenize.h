@@ -795,7 +795,7 @@ public:
      * @return number of variables
      */
     unsigned int varIdCount() const {
-        return _varId;
+        return mVarId;
     }
 
     /**
@@ -859,7 +859,7 @@ private:
     * @return new variable id
     */
     unsigned int newVarId() {
-        return ++_varId;
+        return ++mVarId;
     }
 
     /** Set pod types */
@@ -882,7 +882,7 @@ private:
     std::map<std::string, unsigned int> _typeSize;
 
     /** variable count */
-    unsigned int _varId;
+    unsigned int mVarId;
 
     /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", ... */
     unsigned int _unnamedCount;

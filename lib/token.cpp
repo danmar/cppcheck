@@ -42,7 +42,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     _link(nullptr),
     _scope(nullptr),
     _function(nullptr), // Initialize whole union
-    _varId(0),
+    mVarId(0),
     _fileIndex(0),
     _linenr(0),
     _col(0),
@@ -88,7 +88,7 @@ void Token::update_property_info()
         if (_str == "true" || _str == "false")
             tokType(eBoolean);
         else if (std::isalpha((unsigned char)_str[0]) || _str[0] == '_' || _str[0] == '$') { // Name
-            if (_varId)
+            if (mVarId)
                 tokType(eVariable);
             else if (_tokType != eVariable && _tokType != eFunction && _tokType != eType && _tokType != eKeyword)
                 tokType(eName);
@@ -249,7 +249,7 @@ void Token::swapWithNext()
         std::swap(_str, mNext->_str);
         std::swap(_tokType, mNext->_tokType);
         std::swap(mFlags, mNext->mFlags);
-        std::swap(_varId, mNext->_varId);
+        std::swap(mVarId, mNext->mVarId);
         std::swap(_fileIndex, mNext->_fileIndex);
         std::swap(_linenr, mNext->_linenr);
         if (mNext->_link)
@@ -271,7 +271,7 @@ void Token::takeData(Token *fromToken)
     _str = fromToken->_str;
     tokType(fromToken->_tokType);
     mFlags = fromToken->mFlags;
-    _varId = fromToken->_varId;
+    mVarId = fromToken->mVarId;
     _fileIndex = fromToken->_fileIndex;
     _linenr = fromToken->_linenr;
     _link = fromToken->_link;
@@ -1024,8 +1024,8 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
                 os << _str[i];
         }
     }
-    if (varid && _varId != 0)
-        os << '@' << _varId;
+    if (varid && mVarId != 0)
+        os << '@' << mVarId;
 }
 
 std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, bool linebreaks, bool files, const std::vector<std::string>* fileNames, const Token* end) const
@@ -1621,7 +1621,7 @@ bool Token::addValue(const ValueFlow::Value &value)
             if (it->isInconclusive() && !value.isInconclusive()) {
                 *it = value;
                 if (it->varId == 0)
-                    it->varId = _varId;
+                    it->varId = mVarId;
                 break;
             }
 
@@ -1633,13 +1633,13 @@ bool Token::addValue(const ValueFlow::Value &value)
         if (it == _values->end()) {
             ValueFlow::Value v(value);
             if (v.varId == 0)
-                v.varId = _varId;
+                v.varId = mVarId;
             _values->push_back(v);
         }
     } else {
         ValueFlow::Value v(value);
         if (v.varId == 0)
-            v.varId = _varId;
+            v.varId = mVarId;
         _values = new std::list<ValueFlow::Value>(1, v);
     }
 

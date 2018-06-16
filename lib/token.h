@@ -84,7 +84,7 @@ public:
     template<typename T>
     void str(T&& s) {
         _str = s;
-        _varId = 0;
+        mVarId = 0;
 
         update_property_info();
     }
@@ -559,10 +559,10 @@ public:
 
 
     unsigned int varId() const {
-        return _varId;
+        return mVarId;
     }
     void varId(unsigned int id) {
-        _varId = id;
+        mVarId = id;
         if (id != 0) {
             tokType(eVariable);
             isStandardType(false);
@@ -696,7 +696,7 @@ public:
      */
     void variable(const Variable *v) {
         _variable = v;
-        if (v || _varId)
+        if (v || mVarId)
             tokType(eVariable);
         else if (_tokType == eVariable)
             tokType(eName);
@@ -918,7 +918,7 @@ private:
         const Enumerator *_enumerator;
     };
 
-    unsigned int _varId;
+    unsigned int mVarId;
     unsigned int _fileIndex;
     unsigned int _linenr;
     unsigned int _col;
