@@ -1619,7 +1619,7 @@ void Variable::evaluate(const Library* lib)
     unsigned int pointer = 0;
     _constness = 0;
 
-    if (_name)
+    if (mNameToken)
         setFlag(fIsArray, arrayDimensions(lib));
 
     const Token* tok = _start;
@@ -1673,7 +1673,7 @@ void Variable::evaluate(const Library* lib)
         setFlag(fIsStlString, isStlType() && (Token::Match(_start->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(_start->tokAt(2), "basic_string <") && !Token::simpleMatch(_start->linkAt(3), "> ::"))));
     }
     if (_access == Argument) {
-        tok = _name;
+        tok = mNameToken;
         if (!tok) {
             // Argument without name
             tok = _end;
@@ -1697,7 +1697,7 @@ void Variable::evaluate(const Library* lib)
         // type var = {x}
         // type var = x; gets simplified to: type var ; var = x ;
         Token const * declEnd = declEndToken();
-        if ((Token::Match(declEnd, "; %name% =") && declEnd->strAt(1) == _name->str()) ||
+        if ((Token::Match(declEnd, "; %name% =") && declEnd->strAt(1) == mNameToken->str()) ||
             Token::Match(declEnd, "=|{"))
             setFlag(fHasDefault, true);
     }
@@ -2470,7 +2470,7 @@ bool Variable::arrayDimensions(const Library* lib)
         }
     }
 
-    const Token *dim = _name;
+    const Token *dim = mNameToken;
     if (!dim) {
         // Argument without name
         dim = _end;
@@ -2600,7 +2600,7 @@ static std::string tokenType(const Token * tok)
 
 void SymbolDatabase::printVariable(const Variable *var, const char *indent) const
 {
-    std::cout << indent << "_name: " << tokenToString(var->nameToken(), _tokenizer) << std::endl;
+    std::cout << indent << "mNameToken: " << tokenToString(var->nameToken(), _tokenizer) << std::endl;
     if (var->nameToken()) {
         std::cout << indent << "    declarationId: " << var->declarationId() << std::endl;
     }

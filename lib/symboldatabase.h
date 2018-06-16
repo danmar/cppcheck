@@ -222,7 +222,7 @@ public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, const Type *type_,
              const Scope *scope_, const Library* lib)
-        : _name(name_),
+        : mNameToken(name_),
           _start(start_),
           _end(end_),
           _index(index_),
@@ -239,7 +239,7 @@ public:
      * @return name token
      */
     const Token *nameToken() const {
-        return _name;
+        return mNameToken;
     }
 
     /**
@@ -281,8 +281,8 @@ public:
      */
     const std::string &name() const {
         // name may not exist for function arguments
-        if (_name)
-            return _name->str();
+        if (mNameToken)
+            return mNameToken->str();
 
         return emptyString;
     }
@@ -293,8 +293,8 @@ public:
      */
     unsigned int declarationId() const {
         // name may not exist for function arguments
-        if (_name)
-            return _name->varId();
+        if (mNameToken)
+            return mNameToken->varId();
 
         return 0;
     }
@@ -616,7 +616,7 @@ private:
     }
 
     /** @brief variable name token */
-    const Token *_name;
+    const Token *mNameToken;
 
     /** @brief variable type start token */
     const Token *_start;
