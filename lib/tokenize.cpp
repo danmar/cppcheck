@@ -1736,7 +1736,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     // Fill the map mTypeSize..
     fillTypeSizes();
 
-    _configuration = configuration;
+    mConfiguration = configuration;
 
     if (!simplifyTokenList1(list.getFiles().front().c_str()))
         return false;
@@ -7869,13 +7869,13 @@ void Tokenizer::syntaxError(const Token *tok) const
 void Tokenizer::syntaxError(const Token *tok, char c) const
 {
     printDebugOutput(0);
-    if (_configuration.empty())
+    if (mConfiguration.empty())
         throw InternalError(tok,
                             std::string("Invalid number of character '") + c + "' when no macros are defined.",
                             InternalError::SYNTAX);
     else
         throw InternalError(tok,
-                            std::string("Invalid number of character '") + c + "' when these macros are defined: '" + _configuration + "'.",
+                            std::string("Invalid number of character '") + c + "' when these macros are defined: '" + mConfiguration + "'.",
                             InternalError::SYNTAX);
 }
 

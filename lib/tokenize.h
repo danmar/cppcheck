@@ -876,7 +876,7 @@ private:
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
-    std::string _configuration;
+    std::string mConfiguration;
 
     /** sizeof information for known types */
     std::map<std::string, unsigned int> mTypeSize;
