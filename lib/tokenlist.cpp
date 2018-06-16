@@ -68,21 +68,21 @@ void TokenList::deallocateTokens()
     deleteTokens(mTokensFrontBack.front);
     mTokensFrontBack.front = nullptr;
     mTokensFrontBack.back = nullptr;
-    _files.clear();
+    mFiles.clear();
 }
 
 unsigned int TokenList::appendFileIfNew(const std::string &fileName)
 {
     // Has this file been tokenized already?
-    for (std::size_t i = 0; i < _files.size(); ++i)
-        if (Path::sameFileName(_files[i], fileName))
+    for (std::size_t i = 0; i < mFiles.size(); ++i)
+        if (Path::sameFileName(mFiles[i], fileName))
             return (unsigned int)i;
 
-    // The "_files" vector remembers what files have been tokenized..
-    _files.push_back(Path::simplifyPath(fileName));
+    // The "mFiles" vector remembers what files have been tokenized..
+    mFiles.push_back(Path::simplifyPath(fileName));
 
     // Update _isC and _isCPP properties
-    if (_files.size() == 1) { // Update only useful if first file added to _files
+    if (mFiles.size() == 1) { // Update only useful if first file added to _files
         if (!mSettings) {
             _isC = Path::isC(getSourceFilePath());
             _isCPP = Path::isCPP(getSourceFilePath());
@@ -91,7 +91,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
             _isCPP = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
         }
     }
-    return _files.size() - 1U;
+    return mFiles.size() - 1U;
 }
 
 void TokenList::deleteTokens(Token *tok)
@@ -254,7 +254,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
     appendFileIfNew(file0);
 
     simplecpp::OutputList outputList;
-    simplecpp::TokenList tokens(code, _files, file0, &outputList);
+    simplecpp::TokenList tokens(code, mFiles, file0, &outputList);
 
     createTokens(&tokens);
 
@@ -266,12 +266,12 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 {
     if (tokenList->cfront())
-        _files = tokenList->cfront()->location.files;
+        mFiles = tokenList->cfront()->location.files;
     else
-        _files.clear();
+        mFiles.clear();
 
     _isC = _isCPP = false;
-    if (!_files.empty()) {
+    if (!mFiles.empty()) {
         _isC = Path::isC(getSourceFilePath());
         _isCPP = Path::isCPP(getSourceFilePath());
     }
@@ -321,8 +321,8 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
     }
 
     if (mSettings && mSettings->relativePaths) {
-        for (std::size_t i = 0; i < _files.size(); i++)
-            _files[i] = Path::getRelativePath(_files[i], mSettings->basePaths);
+        for (std::size_t i = 0; i < mFiles.size(); i++)
+            mFiles[i] = Path::getRelativePath(mFiles[i], mSettings->basePaths);
     }
 
     Token::assignProgressValues(mTokensFrontBack.front);
@@ -1204,7 +1204,7 @@ void TokenList::validateAst() const
 
 const std::string& TokenList::file(const Token *tok) const
 {
-    return _files.at(tok->fileIndex());
+    return mFiles.at(tok->fileIndex());
 }
 
 std::string TokenList::fileLine(const Token *tok) const

@@ -495,7 +495,7 @@ private:
         std::set<std::string> _blocks;
     };
     int allocid;
-    std::set<std::string> _files;
+    std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> _alloc; // allocation functions
     std::map<std::string, AllocFunc> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?

@@ -102,10 +102,10 @@ Library::Error Library::load(const char exename[], const char path[])
         absolute_path = Path::getAbsoluteFilePath(path);
 
     if (error == tinyxml2::XML_SUCCESS) {
-        if (_files.find(absolute_path) == _files.end()) {
+        if (mFiles.find(absolute_path) == mFiles.end()) {
             Error err = load(doc);
             if (err.errorcode == OK)
-                _files.insert(absolute_path);
+                mFiles.insert(absolute_path);
             return err;
         }
 

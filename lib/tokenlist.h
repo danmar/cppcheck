@@ -125,7 +125,7 @@ public:
      * @return vector with filenames
      */
     const std::vector<std::string>& getFiles() const {
-        return _files;
+        return mFiles;
     }
 
     /**
@@ -185,7 +185,7 @@ private:
     TokensFrontBack mTokensFrontBack;
 
     /** filenames for the tokenized source code (source + included) */
-    std::vector<std::string> _files;
+    std::vector<std::string> mFiles;
 
     /** settings */
     const Settings* mSettings;
