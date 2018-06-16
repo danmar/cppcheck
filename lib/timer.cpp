@@ -54,7 +54,7 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
     for (std::vector<dataElementType>::const_iterator iter=data.begin() ; iter!=data.end(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
-        overallData._clocks += iter->second._clocks;
+        overallData.mClocks += iter->second.mClocks;
         if ((mode != SHOWTIME_TOP5) || (ordinal<=5)) {
             std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
         }
@@ -67,7 +67,7 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
 
 void TimerResults::AddResults(const std::string& str, std::clock_t clocks)
 {
-    _results[str]._clocks += clocks;
+    _results[str].mClocks += clocks;
     _results[str].mNumberOfResults++;
 }
 
