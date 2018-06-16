@@ -2622,7 +2622,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
             std::cout << indent << "        " << valueType->str() << std::endl;
         }
     }
-    std::cout << indent << "_index: " << var->index() << std::endl;
+    std::cout << indent << "mIndex: " << var->index() << std::endl;
     std::cout << indent << "_access: " <<
               (var->isPublic() ? "Public" :
                var->isProtected() ? "Protected" :

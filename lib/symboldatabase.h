@@ -225,7 +225,7 @@ public:
         : mNameToken(name_),
           mTypeStartToken(start_),
           mTypeEndToken(end_),
-          _index(index_),
+          mIndex(index_),
           _access(access_),
           _flags(0),
           _constness(0),
@@ -304,7 +304,7 @@ public:
      * @return variable index
      */
     std::size_t index() const {
-        return _index;
+        return mIndex;
     }
 
     /**
@@ -625,7 +625,7 @@ private:
     const Token *mTypeEndToken;
 
     /** @brief order declared */
-    std::size_t _index;
+    std::size_t mIndex;
 
     /** @brief what section is this variable declared in? */
     AccessControl _access;  // public/protected/private
