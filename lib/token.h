@@ -234,7 +234,7 @@ public:
     static std::string getCharAt(const Token *tok, std::size_t index);
 
     const ValueType *valueType() const {
-        return _valuetype;
+        return mValueType;
     }
     void setValueType(ValueType *vt);
 
@@ -242,7 +242,7 @@ public:
         const Token *top = this;
         while (top && !Token::Match(top->astParent(), ",|("))
             top = top->astParent();
-        return top ? top->_valuetype : nullptr;
+        return top ? top->mValueType : nullptr;
     }
 
     Token::Type tokType() const {
@@ -997,7 +997,7 @@ private:
     std::string* mOriginalName;
 
     // ValueType
-    ValueType *_valuetype;
+    ValueType *mValueType;
 
     // ValueFlow
     std::list<ValueFlow::Value>* _values;

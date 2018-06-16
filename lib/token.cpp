@@ -54,7 +54,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     mAstOperand2(nullptr),
     mAstParent(nullptr),
     mOriginalName(nullptr),
-    _valuetype(nullptr),
+    mValueType(nullptr),
     _values(nullptr)
 {
 }
@@ -62,7 +62,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
 Token::~Token()
 {
     delete mOriginalName;
-    delete _valuetype;
+    delete mValueType;
     delete _values;
 }
 
@@ -261,7 +261,7 @@ void Token::swapWithNext()
         std::swap(mFunction, mNext->mFunction);
         std::swap(mOriginalName, mNext->mOriginalName);
         std::swap(_values, mNext->_values);
-        std::swap(_valuetype, mNext->_valuetype);
+        std::swap(mValueType, mNext->mValueType);
         std::swap(mProgressValue, mNext->mProgressValue);
     }
 }
@@ -285,9 +285,9 @@ void Token::takeData(Token *fromToken)
     delete _values;
     _values = fromToken->_values;
     fromToken->_values = nullptr;
-    delete _valuetype;
-    _valuetype = fromToken->_valuetype;
-    fromToken->_valuetype = nullptr;
+    delete mValueType;
+    mValueType = fromToken->mValueType;
+    fromToken->mValueType = nullptr;
     if (mLink)
         mLink->link(this);
 }
@@ -1334,8 +1334,8 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
     if (isExpandedMacro())
         ret += '$';
     ret += _str;
-    if (_valuetype)
-        ret += " \'" + _valuetype->str() + '\'';
+    if (mValueType)
+        ret += " \'" + mValueType->str() + '\'';
     ret += '\n';
 
     if (mAstOperand1) {
@@ -1658,9 +1658,9 @@ void Token::assignProgressValues(Token *tok)
 
 void Token::setValueType(ValueType *vt)
 {
-    if (vt != _valuetype) {
-        delete _valuetype;
-        _valuetype = vt;
+    if (vt != mValueType) {
+        delete mValueType;
+        mValueType = vt;
     }
 }
 
