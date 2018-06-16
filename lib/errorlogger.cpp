@@ -445,7 +445,7 @@ static std::string readCode(const std::string &file, unsigned int linenr, unsign
     if (endPos + 1 < line.size())
         line.erase(endPos + 1);
     std::string::size_type pos = 0;
-    while ((pos = line.find("\t", pos)) != std::string::npos)
+    while ((pos = line.find('\t', pos)) != std::string::npos)
         line[pos] = ' ';
     return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
 }
@@ -481,7 +481,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     findAndReplace(result, "{id}", _id);
     if (result.find("{inconclusive:") != std::string::npos) {
         const std::string::size_type pos1 = result.find("{inconclusive:");
-        const std::string::size_type pos2 = result.find("}", pos1+1);
+        const std::string::size_type pos2 = result.find('}', pos1+1);
         const std::string replaceFrom = result.substr(pos1,pos2-pos1+1);
         const std::string replaceWith = _inconclusive ? result.substr(pos1+14, pos2-pos1-14) : std::string();
         findAndReplace(result, replaceFrom, replaceWith);
@@ -494,7 +494,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         findAndReplace(result, "{line}", MathLib::toString(_callStack.back().line));
         findAndReplace(result, "{column}", MathLib::toString(_callStack.back().col));
         if (result.find("{code}") != std::string::npos) {
-            const std::string::size_type pos = result.find("\r");
+            const std::string::size_type pos = result.find('\r');
             const char *endl;
             if (pos == std::string::npos)
                 endl = "\n";
@@ -525,7 +525,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
             findAndReplace(text, "{column}", MathLib::toString(fileLocation.col));
             findAndReplace(text, "{info}", fileLocation.getinfo().empty() ? _shortMessage : fileLocation.getinfo());
             if (text.find("{code}") != std::string::npos) {
-                const std::string::size_type pos = text.find("\r");
+                const std::string::size_type pos = text.find('\r');
                 const char *endl;
                 if (pos == std::string::npos)
                     endl = "\n";
