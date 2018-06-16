@@ -146,7 +146,7 @@ Tokenizer::Tokenizer() :
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
-    _timerResults(nullptr)
+    mTimerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
 #endif
@@ -161,7 +161,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
-    _timerResults(nullptr)
+    mTimerResults(nullptr)
 #ifdef MAXTIME
     ,maxtime(std::time(0) + MAXTIME)
 #endif
@@ -3553,8 +3553,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyAsm();
 
     // Bail out if code is garbage
-    if (_timerResults) {
-        Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, _timerResults);
+    if (mTimerResults) {
+        Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, mTimerResults);
         findGarbageCode();
     } else {
         findGarbageCode();
@@ -3723,8 +3723,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyVarDecl(false);
 
     // typedef..
-    if (_timerResults) {
-        Timer t("Tokenizer::tokenize::simplifyTypedef", mSettings->showtime, _timerResults);
+    if (mTimerResults) {
+        Timer t("Tokenizer::tokenize::simplifyTypedef", mSettings->showtime, mTimerResults);
         simplifyTypedef();
     } else {
         simplifyTypedef();
@@ -3841,8 +3841,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     validate(); // #6772 "segmentation fault (invalid code) in Tokenizer::setVarId"
 
-    if (_timerResults) {
-        Timer t("Tokenizer::tokenize::setVarId", mSettings->showtime, _timerResults);
+    if (mTimerResults) {
+        Timer t("Tokenizer::tokenize::setVarId", mSettings->showtime, mTimerResults);
         setVarId();
     } else {
         setVarId();

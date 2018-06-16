@@ -84,7 +84,7 @@ public:
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
-        _timerResults = tr;
+        mTimerResults = tr;
     }
 
     /** Is the code C. Used for bailouts */
@@ -896,7 +896,7 @@ private:
     /**
      * TimerResults
      */
-    TimerResults *_timerResults;
+    TimerResults *mTimerResults;
 
 #ifdef MAXTIME
     /** Tokenizer maxtime */

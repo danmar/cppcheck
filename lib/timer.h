@@ -78,7 +78,7 @@ private:
     Timer& operator=(const Timer&); // disallow assignments
 
     const std::string _str;
-    TimerResultsIntf* _timerResults;
+    TimerResultsIntf* mTimerResults;
     std::clock_t _start;
     const unsigned int _showtimeMode;
     bool _stopped;
