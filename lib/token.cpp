@@ -43,9 +43,9 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     _scope(nullptr),
     _function(nullptr), // Initialize whole union
     mVarId(0),
-    _fileIndex(0),
-    _linenr(0),
-    _col(0),
+    mFileIndex(0),
+    mLineNumber(0),
+    mColumn(0),
     mProgressValue(0),
     mTokType(eNone),
     mFlags(0),
@@ -250,8 +250,8 @@ void Token::swapWithNext()
         std::swap(mTokType, mNext->mTokType);
         std::swap(mFlags, mNext->mFlags);
         std::swap(mVarId, mNext->mVarId);
-        std::swap(_fileIndex, mNext->_fileIndex);
-        std::swap(_linenr, mNext->_linenr);
+        std::swap(mFileIndex, mNext->mFileIndex);
+        std::swap(mLineNumber, mNext->mLineNumber);
         if (mNext->_link)
             mNext->_link->_link = this;
         if (this->_link)
@@ -272,8 +272,8 @@ void Token::takeData(Token *fromToken)
     tokType(fromToken->mTokType);
     mFlags = fromToken->mFlags;
     mVarId = fromToken->mVarId;
-    _fileIndex = fromToken->_fileIndex;
-    _linenr = fromToken->_linenr;
+    mFileIndex = fromToken->mFileIndex;
+    mLineNumber = fromToken->mLineNumber;
     _link = fromToken->_link;
     _scope = fromToken->_scope;
     _function = fromToken->_function;
@@ -932,8 +932,8 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
         newToken->originalName(originalNameStr);
 
     if (newToken != this) {
-        newToken->_linenr = _linenr;
-        newToken->_fileIndex = _fileIndex;
+        newToken->mLineNumber = mLineNumber;
+        newToken->mFileIndex = mFileIndex;
         newToken->mProgressValue = mProgressValue;
 
         if (prepend) {
@@ -1035,21 +1035,21 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
 
     std::ostringstream ret;
 
-    unsigned int lineNumber = _linenr - (linenumbers ? 1U : 0U);
-    unsigned int fileInd = files ? ~0U : _fileIndex;
+    unsigned int lineNumber = mLineNumber - (linenumbers ? 1U : 0U);
+    unsigned int fileInd = files ? ~0U : mFileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
         bool fileChange = false;
-        if (tok->_fileIndex != fileInd) {
+        if (tok->mFileIndex != fileInd) {
             if (fileInd != ~0U) {
-                lineNumbers[fileInd] = tok->_fileIndex;
+                lineNumbers[fileInd] = tok->mFileIndex;
             }
 
-            fileInd = tok->_fileIndex;
+            fileInd = tok->mFileIndex;
             if (files) {
                 ret << "\n\n##file ";
-                if (fileNames && fileNames->size() > tok->_fileIndex)
-                    ret << fileNames->at(tok->_fileIndex);
+                if (fileNames && fileNames->size() > tok->mFileIndex)
+                    ret << fileNames->at(tok->mFileIndex);
                 else
                     ret << fileInd;
                 ret << '\n';
@@ -1060,7 +1060,7 @@ std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, 
         }
 
         if (linebreaks && (lineNumber != tok->linenr() || fileChange)) {
-            if (lineNumber+4 < tok->linenr() && fileInd == tok->_fileIndex) {
+            if (lineNumber+4 < tok->linenr() && fileInd == tok->mFileIndex) {
                 ret << '\n' << lineNumber+1 << ":\n|\n";
                 ret << tok->linenr()-1 << ":\n";
                 ret << tok->linenr() << ": ";

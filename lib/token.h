@@ -509,24 +509,24 @@ public:
     static int multiCompare(const Token *tok, const char *haystack, unsigned int varid);
 
     unsigned int fileIndex() const {
-        return _fileIndex;
+        return mFileIndex;
     }
     void fileIndex(unsigned int indexOfFile) {
-        _fileIndex = indexOfFile;
+        mFileIndex = indexOfFile;
     }
 
     unsigned int linenr() const {
-        return _linenr;
+        return mLineNumber;
     }
     void linenr(unsigned int lineNumber) {
-        _linenr = lineNumber;
+        mLineNumber = lineNumber;
     }
 
     unsigned int col() const {
-        return _col;
+        return mColumn;
     }
     void col(unsigned int c) {
-        _col = c;
+        mColumn = c;
     }
 
     Token *next() const {
@@ -919,9 +919,9 @@ private:
     };
 
     unsigned int mVarId;
-    unsigned int _fileIndex;
-    unsigned int _linenr;
-    unsigned int _col;
+    unsigned int mFileIndex;
+    unsigned int mLineNumber;
+    unsigned int mColumn;
 
     /**
      * A value from 0-100 that provides a rough idea about where in the token
