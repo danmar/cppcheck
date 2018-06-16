@@ -74,12 +74,12 @@ void TimerResults::AddResults(const std::string& str, std::clock_t clocks)
 Timer::Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults)
     : _str(str)
     , mTimerResults(timerResults)
-    , _start(0)
+    , mStart(0)
     , mShowTimeMode(showtimeMode)
     , mStopped(false)
 {
     if (showtimeMode != SHOWTIME_NONE)
-        _start = std::clock();
+        mStart = std::clock();
 }
 
 Timer::~Timer()
@@ -91,7 +91,7 @@ void Timer::Stop()
 {
     if ((mShowTimeMode != SHOWTIME_NONE) && !mStopped) {
         const std::clock_t end = std::clock();
-        const std::clock_t diff = end - _start;
+        const std::clock_t diff = end - mStart;
 
         if (mShowTimeMode == SHOWTIME_FILE) {
             const double sec = (double)diff / CLOCKS_PER_SEC;

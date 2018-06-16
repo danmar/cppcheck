@@ -79,7 +79,7 @@ private:
 
     const std::string _str;
     TimerResultsIntf* mTimerResults;
-    std::clock_t _start;
+    std::clock_t mStart;
     const unsigned int mShowTimeMode;
     bool mStopped;
 };
