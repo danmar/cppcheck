@@ -105,18 +105,18 @@ public:
 
     /** get first token of list */
     const Token *front() const {
-        return _tokensFrontBack.front;
+        return mTokensFrontBack.front;
     }
     Token *front() {
-        return _tokensFrontBack.front;
+        return mTokensFrontBack.front;
     }
 
     /** get last token of list */
     const Token *back() const {
-        return _tokensFrontBack.back;
+        return mTokensFrontBack.back;
     }
     Token *back() {
-        return _tokensFrontBack.back;
+        return mTokensFrontBack.back;
     }
 
     /**
@@ -182,7 +182,7 @@ private:
     TokenList &operator=(const TokenList &);
 
     /** Token list */
-    TokensFrontBack _tokensFrontBack;
+    TokensFrontBack mTokensFrontBack;
 
     /** filenames for the tokenized source code (source + included) */
     std::vector<std::string> _files;

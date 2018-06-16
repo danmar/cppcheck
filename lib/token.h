@@ -62,7 +62,7 @@ struct TokensFrontBack {
  */
 class CPPCHECKLIB Token {
 private:
-    TokensFrontBack* _tokensFrontBack;
+    TokensFrontBack* mTokensFrontBack;
 
     // Not implemented..
     Token(const Token &);

@@ -36,7 +36,7 @@
 const std::list<ValueFlow::Value> Token::emptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
-    _tokensFrontBack(tokensFrontBack),
+    mTokensFrontBack(tokensFrontBack),
     mNext(nullptr),
     mPrevious(nullptr),
     _link(nullptr),
@@ -219,8 +219,8 @@ void Token::deleteNext(unsigned long index)
 
     if (mNext)
         mNext->previous(this);
-    else if (_tokensFrontBack)
-        _tokensFrontBack->back = this;
+    else if (mTokensFrontBack)
+        mTokensFrontBack->back = this;
 }
 
 void Token::deletePrevious(unsigned long index)
@@ -239,8 +239,8 @@ void Token::deletePrevious(unsigned long index)
 
     if (mPrevious)
         mPrevious->next(this);
-    else if (_tokensFrontBack)
-        _tokensFrontBack->front = this;
+    else if (mTokensFrontBack)
+        mTokensFrontBack->front = this;
 }
 
 void Token::swapWithNext()
@@ -332,10 +332,10 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
-    if (end->_tokensFrontBack && end->_tokensFrontBack->back == end) {
+    if (end->mTokensFrontBack && end->mTokensFrontBack->back == end) {
         while (end->next())
             end = end->next();
-        end->_tokensFrontBack->back = end;
+        end->mTokensFrontBack->back = end;
     }
 
     // Update _progressValue, fileIndex and linenr
@@ -926,7 +926,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
     if (_str.empty())
         newToken = this;
     else
-        newToken = new Token(_tokensFrontBack);
+        newToken = new Token(mTokensFrontBack);
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
@@ -949,8 +949,8 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             if (this->next()) {
                 newToken->next(this->next());
                 newToken->next()->previous(newToken);
-            } else if (_tokensFrontBack) {
-                _tokensFrontBack->back = newToken;
+            } else if (mTokensFrontBack) {
+                mTokensFrontBack->back = newToken;
             }
             this->next(newToken);
             newToken->previous(this);
