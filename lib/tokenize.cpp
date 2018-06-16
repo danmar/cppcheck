@@ -10362,46 +10362,46 @@ void Tokenizer::simplifyNamespaceAliases()
 }
 
 
-Tokenizer::VariableMap::VariableMap() : varId(0) {}
+Tokenizer::VariableMap::VariableMap() : mVarId(0) {}
 
 void Tokenizer::VariableMap::enterScope()
 {
-    scopeInfo.push(std::list<std::pair<std::string, unsigned int>>());
+    mScopeInfo.push(std::list<std::pair<std::string, unsigned int>>());
 }
 
 bool Tokenizer::VariableMap::leaveScope()
 {
-    if (scopeInfo.empty())
+    if (mScopeInfo.empty())
         return false;
 
-    for (const std::pair<std::string, unsigned int> &outerVariable : scopeInfo.top()) {
+    for (const std::pair<std::string, unsigned int> &outerVariable : mScopeInfo.top()) {
         if (outerVariable.second != 0)
-            variableId[outerVariable.first] = outerVariable.second;
+            mVariableId[outerVariable.first] = outerVariable.second;
         else
-            variableId.erase(outerVariable.first);
+            mVariableId.erase(outerVariable.first);
     }
-    scopeInfo.pop();
+    mScopeInfo.pop();
     return true;
 }
 
 void Tokenizer::VariableMap::addVariable(const std::string &varname)
 {
-    if (scopeInfo.empty()) {
-        variableId[varname] = ++varId;
+    if (mScopeInfo.empty()) {
+        mVariableId[varname] = ++mVarId;
         return;
     }
-    std::map<std::string, unsigned int>::iterator it = variableId.find(varname);
-    if (it == variableId.end()) {
-        scopeInfo.top().push_back(std::pair<std::string, unsigned int>(varname, 0));
-        variableId[varname] = ++varId;
+    std::map<std::string, unsigned int>::iterator it = mVariableId.find(varname);
+    if (it == mVariableId.end()) {
+        mScopeInfo.top().push_back(std::pair<std::string, unsigned int>(varname, 0));
+        mVariableId[varname] = ++mVarId;
         return;
     }
-    scopeInfo.top().push_back(std::pair<std::string, unsigned int>(varname, it->second));
-    it->second = ++varId;
+    mScopeInfo.top().push_back(std::pair<std::string, unsigned int>(varname, it->second));
+    it->second = ++mVarId;
 }
 
 bool Tokenizer::VariableMap::hasVariable(const std::string &varname) const
 {
-    return variableId.find(varname) != variableId.end();
+    return mVariableId.find(varname) != mVariableId.end();
 }
 

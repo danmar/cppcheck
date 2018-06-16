@@ -54,9 +54,9 @@ class CPPCHECKLIB Tokenizer {
     /** Class used in Tokenizer::setVarIdPass1 */
     class VariableMap {
     private:
-        std::map<std::string, unsigned int> variableId;
-        std::stack<std::list<std::pair<std::string, unsigned int> > > scopeInfo;
-        mutable unsigned int varId;
+        std::map<std::string, unsigned int> mVariableId;
+        std::stack<std::list<std::pair<std::string, unsigned int> > > mScopeInfo;
+        mutable unsigned int mVarId;
     public:
         VariableMap();
         void enterScope();
@@ -64,16 +64,16 @@ class CPPCHECKLIB Tokenizer {
         void addVariable(const std::string &varname);
         bool hasVariable(const std::string &varname) const;
         std::map<std::string, unsigned int>::const_iterator find(const std::string &varname) const {
-            return variableId.find(varname);
+            return mVariableId.find(varname);
         }
         std::map<std::string, unsigned int>::const_iterator end() const {
-            return variableId.end();
+            return mVariableId.end();
         }
         const std::map<std::string, unsigned int> &map() const {
-            return variableId;
+            return mVariableId;
         }
         unsigned int *getVarId() const {
-            return &varId;
+            return &mVarId;
         }
     };
 
