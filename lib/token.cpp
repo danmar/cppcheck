@@ -82,49 +82,49 @@ static const std::set<std::string> controlFlowKeywords = {
 
 void Token::update_property_info()
 {
-    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(_str) != controlFlowKeywords.end());
+    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
 
-    if (!_str.empty()) {
-        if (_str == "true" || _str == "false")
+    if (!mStr.empty()) {
+        if (mStr == "true" || mStr == "false")
             tokType(eBoolean);
-        else if (std::isalpha((unsigned char)_str[0]) || _str[0] == '_' || _str[0] == '$') { // Name
+        else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mVarId)
                 tokType(eVariable);
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
-        } else if (std::isdigit((unsigned char)_str[0]) || (_str.length() > 1 && _str[0] == '-' && std::isdigit((unsigned char)_str[1])))
+        } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1])))
             tokType(eNumber);
-        else if (_str.length() > 1 && _str[0] == '"' && endsWith(_str,'"'))
+        else if (mStr.length() > 1 && mStr[0] == '"' && endsWith(mStr,'"'))
             tokType(eString);
-        else if (_str.length() > 1 && _str[0] == '\'' && endsWith(_str,'\''))
+        else if (mStr.length() > 1 && mStr[0] == '\'' && endsWith(mStr,'\''))
             tokType(eChar);
-        else if (_str == "=" || _str == "<<=" || _str == ">>=" ||
-                 (_str.size() == 2U && _str[1] == '=' && std::strchr("+-*/%&^|", _str[0])))
+        else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
+                 (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
-        else if (_str.size() == 1 && _str.find_first_of(",[]()?:") != std::string::npos)
+        else if (mStr.size() == 1 && mStr.find_first_of(",[]()?:") != std::string::npos)
             tokType(eExtendedOp);
-        else if (_str=="<<" || _str==">>" || (_str.size()==1 && _str.find_first_of("+-*/%") != std::string::npos))
+        else if (mStr=="<<" || mStr==">>" || (mStr.size()==1 && mStr.find_first_of("+-*/%") != std::string::npos))
             tokType(eArithmeticalOp);
-        else if (_str.size() == 1 && _str.find_first_of("&|^~") != std::string::npos)
+        else if (mStr.size() == 1 && mStr.find_first_of("&|^~") != std::string::npos)
             tokType(eBitOp);
-        else if (_str.size() <= 2 &&
-                 (_str == "&&" ||
-                  _str == "||" ||
-                  _str == "!"))
+        else if (mStr.size() <= 2 &&
+                 (mStr == "&&" ||
+                  mStr == "||" ||
+                  mStr == "!"))
             tokType(eLogicalOp);
-        else if (_str.size() <= 2 && !mLink &&
-                 (_str == "==" ||
-                  _str == "!=" ||
-                  _str == "<"  ||
-                  _str == "<=" ||
-                  _str == ">"  ||
-                  _str == ">="))
+        else if (mStr.size() <= 2 && !mLink &&
+                 (mStr == "==" ||
+                  mStr == "!=" ||
+                  mStr == "<"  ||
+                  mStr == "<=" ||
+                  mStr == ">"  ||
+                  mStr == ">="))
             tokType(eComparisonOp);
-        else if (_str.size() == 2 &&
-                 (_str == "++" ||
-                  _str == "--"))
+        else if (mStr.size() == 2 &&
+                 (mStr == "++" ||
+                  mStr == "--"))
             tokType(eIncDecOp);
-        else if (_str.size() == 1 && (_str.find_first_of("{}") != std::string::npos || (mLink && _str.find_first_of("<>") != std::string::npos)))
+        else if (mStr.size() == 1 && (mStr.find_first_of("{}") != std::string::npos || (mLink && mStr.find_first_of("<>") != std::string::npos)))
             tokType(eBracket);
         else
             tokType(eOther);
@@ -152,10 +152,10 @@ void Token::update_property_isStandardType()
 {
     isStandardType(false);
 
-    if (_str.size() < 3)
+    if (mStr.size() < 3)
         return;
 
-    if (stdTypes.find(_str)!=stdTypes.end()) {
+    if (stdTypes.find(mStr)!=stdTypes.end()) {
         isStandardType(true);
         tokType(eType);
     }
@@ -166,8 +166,8 @@ bool Token::isUpperCaseName() const
 {
     if (!isName())
         return false;
-    for (size_t i = 0; i < _str.length(); ++i) {
-        if (std::islower(_str[i]))
+    for (size_t i = 0; i < mStr.length(); ++i) {
+        if (std::islower(mStr[i]))
             return false;
     }
     return true;
@@ -175,8 +175,8 @@ bool Token::isUpperCaseName() const
 
 void Token::concatStr(std::string const& b)
 {
-    _str.erase(_str.length() - 1);
-    _str.append(b.begin() + 1, b.end());
+    mStr.erase(mStr.length() - 1);
+    mStr.append(b.begin() + 1, b.end());
 
     update_property_info();
 }
@@ -184,7 +184,7 @@ void Token::concatStr(std::string const& b)
 std::string Token::strValue() const
 {
     assert(mTokType == eString);
-    std::string ret(_str.substr(1, _str.length() - 2));
+    std::string ret(mStr.substr(1, mStr.length() - 2));
     std::string::size_type pos = 0U;
     while ((pos = ret.find('\\', pos)) != std::string::npos) {
         ret.erase(pos,1U);
@@ -246,7 +246,7 @@ void Token::deletePrevious(unsigned long index)
 void Token::swapWithNext()
 {
     if (mNext) {
-        std::swap(_str, mNext->_str);
+        std::swap(mStr, mNext->mStr);
         std::swap(mTokType, mNext->mTokType);
         std::swap(mFlags, mNext->mFlags);
         std::swap(mVarId, mNext->mVarId);
@@ -268,7 +268,7 @@ void Token::swapWithNext()
 
 void Token::takeData(Token *fromToken)
 {
-    _str = fromToken->_str;
+    mStr = fromToken->mStr;
     tokType(fromToken->mTokType);
     mFlags = fromToken->mFlags;
     mVarId = fromToken->mVarId;
@@ -372,7 +372,7 @@ const Token *Token::linkAt(int index) const
 const std::string &Token::strAt(int index) const
 {
     const Token *tok = this->tokAt(index);
-    return tok ? tok->_str : emptyString;
+    return tok ? tok->mStr : emptyString;
 }
 
 static int multiComparePercent(const Token *tok, const char*& haystack, unsigned int varid)
@@ -577,7 +577,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     while (*current) {
         const std::size_t length = next - current;
 
-        if (!tok || length != tok->_str.length() || std::strncmp(current, tok->_str.c_str(), length))
+        if (!tok || length != tok->mStr.length() || std::strncmp(current, tok->mStr.c_str(), length))
             return false;
 
         current = next;
@@ -844,7 +844,7 @@ Token* Token::nextTemplateArgument() const
 
 const Token * Token::findClosingBracket() const
 {
-    if (_str != "<")
+    if (mStr != "<")
         return nullptr;
 
     const Token *closing = nullptr;
@@ -923,7 +923,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
         return;
 
     Token *newToken;
-    if (_str.empty())
+    if (mStr.empty())
         newToken = this;
     else
         newToken = new Token(mTokensFrontBack);
@@ -1009,19 +1009,19 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
     }
     if (macro && isExpandedMacro())
         os << "$";
-    if (isName() && _str.find(' ') != std::string::npos) {
-        for (std::size_t i = 0U; i < _str.size(); ++i) {
-            if (_str[i] != ' ')
-                os << _str[i];
+    if (isName() && mStr.find(' ') != std::string::npos) {
+        for (std::size_t i = 0U; i < mStr.size(); ++i) {
+            if (mStr[i] != ' ')
+                os << mStr[i];
         }
-    } else if (_str[0] != '\"' || _str.find('\0') == std::string::npos)
-        os << _str;
+    } else if (mStr[0] != '\"' || mStr.find('\0') == std::string::npos)
+        os << mStr;
     else {
-        for (std::size_t i = 0U; i < _str.size(); ++i) {
-            if (_str[i] == '\0')
+        for (std::size_t i = 0U; i < mStr.size(); ++i) {
+            if (mStr[i] == '\0')
                 os << "\\0";
             else
-                os << _str[i];
+                os << mStr[i];
         }
     }
     if (varid && mVarId != 0)
@@ -1333,7 +1333,7 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
 
     if (isExpandedMacro())
         ret += '$';
-    ret += _str;
+    ret += mStr;
     if (mValueType)
         ret += " \'" + mValueType->str() + '\'';
     ret += '\n';

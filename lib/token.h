@@ -83,7 +83,7 @@ public:
 
     template<typename T>
     void str(T&& s) {
-        _str = s;
+        mStr = s;
         mVarId = 0;
 
         update_property_info();
@@ -96,7 +96,7 @@ public:
     void concatStr(std::string const& b);
 
     const std::string &str() const {
-        return _str;
+        return mStr;
     }
 
     /**
@@ -639,7 +639,7 @@ public:
      */
     void link(Token *linkToToken) {
         mLink = linkToToken;
-        if (_str == "<" || _str == ">")
+        if (mStr == "<" || mStr == ">")
             update_property_info();
     }
 
@@ -903,7 +903,7 @@ private:
      */
     static const char *chrInFirstWord(const char *str, char c);
 
-    std::string _str;
+    std::string mStr;
 
     Token *mNext;
     Token *mPrevious;
@@ -979,7 +979,7 @@ private:
     }
 
     /** Updates internal property cache like _isName or _isBoolean.
-        Called after any _str() modification. */
+        Called after any mStr() modification. */
     void update_property_info();
 
     /** Update internal property cache about isStandardType() */
@@ -1047,7 +1047,7 @@ public:
             ret = mAstOperand1->astString(sep);
         if (mAstOperand2)
             ret += mAstOperand2->astString(sep);
-        return ret + sep + _str;
+        return ret + sep + mStr;
     }
 
     std::string astStringVerbose(const unsigned int indent1, const unsigned int indent2) const;
