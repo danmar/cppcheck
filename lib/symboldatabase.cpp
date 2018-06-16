@@ -901,8 +901,8 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
 void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 {
     // create variable symbol table
-    _variableList.resize(mTokenizer->varIdCount() + 1);
-    std::fill_n(_variableList.begin(), _variableList.size(), (const Variable*)nullptr);
+    mVariableList.resize(mTokenizer->varIdCount() + 1);
+    std::fill_n(mVariableList.begin(), mVariableList.size(), (const Variable*)nullptr);
 
     // check all scopes for variables
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
@@ -912,7 +912,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
         for (std::list<Variable>::iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
             const unsigned int varId = var->declarationId();
             if (varId)
-                _variableList[varId] = &(*var);
+                mVariableList[varId] = &(*var);
             // fix up variables without type
             if (!var->type() && !var->typeStartToken()->isStandardType()) {
                 const Type *type = findType(var->typeStartToken(), scope);
@@ -928,7 +928,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 if (arg->nameToken() && arg->declarationId()) {
                     const unsigned int declarationId = arg->declarationId();
                     if (declarationId > 0U)
-                        _variableList[declarationId] = &(*arg);
+                        mVariableList[declarationId] = &(*arg);
                     // fix up parameters without type
                     if (!arg->type() && !arg->typeStartToken()->isStandardType()) {
                         const Type *type = findTypeInNested(arg->typeStartToken(), scope);
@@ -950,14 +950,14 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 (tok->next()->str() == "." ||
                  (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
                 const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
-                if (tok1 && tok1->varId() && _variableList[tok1->varId()] == 0) {
-                    const Variable *var = _variableList[tok->varId()];
+                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == 0) {
+                    const Variable *var = mVariableList[tok->varId()];
                     if (var && var->typeScope()) {
                         // find the member variable of this variable
                         const Variable *var1 = var->typeScope()->getVariable(tok1->str());
                         if (var1) {
                             // add this variable to the look up table
-                            _variableList[tok1->varId()] = var1;
+                            mVariableList[tok1->varId()] = var1;
                         }
                     }
                 }
@@ -1088,9 +1088,9 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
         MemberIdMap memberId;
         if (membertok->varId() == 0) {
             memberId[membervar->nameToken()->varId()] = const_cast<Tokenizer *>(mTokenizer)->newVarId();
-            _variableList.push_back(membervar);
+            mVariableList.push_back(membervar);
         } else
-            _variableList[membertok->varId()] = membervar;
+            mVariableList[membertok->varId()] = membervar;
         varIds.insert(std::make_pair(vartok->varId(), memberId));
         varId = varIds.find(vartok->varId());
     }
@@ -1098,10 +1098,10 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
     if (memberId == varId->second.end()) {
         if (membertok->varId() == 0) {
             varId->second.insert(std::make_pair(membervar->nameToken()->varId(), const_cast<Tokenizer *>(mTokenizer)->newVarId()));
-            _variableList.push_back(membervar);
+            mVariableList.push_back(membervar);
             memberId = varId->second.find(membervar->nameToken()->varId());
         } else
-            _variableList[membertok->varId()] = membervar;
+            mVariableList[membertok->varId()] = membervar;
     }
     if (membertok->varId() == 0)
         membertok->varId(memberId->second);
@@ -1139,7 +1139,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());
                     if (membervar) {
                         membertok->variable(membervar);
-                        if (membertok->varId() == 0 || _variableList[membertok->varId()] == nullptr)
+                        if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
                             fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
                 } else if (var && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
@@ -1149,7 +1149,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                             const Variable *membervar = type->classScope->getVariable(membertok->str());
                             if (membervar) {
                                 membertok->variable(membervar);
-                                if (membertok->varId() == 0 || _variableList[membertok->varId()] == nullptr)
+                                if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
                                     fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                             }
                         }
@@ -1177,7 +1177,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                         membervar = type->classScope->getVariable(membertok->str());
                         if (membervar) {
                             membertok->variable(membervar);
-                            if (membertok->varId() == 0 || _variableList[membertok->varId()] == nullptr) {
+                            if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr) {
                                 if (tok->function()->retDef)
                                     fixVarId(varIds, tok->function()->retDef, const_cast<Token *>(membertok), membervar);
                             }
@@ -1261,9 +1261,9 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
     // set all unknown array dimensions
     for (std::size_t i = 1; i <= mTokenizer->varIdCount(); i++) {
         // check each array variable
-        if (_variableList[i] && _variableList[i]->isArray()) {
+        if (mVariableList[i] && mVariableList[i]->isArray()) {
             // check each array dimension
-            const std::vector<Dimension>& dimensions = _variableList[i]->dimensions();
+            const std::vector<Dimension>& dimensions = mVariableList[i]->dimensions();
             for (std::size_t j = 0; j < dimensions.size(); j++) {
                 Dimension &dimension = const_cast<Dimension &>(dimensions[j]);
                 if (dimension.num == 0) {
@@ -1576,7 +1576,7 @@ namespace {
 
 void SymbolDatabase::validateVariables() const
 {
-    for (std::vector<const Variable *>::const_iterator iter = _variableList.begin(); iter!=_variableList.end(); ++iter) {
+    for (std::vector<const Variable *>::const_iterator iter = mVariableList.begin(); iter!=mVariableList.end(); ++iter) {
         const Variable * const var = *iter;
         if (var) {
             if (!var->scope()) {
@@ -2905,11 +2905,11 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << " )" << std::endl;
     }
 
-    for (std::size_t i = 1; i < _variableList.size(); i++) {
-        std::cout << "_variableList[" << i << "]: " << _variableList[i];
-        if (_variableList[i]) {
-            std::cout << " " << _variableList[i]->name() << " "
-                      << mTokenizer->list.fileLine(_variableList[i]->nameToken());
+    for (std::size_t i = 1; i < mVariableList.size(); i++) {
+        std::cout << "mVariableList[" << i << "]: " << mVariableList[i];
+        if (mVariableList[i]) {
+            std::cout << " " << mVariableList[i]->name() << " "
+                      << mTokenizer->list.fileLine(mVariableList[i]->nameToken());
         }
         std::cout << std::endl;
     }
@@ -2985,7 +2985,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
     out << "  </scopes>" << std::endl;
 
     // Variables..
-    for (const Variable *var : _variableList)
+    for (const Variable *var : mVariableList)
         variables.insert(var);
     out << "  <variables>" << std::endl;
     for (const Variable *var : variables) {

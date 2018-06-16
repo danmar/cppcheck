@@ -1154,11 +1154,11 @@ public:
     }
 
     const Variable *getVariableFromVarId(std::size_t varId) const {
-        return _variableList.at(varId);
+        return mVariableList.at(varId);
     }
 
     const std::vector<const Variable *> & variableList() const {
-        return _variableList;
+        return mVariableList;
     }
 
     /**
@@ -1243,7 +1243,7 @@ private:
     ErrorLogger *mErrorLogger;
 
     /** variable symbol table */
-    std::vector<const Variable *> _variableList;
+    std::vector<const Variable *> mVariableList;
 
     /** list for missing types */
     std::list<Type> _blankTypes;
