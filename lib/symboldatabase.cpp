@@ -1672,7 +1672,7 @@ void Variable::evaluate(const Library* lib)
         setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
         setFlag(fIsStlString, isStlType() && (Token::Match(mTypeStartToken->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(mTypeStartToken->tokAt(2), "basic_string <") && !Token::simpleMatch(mTypeStartToken->linkAt(3), "> ::"))));
     }
-    if (_access == Argument) {
+    if (mAccess == Argument) {
         tok = mNameToken;
         if (!tok) {
             // Argument without name
@@ -2623,7 +2623,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
         }
     }
     std::cout << indent << "mIndex: " << var->index() << std::endl;
-    std::cout << indent << "_access: " <<
+    std::cout << indent << "mAccess: " <<
               (var->isPublic() ? "Public" :
                var->isProtected() ? "Protected" :
                var->isPrivate() ? "Private" :
@@ -3005,7 +3005,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
         out << " constness=\""      << var->constness() << '\"';
-        out << " access=\""         << accessControlToString(var->_access) << '\"';
+        out << " access=\""         << accessControlToString(var->mAccess) << '\"';
         out << "/>" << std::endl;
     }
     out << "  </variables>" << std::endl;

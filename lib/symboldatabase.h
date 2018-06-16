@@ -226,7 +226,7 @@ public:
           mTypeStartToken(start_),
           mTypeEndToken(end_),
           mIndex(index_),
-          _access(access_),
+          mAccess(access_),
           _flags(0),
           _constness(0),
           _type(type_),
@@ -312,7 +312,7 @@ public:
      * @return true if public, false if not
      */
     bool isPublic() const {
-        return _access == Public;
+        return mAccess == Public;
     }
 
     /**
@@ -320,7 +320,7 @@ public:
      * @return true if protected, false if not
      */
     bool isProtected() const {
-        return _access == Protected;
+        return mAccess == Protected;
     }
 
     /**
@@ -328,7 +328,7 @@ public:
      * @return true if private, false if not
      */
     bool isPrivate() const {
-        return _access == Private;
+        return mAccess == Private;
     }
 
     /**
@@ -336,7 +336,7 @@ public:
      * @return true if global, false if not
      */
     bool isGlobal() const {
-        return _access == Global;
+        return mAccess == Global;
     }
 
     /**
@@ -344,7 +344,7 @@ public:
      * @return true if in a namespace, false if not
      */
     bool isNamespace() const {
-        return _access == Namespace;
+        return mAccess == Namespace;
     }
 
     /**
@@ -352,7 +352,7 @@ public:
      * @return true if a function argument, false if not
      */
     bool isArgument() const {
-        return _access == Argument;
+        return mAccess == Argument;
     }
 
     /**
@@ -360,7 +360,7 @@ public:
      * @return true if local, false if not
      */
     bool isLocal() const {
-        return (_access == Local) && !isExtern();
+        return (mAccess == Local) && !isExtern();
     }
 
     /**
@@ -408,7 +408,7 @@ public:
      * @return true if throw type, false if not
      */
     bool isThrow() const {
-        return _access == Throw;
+        return mAccess == Throw;
     }
 
     /**
@@ -628,7 +628,7 @@ private:
     std::size_t mIndex;
 
     /** @brief what section is this variable declared in? */
-    AccessControl _access;  // public/protected/private
+    AccessControl mAccess;  // public/protected/private
 
     /** @brief flags */
     unsigned int _flags;
