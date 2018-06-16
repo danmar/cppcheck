@@ -41,7 +41,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     mPrevious(nullptr),
     _link(nullptr),
     _scope(nullptr),
-    _function(nullptr), // Initialize whole union
+    mFunction(nullptr), // Initialize whole union
     mVarId(0),
     mFileIndex(0),
     mLineNumber(0),
@@ -258,7 +258,7 @@ void Token::swapWithNext()
             this->_link->_link = mNext;
         std::swap(_link, mNext->_link);
         std::swap(_scope, mNext->_scope);
-        std::swap(_function, mNext->_function);
+        std::swap(mFunction, mNext->mFunction);
         std::swap(_originalName, mNext->_originalName);
         std::swap(_values, mNext->_values);
         std::swap(_valuetype, mNext->_valuetype);
@@ -276,7 +276,7 @@ void Token::takeData(Token *fromToken)
     mLineNumber = fromToken->mLineNumber;
     _link = fromToken->_link;
     _scope = fromToken->_scope;
-    _function = fromToken->_function;
+    mFunction = fromToken->mFunction;
     if (fromToken->_originalName) {
         delete _originalName;
         _originalName = fromToken->_originalName;

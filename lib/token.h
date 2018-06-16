@@ -676,7 +676,7 @@ public:
      * @param f Function to be associated
      */
     void function(const Function *f) {
-        _function = f;
+        mFunction = f;
         if (f)
             tokType(eFunction);
         else if (mTokType == eFunction)
@@ -687,7 +687,7 @@ public:
      * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return mTokType == eFunction ? _function : nullptr;
+        return mTokType == eFunction ? mFunction : nullptr;
     }
 
     /**
@@ -912,7 +912,7 @@ private:
     // symbol database information
     const Scope *_scope;
     union {
-        const Function *_function;
+        const Function *mFunction;
         const Variable *_variable;
         const ::Type* mType;
         const Enumerator *_enumerator;
