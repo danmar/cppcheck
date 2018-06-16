@@ -41,11 +41,11 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     cpp = isCPP();
 
     if (mSettings->defaultSign == 's' || mSettings->defaultSign == 'S')
-        defaultSignedness = ValueType::SIGNED;
+        mDefaultSignedness = ValueType::SIGNED;
     else if (mSettings->defaultSign == 'u' || mSettings->defaultSign == 'U')
-        defaultSignedness = ValueType::UNSIGNED;
+        mDefaultSignedness = ValueType::UNSIGNED;
     else
-        defaultSignedness = ValueType::UNKNOWN_SIGN;
+        mDefaultSignedness = ValueType::UNKNOWN_SIGN;
 
     createSymbolDatabaseFindAllScopes();
     createSymbolDatabaseClassInfo();
@@ -4792,7 +4792,7 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
         valuetype.bits = var.nameToken()->bits();
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
-    if (parsedecl(var.typeStartToken(), &valuetype, defaultSignedness, mSettings))
+    if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings))
         setValueType(tok, valuetype);
 }
 
@@ -4812,7 +4812,7 @@ void SymbolDatabase::setValueType(Token *tok, const Enumerator &enumerator)
             else if (type->isUnsigned())
                 valuetype.sign = ValueType::Sign::UNSIGNED;
             else if (valuetype.type == ValueType::Type::CHAR)
-                valuetype.sign = defaultSignedness;
+                valuetype.sign = mDefaultSignedness;
             else
                 valuetype.sign = ValueType::Sign::SIGNED;
         }
@@ -4977,7 +4977,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             // TODO: Get type better
             if (Token::Match(typeStart, "std :: %type% < %type% *| *| >")) {
                 ValueType autovt;
-                if (parsedecl(typeStart->tokAt(4), &autovt, defaultSignedness, mSettings)) {
+                if (parsedecl(typeStart->tokAt(4), &autovt, mDefaultSignedness, mSettings)) {
                     setValueType(autoToken, autovt);
                     setAutoTokenProperties(autoToken);
                     ValueType varvt(autovt);
@@ -5000,7 +5000,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 
     if (vt1 && vt1->containerTypeToken && parent->str() == "[") {
         ValueType vtParent;
-        if (parsedecl(vt1->containerTypeToken, &vtParent, defaultSignedness, mSettings)) {
+        if (parsedecl(vt1->containerTypeToken, &vtParent, mDefaultSignedness, mSettings)) {
             setValueType(parent, vtParent);
             return;
         }
@@ -5275,7 +5275,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                 const Function *function = getOperatorFunction(tok);
                 if (function) {
                     ValueType vt;
-                    parsedecl(function->retDef, &vt, defaultSignedness, mSettings);
+                    parsedecl(function->retDef, &vt, mDefaultSignedness, mSettings);
                     setValueType(tok, vt);
                     continue;
                 }
@@ -5294,21 +5294,21 @@ void SymbolDatabase::setValueTypeInTokenList()
             // cast
             if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, defaultSignedness, mSettings), ")"))
+                if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, mDefaultSignedness, mSettings), ")"))
                     setValueType(tok, valuetype);
             }
 
             // C++ cast
             if (tok->astOperand2() && Token::Match(tok->astOperand1(), "static_cast|const_cast|dynamic_cast|reinterpret_cast < %name%") && tok->astOperand1()->linkAt(1)) {
                 ValueType valuetype;
-                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, defaultSignedness, mSettings), ">"))
+                if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, mDefaultSignedness, mSettings), ">"))
                     setValueType(tok, valuetype);
             }
 
             // function
             else if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
                 ValueType valuetype;
-                if (parsedecl(tok->previous()->function()->retDef, &valuetype, defaultSignedness, mSettings))
+                if (parsedecl(tok->previous()->function()->retDef, &valuetype, mDefaultSignedness, mSettings))
                     setValueType(tok, valuetype);
             }
 
@@ -5320,7 +5320,7 @@ void SymbolDatabase::setValueTypeInTokenList()
 
                 if (Token::Match(tok, "( %type% %type%| *| *| )")) {
                     ValueType vt;
-                    if (parsedecl(tok->next(), &vt, defaultSignedness, mSettings)) {
+                    if (parsedecl(tok->next(), &vt, mDefaultSignedness, mSettings)) {
                         setValueType(tok->next(), vt);
                     }
                 }
@@ -5371,7 +5371,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                     ValueType vt;
                     assert(tokenList.front());
                     tokenList.simplifyStdType();
-                    if (parsedecl(tokenList.front(), &vt, defaultSignedness, mSettings)) {
+                    if (parsedecl(tokenList.front(), &vt, mDefaultSignedness, mSettings)) {
                         setValueType(tok, vt);
                     }
                 }
@@ -5416,7 +5416,7 @@ void SymbolDatabase::setValueTypeInTokenList()
                 else if (typeTok->isSigned())
                     vt.sign = ValueType::Sign::SIGNED;
                 if (vt.sign == ValueType::Sign::UNKNOWN_SIGN && vt.isIntegral())
-                    vt.sign = (vt.type == ValueType::Type::CHAR) ? defaultSignedness : ValueType::Sign::SIGNED;
+                    vt.sign = (vt.type == ValueType::Type::CHAR) ? mDefaultSignedness : ValueType::Sign::SIGNED;
             }
             setValueType(tok, vt);
         }
