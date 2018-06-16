@@ -77,7 +77,7 @@ private:
     Timer(const Timer& other); // disallow copying
     Timer& operator=(const Timer&); // disallow assignments
 
-    const std::string _str;
+    const std::string mStr;
     TimerResultsIntf* mTimerResults;
     std::clock_t mStart;
     const unsigned int mShowTimeMode;
