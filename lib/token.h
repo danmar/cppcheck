@@ -695,7 +695,7 @@ public:
      * @param v Variable to be associated
      */
     void variable(const Variable *v) {
-        _variable = v;
+        mVariable = v;
         if (v || mVarId)
             tokType(eVariable);
         else if (mTokType == eVariable)
@@ -706,7 +706,7 @@ public:
      * @return a pointer to the variable associated with this token.
      */
     const Variable *variable() const {
-        return mTokType == eVariable ? _variable : nullptr;
+        return mTokType == eVariable ? mVariable : nullptr;
     }
 
     /**
@@ -913,7 +913,7 @@ private:
     const Scope *_scope;
     union {
         const Function *mFunction;
-        const Variable *_variable;
+        const Variable *mVariable;
         const ::Type* mType;
         const Enumerator *_enumerator;
     };
