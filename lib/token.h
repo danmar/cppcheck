@@ -312,10 +312,10 @@ public:
     bool isUnaryPreOp() const;
 
     unsigned int flags() const {
-        return _flags;
+        return mFlags;
     }
     void flags(const unsigned int flags_) {
-        _flags = flags_;
+        mFlags = flags_;
     }
     bool isUnsigned() const {
         return getFlag(fIsUnsigned);
@@ -958,7 +958,7 @@ private:
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
     };
 
-    unsigned int _flags;
+    unsigned int mFlags;
 
     /**
      * Get specified flag state.
@@ -966,7 +966,7 @@ private:
      * @return true if flag set or false in flag not set
      */
     bool getFlag(unsigned int flag_) const {
-        return ((_flags & flag_) != 0);
+        return ((mFlags & flag_) != 0);
     }
 
     /**
@@ -975,7 +975,7 @@ private:
      * @param state_ new state of flag
      */
     void setFlag(unsigned int flag_, bool state_) {
-        _flags = state_ ? _flags | flag_ : _flags & ~flag_;
+        mFlags = state_ ? mFlags | flag_ : mFlags & ~flag_;
     }
 
     /** Updates internal property cache like _isName or _isBoolean.

@@ -199,7 +199,7 @@ class CPPCHECKLIB Variable {
      * @return true if flag set or false in flag not set
      */
     bool getFlag(unsigned int flag_) const {
-        return ((_flags & flag_) != 0);
+        return ((mFlags & flag_) != 0);
     }
 
     /**
@@ -208,7 +208,7 @@ class CPPCHECKLIB Variable {
      * @param state_ new state of flag
      */
     void setFlag(unsigned int flag_, bool state_) {
-        _flags = state_ ? _flags | flag_ : _flags & ~flag_;
+        mFlags = state_ ? mFlags | flag_ : mFlags & ~flag_;
     }
 
     /**
@@ -227,7 +227,7 @@ public:
           mTypeEndToken(end_),
           mIndex(index_),
           mAccess(access_),
-          _flags(0),
+          mFlags(0),
           mConstness(0),
           _type(type_),
           _scope(scope_) {
@@ -631,7 +631,7 @@ private:
     AccessControl mAccess;  // public/protected/private
 
     /** @brief flags */
-    unsigned int _flags;
+    unsigned int mFlags;
 
     /** @brief constness (same encoding as ValueType::constness) */
     unsigned int mConstness;

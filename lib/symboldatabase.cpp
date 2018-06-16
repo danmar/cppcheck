@@ -2633,7 +2633,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
                var->isLocal() ? "Local" :
                var->isThrow() ? "Throw" :
                "Unknown")  << std::endl;
-    std::cout << indent << "_flags: " << std::endl;
+    std::cout << indent << "mFlags: " << std::endl;
     std::cout << indent << "    isMutable: " << var->isMutable() << std::endl;
     std::cout << indent << "    isStatic: " << var->isStatic() << std::endl;
     std::cout << indent << "    isExtern: " << var->isExtern() << std::endl;

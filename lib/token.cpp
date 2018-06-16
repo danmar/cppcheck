@@ -48,7 +48,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     _col(0),
     _progressValue(0),
     _tokType(eNone),
-    _flags(0),
+    mFlags(0),
     _bits(0),
     _astOperand1(nullptr),
     _astOperand2(nullptr),
@@ -248,7 +248,7 @@ void Token::swapWithNext()
     if (_next) {
         std::swap(_str, _next->_str);
         std::swap(_tokType, _next->_tokType);
-        std::swap(_flags, _next->_flags);
+        std::swap(mFlags, _next->mFlags);
         std::swap(_varId, _next->_varId);
         std::swap(_fileIndex, _next->_fileIndex);
         std::swap(_linenr, _next->_linenr);
@@ -270,7 +270,7 @@ void Token::takeData(Token *fromToken)
 {
     _str = fromToken->_str;
     tokType(fromToken->_tokType);
-    _flags = fromToken->_flags;
+    mFlags = fromToken->mFlags;
     _varId = fromToken->_varId;
     _fileIndex = fromToken->_fileIndex;
     _linenr = fromToken->_linenr;
