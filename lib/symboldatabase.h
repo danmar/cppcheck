@@ -1246,7 +1246,7 @@ private:
     std::vector<const Variable *> mVariableList;
 
     /** list for missing types */
-    std::list<Type> _blankTypes;
+    std::list<Type> mBlankTypes;
 
     bool cpp;
     ValueType::Sign defaultSignedness;

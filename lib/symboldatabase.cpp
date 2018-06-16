@@ -819,8 +819,8 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                 Scope *scope = &(*it);
 
                 if (!scope->definedType) {
-                    _blankTypes.push_back(Type());
-                    scope->definedType = &_blankTypes.back();
+                    mBlankTypes.push_back(Type());
+                    scope->definedType = &mBlankTypes.back();
                 }
 
                 if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
