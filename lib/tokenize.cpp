@@ -144,7 +144,7 @@ Tokenizer::Tokenizer() :
     mErrorLogger(nullptr),
     mSymbolDatabase(nullptr),
     mVarId(0),
-    _unnamedCount(0),
+    mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
     _timerResults(nullptr)
 #ifdef MAXTIME
@@ -159,7 +159,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mErrorLogger(errorLogger),
     mSymbolDatabase(nullptr),
     mVarId(0),
-    _unnamedCount(0),
+    mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
     _timerResults(nullptr)
 #ifdef MAXTIME
@@ -584,7 +584,7 @@ void Tokenizer::simplifyTypedef()
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
         if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {")) {
-            Token *tok1 = splitDefinitionFromTypedef(tok, &_unnamedCount);
+            Token *tok1 = splitDefinitionFromTypedef(tok, &mUnnamedCount);
             if (!tok1)
                 continue;
             tok = tok1;
@@ -593,7 +593,7 @@ void Tokenizer::simplifyTypedef()
             while (tok1 && tok1->str() != ";" && tok1->str() != "{")
                 tok1 = tok1->next();
             if (tok1 && tok1->str() == "{") {
-                tok1 = splitDefinitionFromTypedef(tok, &_unnamedCount);
+                tok1 = splitDefinitionFromTypedef(tok, &mUnnamedCount);
                 if (!tok1)
                     continue;
                 tok = tok1;

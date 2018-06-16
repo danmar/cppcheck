@@ -885,7 +885,7 @@ private:
     unsigned int mVarId;
 
     /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", ... */
-    unsigned int _unnamedCount;
+    unsigned int mUnnamedCount;
 
     /**
      * was there any templates? templates that are "unused" are
