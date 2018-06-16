@@ -81,7 +81,7 @@ private:
     TimerResultsIntf* mTimerResults;
     std::clock_t _start;
     const unsigned int _showtimeMode;
-    bool _stopped;
+    bool mStopped;
 };
 //---------------------------------------------------------------------------
 #endif // timerH

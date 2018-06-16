@@ -76,7 +76,7 @@ Timer::Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf
     , mTimerResults(timerResults)
     , _start(0)
     , _showtimeMode(showtimeMode)
-    , _stopped(false)
+    , mStopped(false)
 {
     if (showtimeMode != SHOWTIME_NONE)
         _start = std::clock();
@@ -89,7 +89,7 @@ Timer::~Timer()
 
 void Timer::Stop()
 {
-    if ((_showtimeMode != SHOWTIME_NONE) && !_stopped) {
+    if ((_showtimeMode != SHOWTIME_NONE) && !mStopped) {
         const std::clock_t end = std::clock();
         const std::clock_t diff = end - _start;
 
@@ -102,5 +102,5 @@ void Timer::Stop()
         }
     }
 
-    _stopped = true;
+    mStopped = true;
 }
