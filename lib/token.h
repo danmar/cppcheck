@@ -726,7 +726,7 @@ public:
     * @return a pointer to the Enumerator associated with this token.
     */
     const Enumerator *enumerator() const {
-        return mTokType == eEnumerator ? _enumerator : nullptr;
+        return mTokType == eEnumerator ? mEnumerator : nullptr;
     }
 
     /**
@@ -734,7 +734,7 @@ public:
      * @param e Enumerator to be associated
      */
     void enumerator(const Enumerator *e) {
-        _enumerator = e;
+        mEnumerator = e;
         if (e)
             tokType(eEnumerator);
         else if (mTokType == eEnumerator)
@@ -915,7 +915,7 @@ private:
         const Function *mFunction;
         const Variable *mVariable;
         const ::Type* mType;
-        const Enumerator *_enumerator;
+        const Enumerator *mEnumerator;
     };
 
     unsigned int mVarId;
