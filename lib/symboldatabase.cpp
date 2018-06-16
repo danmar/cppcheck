@@ -1692,7 +1692,7 @@ void Variable::evaluate(const Library* lib)
         setFlag(fHasDefault, tok->str() == "=");
     }
     // check for C++11 member initialization
-    if (_scope && _scope->isClassOrStruct()) {
+    if (mScope && mScope->isClassOrStruct()) {
         // type var = x or
         // type var = {x}
         // type var = x; gets simplified to: type var ; var = x ;
@@ -2662,7 +2662,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
         }
     }
 
-    std::cout << indent << "_scope: " << scopeToString(var->scope(), mTokenizer) << std::endl;
+    std::cout << indent << "mScope: " << scopeToString(var->scope(), mTokenizer) << std::endl;
 
     std::cout << indent << "mDimensions:";
     for (std::size_t i = 0; i < var->dimensions().size(); i++) {

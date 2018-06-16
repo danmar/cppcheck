@@ -230,7 +230,7 @@ public:
           mFlags(0),
           mConstness(0),
           mType(type_),
-          _scope(scope_) {
+          mScope(scope_) {
         evaluate(lib);
     }
 
@@ -502,7 +502,7 @@ public:
      * @return pointer to enclosing scope
      */
     const Scope *scope() const {
-        return _scope;
+        return mScope;
     }
 
     /**
@@ -640,7 +640,7 @@ private:
     const Type *mType;
 
     /** @brief pointer to scope this variable is in */
-    const Scope *_scope;
+    const Scope *mScope;
 
     /** @brief array dimensions */
     std::vector<Dimension> mDimensions;

@@ -661,14 +661,14 @@ public:
      * @param s Scope to be associated
      */
     void scope(const Scope *s) {
-        _scope = s;
+        mScope = s;
     }
 
     /**
      * @return a pointer to the scope containing this token.
      */
     const Scope *scope() const {
-        return _scope;
+        return mScope;
     }
 
     /**
@@ -910,7 +910,7 @@ private:
     Token *_link;
 
     // symbol database information
-    const Scope *_scope;
+    const Scope *mScope;
     union {
         const Function *mFunction;
         const Variable *mVariable;
