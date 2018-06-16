@@ -681,7 +681,7 @@ class CPPCHECKLIB Function {
      * @return true if flag set or false in flag not set
      */
     bool getFlag(unsigned int flag) const {
-        return ((flags & flag) != 0);
+        return ((mFlags & flag) != 0);
     }
 
     /**
@@ -690,7 +690,7 @@ class CPPCHECKLIB Function {
      * @param state new state of flag
      */
     void setFlag(unsigned int flag, bool state) {
-        flags = state ? flags | flag : flags & ~flag;
+        mFlags = state ? mFlags | flag : mFlags & ~flag;
     }
 
 public:
@@ -846,7 +846,7 @@ private:
     /** Recursively determine if this function overrides a virtual method in a base class */
     const Function * getOverridenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
 
-    unsigned int flags;
+    unsigned int mFlags;
 
     void isInline(bool state) {
         setFlag(fIsInline, state);

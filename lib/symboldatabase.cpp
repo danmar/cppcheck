@@ -1722,7 +1722,7 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
       access(Public),
       noexceptArg(nullptr),
       throwArg(nullptr),
-      flags(0)
+      mFlags(0)
 {
     // operator function
     if (tokenDef->isOperatorKeyword()) {
