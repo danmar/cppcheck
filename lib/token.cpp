@@ -49,7 +49,7 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     mProgressValue(0),
     mTokType(eNone),
     mFlags(0),
-    _bits(0),
+    mBits(0),
     mAstOperand1(nullptr),
     mAstOperand2(nullptr),
     mAstParent(nullptr),

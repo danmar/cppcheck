@@ -442,13 +442,13 @@ public:
     }
 
     bool isBitfield() const {
-        return _bits > 0;
+        return mBits > 0;
     }
     unsigned char bits() const {
-        return _bits;
+        return mBits;
     }
     void setBits(const unsigned char b) {
-        _bits = b;
+        mBits = b;
     }
 
     /**
@@ -986,7 +986,7 @@ private:
     void update_property_isStandardType();
 
     /** Bitfield bit count. */
-    unsigned char _bits;
+    unsigned char mBits;
 
     // AST..
     Token *mAstOperand1;
