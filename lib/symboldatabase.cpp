@@ -1622,10 +1622,10 @@ void Variable::evaluate(const Library* lib)
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(lib));
 
-    const Token* tok = _start;
+    const Token* tok = mTypeStartToken;
     while (tok && tok->previous() && tok->previous()->isName())
         tok = tok->previous();
-    const Token* end = _end;
+    const Token* end = mTypeEndToken;
     if (end)
         end = end->next();
     while (tok != end) {
@@ -1659,24 +1659,24 @@ void Variable::evaluate(const Library* lib)
             tok = tok->next();
     }
 
-    while (Token::Match(_start, "static|const|volatile %any%"))
-        _start = _start->next();
-    while (_end && _end->previous() && Token::Match(_end, "const|volatile"))
-        _end = _end->previous();
+    while (Token::Match(mTypeStartToken, "static|const|volatile %any%"))
+        mTypeStartToken = mTypeStartToken->next();
+    while (mTypeEndToken && mTypeEndToken->previous() && Token::Match(mTypeEndToken, "const|volatile"))
+        mTypeEndToken = mTypeEndToken->previous();
 
-    if (_start) {
-        std::string strtype = _start->str();
-        for (const Token *typeToken = _start; Token::Match(typeToken, "%type% :: %type%"); typeToken = typeToken->tokAt(2))
+    if (mTypeStartToken) {
+        std::string strtype = mTypeStartToken->str();
+        for (const Token *typeToken = mTypeStartToken; Token::Match(typeToken, "%type% :: %type%"); typeToken = typeToken->tokAt(2))
             strtype += "::" + typeToken->strAt(2);
-        setFlag(fIsClass, !lib->podtype(strtype) && !_start->isStandardType() && !isEnumType() && !isPointer() && !isReference());
-        setFlag(fIsStlType, Token::simpleMatch(_start, "std ::"));
-        setFlag(fIsStlString, isStlType() && (Token::Match(_start->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(_start->tokAt(2), "basic_string <") && !Token::simpleMatch(_start->linkAt(3), "> ::"))));
+        setFlag(fIsClass, !lib->podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && !isReference());
+        setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
+        setFlag(fIsStlString, isStlType() && (Token::Match(mTypeStartToken->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(mTypeStartToken->tokAt(2), "basic_string <") && !Token::simpleMatch(mTypeStartToken->linkAt(3), "> ::"))));
     }
     if (_access == Argument) {
         tok = mNameToken;
         if (!tok) {
             // Argument without name
-            tok = _end;
+            tok = mTypeEndToken;
             // back up to start of array dimensions
             while (tok && tok->str() == "]")
                 tok = tok->link()->previous();
@@ -1702,8 +1702,8 @@ void Variable::evaluate(const Library* lib)
             setFlag(fHasDefault, true);
     }
 
-    if (_start) {
-        if (Token::Match(_start, "float|double"))
+    if (mTypeStartToken) {
+        if (Token::Match(mTypeStartToken, "float|double"))
             setFlag(fIsFloatType, true);
     }
 }
@@ -2445,9 +2445,9 @@ bool Type::isDerivedFrom(const std::string & ancestor) const
 
 bool Variable::arrayDimensions(const Library* lib)
 {
-    const Library::Container* container = lib->detectContainer(_start);
+    const Library::Container* container = lib->detectContainer(mTypeStartToken);
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
-        const Token* tok = Token::findsimplematch(_start, "<");
+        const Token* tok = Token::findsimplematch(mTypeStartToken, "<");
         if (tok) {
             Dimension dimension_;
             tok = tok->next();
@@ -2473,7 +2473,7 @@ bool Variable::arrayDimensions(const Library* lib)
     const Token *dim = mNameToken;
     if (!dim) {
         // Argument without name
-        dim = _end;
+        dim = mTypeEndToken;
         // back up to start of array dimensions
         while (dim && dim->str() == "]")
             dim = dim->link()->previous();
@@ -2604,8 +2604,8 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     if (var->nameToken()) {
         std::cout << indent << "    declarationId: " << var->declarationId() << std::endl;
     }
-    std::cout << indent << "_start: " << tokenToString(var->typeStartToken(), _tokenizer) << std::endl;
-    std::cout << indent << "_end: " << tokenToString(var->typeEndToken(), _tokenizer) << std::endl;
+    std::cout << indent << "mTypeStartToken: " << tokenToString(var->typeStartToken(), _tokenizer) << std::endl;
+    std::cout << indent << "mTypeEndToken: " << tokenToString(var->typeEndToken(), _tokenizer) << std::endl;
 
     const Token * autoTok = nullptr;
     std::cout << indent << "   ";

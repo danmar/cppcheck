@@ -223,8 +223,8 @@ public:
              std::size_t index_, AccessControl access_, const Type *type_,
              const Scope *scope_, const Library* lib)
         : mNameToken(name_),
-          _start(start_),
-          _end(end_),
+          mTypeStartToken(start_),
+          mTypeEndToken(end_),
           _index(index_),
           _access(access_),
           _flags(0),
@@ -251,7 +251,7 @@ public:
      * @return type start token
      */
     const Token *typeStartToken() const {
-        return _start;
+        return mTypeStartToken;
     }
 
     /**
@@ -263,7 +263,7 @@ public:
      * @return type end token
      */
     const Token *typeEndToken() const {
-        return _end;
+        return mTypeEndToken;
     }
 
     /**
@@ -564,7 +564,7 @@ public:
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
     bool isStlType(const std::string& stlType) const {
-        return isStlType() && stlType==_start->strAt(2);
+        return isStlType() && stlType==mTypeStartToken->strAt(2);
     }
 
     /**
@@ -578,7 +578,7 @@ public:
      * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
      */
     bool isStlType(const std::set<std::string>& stlTypes) const {
-        return isStlType() && stlTypes.find(_start->strAt(2))!=stlTypes.end();
+        return isStlType() && stlTypes.find(mTypeStartToken->strAt(2))!=stlTypes.end();
     }
 
     /**
@@ -619,10 +619,10 @@ private:
     const Token *mNameToken;
 
     /** @brief variable type start token */
-    const Token *_start;
+    const Token *mTypeStartToken;
 
     /** @brief variable type end token */
-    const Token *_end;
+    const Token *mTypeEndToken;
 
     /** @brief order declared */
     std::size_t _index;
