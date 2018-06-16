@@ -1666,10 +1666,10 @@ void Token::setValueType(ValueType *vt)
 
 void Token::type(const ::Type *t)
 {
-    _type = t;
+    mType = t;
     if (t) {
         tokType(eType);
-        isEnumType(_type->isEnumType());
+        isEnumType(mType->isEnumType());
     } else if (mTokType == eType)
         tokType(eName);
 }

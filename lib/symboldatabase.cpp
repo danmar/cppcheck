@@ -2646,7 +2646,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
     std::cout << indent << "    isRValueRef: " << var->isRValueReference() << std::endl;
     std::cout << indent << "    hasDefault: " << var->hasDefault() << std::endl;
     std::cout << indent << "    isStlType: " << var->isStlType() << std::endl;
-    std::cout << indent << "_type: ";
+    std::cout << indent << "mType: ";
     if (var->type()) {
         std::cout << var->type()->type() << " " << var->type()->name();
         std::cout << " " << mTokenizer->list.fileLine(var->type()->classDef);
@@ -5479,13 +5479,13 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
 
     const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platformString());
     if (platformType) {
-        if (platformType->_type == "char")
+        if (platformType->mType == "char")
             type = ValueType::Type::CHAR;
-        else if (platformType->_type == "short")
+        else if (platformType->mType == "short")
             type = ValueType::Type::SHORT;
-        else if (platformType->_type == "int")
+        else if (platformType->mType == "int")
             type = platformType->_long ? ValueType::Type::LONG : ValueType::Type::INT;
-        else if (platformType->_type == "long")
+        else if (platformType->mType == "long")
             type = platformType->_long ? ValueType::Type::LONGLONG : ValueType::Type::LONG;
         if (platformType->_signed)
             sign = ValueType::SIGNED;

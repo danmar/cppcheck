@@ -719,7 +719,7 @@ public:
     * @return a pointer to the type associated with this token.
     */
     const ::Type *type() const {
-        return mTokType == eType ? _type : nullptr;
+        return mTokType == eType ? mType : nullptr;
     }
 
     /**
@@ -914,7 +914,7 @@ private:
     union {
         const Function *_function;
         const Variable *_variable;
-        const ::Type* _type;
+        const ::Type* mType;
         const Enumerator *_enumerator;
     };
 

@@ -466,7 +466,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (value == nullptr)
                 return Error(MISSING_ATTRIBUTE, "value");
             PlatformType type;
-            type._type = value;
+            type.mType = value;
             std::set<std::string> platform;
             for (const tinyxml2::XMLElement *typenode = node->FirstChildElement(); typenode; typenode = typenode->NextSiblingElement()) {
                 const std::string typenodename = typenode->Name();

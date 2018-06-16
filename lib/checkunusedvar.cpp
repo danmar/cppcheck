@@ -64,7 +64,7 @@ public:
                                bool allocateMemory = false) :
             _var(var),
             _lastAccess(var ? var->nameToken() : nullptr),
-            _type(type),
+            mType(type),
             _read(read),
             _write(write),
             _modified(modified),
@@ -88,7 +88,7 @@ public:
 
         const Variable* _var;
         const Token* _lastAccess;
-        VariableType _type;
+        VariableType mType;
         bool _read;
         bool _write;
         bool _modified; // read/modify/write
@@ -200,7 +200,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     var2->_aliases.insert(varid1);
     var1->_aliases.insert(varid2);
 
-    if (var2->_type == Variables::pointer) {
+    if (var2->mType == Variables::pointer) {
         _varReadInScope.back().insert(varid2);
         var2->_read = true;
     }
@@ -524,17 +524,17 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
             const Variables::VariableUsage* var2 = variables.find(varid2);
 
             if (var2) { // local variable (alias or read it)
-                if (var1->_type == Variables::pointer || var1->_type == Variables::pointerArray) {
+                if (var1->mType == Variables::pointer || var1->mType == Variables::pointerArray) {
                     if (dereference)
                         variables.read(varid2, tok);
                     else {
                         if (addressOf ||
-                            var2->_type == Variables::array ||
-                            var2->_type == Variables::pointer) {
+                            var2->mType == Variables::array ||
+                            var2->mType == Variables::pointer) {
                             bool replace = true;
 
                             // pointerArray => don't replace
-                            if (var1->_type == Variables::pointerArray)
+                            if (var1->mType == Variables::pointerArray)
                                 replace = false;
 
                             // check if variable declared in same scope
@@ -569,7 +569,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
 
                             variables.alias(varid1, varid2, replace);
                         } else if (tok->strAt(1) == "?") {
-                            if (var2->_type == Variables::reference)
+                            if (var2->mType == Variables::reference)
                                 variables.readAliases(varid2, tok);
                             else
                                 variables.read(varid2, tok);
@@ -577,16 +577,16 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                             variables.readAll(varid2, tok);
                         }
                     }
-                } else if (var1->_type == Variables::reference) {
+                } else if (var1->mType == Variables::reference) {
                     variables.alias(varid1, varid2, true);
                 } else {
-                    if ((var2->_type == Variables::pointer || var2->_type == Variables::pointerArray) && tok->strAt(1) == "[")
+                    if ((var2->mType == Variables::pointer || var2->mType == Variables::pointerArray) && tok->strAt(1) == "[")
                         variables.readAliases(varid2, tok);
 
                     variables.read(varid2, tok);
                 }
             } else { // not a local variable (or an unsupported local variable)
-                if (var1->_type == Variables::pointer && !dereference) {
+                if (var1->mType == Variables::pointer && !dereference) {
                     // check if variable declaration is in this scope
                     if (var1->_var->scope() == scope) {
                         // If variable is used in RHS then "use" variable
@@ -629,8 +629,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
             const Variables::VariableUsage *var2 = variables.find(varid2);
 
             // struct member aliased to local variable
-            if (var2 && (var2->_type == Variables::array ||
-                         var2->_type == Variables::pointer)) {
+            if (var2 && (var2->mType == Variables::array ||
+                         var2->mType == Variables::pointer)) {
                 // erase aliased variable and all variables that alias it
                 // to prevent false positives
                 variables.eraseAll(varid2);
@@ -642,8 +642,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
     else if (Token::Match(tok, "%name% = %name% ;")) {
         const unsigned int varid2 = tok->tokAt(2)->varId();
         const Variables::VariableUsage *var2 = variables.find(varid2);
-        if (var2 && (var2->_type == Variables::array ||
-                     var2->_type == Variables::pointer)) {
+        if (var2 && (var2->mType == Variables::array ||
+                     var2->mType == Variables::pointer)) {
             variables.use(varid2,tok);
         }
     }
@@ -999,7 +999,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
             if (dereference) {
                 Variables::VariableUsage *var = variables.find(varid1);
-                if (var && var->_type == Variables::array)
+                if (var && var->mType == Variables::array)
                     variables.write(varid1, tok);
                 variables.writeAliases(varid1, tok);
                 variables.read(varid1, tok);
@@ -1007,12 +1007,12 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 Variables::VariableUsage *var = variables.find(varid1);
                 if (var && (inwhile || start->strAt(-1) == ",")) {
                     variables.use(varid1, tok);
-                } else if (var && var->_type == Variables::reference) {
+                } else if (var && var->mType == Variables::reference) {
                     variables.writeAliases(varid1, tok);
                     variables.read(varid1, tok);
                 }
                 // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
-                else if (var && var->_type == Variables::pointer &&
+                else if (var && var->mType == Variables::pointer &&
                          Token::Match(start, "%name% = new|malloc|calloc|kmalloc|kzalloc|kcalloc|strdup|strndup|vmalloc|g_new0|g_try_new|g_new|g_malloc|g_malloc0|g_try_malloc|g_try_malloc0|g_strdup|g_strndup|g_strdup_printf")) {
                     bool allocate = true;
 
@@ -1040,7 +1040,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     variables.read(varid1, tok);
                     variables.write(varid1, start);
                 } else if (var &&
-                           var->_type == Variables::pointer &&
+                           var->mType == Variables::pointer &&
                            Token::Match(tok, "%name% ;") &&
                            tok->varId() == 0 &&
                            tok->hasKnownIntValue() &&
@@ -1053,13 +1053,13 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
             Variables::VariableUsage *var2 = variables.find(tok->varId());
             if (var2) {
-                if (var2->_type == Variables::reference) {
+                if (var2->mType == Variables::reference) {
                     variables.writeAliases(tok->varId(), tok);
                     variables.read(tok->varId(), tok);
                 } else if (tok->varId() != varid1 && Token::Match(tok, "%name% .|["))
                     variables.read(tok->varId(), tok);
                 else if (tok->varId() != varid1 &&
-                         var2->_type == Variables::standard &&
+                         var2->mType == Variables::standard &&
                          tok->strAt(-1) != "&")
                     variables.use(tok->varId(), tok);
             }
@@ -1071,7 +1071,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 const unsigned int varId = tok->varId();
                 Variables::VariableUsage *var = variables.find(varId);
 
-                if (var && var->_type != Variables::reference) {
+                if (var && var->mType != Variables::reference) {
                     variables.read(varId,tok);
                 }
 
@@ -1099,13 +1099,13 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
             if (var) {
                 // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
-                if (var->_type == Variables::pointer &&
+                if (var->mType == Variables::pointer &&
                     Token::Match(skipBrackets(tok->next()), "= new|malloc|calloc|kmalloc|kzalloc|kcalloc|strdup|strndup|vmalloc|g_new0|g_try_new|g_new|g_malloc|g_malloc0|g_try_malloc|g_try_malloc0|g_strdup|g_strndup|g_strdup_printf")) {
                     variables.allocateMemory(varid, tok);
-                } else if (var->_type == Variables::pointer || var->_type == Variables::reference) {
+                } else if (var->mType == Variables::pointer || var->mType == Variables::reference) {
                     variables.read(varid, tok);
                     variables.writeAliases(varid, tok);
-                } else if (var->_type == Variables::pointerArray) {
+                } else if (var->mType == Variables::pointerArray) {
                     tok = doAssignment(variables, tok, deref, scope);
                 } else
                     variables.writeAll(varid, tok);
@@ -1246,9 +1246,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             // skip things that are only partially implemented to prevent false positives
-            if (usage._type == Variables::pointerPointer ||
-                usage._type == Variables::pointerArray ||
-                usage._type == Variables::referenceArray)
+            if (usage.mType == Variables::pointerPointer ||
+                usage.mType == Variables::pointerArray ||
+                usage.mType == Variables::referenceArray)
                 continue;
 
             const std::string &varname = usage._var->name();

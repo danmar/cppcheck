@@ -5957,20 +5957,20 @@ void Tokenizer::simplifyPlatformTypes()
             if (platformtype->_const_ptr) {
                 tok->str("const");
                 tok->insertToken("*");
-                tok->insertToken(platformtype->_type);
+                tok->insertToken(platformtype->mType);
                 typeToken = tok;
             } else if (platformtype->_pointer) {
-                tok->str(platformtype->_type);
+                tok->str(platformtype->mType);
                 typeToken = tok;
                 tok->insertToken("*");
             } else if (platformtype->_ptr_ptr) {
-                tok->str(platformtype->_type);
+                tok->str(platformtype->mType);
                 typeToken = tok;
                 tok->insertToken("*");
                 tok->insertToken("*");
             } else {
                 tok->originalName(tok->str());
-                tok->str(platformtype->_type);
+                tok->str(platformtype->mType);
                 typeToken = tok;
             }
             if (platformtype->_signed)

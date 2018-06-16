@@ -229,7 +229,7 @@ public:
           mAccess(access_),
           mFlags(0),
           mConstness(0),
-          _type(type_),
+          mType(type_),
           _scope(scope_) {
         evaluate(lib);
     }
@@ -486,7 +486,7 @@ public:
      * @return pointer to type if known, NULL if not known
      */
     const Type *type() const {
-        return _type;
+        return mType;
     }
 
     /**
@@ -494,7 +494,7 @@ public:
      * @return pointer to type scope if known, NULL if not known
      */
     const Scope *typeScope() const {
-        return _type ? _type->classScope : nullptr;
+        return mType ? mType->classScope : nullptr;
     }
 
     /**
@@ -612,7 +612,7 @@ private:
      * @param t type
      */
     void type(const Type * t) {
-        _type = t;
+        mType = t;
     }
 
     /** @brief variable name token */
@@ -637,7 +637,7 @@ private:
     unsigned int mConstness;
 
     /** @brief pointer to user defined type info (for known types) */
-    const Type *_type;
+    const Type *mType;
 
     /** @brief pointer to scope this variable is in */
     const Scope *_scope;

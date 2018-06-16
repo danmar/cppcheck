@@ -395,12 +395,12 @@ public:
                     _pointer == type._pointer &&
                     _ptr_ptr == type._ptr_ptr &&
                     _const_ptr == type._const_ptr &&
-                    _type == type._type);
+                    mType == type.mType);
         }
         bool operator != (const PlatformType & type) const {
             return !(*this == type);
         }
-        std::string _type;
+        std::string mType;
         bool _signed;
         bool _unsigned;
         bool _long;
