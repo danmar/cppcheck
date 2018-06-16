@@ -530,7 +530,7 @@ public:
     }
 
     Token *next() const {
-        return _next;
+        return mNext;
     }
 
 
@@ -554,7 +554,7 @@ public:
     void insertToken(const std::string &tokenStr, const std::string &originalNameStr=emptyString, bool prepend=false);
 
     Token *previous() const {
-        return _previous;
+        return mPrevious;
     }
 
 
@@ -880,10 +880,10 @@ public:
 private:
 
     void next(Token *nextToken) {
-        _next = nextToken;
+        mNext = nextToken;
     }
     void previous(Token *previousToken) {
-        _previous = previousToken;
+        mPrevious = previousToken;
     }
 
     /** used by deleteThis() to take data from token to delete */
@@ -905,8 +905,8 @@ private:
 
     std::string _str;
 
-    Token *_next;
-    Token *_previous;
+    Token *mNext;
+    Token *mPrevious;
     Token *_link;
 
     // symbol database information

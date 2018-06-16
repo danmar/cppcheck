@@ -37,8 +37,8 @@ const std::list<ValueFlow::Value> Token::emptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
     _tokensFrontBack(tokensFrontBack),
-    _next(nullptr),
-    _previous(nullptr),
+    mNext(nullptr),
+    mPrevious(nullptr),
     _link(nullptr),
     _scope(nullptr),
     _function(nullptr), // Initialize whole union
@@ -205,64 +205,64 @@ std::string Token::strValue() const
 
 void Token::deleteNext(unsigned long index)
 {
-    while (_next && index) {
-        Token *n = _next;
+    while (mNext && index) {
+        Token *n = mNext;
 
         // #8154 we are about to be unknown -> destroy the link to us
         if (n->_link && n->_link->_link == n)
             n->_link->link(nullptr);
 
-        _next = n->next();
+        mNext = n->next();
         delete n;
         --index;
     }
 
-    if (_next)
-        _next->previous(this);
+    if (mNext)
+        mNext->previous(this);
     else if (_tokensFrontBack)
         _tokensFrontBack->back = this;
 }
 
 void Token::deletePrevious(unsigned long index)
 {
-    while (_previous && index) {
-        Token *p = _previous;
+    while (mPrevious && index) {
+        Token *p = mPrevious;
 
         // #8154 we are about to be unknown -> destroy the link to us
         if (p->_link && p->_link->_link == p)
             p->_link->link(nullptr);
 
-        _previous = p->previous();
+        mPrevious = p->previous();
         delete p;
         --index;
     }
 
-    if (_previous)
-        _previous->next(this);
+    if (mPrevious)
+        mPrevious->next(this);
     else if (_tokensFrontBack)
         _tokensFrontBack->front = this;
 }
 
 void Token::swapWithNext()
 {
-    if (_next) {
-        std::swap(_str, _next->_str);
-        std::swap(_tokType, _next->_tokType);
-        std::swap(mFlags, _next->mFlags);
-        std::swap(_varId, _next->_varId);
-        std::swap(_fileIndex, _next->_fileIndex);
-        std::swap(_linenr, _next->_linenr);
-        if (_next->_link)
-            _next->_link->_link = this;
+    if (mNext) {
+        std::swap(_str, mNext->_str);
+        std::swap(_tokType, mNext->_tokType);
+        std::swap(mFlags, mNext->mFlags);
+        std::swap(_varId, mNext->_varId);
+        std::swap(_fileIndex, mNext->_fileIndex);
+        std::swap(_linenr, mNext->_linenr);
+        if (mNext->_link)
+            mNext->_link->_link = this;
         if (this->_link)
-            this->_link->_link = _next;
-        std::swap(_link, _next->_link);
-        std::swap(_scope, _next->_scope);
-        std::swap(_function, _next->_function);
-        std::swap(_originalName, _next->_originalName);
-        std::swap(_values, _next->_values);
-        std::swap(_valuetype, _next->_valuetype);
-        std::swap(_progressValue, _next->_progressValue);
+            this->_link->_link = mNext;
+        std::swap(_link, mNext->_link);
+        std::swap(_scope, mNext->_scope);
+        std::swap(_function, mNext->_function);
+        std::swap(_originalName, mNext->_originalName);
+        std::swap(_values, mNext->_values);
+        std::swap(_valuetype, mNext->_valuetype);
+        std::swap(_progressValue, mNext->_progressValue);
     }
 }
 
@@ -294,16 +294,16 @@ void Token::takeData(Token *fromToken)
 
 void Token::deleteThis()
 {
-    if (_next) { // Copy next to this and delete next
-        takeData(_next);
-        _next->link(nullptr); // mark as unlinked
+    if (mNext) { // Copy next to this and delete next
+        takeData(mNext);
+        mNext->link(nullptr); // mark as unlinked
         deleteNext();
-    } else if (_previous && _previous->_previous) { // Copy previous to this and delete previous
-        takeData(_previous);
+    } else if (mPrevious && mPrevious->mPrevious) { // Copy previous to this and delete previous
+        takeData(mPrevious);
 
-        Token* toDelete = _previous;
-        _previous = _previous->_previous;
-        _previous->_next = this;
+        Token* toDelete = mPrevious;
+        mPrevious = mPrevious->mPrevious;
+        mPrevious->mNext = this;
 
         delete toDelete;
     } else {
@@ -1176,15 +1176,15 @@ bool Token::isUnaryPreOp() const
         return false;
     if (!Token::Match(this, "++|--"))
         return true;
-    const Token *tokbefore = _previous;
-    const Token *tokafter = _next;
+    const Token *tokbefore = mPrevious;
+    const Token *tokafter = mNext;
     for (int distance = 1; distance < 10 && tokbefore; distance++) {
         if (tokbefore == _astOperand1)
             return false;
         if (tokafter == _astOperand1)
             return true;
-        tokbefore = tokbefore->_previous;
-        tokafter  = tokafter->_previous;
+        tokbefore = tokbefore->mPrevious;
+        tokafter  = tokafter->mPrevious;
     }
     return false; // <- guess
 }
