@@ -461,7 +461,7 @@ private:
     };
     class CodeBlock {
     public:
-        CodeBlock() : _offset(0) {}
+        CodeBlock() : mOffset(0) {}
 
         void setStart(const char* s) {
             mStart = s;
@@ -470,7 +470,7 @@ private:
             mEnd = e;
         }
         void setOffset(const int o) {
-            _offset = o;
+            mOffset = o;
         }
         void addBlock(const char* blockName) {
             _blocks.insert(blockName);
@@ -482,7 +482,7 @@ private:
             return mEnd;
         }
         int offset() const {
-            return _offset;
+            return mOffset;
         }
         bool isBlock(const std::string& blockName) const {
             return _blocks.find(blockName) != _blocks.end();
@@ -491,7 +491,7 @@ private:
     private:
         std::string mStart;
         std::string mEnd;
-        int _offset;
+        int mOffset;
         std::set<std::string> _blocks;
     };
     int allocid;
