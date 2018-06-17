@@ -51,8 +51,8 @@ public:
     }
 
     static void clear() {
-        instance._functions.clear();
-        instance._functionCalls.clear();
+        instance.mFunctions.clear();
+        instance.mFunctionCalls.clear();
     }
 
     // Parse current tokens and determine..
@@ -115,7 +115,7 @@ private:
         bool   usedOtherFile;
     };
 
-    std::map<std::string, FunctionUsage> _functions;
+    std::map<std::string, FunctionUsage> mFunctions;
 
     class CPPCHECKLIB FunctionDecl {
     public:
@@ -123,8 +123,8 @@ private:
         std::string functionName;
         unsigned int lineNumber;
     };
-    std::list<FunctionDecl> _functionDecl;
-    std::set<std::string> _functionCalls;
+    std::list<FunctionDecl> mFunctionDecl;
+    std::set<std::string> mFunctionCalls;
 };
 /// @}
 //---------------------------------------------------------------------------

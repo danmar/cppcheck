@@ -73,9 +73,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 continue;
         }
 
-        _functionDecl.emplace_back(func);
+        mFunctionDecl.emplace_back(func);
 
-        FunctionUsage &usage = _functions[func->name()];
+        FunctionUsage &usage = mFunctions[func->name()];
 
         if (!usage.lineNumber)
             usage.lineNumber = func->token->linenr();
@@ -112,11 +112,11 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
-                    _functionCalls.insert(markupVarToken->str());
-                    if (_functions.find(markupVarToken->str()) != _functions.end())
-                        _functions[markupVarToken->str()].usedOtherFile = true;
+                    mFunctionCalls.insert(markupVarToken->str());
+                    if (mFunctions.find(markupVarToken->str()) != mFunctions.end())
+                        mFunctions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "(") {
-                        FunctionUsage &func = _functions[markupVarToken->str()];
+                        FunctionUsage &func = mFunctions[markupVarToken->str()];
                         func.filename = tokenizer.list.getSourceFilePath();
                         if (func.filename.empty() || func.filename == "+")
                             func.usedOtherFile = true;
@@ -135,18 +135,18 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 if (settings->library.isexportedprefix(tok->str(), propToken->str())) {
                     const Token* nextPropToken = propToken->next();
                     const std::string& value = nextPropToken->str();
-                    if (_functions.find(value) != _functions.end()) {
-                        _functions[value].usedOtherFile = true;
+                    if (mFunctions.find(value) != mFunctions.end()) {
+                        mFunctions[value].usedOtherFile = true;
                     }
-                    _functionCalls.insert(value);
+                    mFunctionCalls.insert(value);
                 }
                 if (settings->library.isexportedsuffix(tok->str(), propToken->str())) {
                     const Token* prevPropToken = propToken->previous();
                     const std::string& value = prevPropToken->str();
-                    if (value != ")" && _functions.find(value) != _functions.end()) {
-                        _functions[value].usedOtherFile = true;
+                    if (value != ")" && mFunctions.find(value) != mFunctions.end()) {
+                        mFunctions[value].usedOtherFile = true;
                     }
-                    _functionCalls.insert(value);
+                    mFunctionCalls.insert(value);
                 }
                 propToken = propToken->next();
             }
@@ -159,8 +159,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 while (propToken && propToken->str() != ")") {
                     const std::string& value = propToken->str();
                     if (!value.empty()) {
-                        _functions[value].usedOtherFile = true;
-                        _functionCalls.insert(value);
+                        mFunctions[value].usedOtherFile = true;
+                        mFunctionCalls.insert(value);
                         break;
                     }
                     propToken = propToken->next();
@@ -185,8 +185,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 }
                 if (index == argIndex) {
                     value = value.substr(1, value.length() - 2);
-                    _functions[value].usedOtherFile = true;
-                    _functionCalls.insert(value);
+                    mFunctions[value].usedOtherFile = true;
+                    mFunctionCalls.insert(value);
                 }
             }
         }
@@ -223,7 +223,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (funcname) {
-            FunctionUsage &func = _functions[ funcname->str()];
+            FunctionUsage &func = mFunctions[ funcname->str()];
             const std::string& called_from_file = tokenizer.list.getSourceFilePath();
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
@@ -231,7 +231,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             else
                 func.usedSameFile = true;
 
-            _functionCalls.insert(funcname->str());
+            mFunctionCalls.insert(funcname->str());
         }
     }
 }
@@ -289,7 +289,7 @@ static bool isOperatorFunction(const std::string & funcName)
 bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
 {
     bool errors = false;
-    for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it) {
+    for (std::map<std::string, FunctionUsage>::const_iterator it = mFunctions.begin(); it != mFunctions.end(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
@@ -360,12 +360,12 @@ CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
 std::string CheckUnusedFunctions::analyzerInfo() const
 {
     std::ostringstream ret;
-    for (std::list<FunctionDecl>::const_iterator it = _functionDecl.begin(); it != _functionDecl.end(); ++it) {
+    for (std::list<FunctionDecl>::const_iterator it = mFunctionDecl.begin(); it != mFunctionDecl.end(); ++it) {
         ret << "    <functiondecl"
             << " functionName=\"" << ErrorLogger::toxml(it->functionName) << '\"'
             << " lineNumber=\"" << it->lineNumber << "\"/>\n";
     }
-    for (std::set<std::string>::const_iterator it = _functionCalls.begin(); it != _functionCalls.end(); ++it) {
+    for (std::set<std::string>::const_iterator it = mFunctionCalls.begin(); it != mFunctionCalls.end(); ++it) {
         ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(*it) << "\"/>\n";
     }
     return ret.str();
