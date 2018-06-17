@@ -94,7 +94,7 @@ public:
 
     /** get deallocation info for function by name (deprecated, use other alloc) */
     const AllocFunc* dealloc(const char name[]) const {
-        return getAllocDealloc(_dealloc, name);
+        return getAllocDealloc(mDealloc, name);
     }
 
     /** get allocation id for function by name (deprecated, use other alloc) */
@@ -105,7 +105,7 @@ public:
 
     /** get deallocation id for function by name (deprecated, use other alloc) */
     int deallocId(const char name[]) const {
-        const AllocFunc* af = getAllocDealloc(_dealloc, name);
+        const AllocFunc* af = getAllocDealloc(mDealloc, name);
         return af ? af->groupId : 0;
     }
 
@@ -116,13 +116,13 @@ public:
     }
 
     void setdealloc(const std::string &functionname, int id, int arg) {
-        _dealloc[functionname].groupId = id;
-        _dealloc[functionname].arg = arg;
+        mDealloc[functionname].groupId = id;
+        mDealloc[functionname].arg = arg;
     }
 
     /** add noreturn function setting */
     void setnoreturn(const std::string& funcname, bool noreturn) {
-        _noreturn[funcname] = noreturn;
+        mNoReturn[funcname] = noreturn;
     }
 
     /** is allocation type memory? */
@@ -324,7 +324,7 @@ public:
     bool processMarkupAfterCode(const std::string &path) const;
 
     const std::set<std::string> &markupExtensions() const {
-        return _markupExtensions;
+        return mMarkupExtensions;
     }
 
     bool reportErrors(const std::string &path) const;
@@ -341,28 +341,28 @@ public:
     bool iskeyword(const std::string &file, const std::string &keyword) const;
 
     bool isexporter(const std::string &prefix) const {
-        return _exporters.find(prefix) != _exporters.end();
+        return mExporters.find(prefix) != mExporters.end();
     }
 
     bool isexportedprefix(const std::string &prefix, const std::string &token) const {
-        const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
-        return (it != _exporters.end() && it->second.isPrefix(token));
+        const std::map<std::string, ExportedFunctions>::const_iterator it = mExporters.find(prefix);
+        return (it != mExporters.end() && it->second.isPrefix(token));
     }
 
     bool isexportedsuffix(const std::string &prefix, const std::string &token) const {
-        const std::map<std::string, ExportedFunctions>::const_iterator it = _exporters.find(prefix);
-        return (it != _exporters.end() && it->second.isSuffix(token));
+        const std::map<std::string, ExportedFunctions>::const_iterator it = mExporters.find(prefix);
+        return (it != mExporters.end() && it->second.isSuffix(token));
     }
 
     bool isimporter(const std::string& file, const std::string &importer) const;
 
     bool isreflection(const std::string &token) const {
-        return _reflection.find(token) != _reflection.end();
+        return mReflection.find(token) != mReflection.end();
     }
 
     int reflectionArgument(const std::string &token) const {
-        const std::map<std::string, int>::const_iterator it = _reflection.find(token);
-        if (it != _reflection.end())
+        const std::map<std::string, int>::const_iterator it = mReflection.find(token);
+        if (it != mReflection.end())
             return it->second;
         return -1;
     }
@@ -497,19 +497,19 @@ private:
     int allocid;
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
-    std::map<std::string, AllocFunc> _dealloc; // deallocation functions
-    std::map<std::string, bool> _noreturn; // is function noreturn?
-    std::map<std::string, std::string> _returnValue;
-    std::map<std::string, std::string> _returnValueType;
-    std::map<std::string, int> _returnValueContainer;
-    std::map<std::string, bool> _reporterrors;
-    std::map<std::string, bool> _processAfterCode;
-    std::set<std::string> _markupExtensions; // file extensions of markup files
-    std::map<std::string, std::set<std::string> > _keywords; // keywords for code in the library
-    std::map<std::string, CodeBlock> _executableblocks; // keywords for blocks of executable code
-    std::map<std::string, ExportedFunctions> _exporters; // keywords that export variables/functions to libraries (meta-code/macros)
-    std::map<std::string, std::set<std::string> > _importers; // keywords that import variables/functions
-    std::map<std::string, int> _reflection; // invocation of reflection
+    std::map<std::string, AllocFunc> mDealloc; // deallocation functions
+    std::map<std::string, bool> mNoReturn; // is function noreturn?
+    std::map<std::string, std::string> mReturnValue;
+    std::map<std::string, std::string> mReturnValueType;
+    std::map<std::string, int> mReturnValueContainer;
+    std::map<std::string, bool> mReportErrors;
+    std::map<std::string, bool> mProcessAfterCode;
+    std::set<std::string> mMarkupExtensions; // file extensions of markup files
+    std::map<std::string, std::set<std::string> > mKeywords; // keywords for code in the library
+    std::map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
+    std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
+    std::map<std::string, std::set<std::string> > mImporters; // keywords that import variables/functions
+    std::map<std::string, int> mReflection; // invocation of reflection
     std::map<std::string, struct PodType> podtypes; // pod types
     std::map<std::string, PlatformType> platform_types; // platform independent typedefs
     std::map<std::string, Platform> platforms; // platform dependent typedefs
