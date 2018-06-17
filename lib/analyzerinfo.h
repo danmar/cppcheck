@@ -59,7 +59,7 @@ public:
     static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg);
 private:
     std::ofstream mOutputStream;
-    std::string analyzerInfoFile;
+    std::string mAnalyzerInfoFile;
 };
 
 /// @}

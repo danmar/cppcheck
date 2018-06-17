@@ -66,7 +66,7 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
 
 void AnalyzerInformation::close()
 {
-    analyzerInfoFile.clear();
+    mAnalyzerInfoFile.clear();
     if (mOutputStream.is_open()) {
         mOutputStream << "</analyzerinfo>\n";
         mOutputStream.close();
@@ -132,17 +132,17 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
         return true;
     close();
 
-    analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg);
+    mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg);
 
-    if (skipAnalysis(analyzerInfoFile, checksum, errors))
+    if (skipAnalysis(mAnalyzerInfoFile, checksum, errors))
         return false;
 
-    mOutputStream.open(analyzerInfoFile);
+    mOutputStream.open(mAnalyzerInfoFile);
     if (mOutputStream.is_open()) {
         mOutputStream << "<?xml version=\"1.0\"?>\n";
         mOutputStream << "<analyzerinfo checksum=\"" << checksum << "\">\n";
     } else {
-        analyzerInfoFile.clear();
+        mAnalyzerInfoFile.clear();
     }
 
     return true;
