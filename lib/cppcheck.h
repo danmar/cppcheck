@@ -126,7 +126,7 @@ public:
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     void dontSimplify() {
-        _simplify = false;
+        mSimplify = false;
     }
 
     /** Analyse whole program, run this after all TUs has been scanned.
@@ -221,7 +221,7 @@ private:
     bool tooManyConfigs;
 
     /** Simplify code? true by default */
-    bool _simplify;
+    bool mSimplify;
 
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;

@@ -54,7 +54,7 @@ static TimerResults S_timerResults;
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), exitcode(0), mUseGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), _simplify(true)
+    : mErrorLogger(errorLogger), exitcode(0), mUseGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), mSimplify(true)
 {
 }
 
@@ -408,7 +408,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     checkUnusedFunctions.parseTokens(mTokenizer, filename.c_str(), &mSettings);
 
                 // simplify more if required, skip rest of iteration if failed
-                if (_simplify) {
+                if (mSimplify) {
                     // if further simplification fails then skip rest of iteration
                     Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
                     result = mTokenizer.simplifyTokenList2();
