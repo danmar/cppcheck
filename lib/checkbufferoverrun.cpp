@@ -1211,19 +1211,19 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
     }
 
     // check all known fixed size arrays first by just looking them up
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.cbegin(); scope != symbolDatabase->scopeList.cend(); ++scope) {
+    for (const Scope &scope : symbolDatabase->scopeList) {
         std::map<unsigned int, ArrayInfo> arrayInfos;
-        for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
-            if (!var->isArray() || var->dimension(0) <= 0)
+        for (const Variable &var : scope.varlist) {
+            if (!var.isArray() || var.dimension(0) <= 0)
                 continue;
             mErrorLogger->reportProgress(mTokenizer->list.getSourceFilePath(),
                                          "Check (BufferOverrun::checkGlobalAndLocalVariable 1)",
-                                         var->nameToken()->progressValue());
+                                         var.nameToken()->progressValue());
 
             if (mTokenizer->isMaxTime())
                 return;
 
-            const Token *tok = var->nameToken();
+            const Token *tok = var.nameToken();
             do {
                 if (tok->str() == "{") {
                     if (Token::simpleMatch(tok->previous(), "= {"))
@@ -1235,18 +1235,16 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             } while (tok && tok->str() != ";");
             if (!tok)
                 break;
-            arrayInfos[var->declarationId()] = ArrayInfo(&*var, symbolDatabase, var->declarationId());
+            arrayInfos[var.declarationId()] = ArrayInfo(&var, symbolDatabase, var.declarationId());
         }
         if (!arrayInfos.empty())
-            checkScope(scope->bodyStart ? scope->bodyStart : mTokenizer->tokens(), arrayInfos);
+            checkScope(scope.bodyStart ? scope.bodyStart : mTokenizer->tokens(), arrayInfos);
     }
 
     const std::vector<const std::string*> v;
 
     // find all dynamically allocated arrays next
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
 
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "[*;{}] %var% ="))
@@ -1347,10 +1345,7 @@ void CheckBufferOverrun::checkStructVariable()
             ArrayInfo arrayInfo(&*var, symbolDatabase);
 
             // find every function
-            const std::size_t functions = symbolDatabase->functionScopes.size();
-            for (std::size_t j = 0; j < functions; ++j) {
-                const Scope * func_scope = symbolDatabase->functionScopes[j];
-
+            for (const Scope * func_scope : symbolDatabase->functionScopes) {
                 // If struct is declared in a function then check
                 // if scope_func matches
                 if (scope->nestedIn->type == Scope::eFunction &&
@@ -1709,9 +1704,7 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
 void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
             const unsigned int dstVarId = tok->varId();
             if (!dstVarId || tok->strAt(1) != "=")
@@ -1760,9 +1753,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 void CheckBufferOverrun::checkStringArgument()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t functionIndex = 0; functionIndex < functions; ++functionIndex) {
-        const Scope * const scope = symbolDatabase->functionScopes[functionIndex];
+    for (const Scope * const scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% (") || !mSettings->library.hasminsize(tok->str()))
                 continue;
