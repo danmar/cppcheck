@@ -54,7 +54,7 @@ static TimerResults S_timerResults;
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), mExitCode(0), mUseGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), mSimplify(true)
+    : mErrorLogger(errorLogger), mExitCode(0), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
 {
 }
 
@@ -297,7 +297,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (mSettings.isEnabled(Settings::INFORMATION)) {
                 tooManyConfigsError(Path::toNativeSeparators(filename),configurations.size());
             } else {
-                tooManyConfigs = true;
+                mTooManyConfigs = true;
             }
         }
 
@@ -681,10 +681,10 @@ Settings &CppCheck::settings()
 
 void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations)
 {
-    if (!mSettings.isEnabled(Settings::INFORMATION) && !tooManyConfigs)
+    if (!mSettings.isEnabled(Settings::INFORMATION) && !mTooManyConfigs)
         return;
 
-    tooManyConfigs = false;
+    mTooManyConfigs = false;
 
     if (mSettings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
@@ -722,7 +722,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t nu
 
 void CppCheck::purgedConfigurationMessage(const std::string &file, const std::string& configuration)
 {
-    tooManyConfigs = false;
+    mTooManyConfigs = false;
 
     if (mSettings.isEnabled(Settings::INFORMATION) && file.empty())
         return;
@@ -814,7 +814,7 @@ void CppCheck::getErrorMessages()
 
     purgedConfigurationMessage("","");
 
-    tooManyConfigs = true;
+    mTooManyConfigs = true;
     tooManyConfigsError("",0U);
 
     // call all "getErrorMessages" in all registered Check classes

@@ -218,7 +218,7 @@ private:
     bool mUseGlobalSuppressions;
 
     /** Are there too many configs? */
-    bool tooManyConfigs;
+    bool mTooManyConfigs;
 
     /** Simplify code? true by default */
     bool mSimplify;

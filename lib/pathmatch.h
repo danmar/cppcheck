@@ -58,9 +58,9 @@ protected:
     static std::string removeFilename(const std::string &path);
 
 private:
-    std::vector<std::string> _excludedPaths;
-    bool _caseSensitive;
-    std::vector<std::string> _workingDirectory;
+    std::vector<std::string> mExcludedPaths;
+    bool mCaseSensitive;
+    std::vector<std::string> mWorkingDirectory;
 };
 
 /// @}
