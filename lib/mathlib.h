@@ -38,10 +38,10 @@ public:
     /** @brief value class */
     class value {
     private:
-        long long intValue;
-        double doubleValue;
-        enum { INT, LONG, LONGLONG, FLOAT } type;
-        bool isUnsigned;
+        long long mIntValue;
+        double mDoubleValue;
+        enum { INT, LONG, LONGLONG, FLOAT } mType;
+        bool mIsUnsigned;
 
         void promote(const value &v);
 
@@ -49,14 +49,14 @@ public:
         explicit value(const std::string &s);
         std::string str() const;
         bool isInt() const {
-            return type != FLOAT;
+            return mType != FLOAT;
         }
         bool isFloat() const {
-            return type == FLOAT;
+            return mType == FLOAT;
         }
 
         double getDoubleValue() const {
-            return isFloat() ? doubleValue : (double)intValue;
+            return isFloat() ? mDoubleValue : (double)mIntValue;
         }
 
         static value calc(char op, const value &v1, const value &v2);
