@@ -446,18 +446,18 @@ private:
             mPrefixes.insert(prefix);
         }
         void addSuffix(const std::string& suffix) {
-            _suffixes.insert(suffix);
+            mSuffixes.insert(suffix);
         }
         bool isPrefix(const std::string& prefix) const {
             return (mPrefixes.find(prefix) != mPrefixes.end());
         }
         bool isSuffix(const std::string& suffix) const {
-            return (_suffixes.find(suffix) != _suffixes.end());
+            return (mSuffixes.find(suffix) != mSuffixes.end());
         }
 
     private:
         std::set<std::string> mPrefixes;
-        std::set<std::string> _suffixes;
+        std::set<std::string> mSuffixes;
     };
     class CodeBlock {
     public:
