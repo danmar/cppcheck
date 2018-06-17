@@ -65,13 +65,12 @@ class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
 
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName()), symbolDatabase(nullptr) {
+    CheckBufferOverrun() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger)
-        , symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr) {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -128,16 +127,16 @@ public:
     class CPPCHECKLIB ArrayInfo {
     private:
         /** number of elements of array */
-        std::vector<MathLib::bigint> _num;
+        std::vector<MathLib::bigint> mNum;
 
         /** full name of variable as pattern */
-        std::string _varname;
+        std::string mVarName;
 
         /** size of each element in array */
-        MathLib::bigint _element_size;
+        MathLib::bigint mElementSize;
 
         /** declaration id */
-        unsigned int _declarationId;
+        unsigned int mDeclarationId;
 
     public:
         ArrayInfo();
@@ -156,36 +155,36 @@ public:
 
         /** array sizes */
         const std::vector<MathLib::bigint> &num() const {
-            return _num;
+            return mNum;
         }
 
         /** array size */
         MathLib::bigint num(std::size_t index) const {
-            return _num[index];
+            return mNum[index];
         }
         void num(std::size_t index, MathLib::bigint number) {
-            _num[index] = number;
+            mNum[index] = number;
         }
 
         /** size of each element */
         MathLib::bigint element_size() const {
-            return _element_size;
+            return mElementSize;
         }
 
         /** Variable name */
         unsigned int declarationId() const {
-            return _declarationId;
+            return mDeclarationId;
         }
         void declarationId(unsigned int id) {
-            _declarationId = id;
+            mDeclarationId = id;
         }
 
         /** Variable name */
         const std::string &varname() const {
-            return _varname;
+            return mVarName;
         }
         void varname(const std::string &name) {
-            _varname = name;
+            mVarName = name;
         }
 
         MathLib::bigint numberOfElements() const;
@@ -254,8 +253,6 @@ public:
     unsigned int sizeOfType(const Token *type) const;
 
 private:
-    const SymbolDatabase *symbolDatabase;
-
     static bool isArrayOfStruct(const Token* tok, int &position);
     void arrayIndexOutOfBoundsError(const std::list<const Token *> &callstack, const ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index);
     void bufferOverrunError(const Token *tok, const std::string &varnames = emptyString);

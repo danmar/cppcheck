@@ -808,7 +808,7 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return mValues ? *mValues : emptyValueList;
+        return mValues ? *mValues : mEmptyValueList;
     }
 
     /**
@@ -1001,7 +1001,7 @@ private:
 
     // ValueFlow
     std::list<ValueFlow::Value>* mValues;
-    static const std::list<ValueFlow::Value> emptyValueList;
+    static const std::list<ValueFlow::Value> mEmptyValueList;
 
 public:
     void astOperand1(Token *tok);

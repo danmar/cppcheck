@@ -64,7 +64,7 @@ public:
     virtual void AddResults(const std::string& str, std::clock_t clocks) override;
 
 private:
-    std::map<std::string, struct TimerResultsData> _results;
+    std::map<std::string, struct TimerResultsData> mResults;
 };
 
 class CPPCHECKLIB Timer {

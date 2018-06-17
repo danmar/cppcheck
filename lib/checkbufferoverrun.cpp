@@ -968,6 +968,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
     }
 
     else if (printPortability && astParent && astParent->str() == "-") {
+        const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
         const Variable *var = symbolDatabase->getVariableFromVarId(arrayInfo.declarationId());
         if (var && var->isArray()) {
             const Token *index = astParent->astOperand2();
@@ -1108,6 +1109,7 @@ static bool isVLAIndex(const Token *index)
 
 void CheckBufferOverrun::negativeArraySize()
 {
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable *var : symbolDatabase->variableList()) {
         if (!var || !var->isArray())
             continue;
@@ -1159,6 +1161,8 @@ bool CheckBufferOverrun::isArrayOfStruct(const Token* tok, int &position)
 
 void CheckBufferOverrun::checkGlobalAndLocalVariable()
 {
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+
     // check string literals
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% [") && tok->next()->astOperand2()) {
@@ -1331,6 +1335,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 void CheckBufferOverrun::checkStructVariable()
 {
     // find every class and struct
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t classes = symbolDatabase->classAndStructScopes.size();
     for (std::size_t i = 0; i < classes; ++i) {
         const Scope * scope = symbolDatabase->classAndStructScopes[i];
@@ -1488,6 +1493,8 @@ void CheckBufferOverrun::checkStructVariable()
 
 void CheckBufferOverrun::bufferOverrun()
 {
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+
     // singlepass checking using ast, symboldatabase and valueflow
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (mSettings->isEnabled(Settings::PORTABILITY) && tok->str() == "+" && tok->valueType() && tok->valueType()->pointer > 0) {
@@ -1701,6 +1708,7 @@ MathLib::biguint CheckBufferOverrun::countSprintfLength(const std::string &input
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 {
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
@@ -1751,6 +1759,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkStringArgument()
 {
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t functionIndex = 0; functionIndex < functions; ++functionIndex) {
         const Scope * const scope = symbolDatabase->functionScopes[functionIndex];
@@ -1788,6 +1797,7 @@ void CheckBufferOverrun::checkStringArgument()
 //---------------------------------------------------------------------------
 void CheckBufferOverrun::checkInsecureCmdLineArgs()
 {
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Function * function = symbolDatabase->functionScopes[i]->function;
@@ -1851,21 +1861,21 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const ValueFlow::V
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
-    : _element_size(0), _declarationId(0)
+    : mElementSize(0), mDeclarationId(0)
 {
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const SymbolDatabase * symbolDatabase, const unsigned int forcedeclid)
-    : _varname(var->name()), _declarationId((forcedeclid == 0U) ? var->declarationId() : forcedeclid)
+    : mVarName(var->name()), mDeclarationId((forcedeclid == 0U) ? var->declarationId() : forcedeclid)
 {
     for (std::size_t i = 0; i < var->dimensions().size(); i++)
-        _num.push_back(var->dimension(i));
+        mNum.push_back(var->dimension(i));
     if (var->typeEndToken()->str() == "*")
-        _element_size = symbolDatabase->sizeOfType(var->typeEndToken());
+        mElementSize = symbolDatabase->sizeOfType(var->typeEndToken());
     else if (var->typeStartToken()->strAt(-1) == "struct")
-        _element_size = 100;
+        mElementSize = 100;
     else {
-        _element_size = symbolDatabase->sizeOfType(var->typeEndToken());
+        mElementSize = symbolDatabase->sizeOfType(var->typeEndToken());
     }
 }
 
@@ -1876,31 +1886,31 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(const Variable *var, const SymbolDataba
  * this will not be needed as the declare can be used instead.
  */
 CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &name, MathLib::bigint size1, MathLib::bigint n)
-    : _varname(name), _element_size(size1), _declarationId(id)
+    : mVarName(name), mElementSize(size1), mDeclarationId(id)
 {
-    _num.push_back(n);
+    mNum.push_back(n);
 }
 
 CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(MathLib::bigint value) const
 {
     const MathLib::bigint uvalue = std::max(MathLib::bigint(0), value);
     MathLib::bigint n = 1;
-    for (std::size_t i = 0; i < _num.size(); ++i)
-        n *= _num[i];
+    for (std::size_t i = 0; i < mNum.size(); ++i)
+        n *= mNum[i];
     if (uvalue > n)
         n = uvalue;
-    return ArrayInfo(_declarationId, _varname, _element_size, n - uvalue);
+    return ArrayInfo(mDeclarationId, mVarName, mElementSize, n - uvalue);
 }
 
 MathLib::bigint CheckBufferOverrun::ArrayInfo::numberOfElements() const
 {
-    if (_num.empty())
+    if (mNum.empty())
         return 0;
 
     // total number of elements of array..
     MathLib::bigint ret = 1;
-    for (std::size_t i = 0; i < _num.size(); ++i) {
-        ret *= _num[i];
+    for (std::size_t i = 0; i < mNum.size(); ++i) {
+        ret *= mNum[i];
     }
     return ret;
 }
@@ -1909,10 +1919,10 @@ MathLib::bigint CheckBufferOverrun::ArrayInfo::totalIndex(const std::vector<Valu
 {
     MathLib::bigint index = 0;
     MathLib::bigint elements = 1;
-    for (std::size_t i = 0; i < _num.size(); ++i) {
-        const std::size_t ri = _num.size() - 1U - i;
+    for (std::size_t i = 0; i < mNum.size(); ++i) {
+        const std::size_t ri = mNum.size() - 1U - i;
         index += indexes[ri].intvalue * elements;
-        elements *= _num[ri];
+        elements *= mNum[ri];
     }
     return index;
 }
@@ -1923,6 +1933,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
     if (!mSettings->isEnabled(Settings::PORTABILITY))
         return;
 
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * const scope = symbolDatabase->functionScopes[i];
@@ -2122,8 +2133,5 @@ bool CheckBufferOverrun::analyseWholeProgram(const std::list<Check::FileInfo*> &
 
 unsigned int CheckBufferOverrun::sizeOfType(const Token *type) const
 {
-    if (symbolDatabase)
-        return symbolDatabase->sizeOfType(type);
-
-    return 0;
+    return mTokenizer->getSymbolDatabase()->sizeOfType(type);
 }

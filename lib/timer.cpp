@@ -47,7 +47,7 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
     std::cout << std::endl;
     TimerResultsData overallData;
 
-    std::vector<dataElementType> data(_results.begin(), _results.end());
+    std::vector<dataElementType> data(mResults.begin(), mResults.end());
     std::sort(data.begin(), data.end(), more_second_sec);
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
@@ -67,8 +67,8 @@ void TimerResults::ShowResults(SHOWTIME_MODES mode) const
 
 void TimerResults::AddResults(const std::string& str, std::clock_t clocks)
 {
-    _results[str].mClocks += clocks;
-    _results[str].mNumberOfResults++;
+    mResults[str].mClocks += clocks;
+    mResults[str].mNumberOfResults++;
 }
 
 Timer::Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults)

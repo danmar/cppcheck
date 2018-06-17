@@ -33,7 +33,7 @@
 #include <stack>
 #include <utility>
 
-const std::list<ValueFlow::Value> Token::emptyValueList;
+const std::list<ValueFlow::Value> Token::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
     mTokensFrontBack(tokensFrontBack),
