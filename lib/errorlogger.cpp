@@ -156,7 +156,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
     _inconclusive = attr && (std::strcmp(attr, "true") == 0);
 
     attr = errmsg->Attribute("msg");
-    _shortMessage = attr ? attr : "";
+    mShortMessage = attr ? attr : "";
 
     attr = errmsg->Attribute("verbose");
     _verboseMessage = attr ? attr : "";
@@ -200,13 +200,13 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     const std::string::size_type pos = msg.find('\n');
     const std::string symbolName = _symbolNames.empty() ? std::string() : _symbolNames.substr(0, _symbolNames.find('\n'));
     if (pos == std::string::npos) {
-        _shortMessage = replaceStr(msg, "$symbol", symbolName);
+        mShortMessage = replaceStr(msg, "$symbol", symbolName);
         _verboseMessage = replaceStr(msg, "$symbol", symbolName);
     } else if (msg.compare(0,8,"$symbol:") == 0) {
         _symbolNames += msg.substr(8, pos-7);
         setmsg(msg.substr(pos + 1));
     } else {
-        _shortMessage = replaceStr(msg.substr(0, pos), "$symbol", symbolName);
+        mShortMessage = replaceStr(msg.substr(0, pos), "$symbol", symbolName);
         _verboseMessage = replaceStr(msg.substr(pos + 1), "$symbol", symbolName);
     }
 }
@@ -237,7 +237,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
         oss << inconclusive.length() << " " << inconclusive;
     }
 
-    const std::string saneShortMessage = fixInvalidChars(_shortMessage);
+    const std::string saneShortMessage = fixInvalidChars(mShortMessage);
     const std::string saneVerboseMessage = fixInvalidChars(_verboseMessage);
 
     oss << saneShortMessage.length() << " " << saneShortMessage;
@@ -289,7 +289,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     _severity = Severity::fromString(results[1]);
     std::istringstream scwe(results[2]);
     scwe >> _cwe.id;
-    _shortMessage = results[3];
+    mShortMessage = results[3];
     _verboseMessage = results[4];
 
     unsigned int stackSize = 0;
@@ -389,7 +389,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     printer.OpenElement("error", false);
     printer.PushAttribute("id", _id.c_str());
     printer.PushAttribute("severity", Severity::toString(_severity).c_str());
-    printer.PushAttribute("msg", fixInvalidChars(_shortMessage).c_str());
+    printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
     if (_cwe.id)
         printer.PushAttribute("cwe", _cwe.id);
@@ -465,7 +465,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                 text << ", inconclusive";
             text << ") ";
         }
-        text << (verbose ? _verboseMessage : _shortMessage);
+        text << (verbose ? _verboseMessage : mShortMessage);
         return text.str();
     }
 
@@ -487,7 +487,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         findAndReplace(result, replaceFrom, replaceWith);
     }
     findAndReplace(result, "{severity}", Severity::toString(_severity));
-    findAndReplace(result, "{message}", verbose ? _verboseMessage : _shortMessage);
+    findAndReplace(result, "{message}", verbose ? _verboseMessage : mShortMessage);
     findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
     if (!_callStack.empty()) {
         findAndReplace(result, "{file}", _callStack.back().getfile());
@@ -523,7 +523,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
             findAndReplace(text, "{file}", fileLocation.getfile());
             findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
             findAndReplace(text, "{column}", MathLib::toString(fileLocation.col));
-            findAndReplace(text, "{info}", fileLocation.getinfo().empty() ? _shortMessage : fileLocation.getinfo());
+            findAndReplace(text, "{info}", fileLocation.getinfo().empty() ? mShortMessage : fileLocation.getinfo());
             if (text.find("{code}") != std::string::npos) {
                 const std::string::size_type pos = text.find("\r");
                 const char *endl;

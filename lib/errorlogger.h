@@ -282,7 +282,7 @@ public:
 
         /** Short message (single line short message) */
         const std::string &shortMessage() const {
-            return _shortMessage;
+            return mShortMessage;
         }
 
         /** Verbose message (may be the same as the short message) */
@@ -310,7 +310,7 @@ public:
         static std::string fixInvalidChars(const std::string& raw);
 
         /** Short message */
-        std::string _shortMessage;
+        std::string mShortMessage;
 
         /** Verbose message */
         std::string _verboseMessage;
