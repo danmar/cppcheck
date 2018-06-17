@@ -67,9 +67,9 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
 void AnalyzerInformation::close()
 {
     analyzerInfoFile.clear();
-    if (fout.is_open()) {
-        fout << "</analyzerinfo>\n";
-        fout.close();
+    if (mOutputStream.is_open()) {
+        mOutputStream << "</analyzerinfo>\n";
+        mOutputStream.close();
     }
 }
 
@@ -137,10 +137,10 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
     if (skipAnalysis(analyzerInfoFile, checksum, errors))
         return false;
 
-    fout.open(analyzerInfoFile);
-    if (fout.is_open()) {
-        fout << "<?xml version=\"1.0\"?>\n";
-        fout << "<analyzerinfo checksum=\"" << checksum << "\">\n";
+    mOutputStream.open(analyzerInfoFile);
+    if (mOutputStream.is_open()) {
+        mOutputStream << "<?xml version=\"1.0\"?>\n";
+        mOutputStream << "<analyzerinfo checksum=\"" << checksum << "\">\n";
     } else {
         analyzerInfoFile.clear();
     }
@@ -150,12 +150,12 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
 
 void AnalyzerInformation::reportErr(const ErrorLogger::ErrorMessage &msg, bool /*verbose*/)
 {
-    if (fout.is_open())
-        fout << msg.toXML() << '\n';
+    if (mOutputStream.is_open())
+        mOutputStream << msg.toXML() << '\n';
 }
 
 void AnalyzerInformation::setFileInfo(const std::string &check, const std::string &fileInfo)
 {
-    if (fout.is_open() && !fileInfo.empty())
-        fout << "  <FileInfo check=\"" << check << "\">\n" << fileInfo << "  </FileInfo>\n";
+    if (mOutputStream.is_open() && !fileInfo.empty())
+        mOutputStream << "  <FileInfo check=\"" << check << "\">\n" << fileInfo << "  </FileInfo>\n";
 }
