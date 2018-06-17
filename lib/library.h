@@ -464,10 +464,10 @@ private:
         CodeBlock() : _offset(0) {}
 
         void setStart(const char* s) {
-            _start = s;
+            mStart = s;
         }
         void setEnd(const char* e) {
-            _end = e;
+            mEnd = e;
         }
         void setOffset(const int o) {
             _offset = o;
@@ -476,10 +476,10 @@ private:
             _blocks.insert(blockName);
         }
         const std::string& start() const {
-            return _start;
+            return mStart;
         }
         const std::string& end() const {
-            return _end;
+            return mEnd;
         }
         int offset() const {
             return _offset;
@@ -489,8 +489,8 @@ private:
         }
 
     private:
-        std::string _start;
-        std::string _end;
+        std::string mStart;
+        std::string mEnd;
         int _offset;
         std::set<std::string> _blocks;
     };
