@@ -54,7 +54,7 @@ static TimerResults S_timerResults;
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), exitcode(0), mUseGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), mSimplify(true)
+    : mErrorLogger(errorLogger), mExitCode(0), mUseGlobalSuppressions(useGlobalSuppressions), tooManyConfigs(false), mSimplify(true)
 {
 }
 
@@ -107,14 +107,14 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
-    exitcode = 0;
+    mExitCode = 0;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
         mSettings.debugwarnings = false;
 
     if (mSettings.terminated())
-        return exitcode;
+        return mExitCode;
 
     if (!mSettings.quiet) {
         std::string fixedpath = Path::simplifyPath(filename);
@@ -250,7 +250,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     reportErr(errors.front());
                     errors.pop_front();
                 }
-                return exitcode;  // known results => no need to reanalyze file
+                return mExitCode;  // known results => no need to reanalyze file
             }
         }
 
@@ -482,7 +482,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         internalError(filename, e.what());
     } catch (const InternalError &e) {
         internalError(filename, e.errorMessage);
-        exitcode=1; // e.g. reflect a syntax error
+        mExitCode=1; // e.g. reflect a syntax error
     }
 
     mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
@@ -495,10 +495,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     mErrorList.clear();
-    if (internalErrorFound && (exitcode==0)) {
-        exitcode=1;
+    if (internalErrorFound && (mExitCode==0)) {
+        mExitCode = 1;
     }
-    return exitcode;
+    return mExitCode;
 }
 
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
@@ -770,7 +770,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     }
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && (mUseGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))
-        exitcode = 1;
+        mExitCode = 1;
 
     mErrorList.push_back(errmsg);
 
@@ -830,7 +830,7 @@ bool CppCheck::analyseWholeProgram()
     // Analyse the tokens
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
         errors |= (*it)->analyseWholeProgram(mFileInfo, mSettings, *this);
-    return errors && (exitcode > 0);
+    return errors && (mExitCode > 0);
 }
 
 void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)

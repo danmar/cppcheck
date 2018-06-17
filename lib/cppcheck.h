@@ -213,7 +213,7 @@ private:
     /** @brief Current preprocessor configuration */
     std::string mCurrentConfig;
 
-    unsigned int exitcode;
+    unsigned int mExitCode;
 
     bool mUseGlobalSuppressions;
 
