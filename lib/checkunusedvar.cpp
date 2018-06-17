@@ -99,13 +99,13 @@ public:
     public:
         ScopeGuard(Variables & guarded,
                    bool insideLoop)
-            :_guarded(guarded),
-             _insideLoop(insideLoop) {
-            _guarded.enterScope();
+            :mGuarded(guarded),
+             mInsideLoop(insideLoop) {
+            mGuarded.enterScope();
         }
 
         ~ScopeGuard() {
-            _guarded.leaveScope(_insideLoop);
+            mGuarded.leaveScope(mInsideLoop);
         }
 
     private:
@@ -113,15 +113,15 @@ public:
         ScopeGuard();
         ScopeGuard& operator=(const ScopeGuard &);
 
-        Variables & _guarded;
-        bool _insideLoop;
+        Variables & mGuarded;
+        bool mInsideLoop;
     };
 
     void clear() {
-        _varUsage.clear();
+        mVarUsage.clear();
     }
     const std::map<unsigned int, VariableUsage> &varUsage() const {
-        return _varUsage;
+        return mVarUsage;
     }
     void addVar(const Variable *var, VariableType type, bool write_);
     void allocateMemory(unsigned int varid, const Token* tok);
@@ -136,7 +136,7 @@ public:
     VariableUsage *find(unsigned int varid);
     void alias(unsigned int varid1, unsigned int varid2, bool replace);
     void erase(unsigned int varid) {
-        _varUsage.erase(varid);
+        mVarUsage.erase(varid);
     }
     void eraseAliases(unsigned int varid);
     void eraseAll(unsigned int varid);
@@ -150,9 +150,9 @@ private:
     void enterScope();
     void leaveScope(bool insideLoop);
 
-    std::map<unsigned int, VariableUsage> _varUsage;
-    std::list<std::set<unsigned int> > _varAddedInScope;
-    std::list<std::set<unsigned int> > _varReadInScope;
+    std::map<unsigned int, VariableUsage> mVarUsage;
+    std::list<std::set<unsigned int> > mVarAddedInScope;
+    std::list<std::set<unsigned int> > mVarReadInScope;
 };
 
 
@@ -173,7 +173,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
 
     // alias to self
     if (varid1 == varid2) {
-        var1->use(_varReadInScope);
+        var1->use(mVarReadInScope);
         return;
     }
 
@@ -201,7 +201,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     var1->_aliases.insert(varid2);
 
     if (var2->mType == Variables::pointer) {
-        _varReadInScope.back().insert(varid2);
+        mVarReadInScope.back().insert(varid2);
         var2->_read = true;
     }
 }
@@ -247,8 +247,8 @@ void Variables::addVar(const Variable *var,
                        bool write_)
 {
     if (var->declarationId() > 0) {
-        _varAddedInScope.back().insert(var->declarationId());
-        _varUsage.insert(std::make_pair(var->declarationId(), VariableUsage(var, type, false, write_, false)));
+        mVarAddedInScope.back().insert(var->declarationId());
+        mVarUsage.insert(std::make_pair(var->declarationId(), VariableUsage(var, type, false, write_, false)));
     }
 }
 
@@ -267,7 +267,7 @@ void Variables::read(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        _varReadInScope.back().insert(varid);
+        mVarReadInScope.back().insert(varid);
         usage->_read = true;
         if (tok)
             usage->_lastAccess = tok;
@@ -283,7 +283,7 @@ void Variables::readAliases(unsigned int varid, const Token* tok)
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
-                _varReadInScope.back().insert(*aliases);
+                mVarReadInScope.back().insert(*aliases);
                 aliased->_read = true;
                 aliased->_lastAccess = tok;
             }
@@ -336,14 +336,14 @@ void Variables::use(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        usage->use(_varReadInScope);
+        usage->use(mVarReadInScope);
         usage->_lastAccess = tok;
 
         for (std::set<unsigned int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
-                aliased->use(_varReadInScope);
+                aliased->use(mVarReadInScope);
                 aliased->_lastAccess = tok;
             }
         }
@@ -374,8 +374,8 @@ void Variables::modified(unsigned int varid, const Token* tok)
 Variables::VariableUsage *Variables::find(unsigned int varid)
 {
     if (varid) {
-        std::map<unsigned int, VariableUsage>::iterator i = _varUsage.find(varid);
-        if (i != _varUsage.end())
+        std::map<unsigned int, VariableUsage>::iterator i = mVarUsage.find(varid);
+        if (i != mVarUsage.end())
             return &i->second;
     }
     return nullptr;
@@ -383,15 +383,15 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
 
 void Variables::enterScope()
 {
-    _varAddedInScope.emplace_back();
-    _varReadInScope.emplace_back();
+    mVarAddedInScope.emplace_back();
+    mVarReadInScope.emplace_back();
 }
 
 void Variables::leaveScope(bool insideLoop)
 {
     if (insideLoop) {
         // read variables are read again in subsequent run through loop
-        std::set<unsigned int> const & currentVarReadInScope = _varReadInScope.back();
+        std::set<unsigned int> const & currentVarReadInScope = mVarReadInScope.back();
         for (std::set<unsigned int>::const_iterator readIter = currentVarReadInScope.begin();
              readIter != currentVarReadInScope.end();
              ++readIter) {
@@ -399,13 +399,13 @@ void Variables::leaveScope(bool insideLoop)
         }
     }
 
-    std::list<std::set<unsigned int> >::reverse_iterator reverseReadIter = _varReadInScope.rbegin();
+    std::list<std::set<unsigned int> >::reverse_iterator reverseReadIter = mVarReadInScope.rbegin();
     ++reverseReadIter;
-    if (reverseReadIter != _varReadInScope.rend()) {
+    if (reverseReadIter != mVarReadInScope.rend()) {
         // Transfer read variables into previous scope
 
-        std::set<unsigned int> const & currentVarAddedInScope = _varAddedInScope.back();
-        std::set<unsigned int>  & currentVarReadInScope = _varReadInScope.back();
+        std::set<unsigned int> const & currentVarAddedInScope = mVarAddedInScope.back();
+        std::set<unsigned int>  & currentVarReadInScope = mVarReadInScope.back();
         for (std::set<unsigned int>::const_iterator addedIter = currentVarAddedInScope.begin();
              addedIter != currentVarAddedInScope.end();
              ++addedIter) {
@@ -415,8 +415,8 @@ void Variables::leaveScope(bool insideLoop)
         previousVarReadInScope.insert(currentVarReadInScope.begin(),
                                       currentVarReadInScope.end());
     }
-    _varReadInScope.pop_back();
-    _varAddedInScope.pop_back();
+    mVarReadInScope.pop_back();
+    mVarAddedInScope.pop_back();
 }
 
 static const Token* doAssignment(Variables &variables, const Token *tok, bool dereference, const Scope *scope)
