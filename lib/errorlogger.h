@@ -287,7 +287,7 @@ public:
 
         /** Verbose message (may be the same as the short message) */
         const std::string &verboseMessage() const {
-            return _verboseMessage;
+            return mVerboseMessage;
         }
 
         /** Symbol names */
@@ -313,7 +313,7 @@ public:
         std::string mShortMessage;
 
         /** Verbose message */
-        std::string _verboseMessage;
+        std::string mVerboseMessage;
 
         /** symbol names */
         std::string _symbolNames;

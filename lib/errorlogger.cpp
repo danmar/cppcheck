@@ -159,7 +159,7 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
     mShortMessage = attr ? attr : "";
 
     attr = errmsg->Attribute("verbose");
-    _verboseMessage = attr ? attr : "";
+    mVerboseMessage = attr ? attr : "";
 
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(),"location")==0) {
@@ -188,7 +188,7 @@ static std::string replaceStr(std::string s, const std::string &from, const std:
 void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
 {
     // If a message ends to a '\n' and contains only a one '\n'
-    // it will cause the _verboseMessage to be empty which will show
+    // it will cause the mVerboseMessage to be empty which will show
     // as an empty message to the user if --verbose is used.
     // Even this doesn't cause problems with messages that have multiple
     // lines, none of the the error messages should end into it.
@@ -201,13 +201,13 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     const std::string symbolName = _symbolNames.empty() ? std::string() : _symbolNames.substr(0, _symbolNames.find('\n'));
     if (pos == std::string::npos) {
         mShortMessage = replaceStr(msg, "$symbol", symbolName);
-        _verboseMessage = replaceStr(msg, "$symbol", symbolName);
+        mVerboseMessage = replaceStr(msg, "$symbol", symbolName);
     } else if (msg.compare(0,8,"$symbol:") == 0) {
         _symbolNames += msg.substr(8, pos-7);
         setmsg(msg.substr(pos + 1));
     } else {
         mShortMessage = replaceStr(msg.substr(0, pos), "$symbol", symbolName);
-        _verboseMessage = replaceStr(msg.substr(pos + 1), "$symbol", symbolName);
+        mVerboseMessage = replaceStr(msg.substr(pos + 1), "$symbol", symbolName);
     }
 }
 
@@ -238,7 +238,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     }
 
     const std::string saneShortMessage = fixInvalidChars(mShortMessage);
-    const std::string saneVerboseMessage = fixInvalidChars(_verboseMessage);
+    const std::string saneVerboseMessage = fixInvalidChars(mVerboseMessage);
 
     oss << saneShortMessage.length() << " " << saneShortMessage;
     oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
@@ -290,7 +290,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     std::istringstream scwe(results[2]);
     scwe >> _cwe.id;
     mShortMessage = results[3];
-    _verboseMessage = results[4];
+    mVerboseMessage = results[4];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -390,7 +390,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     printer.PushAttribute("id", _id.c_str());
     printer.PushAttribute("severity", Severity::toString(_severity).c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
-    printer.PushAttribute("verbose", fixInvalidChars(_verboseMessage).c_str());
+    printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
     if (_cwe.id)
         printer.PushAttribute("cwe", _cwe.id);
     if (_inconclusive)
@@ -465,7 +465,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                 text << ", inconclusive";
             text << ") ";
         }
-        text << (verbose ? _verboseMessage : mShortMessage);
+        text << (verbose ? mVerboseMessage : mShortMessage);
         return text.str();
     }
 
@@ -487,7 +487,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         findAndReplace(result, replaceFrom, replaceWith);
     }
     findAndReplace(result, "{severity}", Severity::toString(_severity));
-    findAndReplace(result, "{message}", verbose ? _verboseMessage : mShortMessage);
+    findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
     if (!_callStack.empty()) {
         findAndReplace(result, "{file}", _callStack.back().getfile());
