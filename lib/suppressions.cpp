@@ -169,7 +169,7 @@ std::string Suppressions::addSuppression(const Suppressions::Suppression &suppre
     if (!isValidGlobPattern(suppression.fileName))
         return "Failed to add suppression. Invalid glob pattern '" + suppression.fileName + "'.";
 
-    _suppressions.push_back(suppression);
+    mSuppressions.push_back(suppression);
 
     return "";
 }
@@ -269,7 +269,7 @@ std::string Suppressions::Suppression::getText() const
 bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    for (std::list<Suppression>::iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+    for (std::list<Suppression>::iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
         Suppression &s = *it;
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
             continue;
@@ -282,7 +282,7 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
 bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    for (std::list<Suppression>::iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+    for (std::list<Suppression>::iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
         Suppression &s = *it;
         if (!s.isLocal())
             continue;
@@ -297,7 +297,7 @@ bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
 void Suppressions::dump(std::ostream & out)
 {
     out << "  <suppressions>" << std::endl;
-    for (const Suppression &suppression : _suppressions) {
+    for (const Suppression &suppression : mSuppressions) {
         out << "    <suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
         if (!suppression.fileName.empty())
@@ -316,7 +316,7 @@ void Suppressions::dump(std::ostream & out)
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
-    for (std::list<Suppression>::const_iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+    for (std::list<Suppression>::const_iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
         const Suppression &s = *it;
         if (s.matched)
             continue;
@@ -332,7 +332,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
-    for (std::list<Suppression>::const_iterator it = _suppressions.begin(); it != _suppressions.end(); ++it) {
+    for (std::list<Suppression>::const_iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
         const Suppression &s = *it;
         if (s.matched)
             continue;

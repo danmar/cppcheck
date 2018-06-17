@@ -165,7 +165,7 @@ public:
     static bool matchglob(const std::string &pattern, const std::string &name);
 private:
     /** @brief List of error which the user doesn't want to see. */
-    std::list<Suppression> _suppressions;
+    std::list<Suppression> mSuppressions;
 };
 
 /// @}
