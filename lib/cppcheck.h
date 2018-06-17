@@ -215,7 +215,7 @@ private:
 
     unsigned int exitcode;
 
-    bool _useGlobalSuppressions;
+    bool mUseGlobalSuppressions;
 
     /** Are there too many configs? */
     bool tooManyConfigs;
