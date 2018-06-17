@@ -198,12 +198,12 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // If there is no newline then both the summary and verbose messages
     // are the given message
     const std::string::size_type pos = msg.find('\n');
-    const std::string symbolName = _symbolNames.empty() ? std::string() : _symbolNames.substr(0, _symbolNames.find('\n'));
+    const std::string symbolName = mSymbolNames.empty() ? std::string() : mSymbolNames.substr(0, mSymbolNames.find('\n'));
     if (pos == std::string::npos) {
         mShortMessage = replaceStr(msg, "$symbol", symbolName);
         mVerboseMessage = replaceStr(msg, "$symbol", symbolName);
     } else if (msg.compare(0,8,"$symbol:") == 0) {
-        _symbolNames += msg.substr(8, pos-7);
+        mSymbolNames += msg.substr(8, pos-7);
         setmsg(msg.substr(pos + 1));
     } else {
         mShortMessage = replaceStr(msg.substr(0, pos), "$symbol", symbolName);
@@ -220,7 +220,7 @@ Suppressions::ErrorMessage ErrorLogger::ErrorMessage::toSuppressionsErrorMessage
         ret.lineNumber = _callStack.back().line;
     }
     ret.inconclusive = _inconclusive;
-    ret.symbolNames = _symbolNames;
+    ret.symbolNames = mSymbolNames;
     return ret;
 }
 
@@ -406,14 +406,14 @@ std::string ErrorLogger::ErrorMessage::toXML() const
             printer.PushAttribute("info", it->getinfo().c_str());
         printer.CloseElement(false);
     }
-    for (std::string::size_type pos = 0; pos < _symbolNames.size();) {
-        const std::string::size_type pos2 = _symbolNames.find('\n', pos);
+    for (std::string::size_type pos = 0; pos < mSymbolNames.size();) {
+        const std::string::size_type pos2 = mSymbolNames.find('\n', pos);
         std::string symbolName;
         if (pos2 == std::string::npos) {
-            symbolName = _symbolNames.substr(pos);
+            symbolName = mSymbolNames.substr(pos);
             pos = pos2;
         } else {
-            symbolName = _symbolNames.substr(pos, pos2-pos);
+            symbolName = mSymbolNames.substr(pos, pos2-pos);
             pos = pos2 + 1;
         }
         printer.OpenElement("symbol", false);

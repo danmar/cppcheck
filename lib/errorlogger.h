@@ -292,7 +292,7 @@ public:
 
         /** Symbol names */
         const std::string &symbolNames() const {
-            return _symbolNames;
+            return mSymbolNames;
         }
 
         Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
@@ -316,7 +316,7 @@ public:
         std::string mVerboseMessage;
 
         /** symbol names */
-        std::string _symbolNames;
+        std::string mSymbolNames;
     };
 
     ErrorLogger() { }
