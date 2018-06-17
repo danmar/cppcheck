@@ -12,10 +12,13 @@ import sys
 import re
 
 RE_VARNAME = None
+RE_PRIVATE_MEMBER_VARIABLE = None
 RE_FUNCTIONNAME = None
 for arg in sys.argv[1:]:
     if arg[:6] == '--var=':
         RE_VARNAME = arg[6:]
+    elif arg.startswith('--private-member-variable='):
+        RE_PRIVATE_MEMBER_VARIABLE = arg[arg.find('=')+1:]
     elif arg[:11] == '--function=':
         RE_FUNCTIONNAME = arg[11:]
 
@@ -37,6 +40,14 @@ for arg in sys.argv[1:]:
                 res = re.match(RE_VARNAME, var.nameToken.str)
                 if not res:
                     reportError(var.typeStartToken, 'style', 'Variable ' +
+                                var.nameToken.str + ' violates naming convention')
+        if RE_PRIVATE_MEMBER_VARIABLE:
+            for var in cfg.variables:
+                if (var.access is None) or var.access != 'Private':
+                    continue
+                res = re.match(RE_PRIVATE_MEMBER_VARIABLE, var.nameToken.str)
+                if not res:
+                    reportError(var.typeStartToken, 'style', 'Private member variable ' +
                                 var.nameToken.str + ' violates naming convention')
         if RE_FUNCTIONNAME:
             for scope in cfg.scopes:

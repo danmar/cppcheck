@@ -359,6 +359,7 @@ class Variable:
         nameToken       name token in variable declaration
         typeStartToken  start token of variable declaration
         typeEndToken    end token of variable declaration
+        access          Global/Local/Namespace/Public/Protected/Public/Throw/Argument
         isArgument      Is this variable a function argument?
         isArray         Is this variable an array?
         isClass         Is this variable a class or struct?
@@ -378,6 +379,7 @@ class Variable:
     typeStartToken = None
     typeEndTokenId = None
     typeEndToken = None
+    access = None
     isArgument = False
     isArray = False
     isClass = False
@@ -397,6 +399,7 @@ class Variable:
         self.typeStartToken = None
         self.typeEndTokenId = element.get('typeEndToken')
         self.typeEndToken = None
+        self.access = element.get('access')
         self.isArgument = element.get('isArgument') == 'true'
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
