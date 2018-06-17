@@ -211,7 +211,7 @@ private:
     ErrorLogger &mErrorLogger;
 
     /** @brief Current preprocessor configuration */
-    std::string cfg;
+    std::string mCurrentConfig;
 
     unsigned int exitcode;
 

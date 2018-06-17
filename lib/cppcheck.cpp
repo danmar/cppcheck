@@ -61,8 +61,8 @@ CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
 CppCheck::~CppCheck()
 {
     while (!mFileInfo.empty()) {
-        delete fileInfo.back();
-        fileInfo.pop_back();
+        delete mFileInfo.back();
+        mFileInfo.pop_back();
     }
     S_timerResults.ShowResults(mSettings.showtime);
 }
@@ -315,17 +315,17 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (!mSettings.force && ++checkCount > mSettings.maxConfigs)
                 break;
 
-            cfg = *it;
+            mCurrentConfig = *it;
 
             if (!mSettings.userDefines.empty()) {
-                if (!cfg.empty())
-                    cfg = ";" + cfg;
-                cfg = mSettings.userDefines + cfg;
+                if (!mCurrentConfig.empty())
+                    mCurrentConfig = ";" + mCurrentConfig;
+                mCurrentConfig = mSettings.userDefines + mCurrentConfig;
             }
 
             if (mSettings.preprocessOnly) {
                 Timer t("Preprocessor::getcode", mSettings.showtime, &S_timerResults);
-                std::string codeWithoutCfg = preprocessor.getcode(tokens1, cfg, files, true);
+                std::string codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
                 t.Stop();
 
                 if (codeWithoutCfg.compare(0,5,"#file") == 0)
@@ -352,16 +352,16 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Create tokens, skip rest of iteration if failed
                 Timer timer("Tokenizer::createTokens", mSettings.showtime, &S_timerResults);
-                const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, cfg, files, true);
+                const simplecpp::TokenList &tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
                 mTokenizer.createTokens(&tokensP);
                 timer.Stop();
                 hasValidConfig = true;
 
                 // If only errors are printed, print filename after the check
-                if (!mSettings.quiet && (!cfg.empty() || it != configurations.begin())) {
+                if (!mSettings.quiet && (!mCurrentConfig.empty() || it != configurations.begin())) {
                     std::string fixedpath = Path::simplifyPath(filename);
                     fixedpath = Path::toNativeSeparators(fixedpath);
-                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + cfg + "...");
+                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...");
                 }
 
                 if (tokensP.empty())
@@ -376,14 +376,14 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
                 Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &S_timerResults);
-                result = mTokenizer.simplifyTokens1(cfg);
+                result = mTokenizer.simplifyTokens1(mCurrentConfig);
                 timer2.Stop();
                 if (!result)
                     continue;
 
                 // dump xml if --dump
                 if (mSettings.dump && fdump.is_open()) {
-                    fdump << "<dump cfg=\"" << ErrorLogger::toxml(cfg) << "\">" << std::endl;
+                    fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
                     preprocessor.dump(fdump);
                     mTokenizer.dump(fdump);
                     fdump << "</dump>" << std::endl;
@@ -394,7 +394,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     const unsigned long long checksum = mTokenizer.list.calculateChecksum();
                     if (checksums.find(checksum) != checksums.end()) {
                         if (mSettings.isEnabled(Settings::INFORMATION) && (mSettings.debug || mSettings.verbose))
-                            purgedConfigurationMessage(filename, cfg);
+                            purgedConfigurationMessage(filename, mCurrentConfig);
                         continue;
                     }
                     checksums.insert(checksum);
@@ -422,7 +422,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
-                configurationError.push_back((cfg.empty() ? "\'\'" : cfg) + " : [" + o.location.file() + ':' + MathLib::toString(o.location.line) + "] " + o.msg);
+                configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + MathLib::toString(o.location.line) + "] " + o.msg);
                 --checkCount; // don't count invalid configurations
                 continue;
 
