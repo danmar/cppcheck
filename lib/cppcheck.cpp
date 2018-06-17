@@ -245,7 +245,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             // Calculate checksum so it can be compared with old checksum / future checksums
             const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
             std::list<ErrorLogger::ErrorMessage> errors;
-            if (!analyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, checksum, &errors)) {
+            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, checksum, &errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
                     errors.pop_front();
@@ -485,8 +485,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         exitcode=1; // e.g. reflect a syntax error
     }
 
-    analyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
-    analyzerInformation.close();
+    mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", checkUnusedFunctions.analyzerInfo());
+    mAnalyzerInformation.close();
 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
@@ -556,7 +556,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         Check::FileInfo *fi = (*it)->getFileInfo(&tokenizer, &mSettings);
         if (fi != nullptr) {
             fileInfo.push_back(fi);
-            analyzerInformation.setFileInfo((*it)->name(), fi->toString());
+            mAnalyzerInformation.setFileInfo((*it)->name(), fi->toString());
         }
     }
 
@@ -775,7 +775,7 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     mErrorList.push_back(errmsg);
 
     mErrorLogger.reportErr(msg);
-    analyzerInformation.reportErr(msg, mSettings.verbose);
+    mAnalyzerInformation.reportErr(msg, mSettings.verbose);
     if (!mSettings.plistOutput.empty() && plistFile.is_open()) {
         plistFile << ErrorLogger::plistData(msg);
     }
