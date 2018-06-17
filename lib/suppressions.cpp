@@ -184,8 +184,8 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
     if (comment.size() < 2)
         return false;
 
-    if (comment.find(";") != std::string::npos)
-        comment.erase(comment.find(";"));
+    if (comment.find(';') != std::string::npos)
+        comment.erase(comment.find(';'));
 
     if (comment.find("//", 2) != std::string::npos)
         comment.erase(comment.find("//",2));
