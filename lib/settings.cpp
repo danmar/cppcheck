@@ -23,7 +23,7 @@
 bool Settings::_terminated;
 
 Settings::Settings()
-    : _enabled(0),
+    : mEnabled(0),
       debug(false),
       debugnormal(false),
       debugwarnings(false),
@@ -72,25 +72,25 @@ std::string Settings::addEnabled(const std::string &str)
     }
 
     if (str == "all") {
-        _enabled |= WARNING | STYLE | PERFORMANCE | PORTABILITY | INFORMATION | UNUSED_FUNCTION | MISSING_INCLUDE;
+        mEnabled |= WARNING | STYLE | PERFORMANCE | PORTABILITY | INFORMATION | UNUSED_FUNCTION | MISSING_INCLUDE;
     } else if (str == "warning") {
-        _enabled |= WARNING;
+        mEnabled |= WARNING;
     } else if (str == "style") {
-        _enabled |= STYLE;
+        mEnabled |= STYLE;
     } else if (str == "performance") {
-        _enabled |= PERFORMANCE;
+        mEnabled |= PERFORMANCE;
     } else if (str == "portability") {
-        _enabled |= PORTABILITY;
+        mEnabled |= PORTABILITY;
     } else if (str == "information") {
-        _enabled |= INFORMATION | MISSING_INCLUDE;
+        mEnabled |= INFORMATION | MISSING_INCLUDE;
     } else if (str == "unusedFunction") {
-        _enabled |= UNUSED_FUNCTION;
+        mEnabled |= UNUSED_FUNCTION;
     } else if (str == "missingInclude") {
-        _enabled |= MISSING_INCLUDE;
+        mEnabled |= MISSING_INCLUDE;
     }
 #ifdef CHECK_INTERNAL
     else if (str == "internal") {
-        _enabled |= INTERNAL;
+        mEnabled |= INTERNAL;
     }
 #endif
     else {

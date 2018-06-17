@@ -62,7 +62,7 @@ public:
 
 private:
     /** @brief enable extra checks by id */
-    int _enabled;
+    int mEnabled;
 
     /** @brief terminate checking */
     static bool _terminated;
@@ -185,7 +185,7 @@ public:
      * @return true if the check is enabled.
      */
     bool isEnabled(EnabledGroup group) const {
-        return (_enabled & group) == group;
+        return (mEnabled & group) == group;
     }
 
     /**
@@ -212,7 +212,7 @@ public:
      * @brief Disables all severities, except from error.
      */
     void clearEnabled() {
-        _enabled = 0;
+        mEnabled = 0;
     }
 
     enum Language {
