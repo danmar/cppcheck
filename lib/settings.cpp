@@ -20,7 +20,7 @@
 
 #include "valueflow.h"
 
-bool Settings::_terminated;
+bool Settings::mTerminated;
 
 Settings::Settings()
     : mEnabled(0),

@@ -65,7 +65,7 @@ private:
     int mEnabled;
 
     /** @brief terminate checking */
-    static bool _terminated;
+    static bool mTerminated;
 
 public:
     Settings();
@@ -116,12 +116,12 @@ public:
 
     /** @brief Request termination of checking */
     static void terminate(bool t = true) {
-        Settings::_terminated = t;
+        Settings::mTerminated = t;
     }
 
     /** @brief termination requested? */
     static bool terminated() {
-        return Settings::_terminated;
+        return Settings::mTerminated;
     }
 
     /** @brief Force checking the files with "too many" configurations (--force). */
