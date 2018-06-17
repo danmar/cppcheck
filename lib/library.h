@@ -443,20 +443,20 @@ private:
     class ExportedFunctions {
     public:
         void addPrefix(const std::string& prefix) {
-            _prefixes.insert(prefix);
+            mPrefixes.insert(prefix);
         }
         void addSuffix(const std::string& suffix) {
             _suffixes.insert(suffix);
         }
         bool isPrefix(const std::string& prefix) const {
-            return (_prefixes.find(prefix) != _prefixes.end());
+            return (mPrefixes.find(prefix) != mPrefixes.end());
         }
         bool isSuffix(const std::string& suffix) const {
             return (_suffixes.find(suffix) != _suffixes.end());
         }
 
     private:
-        std::set<std::string> _prefixes;
+        std::set<std::string> mPrefixes;
         std::set<std::string> _suffixes;
     };
     class CodeBlock {
