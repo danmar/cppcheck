@@ -176,7 +176,7 @@ std::string Suppressions::addSuppression(const Suppressions::Suppression &suppre
 
 void Suppressions::ErrorMessage::setFileName(const std::string &s)
 {
-    _fileName = Path::simplifyPath(s);
+    mFileName = Path::simplifyPath(s);
 }
 
 bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)

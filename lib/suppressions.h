@@ -38,13 +38,13 @@ public:
         std::string errorId;
         void setFileName(const std::string &s);
         const std::string &getFileName() const {
-            return _fileName;
+            return mFileName;
         }
         int lineNumber;
         bool inconclusive;
         std::string symbolNames;
     private:
-        std::string _fileName;
+        std::string mFileName;
     };
 
     struct CPPCHECKLIB Suppression {
