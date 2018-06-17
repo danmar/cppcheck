@@ -212,7 +212,7 @@ private:
     /** list of all directives met while preprocessing file */
     std::list<Directive> mDirectives;
 
-    std::map<std::string, simplecpp::TokenList *> tokenlists;
+    std::map<std::string, simplecpp::TokenList *> mTokenLists;
 
     /** filename for cpp/c file - useful when reporting errors */
     std::string file0;

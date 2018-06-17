@@ -63,7 +63,7 @@ Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSett
 
 Preprocessor::~Preprocessor()
 {
-    for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it)
+    for (std::map<std::string, simplecpp::TokenList *>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it)
         delete it->second;
 }
 
@@ -122,7 +122,7 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
         return;
     std::list<BadInlineSuppression> err;
     ::inlineSuppressions(tokens, mSettings, &err);
-    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (it->second)
             ::inlineSuppressions(*it->second, mSettings, &err);
     }
@@ -137,9 +137,9 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
     mDirectives.clear();
 
     std::vector<const simplecpp::TokenList *> list;
-    list.reserve(1U + tokenlists.size());
+    list.reserve(1U + mTokenLists.size());
     list.push_back(&tokens);
-    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         list.push_back(it->second);
     }
 
@@ -432,7 +432,7 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 
     ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
 
-    for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (!mSettings.configurationExcluded(it->first))
             ::getConfigs(*(it->second), defined, mSettings.userDefines, mSettings.userUndefs, ret);
     }
@@ -577,12 +577,12 @@ void Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
 {
     const simplecpp::DUI dui = createDUI(mSettings, emptyString, files[0]);
 
-    tokenlists = simplecpp::load(rawtokens, files, dui, nullptr);
+    mTokenLists = simplecpp::load(rawtokens, files, dui, nullptr);
 }
 
 void Preprocessor::removeComments()
 {
-    for (std::map<std::string, simplecpp::TokenList*>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList*>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (it->second)
             it->second->removeComments();
     }
@@ -615,7 +615,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
     simplecpp::TokenList tokens2(files);
-    simplecpp::preprocess(tokens2, tokens1, files, tokenlists, dui, &outputList, &macroUsage);
+    simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage);
 
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
     reportOutput(outputList, showerror);
@@ -908,7 +908,7 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
         if (!tok->comment)
             ostr << tok->str();
     }
-    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
             if (!tok->comment)
                 ostr << tok->str();
@@ -920,7 +920,7 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-    for (std::map<std::string, simplecpp::TokenList *>::iterator it = tokenlists.begin(); it != tokenlists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList *>::iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         Preprocessor::simplifyPragmaAsmPrivate(it->second);
     }
 }
