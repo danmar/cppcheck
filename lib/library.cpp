@@ -178,7 +178,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         temp.arg = atoi(arg);
                     else
                         temp.arg = -1;
-                    _alloc[memorynode->GetText()] = temp;
+                    mAlloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
                     AllocFunc temp;
                     temp.groupId = allocationId;
@@ -825,7 +825,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
 const Library::AllocFunc* Library::alloc(const Token *tok) const
 {
     const std::string funcname = getFunctionName(tok);
-    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(_alloc, funcname);
+    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
 }
 
 /** get deallocation info for function */

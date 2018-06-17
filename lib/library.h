@@ -89,7 +89,7 @@ public:
 
     /** get allocation info for function by name (deprecated, use other alloc) */
     const AllocFunc* alloc(const char name[]) const {
-        return getAllocDealloc(_alloc, name);
+        return getAllocDealloc(mAlloc, name);
     }
 
     /** get deallocation info for function by name (deprecated, use other alloc) */
@@ -99,7 +99,7 @@ public:
 
     /** get allocation id for function by name (deprecated, use other alloc) */
     int allocId(const char name[]) const {
-        const AllocFunc* af = getAllocDealloc(_alloc, name);
+        const AllocFunc* af = getAllocDealloc(mAlloc, name);
         return af ? af->groupId : 0;
     }
 
@@ -111,8 +111,8 @@ public:
 
     /** set allocation id for function */
     void setalloc(const std::string &functionname, int id, int arg) {
-        _alloc[functionname].groupId = id;
-        _alloc[functionname].arg = arg;
+        mAlloc[functionname].groupId = id;
+        mAlloc[functionname].arg = arg;
     }
 
     void setdealloc(const std::string &functionname, int id, int arg) {
@@ -496,7 +496,7 @@ private:
     };
     int allocid;
     std::set<std::string> mFiles;
-    std::map<std::string, AllocFunc> _alloc; // allocation functions
+    std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> _dealloc; // deallocation functions
     std::map<std::string, bool> _noreturn; // is function noreturn?
     std::map<std::string, std::string> _returnValue;
