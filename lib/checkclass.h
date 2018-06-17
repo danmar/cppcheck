@@ -46,7 +46,7 @@ class Token;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), symbolDatabase(nullptr) {
+    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {
     }
 
     /** @brief This constructor is used when running checks. */
@@ -161,7 +161,7 @@ public:
     void checkOverride();
 
 private:
-    const SymbolDatabase *symbolDatabase;
+    const SymbolDatabase *mSymbolDatabase;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);

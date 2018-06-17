@@ -69,7 +69,7 @@ static const char * getFunctionTypeName(Function::Type type)
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : Check(myName(), tokenizer, settings, errorLogger),
-      symbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
+      mSymbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
 {
 
 }
@@ -86,10 +86,10 @@ void CheckClass::constructors()
         return;
 
     const bool printInconclusive = mSettings->inconclusive;
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         bool usedInUnion = false;
-        for (const Scope &unionScope : symbolDatabase->scopeList) {
+        for (const Scope &unionScope : mSymbolDatabase->scopeList) {
             if (unionScope.type != Scope::eUnion)
                 continue;
             for (const Variable &var : unionScope.varlist) {
@@ -235,7 +235,7 @@ void CheckClass::checkExplicitConstructors()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         // Do not perform check, if the class/struct has not any constructors
         if (scope->numConstructors == 0)
             continue;
@@ -304,7 +304,7 @@ void CheckClass::copyconstructors()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         std::map<unsigned int, const Token*> allocatedVars;
 
         for (const Function &func : scope->functionList) {
@@ -917,7 +917,7 @@ void CheckClass::initializationListUsage()
     if (!mSettings->isEnabled(Settings::PERFORMANCE))
         return;
 
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    for (const Scope *scope : mSymbolDatabase->functionScopes) {
         // Check every constructor
         if (!scope->function || (!scope->function->isConstructor()))
             continue;
@@ -1030,7 +1030,7 @@ void CheckClass::privateFunctions()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // do not check borland classes with properties..
         if (Token::findsimplematch(scope->bodyStart, "; __property ;", scope->bodyEnd))
@@ -1096,7 +1096,7 @@ static const Scope* findFunctionOf(const Scope* scope)
 void CheckClass::checkMemset()
 {
     const bool printWarnings = mSettings->isEnabled(Settings::WARNING);
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    for (const Scope *scope : mSymbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|memcpy|memmove (")) {
                 const Token* arg1 = tok->tokAt(2);
@@ -1290,7 +1290,7 @@ void CheckClass::operatorEq()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->access == Public) {
                 // skip "deleted" functions - cannot be called anyway
@@ -1343,7 +1343,7 @@ void CheckClass::operatorEqRetRefThis()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure return signature is correct
@@ -1474,7 +1474,7 @@ void CheckClass::operatorEqToSelf()
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         // skip classes with multiple inheritance
         if (scope->definedType->derivedFrom.size() > 1)
             continue;
@@ -1598,7 +1598,7 @@ void CheckClass::virtualDestructor()
 
     std::list<const Function *> inconclusiveErrors;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // Skip base classes (unless inconclusive)
         if (scope->definedType->derivedFrom.empty()) {
@@ -1648,7 +1648,7 @@ void CheckClass::virtualDestructor()
                     // pointer variables of type 'Base *'
                     std::set<unsigned int> baseClassPointers;
 
-                    for (const Variable* var : symbolDatabase->variableList()) {
+                    for (const Variable* var : mSymbolDatabase->variableList()) {
                         if (var && var->isPointer() && var->type() == derivedFrom)
                             baseClassPointers.insert(var->declarationId());
                     }
@@ -1774,7 +1774,7 @@ void CheckClass::checkConst()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             // does the function have a body?
             if (func->type != Function::eFunction || !func->hasBody())
@@ -1876,7 +1876,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
         if (var->name() == tok->str()) {
             if (tok->varId() == 0)
-                symbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+                mSymbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
 
             return !var->isStatic();
         }
@@ -2157,7 +2157,7 @@ void CheckClass::initializerListOrder()
     if (!mSettings->inconclusive)
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
@@ -2219,7 +2219,7 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
 
 void CheckClass::checkSelfInitialization()
 {
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    for (const Scope *scope : mSymbolDatabase->functionScopes) {
         const Function* function = scope->function;
         if (!function || !function->isConstructor())
             continue;
@@ -2251,7 +2251,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
     if (! mSettings->isEnabled(Settings::WARNING))
         return;
     std::map<const Function *, std::list<const Token *> > virtualFunctionCallsMap;
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    for (const Scope *scope : mSymbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody() ||
             !(scope->function->isConstructor() ||
               scope->function->isDestructor()))
@@ -2414,8 +2414,8 @@ void CheckClass::checkDuplInheritedMembers()
         return;
 
     // Iterate over all classes
-    for (std::list<Type>::const_iterator classIt = symbolDatabase->typeList.begin();
-         classIt != symbolDatabase->typeList.end();
+    for (std::list<Type>::const_iterator classIt = mSymbolDatabase->typeList.begin();
+         classIt != mSymbolDatabase->typeList.end();
          ++classIt) {
         // Iterate over the parent classes
         for (std::vector<Type::BaseInfo>::const_iterator parentClassIt = classIt->derivedFrom.begin();
@@ -2473,7 +2473,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         bool hasNonStaticVars = false;
         for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
@@ -2538,7 +2538,7 @@ void CheckClass::checkUnsafeClassDivZero(bool test)
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    for (const Scope * classScope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
         if (!test && classScope->classDef->fileIndex() != 1)
             continue;
         for (const Function &func : classScope->functionList) {
@@ -2580,7 +2580,7 @@ void CheckClass::checkOverride()
         return;
     if (mSettings->standards.cpp < Standards::CPP11)
         return;
-    for (const Scope * classScope : symbolDatabase->classAndStructScopes) {
+    for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
         if (!classScope->definedType || classScope->definedType->derivedFrom.empty())
             continue;
         for (const Function &func : classScope->functionList) {
