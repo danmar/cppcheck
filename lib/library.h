@@ -473,7 +473,7 @@ private:
             mOffset = o;
         }
         void addBlock(const char* blockName) {
-            _blocks.insert(blockName);
+            mBlocks.insert(blockName);
         }
         const std::string& start() const {
             return mStart;
@@ -485,14 +485,14 @@ private:
             return mOffset;
         }
         bool isBlock(const std::string& blockName) const {
-            return _blocks.find(blockName) != _blocks.end();
+            return mBlocks.find(blockName) != mBlocks.end();
         }
 
     private:
         std::string mStart;
         std::string mEnd;
         int mOffset;
-        std::set<std::string> _blocks;
+        std::set<std::string> mBlocks;
     };
     int allocid;
     std::set<std::string> mFiles;
