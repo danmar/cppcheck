@@ -785,13 +785,12 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
         if (defineIt->find('=') != std::string::npos)
             continue;
         const std::string macroName(defineIt->substr(0, defineIt->find('(')));
-        for (std::list<simplecpp::MacroUsage>::const_iterator usageIt = macroUsageList.begin(); usageIt != macroUsageList.end(); ++usageIt) {
-            const simplecpp::MacroUsage &mu = *usageIt;
+        for (const simplecpp::MacroUsage &mu : macroUsageList) {
             if (mu.macroName != macroName)
                 continue;
             bool directiveLocation = false;
-            for (std::list<Directive>::const_iterator dirIt = directives.begin(); dirIt != directives.end(); ++dirIt) {
-                if (mu.useLocation.file() == dirIt->file && mu.useLocation.line == dirIt->linenr) {
+            for (const Directive &dir : directives) {
+                if (mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr) {
                     directiveLocation = true;
                     break;
                 }
