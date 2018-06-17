@@ -192,7 +192,7 @@ public:
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
     void setFile0(const std::string &f) {
-        file0 = f;
+        mFile0 = f;
     }
 
     /**
@@ -215,7 +215,7 @@ private:
     std::map<std::string, simplecpp::TokenList *> mTokenLists;
 
     /** filename for cpp/c file - useful when reporting errors */
-    std::string file0;
+    std::string mFile0;
 };
 
 /// @}

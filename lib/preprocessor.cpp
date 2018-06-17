@@ -492,8 +492,8 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 {
     (void)includePaths;
 
-    if (file0.empty())
-        file0 = filename;
+    if (mFile0.empty())
+        mFile0 = filename;
 
     simplecpp::OutputList outputList;
     std::vector<std::string> files;
@@ -732,7 +732,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         locationList.push_back(loc);
     }
     mErrorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
-                            file0,
+                            mFile0,
                             Severity::error,
                             msg,
                             "preprocessorErrorDirective",
@@ -766,7 +766,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
             loc.setfile(Path::toNativeSeparators(filename));
             locationList.push_back(loc);
         }
-        ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information,
+        ErrorLogger::ErrorMessage errmsg(locationList, mFile0, Severity::information,
                                          (headerType==SystemHeader) ?
                                          "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                                          "Include file: \"" + header + "\" not found.",
@@ -812,7 +812,7 @@ void Preprocessor::validateCfgError(const std::string &file, const unsigned int 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     const ErrorLogger::ErrorMessage::FileLocation loc(file, line);
     locationList.push_back(loc);
-    const ErrorLogger::ErrorMessage errmsg(locationList, file0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
+    const ErrorLogger::ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
     mErrorLogger->reportInfo(errmsg);
 }
 
