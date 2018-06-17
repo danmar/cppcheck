@@ -93,7 +93,7 @@ public:
 
     /** list of all directives met while preprocessing file */
     const std::list<Directive> &getDirectives() const {
-        return directives;
+        return mDirectives;
     }
 
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
@@ -210,7 +210,7 @@ private:
     ErrorLogger *mErrorLogger;
 
     /** list of all directives met while preprocessing file */
-    std::list<Directive> directives;
+    std::list<Directive> mDirectives;
 
     std::map<std::string, simplecpp::TokenList *> tokenlists;
 

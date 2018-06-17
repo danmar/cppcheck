@@ -134,7 +134,7 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
 void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
 {
     // directive list..
-    directives.clear();
+    mDirectives.clear();
 
     std::vector<const simplecpp::TokenList *> list;
     list.reserve(1U + tokenlists.size());
@@ -160,7 +160,7 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
                 else
                     directive.str += tok2->str();
             }
-            directives.push_back(directive);
+            mDirectives.push_back(directive);
         }
     }
 }
@@ -789,7 +789,7 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
             if (mu.macroName != macroName)
                 continue;
             bool directiveLocation = false;
-            for (const Directive &dir : directives) {
+            for (const Directive &dir : mDirectives) {
                 if (mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr) {
                     directiveLocation = true;
                     break;
@@ -834,13 +834,13 @@ void Preprocessor::dump(std::ostream &out) const
     // data dump that 3rd party tools could load and get useful info from.
     out << "  <directivelist>" << std::endl;
 
-    for (std::list<Directive>::const_iterator it = directives.begin(); it != directives.end(); ++it) {
+    for (const Directive &dir : mDirectives) {
         out << "    <directive "
-            << "file=\"" << ErrorLogger::toxml(it->file) << "\" "
-            << "linenr=\"" << it->linenr << "\" "
+            << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
+            << "linenr=\"" << dir.linenr << "\" "
             // str might contain characters such as '"', '<' or '>' which
             // could result in invalid XML, so run it through toxml().
-            << "str=\"" << ErrorLogger::toxml(it->str) << "\"/>" << std::endl;
+            << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
     }
     out << "  </directivelist>" << std::endl;
 }
