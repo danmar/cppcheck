@@ -34,22 +34,22 @@
 namespace {
     class FindToken {
     public:
-        explicit FindToken(const Token *t) : token(t) {}
-        bool operator()(const TemplateSimplifier::TokenAndName &t) const {
-            return t.token == token;
+        explicit FindToken(const Token *token) : mToken(token) {}
+        bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
+            return tokenAndName.token == mToken;
         }
     private:
-        const Token * const token;
+        const Token * const mToken;
     };
 
     class FindName {
     public:
-        explicit FindName(const std::string &s) : name(s) {}
-        bool operator()(const TemplateSimplifier::TokenAndName &t) const {
-            return t.name == name;
+        explicit FindName(const std::string &name) : mName(name) {}
+        bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
+            return tokenAndName.name == mName;
         }
     private:
-        const std::string name;
+        const std::string mName;
     };
 }
 
