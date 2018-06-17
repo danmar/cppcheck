@@ -4747,17 +4747,15 @@ namespace {
     const std::set<std::string> c_keywords = { C_KEYWORDS };
     const std::set<std::string> cpp_keywords = {
         C_KEYWORDS,
-        "alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor", "bool",
-        "break", "case", "catch", "char", "class", "compl",
-        "concept", "const", "constexpr", "const_cast", "continue", "decltype", "default",
-        "delete", "do", "double", "dynamic_cast", "else", "enum", "explicit", "export",
-        "extern", "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
+        "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch", "class", "compl",
+        "concept", "constexpr", "const_cast", "decltype",
+        "delete", "dynamic_cast", "explicit", "export", "false", "friend",
         "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator",
-        "or", "or_eq", "private", "protected", "public", "register", "reinterpret_cast",
-        "requires", "return", "short", "signed", "sizeof", "static", "static_assert",
-        "static_cast", "struct", "switch", "template", "this", "thread_local", "throw",
-        "true", "try", "typedef", "typeid", "typename", "union", "unsigned", "using",
-        "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
+        "or", "or_eq", "private", "protected", "public", "reinterpret_cast",
+        "requires", "static_assert",
+        "static_cast", "template", "this", "thread_local", "throw",
+        "true", "try", "typeid", "typename", "using",
+        "virtual", "wchar_t", "xor", "xor_eq"
     };
 }
 
