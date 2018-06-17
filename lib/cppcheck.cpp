@@ -60,7 +60,7 @@ CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
 
 CppCheck::~CppCheck()
 {
-    while (!fileInfo.empty()) {
+    while (!mFileInfo.empty()) {
         delete fileInfo.back();
         fileInfo.pop_back();
     }
@@ -555,7 +555,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
         Check::FileInfo *fi = (*it)->getFileInfo(&tokenizer, &mSettings);
         if (fi != nullptr) {
-            fileInfo.push_back(fi);
+            mFileInfo.push_back(fi);
             mAnalyzerInformation.setFileInfo((*it)->name(), fi->toString());
         }
     }
@@ -829,7 +829,7 @@ bool CppCheck::analyseWholeProgram()
     bool errors = false;
     // Analyse the tokens
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-        errors |= (*it)->analyseWholeProgram(fileInfo, mSettings, *this);
+        errors |= (*it)->analyseWholeProgram(mFileInfo, mSettings, *this);
     return errors && (exitcode > 0);
 }
 

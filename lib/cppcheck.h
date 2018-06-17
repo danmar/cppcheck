@@ -224,7 +224,7 @@ private:
     bool _simplify;
 
     /** File info used for whole program analysis */
-    std::list<Check::FileInfo*> fileInfo;
+    std::list<Check::FileInfo*> mFileInfo;
 
     AnalyzerInformation mAnalyzerInformation;
 };
