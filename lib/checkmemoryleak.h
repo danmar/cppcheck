@@ -52,16 +52,15 @@ class Variable;
 
 /** @brief Base class for memory leaks checking */
 class CPPCHECKLIB CheckMemoryLeak {
-protected:
-    /** For access to the tokens */
-    const Tokenizer * const tokenizer;
-
 private:
+    /** For access to the tokens */
+    const Tokenizer * const mTokenizer_;
+
     /** ErrorLogger used to report errors */
-    ErrorLogger * const errorLogger;
+    ErrorLogger * const mErrorLogger_;
 
     /** Enabled standards */
-    const Settings * const settings1;
+    const Settings * const mSettings_;
 
     /**
      * Report error. Similar with the function Check::reportError
@@ -89,7 +88,7 @@ public:
     void operator=(const CheckMemoryLeak &) = delete;
 
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e, const Settings *s)
-        : tokenizer(t), errorLogger(e), settings1(s) {
+        : mTokenizer_(t), mErrorLogger_(e), mSettings_(s) {
     }
 
     /** @brief What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
