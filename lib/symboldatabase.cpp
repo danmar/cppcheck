@@ -4854,7 +4854,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         if (vt1)
             setValueType(parent, *vt1);
         else if (mIsCpp && ((Token::Match(parent->tokAt(-3), "%var% ; %var% =") && parent->strAt(-3) == parent->strAt(-1)) ||
-                         Token::Match(parent->tokAt(-1), "%var% ="))) {
+                            Token::Match(parent->tokAt(-1), "%var% ="))) {
             Token *var1Tok = parent->strAt(-2) == ";" ? parent->tokAt(-3) : parent->tokAt(-1);
             Token *autoTok = nullptr;
             if (Token::Match(var1Tok->tokAt(-2), ";|{|}|(|const auto"))
