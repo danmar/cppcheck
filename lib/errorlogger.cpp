@@ -583,33 +583,33 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), _file(tokenList->file(tok))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mFileName(tokenList->file(tok))
 {
 }
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), _file(tokenList->file(tok)), _info(info)
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mFileName(tokenList->file(tok)), mInfo(info)
 {
 }
 
 std::string ErrorLogger::ErrorMessage::FileLocation::getfile(bool convert) const
 {
     if (convert)
-        return Path::toNativeSeparators(_file);
-    return _file;
+        return Path::toNativeSeparators(mFileName);
+    return mFileName;
 }
 
 void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)
 {
-    _file = file;
-    _file = Path::fromNativeSeparators(_file);
-    _file = Path::simplifyPath(_file);
+    mFileName = file;
+    mFileName = Path::fromNativeSeparators(mFileName);
+    mFileName = Path::simplifyPath(mFileName);
 }
 
 std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const
 {
     std::ostringstream oss;
-    oss << '[' << Path::toNativeSeparators(_file);
+    oss << '[' << Path::toNativeSeparators(mFileName);
     if (line != 0)
         oss << ':' << line;
     oss << ']';

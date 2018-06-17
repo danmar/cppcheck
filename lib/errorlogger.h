@@ -193,11 +193,11 @@ public:
             }
 
             FileLocation(const std::string &file, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), _file(file) {
+                : fileIndex(0), line(aline), col(0), mFileName(file) {
             }
 
             FileLocation(const std::string &file, const std::string &info, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), _file(file), _info(info) {
+                : fileIndex(0), line(aline), col(0), mFileName(file), mInfo(info) {
             }
 
             FileLocation(const Token* tok, const TokenList* tokenList);
@@ -226,15 +226,15 @@ public:
             unsigned int col;
 
             std::string getinfo() const {
-                return _info;
+                return mInfo;
             }
             void setinfo(const std::string &i) {
-                _info = i;
+                mInfo = i;
             }
 
         private:
-            std::string _file;
-            std::string _info;
+            std::string mFileName;
+            std::string mInfo;
         };
 
         ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive);
