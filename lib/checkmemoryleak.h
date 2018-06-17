@@ -63,15 +63,6 @@ private:
     /** Enabled standards */
     const Settings * const settings1;
 
-    /** Disable the default constructors */
-    CheckMemoryLeak();
-
-    /** Disable the default constructors */
-    CheckMemoryLeak(const CheckMemoryLeak &);
-
-    /** disable assignment operator */
-    void operator=(const CheckMemoryLeak &);
-
     /**
      * Report error. Similar with the function Check::reportError
      * @param tok the token where the error occurs
@@ -93,6 +84,10 @@ private:
     void reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const;
 
 public:
+    CheckMemoryLeak() = delete;
+    CheckMemoryLeak(const CheckMemoryLeak &) = delete;
+    void operator=(const CheckMemoryLeak &) = delete;
+
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e, const Settings *s)
         : tokenizer(t), errorLogger(e), settings1(s) {
     }
