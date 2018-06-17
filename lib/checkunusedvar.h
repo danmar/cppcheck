@@ -112,9 +112,9 @@ private:
                "- unused struct member\n";
     }
 
-    std::map<const Type *,bool> isRecordTypeWithoutSideEffectsMap;
+    std::map<const Type *,bool> mIsRecordTypeWithoutSideEffectsMap;
 
-    std::map<const Type *,bool> isEmptyTypeMap;
+    std::map<const Type *,bool> mIsEmptyTypeMap;
 
 };
 /// @}
