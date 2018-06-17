@@ -507,7 +507,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             return Error(DUPLICATE_PLATFORM_TYPE, type_name);
                         return Error(PLATFORM_TYPE_REDEFINED, type_name);
                     }
-                    mPlatforms[*it]._platform_types[type_name] = type;
+                    mPlatforms[*it].mPlatformTypes[type_name] = type;
                 }
             }
         }

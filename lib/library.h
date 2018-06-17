@@ -411,10 +411,10 @@ public:
 
     struct Platform {
         const PlatformType *platform_type(const std::string &name) const {
-            const std::map<std::string, struct PlatformType>::const_iterator it = _platform_types.find(name);
-            return (it != _platform_types.end()) ? &(it->second) : nullptr;
+            const std::map<std::string, struct PlatformType>::const_iterator it = mPlatformTypes.find(name);
+            return (it != mPlatformTypes.end()) ? &(it->second) : nullptr;
         }
-        std::map<std::string, PlatformType> _platform_types;
+        std::map<std::string, PlatformType> mPlatformTypes;
     };
 
     const PlatformType *platform_type(const std::string &name, const std::string & platform) const {
