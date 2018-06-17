@@ -5773,8 +5773,8 @@ private:
             Settings settingsWin64;
             settingsWin64.platformType = Settings::Win64;
             const Library::PodType u32 = { 4, 'u' };
-            settingsWin64.library.podtypes["u32"] = u32;
-            settingsWin64.library.podtypes["xyz::x"] = u32;
+            settingsWin64.library.mPodTypes["u32"] = u32;
+            settingsWin64.library.mPodTypes["xyz::x"] = u32;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
             ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", &settingsWin64));
@@ -5789,7 +5789,7 @@ private:
             settingsUnix32.platformType = Settings::Unix32;
             Library::PlatformType s32;
             s32.mType = "int";
-            settingsUnix32.library.platforms[settingsUnix32.platformString()]._platform_types["s32"] = s32;
+            settingsUnix32.library.mPlatforms[settingsUnix32.platformString()]._platform_types["s32"] = s32;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);

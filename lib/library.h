@@ -375,8 +375,8 @@ public:
         char           sign;
     };
     const struct PodType *podtype(const std::string &name) const {
-        const std::map<std::string, struct PodType>::const_iterator it = podtypes.find(name);
-        return (it != podtypes.end()) ? &(it->second) : nullptr;
+        const std::map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);
+        return (it != mPodTypes.end()) ? &(it->second) : nullptr;
     }
 
     struct PlatformType {
@@ -418,15 +418,15 @@ public:
     };
 
     const PlatformType *platform_type(const std::string &name, const std::string & platform) const {
-        const std::map<std::string, Platform>::const_iterator it = platforms.find(platform);
-        if (it != platforms.end()) {
+        const std::map<std::string, Platform>::const_iterator it = mPlatforms.find(platform);
+        if (it != mPlatforms.end()) {
             const PlatformType * const type = it->second.platform_type(name);
             if (type)
                 return type;
         }
 
-        const std::map<std::string, PlatformType>::const_iterator it2 = platform_types.find(name);
-        return (it2 != platform_types.end()) ? &(it2->second) : nullptr;
+        const std::map<std::string, PlatformType>::const_iterator it2 = mPlatformTypes.find(name);
+        return (it2 != mPlatformTypes.end()) ? &(it2->second) : nullptr;
     }
 
     /**
@@ -494,7 +494,7 @@ private:
         int mOffset;
         std::set<std::string> mBlocks;
     };
-    int allocid;
+    int mAllocId;
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
@@ -510,9 +510,9 @@ private:
     std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::set<std::string> > mImporters; // keywords that import variables/functions
     std::map<std::string, int> mReflection; // invocation of reflection
-    std::map<std::string, struct PodType> podtypes; // pod types
-    std::map<std::string, PlatformType> platform_types; // platform independent typedefs
-    std::map<std::string, Platform> platforms; // platform dependent typedefs
+    std::map<std::string, struct PodType> mPodTypes; // pod types
+    std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
+    std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 

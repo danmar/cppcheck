@@ -43,7 +43,7 @@ static std::vector<std::string> getnames(const char *names)
     return ret;
 }
 
-Library::Library() : allocid(0)
+Library::Library() : mAllocId(0)
 {
 }
 
@@ -157,10 +157,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
             if (allocationId == 0) {
                 if (nodename == "memory")
-                    while (!ismemory(++allocid));
+                    while (!ismemory(++mAllocId));
                 else
-                    while (!isresource(++allocid));
-                allocationId = allocid;
+                    while (!isresource(++mAllocId));
+                allocationId = mAllocId;
             }
 
             // add alloc/dealloc/use functions..
@@ -455,7 +455,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 podType.sign = *sign;
             const std::vector<std::string> names(getnames(name));
             for (unsigned int i = 0U; i < names.size(); ++i)
-                podtypes[names[i]] = podType;
+                mPodTypes[names[i]] = podType;
         }
 
         else if (nodename == "platformtype") {
@@ -497,7 +497,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         return Error(DUPLICATE_PLATFORM_TYPE, type_name);
                     return Error(PLATFORM_TYPE_REDEFINED, type_name);
                 }
-                platform_types[type_name] = type;
+                mPlatformTypes[type_name] = type;
             } else {
                 std::set<std::string>::const_iterator it;
                 for (it = platform.begin(); it != platform.end(); ++it) {
@@ -507,7 +507,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             return Error(DUPLICATE_PLATFORM_TYPE, type_name);
                         return Error(PLATFORM_TYPE_REDEFINED, type_name);
                     }
-                    platforms[*it]._platform_types[type_name] = type;
+                    mPlatforms[*it]._platform_types[type_name] = type;
                 }
             }
         }
