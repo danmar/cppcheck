@@ -4,7 +4,7 @@
 LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg) :
     QDialog(parent),
     mUi(new Ui::LibraryEditArgDialog),
-    minsizes(arg.minsizes)
+    mMinSizes(arg.minsizes)
 {
     mUi->setupUi(this);
     mUi->notbool->setChecked(arg.notbool);
@@ -27,10 +27,10 @@ LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibrar
     mUi->minsize1type->clear();
     mUi->minsize1type->addItems(items);
     if (arg.minsizes.count() >= 1) {
-        mUi->minsize1type->setCurrentIndex(items.indexOf(minsizes[0].type));
-        mUi->minsize1arg->setValue(minsizes[0].arg.toInt());
+        mUi->minsize1type->setCurrentIndex(items.indexOf(mMinSizes[0].type));
+        mUi->minsize1arg->setValue(mMinSizes[0].arg.toInt());
         if (arg.minsizes[0].type == "mul")
-            mUi->minsize1arg2->setValue(minsizes[0].arg2.toInt());
+            mUi->minsize1arg2->setValue(mMinSizes[0].arg2.toInt());
         else
             mUi->minsize1arg2->setValue(0);
     } else {
@@ -42,10 +42,10 @@ LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibrar
     mUi->minsize2type->clear();
     mUi->minsize2type->addItems(items);
     if (arg.minsizes.count() >= 2) {
-        mUi->minsize2type->setCurrentIndex(items.indexOf(minsizes[1].type));
-        mUi->minsize2arg->setValue(minsizes[1].arg.toInt());
+        mUi->minsize2type->setCurrentIndex(items.indexOf(mMinSizes[1].type));
+        mUi->minsize2arg->setValue(mMinSizes[1].arg.toInt());
         if (arg.minsizes[1].type == "mul")
-            mUi->minsize2arg2->setValue(minsizes[1].arg2.toInt());
+            mUi->minsize2arg2->setValue(mMinSizes[1].arg2.toInt());
         else
             mUi->minsize2arg2->setValue(0);
     } else {
