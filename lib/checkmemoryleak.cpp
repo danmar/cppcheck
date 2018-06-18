@@ -2136,9 +2136,8 @@ static bool isNoArgument(const SymbolDatabase* symbolDatabase, unsigned int vari
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
     // only check functions
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
 
         // Search for the "var = realloc(var, 100" pattern within this function
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -2200,6 +2199,8 @@ static bool isInMemberFunc(const Scope* scope)
 
 void CheckMemoryLeakInFunction::check()
 {
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+
     // Check locking/unlocking of global resources..
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->hasInlineOrLambdaFunction())
