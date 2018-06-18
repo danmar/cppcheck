@@ -47,7 +47,7 @@ public:
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),
     mUi(new Ui::LibraryDialog),
-    ignoreChanges(false)
+    mIgnoreChanges(false)
 {
     mUi->setupUi(this);
     mUi->buttonSave->setEnabled(false);
@@ -112,22 +112,22 @@ void LibraryDialog::openCfg()
         return;
     }
 
-    ignoreChanges = true;
-    data.swap(tempdata);
+    mIgnoreChanges = true;
+    mData.swap(tempdata);
     mFileName = selectedFile;
     mUi->buttonSave->setEnabled(false);
     mUi->buttonSaveAs->setEnabled(true);
     mUi->filter->clear();
     mUi->functions->clear();
-    for (CppcheckLibraryData::Function &function : data.functions) {
+    for (CppcheckLibraryData::Function &function : mData.functions) {
         mUi->functions->addItem(new FunctionListItem(mUi->functions,
                                &function,
                                false));
     }
-    mUi->sortFunctions->setEnabled(!data.functions.empty());
-    mUi->filter->setEnabled(!data.functions.empty());
+    mUi->sortFunctions->setEnabled(!mData.functions.empty());
+    mUi->filter->setEnabled(!mData.functions.empty());
     mUi->addFunction->setEnabled(true);
-    ignoreChanges = false;
+    mIgnoreChanges = false;
 }
 
 void LibraryDialog::saveCfg()
@@ -137,7 +137,7 @@ void LibraryDialog::saveCfg()
     QFile file(mFileName);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream ts(&file);
-        ts << data.toString() << '\n';
+        ts << mData.toString() << '\n';
         mUi->buttonSave->setEnabled(false);
     } else {
         QMessageBox msg(QMessageBox::Critical,
@@ -181,18 +181,18 @@ void LibraryDialog::addFunction()
             arg.nr = i;
             f.args.append(arg);
         }
-        data.functions.append(f);
-        mUi->functions->addItem(new FunctionListItem(mUi->functions, &data.functions.back(), false));
+        mData.functions.append(f);
+        mUi->functions->addItem(new FunctionListItem(mUi->functions, &mData.functions.back(), false));
         mUi->buttonSave->setEnabled(true);
-        mUi->sortFunctions->setEnabled(!data.functions.empty());
-        mUi->filter->setEnabled(!data.functions.empty());
+        mUi->sortFunctions->setEnabled(!mData.functions.empty());
+        mUi->filter->setEnabled(!mData.functions.empty());
     }
     delete d;
 }
 
 void LibraryDialog::editFunctionName(QListWidgetItem* item)
 {
-    if (ignoreChanges)
+    if (mIgnoreChanges)
         return;
     QString functionName = item->text();
     CppcheckLibraryData::Function * const function = dynamic_cast<FunctionListItem*>(item)->function;
@@ -201,9 +201,9 @@ void LibraryDialog::editFunctionName(QListWidgetItem* item)
             function->name = functionName;
             mUi->buttonSave->setEnabled(true);
         } else {
-            ignoreChanges = true;
+            mIgnoreChanges = true;
             item->setText(function->name);
-            ignoreChanges = false;
+            mIgnoreChanges = false;
         }
     }
 }
@@ -232,7 +232,7 @@ void LibraryDialog::selectFunction()
         return;
     }
 
-    ignoreChanges = true;
+    mIgnoreChanges = true;
     mUi->comments->setPlainText(function->comments);
     mUi->comments->setEnabled(true);
 
@@ -249,7 +249,7 @@ void LibraryDialog::selectFunction()
     mUi->arguments->setEnabled(true);
 
     mUi->editArgButton->setEnabled(true);
-    ignoreChanges = false;
+    mIgnoreChanges = false;
 }
 
 void LibraryDialog::sortFunctions(bool sort)
@@ -257,17 +257,17 @@ void LibraryDialog::sortFunctions(bool sort)
     if (sort) {
         mUi->functions->sortItems();
     } else {
-        ignoreChanges = true;
+        mIgnoreChanges = true;
         CppcheckLibraryData::Function *selfunction = currentFunction();
         mUi->functions->clear();
-        for (CppcheckLibraryData::Function &function : data.functions) {
+        for (CppcheckLibraryData::Function &function : mData.functions) {
             mUi->functions->addItem(new FunctionListItem(mUi->functions,
                                    &function,
                                    selfunction == &function));
         }
         if (!mUi->filter->text().isEmpty())
             filterFunctions(mUi->filter->text());
-        ignoreChanges = false;
+        mIgnoreChanges = false;
     }
 }
 
@@ -288,7 +288,7 @@ void LibraryDialog::filterFunctions(QString filter)
 
 void LibraryDialog::changeFunction()
 {
-    if (ignoreChanges)
+    if (mIgnoreChanges)
         return;
 
     CppcheckLibraryData::Function *function = currentFunction();

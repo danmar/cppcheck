@@ -53,9 +53,9 @@ private slots:
 
 private:
     Ui::LibraryDialog *mUi;
-    CppcheckLibraryData data;
+    CppcheckLibraryData mData;
     QString mFileName;
-    bool ignoreChanges;
+    bool mIgnoreChanges;
 
     static QString getArgText(const CppcheckLibraryData::Function::Arg &arg);
     CppcheckLibraryData::Function *currentFunction();
