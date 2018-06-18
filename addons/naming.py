@@ -23,7 +23,11 @@ for arg in sys.argv[1:]:
         RE_FUNCTIONNAME = arg[11:]
 
 
+FoundError = False
+
 def reportError(token, severity, msg):
+    global FoundError
+    FoundError = True
     sys.stderr.write(
         '[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') naming.py: ' + msg + '\n')
 
@@ -56,3 +60,8 @@ for arg in sys.argv[1:]:
                     if not res:
                         reportError(
                             scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention')
+
+if FoundError:
+    print('FoundError')
+    sys.exit(1)
+
