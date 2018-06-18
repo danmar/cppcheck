@@ -838,7 +838,7 @@ public:
 
 #ifdef MAXTIME
     bool isMaxTime() const {
-        return (std::time(0) > maxtime);
+        return (std::time(0) > mMaxTime);
 #else
     static bool isMaxTime() {
         return false;
@@ -900,7 +900,7 @@ private:
 
 #ifdef MAXTIME
     /** Tokenizer maxtime */
-    std::time_t maxtime;
+    const std::time_t mMaxTime;
 #endif
 };
 

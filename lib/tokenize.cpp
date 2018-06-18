@@ -148,7 +148,7 @@ Tokenizer::Tokenizer() :
     mCodeWithTemplates(false), //is there any templates?
     mTimerResults(nullptr)
 #ifdef MAXTIME
-    ,maxtime(std::time(0) + MAXTIME)
+    ,mMaxTime(std::time(0) + MAXTIME)
 #endif
 {
 }
@@ -163,7 +163,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mCodeWithTemplates(false), //is there any templates?
     mTimerResults(nullptr)
 #ifdef MAXTIME
-    ,maxtime(std::time(0) + MAXTIME)
+    ,mMaxTime(std::time(0) + MAXTIME)
 #endif
 {
     // make sure settings are specified
@@ -2295,7 +2295,7 @@ void Tokenizer::simplifyTemplates()
         mErrorLogger,
         mSettings,
 #ifdef MAXTIME
-        maxtime,
+        mMaxTime,
 #else
         0, // ignored
 #endif
