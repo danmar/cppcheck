@@ -105,7 +105,7 @@ void SettingsDialog::initTranslationsList()
     foreach (TranslationInfo translation, translations) {
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(translation.mName);
-        item->setData(LangCodeRole, QVariant(translation.mCode));
+        item->setData(mLangCodeRole, QVariant(translation.mCode));
         mUI.mListLanguages->addItem(item);
         if (translation.mCode == current || translation.mCode == current.mid(0, 2))
             mUI.mListLanguages->setCurrentItem(item);
@@ -172,7 +172,7 @@ void SettingsDialog::saveSettingValues() const
 
     const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     if (currentLang) {
-        const QString langcode = currentLang->data(LangCodeRole).toString();
+        const QString langcode = currentLang->data(mLangCodeRole).toString();
         settings.setValue(SETTINGS_LANGUAGE, langcode);
     }
 }

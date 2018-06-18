@@ -211,7 +211,7 @@ protected:
     */
     Ui::Settings mUI;
 private:
-    static const int LangCodeRole = Qt::UserRole;
+    static const int mLangCodeRole = Qt::UserRole;
 };
 /// @}
 #endif // SETTINGSDIALOG_H
