@@ -46,15 +46,15 @@ public:
 
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::LibraryDialog),
+    mUi(new Ui::LibraryDialog),
     ignoreChanges(false)
 {
-    ui->setupUi(this);
-    ui->buttonSave->setEnabled(false);
-    ui->buttonSaveAs->setEnabled(false);
-    ui->sortFunctions->setEnabled(false);
-    ui->filter->setEnabled(false);
-    ui->addFunction->setEnabled(false);
+    mUi->setupUi(this);
+    mUi->buttonSave->setEnabled(false);
+    mUi->buttonSaveAs->setEnabled(false);
+    mUi->sortFunctions->setEnabled(false);
+    mUi->filter->setEnabled(false);
+    mUi->addFunction->setEnabled(false);
 
     //As no function selected, this disables function editing widgets
     selectFunction();
@@ -62,12 +62,12 @@ LibraryDialog::LibraryDialog(QWidget *parent) :
 
 LibraryDialog::~LibraryDialog()
 {
-    delete ui;
+    delete mUi;
 }
 
 CppcheckLibraryData::Function *LibraryDialog::currentFunction()
 {
-    QList<QListWidgetItem *> selitems = ui->functions->selectedItems();
+    QList<QListWidgetItem *> selitems = mUi->functions->selectedItems();
     if (selitems.count() != 1)
         return nullptr;
     return static_cast<FunctionListItem *>(selitems.first())->function;
@@ -115,18 +115,18 @@ void LibraryDialog::openCfg()
     ignoreChanges = true;
     data.swap(tempdata);
     mFileName = selectedFile;
-    ui->buttonSave->setEnabled(false);
-    ui->buttonSaveAs->setEnabled(true);
-    ui->filter->clear();
-    ui->functions->clear();
+    mUi->buttonSave->setEnabled(false);
+    mUi->buttonSaveAs->setEnabled(true);
+    mUi->filter->clear();
+    mUi->functions->clear();
     for (CppcheckLibraryData::Function &function : data.functions) {
-        ui->functions->addItem(new FunctionListItem(ui->functions,
+        mUi->functions->addItem(new FunctionListItem(mUi->functions,
                                &function,
                                false));
     }
-    ui->sortFunctions->setEnabled(!data.functions.empty());
-    ui->filter->setEnabled(!data.functions.empty());
-    ui->addFunction->setEnabled(true);
+    mUi->sortFunctions->setEnabled(!data.functions.empty());
+    mUi->filter->setEnabled(!data.functions.empty());
+    mUi->addFunction->setEnabled(true);
     ignoreChanges = false;
 }
 
@@ -138,7 +138,7 @@ void LibraryDialog::saveCfg()
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream ts(&file);
         ts << data.toString() << '\n';
-        ui->buttonSave->setEnabled(false);
+        mUi->buttonSave->setEnabled(false);
     } else {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
@@ -182,10 +182,10 @@ void LibraryDialog::addFunction()
             f.args.append(arg);
         }
         data.functions.append(f);
-        ui->functions->addItem(new FunctionListItem(ui->functions, &data.functions.back(), false));
-        ui->buttonSave->setEnabled(true);
-        ui->sortFunctions->setEnabled(!data.functions.empty());
-        ui->filter->setEnabled(!data.functions.empty());
+        mUi->functions->addItem(new FunctionListItem(mUi->functions, &data.functions.back(), false));
+        mUi->buttonSave->setEnabled(true);
+        mUi->sortFunctions->setEnabled(!data.functions.empty());
+        mUi->filter->setEnabled(!data.functions.empty());
     }
     delete d;
 }
@@ -199,7 +199,7 @@ void LibraryDialog::editFunctionName(QListWidgetItem* item)
     if (functionName != function->name) {
         if (QRegExp(NAMES).exactMatch(functionName)) {
             function->name = functionName;
-            ui->buttonSave->setEnabled(true);
+            mUi->buttonSave->setEnabled(true);
         } else {
             ignoreChanges = true;
             item->setText(function->name);
@@ -213,67 +213,67 @@ void LibraryDialog::selectFunction()
     const CppcheckLibraryData::Function * const function = currentFunction();
 
     if (function == nullptr) {
-        ui->comments->clear();
-        ui->comments->setEnabled(false);
+        mUi->comments->clear();
+        mUi->comments->setEnabled(false);
 
-        ui->noreturn->setCurrentIndex(0);
-        ui->noreturn->setEnabled(false);
+        mUi->noreturn->setCurrentIndex(0);
+        mUi->noreturn->setEnabled(false);
 
-        ui->useretval->setChecked(false);
-        ui->useretval->setEnabled(false);
+        mUi->useretval->setChecked(false);
+        mUi->useretval->setEnabled(false);
 
-        ui->leakignore->setChecked(false);
-        ui->leakignore->setEnabled(false);
+        mUi->leakignore->setChecked(false);
+        mUi->leakignore->setEnabled(false);
 
-        ui->arguments->clear();
-        ui->arguments->setEnabled(false);
+        mUi->arguments->clear();
+        mUi->arguments->setEnabled(false);
 
-        ui->editArgButton->setEnabled(false);
+        mUi->editArgButton->setEnabled(false);
         return;
     }
 
     ignoreChanges = true;
-    ui->comments->setPlainText(function->comments);
-    ui->comments->setEnabled(true);
+    mUi->comments->setPlainText(function->comments);
+    mUi->comments->setEnabled(true);
 
-    ui->noreturn->setCurrentIndex(function->noreturn);
-    ui->noreturn->setEnabled(true);
+    mUi->noreturn->setCurrentIndex(function->noreturn);
+    mUi->noreturn->setEnabled(true);
 
-    ui->useretval->setChecked(function->useretval);
-    ui->useretval->setEnabled(true);
+    mUi->useretval->setChecked(function->useretval);
+    mUi->useretval->setEnabled(true);
 
-    ui->leakignore->setChecked(function->leakignore);
-    ui->leakignore->setEnabled(true);
+    mUi->leakignore->setChecked(function->leakignore);
+    mUi->leakignore->setEnabled(true);
 
     updateArguments(*function);
-    ui->arguments->setEnabled(true);
+    mUi->arguments->setEnabled(true);
 
-    ui->editArgButton->setEnabled(true);
+    mUi->editArgButton->setEnabled(true);
     ignoreChanges = false;
 }
 
 void LibraryDialog::sortFunctions(bool sort)
 {
     if (sort) {
-        ui->functions->sortItems();
+        mUi->functions->sortItems();
     } else {
         ignoreChanges = true;
         CppcheckLibraryData::Function *selfunction = currentFunction();
-        ui->functions->clear();
+        mUi->functions->clear();
         for (CppcheckLibraryData::Function &function : data.functions) {
-            ui->functions->addItem(new FunctionListItem(ui->functions,
+            mUi->functions->addItem(new FunctionListItem(mUi->functions,
                                    &function,
                                    selfunction == &function));
         }
-        if (!ui->filter->text().isEmpty())
-            filterFunctions(ui->filter->text());
+        if (!mUi->filter->text().isEmpty())
+            filterFunctions(mUi->filter->text());
         ignoreChanges = false;
     }
 }
 
 void LibraryDialog::filterFunctions(QString filter)
 {
-    QList<QListWidgetItem *> allItems = ui->functions->findItems(QString(), Qt::MatchContains);
+    QList<QListWidgetItem *> allItems = mUi->functions->findItems(QString(), Qt::MatchContains);
 
     if (filter.isEmpty()) {
         foreach (QListWidgetItem *item, allItems) {
@@ -295,12 +295,12 @@ void LibraryDialog::changeFunction()
     if (!function)
         return;
 
-    function->comments   = ui->comments->toPlainText();
-    function->noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)ui->noreturn->currentIndex();
-    function->useretval  = ui->useretval->isChecked();
-    function->leakignore = ui->leakignore->isChecked();
+    function->comments   = mUi->comments->toPlainText();
+    function->noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)mUi->noreturn->currentIndex();
+    function->useretval  = mUi->useretval->isChecked();
+    function->leakignore = mUi->leakignore->isChecked();
 
-    ui->buttonSave->setEnabled(true);
+    mUi->buttonSave->setEnabled(true);
 }
 
 void LibraryDialog::editArg()
@@ -309,20 +309,20 @@ void LibraryDialog::editArg()
     if (!function)
         return;
 
-    if (ui->arguments->selectedItems().count() != 1)
+    if (mUi->arguments->selectedItems().count() != 1)
         return;
-    CppcheckLibraryData::Function::Arg &arg = function->args[ui->arguments->row(ui->arguments->selectedItems().first())];
+    CppcheckLibraryData::Function::Arg &arg = function->args[mUi->arguments->row(mUi->arguments->selectedItems().first())];
 
     LibraryEditArgDialog *d = new LibraryEditArgDialog(0, arg);
     if (d->exec() == QDialog::Accepted) {
         unsigned number = arg.nr;
         arg = d->getArg();
         arg.nr = number;
-        ui->arguments->selectedItems().first()->setText(getArgText(arg));
+        mUi->arguments->selectedItems().first()->setText(getArgText(arg));
     }
 
     delete d;
-    ui->buttonSave->setEnabled(true);
+    mUi->buttonSave->setEnabled(true);
 }
 
 QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
@@ -345,8 +345,8 @@ QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
 
 void LibraryDialog::updateArguments(const CppcheckLibraryData::Function &function)
 {
-    ui->arguments->clear();
+    mUi->arguments->clear();
     foreach (const CppcheckLibraryData::Function::Arg &arg, function.args) {
-        ui->arguments->addItem(getArgText(arg));
+        mUi->arguments->addItem(getArgText(arg));
     }
 }

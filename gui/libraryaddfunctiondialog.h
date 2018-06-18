@@ -24,7 +24,7 @@ public:
     int     numberOfArguments() const;
 
 private:
-    Ui::LibraryAddFunctionDialog *ui;
+    Ui::LibraryAddFunctionDialog *mUi;
 };
 
 #endif // LIBRARYADDFUNCTIONDIALOG_H

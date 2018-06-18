@@ -52,7 +52,7 @@ private slots:
     void sortFunctions(bool);
 
 private:
-    Ui::LibraryDialog *ui;
+    Ui::LibraryDialog *mUi;
     CppcheckLibraryData data;
     QString mFileName;
     bool ignoreChanges;

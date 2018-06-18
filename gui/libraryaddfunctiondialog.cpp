@@ -6,26 +6,26 @@
 
 LibraryAddFunctionDialog::LibraryAddFunctionDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::LibraryAddFunctionDialog)
+    mUi(new Ui::LibraryAddFunctionDialog)
 {
-    ui->setupUi(this);
+    mUi->setupUi(this);
     QRegExp rx(NAMES);
     QValidator *validator = new QRegExpValidator(rx, this);
-    ui->functionName->setValidator(validator);
+    mUi->functionName->setValidator(validator);
 }
 
 LibraryAddFunctionDialog::~LibraryAddFunctionDialog()
 {
-    delete ui;
+    delete mUi;
 }
 
 QString LibraryAddFunctionDialog::functionName() const
 {
-    return ui->functionName->text();
+    return mUi->functionName->text();
 }
 
 int LibraryAddFunctionDialog::numberOfArguments() const
 {
-    return ui->numberOfArguments->value();
+    return mUi->numberOfArguments->value();
 }
 
