@@ -121,8 +121,8 @@ void LibraryDialog::openCfg()
     mUi->functions->clear();
     for (CppcheckLibraryData::Function &function : mData.functions) {
         mUi->functions->addItem(new FunctionListItem(mUi->functions,
-                               &function,
-                               false));
+                                &function,
+                                false));
     }
     mUi->sortFunctions->setEnabled(!mData.functions.empty());
     mUi->filter->setEnabled(!mData.functions.empty());
@@ -262,8 +262,8 @@ void LibraryDialog::sortFunctions(bool sort)
         mUi->functions->clear();
         for (CppcheckLibraryData::Function &function : mData.functions) {
             mUi->functions->addItem(new FunctionListItem(mUi->functions,
-                                   &function,
-                                   selfunction == &function));
+                                    &function,
+                                    selfunction == &function));
         }
         if (!mUi->filter->text().isEmpty())
             filterFunctions(mUi->filter->text());
