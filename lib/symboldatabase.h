@@ -1065,9 +1065,6 @@ private:
 
 /** Value type */
 class CPPCHECKLIB ValueType {
-private:
-    // No assignment
-    ValueType &operator=(const ValueType &other);
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
@@ -1084,6 +1081,7 @@ public:
     ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
     ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
     ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
+    ValueType &operator=(const ValueType &other) = delete;
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
