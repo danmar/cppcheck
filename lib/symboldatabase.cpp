@@ -2995,6 +2995,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " nameToken=\""      << var->nameToken() << '\"';
         out << " typeStartToken=\"" << var->typeStartToken() << '\"';
         out << " typeEndToken=\""   << var->typeEndToken() << '\"';
+        out << " access=\""         << accessControlToString(var->mAccess) << '\"';
+        out << " scope=\""          << var->scope() << '\"';
         out << " isArgument=\""     << var->isArgument() << '\"';
         out << " isArray=\""        << var->isArray() << '\"';
         out << " isClass=\""        << var->isClass() << '\"';
@@ -3005,7 +3007,6 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
         out << " constness=\""      << var->constness() << '\"';
-        out << " access=\""         << accessControlToString(var->mAccess) << '\"';
         out << "/>" << std::endl;
     }
     out << "  </variables>" << std::endl;

@@ -356,10 +356,11 @@ class Variable:
     http://cppcheck.net/devinfo/doxyoutput/classVariable.html
 
     Attributes:
-        nameToken       name token in variable declaration
-        typeStartToken  start token of variable declaration
-        typeEndToken    end token of variable declaration
+        nameToken       Name token in variable declaration
+        typeStartToken  Start token of variable declaration
+        typeEndToken    End token of variable declaration
         access          Global/Local/Namespace/Public/Protected/Public/Throw/Argument
+        scope           Variable scope
         isArgument      Is this variable a function argument?
         isArray         Is this variable an array?
         isClass         Is this variable a class or struct?
@@ -380,6 +381,8 @@ class Variable:
     typeEndTokenId = None
     typeEndToken = None
     access = None
+    scopeId = None
+    scope = None
     isArgument = False
     isArray = False
     isClass = False
@@ -400,6 +403,8 @@ class Variable:
         self.typeEndTokenId = element.get('typeEndToken')
         self.typeEndToken = None
         self.access = element.get('access')
+        self.scopeId = element.get('scope')
+        self.scope = None
         self.isArgument = element.get('isArgument') == 'true'
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
@@ -417,6 +422,7 @@ class Variable:
         self.nameToken = IdMap[self.nameTokenId]
         self.typeStartToken = IdMap[self.typeStartTokenId]
         self.typeEndToken = IdMap[self.typeEndTokenId]
+        self.scope = IdMap[self.scopeId]
 
 
 class ValueFlow:
