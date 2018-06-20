@@ -3002,6 +3002,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " typeEndToken=\""   << var->typeEndToken() << '\"';
         out << " access=\""         << accessControlToString(var->mAccess) << '\"';
         out << " scope=\""          << var->scope() << '\"';
+        out << " constness=\""      << var->valueType()->constness << '\"';
         out << " isArgument=\""     << var->isArgument() << '\"';
         out << " isArray=\""        << var->isArray() << '\"';
         out << " isClass=\""        << var->isClass() << '\"';
