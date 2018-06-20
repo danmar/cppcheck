@@ -125,6 +125,7 @@ private:
         c.bitwiseOnBooleanError(nullptr, "varname", "&&");
         c.comparisonOfBoolExpressionWithIntError(nullptr, true);
         c.pointerArithBoolError(nullptr);
+        c.comparisonOfBoolWithInvalidComparator(nullptr, "expression");
     }
 
     static std::string myName() {

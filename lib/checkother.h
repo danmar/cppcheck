@@ -275,6 +275,7 @@ private:
         c.negativeBitwiseShiftError(nullptr, 2);
         c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
         c.raceAfterInterlockedDecrementError(nullptr);
+        c.invalidFreeError(nullptr, false);
 
         //performance
         c.redundantCopyError(nullptr,  "varname");
@@ -320,6 +321,7 @@ private:
         c.unknownEvaluationOrder(nullptr);
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
+        c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);

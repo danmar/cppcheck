@@ -221,6 +221,7 @@ private:
         c.string_c_strError(nullptr);
         c.string_c_strReturn(nullptr);
         c.string_c_strParam(nullptr, 0);
+        c.string_c_strThrowError(nullptr);
         c.sizeError(nullptr);
         c.missingComparisonError(nullptr, nullptr);
         c.redundantIfRemoveError(nullptr);
