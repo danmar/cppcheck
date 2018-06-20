@@ -228,7 +228,6 @@ public:
           mIndex(index_),
           mAccess(access_),
           mFlags(0),
-          mConstness(0),
           mType(type_),
           mScope(scope_),
           mValueType(nullptr) {
@@ -635,9 +634,6 @@ private:
 
     /** @brief flags */
     unsigned int mFlags;
-
-    /** @brief constness (same encoding as ValueType::constness) */
-    unsigned int mConstness;
 
     /** @brief pointer to user defined type info (for known types) */
     const Type *mType;
