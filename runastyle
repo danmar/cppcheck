@@ -29,7 +29,8 @@ $ASTYLE $style $options -r gui/test/*.h
 $ASTYLE $style $options lib/*.cpp
 $ASTYLE $style $options lib/*.h
 $ASTYLE $style $options test/*.cpp
-$ASTYLE $style $options test/cfg/{std,qt,windows,wxwidgets,posix,gnu,gtk}.c* # Exclude generated test files
+$ASTYLE $style $options test/cfg/*.c
+$ASTYLE $style $options test/cfg/*.cpp
 $ASTYLE $style $options test/*.h
 
 $ASTYLE $style $options --recursive "tools/*.cpp"

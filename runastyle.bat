@@ -32,7 +32,8 @@
 %ASTYLE% %STYLE% %OPTIONS% lib/*.cpp
 %ASTYLE% %STYLE% %OPTIONS% lib/*.h
 %ASTYLE% %STYLE% %OPTIONS% test/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% test/cfg/*.c*
+%ASTYLE% %STYLE% %OPTIONS% test/cfg/*.c
+%ASTYLE% %STYLE% %OPTIONS% test/cfg/*.cpp
 %ASTYLE% %STYLE% %OPTIONS% test/*.h
 
 %ASTYLE% %STYLE% %OPTIONS% -r tools/*.cpp
