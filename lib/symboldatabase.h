@@ -221,7 +221,7 @@ class CPPCHECKLIB Variable {
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
              std::size_t index_, AccessControl access_, const Type *type_,
-             const Scope *scope_, const Library* lib)
+             const Scope *scope_, const Settings* settings)
         : mNameToken(name_),
           mTypeStartToken(start_),
           mTypeEndToken(end_),
@@ -230,9 +230,12 @@ public:
           mFlags(0),
           mConstness(0),
           mType(type_),
-          mScope(scope_) {
-        evaluate(lib);
+          mScope(scope_),
+          mValueType(nullptr) {
+        evaluate(settings);
     }
+
+    ~Variable();
 
     /**
      * Get name token.
@@ -597,11 +600,11 @@ public:
         return type() && type()->isEnumType();
     }
 
-    void setFlags(const ValueType &valuetype);
-
-    unsigned int constness() const {
-        return mConstness;
+    const ValueType *valueType() const {
+        return mValueType;
     }
+
+    void setValueType(const ValueType &valueType);
 
 private:
     // only symbol database can change the type
@@ -642,11 +645,13 @@ private:
     /** @brief pointer to scope this variable is in */
     const Scope *mScope;
 
+    ValueType *mValueType;
+
     /** @brief array dimensions */
     std::vector<Dimension> mDimensions;
 
     /** @brief fill in information, depending on Tokens given at instantiation */
-    void evaluate(const Library* lib);
+    void evaluate(const Settings* settings);
 };
 
 class CPPCHECKLIB Function {
@@ -1008,14 +1013,14 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_, const Library* lib) {
+                     const Scope *scope_, const Settings* settings) {
         varlist.emplace_back(token_, start_, end_, varlist.size(),
                              access_,
-                             type_, scope_, lib);
+                             type_, scope_, settings);
     }
 
     /** @brief initialize varlist */
-    void getVariableList(const Library* lib);
+    void getVariableList(const Settings* settings);
 
     const Function *getDestructor() const;
 
@@ -1035,10 +1040,10 @@ public:
      * @brief check if statement is variable declaration and add it if it is
      * @param tok pointer to start of statement
      * @param varaccess access control of statement
-     * @param lib Library instance
+     * @param settings Settings
      * @return pointer to last token
      */
-    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Library* lib);
+    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Settings* settings);
 
     /**
      * @brief get variable from name

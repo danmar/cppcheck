@@ -365,7 +365,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope->definedTypesMap[new_type->name()] = new_type;
             }
 
-            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, &mSettings->library);
+            scope->addVariable(varNameTok, tok, tok, access[scope], new_scope->definedType, scope, mSettings);
 
             const Token *tok2 = tok->next();
 
@@ -637,9 +637,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope->nestedList.push_back(&scopeList.back());
                 scope = &scopeList.back();
                 if (scope->type == Scope::eFor)
-                    scope->checkVariable(tok->tokAt(2), Local, &mSettings->library); // check for variable declaration and add it to new scope if found
+                    scope->checkVariable(tok->tokAt(2), Local, mSettings); // check for variable declaration and add it to new scope if found
                 else if (scope->type == Scope::eCatch)
-                    scope->checkVariable(tok->tokAt(2), Throw, &mSettings->library); // check for variable declaration and add it to new scope if found
+                    scope->checkVariable(tok->tokAt(2), Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = scopeStartTok;
             } else if (tok->str() == "{") {
                 if (tok->previous()->varId())
@@ -717,7 +717,7 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
     // fill in variable info
     for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
         // find variables
-        it->getVariableList(&mSettings->library);
+        it->getVariableList(mSettings);
     }
 
     // fill in function arguments
@@ -1598,6 +1598,11 @@ void SymbolDatabase::validate() const
     //validateVariables();
 }
 
+Variable::~Variable()
+{
+    delete mValueType;
+}
+
 bool Variable::isPointerArray() const
 {
     return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");
@@ -1614,13 +1619,15 @@ const Token * Variable::declEndToken() const
     return declEnd;
 }
 
-void Variable::evaluate(const Library* lib)
+void Variable::evaluate(const Settings* settings)
 {
-    unsigned int pointer = 0;
-    mConstness = 0;
+    const Library * const lib = settings ? &settings->library : nullptr;
 
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(lib));
+
+    if (mTypeStartToken)
+        setValueType(ValueType::parseDecl(mTypeStartToken,settings));
 
     const Token* tok = mTypeStartToken;
     while (tok && tok->previous() && tok->previous()->isName())
@@ -1637,13 +1644,11 @@ void Variable::evaluate(const Library* lib)
             setFlag(fIsVolatile, true);
         else if (tok->str() == "mutable")
             setFlag(fIsMutable, true);
-        else if (tok->str() == "const") {
+        else if (tok->str() == "const")
             setFlag(fIsConst, true);
-            mConstness |= 1 << pointer;
-        } else if (tok->str() == "*") {
+        else if (tok->str() == "*") {
             setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
-            ++pointer;
         } else if (tok->str() == "&") {
             if (isReference())
                 setFlag(fIsRValueRef, true);
@@ -1706,6 +1711,15 @@ void Variable::evaluate(const Library* lib)
         if (Token::Match(mTypeStartToken, "float|double"))
             setFlag(fIsFloatType, true);
     }
+}
+
+void Variable::setValueType(const ValueType &valueType)
+{
+    delete mValueType;
+    mValueType = new ValueType(valueType);
+    if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
+        setFlag(fIsPointer, true);
+    setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
 }
 
 Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef)
@@ -2503,15 +2517,6 @@ bool Variable::arrayDimensions(const Library* lib)
     return arr;
 }
 
-void Variable::setFlags(const ValueType &valuetype)
-{
-    if (valuetype.constness)
-        setFlag(fIsConst,true);
-    if (valuetype.pointer)
-        setFlag(fIsPointer,true);
-}
-
-
 static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
 {
     s << (type == Scope::eGlobal ? "Global" :
@@ -3006,7 +3011,6 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " isPointer=\""      << var->isPointer() << '\"';
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
-        out << " constness=\""      << var->constness() << '\"';
         out << "/>" << std::endl;
     }
     out << "  </variables>" << std::endl;
@@ -3123,7 +3127,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         while (Token::Match(startTok, "enum|struct|const|volatile"))
             startTok = startTok->next();
 
-        argumentList.emplace_back(nameTok, startTok, endTok, count++, Argument, argType, functionScope, &symbolDatabase->mSettings->library);
+        argumentList.emplace_back(nameTok, startTok, endTok, count++, Argument, argType, functionScope, symbolDatabase->mSettings);
 
         if (tok->str() == ")") {
             // check for a variadic function
@@ -3325,7 +3329,7 @@ AccessControl Scope::defaultAccess() const
 }
 
 // Get variable list..
-void Scope::getVariableList(const Library* lib)
+void Scope::getVariableList(const Settings* settings)
 {
     const Token *start;
 
@@ -3426,14 +3430,14 @@ void Scope::getVariableList(const Library* lib)
         else if (tok->str() == ";")
             continue;
 
-        tok = checkVariable(tok, varaccess, lib);
+        tok = checkVariable(tok, varaccess, settings);
 
         if (!tok)
             break;
     }
 }
 
-const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, const Library* lib)
+const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, const Settings* settings)
 {
     // Is it a throw..?
     if (Token::Match(tok, "throw %any% (") &&
@@ -3494,7 +3498,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         if (Token::Match(typestart, "enum|struct"))
             typestart = typestart->next();
 
-        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, lib);
+        addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, settings);
     }
 
     return tok;
@@ -4872,7 +4876,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                 setValueType(parent->previous(), *vt2);
                 Variable *var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
-                    var->setFlags(*vt2);
+                    var->setValueType(*vt2);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
                         var->type(vt2->typeScope->definedType);
                         if (autoTok->valueType()->pointer == 0)
@@ -4956,7 +4960,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             setValueType(parent->previous(), varvt);
             Variable *var = const_cast<Variable *>(parent->previous()->variable());
             if (var) {
-                var->setFlags(varvt);
+                var->setValueType(varvt);
                 if (vt2->typeScope && vt2->typeScope->definedType) {
                     var->type(vt2->typeScope->definedType);
                     autoToken->type(vt2->typeScope->definedType);
@@ -4985,7 +4989,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     setValueType(parent->previous(), varvt);
                     Variable * var = const_cast<Variable *>(parent->previous()->variable());
                     if (var) {
-                        var->setFlags(varvt);
+                        var->setValueType(varvt);
                         const Type * type = typeStart->tokAt(4)->type();
                         if (type && type->classScope && type->classScope->definedType) {
                             autoToken->type(type->classScope->definedType);
