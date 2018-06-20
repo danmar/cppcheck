@@ -146,6 +146,9 @@ private:
         TEST_CASE(isVariableDeclarationRValueRef);
         TEST_CASE(isVariableStlType);
 
+        TEST_CASE(VariableValueType1);
+        TEST_CASE(VariableValueType2);
+
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
         TEST_CASE(findVariableType3);
@@ -787,6 +790,22 @@ private:
         ASSERT(true == v.isReference());
         ASSERT(true == v.isRValueReference());
         ASSERT(var.tokens()->tokAt(2)->scope() != 0);
+    }
+
+    void VariableValueType1() {
+        GET_SYMBOL_DB("typedef uint8_t u8;\n"
+                      "static u8 x;\n");
+        const Variable* x = db->getVariableFromVarId(1);
+        ASSERT_EQUALS("x", x->name());
+        ASSERT(x->valueType()->isIntegral());
+    }
+
+    void VariableValueType2() {
+        GET_SYMBOL_DB("using u8 = uint8_t;\n"
+                      "static u8 x;\n");
+        const Variable* x = db->getVariableFromVarId(1);
+        ASSERT_EQUALS("x", x->name());
+        ASSERT(x->valueType()->isIntegral());
     }
 
     void findVariableType1() {

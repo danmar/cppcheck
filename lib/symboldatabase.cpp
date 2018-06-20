@@ -5184,6 +5184,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->pointer++;
         else if (type->isStandardType())
             valuetype->fromLibraryType(type->str(), settings);
+        else if (Token::Match(type->previous(), "!!:: %name% !!::"))
+            valuetype->fromLibraryType(type->str(), settings);
         if (!type->originalName().empty())
             valuetype->originalTypeName = type->originalName();
         type = type->next();
