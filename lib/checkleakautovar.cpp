@@ -669,12 +669,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
 const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo)
 {
-    std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
-
     // Deallocation and then dereferencing pointer..
     if (tok->varId() > 0) {
-        const std::map<unsigned int, VarInfo::AllocInfo>::const_iterator var = alloctype.find(tok->varId());
-        if (var != alloctype.end()) {
+        const std::map<unsigned int, VarInfo::AllocInfo>::const_iterator var = varInfo->alloctype.find(tok->varId());
+        if (var != varInfo->alloctype.end()) {
             bool unknown = false;
             if (var->second.status == VarInfo::DEALLOC && CheckNullPointer::isPointerDeRef(tok, unknown) && !unknown) {
                 deallocUseError(tok, tok->str());
@@ -706,12 +704,11 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
 void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg)
 {
     std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
-    std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
     const std::map<unsigned int, VarInfo::AllocInfo>::iterator var = alloctype.find(arg->varId());
     if (var != alloctype.end()) {
         if (allocation.status == VarInfo::NOALLOC) {
             // possible usage
-            possibleUsage[arg->varId()] = tok->str();
+            varInfo->possibleUsage[arg->varId()] = tok->str();
             if (var->second.status == VarInfo::DEALLOC && arg->previous()->str() == "&")
                 varInfo->erase(arg->varId());
         } else if (var->second.managed()) {
