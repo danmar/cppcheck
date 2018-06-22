@@ -1335,7 +1335,7 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
             size = settings->sizeof_pointer;
         else if (i->type() && i->type()->classScope)
             size = estimateSize(i->type(), settings, symbolDatabase, recursionDepth+1);
-        else if (i->isStlStringType() || (i->isStlType() && Token::Match(i->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(i->typeStartToken()->linkAt(3), "> ::")))
+        else if (i->valueType()->type == ValueType::Type::CONTAINER)
             size = 3 * settings->sizeof_pointer; // Just guess
         else
             size = symbolDatabase->sizeOfType(i->typeStartToken());
