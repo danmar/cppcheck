@@ -82,6 +82,7 @@ private:
         TEST_CASE(varScope21);      // Ticket #5382
         TEST_CASE(varScope22);      // Ticket #5684
         TEST_CASE(varScope23);      // Ticket #6154
+        TEST_CASE(varScope24);      // pointer / reference
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1136,6 +1137,24 @@ private:
               "   Test myTest([&](size_t aX){\n"
               "       std::cout << myCounter += aX << std::endl;\n"
               "   });\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope24() {
+        check("void f(Foo x) {\n"
+              "   Foo &r = x;\n"
+              "   if (cond) {\n"
+              "       r.dostuff();\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 'r' can be reduced.\n", errout.str());
+
+        check("void f(Foo x) {\n"
+              "   Foo foo = x;\n"
+              "   if (cond) {\n"
+              "       foo.dostuff();\n"
+              "   }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

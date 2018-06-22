@@ -1097,7 +1097,7 @@ void CheckOther::checkVariableScope()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isLocal() || (!var->isPointer() && var->valueType()->type <= ValueType::Type::RECORD))
+        if (!var || !var->isLocal() || (!var->isPointer() && !var->isReference() && var->valueType()->type <= ValueType::Type::RECORD))
             continue;
 
         if (var->isConst())
