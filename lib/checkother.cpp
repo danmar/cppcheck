@@ -2366,7 +2366,7 @@ void CheckOther::checkIncompleteArrayFill()
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                         if (printWarning)
                             incompleteArrayFillError(tok, var->name(), tok->str(), false);
-                    } else if (Token::Match(var->typeStartToken(), "bool|_Bool") && printPortability) // sizeof(bool) is not 1 on all platforms
+                    } else if (var->valueType()->type == ValueType::Type::BOOL && printPortability) // sizeof(bool) is not 1 on all platforms
                         incompleteArrayFillError(tok, var->name(), tok->str(), true);
                 }
             }
