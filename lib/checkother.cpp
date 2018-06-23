@@ -1355,58 +1355,59 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
 static bool canBeConst(const Variable *var)
 {
     for (const Token* tok2 = var->scope()->bodyStart; tok2 != var->scope()->bodyEnd; tok2 = tok2->next()) {
-        if (tok2->varId() == var->declarationId()) {
-            const Token* parent = tok2->astParent();
-            if (!parent)
-                ;
-            else if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
-                if (parent->str() == "<<" && parent->astOperand1() == tok2)
-                    return false;
-                if (parent->str() == ">>" && parent->astOperand2() == tok2)
-                    return false;
-            } else if (parent->str() == "," || parent->str() == "(") { // function argument
-                const Token* tok3 = tok2->previous();
-                unsigned int argNr = 0;
-                while (tok3 && tok3->str() != "(") {
-                    if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
-                        tok3 = tok3->link();
-                    else if (tok3->link())
-                        break;
-                    else if (tok3->str() == ";")
-                        break;
-                    else if (tok3->str() == ",")
-                        argNr++;
-                    tok3 = tok3->previous();
-                }
-                if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
-                    return false;
-                else {
-                    const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
-                    if (!argVar|| (!argVar->isConst() && argVar->isReference()))
-                        return false;
-                }
-            } else if (parent->str() == "&" && !parent->astOperand2()) {
-                // TODO: check how pointer is used
+        if (tok2->varId() != var->declarationId())
+            continue;
+
+        const Token* parent = tok2->astParent();
+        if (!parent)
+            ;
+        else if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
+            if (parent->str() == "<<" && parent->astOperand1() == tok2)
                 return false;
-            } else if (parent->isConstOp())
-                ;
-            else if (parent->isAssignmentOp()) {
-                if (parent->astOperand1() == tok2)
-                    return false;
-                else if (parent->astOperand1()->str() == "&") {
-                    const Variable* assignedVar = parent->previous()->variable();
-                    if (!assignedVar || !assignedVar->isConst())
-                        return false;
-                }
-            } else if (Token::Match(tok2, "%var% . %name% (")) {
-                const Function* func = tok2->tokAt(2)->function();
-                if (func && (func->isConst() || func->isStatic()))
-                    ;
-                else
-                    return false;
-            } else
+            if (parent->str() == ">>" && parent->astOperand2() == tok2)
                 return false;
-        }
+        } else if (parent->str() == "," || parent->str() == "(") { // function argument
+            const Token* tok3 = tok2->previous();
+            unsigned int argNr = 0;
+            while (tok3 && tok3->str() != "(") {
+                if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
+                    tok3 = tok3->link();
+                else if (tok3->link())
+                    break;
+                else if (tok3->str() == ";")
+                    break;
+                else if (tok3->str() == ",")
+                    argNr++;
+                tok3 = tok3->previous();
+            }
+            if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
+                return false;
+            else {
+                const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
+                if (!argVar|| (!argVar->isConst() && argVar->isReference()))
+                    return false;
+            }
+        } else if (parent->str() == "&" && !parent->astOperand2()) {
+            // TODO: check how pointer is used
+            return false;
+        } else if (parent->isConstOp())
+            ;
+        else if (parent->isAssignmentOp()) {
+            if (parent->astOperand1() == tok2)
+                return false;
+            else if (parent->astOperand1()->str() == "&") {
+                const Variable* assignedVar = parent->previous()->variable();
+                if (!assignedVar || !assignedVar->isConst())
+                    return false;
+            }
+        } else if (Token::Match(tok2, "%var% . %name% (")) {
+            const Function* func = tok2->tokAt(2)->function();
+            if (func && (func->isConst() || func->isStatic()))
+                ;
+            else
+                return false;
+        } else
+            return false;
     }
 
     return true;
