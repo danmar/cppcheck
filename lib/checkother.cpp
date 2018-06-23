@@ -1327,27 +1327,28 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
         return 0;
 
     std::size_t cumulatedSize = 0;
-    for (std::list<Variable>::const_iterator i = type->classScope->varlist.cbegin(); i != type->classScope->varlist.cend(); ++i) {
+    for (const Variable&var : type->classScope->varlist) {
         std::size_t size = 0;
-        if (i->isStatic())
+        if (var.isStatic())
             continue;
-        if (i->isPointer() || i->isReference())
+        if (var.isPointer() || var.isReference())
             size = settings->sizeof_pointer;
-        else if (i->type() && i->type()->classScope)
-            size = estimateSize(i->type(), settings, symbolDatabase, recursionDepth+1);
-        else if (i->valueType()->type == ValueType::Type::CONTAINER)
+        else if (var.type() && var.type()->classScope)
+            size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth+1);
+        else if (var.valueType()->type == ValueType::Type::CONTAINER)
             size = 3 * settings->sizeof_pointer; // Just guess
         else
             size = symbolDatabase->sizeOfType(i->typeStartToken());
 
-        if (i->isArray())
-            cumulatedSize += size*i->dimension(0);
+        if (var.isArray())
+            cumulatedSize += size * var.dimension(0);
         else
             cumulatedSize += size;
     }
-    for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.cbegin(); i != type->derivedFrom.cend(); ++i)
-        if (i->type && i->type->classScope)
-            cumulatedSize += estimateSize(i->type, settings, symbolDatabase, recursionDepth+1);
+    for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
+        if (baseInfo.type && baseInfo.type->classScope)
+            cumulatedSize += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth+1);
+    }
     return cumulatedSize;
 }
 
