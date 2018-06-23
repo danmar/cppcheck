@@ -1338,7 +1338,7 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
         else if (var.valueType()->type == ValueType::Type::CONTAINER)
             size = 3 * settings->sizeof_pointer; // Just guess
         else
-            size = symbolDatabase->sizeOfType(i->typeStartToken());
+            size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
             cumulatedSize += size * var.dimension(0);
