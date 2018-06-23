@@ -148,6 +148,7 @@ private:
 
         TEST_CASE(VariableValueType1);
         TEST_CASE(VariableValueType2);
+        TEST_CASE(VariableValueType3);
 
         TEST_CASE(findVariableType1);
         TEST_CASE(findVariableType2);
@@ -806,6 +807,14 @@ private:
         const Variable* x = db->getVariableFromVarId(1);
         ASSERT_EQUALS("x", x->name());
         ASSERT(x->valueType()->isIntegral());
+    }
+
+    void VariableValueType3() {
+        GET_SYMBOL_DB("void f(std::string::size_type x);\n");
+        const Variable* x = db->getVariableFromVarId(1);
+        ASSERT_EQUALS("x", x->name());
+        // TODO: Configure std::string::size_type somehow.
+        TODO_ASSERT_EQUALS(ValueType::Type::LONGLONG, ValueType::Type::UNKNOWN_TYPE, x->valueType()->type);
     }
 
     void findVariableType1() {

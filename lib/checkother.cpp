@@ -1425,11 +1425,7 @@ void CheckOther::checkPassByReference()
 
         bool inconclusive = false;
 
-        const Token* const tok = var->typeStartToken();
-        if (var->isStlStringType()) {
-            ;
-        } else if (var->isStlType() && Token::Match(tok, "std :: %type% <") && !Token::simpleMatch(tok->linkAt(3), "> ::") && !Token::Match(tok->tokAt(2), "initializer_list|weak_ptr|auto_ptr|unique_ptr|shared_ptr|function|pair")) {
-            ;
+        if (var->valueType()->type == ValueType::Type::CONTAINER) {
         } else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
             // Ensure that it is a large object.
             if (!var->type()->classScope)
@@ -1444,7 +1440,7 @@ void CheckOther::checkPassByReference()
 
         const bool isConst = var->isConst();
         if (isConst) {
-            passedByValueError(tok, var->name(), inconclusive);
+            passedByValueError(var->nameToken(), var->name(), inconclusive);
             continue;
         }
 
@@ -1453,7 +1449,7 @@ void CheckOther::checkPassByReference()
             continue;
 
         if (canBeConst(var)) {
-            passedByValueError(tok, var->name(), inconclusive);
+            passedByValueError(var->nameToken(), var->name(), inconclusive);
         }
     }
 }

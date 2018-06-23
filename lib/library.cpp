@@ -904,17 +904,21 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
         if (container.startPattern.empty())
             continue;
 
-        if (Token::Match(typeStart, container.startPattern.c_str())) {
-            if (!iterator && container.endPattern.empty()) // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
-                return &container;
+        if (!endsWith(container.startPattern, '<')) {
+            if (!Token::Match(typeStart, (container.startPattern + " !!::").c_str()))
+                continue;
+        } else if (!Token::Match(typeStart, (container.startPattern + " !!::").c_str()))
+            continue;
 
-            for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
-                if (tok->link()) {
-                    const std::string& endPattern = iterator ? container.itEndPattern : container.endPattern;
-                    if (Token::Match(tok->link(), endPattern.c_str()))
-                        return &container;
-                    break;
-                }
+        if (!iterator && container.endPattern.empty()) // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
+            return &container;
+
+        for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
+            if (tok->link()) {
+                const std::string& endPattern = iterator ? container.itEndPattern : container.endPattern;
+                if (Token::Match(tok->link(), endPattern.c_str()))
+                    return &container;
+                break;
             }
         }
     }
