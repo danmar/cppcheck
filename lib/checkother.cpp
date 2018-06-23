@@ -2361,7 +2361,7 @@ void CheckOther::checkIncompleteArrayFill()
 
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
                     unsigned int size = mTokenizer->sizeOfType(var->typeStartToken());
-                    if (size == 0 && var->typeStartToken()->next()->str() == "*")
+                    if (size == 0 && var->valueType()->pointer)
                         size = mSettings->sizeof_pointer;
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                         if (printWarning)
