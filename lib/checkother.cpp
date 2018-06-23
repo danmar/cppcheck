@@ -1385,6 +1385,9 @@ static bool canBeConst(const Variable *var)
                     if (!argVar|| (!argVar->isConst() && argVar->isReference()))
                         return false;
                 }
+            } else if (parent->str() == "&" && !parent->astOperand2()) {
+                // TODO: check how pointer is used
+                return false;
             } else if (parent->isConstOp())
                 ;
             else if (parent->isAssignmentOp()) {

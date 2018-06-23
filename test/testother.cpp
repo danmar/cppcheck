@@ -1557,6 +1557,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo(std::string* str);\n"
+              "void f(std::string str) {\n"
+              "    foo(&str);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(int& i1, const std::string& str, int& i2);\n"
               "void f(std::string str) {\n"
               "    foo((a+b)*c, str, x);\n"
