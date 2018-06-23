@@ -144,7 +144,7 @@ protected:
 private:
     void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
-    void parseAddonErrors(QString err, QString tool);
+    void parseAddonErrors(QString err, const QString &tool);
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
     QStringList mFiles;

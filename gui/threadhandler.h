@@ -72,7 +72,7 @@ public:
     */
     void saveSettings(QSettings &settings) const;
 
-    void setAddonsAndTools(const QStringList &addonsAndTools, const QString misraFile) {
+    void setAddonsAndTools(const QStringList &addonsAndTools, const QString &misraFile) {
         mAddonsAndTools = addonsAndTools;
         mMisraFile = misraFile;
     }

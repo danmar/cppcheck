@@ -723,7 +723,7 @@ void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
-Library::Error MainWindow::loadLibrary(Library *library, QString filename)
+Library::Error MainWindow::loadLibrary(Library *library, const QString &filename)
 {
     Library::Error ret;
 
@@ -1141,7 +1141,7 @@ void MainWindow::openResults()
     }
 }
 
-void MainWindow::loadResults(const QString selectedFile)
+void MainWindow::loadResults(const QString &selectedFile)
 {
     if (selectedFile.isEmpty())
         return;
@@ -1156,7 +1156,7 @@ void MainWindow::loadResults(const QString selectedFile)
     formatAndSetTitle(selectedFile);
 }
 
-void MainWindow::loadResults(const QString selectedFile, const QString sourceDirectory)
+void MainWindow::loadResults(const QString &selectedFile, const QString &sourceDirectory)
 {
     loadResults(selectedFile);
     mUI.mResults->setCheckDirectory(sourceDirectory);
@@ -1292,7 +1292,7 @@ void MainWindow::showAuthors()
     dlg->exec();
 }
 
-void MainWindow::performSelectedFilesCheck(QStringList selectedFilesList)
+void MainWindow::performSelectedFilesCheck(const QStringList &selectedFilesList)
 {
     reAnalyzeSelected(selectedFilesList);
 }

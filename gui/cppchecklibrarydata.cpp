@@ -137,7 +137,7 @@ static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlR
     return arg;
 }
 
-static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, const QString comments)
+static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, const QString &comments)
 {
     CppcheckLibraryData::Function function;
     function.comments = comments;
@@ -258,7 +258,7 @@ QString CppcheckLibraryData::open(QIODevice &file)
     return QString();
 }
 
-static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)
+static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)
 {
     if (functions.isEmpty() && extra < 0)
         return;

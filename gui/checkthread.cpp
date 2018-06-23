@@ -321,7 +321,7 @@ void CheckThread::stop()
     mCppcheck.terminate();
 }
 
-void CheckThread::parseAddonErrors(QString err, QString tool)
+void CheckThread::parseAddonErrors(QString err, const QString &tool)
 {
     Q_UNUSED(tool);
     QTextStream in(&err, QIODevice::ReadOnly);

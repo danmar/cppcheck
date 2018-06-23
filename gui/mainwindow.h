@@ -89,7 +89,7 @@ public slots:
      * @brief Slot to reanalyze selected files
      * @param selectedFilesList list of selected files
      */
-    void performSelectedFilesCheck(QStringList selectedFilesList);
+    void performSelectedFilesCheck(const QStringList &selectedFilesList);
 
     /** @brief Slot to reanalyze modified files */
     void reAnalyzeModified();
@@ -349,14 +349,14 @@ private:
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      */
-    void loadResults(const QString selectedFile);
+    void loadResults(const QString &selectedFile);
 
     /**
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      * @param sourceDirectory Path to the directory that the results were generated for.
      */
-    void loadResults(const QString selectedFile, const QString sourceDirectory);
+    void loadResults(const QString &selectedFile, const QString &sourceDirectory);
 
     /**
     * @brief Load last project results to the GUI.
@@ -376,7 +376,7 @@ private:
      * @param filename filename (no path)
      * @return error code
      */
-    Library::Error loadLibrary(Library *library, QString filename);
+    Library::Error loadLibrary(Library *library, const QString &filename);
 
     /**
      * @brief Tries to load library file, prints message on error
