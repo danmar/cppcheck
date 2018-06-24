@@ -188,7 +188,7 @@ void CheckClass::constructors()
                 if (!var->isPointer() &&
                     !(var->type() && var->type()->needInitialization != Type::True) &&
                     (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
-                    if (!var->typeStartToken()->isStandardType()) {
+                    if (var->valueType()->type <= ValueType::Type::RECORD) {
                         if (printInconclusive)
                             inconclusive = true;
                         else
