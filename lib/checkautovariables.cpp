@@ -206,19 +206,14 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
-static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVarId)
+static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVarId, const Settings *settings, bool cpp)
 {
-    const Token * const end = vartok->variable()->typeStartToken()->scope()->bodyEnd;
-    for (const Token *tok2 = vartok; tok2 != nullptr && tok2 != end; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "%varid% =", pointerVarId))
-            return true;
-        if (Token::Match(tok2, "%name% (") && !Token::simpleMatch(tok2->linkAt(1), ") {")) {
-            // Bailout: possibly written
-            // TODO: check if it is written
-            return true;
-        }
-    }
-    return false;
+    return isVariableChanged(vartok,
+                             vartok->variable()->scope()->bodyEnd,
+                             pointerVarId,
+                             true,
+                             settings,
+                             cpp);
 }
 
 
@@ -239,11 +234,11 @@ void CheckAutoVariables::autoVariables()
                 const Token * const pointer = tok->next();
                 if (isAutoVarArray(tok->tokAt(3))) {
                     const Token * const array = tok->tokAt(3);
-                    if (!reassignedGlobalPointer(array, pointer->varId()))
+                    if (!reassignedGlobalPointer(array, pointer->varId(), mSettings, mTokenizer->isCPP()))
                         errorAssignAddressOfLocalArrayToGlobalPointer(pointer, array);
                 } else if (isAutoVar(tok->tokAt(4))) {
                     const Token * const variable = tok->tokAt(4);
-                    if (!reassignedGlobalPointer(variable, pointer->varId()))
+                    if (!reassignedGlobalPointer(variable, pointer->varId(), mSettings, mTokenizer->isCPP()))
                         errorAssignAddressOfLocalVariableToGlobalPointer(pointer, variable);
                 }
             } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
