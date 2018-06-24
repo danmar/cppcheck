@@ -931,7 +931,7 @@ void CheckClass::initializationListUsage()
             if (Token::Match(tok, "%var% =") && tok->strAt(-1) != "*") {
                 const Variable* var = tok->variable();
                 if (var && var->scope() == owner && !var->isStatic()) {
-                    if (var->isPointer() || var->isReference() || var->isEnumType() || (!var->type() && !var->isStlStringType() && !(Token::Match(var->typeStartToken(), "std :: %type% <") && !Token::simpleMatch(var->typeStartToken()->linkAt(3), "> ::"))))
+                    if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
                         continue;
 
                     bool allowed = true;
