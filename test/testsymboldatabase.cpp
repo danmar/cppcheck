@@ -51,22 +51,19 @@ public:
         :TestFixture("TestSymbolDatabase")
         ,nullScope(nullptr, nullptr, nullptr)
         ,vartok(nullptr)
-        ,typetok(nullptr)
-        ,found(false) {
+        ,typetok(nullptr) {
     }
 
 private:
     const Scope nullScope;
     const Token* vartok;
     const Token* typetok;
-    bool found;
     Settings settings1;
     Settings settings2;
 
     void reset() {
         vartok = nullptr;
         typetok = nullptr;
-        found = false;
     }
 
     const static SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
