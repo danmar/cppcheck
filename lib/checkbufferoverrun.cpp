@@ -1293,10 +1293,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                     negativeMemoryAllocationSizeError(tok);
                 }
 
-                /** @todo false negatives: this may be too conservative */
-                if (!var || !var->isPointer() || var->typeStartToken()->next() != var->typeEndToken())
-                    continue;
-
                 // malloc() gets count of bytes and not count of
                 // elements, so we should calculate count of elements
                 // manually
