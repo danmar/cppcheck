@@ -73,7 +73,7 @@ static bool isRefPtrArg(const Token *tok)
 static bool isNonReferenceArg(const Token *tok)
 {
     const Variable *var = tok->variable();
-    return (var && var->isArgument() && !var->isReference() && (var->isPointer() || var->typeStartToken()->isStandardType() || var->type()));
+    return (var && var->isArgument() && !var->isReference() && (var->isPointer() || var->valueType()->type >= ValueType::Type::CONTAINER || var->type()));
 }
 
 static bool isAutoVar(const Token *tok)
