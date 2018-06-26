@@ -325,7 +325,6 @@ private:
         TEST_CASE(findFunction18);
         TEST_CASE(findFunction19);
         TEST_CASE(findFunction20); // #8280
-        TEST_CASE(findFunction21); // #8592 - using namespace
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -5157,30 +5156,6 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "copy ( * f ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
-    }
-
-    void findFunction21() { // using namespace ..
-        {
-            GET_SYMBOL_DB("namespace NS { void f(); };\n"
-                          "void foo() {\n"
-                          "  using namespace NS;\n"
-                          "  f();\n"
-                          "}");
-            const Scope *foo = db->findScopeByName("foo");
-            const Token *ftok = Token::findsimplematch(foo->bodyStart, "f (");
-            ASSERT(foo->findFunction(ftok,false));
-        }
-
-        {
-            GET_SYMBOL_DB("namespace NS { void f(); };\n"
-                          "void foo() {\n"
-                          "  using namespace NS;\n"
-                          "  if (abc) { f(); }\n"
-                          "}");
-            const Scope *foo = db->findScopeByName("foo");
-            const Token *ftok = Token::findsimplematch(foo->bodyStart, "f (");
-            ASSERT(foo->findFunction(ftok,false));
-        }
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

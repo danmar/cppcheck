@@ -4021,15 +4021,6 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         }
     }
 
-    // using namespace..
-    for (const Scope *scope = this; scope; scope = scope->nestedIn) {
-        for (const UsingInfo &usingInfo : scope->usingList) {
-            const Function *func = usingInfo.scope->findFunction(tok,requireConst);
-            if (func)
-                matches.push_back(func);
-        }
-    }
-
     // check in base classes
     findFunctionInBase(tok->str(), args, matches);
 
