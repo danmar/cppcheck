@@ -65,6 +65,11 @@ static const char * getFunctionTypeName(Function::Type type)
     return "";
 }
 
+static bool isVariableCopyNeeded(const Variable &var)
+{
+    return var.isPointer() || (var.type() && var.type()->needInitialization == Type::True) || (var.valueType()->type >= ValueType::Type::CHAR);
+}
+
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -156,6 +161,9 @@ void CheckClass::constructors()
                 if (usage[count].assign || usage[count].init || var.isStatic())
                     continue;
 
+                if (var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::False)
+                    continue;
+
                 if (var.isConst() && func.isOperator()) // We can't set const members in assignment operator
                     continue;
 
@@ -185,16 +193,11 @@ void CheckClass::constructors()
                 bool inconclusive = false;
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
-                if (!var.isPointer() &&
-                    !(var.type() && var.type()->needInitialization != Type::True) &&
-                    (func.type == Function::eCopyConstructor || func.type == Function::eOperatorEqual)) {
-                    if (var.valueType()->type <= ValueType::Type::RECORD) {
-                        if (printInconclusive)
-                            inconclusive = true;
-                        else
-                            continue;
-                    }
-                }
+                if ((func.type == Function::eCopyConstructor || func.type == Function::eOperatorEqual) && !isVariableCopyNeeded(var))
+                    inconclusive = true;
+
+                if (!printInconclusive && inconclusive)
+                    continue;
 
                 // It's non-static and it's not initialized => error
                 if (func.type == Function::eOperatorEqual) {
