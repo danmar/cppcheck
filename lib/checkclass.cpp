@@ -132,52 +132,52 @@ void CheckClass::constructors()
 
         std::vector<Usage> usage(scope->varlist.size());
 
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (!func->hasBody() || !(func->isConstructor() ||
-                                      func->type == Function::eOperatorEqual))
+        for (const Function &func : scope->functionList) {
+            if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
 
             // Mark all variables not used
             clearAllVar(usage);
 
             std::list<const Function *> callstack;
-            initializeVarList(*func, callstack, scope, usage);
+            initializeVarList(func, callstack, scope, usage);
 
             // Check if any variables are uninitialized
-            std::list<Variable>::const_iterator var;
-            unsigned int count = 0;
-            for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
+            int count = -1;
+            for (const Variable &var : scope->varlist) {
+                ++count;
+
                 // check for C++11 initializer
-                if (var->hasDefault()) {
+                if (var.hasDefault()) {
                     usage[count].init = true;
                     continue;
                 }
 
-                if (usage[count].assign || usage[count].init || var->isStatic())
+                if (usage[count].assign || usage[count].init || var.isStatic())
                     continue;
 
-                if (var->isConst() && func->isOperator()) // We can't set const members in assignment operator
+                if (var.isConst() && func.isOperator()) // We can't set const members in assignment operator
                     continue;
 
                 // Check if this is a class constructor
-                if (!var->isPointer() && !var->isPointerArray() && var->isClass() && func->type == Function::eConstructor) {
+                if (!var.isPointer() && !var.isPointerArray() && var.isClass() && func.type == Function::eConstructor) {
                     // Unknown type so assume it is initialized
-                    if (!var->type())
+                    if (!var.type())
                         continue;
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
-                    else if (var->type()->needInitialization != Type::True)
+                    else if (var.type()->needInitialization != Type::True)
                         continue;
                 }
 
                 // Check if type can't be copied
-                if (!var->isPointer() && !var->isPointerArray() && var->typeScope()) {
-                    if (func->type == Function::eMoveConstructor) {
-                        if (canNotMove(var->typeScope()))
+                if (!var.isPointer() && !var.isPointerArray() && var.typeScope()) {
+                    if (func.type == Function::eMoveConstructor) {
+                        if (canNotMove(var.typeScope()))
                             continue;
                     } else {
-                        if (canNotCopy(var->typeScope()))
+                        if (canNotCopy(var.typeScope()))
                             continue;
                     }
                 }
@@ -185,10 +185,10 @@ void CheckClass::constructors()
                 bool inconclusive = false;
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
-                if (!var->isPointer() &&
-                    !(var->type() && var->type()->needInitialization != Type::True) &&
-                    (func->type == Function::eCopyConstructor || func->type == Function::eOperatorEqual)) {
-                    if (var->valueType()->type <= ValueType::Type::RECORD) {
+                if (!var.isPointer() &&
+                    !(var.type() && var.type()->needInitialization != Type::True) &&
+                    (func.type == Function::eCopyConstructor || func.type == Function::eOperatorEqual)) {
+                    if (var.valueType()->type <= ValueType::Type::RECORD) {
                         if (printInconclusive)
                             inconclusive = true;
                         else
@@ -197,8 +197,8 @@ void CheckClass::constructors()
                 }
 
                 // It's non-static and it's not initialized => error
-                if (func->type == Function::eOperatorEqual) {
-                    const Token *operStart = func->arg;
+                if (func.type == Function::eOperatorEqual) {
+                    const Token *operStart = func.arg;
 
                     bool classNameUsed = false;
                     for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next()) {
@@ -209,20 +209,20 @@ void CheckClass::constructors()
                     }
 
                     if (classNameUsed)
-                        operatorEqVarError(func->token, scope->className, var->name(), inconclusive);
-                } else if (func->access != Private || mSettings->standards.cpp >= Standards::CPP11) {
-                    const Scope *varType = var->typeScope();
+                        operatorEqVarError(func.token, scope->className, var.name(), inconclusive);
+                } else if (func.access != Private || mSettings->standards.cpp >= Standards::CPP11) {
+                    const Scope *varType = var.typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
-                        if (func->type == Function::eConstructor &&
-                            func->nestedIn && (func->nestedIn->numConstructors - func->nestedIn->numCopyOrMoveConstructors) > 1 &&
-                            func->argCount() == 0 && func->functionScope &&
-                            func->arg && func->arg->link()->next() == func->functionScope->bodyStart &&
-                            func->functionScope->bodyStart->link() == func->functionScope->bodyStart->next()) {
+                        if (func.type == Function::eConstructor &&
+                            func.nestedIn && (func.nestedIn->numConstructors - func.nestedIn->numCopyOrMoveConstructors) > 1 &&
+                            func.argCount() == 0 && func.functionScope &&
+                            func.arg && func.arg->link()->next() == func.functionScope->bodyStart &&
+                            func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
                             if (printInconclusive)
-                                uninitVarError(func->token, func->access == Private, scope->className, var->name(), true);
+                                uninitVarError(func.token, func.access == Private, scope->className, var.name(), true);
                         } else
-                            uninitVarError(func->token, func->access == Private, scope->className, var->name(), inconclusive);
+                            uninitVarError(func.token, func.access == Private, scope->className, var.name(), inconclusive);
                     }
                 }
             }
