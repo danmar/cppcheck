@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # 1. Create a folder daca2 in your HOME folder
-# 2. Put cppcheck-O2 in daca2. It should be built with all optimisations.
+# 2. Put cppcheck-head in daca2. It should be built with all optimisations.
 # 3. Optional: Put a file called "suppressions.txt" in the daca2 folder.
 # 4. Optional: tweak FTPSERVER and FTPPATH in this script below.
 # 5. Run the daca2 script:  python daca2.py FOLDER
@@ -14,11 +14,11 @@ import glob
 import os
 import datetime
 import time
-import logging
 
 DEBIAN = ('ftp://ftp.se.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
 
+RESULTS_FILES = ['results.txt']
 
 def wget(filepath):
     filename = filepath
@@ -85,7 +85,7 @@ def removeAllExceptResults():
             try:
                 if os.path.isdir(filename):
                     shutil.rmtree(filename, onerror=handleRemoveReadonly)
-                elif filename != RESULTS_FILENAME:
+                elif filename not in RESULTS_FILES:
                     os.remove(filename)
                 break
             except WindowsError as err:
@@ -113,7 +113,7 @@ def removeLargeFiles(path):
                 shutil.rmtree(g, onerror=handleRemoveReadonly)
             else:
                 removeLargeFiles(g + '/')
-        elif os.path.isfile(g) and g[-4:] != '.txt':
+        elif os.path.isfile(g) and not g.endswith('.txt'):
             statinfo = os.stat(g)
             if statinfo.st_size > 1000000:
                 try:
@@ -126,15 +126,15 @@ def strfCurrTime(fmt):
     return datetime.time.strftime(datetime.datetime.now().time(), fmt)
 
 
-def scanarchive(filepath, jobs, cpulimit):
+def scanarchive(filepath, args, run, resultsFile):
     # remove all files/folders except RESULTS_FILENAME
     removeAllExceptResults()
 
-    logging.info(DEBIAN[0] + filepath)
+    resultsFile.write(DEBIAN[0] + filepath + '\n')
 
     if not wget(filepath):
         if not wget(filepath):
-            logging.error('wget failed at {}'.format(filepath))
+            resultsFile.write('wget failed at {}'.format(filepath))
             return
 
     filename = filepath[filepath.rfind('/') + 1:]
@@ -149,27 +149,29 @@ def scanarchive(filepath, jobs, cpulimit):
 
     print(strfCurrTime('[%H:%M] cppcheck ') + filename)
 
-    if cpulimit:
-        cmd = 'cpulimit --limit=' + cpulimit
+    if args.cpulimit:
+        cmd = 'cpulimit --limit=' + args.cpulimit
     else:
         cmd = 'nice --adjustment=1000'
     # TODO: The --exception-handling=stderr is skipped right now because it hangs (#8589)
-    cmd = cmd + ' ../cppcheck-O2 -D__GCC__ --enable=style --inconclusive --error-exitcode=0 ' +\
-        jobs + ' --template=daca2 .'
+    cppcheck = '../cppcheck-' + run
+    cmd = cmd + ' ' + cppcheck + ' -D__GCC__ --enable=style --inconclusive --error-exitcode=0 ' +\
+        args.jobs + ' --template=daca2 .'
     cmds = cmd.split()
 
     p = subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
 
     if p.returncode == 0:
-        logging.info(comm[1] + strfCurrTime('[%H:%M]'))
+        resultsFile.write(comm[1] + strfCurrTime('[%H:%M]') + '\n')
     elif 'cppcheck: error: could not find or open any of the paths given.' not in comm[0]:
         stdout = comm[0]
         pos1 = stdout.rfind('Checking ')
         if pos1 > 0:
-            logging.error(stdout[pos1:])
-        logging.error(comm[1] + strfCurrTime('[%H:%M]'))
-        logging.error('Exit code is not zero! Crash?\n')
+            resultsFile.write(stdout[pos1:]+'\n')
+        resultsFile.write(comm[1] + strfCurrTime('[%H:%M]')+'\n')
+        resultsFile.write('Exit code is not zero! Crash?\n')
+    resultsFile.write('\n')
 
 
 parser = argparse.ArgumentParser(description='Checks debian source code')
@@ -179,57 +181,58 @@ parser.add_argument('--workdir', default='~/daca2')
 parser.add_argument('-j', '--jobs', default='-j1')
 parser.add_argument('--skip', default=[], action='append')
 parser.add_argument('--cpulimit')
+parser.add_argument('--baseversion')
 
 args = parser.parse_args()
 
 workdir = os.path.expanduser(args.workdir)
 if not os.path.isdir(workdir):
-    logging.critical('workdir \'' + workdir + '\' is not a folder')
+    print('workdir \'' + workdir + '\' is not a folder')
+    sys.exit(1)
+os.chdir(workdir)
+
+archives = getpackages(args.folder)
+if len(archives) == 0:
+    print('failed to load packages')
     sys.exit(1)
 
 workdir = os.path.join(workdir, args.folder)
 if not os.path.isdir(workdir):
     os.makedirs(workdir)
-
-RESULTS_FILENAME = 'results.txt'
-RESULTS_FILE = os.path.join(workdir, RESULTS_FILENAME)
-
-logging.basicConfig(
-    filename=RESULTS_FILE,
-    level=logging.INFO,
-    format='%(message)s')
-
-print(workdir)
-
-archives = getpackages(args.folder)
-if len(archives) == 0:
-    logging.critical('failed to load packages')
-    sys.exit(1)
-
-if not os.path.isdir(workdir):
-    os.makedirs(workdir)
 os.chdir(workdir)
 
-try:
-    logging.info('STARTDATE ' + str(datetime.date.today()))
-    logging.info('STARTTIME ' + strfCurrTime('%H:%M:%S'))
-    if args.rev:
-        logging.info('GIT-REVISION ' + args.rev + '\n')
-    logging.info('')
+versions = ['head']
+if args.baseversion:
+    versions.append(args.baseversion)
+    RESULTS_FILES = ['results-head.txt', 'results-' + args.baseversion + '.txt']
 
-    for archive in archives:
-        if len(args.skip) > 0:
-            a = archive[:archive.rfind('/')]
-            a = a[a.rfind('/') + 1:]
-            if a in args.skip:
-                continue
-        scanarchive(archive, args.jobs, args.cpulimit)
+for run in versions:
+    try:
+        f = None
+        if args.baseversion:
+            f = open('results-' + run + '.txt', 'wt')
+        else:
+            f = open('results.txt', 'wt')
+        f.write('STARTDATE ' + str(datetime.date.today()) + '\n')
+        f.write('STARTTIME ' + strfCurrTime('%H:%M:%S') + '\n')
+        if args.rev:
+            f.write('GIT-REVISION ' + args.rev + '\n')
+        f.write('\n')
 
-    logging.info('DATE {}'.format(datetime.date.today()))
-    logging.info('TIME {}'.format(strfCurrTime('%H:%M:%S')))
+        for archive in archives:
+            if len(args.skip) > 0:
+                a = archive[:archive.rfind('/')]
+                a = a[a.rfind('/') + 1:]
+                if a in args.skip:
+                    continue
+            scanarchive(archive, args, run, f)
 
-except EOFError:
-    pass
+        f.write('DATE {}'.format(datetime.date.today()) + '\n')
+        f.write('TIME {}'.format(strfCurrTime('%H:%M:%S')) + '\n')
+        f.close()
+
+    except EOFError:
+        pass
 
 # remove all files/folders except RESULTS_FILENAME
 removeAllExceptResults()

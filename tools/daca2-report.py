@@ -95,14 +95,14 @@ for severity in ['error', 'warning', 'style', 'portability', 'performance']:
 
 daca2 = daca2folder
 pattern = re.compile(r'.*: (error|warning|style|performance|portability):.* \[([a-zA-Z0-9_\\-]+)\]')
-for lib in (False, True):
+for lib in [False, True]:
     for a in "0123456789abcdefghijklmnopqrstuvwxyz":
         if lib:
             a = "lib" + a
-        if not os.path.isfile(daca2 + a + '/results.txt'):
+        if not os.path.isfile(daca2 + a + '/results-head.txt'):
             continue
 
-        f = open(daca2 + a + '/results.txt', 'rt')
+        f = open(daca2 + a + '/results-head.txt', 'rt')
         data = f.read()
         f.close()
 

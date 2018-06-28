@@ -21,20 +21,21 @@ def compilecppcheck(CPPFLAGS):
     subprocess.call(['nice', 'make', 'clean'])
     subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' +
                     os.path.expanduser('~/cppcheck/cfg'), 'CXXFLAGS=-g -O2', 'CPPFLAGS=' + CPPFLAGS])
-    subprocess.call(['cp', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-O2')])
+    subprocess.call(['cp', 'cppcheck', os.path.expanduser('~/daca2/cppcheck-head')])
 
 
 def runcppcheck(rev, folder):
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
     subprocess.call(['nice', '--adjustment=19', 'python',
                     os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev,
-                    '--skip=hashdeep', '--skip=lice'])
+                    '--baseversion=1.84', '--skip=hashdeep', '--skip=lice'])
 
 
 def daca2report(reportfolder):
     subprocess.call(['rm', '-rf', reportfolder])
     subprocess.call(['mkdir', reportfolder])
     subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), reportfolder])
+    subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-diff.py'), reportfolder])
 
 
 # Upload file to sourceforge server using scp
@@ -71,10 +72,17 @@ def daca2(foldernum):
     rev = comm[0]
     rev = rev[:rev.find('\n')]
 
+    print('rundaca2.py: compile cppcheck')
     compilecppcheck('-DMAXTIME=600 -DDACA2')
+
+    print('rundaca2.py: runcppcheck')
     runcppcheck(rev, folder)
     runcppcheck(rev, 'lib' + folder)
+
+    print('rundaca2.py: daca2 report')
     daca2report(os.path.expanduser('~/daca2-report'))
+
+    print('rundaca2.py: upload')
     upload(os.path.expanduser('~/daca2-report'), 'devinfo/')
 
 foldernum = START
