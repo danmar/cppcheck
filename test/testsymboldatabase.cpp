@@ -26,6 +26,7 @@
 #include "tokenlist.h"
 #include "utils.h"
 
+#include <climits>
 #include <cstddef>
 #include <list>
 #include <map>
@@ -5065,6 +5066,7 @@ private:
                       "    long               get(long x) { return x; }\n"
                       "    long long          get(long long x) { return x; }\n"
                       "    unsigned char      get(unsigned char x) { return x; }\n"
+                      "    signed char        get(signed char x) { return x; }\n"
                       "    unsigned short     get(unsigned short x) { return x; }\n"
                       "    unsigned int       get(unsigned int x) { return x; }\n"
                       "    unsigned long      get(unsigned long x) { return x; }\n"
@@ -5079,12 +5081,13 @@ private:
                       "        long               v5  = 1;      v5  = get(get(v5));\n"
                       "        long long          v6  = 1;      v6  = get(get(v6));\n"
                       "        unsigned char      v7  = '1';    v7  = get(get(v7));\n"
-                      "        unsigned short     v8  = 1;      v8  = get(get(v8));\n"
-                      "        unsigned int       v9  = 1;      v9  = get(get(v9));\n"
-                      "        unsigned long      v10 = 1;      v10 = get(get(v10));\n"
-                      "        unsigned long long v11 = 1;      v11 = get(get(v11));\n"
-                      "        E1                 v12 = e1;     v12 = get(get(v12));\n"
-                      "        E2                 v13 = E2::e2; v13 = get(get(v13));\n"
+                      "        signed char        v8  = '1';    v8  = get(get(v8));\n"
+                      "        unsigned short     v9  = 1;      v9  = get(get(v9));\n"
+                      "        unsigned int       v10 = 1;      v10 = get(get(v10));\n"
+                      "        unsigned long      v11 = 1;      v11 = get(get(v11));\n"
+                      "        unsigned long long v12 = 1;      v12 = get(get(v12));\n"
+                      "        E1                 v13 = e1;     v13 = get(get(v13));\n"
+                      "        E2                 v14 = E2::e2; v14 = get(get(v14));\n"
                       "    }\n"
                       "};");
 
@@ -5094,7 +5097,10 @@ private:
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v2 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+        if (std::numeric_limits<char>::is_signed)
+            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+        else
+            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 10);
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v3 ) ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 6);
@@ -5112,7 +5118,10 @@ private:
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 10);
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v8 ) ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 11);
+        if (std::numeric_limits<char>::is_signed)
+            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 5);
+        else
+            ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 10);
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v9 ) ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
@@ -5128,6 +5137,9 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v13 ) ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 16);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "get ( get ( v14 ) ) ;");
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 17);
     }
 
     void findFunction20() { // # 8280
