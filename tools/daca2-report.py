@@ -48,14 +48,15 @@ def summaryHtml(style, font, severity, categories, totalNumber):
 def getWarnings(filename):
     ftp = ''
     warnings = []
-    pattern = re.compile(r'.*: (error|warning|style|performance|portability):.* \[([a-zA-Z0-9_\\-]+)\]')
+    pattern = re.compile(r'(.*:[0-9]+):[0-9]+: (error|warning|style|performance|portability)(:.* \[[a-zA-Z0-9_\\-]+\])')
     for line in open(filename, 'rt'):
         line = line.strip('\r\n')
         if line.startswith('ftp://'):
             ftp = line
             continue
-        if pattern.match(line):
-            warnings.append(ftp + '\n' + line)
+        res = pattern.match(line)
+        if res:
+            warnings.append(ftp + '\n' + res.group(1) + ': ' + res.group(2) + res.group(3))
     return warnings
 
 def getUnique(warnings1, warnings2):
