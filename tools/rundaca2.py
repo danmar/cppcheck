@@ -52,7 +52,7 @@ def upload(localfolder, webfolder):
             child.interact()
             return
         except (IOError, OSError, pexpect.TIMEOUT, pexpect.EOF):
-            print('Sleep for 10 seconds..')
+            print('rundaca2.py: Upload failed. Sleep for 10 seconds..')
             time.sleep(10)
             tries = tries + 1
 
