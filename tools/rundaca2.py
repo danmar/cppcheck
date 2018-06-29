@@ -35,7 +35,6 @@ def daca2report(reportfolder):
     subprocess.call(['rm', '-rf', reportfolder])
     subprocess.call(['mkdir', reportfolder])
     subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-report.py'), reportfolder])
-    subprocess.call(['python', os.path.expanduser('~/cppcheck/tools/daca2-diff.py'), reportfolder])
 
 
 # Upload file to sourceforge server using scp
