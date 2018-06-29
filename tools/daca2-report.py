@@ -87,7 +87,7 @@ def diffResults(reportpath):
     f.close()
 
     f = open(reportpath + 'positives.txt', 'wt')
-    s, count_positives = getUnique(warnings_base, warnings_head)
+    s, count_positives = getUnique(warnings_head, warnings_base)
     f.write(s)
     f.close()
 
