@@ -345,7 +345,7 @@ static const Variable *getContainer(const Token *argtok)
 bool isIteratorExpression(const Token * tok)
 {
     if(!tok) return false;
-    if (Token::Match(tok, "%name% (") && 
+    if (Token::Match(tok, "%name% (|{") && 
         tok->next()->link() && 
         !Token::simpleMatch(tok->next()->link()->next(), ",") && 
         isIteratorExpression(tok->next()->link()->next())) {
@@ -373,6 +373,15 @@ bool isMismatchIteratorExpression(const Token * tok1, const Token * tok2)
         return true;
     }
 
+    if (Token::Match(tok1, "%name% (|{") && 
+        Token::Match(tok2, "%name% (|{") &&
+        tok1->next()->link() && 
+        tok2->next()->link() && 
+        tok1->next()->link()->next() &&
+        tok2->next()->link()->next() &&
+        isMismatchIteratorExpression(tok1->next()->link()->next()->astOperand2(), tok2->next()->link()->next()->astOperand2())) {
+        return true;
+    }
     return isMismatchIteratorExpression(tok1->astOperand1(), tok2->astOperand1()) ||
         isMismatchIteratorExpression(tok1->astOperand2(), tok2->astOperand2());
 }

@@ -534,22 +534,49 @@ private:
     }
 
     void iteratorExpression() {
-        check("std::vector<int> f();\n"
-              "std::vector<int> g();\n"
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    (void)std::find(f().begin(), g().end(), 0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers are used together.\n", errout.str());
 
-        check("std::vector<int> f();\n"
-              "std::vector<int> g();\n"
+        check("struct A {\n"
+              "    std::vector<int>& f();\n"
+              "    std::vector<int>& g();\n"
+              "};\n"
+              "void foo() {\n"
+              "    (void)std::find(A().f().begin(), A().g().end(), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers are used together.\n", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int>& f();\n"
+              "    std::vector<int>& g();\n"
+              "};\n"
+              "void foo() {\n"
+              "    (void)std::find(A{}.f().begin(), A{}.g().end(), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers are used together.\n", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    (void)std::find(begin(f()), end(g()), 0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers are used together.\n", errout.str());
 
-        check("std::vector<int> f();\n"
-              "std::vector<int> g();\n"
+        check("struct A {\n"
+              "    std::vector<int>& f();\n"
+              "    std::vector<int>& g();\n"
+              "};\n"
+              "void foo() {\n"
+              "    (void)std::find(A().f().begin(), A().f().end(), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    (void)std::find(f().begin() + 1, f().end(), 0);\n"
               "    (void)std::find(f().begin(), f().end() - 1, 0);\n"
