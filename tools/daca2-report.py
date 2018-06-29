@@ -45,6 +45,54 @@ def summaryHtml(style, font, severity, categories, totalNumber):
     ret = ret + '</tr>\n'
     return ret
 
+def getWarnings(filename):
+    ftp = ''
+    warnings = []
+    pattern = re.compile(r'.*: (error|warning|style|performance|portability):.* \[([a-zA-Z0-9_\\-]+)\]')
+    for line in open(filename, 'rt'):
+        line = line.strip('\r\n')
+        if line.startswith('ftp://'):
+            ftp = line
+            continue
+        if pattern.match(line):
+            warnings.append(ftp + '\n' + line)
+    return warnings
+
+def getUnique(warnings1, warnings2):
+    ret = ''
+    count = 0
+    for w in warnings1:
+        if w not in warnings2:
+            ret = ret + w + '\n'
+            count = count + 1
+    return ret, count
+
+def diffResults(reportpath):
+    warnings_base = []
+    warnings_head = []
+
+    for lib in ['', 'lib']:
+        for a in "0123456789abcdefghijklmnopqrstuvwxyz":
+            if not os.path.isfile(daca2folder + lib + a + '/results-1.84.txt'):
+                continue
+            if not os.path.isfile(daca2folder + lib + a + '/results-head.txt'):
+                continue
+
+            warnings_base.extend(getWarnings(daca2folder + lib + a + '/results-1.84.txt'))
+            warnings_head.extend(getWarnings(daca2folder + lib + a + '/results-head.txt'))
+
+    f = open(reportpath + 'negatives.txt', 'wt')
+    s, count_negatives = getUnique(warnings_base, warnings_head)
+    f.write(s)
+    f.close()
+
+    f = open(reportpath + 'positives.txt', 'wt')
+    s, count_positives = getUnique(warnings_base, warnings_head)
+    f.write(s)
+    f.close()
+
+    return count_negatives, count_positives
+
 daca2folder = os.path.expanduser('~/daca2/')
 path = ''
 for arg in sys.argv[1:]:
@@ -56,6 +104,8 @@ for arg in sys.argv[1:]:
         path = arg
         if path[-1] != '/':
             path += '/'
+
+count_negatives, count_positives = diffResults(path)
 
 mainpage = open(path + 'daca2.html', 'wt')
 mainpage.write('<!DOCTYPE html>\n')
@@ -71,6 +121,8 @@ mainpage.write('<h1>DACA2</h1>\n')
 mainpage.write('<p>Results when running latest (git head) Cppcheck on Debian.</p>\n')
 mainpage.write('<p>For performance reasons the analysis is limited. Files larger than 1mb are skipped. ' +
                'If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
+mainpage.write('<p>Negatives: <a href="negatives.txt">' + str(count_negatives) + '</a></p>\n')
+mainpage.write('<p>Positives: <a href="positives.txt">' + str(count_positives) + '</a></p>\n')
 mainpage.write('<table class="sortable">\n')
 mainpage.write(
     '<tr>' +
