@@ -54,6 +54,7 @@ private:
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
         TEST_CASE(iterator14); // #8191
+        TEST_CASE(iteratorExpression);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -529,6 +530,34 @@ private:
               "    std::map<int,Foo>::const_iterator it;\n"
               "    for (it = x.find(0)->second.begin(); it != x.find(0)->second.end(); ++it) {}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iteratorExpression() {
+        check("std::vector<int> f();\n"
+              "std::vector<int> g();\n"
+              "void foo() {\n"
+              "    (void)std::find(f().begin(), g().end(), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers are used together.\n", errout.str());
+
+        check("std::vector<int> f();\n"
+              "std::vector<int> g();\n"
+              "void foo() {\n"
+              "    (void)std::find(begin(f()), end(g()), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers are used together.\n", errout.str());
+
+        check("std::vector<int> f();\n"
+              "std::vector<int> g();\n"
+              "void foo() {\n"
+              "    (void)std::find(f().begin() + 1, f().end(), 0);\n"
+              "    (void)std::find(f().begin(), f().end() - 1, 0);\n"
+              "    (void)std::find(f().begin() + 1, f().end() - 1, 0);\n"
+              "    (void)std::find(begin(f()) + 1, end(f()), 0);\n"
+              "    (void)std::find(begin(f()), end(f()) - 1, 0);\n"
+              "    (void)std::find(begin(f()) + 1, end(f()) - 1, 0);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

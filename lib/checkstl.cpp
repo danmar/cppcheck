@@ -341,6 +341,31 @@ static const Variable *getContainer(const Token *argtok)
     return nullptr;
 }
 
+bool isSameIteratorExpression(const Token * tok1, const Token * tok2)
+{
+    if (tok1 == nullptr && tok2 == nullptr)
+        return true;
+    if (tok1 == nullptr || tok2 == nullptr)
+        return false;
+    if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
+        tok1 = tok1->astOperand2();
+    if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
+        tok2 = tok2->astOperand2();
+
+    bool it1 = Token::Match(tok1, iteratorBeginFuncPattern.c_str()) || Token::Match(tok1, iteratorEndFuncPattern.c_str());
+    bool it2 = Token::Match(tok2, iteratorBeginFuncPattern.c_str()) || Token::Match(tok2, iteratorEndFuncPattern.c_str());
+
+    if(it1 && it2 && tok1->next() && tok2->next()) {
+        return isSameIteratorExpression(tok1->next()->astOperand2(), tok2->next()->astOperand2());
+    }
+    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
+        return false;
+    }
+
+    return isSameIteratorExpression(tok1->astOperand1(), tok2->astOperand1()) &&
+        isSameIteratorExpression(tok1->astOperand2(), tok2->astOperand2());
+}
+
 void CheckStl::mismatchingContainers()
 {
     // Check if different containers are used in various calls of standard functions
@@ -353,6 +378,7 @@ void CheckStl::mismatchingContainers()
                 continue;
             const Token * const ftok = tok;
             const Token * const arg1 = tok->tokAt(2);
+            const Token * firstArg = nullptr;
 
             int argnr = 1;
             std::map<const Variable *, unsigned int> containerNr;
@@ -361,19 +387,25 @@ void CheckStl::mismatchingContainers()
                 if (!i)
                     continue;
                 const Variable *c = getContainer(argTok);
-                if (!c)
-                    continue;
-                std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
-                if (it == containerNr.end()) {
-                    for (it = containerNr.begin(); it != containerNr.end(); ++it) {
-                        if (it->second == i->container) {
-                            mismatchingContainersError(argTok);
-                            break;
+                if(c) {
+                    std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
+                    if (it == containerNr.end()) {
+                        for (it = containerNr.begin(); it != containerNr.end(); ++it) {
+                            if (it->second == i->container) {
+                                mismatchingContainersError(argTok);
+                                break;
+                            }
                         }
+                        containerNr[c] = i->container;
+                    } else if (it->second != i->container) {
+                        mismatchingContainersError(argTok);
                     }
-                    containerNr[c] = i->container;
-                } else if (it->second != i->container) {
-                    mismatchingContainersError(argTok);
+                } else {
+                    if(i->first) {
+                        firstArg = argTok;
+                    } else if(i->last && firstArg && !isSameIteratorExpression(firstArg, argTok)) {
+                        mismatchingContainersError(argTok);
+                    }
                 }
             }
             const int ret = mSettings->library.returnValueContainer(ftok);
