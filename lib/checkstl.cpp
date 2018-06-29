@@ -324,6 +324,7 @@ static const std::set<std::string> algorithm1x1 = {  // func(begin1, x, end1
 
 static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
 static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
+static const std::string iteratorFuncPattern = "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (";
 
 static const std::string pattern1x1_1 = "%name% . " + iteratorBeginFuncPattern + " ( ) , ";
 static const std::string pattern1x1_2 = "%name% . " + iteratorEndFuncPattern + " ( ) ,|)";
@@ -341,29 +342,39 @@ static const Variable *getContainer(const Token *argtok)
     return nullptr;
 }
 
-bool isSameIteratorExpression(const Token * tok1, const Token * tok2)
+bool isIteratorExpression(const Token * tok)
+{
+    if(!tok) return false;
+    if (Token::Match(tok, "%name% (") && 
+        tok->next()->link() && 
+        !Token::simpleMatch(tok->next()->link()->next(), ",") && 
+        isIteratorExpression(tok->next()->link()->next())) {
+        return true;
+    }
+    return Token::Match(tok, iteratorFuncPattern.c_str()) || 
+            isIteratorExpression(tok->astOperand2());
+}
+
+bool isMismatchIteratorExpression(const Token * tok1, const Token * tok2)
 {
     if (tok1 == nullptr && tok2 == nullptr)
-        return true;
-    if (tok1 == nullptr || tok2 == nullptr)
         return false;
+    if (tok1 == nullptr || tok2 == nullptr)
+        return true;
     if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
         tok1 = tok1->astOperand2();
     if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
         tok2 = tok2->astOperand2();
 
-    bool it1 = Token::Match(tok1, iteratorBeginFuncPattern.c_str()) || Token::Match(tok1, iteratorEndFuncPattern.c_str());
-    bool it2 = Token::Match(tok2, iteratorBeginFuncPattern.c_str()) || Token::Match(tok2, iteratorEndFuncPattern.c_str());
-
-    if(it1 && it2 && tok1->next() && tok2->next()) {
-        return isSameIteratorExpression(tok1->next()->astOperand2(), tok2->next()->astOperand2());
+    if(Token::Match(tok1, iteratorFuncPattern.c_str()) && Token::Match(tok2, iteratorFuncPattern.c_str()) && tok1->next() && tok2->next()) {
+        return isMismatchIteratorExpression(tok1->next()->astOperand2(), tok2->next()->astOperand2());
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
-        return false;
+        return true;
     }
 
-    return isSameIteratorExpression(tok1->astOperand1(), tok2->astOperand1()) &&
-        isSameIteratorExpression(tok1->astOperand2(), tok2->astOperand2());
+    return isMismatchIteratorExpression(tok1->astOperand1(), tok2->astOperand1()) ||
+        isMismatchIteratorExpression(tok1->astOperand2(), tok2->astOperand2());
 }
 
 void CheckStl::mismatchingContainers()
@@ -403,7 +414,10 @@ void CheckStl::mismatchingContainers()
                 } else {
                     if(i->first) {
                         firstArg = argTok;
-                    } else if(i->last && firstArg && !isSameIteratorExpression(firstArg, argTok)) {
+                    } else if(i->last && firstArg && 
+                            isIteratorExpression(firstArg) && 
+                            isIteratorExpression(argTok) && 
+                            isMismatchIteratorExpression(firstArg, argTok)) {
                         mismatchingContainersError(argTok);
                     }
                 }
