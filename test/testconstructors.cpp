@@ -1356,6 +1356,25 @@ private:
               "};");
         ASSERT_EQUALS("", errout.str());
 
+        check("class A : public std::vector<int>\n"
+              "{\n"
+              "public:\n"
+              "    A(const A &a);\n"
+              "};\n"
+              "class B\n"
+              "{\n"
+              "    A a;\n"
+              "public:\n"
+              "    B(){}\n"
+              "    B(const B&){}\n"
+              "    B(B &&){}\n"
+              "    const B& operator=(const B&){return *this;}\n"
+              "};", true);
+        ASSERT_EQUALS("[test.cpp:11]: (warning, inconclusive) Member variable 'B::a' is not initialized in the constructor.\n"
+                      "[test.cpp:12]: (warning, inconclusive) Member variable 'B::a' is not initialized in the constructor.\n"
+                      "[test.cpp:13]: (warning, inconclusive) Member variable 'B::a' is not assigned a value in 'B::operator='.\n",
+                      errout.str());
+
         check("class B\n"
               "{\n"
               "public:\n"
