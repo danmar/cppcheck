@@ -47,7 +47,7 @@ def summaryHtml(style, font, severity, categories, totalNumber):
 
 def getWarnings(filename):
     ftp = ''
-    warnings = []
+    warnings = {}
     pattern = re.compile(r'(.*:[0-9]+):[0-9]+: (error|warning|style|performance|portability)(:.* \[[a-zA-Z0-9_\\-]+\])')
     for line in open(filename, 'rt'):
         line = line.strip('\r\n')
@@ -56,21 +56,24 @@ def getWarnings(filename):
             continue
         res = pattern.match(line)
         if res:
-            warnings.append(ftp + '\n' + res.group(1) + ': ' + res.group(2) + res.group(3))
+            warnings[ftp + '\n' + res.group(1) + ': ' + res.group(2) + res.group(3)] = 1
     return warnings
 
 def getUnique(warnings1, warnings2):
     ret = ''
     count = 0
-    for w in warnings1:
+    for w in warnings1.keys():
         if w not in warnings2:
             ret = ret + w + '\n'
             count = count + 1
     return ret, count
 
 def diffResults(reportpath):
-    warnings_base = []
-    warnings_head = []
+    negatives = ''
+    count_negatives = 0
+
+    positives = ''
+    count_positives = 0
 
     for lib in ['', 'lib']:
         for a in "0123456789abcdefghijklmnopqrstuvwxyz":
@@ -79,17 +82,25 @@ def diffResults(reportpath):
             if not os.path.isfile(daca2folder + lib + a + '/results-head.txt'):
                 continue
 
-            warnings_base.extend(getWarnings(daca2folder + lib + a + '/results-1.84.txt'))
-            warnings_head.extend(getWarnings(daca2folder + lib + a + '/results-head.txt'))
+            print('diffResults:' + lib + a)
+
+            warnings_base = getWarnings(daca2folder + lib + a + '/results-1.84.txt')
+            warnings_head = getWarnings(daca2folder + lib + a + '/results-head.txt')
+
+            s, count = getUnique(warnings_base, warnings_head)
+            negatives += s
+            count_negatives += count
+
+            s, count = getUnique(warnings_head, warnings_base)
+            positives += s
+            count_positives += count
 
     f = open(reportpath + 'negatives.txt', 'wt')
-    s, count_negatives = getUnique(warnings_base, warnings_head)
-    f.write(s)
+    f.write(negatives)
     f.close()
 
     f = open(reportpath + 'positives.txt', 'wt')
-    s, count_positives = getUnique(warnings_head, warnings_base)
-    f.write(s)
+    f.write(positives)
     f.close()
 
     return count_negatives, count_positives
