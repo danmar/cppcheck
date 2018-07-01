@@ -1480,6 +1480,8 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     QFileInfo inf(projectFile->getFilename());
     const QString rootpath = projectFile->getRootPath();
 
+    QDir::setCurrent(inf.absolutePath());
+
     mThread->setAddonsAndTools(projectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
     mUI.mResults->setTags(projectFile->getTags());
 
@@ -1540,15 +1542,6 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
     // project file was located.
     if (paths.isEmpty()) {
         paths << mCurrentDirectory;
-    }
-
-    // Convert relative paths to absolute paths
-    for (int i = 0; i < paths.size(); i++) {
-        if (!QDir::isAbsolutePath(paths[i])) {
-            QString path = mCurrentDirectory + "/";
-            path += paths[i];
-            paths[i] = QDir::cleanPath(path);
-        }
     }
     doAnalyzeFiles(paths, checkLibrary, checkConfiguration);
 }

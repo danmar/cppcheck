@@ -93,7 +93,7 @@ QStringList FileList::getFileList() const
     if (mExcludedPaths.empty()) {
         QStringList names;
         foreach (QFileInfo item, mFileList) {
-            QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
+            QString name = QDir::fromNativeSeparators(item.filePath());
             names << name;
         }
         return names;
