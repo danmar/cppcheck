@@ -83,6 +83,7 @@ private:
         TEST_CASE(varScope22);      // Ticket #5684
         TEST_CASE(varScope23);      // Ticket #6154
         TEST_CASE(varScope24);      // pointer / reference
+        TEST_CASE(varScope25);      // time_t
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1159,6 +1160,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void varScope25() {
+        check("void f() {\n"
+              "    time_t currtime;\n"
+              "    if (a) {\n"
+              "        currtime = time(&dummy);\n"
+              "        if (currtime > t) {}\n"
+              "    }\n"
+              "}", "test.c");
+        ASSERT_EQUALS("[test.c:2]: (style) The scope of the variable 'currtime' can be reduced.\n", errout.str());
+    }
     void checkOldStylePointerCast(const char code[]) {
         // Clear the error buffer..
         errout.str("");
