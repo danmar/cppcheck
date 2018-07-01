@@ -48,31 +48,57 @@ def summaryHtml(style, font, severity, categories, totalNumber):
 def getWarnings(filename):
     ftp = ''
     warnings = {}
+    warnings[''] = []
     pattern = re.compile(r'(.*:[0-9]+):[0-9]+: (error|warning|style|performance|portability)(:.* \[[a-zA-Z0-9_\\-]+\])')
     for line in open(filename, 'rt'):
         line = line.strip('\r\n')
         if line.startswith('ftp://'):
             ftp = line
+            warnings[ftp] = []
             continue
         res = pattern.match(line)
         if res:
-            warnings[ftp + '\n' + res.group(1) + ': ' + res.group(2) + res.group(3)] = 1
+            warnings[ftp].append(res.group(1) + ': ' + res.group(2) + res.group(3))
     return warnings
 
-def getUnique(warnings1, warnings2):
+def diffWarnings(warnings1, warnings2):
     ret = ''
-    count = 0
-    for w in warnings1.keys():
-        if w not in warnings2:
-            ret = ret + w + '\n'
-            count = count + 1
-    return ret, count
+    count1 = 0
+    count2 = 0
+    for ftp in warnings1.keys():
+        if len(ftp)<4:
+            continue
+        w1 = sorted(warnings1[ftp])
+        w2 = sorted(warnings2[ftp])
+        i1 = 0
+        i2 = 0
+
+        while i1 < len(w1) and i2 < len(w2):
+            if w1[i1] == w2[i2]:
+                i1 = i1 + 1
+                i2 = i2 + 1
+            elif w1[i1] < w2[i2]:
+                ret = ret + '1.84: ' + w1[i1] + '\n'
+                count1 = count1 + 1
+                i1 = i1 + 1
+            else:
+                ret = ret + 'head: ' + w2[i2] + '\n'
+                count2 = count2 + 1
+                i2 = i2 + 1
+        while i1 < len(w1):
+            ret = ret + '1.84: ' + w1[i1] + '\n'
+            count1 = count1 + 1
+            i1 = i1 + 1
+        while i2 < len(w2):
+            ret = ret + 'head: ' + w2[i2] + '\n'
+            count2 = count2 + 1
+            i2 = i2 + 1
+
+    return ret, count1, count2
 
 def diffResults(reportpath):
-    negatives = ''
+    diff = ''
     count_negatives = 0
-
-    positives = ''
     count_positives = 0
 
     for lib in ['', 'lib']:
@@ -87,20 +113,13 @@ def diffResults(reportpath):
             warnings_base = getWarnings(daca2folder + lib + a + '/results-1.84.txt')
             warnings_head = getWarnings(daca2folder + lib + a + '/results-head.txt')
 
-            s, count = getUnique(warnings_base, warnings_head)
-            negatives += s
-            count_negatives += count
+            s, count1, count2 = diffWarnings(warnings_base, warnings_head)
+            diff = diff + s
+            count_negatives += count1
+            count_positives += count2
 
-            s, count = getUnique(warnings_head, warnings_base)
-            positives += s
-            count_positives += count
-
-    f = open(reportpath + 'negatives.txt', 'wt')
-    f.write(negatives)
-    f.close()
-
-    f = open(reportpath + 'positives.txt', 'wt')
-    f.write(positives)
+    f = open(reportpath + 'diff.txt', 'wt')
+    f.write(diff)
     f.close()
 
     return count_negatives, count_positives
@@ -133,8 +152,9 @@ mainpage.write('<h1>DACA2</h1>\n')
 mainpage.write('<p>Results when running latest (git head) Cppcheck on Debian.</p>\n')
 mainpage.write('<p>For performance reasons the analysis is limited. Files larger than 1mb are skipped. ' +
                'If analysis of a file takes more than 10 minutes it may be stopped.</p>\n')
-mainpage.write('<p>Negatives (fixed/lost warnings): <a href="negatives.txt">' + str(count_negatives) + '</a></p>\n')
-mainpage.write('<p>Positives (new warnings): <a href="positives.txt">' + str(count_positives) + '</a></p>\n')
+
+mainpage.write('<p>Show <a href="diff.txt">diff</a> (1.84:' + str(count_negatives) + ', head:' + str(count_positives) + ')</p>\n')
+
 mainpage.write('<table class="sortable">\n')
 mainpage.write(
     '<tr>' +
