@@ -38,6 +38,8 @@ Suppressions::Suppression NewSuppressionDialog::getSuppression() const
 {
     Suppressions::Suppression ret;
     ret.errorId = mUI->mComboErrorId->currentText().toStdString();
+    if (ret.errorId.empty())
+        ret.errorId = "*";
     ret.fileName = mUI->mTextFileName->text().toStdString();
     ret.lineNumber = mUI->mTextLineNumber->text().toInt();
     ret.symbolName = mUI->mTextSymbolName->text().toStdString();
