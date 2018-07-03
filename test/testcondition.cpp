@@ -105,6 +105,7 @@ private:
 
         TEST_CASE(checkInvalidTestForOverflow);
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
+        TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
     }
 
@@ -2431,6 +2432,24 @@ private:
               "    while(a + 1) { return; }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a+1' is always true\n", errout.str());
+    }
+
+    void alwaysTrueFalseInLogicalOperators() {
+        check("bool f();\n"
+              "void foo() { if(true||f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: true||f().\n", errout.str());
+
+        check("bool f();\n"
+              "void foo() { if(false||f()) {}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f();\n"
+              "void foo() { if(false&&f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: false&&f().\n", errout.str());
+
+        check("bool f();\n"
+              "void foo() { if(true&&f()) {}}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointerAdditionResultNotNull() {
