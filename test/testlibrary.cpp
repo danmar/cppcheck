@@ -730,6 +730,15 @@ private:
     }
 
 #define LOADLIBERROR(xmldata, errorcode) loadLibError(xmldata, errorcode, __FILE__, __LINE__)
+#define LOADLIB_ERROR_INVALID_RANGE(valid) LOADLIBERROR("<?xml version=\"1.0\"?>\n" \
+                                                        "<def>\n" \
+                                                        "<function name=\"f\">\n" \
+                                                        "<arg nr=\"1\">\n" \
+                                                        "<valid>" valid  "</valid>\n" \
+                                                        "</arg>\n" \
+                                                        "</function>\n" \
+                                                        "</def>", \
+                                                        Library::BAD_ATTRIBUTE_VALUE)
 
     void loadLibErrors() const {
 
@@ -763,6 +772,21 @@ private:
                      "<X>\n"
                      "</X>",
                      Library::UNSUPPORTED_FORMAT);
+
+        // letter as range
+        LOADLIB_ERROR_INVALID_RANGE("a");
+
+        // letter and number as range
+        LOADLIB_ERROR_INVALID_RANGE("1a");
+
+        // digit followed by dash
+        LOADLIB_ERROR_INVALID_RANGE("0:2-1");
+
+        // single dash
+        LOADLIB_ERROR_INVALID_RANGE("-");
+
+        // range with multiple colons
+        LOADLIB_ERROR_INVALID_RANGE("1:2:3");
     }
 };
 
