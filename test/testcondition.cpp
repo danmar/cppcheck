@@ -1911,6 +1911,15 @@ private:
 
         check("void f2(int a, int b) { if(a!=b) if(a!=b) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+
+        // #6645 false negative: condition is always false
+        check("void f(bool a, bool b) {\n"
+              "  if(a && b) {\n"
+              "     if(a) {}\n"
+              "     else  {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
     }
 
     void identicalConditionAfterEarlyExit() {
