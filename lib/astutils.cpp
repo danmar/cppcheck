@@ -143,6 +143,15 @@ const Token * getVariableExpression(const Variable * var)
         return var->declEndToken()->astOperand2();
 }
 
+bool isInLoop(const Token * tok) {
+    while(tok->astParent()) {
+        tok = tok->astParent();
+        if(Token::Match(tok->astOperand1(), "for|while"))
+            return true;
+    }
+    return false;
+}
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure)
 {
     if (tok1 == nullptr && tok2 == nullptr)
@@ -170,7 +179,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                 (var->scope() == (*varTok)->scope() || var->isConst()) && 
                 (!var->isStatic() || var->isConst()) &&
                 !var->isArgument() &&
-                !isVariableChanged(varExpr, *varTok, (*varTok)->varId(), false, nullptr, cpp)) {
+                !isVariableChanged(varExpr, *varTok, (*varTok)->varId(), false, nullptr, cpp) &&
+                !isInLoop(*varTok)) {
                 *varTok = varExpr;
             }
         }

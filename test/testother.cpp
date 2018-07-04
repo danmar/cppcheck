@@ -131,6 +131,7 @@ private:
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
         TEST_CASE(duplicateExpression6); // ticket #4639
         TEST_CASE(duplicateExpression7);
+        TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
@@ -3938,6 +3939,26 @@ private:
 
         check("void f() { static int a = 1; if ( a != 1){}}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { int a = 1; if ( a != 1){ a++; }}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
+
+        check("void f(int b) { int a = 1; if (b) { if ( a != 1){}} a++; } \n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpressionLoop() {
+        check("void f() { int a = 1; while ( a != 1){ a++; }}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { int a = 1; for ( int i=0; i < 3 && a != 1; i++){ a++; }}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int b) { int a = 1; while (b) { if ( a != 1){} b++; } a++; } \n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int b) { while (b) { int a = 1; if ( a != 1){} b++; } } \n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());        
     }
 
     void duplicateExpressionTernary() { // #6391
