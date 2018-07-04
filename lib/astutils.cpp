@@ -155,6 +155,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         if(varTok && *varTok) {
             const Variable * var = (*varTok)->variable();
             if(var && var->declEndToken() && 
+                !var->isArgument() &&
                 var->declEndToken()->astOperand2() && 
                 var->scope() == (*varTok)->scope() && 
                 *varTok != var->nameToken() &&
