@@ -29,6 +29,7 @@
 
 #include <list>
 #include <functional>
+#include <cassert>
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
@@ -144,6 +145,24 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             tok1 = tok1->astOperand2();
         if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
             tok2 = tok2->astOperand2();
+    }
+    // Follow variables if possible
+    if(tok1->tokType() != tok2->tokType()) {
+        const Token ** varTok = nullptr;
+        if(tok1->tokType() == Token::eVariable)
+            varTok = &tok1;
+        else if(tok2->tokType() == Token::eVariable)
+            varTok = &tok1;
+        if(varTok && *varTok) {
+            const Variable * var = (*varTok)->variable();
+            if(var && var->declEndToken() && 
+                var->declEndToken()->astOperand2() && 
+                var->scope() == (*varTok)->scope() && 
+                *varTok != var->nameToken() &&
+                !isVariableChanged(var->declEndToken(), *varTok, (*varTok)->varId(), false, nullptr, cpp)) {
+                *varTok = var->declEndToken()->astOperand2();
+            }
+        }
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
@@ -604,7 +623,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (!tok->function()) {
         // if the library says 0 is invalid
         // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
-        if (!addressOf && settings->library.isnullargbad(tok, 1+argnr))
+        if (!addressOf && settings && settings->library.isnullargbad(tok, 1+argnr))
             return false;
         // addressOf => inconclusive
         if (!addressOf) {

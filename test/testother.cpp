@@ -130,6 +130,7 @@ private:
         TEST_CASE(duplicateExpression4); // ticket #3354 (++)
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
         TEST_CASE(duplicateExpression6); // ticket #4639
+        TEST_CASE(duplicateExpression7);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
@@ -3902,6 +3903,11 @@ private:
               "double IsNan(double value) { return !(value == value); }\n"
               "long double IsNan(long double value) { return !(value == value); }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression7() {
+        check("void f() { const int i = sizeof(int);  if ( i != sizeof (int)){}}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
     }
 
     void duplicateExpressionTernary() { // #6391
