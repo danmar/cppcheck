@@ -29,7 +29,6 @@
 
 #include <list>
 #include <functional>
-#include <cassert>
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
