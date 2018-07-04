@@ -133,6 +133,16 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+const Token * getVariableExpression(const Variable * var)
+{
+    if(!var || !var->declEndToken())
+        return nullptr;
+    if(Token::Match(var->declEndToken(), "; %varid% =", var->declarationId()))
+        return var->declEndToken()->tokAt(2)->astOperand2();
+    else
+        return var->declEndToken()->astOperand2();
+}
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure)
 {
     if (tok1 == nullptr && tok2 == nullptr)
@@ -146,7 +156,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             tok2 = tok2->astOperand2();
     }
     // Follow variables if possible
-    if(tok1->tokType() != tok2->tokType()) {
+    bool assignment = tok1->astParent() && tok1->astParent()->str() == "=";
+    if(!assignment && tok1->tokType() != tok2->tokType()) {
         const Token ** varTok = nullptr;
         if(tok1->tokType() == Token::eVariable)
             varTok = &tok1;
@@ -154,13 +165,13 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             varTok = &tok1;
         if(varTok && *varTok) {
             const Variable * var = (*varTok)->variable();
-            if(var && var->declEndToken() && 
+            const Token * varExpr = getVariableExpression(var);
+            if(varExpr &&
+                (var->scope() == (*varTok)->scope() || var->isConst()) && 
+                (!var->isStatic() || var->isConst()) &&
                 !var->isArgument() &&
-                var->declEndToken()->astOperand2() && 
-                var->scope() == (*varTok)->scope() && 
-                *varTok != var->nameToken() &&
-                !isVariableChanged(var->declEndToken(), *varTok, (*varTok)->varId(), false, nullptr, cpp)) {
-                *varTok = var->declEndToken()->astOperand2();
+                !isVariableChanged(varExpr, *varTok, (*varTok)->varId(), false, nullptr, cpp)) {
+                *varTok = varExpr;
             }
         }
     }
