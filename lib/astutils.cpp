@@ -152,6 +152,26 @@ bool isInLoop(const Token * tok) {
     return false;
 }
 
+const Token * followVariableExpression(const Token * tok, bool cpp)
+{
+    if(!tok)
+        return tok;
+    // Skip following variables if it is used in an assignment
+    if((tok->astParent() && tok->astParent()->str() == "=") || tok->next() && tok->next()->str() == "=")
+        return tok;
+    const Variable * var = tok->variable();
+    const Token * varTok = getVariableExpression(var);
+    if(varTok &&
+        (var->scope() == tok->scope() || var->isConst()) && 
+        (!var->isStatic() || var->isConst()) &&
+        !var->isArgument() &&
+        !isVariableChanged(varTok, tok, tok->varId(), false, nullptr, cpp) &&
+        !isInLoop(tok)) {
+        return varTok;
+    }
+    return tok;
+}
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure)
 {
     if (tok1 == nullptr && tok2 == nullptr)
@@ -165,24 +185,16 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             tok2 = tok2->astOperand2();
     }
     // Follow variables if possible
-    bool assignment = tok1->astParent() && tok1->astParent()->str() == "=";
-    if(!assignment && tok1->tokType() != tok2->tokType()) {
-        const Token ** varTok = nullptr;
-        if(tok1->tokType() == Token::eVariable)
-            varTok = &tok1;
-        else if(tok2->tokType() == Token::eVariable)
-            varTok = &tok1;
-        if(varTok && *varTok) {
-            const Variable * var = (*varTok)->variable();
-            const Token * varExpr = getVariableExpression(var);
-            if(varExpr &&
-                (var->scope() == (*varTok)->scope() || var->isConst()) && 
-                (!var->isStatic() || var->isConst()) &&
-                !var->isArgument() &&
-                !isVariableChanged(varExpr, *varTok, (*varTok)->varId(), false, nullptr, cpp) &&
-                !isInLoop(*varTok)) {
-                *varTok = varExpr;
-            }
+    if(tok1->str() != tok2->str()) {
+        const Token * varTok1 = followVariableExpression(tok1, cpp);
+        const Token * varTok2 = followVariableExpression(tok2, cpp);
+        if (varTok1->str() == tok2->str()) {
+            tok1 = varTok1;
+        } else if(tok1->str() == varTok2->str()) {
+            tok2 = varTok2;
+        } else {
+            tok1 = varTok1;
+            tok2 = varTok2;
         }
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {

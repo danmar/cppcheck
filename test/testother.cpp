@@ -3916,6 +3916,12 @@ private:
         check("void f() { int a = 1; if ( a != 1){}}\n");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
 
+        check("void f() { int a = 1; int b = 1; if ( a != b){}}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
+
+        check("void f() { int a = 1; int b = a; if ( a != b){}}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
+
         check("void use(int);\n" 
               "void f() { int a = 1; int b = 1; use(b); if ( a != 1){}}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '!='.\n", errout.str());
