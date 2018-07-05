@@ -131,6 +131,7 @@ private:
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
         TEST_CASE(duplicateExpression6); // ticket #4639
         TEST_CASE(duplicateExpression7);
+        TEST_CASE(duplicateExpression8);
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -3951,6 +3952,12 @@ private:
 
         check("void f(int b) { int a = 1; if (b) { if ( a != 1){}} a++; } \n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression8() {
+        check("void f() { int a = 1; int b = a; a = 2; if ( b != a){}}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void duplicateExpressionLoop() {

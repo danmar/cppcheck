@@ -166,6 +166,9 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
         (!var->isStatic() || var->isConst()) &&
         !var->isArgument()) {
         const Token * endToken = isInLoop(tok) ? tok->scope()->bodyEnd : tok;
+        // Skip if the variable its referring to is modified
+        if(varTok->tokType() == Token::eVariable && isVariableChanged(varTok, endToken, varTok->varId(), false, nullptr, cpp))
+            return tok;
         if (!isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
             return varTok;
     }
