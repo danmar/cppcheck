@@ -3954,6 +3954,9 @@ private:
     }
 
     void duplicateExpressionLoop() {
+        check("void f() { int a = 1; while ( a != 1){}}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
+
         check("void f() { int a = 1; while ( a != 1){ a++; }}\n");
         ASSERT_EQUALS("", errout.str());
 

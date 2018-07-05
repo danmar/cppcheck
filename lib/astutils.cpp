@@ -164,10 +164,10 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
     if(varTok &&
         (var->scope() == tok->scope() || var->isConst()) && 
         (!var->isStatic() || var->isConst()) &&
-        !var->isArgument() &&
-        !isVariableChanged(varTok, tok, tok->varId(), false, nullptr, cpp) &&
-        !isInLoop(tok)) {
-        return varTok;
+        !var->isArgument()) {
+        const Token * endToken = isInLoop(tok) ? tok->scope()->bodyEnd : tok;
+        if (!isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
+            return varTok;
     }
     return tok;
 }
