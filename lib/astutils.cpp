@@ -156,15 +156,22 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
 {
     if(!tok)
         return tok;
+    // Skip array access
+    if(Token::Match(tok, "%var% ["))
+        return tok;
     // Skip following variables if it is used in an assignment
-    if((tok->astParent() && tok->astParent()->str() == "=") || tok->next() && tok->next()->str() == "=")
+    if(Token::simpleMatch(tok->astParent(), "=") || Token::simpleMatch(tok->next(), "="))
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableExpression(var);
+    // Skip array access
+    if(Token::simpleMatch(varTok, "["))
+        return tok;
     if(varTok &&
         (var->scope() == tok->scope() || var->isConst()) && 
         (!var->isStatic() || var->isConst()) &&
         !var->isArgument()) {
+        // If this is in a loop then check if variables are modified in the entire scope
         const Token * endToken = isInLoop(tok) ? tok->scope()->bodyEnd : tok;
         // Skip if the variable its referring to is modified
         if(varTok->tokType() == Token::eVariable && isVariableChanged(varTok, endToken, varTok->varId(), false, nullptr, cpp))

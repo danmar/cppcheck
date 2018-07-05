@@ -3958,6 +3958,9 @@ private:
         check("void f() { int a = 1; int b = a; a = 2; if ( b != a){}}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int * a, int i) { int b = a[i]; a[i] = 2; if ( b != a[i]){}}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void duplicateExpressionLoop() {
