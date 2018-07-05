@@ -197,15 +197,13 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     // Follow variables if possible
     if(tok1->str() != tok2->str()) {
         const Token * varTok1 = followVariableExpression(tok1, cpp);
+        if (varTok1->str() == tok2->str())
+            return isSameExpression(cpp, macro, varTok1, tok2, library, pure);
         const Token * varTok2 = followVariableExpression(tok2, cpp);
-        if (varTok1->str() == tok2->str()) {
-            tok1 = varTok1;
-        } else if(tok1->str() == varTok2->str()) {
-            tok2 = varTok2;
-        } else {
-            tok1 = varTok1;
-            tok2 = varTok2;
-        }
+        if(tok1->str() == varTok2->str())
+            return isSameExpression(cpp, macro, tok1, varTok2, library, pure);
+        if(varTok1->str() == varTok2->str())
+            return isSameExpression(cpp, macro, varTok1, varTok2, library, pure);
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
