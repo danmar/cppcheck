@@ -164,8 +164,8 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableExpression(var);
-    // Skip array access
-    if(Token::simpleMatch(varTok, "["))
+    // Skip array access and pointer indirection
+    if(Token::Match(varTok, "[|*"))
         return tok;
     if(varTok &&
         (var->scope() == tok->scope() || var->isConst()) && 
