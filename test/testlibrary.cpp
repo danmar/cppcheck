@@ -724,54 +724,45 @@ private:
         }
     }
 
+    void loadLibError(const char xmldata [], Library::ErrorCode errorcode, const char* file, unsigned line) const {
+        Library library;
+        assertEquals(file, line, errorcode, readLibrary(library, xmldata).errorcode);
+    }
+
+#define LOADLIBERROR(xmldata, errorcode) loadLibError(xmldata, errorcode, __FILE__, __LINE__)
+
     void loadLibErrors() const {
-        // UNKNOWN_ELEMENT
-        {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<def>\n"
-                                    "   <X name=\"uint8_t,std::uint8_t\" size=\"1\"/>\n"
-                                    "</def>";
-            Library library;
-            ASSERT_EQUALS(Library::UNKNOWN_ELEMENT, readLibrary(library, xmldata).errorcode);
-        }
-        // MISSING_ATTRIBUTE
-        {
-            // #define without attributes
-            {
-                const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                        "<def>\n"
-                                        "  <define />\n" // no attributes provided at all
-                                        "</def>";
-                Library library;
-                ASSERT_EQUALS(Library::MISSING_ATTRIBUTE, readLibrary(library, xmldata).errorcode);
-            }
-            // #define with name but without value
-            {
-                const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                        "<def>\n"
-                                        "  <define name=\"foo\" />\n" // no value provided
-                                        "</def>";
-                Library library;
-                ASSERT_EQUALS(Library::MISSING_ATTRIBUTE, readLibrary(library, xmldata).errorcode);
-            }
-            // #define with value but without a name
-            {
-                const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                        "<def>\n"
-                                        "  <define value=\"1\" />\n" // no name provided
-                                        "</def>";
-                Library library;
-                ASSERT_EQUALS(Library::MISSING_ATTRIBUTE, readLibrary(library, xmldata).errorcode);
-            }
-        }
-        // UNSUPPORTED_FORMAT
-        {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<X>\n"
-                                    "</X>";
-            Library library;
-            ASSERT_EQUALS(Library::UNSUPPORTED_FORMAT, readLibrary(library, xmldata).errorcode);
-        }
+
+        LOADLIBERROR("<?xml version=\"1.0\"?>\n"
+                     "<def>\n"
+                     "   <X name=\"uint8_t,std::uint8_t\" size=\"1\"/>\n"
+                     "</def>",
+                     Library::UNKNOWN_ELEMENT);
+
+        // #define without attributes
+        LOADLIBERROR("<?xml version=\"1.0\"?>\n"
+                     "<def>\n"
+                     "  <define />\n" // no attributes provided at all
+                     "</def>",
+                     Library::MISSING_ATTRIBUTE);
+
+        // #define with name but without value
+        LOADLIBERROR("<?xml version=\"1.0\"?>\n"
+                     "<def>\n"
+                     "  <define name=\"foo\" />\n" // no value provided
+                     "</def>",
+                     Library::MISSING_ATTRIBUTE);
+
+        LOADLIBERROR("<?xml version=\"1.0\"?>\n"
+                     "<def>\n"
+                     "  <define value=\"1\" />\n" // no name provided
+                     "</def>",
+                     Library::MISSING_ATTRIBUTE);
+
+        LOADLIBERROR("<?xml version=\"1.0\"?>\n"
+                     "<X>\n"
+                     "</X>",
+                     Library::UNSUPPORTED_FORMAT);
     }
 };
 
