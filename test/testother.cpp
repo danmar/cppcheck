@@ -3975,6 +3975,25 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(int i);\n"
+              "struct A {\n"
+              "    enum E { B, C };\n"
+              "    bool f(E);\n"
+              "};\n"
+              "void foo() {\n"
+              "    A a;\n"
+              "    const bool x = a.f(A::B);\n"
+              "    const bool y = a.f(A::C);\n"
+              "    if(!x && !y) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() { \n"
+              "    const bool x = a.f(A::B);\n"
+              "    const bool y = a.f(A::C);\n"
+              "    if (!x && !y) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {

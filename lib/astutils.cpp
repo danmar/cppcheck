@@ -160,14 +160,12 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
     if(Token::Match(tok, "%var% ["))
         return tok;
     // Skip following variables if it is used in an assignment
-    if(Token::simpleMatch(tok->astParent(), "=") || Token::simpleMatch(tok->next(), "="))
+    if(Token::Match(tok->astParent(), "%assign%") || Token::Match(tok->next(), "%assign%"))
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableExpression(var);
     if(!varTok)
         return tok;
-    if(varTok->str() == "(")
-        varTok = varTok->astOperand1();
     // Skip array access
     if(Token::simpleMatch(varTok, "["))
         return tok;
@@ -199,7 +197,7 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure)
 {
-    if (tok1 == nullptr && tok2 == nullptr)
+    if (tok1 == nullptr && tok2 == nullptr) 
         return true;
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
@@ -210,7 +208,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             tok2 = tok2->astOperand2();
     }
     // Follow variables if possible
-    if(tok1->str() != tok2->str()) {
+    if(tok1->str() != tok2->str() && !Token::Match(tok1, "%op%|.|(|{")) {
         const Token * varTok1 = followVariableExpression(tok1, cpp);
         if (varTok1->str() == tok2->str())
             return isSameExpression(cpp, macro, varTok1, tok2, library, pure);
@@ -219,10 +217,6 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             return isSameExpression(cpp, macro, tok1, varTok2, library, pure);
         if(varTok1->str() == varTok2->str())
             return isSameExpression(cpp, macro, varTok1, varTok2, library, pure);
-        if(Token::Match(tok1->astOperand1(), "%name% (") && tok1->astOperand1()->str() == varTok2->str())
-            return isSameExpression(cpp, macro, tok1->astOperand1(), varTok2, library, pure);
-        if(Token::Match(tok2->astOperand1(), "%name% (") && varTok1->str() == tok2->astOperand1()->str())
-            return isSameExpression(cpp, macro, varTok1, tok2->astOperand1(), library, pure);
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
