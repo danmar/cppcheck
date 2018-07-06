@@ -408,13 +408,6 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
                 if (!name.isEmpty())
                     mExcludedPaths << name;
             }
-            // Read ignore-elements - deprecated but support reading them
-            else if (reader.name().toString() == IgnorePathName) {
-                QXmlStreamAttributes attribs = reader.attributes();
-                QString name = attribs.value(QString(), IgnorePathNameAttrib).toString();
-                if (!name.isEmpty())
-                    mExcludedPaths << name;
-            }
             break;
 
         case QXmlStreamReader::EndElement:
