@@ -578,6 +578,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     const char *p = argnode->GetText();
                     bool error = false;
                     bool range = false;
+
+                    if (!p)
+                        return Error(BAD_ATTRIBUTE_VALUE, "\"\"");
+
                     for (; *p; p++) {
                         if (std::isdigit(*p))
                             error |= (*(p+1) == '-');

@@ -773,6 +773,9 @@ private:
                      "</X>",
                      Library::UNSUPPORTED_FORMAT);
 
+        // empty range
+        LOADLIB_ERROR_INVALID_RANGE("");
+
         // letter as range
         LOADLIB_ERROR_INVALID_RANGE("a");
 
