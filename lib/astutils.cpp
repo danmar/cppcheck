@@ -174,14 +174,17 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
         !var->isArgument()) {
         // If this is in a loop then check if variables are modified in the entire scope
         const Token * endToken = isInLoop(tok) ? tok->scope()->bodyEnd : tok;
+        const Token * startToken = varTok;
+        while(Token::Match(startToken, "%op%|.|(|{"))
+            startToken = startToken->astOperand1();
         // Skip if the variable its referring to is modified
-        for(const Token * tok2 = varTok;tok2 != endToken;tok2 = tok2->next()) {
+        for(const Token * tok2 = startToken;tok2 != endToken;tok2 = tok2->next()) {
             if(Token::simpleMatch(tok2, ";"))
                 break;
             if (tok->tokType() == Token::eIncDecOp || 
                 tok->isAssignmentOp() || 
                 Token::Match(tok2, "* %var%") || 
-                Token::Match(tok2, "%var% .|[|++|--|%assign%")) {
+                Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
                 return tok;
             }
             
@@ -207,8 +210,9 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
             tok2 = tok2->astOperand2();
     }
+
     // Follow variables if possible
-    if(tok1->str() != tok2->str() && !Token::Match(tok1, "%op%|.|(|{")) {
+    if(tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp);
         if (varTok1->str() == tok2->str())
             return isSameExpression(cpp, macro, varTok1, tok2, library, pure);

@@ -3911,6 +3911,9 @@ private:
         check("void f() { const int i = sizeof(int);  if ( i != sizeof (int)){}}\n");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
 
+        check("void f() { const int i = sizeof(int);  if ( sizeof (int) != i){}}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
+
         check("void f(int a = 1) { if ( a != 1){}}\n");
         ASSERT_EQUALS("", errout.str());
 
