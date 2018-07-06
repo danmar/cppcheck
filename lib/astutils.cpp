@@ -219,6 +219,10 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             return isSameExpression(cpp, macro, tok1, varTok2, library, pure);
         if(varTok1->str() == varTok2->str())
             return isSameExpression(cpp, macro, varTok1, varTok2, library, pure);
+        if(Token::Match(tok1->astOperand1(), "%name% (") && tok1->astOperand1()->str() == varTok2->str())
+            return isSameExpression(cpp, macro, tok1->astOperand1(), varTok2, library, pure);
+        if(Token::Match(tok2->astOperand1(), "%name% (") && varTok1->str() == tok2->astOperand1()->str())
+            return isSameExpression(cpp, macro, varTok1, tok2->astOperand1(), library, pure);
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
