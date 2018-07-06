@@ -601,6 +601,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             error |= (*(p+1) == '-');
                         else if (*p == ':') {
                             error |= range | (*(p+1) == '.');
+                            range = true;
                             has_dot = false;
                         }
                         else if (*p == '-')
@@ -616,8 +617,6 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         }
                         else
                             error = true;
-
-                        range |= (*p == ':');
                     }
                     if (error)
                         return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
