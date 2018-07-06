@@ -164,18 +164,33 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableExpression(var);
-    // Skip array access and pointer indirection
-    if(Token::Match(varTok, "[|*"))
+    if(!varTok)
         return tok;
-    if(varTok &&
-        (var->scope() == tok->scope() || var->isConst()) && 
+    if(varTok->str() == "(")
+        varTok = varTok->astOperand1();
+    // Skip array access
+    if(Token::simpleMatch(varTok, "["))
+        return tok;
+    if((var->scope() == tok->scope() || var->isConst()) && 
         (!var->isStatic() || var->isConst()) &&
         !var->isArgument()) {
         // If this is in a loop then check if variables are modified in the entire scope
         const Token * endToken = isInLoop(tok) ? tok->scope()->bodyEnd : tok;
         // Skip if the variable its referring to is modified
-        if(varTok->tokType() == Token::eVariable && isVariableChanged(varTok, endToken, varTok->varId(), false, nullptr, cpp))
-            return tok;
+        for(const Token * tok2 = varTok;tok2 != endToken;tok2 = tok2->next()) {
+            if(Token::simpleMatch(tok2, ";"))
+                break;
+            if (tok->tokType() == Token::eIncDecOp || 
+                tok->isAssignmentOp() || 
+                Token::Match(tok2, "* %var%") || 
+                Token::Match(tok2, "%var% .|[|++|--|%assign%")) {
+                return tok;
+            }
+            
+            if(Token::Match(tok2, "%var%") && isVariableChanged(tok2, endToken, tok2->varId(), false, nullptr, cpp)) {
+                return tok;
+            }
+        }
         if (!isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
             return varTok;
     }

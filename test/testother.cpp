@@ -3964,6 +3964,17 @@ private:
         check("void f(int * a, int i) { int b = *a; *a = 2; if ( b != *a){}}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct A { int f() const; };\n"
+              "A g();\n"
+              "void foo() {\n"
+              "    for (const A x = A();;) {\n"
+              "        const int a = x.f();\n"
+              "        x = g();\n"
+              "        if (x.f() == a) break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void duplicateExpressionLoop() {
