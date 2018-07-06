@@ -590,19 +590,30 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     const char *p = argnode->GetText();
                     bool error = false;
                     bool range = false;
+                    bool has_dot = false;
 
                     if (!p)
                         return Error(BAD_ATTRIBUTE_VALUE, "\"\"");
 
+                    error = *p == '.';
                     for (; *p; p++) {
                         if (std::isdigit(*p))
                             error |= (*(p+1) == '-');
-                        else if (*p == ':')
-                            error |= range;
+                        else if (*p == ':') {
+                            error |= range | (*(p+1) == '.');
+                            has_dot = false;
+                        }
                         else if (*p == '-')
                             error |= (!std::isdigit(*(p+1)));
-                        else if (*p == ',')
+                        else if (*p == ',') {
                             range = false;
+                            error |= *(p+1) == '.';
+                            has_dot = false;
+                        }
+                        else if (*p == '.') {
+                            error |= has_dot | (!std::isdigit(*(p+1)));
+                            has_dot = true;
+                        }
                         else
                             error = true;
 

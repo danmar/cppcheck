@@ -282,6 +282,11 @@ private:
                                "    <arg nr=\"3\"><valid>1:5,8</valid></arg>\n"
                                "    <arg nr=\"4\"><valid>-1,5</valid></arg>\n"
                                "    <arg nr=\"5\"><valid>:1,5</valid></arg>\n"
+                               "    <arg nr=\"6\"><valid>1.5:</valid></arg>\n"
+                               "    <arg nr=\"7\"><valid>-6.7:-5.5,-3.3:-2.7</valid></arg>\n"
+                               "    <arg nr=\"8\"><valid>0.0:</valid></arg>\n"
+                               "    <arg nr=\"9\"><valid>:2.0</valid></arg>\n"
+                               "    <arg nr=\"10\"><valid>0.0</valid></arg>\n"
                                "  </function>\n"
                                "</def>";
 
@@ -289,7 +294,7 @@ private:
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
-        std::istringstream istr("foo(a,b,c,d,e);");
+        std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j);");
         tokenList.createTokens(istr);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
@@ -352,6 +357,62 @@ private:
         ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 5, 1.0));
         ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 5, static_cast<MathLib::bigint>(2)));
         ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 5, 2.0));
+
+        // 1.5:
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(0)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, 0.0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(1)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, 1.499999));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 6, 1.5));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(2)));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(10)));
+
+        // -6.7:-5.5,-3.3:-2.7
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-7)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -7.0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -6.7000001));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -6.7));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-6)));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -6.0));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -5.5));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -5.4999999));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -3.3000001));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -3.3));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-3)));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -3.0));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -2.7));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -2.6999999));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-2)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -2.0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(0)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, 0.0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(3)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, 3.0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(6)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, 6.0));
+
+        // 0.0:
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 8, static_cast<MathLib::bigint>(-1)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 8, -1.0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 8, -0.00000001));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, static_cast<MathLib::bigint>(0)));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, 0.0));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, 0.000000001));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, static_cast<MathLib::bigint>(1)));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, 1.0));
+
+        // :2.0
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, static_cast<MathLib::bigint>(-1)));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, -1.0));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, static_cast<MathLib::bigint>(2)));
+        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, 2.0));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 9, 2.00000001));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 9, static_cast<MathLib::bigint>(200)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 9, 200.0));
+
+        // 0.0
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 10, static_cast<MathLib::bigint>(0)));
+        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 10, 0.0));
     }
 
     void function_arg_minsize() const {
@@ -818,6 +879,39 @@ private:
 
         // range with multiple colons
         LOADLIB_ERROR_INVALID_RANGE("1:2:3");
+
+        // extra dot
+        LOADLIB_ERROR_INVALID_RANGE("1.0.0:10");
+
+        // consecutive dots
+        LOADLIB_ERROR_INVALID_RANGE("1..0:10");
+
+        // dot followed by dash
+        LOADLIB_ERROR_INVALID_RANGE("1.-0:10");
+
+        // dot without preceding number
+        LOADLIB_ERROR_INVALID_RANGE(".5:10");
+
+        // dash followed by dot
+        LOADLIB_ERROR_INVALID_RANGE("-.5:10");
+
+        // colon followed by dot without preceding number
+        LOADLIB_ERROR_INVALID_RANGE("0:.5");
+
+        // colon followed by dash followed by dot
+        LOADLIB_ERROR_INVALID_RANGE("-10:-.5");
+
+        // dot not followed by number
+        LOADLIB_ERROR_INVALID_RANGE("1:5.");
+
+        // dot not followed by number
+        LOADLIB_ERROR_INVALID_RANGE("1.:5");
+
+        // dot followed by comma
+        LOADLIB_ERROR_INVALID_RANGE("1:5.,6:10");
+
+        // comma followed by dot
+        LOADLIB_ERROR_INVALID_RANGE("-10:0,.5:");
     }
 };
 
