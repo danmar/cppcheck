@@ -304,6 +304,11 @@ void CheckStl::mismatchingContainersError(const Token *tok)
     reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.", CWE664, false);
 }
 
+void CheckStl::mismatchingContainerExpressionError(const Token *tok)
+{
+    reportError(tok, Severity::warning, "mismatchingContainerExpression", "Iterators from different expressions are used together.", CWE664, false);
+}
+
 static const std::set<std::string> algorithm2 = { // func(begin1, end1
     "binary_search", "copy", "copy_if", "equal_range"
     , "generate", "is_heap", "is_heap_until", "is_partitioned"
@@ -427,7 +432,7 @@ void CheckStl::mismatchingContainers()
                             isIteratorExpression(firstArg) && 
                             isIteratorExpression(argTok) && 
                             isMismatchIteratorExpression(firstArg, argTok)) {
-                        mismatchingContainersError(argTok);
+                        mismatchingContainerExpressionError(argTok);
                     }
                 }
             }
