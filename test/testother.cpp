@@ -3953,7 +3953,7 @@ private:
         check("void f() { int a = 1; if ( a != 1){ a++; }}\n");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!='.\n", errout.str());
 
-        check("void f(int b) { int a = 1; if (b) { if ( a != 1){}} a++; } \n");
+        check("void f(int b) { int a = 1; while (b) { if ( a != 1){} a++; } } \n");
         ASSERT_EQUALS("", errout.str());
     }
 
