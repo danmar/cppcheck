@@ -43,6 +43,18 @@ static std::vector<std::string> getnames(const char *names)
     return ret;
 }
 
+static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList)
+{
+    std::istringstream istr(valid + ',');
+    tokenList.createTokens(istr);
+    for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok,"- %num%")) {
+            tok->str("-" + tok->strAt(1));
+            tok->deleteNext();
+        }
+    }
+}
+
 Library::Library() : mAllocId(0)
 {
 }
@@ -709,15 +721,10 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
+    else if (ac->valid.find('.') != std::string::npos)
+        return isargvalid(ftok, argnr, static_cast<double>(argvalue));
     TokenList tokenList(nullptr);
-    std::istringstream istr(ac->valid + ',');
-    tokenList.createTokens(istr);
-    for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok,"- %num%")) {
-            tok->str("-" + tok->strAt(1));
-            tok->deleteNext();
-        }
-    }
+    gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && argvalue == MathLib::toLongNumber(tok->str()))
             return true;
@@ -726,6 +733,24 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
         if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toLongNumber(tok->str()))
             return true;
         if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toLongNumber(tok->strAt(1)))
+            return true;
+    }
+    return false;
+}
+
+bool Library::isargvalid(const Token *ftok, int argnr, double argvalue) const
+{
+    const ArgumentChecks *ac = getarg(ftok, argnr);
+    if (!ac || ac->valid.empty())
+        return true;
+    TokenList tokenList(nullptr);
+    gettokenlistfromvalid(ac->valid, tokenList);
+    for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toDoubleNumber(tok->str()) && argvalue <= MathLib::toDoubleNumber(tok->strAt(2)))
+            return true;
+        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toDoubleNumber(tok->str()))
+            return true;
+        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
             return true;
     }
     return false;

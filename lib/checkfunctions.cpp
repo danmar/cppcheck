@@ -32,6 +32,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
 #include <ostream>
 #include <vector>
 
@@ -119,9 +120,9 @@ void CheckFunctions::invalidFunctionUsage()
                         invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
 
                     // Are the values 0 and 1 valid?
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, 0))
+                    else if (!mSettings->library.isargvalid(functionToken, argnr, static_cast<MathLib::bigint>(0)))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, 1))
+                    else if (!mSettings->library.isargvalid(functionToken, argnr, static_cast<MathLib::bigint>(1)))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
             }
@@ -139,7 +140,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
     else
         errmsg << "Invalid $symbol() argument nr " << argnr << '.';
     if (invalidValue)
-        errmsg << " The value is " << invalidValue->intvalue << " but the valid values are '" << validstr << "'.";
+        errmsg << " The value is " << std::setprecision(10) << (invalidValue->isIntValue() ? invalidValue->intvalue : invalidValue->floatValue) << " but the valid values are '" << validstr << "'.";
     else
         errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
     if (invalidValue)
