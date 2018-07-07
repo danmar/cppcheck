@@ -133,20 +133,23 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
-const Token * getVariableExpression(const Variable * var)
+const Token * getVariableInitExpression(const Variable * var)
 {
     if(!var || !var->declEndToken())
         return nullptr;
     if(Token::Match(var->declEndToken(), "; %varid% =", var->declarationId()))
         return var->declEndToken()->tokAt(2)->astOperand2();
-    else
-        return var->declEndToken()->astOperand2();
+    return var->declEndToken()->astOperand2();
 }
 
-bool isInLoop(const Token * tok) {
+bool isInLoopCondition(const Token * tok) {
     return Token::Match(tok->astTop()->previous(), "for|while (");
 }
 
+
+/// This takes a token that refers to a variable and it will return the token
+/// to the expression that the variable is assigned to. If its not valid to
+/// make such substitution then it will return the original token.
 const Token * followVariableExpression(const Token * tok, bool cpp)
 {
     if(!tok)
@@ -158,38 +161,40 @@ const Token * followVariableExpression(const Token * tok, bool cpp)
     if(Token::Match(tok->astParent(), "%assign%") || Token::Match(tok->next(), "%assign%"))
         return tok;
     const Variable * var = tok->variable();
-    const Token * varTok = getVariableExpression(var);
+    const Token * varTok = getVariableInitExpression(var);
     if(!varTok)
         return tok;
     // Skip array access
     if(Token::simpleMatch(varTok, "["))
         return tok;
-    if((var->scope() == tok->scope() || var->isConst()) && 
-        (!var->isStatic() || var->isConst()) &&
-        !var->isArgument()) {
-        // If this is in a loop then check if variables are modified in the entire scope
-        const Token * endToken = isInLoop(tok) ? tok->scope()->bodyEnd : tok;
-        const Token * startToken = varTok;
-        while(Token::Match(startToken, "%op%|.|(|{"))
-            startToken = startToken->astOperand1();
-        // Skip if the variable its referring to is modified
-        for(const Token * tok2 = startToken;tok2 != endToken;tok2 = tok2->next()) {
-            if(Token::simpleMatch(tok2, ";"))
-                break;
-            if (tok->tokType() == Token::eIncDecOp || 
-                tok->isAssignmentOp() || 
-                Token::Match(tok2, "* %var%") || 
-                Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
-                return tok;
-            }
-            
-            if(Token::Match(tok2, "%var%") && isVariableChanged(tok2, endToken, tok2->varId(), false, nullptr, cpp)) {
-                return tok;
-            }
+    if(var->scope() != tok->scope() && !var->isConst())
+        return tok;
+    if(var->isStatic() && !var->isConst())
+        return tok;
+    if(var->isArgument())
+        return tok;
+    // If this is in a loop then check if variables are modified in the entire scope
+    const Token * endToken = isInLoopCondition(tok) ? tok->scope()->bodyEnd : tok;
+    const Token * startToken = varTok;
+    while(Token::Match(startToken, "%op%|.|(|{"))
+        startToken = startToken->astOperand1();
+    // Skip if the variable its referring to is modified
+    for(const Token * tok2 = startToken;tok2 != endToken;tok2 = tok2->next()) {
+        if(Token::simpleMatch(tok2, ";"))
+            break;
+        if (tok->tokType() == Token::eIncDecOp || 
+            tok->isAssignmentOp() || 
+            Token::Match(tok2, "* %var%") || 
+            Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
+            return tok;
         }
-        if (!isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
-            return varTok;
+        
+        if(Token::Match(tok2, "%var%") && isVariableChanged(tok2, endToken, tok2->varId(), false, nullptr, cpp)) {
+            return tok;
+        }
     }
+    if (!isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
+        return varTok;
     return tok;
 }
 
