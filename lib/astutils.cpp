@@ -144,12 +144,7 @@ const Token * getVariableExpression(const Variable * var)
 }
 
 bool isInLoop(const Token * tok) {
-    while(tok->astParent()) {
-        tok = tok->astParent();
-        if(Token::Match(tok->astOperand1(), "for|while"))
-            return true;
-    }
-    return false;
+    return Token::Match(tok->astTop()->previous(), "for|while (");
 }
 
 const Token * followVariableExpression(const Token * tok, bool cpp)
