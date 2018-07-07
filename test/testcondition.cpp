@@ -2436,19 +2436,19 @@ private:
 
     void alwaysTrueFalseInLogicalOperators() {
         check("bool f();\n"
-              "void foo() { if(true||f()) {}}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: true||f().\n", errout.str());
+              "void foo() { bool x = true; if(x||f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x||f().\n", errout.str());
 
         check("bool f();\n"
-              "void foo() { if(false||f()) {}}\n");
+              "void foo() { bool x = false; if(x||f()) {}}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("bool f();\n"
-              "void foo() { if(false&&f()) {}}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: false&&f().\n", errout.str());
+              "void foo() { bool x = false; if(x&&f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x&&f().\n", errout.str());
 
         check("bool f();\n"
-              "void foo() { if(true&&f()) {}}\n");
+              "void foo() { bool x = true; if(x&&f()) {}}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

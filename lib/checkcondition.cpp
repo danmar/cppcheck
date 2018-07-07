@@ -889,9 +889,9 @@ void CheckCondition::checkIncorrectLogicOperator()
             }
 
             ValueFlow::Value knownValue;
-            if(tok->astOperand1()->hasKnownIntValue() && tok->astOperand2()->tokType() != Token::eString)
+            if(!tok->astOperand1()->isLiteral() && tok->astOperand1()->hasKnownIntValue() && tok->astOperand2()->tokType() != Token::eString)
                 knownValue = tok->astOperand1()->values().front();
-            else if(tok->astOperand2()->hasKnownIntValue() && tok->astOperand1()->tokType() != Token::eString)
+            else if(!tok->astOperand2()->isLiteral() && tok->astOperand2()->hasKnownIntValue() && tok->astOperand1()->tokType() != Token::eString)
                 knownValue = tok->astOperand2()->values().front();
             if(knownValue.isKnown()) {
                 if(tok->str() == "||" && knownValue.intvalue != 0)
