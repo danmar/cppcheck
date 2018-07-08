@@ -133,7 +133,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
-const Token * getVariableInitExpression(const Variable * var)
+static const Token * getVariableInitExpression(const Variable * var)
 {
     if(!var || !var->declEndToken())
         return nullptr;
@@ -142,7 +142,7 @@ const Token * getVariableInitExpression(const Variable * var)
     return var->declEndToken()->astOperand2();
 }
 
-bool isInLoopCondition(const Token * tok) {
+static bool isInLoopCondition(const Token * tok) {
     return Token::Match(tok->astTop()->previous(), "for|while (");
 }
 
@@ -150,7 +150,7 @@ bool isInLoopCondition(const Token * tok) {
 /// This takes a token that refers to a variable and it will return the token
 /// to the expression that the variable is assigned to. If its not valid to
 /// make such substitution then it will return the original token.
-const Token * followVariableExpression(const Token * tok, bool cpp)
+static const Token * followVariableExpression(const Token * tok, bool cpp)
 {
     if(!tok)
         return tok;
