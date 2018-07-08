@@ -167,14 +167,17 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     // Skip array access
     if(Token::simpleMatch(varTok, "["))
         return tok;
-    if(var->scope() != tok->scope() && !var->isConst())
+    if(!var->isLocal() && !var->isConst())
         return tok;
     if(var->isStatic() && !var->isConst())
         return tok;
     if(var->isArgument())
         return tok;
     // If this is in a loop then check if variables are modified in the entire scope
-    const Token * endToken = isInLoopCondition(tok) ? tok->scope()->bodyEnd : tok;
+    const Token * endToken = (isInLoopCondition(tok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
+    if (!var->isConst() && isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
+        return tok;
+    // Start at begining of initialization
     const Token * startToken = varTok;
     while(Token::Match(startToken, "%op%|.|(|{"))
         startToken = startToken->astOperand1();
@@ -190,16 +193,16 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         }
 
         if(const Variable * var2 = tok2->variable()) {
-            const Token * endToken2 = var2->scope() != tok->scope() ? tok->scope()->bodyEnd : endToken;
-            if(!var->isLocal() && !var2->isConst())
+            const Token * endToken2 = var2->scope() != tok->scope() ? var2->scope()->bodyEnd : endToken;
+            if(!var2->isLocal() && !var2->isConst() && !var2->isArgument())
                 return tok;
-            if(isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
+            if(var2->isStatic() && !var2->isConst())
+                return tok;
+            if(!var2->isConst() && isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
                 return tok;
         }
     }
-    if (!isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
-        return varTok;
-    return tok;
+    return varTok;
 }
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure)
