@@ -182,15 +182,19 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     for(const Token * tok2 = startToken;tok2 != endToken;tok2 = tok2->next()) {
         if(Token::simpleMatch(tok2, ";"))
             break;
-        if (tok->tokType() == Token::eIncDecOp || 
-            tok->isAssignmentOp() || 
+        if (tok2->tokType() == Token::eIncDecOp || 
+            tok2->isAssignmentOp() || 
             Token::Match(tok2, "* %var%") || 
             Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
             return tok;
         }
-        
-        if(Token::Match(tok2, "%var%") && isVariableChanged(tok2, endToken, tok2->varId(), false, nullptr, cpp)) {
-            return tok;
+
+        if(const Variable * var2 = tok2->variable()) {
+            const Token * endToken2 = var2->scope() != tok->scope() ? tok->scope()->bodyEnd : endToken;
+            if(!var->isLocal() && !var2->isConst())
+                return tok;
+            if(isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
+                return tok;
         }
     }
     if (!isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
