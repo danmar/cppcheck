@@ -546,6 +546,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        {
+        check("void f(Class &c) {\n"
+              "    if (c.dostuff() == 3) {}\n"
+              "    else { if (c.dostuff() == 3) {} }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const Class &c) {\n"
+              "    if (c.dostuff() == 3) {}\n"
+              "    else { if (c.dostuff() == 3) {} }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        }
+
         check("void f(int a, int &b) {\n"
               "   x = x / 2;\n"
               "   if (x < 100) { b = 1; }\n"
@@ -2091,7 +2105,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. '!a || (a && b)' is equivalent to '!a || b'\n", errout.str());
 
 
-        check("void f() {\n"
+        check("void f(const Token *tok) {\n"
               "    if (!tok->next()->function() || \n"
               "        (tok->next()->function() && tok->next()->function()->isConstructor()));\n"
               "}");
@@ -2109,7 +2123,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(const Token *tok) {\n"
               "    if (!tok->next(1)->function(1) || \n"
               "        (tok->next(1)->function(1) && tok->next(1)->function(1)->isConstructor()));\n"
               "}");
