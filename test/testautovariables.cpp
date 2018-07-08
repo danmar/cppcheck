@@ -97,6 +97,8 @@ private:
         TEST_CASE(returnLocalVariable5); // cast
         TEST_CASE(returnLocalVariable6); // valueflow
 
+        TEST_CASE(returnLocalVariableFalsePositive1); // #8615
+
         // return reference..
         TEST_CASE(returnReference1);
         TEST_CASE(returnReference2);
@@ -768,6 +770,17 @@ private:
               "    return p;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Address of auto-variable 'x' returned\n", errout.str());
+    }
+
+    // #8615 - Cppcheck claims that address is returned when std::string is assigned a char pointer
+    void returnLocalVariableFalsePositive1() {
+        check( "std::string f() {                  \n"
+               "    std::vector<char> v({'\\0'});  \n"
+               "    std::string s = &v[0];         \n"
+               "    return s;                      \n"
+               "}                                  \n"
+        );
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Address of auto-variable 'v[0]' returned\n", errout.str());
     }
 
     void returnReference1() {
