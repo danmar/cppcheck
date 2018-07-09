@@ -335,15 +335,6 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             comp2[0] = '>';
     }
 
-    if(isNot && !comp2.empty()) {
-        if((comp1 == "<"  && comp2 == ">=") ||
-            (comp1 == "<=" && comp2 == ">") ||
-            (comp1 == ">"  && comp2 == "<=") ||
-            (comp1 == ">=" && comp2 == "<")) {
-            return false;
-        }
-    }
-
     if (!isNot && comp2.empty()) {
         const Token *expr1 = nullptr, *value1 = nullptr, *expr2 = nullptr, *value2 = nullptr;
         std::string op1 = cond1->str(), op2 = cond2->str();
