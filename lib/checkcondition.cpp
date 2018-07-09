@@ -862,6 +862,28 @@ static std::string conditionString(bool not1, const Token *expr1, const std::str
            (expr1->isName() ? expr1->str() : std::string("EXPR"));
 }
 
+static std::string conditionString(const Token * tok)
+{
+    if(!tok)
+        return "";
+    if(tok->isComparisonOp()) {
+        bool inconclusive = false;
+        bool not_;
+        std::string op, value;
+        const Token *expr;
+        if(parseComparison(tok, &not_, &op, &value, &expr, &inconclusive) && expr->isName()) {
+            return conditionString(not_, expr, op, value);
+        }
+    }
+    if(Token::Match(tok, "%cop%|&&|%oror%")) {
+        if(tok->astOperand2())
+            return conditionString(tok->astOperand1()) + " " + tok->str() + " " + conditionString(tok->astOperand2());
+        return tok->str() + "(" + conditionString(tok->astOperand1()) + ")";
+
+    }
+    return tok->expressionString();
+}
+
 void CheckCondition::checkIncorrectLogicOperator()
 {
     const bool printStyle = mSettings->isEnabled(Settings::STYLE);
@@ -880,11 +902,11 @@ void CheckCondition::checkIncorrectLogicOperator()
                 continue;
 
             // Opposite comparisons around || or && => always true or always false
-            if ((tok->astOperand1()->isName() || tok->astOperand2()->isName()) &&
-                isOppositeCond(true, mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
+            if (!astIsFloat(tok->astOperand1(), false) && !astIsFloat(tok->astOperand2(), false) &&
+                isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
 
                 const bool alwaysTrue(tok->str() == "||");
-                incorrectLogicOperatorError(tok, tok->expressionString(), alwaysTrue, false);
+                incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, false);
                 continue;
             }
 
