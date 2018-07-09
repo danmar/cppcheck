@@ -1,21 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
   <Type Name="Token">
-    <DisplayString>{_str}</DisplayString>
+    <DisplayString>{mStr}</DisplayString>
   </Type>
 
-  <Type Name="TokenList">
-    <DisplayString>{_front->_str} - {_back->_str}</DisplayString>
+    <Type Name="TokensFrontBack">
+        <DisplayString>{front->mStr} - {back->mStr}</DisplayString>
+    </Type>
+
+
+    <Type Name="TokenList">
+    <DisplayString>{mTokensFrontBack.front->mStr} - {mTokensFrontBack.back->mStr}</DisplayString>
     <Expand>
-      <Item Name="[files]">_files</Item>
+      <Item Name="[files]">mFiles</Item>
       <CustomListItems Optional="true" MaxItemsPerView="5000">
-        <Variable Name="pCurr" InitialValue="_front" />
+        <Variable Name="pCurr" InitialValue="mTokensFrontBack.front" />
         <Loop>
-          <If Condition="pCurr == _back">
+          <If Condition="pCurr == mTokensFrontBack.back">
             <Break Condition="1"/>
           </If>
           <Item>pCurr</Item>
-          <Exec>pCurr = pCurr->_next</Exec>
+          <Exec>pCurr = pCurr->mNext</Exec>
         </Loop>
       </CustomListItems>
       
@@ -23,7 +28,11 @@
   </Type>
 
   <Type Name="Variable">
-    <DisplayString>{_name->_str}</DisplayString>
+    <DisplayString>{mNameToken->mStr}</DisplayString>
+  </Type>
+
+  <Type Name="Function">
+    <DisplayString>{tokenDef->mStr}</DisplayString>
   </Type>
 
   <Type Name="Dimension">
