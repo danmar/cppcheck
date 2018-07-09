@@ -709,7 +709,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
         if(!(arg && arg->isConst()))
             return true;
         // If const is applied to the pointer, then the value can still be modified
-        if(arg && Token::Match(arg->typeEndToken(), "* const"))
+        if(arg && Token::simpleMatch(arg->typeEndToken(), "* const"))
             return true;
     }
 
