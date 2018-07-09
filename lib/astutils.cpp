@@ -246,7 +246,16 @@ bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
 
 bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
-    return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values();
+    if(tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values()) {
+        ValueFlow::Value val1 = tok1->values().front();
+        ValueFlow::Value val2 = tok2->values().front();
+        if(val1.isIntValue() && val2.isFloatValue())
+            return val1.intvalue != val2.floatValue;
+        if(val2.isIntValue() && val1.isFloatValue())
+            return val2.intvalue != val1.floatValue;
+        return true;
+    }
+    return false;
 }
 
 static bool isZeroBoundCond(const Token * const cond)
@@ -324,6 +333,15 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             comp2[0] = '<';
         else if (comp2[0] == '<')
             comp2[0] = '>';
+    }
+
+    if(isNot && !comp2.empty()) {
+        if((comp1 == "<"  && comp2 == ">=") ||
+            (comp1 == "<=" && comp2 == ">") ||
+            (comp1 == ">"  && comp2 == "<=") ||
+            (comp1 == ">=" && comp2 == "<")) {
+            return false;
+        }
     }
 
     if (!isNot && comp2.empty()) {
