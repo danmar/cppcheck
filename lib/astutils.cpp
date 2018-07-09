@@ -701,8 +701,13 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 
     const Variable *arg = tok->function()->getArgumentVar(argnr);
 
-    if (addressOf && !(arg && arg->isConst()))
-        return true;
+    if (addressOf) {
+        if(!(arg && arg->isConst()))
+            return true;
+        // If const is applied to the pointer, then the value can still be modified
+        if(arg && Token::Match(arg->typeEndToken(), "* const"))
+            return true;
+    }
 
     return arg && !arg->isConst() && arg->isReference();
 }

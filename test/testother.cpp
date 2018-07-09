@@ -3997,6 +3997,15 @@ private:
               "    if (!x && !y) return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool * const b);\n"
+              "void foo() { \n"
+              "    bool x = true;\n"
+              "    bool y = true;\n"
+              "    f(&x);\n"
+              "    if (!x && !y) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {
