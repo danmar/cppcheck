@@ -100,3 +100,25 @@ else
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
+
+# Check the syntax of the defines in the configuration files
+set +e
+xmlstarlet --version
+XMLSTARLET_RETURNCODE=$?
+set -e
+if [ $XMLSTARLET_RETURNCODE -ne 0 ]; then
+    echo "xmlstarlet needed to extract defines, skipping defines check."
+else
+    for configfile in cfg/*.cfg; do
+        echo "Checking defines in $configfile"
+        # Disable debugging output temorarily since there could be many defines
+        set +x
+        # XMLStarlet returns 1 if no elements were found which is no problem here
+        set +e
+        EXTRACTED_DEFINES=$(xmlstarlet sel -t -m '//define' -c . -n <$configfile)
+        set -e
+        EXTRACTED_DEFINES=$(echo "$EXTRACTED_DEFINES" | sed 's/<define name="/#define /g' | sed 's/" value="/ /g' | sed 's/"\/>//g')
+        echo "$EXTRACTED_DEFINES" | gcc -fsyntax-only -xc -
+        set -x
+    done
+fi
