@@ -43,6 +43,7 @@ public:
         int lineNumber;
         bool inconclusive;
         std::string symbolNames;
+        std::string message;
     private:
         std::string mFileName;
     };
@@ -60,6 +61,7 @@ public:
             lineNumber = other.lineNumber;
             symbolName = other.symbolName;
             matched = other.matched;
+            messageGlob = other.messageGlob;
             return *this;
         }
 
@@ -72,6 +74,8 @@ public:
                 return fileName < other.fileName;
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
+            if (messageGlob != other.messageGlob)
+                return messageGlob < other.messageGlob;
             return false;
         }
 
@@ -96,6 +100,7 @@ public:
         std::string fileName;
         int lineNumber;
         std::string symbolName;
+        std::string messageGlob;
         bool matched;
 
         static const int NO_LINE = 0;
