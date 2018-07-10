@@ -221,6 +221,7 @@ Suppressions::ErrorMessage ErrorLogger::ErrorMessage::toSuppressionsErrorMessage
     }
     ret.inconclusive = _inconclusive;
     ret.symbolNames = mSymbolNames;
+    ret.message = _shortMessage;
     return ret;
 }
 
