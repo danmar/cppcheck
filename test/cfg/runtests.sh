@@ -118,7 +118,7 @@ else
         EXTRACTED_DEFINES=$(xmlstarlet sel -t -m '//define' -c . -n <$configfile)
         set -e
         EXTRACTED_DEFINES=$(echo "$EXTRACTED_DEFINES" | sed 's/<define name="/#define /g' | sed 's/" value="/ /g' | sed 's/"\/>//g')
-        echo "$EXTRACTED_DEFINES" | gcc -fsyntax-only -xc -
+        echo "$EXTRACTED_DEFINES" | gcc -fsyntax-only -xc -Werror -
         set -x
     done
 fi
