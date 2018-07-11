@@ -111,7 +111,7 @@ if [ $XMLSTARLET_RETURNCODE -ne 0 ]; then
 else
     for configfile in cfg/*.cfg; do
         echo "Checking defines in $configfile"
-        # Disable debugging output temorarily since there could be many defines
+        # Disable debugging output temporarily since there could be many defines
         set +x
         # XMLStarlet returns 1 if no elements were found which is no problem here
         set +e
