@@ -2395,6 +2395,25 @@ private:
                       "[test.cpp:4]: (style) Condition '1&&'c'' is always true\n"
                       "[test.cpp:4]: (style) Condition ''c'' is always true\n"
                       "[test.cpp:5]: (style) Condition ''d'' is always true\n", errout.str());
+
+        // Skip literals
+        check("void f() { if(true) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(false) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(!true) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(!false) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(0) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(1) {} }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
