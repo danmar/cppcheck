@@ -1429,6 +1429,7 @@ void CheckStl::uselessCalls()
                 } else if (Token::simpleMatch(tok->linkAt(3)->tokAt(-2), ", 0 )"))
                     uselessCallsSubstrError(tok, true);
             } else if (printWarning && Token::Match(tok, "[{};] %var% . empty ( ) ;") &&
+                       !tok->tokAt(4)->astParent() &&
                        tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())

@@ -547,17 +547,17 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         {
-        check("void f(Class &c) {\n"
-              "    if (c.dostuff() == 3) {}\n"
-              "    else { if (c.dostuff() == 3) {} }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+            check("void f(Class &c) {\n"
+                  "    if (c.dostuff() == 3) {}\n"
+                  "    else { if (c.dostuff() == 3) {} }\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
 
-        check("void f(const Class &c) {\n"
-              "    if (c.dostuff() == 3) {}\n"
-              "    else { if (c.dostuff() == 3) {} }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+            check("void f(const Class &c) {\n"
+                  "    if (c.dostuff() == 3) {}\n"
+                  "    else { if (c.dostuff() == 3) {} }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
         }
 
         check("void f(int a, int &b) {\n"
