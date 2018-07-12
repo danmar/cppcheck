@@ -360,7 +360,7 @@ bool isIteratorExpression(const Token * tok)
             isIteratorExpression(tok->astOperand2());
 }
 
-bool isMismatchIteratorExpression(const Token * tok1, const Token * tok2)
+static bool isMismatchIteratorExpression(const Token * tok1, const Token * tok2)
 {
     if (tok1 == nullptr && tok2 == nullptr)
         return false;
