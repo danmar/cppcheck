@@ -4006,6 +4006,9 @@ private:
               "    if (!x && !y) return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { const int a = {}; if(a == 1) {} }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {

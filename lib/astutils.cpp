@@ -182,7 +182,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         return tok;
     // Start at begining of initialization
     const Token * startToken = varTok;
-    while(Token::Match(startToken, "%op%|.|(|{"))
+    while(Token::Match(startToken, "%op%|.|(|{") && startToken->astOperand1())
         startToken = startToken->astOperand1();
     // Skip if the variable its referring to is modified
     for(const Token * tok2 = startToken;tok2 != endToken;tok2 = tok2->next()) {
