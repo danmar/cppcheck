@@ -242,11 +242,6 @@ void CheckFunctions::checkMathFunctions()
                     }
                 }
 
-                // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
-                else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )")) {
-                    if (std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0)
-                        mathfunctionCallWarning(tok);
-                }
                 // sqrt( x ): if x is negative the result is undefined
                 else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )")) {
                     if (MathLib::isNegative(tok->strAt(2)))

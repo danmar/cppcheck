@@ -604,9 +604,9 @@ private:
               "    std::cout <<  acosf(1.1) << std::endl;\n"
               "    std::cout <<  acosl(1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value 1.1 to acos() leads to implementation-defined result.\n"
-                      "[test.cpp:4]: (warning) Passing value 1.1 to acosf() leads to implementation-defined result.\n"
-                      "[test.cpp:5]: (warning) Passing value 1.1 to acosl() leads to implementation-defined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid acos() argument nr 1. The value is 1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:4]: (error) Invalid acosf() argument nr 1. The value is 1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:5]: (error) Invalid acosl() argument nr 1. The value is 1.1 but the valid values are '-1.0:1.0'.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -614,9 +614,9 @@ private:
               "    std::cout <<  acosf(-1.1) << std::endl;\n"
               "    std::cout <<  acosl(-1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1.1 to acos() leads to implementation-defined result.\n"
-                      "[test.cpp:4]: (warning) Passing value -1.1 to acosf() leads to implementation-defined result.\n"
-                      "[test.cpp:5]: (warning) Passing value -1.1 to acosl() leads to implementation-defined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid acos() argument nr 1. The value is -1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:4]: (error) Invalid acosf() argument nr 1. The value is -1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:5]: (error) Invalid acosl() argument nr 1. The value is -1.1 but the valid values are '-1.0:1.0'.\n", errout.str());
     }
 
     void mathfunctionCall_asin() {
@@ -665,9 +665,9 @@ private:
               "    std::cout <<  asinf(1.1) << std::endl;\n"
               "    std::cout <<  asinl(1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value 1.1 to asin() leads to implementation-defined result.\n"
-                      "[test.cpp:4]: (warning) Passing value 1.1 to asinf() leads to implementation-defined result.\n"
-                      "[test.cpp:5]: (warning) Passing value 1.1 to asinl() leads to implementation-defined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid asin() argument nr 1. The value is 1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:4]: (error) Invalid asinf() argument nr 1. The value is 1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:5]: (error) Invalid asinl() argument nr 1. The value is 1.1 but the valid values are '-1.0:1.0'.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -675,9 +675,9 @@ private:
               "    std::cout <<  asinf(-1.1) << std::endl;\n"
               "    std::cout <<  asinl(-1.1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1.1 to asin() leads to implementation-defined result.\n"
-                      "[test.cpp:4]: (warning) Passing value -1.1 to asinf() leads to implementation-defined result.\n"
-                      "[test.cpp:5]: (warning) Passing value -1.1 to asinl() leads to implementation-defined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid asin() argument nr 1. The value is -1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:4]: (error) Invalid asinf() argument nr 1. The value is -1.1 but the valid values are '-1.0:1.0'.\n"
+                      "[test.cpp:5]: (error) Invalid asinl() argument nr 1. The value is -1.1 but the valid values are '-1.0:1.0'.\n", errout.str());
     }
 
     void mathfunctionCall_pow() {
