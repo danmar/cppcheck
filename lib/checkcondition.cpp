@@ -1194,7 +1194,9 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (Token::Match(tok, "[01]"))
+            if (Token::Match(tok, "%num%|%bool%"))
+                continue;
+            if (Token::Match(tok, "! %num%|%bool%"))
                 continue;
 
             const bool constIfWhileExpression =
