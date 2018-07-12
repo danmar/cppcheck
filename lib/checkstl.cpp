@@ -306,7 +306,7 @@ void CheckStl::mismatchingContainersError(const Token *tok)
 
 void CheckStl::mismatchingContainerExpressionError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "mismatchingContainerExpression", "Iterators from different expressions are used together.", CWE664, false);
+    reportError(tok, Severity::warning, "mismatchingContainerExpression", "Iterators to containers from different expressions are used together.", CWE664, false);
 }
 
 static const std::set<std::string> algorithm2 = { // func(begin1, end1
