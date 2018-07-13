@@ -1569,7 +1569,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
                 tok2 = tok2->astOperand1();
             else
                 continue;
-            if (tok2 && tok2->str() == "&" && !tok2->astOperand2() && tok2->astOperand1() && tok2->astOperand1()->str() == rhs->str())
+            if (tok2 && tok2->isUnaryOp("&") && tok2->astOperand1()->str() == rhs->str())
                 return true;
         }
     }
