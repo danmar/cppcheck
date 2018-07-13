@@ -46,9 +46,7 @@ void CheckSizeof::checkSizeofForNumericParameter()
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "sizeof ( %num% )") ||
                 Token::Match(tok, "sizeof %num%")) {
@@ -75,9 +73,7 @@ void CheckSizeof::checkSizeofForArrayParameter()
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "sizeof ( %var% )") ||
                 Token::Match(tok, "sizeof %var% !![")) {
@@ -116,9 +112,7 @@ void CheckSizeof::checkSizeofForPointerSize()
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             const Token* tokSize;
             const Token* tokFunc;
