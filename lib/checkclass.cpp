@@ -1039,10 +1039,10 @@ void CheckClass::privateFunctions()
             continue;
 
         std::list<const Function*> privateFuncs;
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (const Function &func : scope->functionList) {
             // Get private functions..
-            if (func->type == Function::eFunction && func->access == Private && !func->isOperator()) // TODO: There are smarter ways to check private operator usage
-                privateFuncs.push_back(&*func);
+            if (func.type == Function::eFunction && func.access == Private && !func.isOperator()) // TODO: There are smarter ways to check private operator usage
+                privateFuncs.push_back(&func);
         }
 
         // Bailout for overridden virtual functions of base classes
@@ -1481,25 +1481,25 @@ void CheckClass::operatorEqToSelf()
         if (scope->definedType->derivedFrom.size() > 1)
             continue;
 
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-            if (func->type == Function::eOperatorEqual && func->hasBody()) {
+        for (const Function &func : scope->functionList) {
+            if (func.type == Function::eOperatorEqual && func.hasBody()) {
                 // make sure that the operator takes an object of the same type as *this, otherwise we can't detect self-assignment checks
-                if (func->argumentList.empty())
+                if (func.argumentList.empty())
                     continue;
-                const Token* typeTok = func->argumentList.front().typeEndToken();
+                const Token* typeTok = func.argumentList.front().typeEndToken();
                 while (typeTok->str() == "const" || typeTok->str() == "&" || typeTok->str() == "*")
                     typeTok = typeTok->previous();
                 if (typeTok->str() != scope->className)
                     continue;
 
                 // make sure return signature is correct
-                if (Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className) {
+                if (Token::Match(func.retDef, "%type% &") && func.retDef->str() == scope->className) {
                     // find the parameter name
-                    const Token *rhs = func->argumentList.begin()->nameToken();
+                    const Token *rhs = func.argumentList.begin()->nameToken();
 
-                    if (!hasAssignSelf(&(*func), rhs)) {
-                        if (hasAllocation(&(*func), scope))
-                            operatorEqToSelfError(func->token);
+                    if (!hasAssignSelf(&func, rhs)) {
+                        if (hasAllocation(&func, scope))
+                            operatorEqToSelfError(func.token);
                     }
                 }
             }
