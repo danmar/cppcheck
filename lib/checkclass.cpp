@@ -407,9 +407,8 @@ void CheckClass::copyconstructors()
             break;
         }
         if (copyCtor && !copiedVars.empty()) {
-            for (std::set<const Token*>::const_iterator it = copiedVars.begin(); it != copiedVars.end(); ++it) {
-                copyConstructorShallowCopyError(*it, (*it)->str());
-            }
+            for (const Token *cv : copiedVars)
+                copyConstructorShallowCopyError(cv, cv->str());
             // throw error if count mismatch
             /* FIXME: This doesn't work. See #4154
             for (std::map<unsigned int, const Token*>::const_iterator i = allocatedVars.begin(); i != allocatedVars.end(); ++i) {
@@ -477,15 +476,15 @@ bool CheckClass::canNotCopy(const Scope *scope)
     bool publicAssign = false;
     bool publicCopy = false;
 
-    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        if (func->isConstructor())
+    for (const Function &func : scope->functionList) {
+        if (func.isConstructor())
             constructor = true;
-        if (func->access != Public)
+        if (func.access != Public)
             continue;
-        if (func->type == Function::eCopyConstructor) {
+        if (func.type == Function::eCopyConstructor) {
             publicCopy = true;
             break;
-        } else if (func->type == Function::eOperatorEqual) {
+        } else if (func.type == Function::eOperatorEqual) {
             publicAssign = true;
             break;
         }
@@ -501,18 +500,18 @@ bool CheckClass::canNotMove(const Scope *scope)
     bool publicCopy = false;
     bool publicMove = false;
 
-    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-        if (func->isConstructor())
+    for (const Function &func : scope->functionList) {
+        if (func.isConstructor())
             constructor = true;
-        if (func->access != Public)
+        if (func.access != Public)
             continue;
-        if (func->type == Function::eCopyConstructor) {
+        if (func.type == Function::eCopyConstructor) {
             publicCopy = true;
             break;
-        } else if (func->type == Function::eMoveConstructor) {
+        } else if (func.type == Function::eMoveConstructor) {
             publicMove = true;
             break;
-        } else if (func->type == Function::eOperatorEqual) {
+        } else if (func.type == Function::eOperatorEqual) {
             publicAssign = true;
             break;
         }
@@ -668,8 +667,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Calling member variable function?
         if (Token::Match(ftok->next(), "%var% . %name% (")) {
-            for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-                if (var->declarationId() == ftok->next()->varId()) {
+            for (const Variable &var : scope->varlist) {
+                if (var.declarationId() == ftok->next()->varId()) {
                     /** @todo false negative: we assume function changes variable state */
                     assignVar(ftok->next()->varId(), scope, usage);
                     break;
