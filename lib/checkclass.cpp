@@ -1607,8 +1607,8 @@ void CheckClass::virtualDestructor()
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor && !destructor->isVirtual()) {
-                    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
-                        if (func->isVirtual()) {
+                    for (const Function &func : scope->functionList) {
+                        if (func.isVirtual()) {
                             inconclusiveErrors.push_back(destructor);
                             break;
                         }
@@ -1715,8 +1715,8 @@ void CheckClass::virtualDestructor()
         }
     }
 
-    for (std::list<const Function *>::const_iterator i = inconclusiveErrors.begin(); i != inconclusiveErrors.end(); ++i)
-        virtualDestructorError((*i)->tokenDef, (*i)->name(), emptyString, true);
+    for (const Function *func : inconclusiveErrors)
+        virtualDestructorError(func->tokenDef, func->name(), emptyString, true);
 }
 
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
