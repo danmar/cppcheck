@@ -99,6 +99,8 @@ std::string Suppressions::parseXmlFile(const char *filename)
                 s.lineNumber = std::atoi(text);
             else if (std::strcmp(e2->Name(), "symbolName") == 0)
                 s.symbolName = text;
+            else if (std::strcmp(e2->Name(), "messageText") == 0)
+                s.messageGlob = text;
             else
                 return "Unknown suppression element <" + std::string(e2->Name()) + ">, expected <id>/<fileName>/<lineNumber>/<symbolName>";
         }
@@ -238,6 +240,12 @@ bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &e
                 return true;
         }
         return false;
+    }
+    if (!messageGlob.empty()) {
+        if (!matchglob(messageGlob, errmsg.message))
+        {
+            return false;
+        }
     }
     return true;
 }

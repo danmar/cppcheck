@@ -1075,6 +1075,7 @@ uninitvar</programlisting>
     &lt;fileName&gt;src/file1.c&lt;/fileName&gt;
     &lt;lineNumber&gt;10&lt;/lineNumber&gt;
     &lt;symbolName&gt;var&lt;/symbolName&gt;
+    &lt;messageText&gt;*auto&lt;/messageText&gt;
   &lt;/suppression&gt;
 &lt;/suppressions&gt;</programlisting>
 
