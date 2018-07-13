@@ -309,6 +309,9 @@ public:
     bool isBoolean() const {
         return mTokType == eBoolean;
     }
+    bool isUnaryOp() const {
+        return astOperand1() != nullptr && astOperand2() == nullptr;
+    }
     bool isUnaryPreOp() const;
 
     unsigned int flags() const {
