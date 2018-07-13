@@ -1875,12 +1875,12 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         }
     } while (again);
 
-    for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-        if (var->name() == tok->str()) {
+    for (const Variable &var : scope->varlist) {
+        if (var.name() == tok->str()) {
             if (tok->varId() == 0)
                 mSymbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
 
-            return !var->isStatic();
+            return !var.isStatic();
         }
     }
 
@@ -1905,8 +1905,8 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
 {
     if (!tok->function()) {
-        for (std::list<Function>::const_iterator i = scope->functionList.cbegin(); i != scope->functionList.cend(); ++i) {
-            if (i->name() == tok->str()) {
+        for (const Function &func : scope->functionList) {
+            if (func.name() == tok->str()) {
                 const Token* tok2 = tok->tokAt(2);
                 size_t argsPassed = tok2->str() == ")" ? 0 : 1;
                 for (;;) {
@@ -1916,7 +1916,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
                     else
                         break;
                 }
-                if (argsPassed == i->argCount() || (argsPassed < i->argCount() && argsPassed >= i->minArgCount()))
+                if (argsPassed == func.argCount() || (argsPassed < func.argCount() && argsPassed >= func.minArgCount()))
                     return true;
             }
         }
@@ -2260,8 +2260,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
             continue;
 
         const std::list<const Token *> & virtualFunctionCalls = getVirtualFunctionCalls(*scope->function, virtualFunctionCallsMap);
-        for (std::list<const Token *>::const_iterator it = virtualFunctionCalls.begin(); it != virtualFunctionCalls.end(); ++it) {
-            const Token * callToken = *it;
+        for (const Token *callToken : virtualFunctionCalls) {
             std::list<const Token *> callstack(1, callToken);
             getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, callToken, callstack);
             if (callstack.empty())
@@ -2360,8 +2359,8 @@ void CheckClass::virtualFunctionCallInConstructorError(
 
     ErrorPath errorPath;
     int lineNumber = 1;
-    for (std::list<const Token *>::const_iterator it = tokStack.begin(); it != tokStack.end(); ++it)
-        errorPath.emplace_back(*it, "Calling " + (*it)->str());
+    for (const Token *tok : tokStack)
+        errorPath.emplace_back(tok, "Calling " + tok->str());
     if (!errorPath.empty()) {
         lineNumber = errorPath.front().first->linenr();
         errorPath.back().second = funcname + " is a virtual method";
@@ -2394,8 +2393,8 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
-    for (std::list<const Token *>::const_iterator it = tokStack.begin(); it != tokStack.end(); ++it)
-        errorPath.emplace_back(*it, "Calling " + (*it)->str());
+    for (const Token *tok : tokStack)
+        errorPath.emplace_back(tok, "Calling " + tok->str());
     if (!errorPath.empty())
         errorPath.back().second = purefuncname + " is a pure virtual method without body";
 
