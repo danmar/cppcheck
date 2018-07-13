@@ -246,16 +246,7 @@ bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
 
 bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
-    if(tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values()) {
-        ValueFlow::Value val1 = tok1->values().front();
-        ValueFlow::Value val2 = tok2->values().front();
-        if(val1.isIntValue() && val2.isFloatValue())
-            return val1.intvalue != val2.floatValue;
-        if(val2.isIntValue() && val1.isFloatValue())
-            return val2.intvalue != val1.floatValue;
-        return true;
-    }
-    return false;
+    return tok1->hasKnownValue() && tok2->hasKnownValue() && tok1->values() != tok2->values();
 }
 
 static bool isZeroBoundCond(const Token * const cond)
