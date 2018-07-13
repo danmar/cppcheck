@@ -106,7 +106,7 @@ static bool isAutoVarArray(const Token *tok)
         return false;
 
     // &x[..]
-    if (tok->str() == "&" && Token::simpleMatch(tok->astOperand1(), "[") && !tok->astOperand2())
+    if (tok->isUnaryOp("&") && Token::simpleMatch(tok->astOperand1(), "["))
         return isAutoVarArray(tok->astOperand1()->astOperand1());
 
     // x+y
@@ -474,7 +474,7 @@ static bool astHasAutoResult(const Token *tok)
             return false;
         if ((tok->str() == "<<" || tok->str() == ">>") && tok->astOperand1()) {
             const Token* tok2 = tok->astOperand1();
-            while (tok2 && tok2->str() == "*" && !tok2->astOperand2())
+            while (tok2 && tok2->isUnaryOp("*"))
                 tok2 = tok2->astOperand1();
             return tok2 && tok2->variable() && !tok2->variable()->isClass() && !tok2->variable()->isStlType(); // Class or unknown type on LHS: Assume it is a stream
         }
