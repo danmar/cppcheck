@@ -309,8 +309,11 @@ public:
     bool isBoolean() const {
         return mTokType == eBoolean;
     }
-    bool isUnaryOp() const {
-        return astOperand1() != nullptr && astOperand2() == nullptr;
+    bool isBinaryOp() const {
+        return astOperand1() != nullptr && astOperand2() != nullptr;
+    }
+    bool isUnaryOp(const std::string &s) const {
+        return s == mStr && astOperand1() != nullptr && astOperand2() == nullptr;
     }
     bool isUnaryPreOp() const;
 
