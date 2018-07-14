@@ -643,7 +643,7 @@ void CheckCondition::multiCondition2()
                     break;
                 if (Token::Match(tok->astParent(), "*|.|[")) {
                     const Token *parent = tok;
-                    while (Token::Match(parent->astParent(), ".|[") || (Token::simpleMatch(parent->astParent(), "*") && !parent->astParent()->astOperand2()))
+                    while (Token::Match(parent->astParent(), ".|[") || (parent->astParent() && parent->astParent()->isUnaryOp("*")))
                         parent = parent->astParent();
                     if (Token::Match(parent->astParent(), "%assign%|++|--"))
                         break;
@@ -1138,7 +1138,7 @@ void CheckCondition::clarifyCondition()
                     } else if (!tok2->isName() && !tok2->isNumber() && tok2->str() != ".")
                         break;
                 }
-            } else if (tok->tokType() == Token::eBitOp && (tok->str() != "&" || tok->astOperand2())) {
+            } else if (tok->tokType() == Token::eBitOp && !tok->isUnaryOp("&")) {
                 if (tok->astOperand2() && tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
                     continue;
 
