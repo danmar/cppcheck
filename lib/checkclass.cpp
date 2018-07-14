@@ -2415,28 +2415,20 @@ void CheckClass::checkDuplInheritedMembers()
         return;
 
     // Iterate over all classes
-    for (std::list<Type>::const_iterator classIt = mSymbolDatabase->typeList.begin();
-         classIt != mSymbolDatabase->typeList.end();
-         ++classIt) {
+    for (const Type &classIt : mSymbolDatabase->typeList) {
         // Iterate over the parent classes
-        for (std::vector<Type::BaseInfo>::const_iterator parentClassIt = classIt->derivedFrom.begin();
-             parentClassIt != classIt->derivedFrom.end();
-             ++parentClassIt) {
+        for (const Type::BaseInfo &parentClassIt : classIt.derivedFrom) {
             // Check if there is info about the 'Base' class
-            if (!parentClassIt->type || !parentClassIt->type->classScope)
+            if (!parentClassIt.type || !parentClassIt.type->classScope)
                 continue;
             // Check if they have a member variable in common
-            for (std::list<Variable>::const_iterator classVarIt = classIt->classScope->varlist.begin();
-                 classVarIt != classIt->classScope->varlist.end();
-                 ++classVarIt) {
-                for (std::list<Variable>::const_iterator parentClassVarIt = parentClassIt->type->classScope->varlist.begin();
-                     parentClassVarIt != parentClassIt->type->classScope->varlist.end();
-                     ++parentClassVarIt) {
-                    if (classVarIt->name() == parentClassVarIt->name() && !parentClassVarIt->isPrivate()) { // Check if the class and its parent have a common variable
-                        duplInheritedMembersError(classVarIt->nameToken(), parentClassVarIt->nameToken(),
-                                                  classIt->name(), parentClassIt->type->name(), classVarIt->name(),
-                                                  classIt->classScope->type == Scope::eStruct,
-                                                  parentClassIt->type->classScope->type == Scope::eStruct);
+            for (const Variable &classVarIt : classIt.classScope->varlist) {
+                for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
+                    if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) { // Check if the class and its parent have a common variable
+                        duplInheritedMembersError(classVarIt.nameToken(), parentClassVarIt.nameToken(),
+                                                  classIt.name(), parentClassIt.type->name(), classVarIt.name(),
+                                                  classIt.classScope->type == Scope::eStruct,
+                                                  parentClassIt.type->classScope->type == Scope::eStruct);
                     }
                 }
             }
