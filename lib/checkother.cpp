@@ -1387,7 +1387,7 @@ static bool canBeConst(const Variable *var)
                 if (!argVar|| (!argVar->isConst() && argVar->isReference()))
                     return false;
             }
-        } else if (parent->str() == "&" && !parent->astOperand2()) {
+        } else if (parent->isUnaryOp("&")) {
             // TODO: check how pointer is used
             return false;
         } else if (parent->isConstOp())
@@ -1491,7 +1491,7 @@ void CheckOther::checkCharVariable()
                     signedCharArrayIndexError(tok);
                 if (portability && astIsUnknownSignChar(index) && index->getValueGE(0x80, mSettings))
                     unknownSignCharArrayIndexError(tok);
-            } else if (warning && Token::Match(tok, "[&|^]") && tok->astOperand2() && tok->astOperand1()) {
+            } else if (warning && Token::Match(tok, "[&|^]") && tok->isBinaryOp()) {
                 bool warn = false;
                 if (astIsSignedChar(tok->astOperand1())) {
                     const ValueFlow::Value *v1 = tok->astOperand1()->getValueLE(-1, mSettings);
@@ -2485,29 +2485,20 @@ void CheckOther::checkRedundantPointerOp()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->str() == "&") {
-            // bail out for logical AND operator
-            if (tok->astOperand2())
-                continue;
+        if (!tok->isUnaryOp("&") || !tok->astOperand1()->isUnaryOp("*"))
+            continue;
 
-            // pointer dereference
-            const Token *astTok = tok->astOperand1();
-            if (!astTok || astTok->str() != "*")
-                continue;
+        // variable
+        const Token *varTok = tok->astOperand1()->astOperand1();
+        if (!varTok || varTok->isExpandedMacro())
+            continue;
 
-            // variable
-            const Token *varTok = astTok->astOperand1();
-            if (!varTok || varTok->isExpandedMacro() || varTok->varId() == 0)
-                continue;
+        const Variable *var = varTok->variable();
+        if (!var || !var->isPointer())
+            continue;
 
-            const Variable *var = symbolDatabase->getVariableFromVarId(varTok->varId());
-            if (!var || !var->isPointer())
-                continue;
-
-            redundantPointerOpError(tok, var->name(), false);
-        }
+        redundantPointerOpError(tok, var->name(), false);
     }
 }
 
