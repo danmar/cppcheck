@@ -1285,8 +1285,8 @@ void Tokenizer::simplifyTypedef()
                     tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty()) {
-                        for (std::list<std::string>::const_iterator iter = pointers.begin(); iter != pointers.end(); ++iter) {
-                            tok2->insertToken(*iter);
+                        for (const std::string &p : pointers) {
+                            tok2->insertToken(p);
                             tok2 = tok2->next();
                         }
                     }
@@ -2863,8 +2863,8 @@ namespace {
 static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
 {
     std::string ret;
-    for (std::list<ScopeInfo2>::const_iterator it = scopeInfo.begin(); it != scopeInfo.end(); ++it)
-        ret += (ret.empty() ? "" : " :: ") + (it->name);
+    for (const ScopeInfo2 &si : scopeInfo)
+        ret += (ret.empty() ? "" : " :: ") + (si.name);
     return ret;
 }
 
@@ -2925,8 +2925,8 @@ static Token * matchMemberName(const Member &member, const std::list<ScopeInfo2>
         return ret;
 
     // Try to match member using the "using namespace ..." namespaces..
-    for (std::list<const Token *>::const_iterator ns = member.usingnamespaces.begin(); ns != member.usingnamespaces.end(); ++ns) {
-        ret = matchMemberName(member.scope, *ns, member.tok, scopeInfo);
+    for (const Token *ns : member.usingnamespaces) {
+        ret = matchMemberName(member.scope, ns, member.tok, scopeInfo);
         if (ret)
             return ret;
     }
@@ -3028,8 +3028,8 @@ void Tokenizer::setVarIdPass2()
         }
 
         std::string classname;
-        for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
-            classname += (classname.empty() ? "" : " :: ") + (*it)->str();
+        for (const Token *it : classnameTokens)
+            classname += (classname.empty() ? "" : " :: ") + it->str();
 
         std::map<std::string, unsigned int> &thisClassVars = varsByClass[scopeName2 + classname];
         while (Token::Match(tokStart, ":|::|,|%name%")) {
@@ -3049,8 +3049,8 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // What member variables are there in this class?
-        for (std::list<const Token *>::const_iterator it = classnameTokens.begin(); it != classnameTokens.end(); ++it)
-            scopeInfo.emplace_back((*it)->str(), tokStart->link());
+        for (const Token *it : classnameTokens)
+            scopeInfo.emplace_back(it->str(), tokStart->link());
 
         for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
             // skip parentheses..
@@ -3073,8 +3073,8 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // Member variables
-        for (std::list<Member>::iterator var = allMemberVars.begin(); var != allMemberVars.end(); ++var) {
-            Token *tok2 = matchMemberVarName(*var, scopeInfo);
+        for (const Member &var : allMemberVars) {
+            Token *tok2 = matchMemberVarName(var, scopeInfo);
             if (!tok2)
                 continue;
             tok2->varId(thisClassVars[tok2->str()]);
@@ -3084,8 +3084,8 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // Set variable ids in member functions for this class..
-        for (std::list<Member>::const_iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func) {
-            Token *tok2 = matchMemberFunctionName(*func, scopeInfo);
+        for (const Member &func : allMemberFunctions) {
+            Token *tok2 = matchMemberFunctionName(func, scopeInfo);
             if (!tok2)
                 continue;
 
