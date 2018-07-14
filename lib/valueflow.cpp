@@ -965,7 +965,7 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         // not address of
-        if (tok->str() != "&" || tok->astOperand2())
+        if (!tok->isUnaryOp("&"))
             continue;
 
         // parent should be a '='
@@ -2121,7 +2121,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
 
             // bailout if address of var is taken..
-            if (tok2->astParent() && tok2->astParent()->str() == "&" && !tok2->astParent()->astOperand2()) {
+            if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "Taking address of " + tok2->str());
                 return false;
@@ -2321,7 +2321,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
         std::set<unsigned int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Alias
-            if (tok->str() == "&" && !tok->astOperand2() && tok->astOperand1()) {
+            if (tok->isUnaryOp("&")) {
                 aliased.insert(tok->astOperand1()->varId());
                 continue;
             }
