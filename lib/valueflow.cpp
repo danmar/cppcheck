@@ -608,11 +608,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // !
     else if (parent->str() == "!") {
-        std::list<ValueFlow::Value>::const_iterator it;
-        for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-            if (!it->isIntValue())
+        for (const ValueFlow::Value &val : tok->values()) {
+            if (!val.isIntValue())
                 continue;
-            ValueFlow::Value v(*it);
+            ValueFlow::Value v(val);
             v.intvalue = !v.intvalue;
             setTokenValue(parent, v, settings);
         }
@@ -620,11 +619,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // ~
     else if (parent->str() == "~") {
-        std::list<ValueFlow::Value>::const_iterator it;
-        for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-            if (!it->isIntValue())
+        for (const ValueFlow::Value &val : tok->values()) {
+            if (!val.isIntValue())
                 continue;
-            ValueFlow::Value v(*it);
+            ValueFlow::Value v(val);
             v.intvalue = ~v.intvalue;
             unsigned int bits = 0;
             if (settings &&
@@ -643,12 +641,11 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     // unary minus
-    else if (parent->str() == "-" && !parent->astOperand2()) {
-        std::list<ValueFlow::Value>::const_iterator it;
-        for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-            if (!it->isIntValue() && !it->isFloatValue())
+    else if (parent->isUnaryOp("-")) {
+        for (const ValueFlow::Value &val : tok->values()) {
+            if (!val.isIntValue() && !val.isFloatValue())
                 continue;
-            ValueFlow::Value v(*it);
+            ValueFlow::Value v(val);
             if (v.isIntValue())
                 v.intvalue = -v.intvalue;
             else
@@ -658,25 +655,25 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     // Array element
-    else if (parent->str() == "[" && parent->astOperand1() && parent->astOperand2()) {
-        for (std::list<ValueFlow::Value>::const_iterator value1 = parent->astOperand1()->values().begin(); value1 != parent->astOperand1()->values().end(); ++value1) {
-            if (!value1->isTokValue())
+    else if (parent->str() == "[" && parent->isBinaryOp()) {
+        for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
+            if (!value1.isTokValue())
                 continue;
-            for (std::list<ValueFlow::Value>::const_iterator value2 = parent->astOperand2()->values().begin(); value2 != parent->astOperand2()->values().end(); ++value2) {
-                if (!value2->isIntValue())
+            for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
+                if (!value2.isIntValue())
                     continue;
-                if (value1->varId == 0U || value2->varId == 0U ||
-                    (value1->varId == value2->varId && value1->varvalue == value2->varvalue)) {
+                if (value1.varId == 0U || value2.varId == 0U ||
+                    (value1.varId == value2.varId && value1.varvalue == value2.varvalue)) {
                     ValueFlow::Value result(0);
-                    result.condition = value1->condition ? value1->condition : value2->condition;
-                    result.setInconclusive(value1->isInconclusive() | value2->isInconclusive());
-                    result.varId = (value1->varId != 0U) ? value1->varId : value2->varId;
-                    result.varvalue = (result.varId == value1->varId) ? value1->intvalue : value2->intvalue;
-                    if (value1->valueKind == value2->valueKind)
-                        result.valueKind = value1->valueKind;
-                    if (value1->tokvalue->tokType() == Token::eString) {
-                        const std::string s = value1->tokvalue->strValue();
-                        const MathLib::bigint index = value2->intvalue;
+                    result.condition = value1.condition ? value1.condition : value2.condition;
+                    result.setInconclusive(value1.isInconclusive() | value2.isInconclusive());
+                    result.varId = (value1.varId != 0U) ? value1.varId : value2.varId;
+                    result.varvalue = (result.varId == value1.varId) ? value1.intvalue : value2.intvalue;
+                    if (value1.valueKind == value2.valueKind)
+                        result.valueKind = value1.valueKind;
+                    if (value1.tokvalue->tokType() == Token::eString) {
+                        const std::string s = value1.tokvalue->strValue();
+                        const MathLib::bigint index = value2.intvalue;
                         if (index == s.size()) {
                             result.intvalue = 0;
                             setTokenValue(parent, result, settings);
@@ -684,9 +681,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.intvalue = s[index];
                             setTokenValue(parent, result, settings);
                         }
-                    } else if (value1->tokvalue->str() == "{") {
-                        MathLib::bigint index = value2->intvalue;
-                        const Token *element = value1->tokvalue->next();
+                    } else if (value1.tokvalue->str() == "{") {
+                        MathLib::bigint index = value2.intvalue;
+                        const Token *element = value1.tokvalue->next();
                         while (index > 0 && element->str() != "}") {
                             if (element->str() == ",")
                                 --index;
