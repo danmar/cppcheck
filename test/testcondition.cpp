@@ -2437,7 +2437,7 @@ private:
     void alwaysTrueFalseInLogicalOperators() {
         check("bool f();\n"
               "void foo() { bool x = true; if(x||f()) {}}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x||f().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x||f()' is always true\n", errout.str());
 
         check("bool f();\n"
               "void foo() { bool x = false; if(x||f()) {}}\n");
@@ -2445,7 +2445,7 @@ private:
 
         check("bool f();\n"
               "void foo() { bool x = false; if(x&&f()) {}}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x&&f().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x&&f()' is always false\n", errout.str());
 
         check("bool f();\n"
               "void foo() { bool x = true; if(x&&f()) {}}\n");

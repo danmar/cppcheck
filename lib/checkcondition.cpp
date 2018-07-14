@@ -888,18 +888,6 @@ void CheckCondition::checkIncorrectLogicOperator()
                 continue;
             }
 
-            ValueFlow::Value knownValue;
-            if(!tok->astOperand1()->isLiteral() && tok->astOperand1()->hasKnownIntValue() && tok->astOperand2()->tokType() != Token::eString)
-                knownValue = tok->astOperand1()->values().front();
-            else if(!tok->astOperand2()->isLiteral() && tok->astOperand2()->hasKnownIntValue() && tok->astOperand1()->tokType() != Token::eString)
-                knownValue = tok->astOperand2()->values().front();
-            if(knownValue.isKnown()) {
-                if(tok->str() == "||" && knownValue.intvalue != 0)
-                    incorrectLogicOperatorError(tok, tok->expressionString(), true, false);
-                else if(tok->str() == "&&" && knownValue.intvalue == 0) 
-                    incorrectLogicOperatorError(tok, tok->expressionString(), false, false);
-            }
-
             // 'A && (!A || B)' is equivalent to 'A && B'
             // 'A || (!A && B)' is equivalent to 'A || B'
             if (printStyle &&
