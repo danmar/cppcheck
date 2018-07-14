@@ -158,7 +158,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     if(Token::Match(tok, "%var% ["))
         return tok;
     // Skip pointer indirection
-    if(Token::Match(tok->previous(), "* %var%") && !tok->previous()->astOperand2())
+    if(tok->astParent() && tok->isUnaryOp("*"))
         return tok;
     // Skip following variables if it is used in an assignment
     if(Token::Match(tok->astParent(), "%assign%") || Token::Match(tok->next(), "%assign%"))
@@ -188,7 +188,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     for(const Token * tok2 = startToken;tok2 != endToken;tok2 = tok2->next()) {
         if(Token::simpleMatch(tok2, ";"))
             break;
-        if(Token::Match(tok2, "* %var%") && !tok2->astOperand2())
+        if(tok2->astParent() && tok2->isUnaryOp("*"))
             return tok;
         if (tok2->tokType() == Token::eIncDecOp || 
             tok2->isAssignmentOp() || 
