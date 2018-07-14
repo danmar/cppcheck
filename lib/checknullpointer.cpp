@@ -177,7 +177,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     }
 
     // Dereferencing pointer..
-    if (parent->str() == "*" && !parent->astOperand2() && !Token::Match(parent->tokAt(-2), "sizeof|decltype|typeof"))
+    if (parent->isUnaryOp("*") && !Token::Match(parent->tokAt(-2), "sizeof|decltype|typeof"))
         return true;
 
     // array access
@@ -188,7 +188,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     const Token *parent2 = parent;
     while (Token::Match(parent2, "[|."))
         parent2 = parent2->astParent();
-    if (parent2 != parent && parent2 && parent2->str() == "&" && !parent2->astOperand2())
+    if (parent2 != parent && parent2 && parent2->isUnaryOp("&"))
         return false;
 
     // read/write member variable
