@@ -78,6 +78,7 @@ private:
 
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowForwardAssignInBranch);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
         TEST_CASE(valueFlowForwardFunction);
@@ -2024,6 +2025,17 @@ private:
                "  }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+    }
+    
+    void valueFlowForwardAssignInBranch() {
+        const char *code;
+
+        code = "void f(int i) {\n"
+                "    bool x = false;\n"
+                "    if (i == 0) { x = true; }\n"
+                "    else if (x && i == 1) {}\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowForwardCompoundAssign() {
