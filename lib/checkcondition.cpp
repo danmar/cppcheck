@@ -1196,6 +1196,13 @@ void CheckCondition::alwaysTrueFalse()
             if (Token::Match(tok, "[01]"))
                 continue;
 
+            if(Token::Match(tok, "&&|%oror%")) {
+                if(Token::Match(tok->astOperand1(), "%num%|%bool%") && !Token::Match(tok->astOperand2(), "%char%|%str%"))
+                    continue;
+                if(Token::Match(tok->astOperand2(), "%num%|%bool%") && !Token::Match(tok->astOperand1(), "%char%|%str%"))
+                    continue;
+            }
+
             const bool constIfWhileExpression =
                 tok->astParent()
                 && Token::Match(tok->astParent()->astOperand1(), "if|while")

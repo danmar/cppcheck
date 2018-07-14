@@ -2439,6 +2439,12 @@ private:
               "void foo() { bool x = true; if(x||f()) {}}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x||f()' is always true\n", errout.str());
 
+        check("void foo(bool b) { bool x = true; if(x||b) {}}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'x||b' is always true\n", errout.str());
+
+        check("void foo(bool b) { if(true||b) {}}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("bool f();\n"
               "void foo() { bool x = false; if(x||f()) {}}\n");
         ASSERT_EQUALS("", errout.str());
@@ -2446,6 +2452,12 @@ private:
         check("bool f();\n"
               "void foo() { bool x = false; if(x&&f()) {}}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x&&f()' is always false\n", errout.str());
+
+        check("void foo(bool b) { bool x = false; if(x&&b) {}}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'x&&b' is always false\n", errout.str());
+
+        check("void foo(bool b) { if(false&&b) {}}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f();\n"
               "void foo() { bool x = true; if(x&&f()) {}}\n");
