@@ -312,7 +312,7 @@ static bool isAddressOf(const Token *tok)
     const Token *tok2 = tok->astParent();
     while (Token::Match(tok2, "%name%|.|::|["))
         tok2 = tok2->astParent();
-    return tok2 && tok2->str() == "&" && !(tok2->astOperand1() && tok2->astOperand2());
+    return tok2 && tok2->isUnaryOp("&");
 }
 
 /**

@@ -323,14 +323,14 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return true;
 
     // in c++, a+b might be different to b+a, depending on the type of a and b
-    if (cpp && tok1->str() == "+" && tok1->astOperand2()) {
+    if (cpp && tok1->str() == "+" && tok1->isBinaryOp()) {
         const ValueType* vt1 = tok1->astOperand1()->valueType();
         const ValueType* vt2 = tok1->astOperand2()->valueType();
         if (!(vt1 && (vt1->type >= ValueType::VOID || vt1->pointer) && vt2 && (vt2->type >= ValueType::VOID || vt2->pointer)))
             return false;
     }
 
-    const bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
+    const bool commutative = tok1->isBinaryOp() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
     bool commutativeEquals = commutative &&
                              isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), library, pure);
     commutativeEquals = commutativeEquals &&
@@ -486,9 +486,9 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
         return false;
     if (isOppositeCond(true, cpp, tok1, tok2, library, pure))
         return true;
-    if (tok1->str() == "-" && !tok1->astOperand2())
+    if (tok1->isUnaryOp("-"))
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure);
-    if (tok2->str() == "-" && !tok2->astOperand2())
+    if (tok2->isUnaryOp("-"))
         return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure);
     return false;
 }
@@ -826,7 +826,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     if (!cpp)
         return false;
 
-    if (!Token::Match(op, "&|>>") || !op->astOperand2())
+    if (!Token::Match(op, "&|>>") || !op->isBinaryOp())
         return false;
 
     if (!Token::Match(op->astOperand2(), "%name%|.|*|[") && op->str() != op->astOperand2()->str())

@@ -49,18 +49,18 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
 
     const std::string filesTxt(buildDir + "/files.txt");
     std::ofstream fout(filesTxt);
-    for (std::list<std::string>::const_iterator f = sourcefiles.begin(); f != sourcefiles.end(); ++f) {
-        const std::string afile = getFilename(*f);
+    for (const std::string &f : sourcefiles) {
+        const std::string afile = getFilename(f);
         if (fileCount.find(afile) == fileCount.end())
             fileCount[afile] = 0;
-        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::fromNativeSeparators(*f) << '\n';
+        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::fromNativeSeparators(f) << '\n';
     }
 
-    for (std::list<ImportProject::FileSettings>::const_iterator fs = fileSettings.begin(); fs != fileSettings.end(); ++fs) {
-        const std::string afile = getFilename(fs->filename);
+    for (const ImportProject::FileSettings &fs : fileSettings) {
+        const std::string afile = getFilename(fs.filename);
         if (fileCount.find(afile) == fileCount.end())
             fileCount[afile] = 0;
-        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs->cfg << ":" << Path::fromNativeSeparators(fs->filename) << std::endl;
+        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::fromNativeSeparators(fs.filename) << std::endl;
     }
 }
 
