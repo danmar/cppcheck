@@ -387,7 +387,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     else if (parent->str() == "?" && tok->str() == ":" && tok == parent->astOperand2() && parent->astOperand1()) {
         // is condition always true/false?
-        if (parent->astOperand1()->values().size() == 1U && parent->astOperand1()->values().front().isKnown()) {
+        if (parent->astOperand1()->hasKnownValue()) {
             const ValueFlow::Value &condvalue = parent->astOperand1()->values().front();
             const bool cond(condvalue.isTokValue() || (condvalue.isIntValue() && condvalue.intvalue != 0));
             if (cond && !tok->astOperand1()) { // true condition, no second operator
@@ -435,10 +435,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     else if ((parent->isArithmeticalOp() || parent->isComparisonOp() || (parent->tokType() == Token::eBitOp) || (parent->tokType() == Token::eLogicalOp)) &&
              parent->astOperand1() &&
              parent->astOperand2()) {
-        const bool known = ((parent->astOperand1()->values().size() == 1U &&
-                             parent->astOperand1()->values().front().isKnown()) ||
-                            (parent->astOperand2()->values().size() == 1U &&
-                             parent->astOperand2()->values().front().isKnown()));
+        const bool known = (parent->astOperand1()->hasKnownValue() ||
+                            parent->astOperand2()->hasKnownValue());
 
         // known result when a operand is 0.
         if (Token::Match(parent, "[&*]") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
@@ -1003,7 +1001,7 @@ static void valueFlowBitAnd(TokenList *tokenlist)
         if (tok->str() != "&")
             continue;
 
-        if (tok->values().size() == 1U && tok->values().front().isKnown())
+        if (tok->hasKnownValue())
             continue;
 
         if (!tok->astOperand1() || !tok->astOperand2())
@@ -3457,7 +3455,7 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, c
         valueFlowConstantFoldAST(expr->astOperand2(), settings);
         valueFlowSetConstantValue(expr, settings, true /* TODO: this is a guess */);
     }
-    return expr && expr->values().size() == 1U && expr->values().front().isKnown() ? &expr->values().front() : nullptr;
+    return expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
 }
 
 
