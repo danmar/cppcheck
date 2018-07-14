@@ -568,8 +568,8 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
         if (derivedFrom && derivedFrom->classScope) {
             const std::list<Function>& functionList = derivedFrom->classScope->functionList;
 
-            for (std::list<Function>::const_iterator func = functionList.begin(); func != functionList.end(); ++func) {
-                if (func->tokenDef->str() == tok->str())
+            for (const Function &func : functionList) {
+                if (func.tokenDef->str() == tok->str())
                     return true;
             }
         }
@@ -1011,9 +1011,9 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
             return true;
     }
 
-    for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
-        if (i->isStatic()) {
-            const Token* tok = Token::findmatch(scope->bodyEnd, "%varid% =|(|{", i->declarationId());
+    for (const Variable &var : scope->varlist) {
+        if (var.isStatic()) {
+            const Token* tok = Token::findmatch(scope->bodyEnd, "%varid% =|(|{", var.declarationId());
             if (tok)
                 tok = tok->tokAt(2);
             while (tok && tok->str() != ";") {
@@ -1192,10 +1192,8 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     }
 
     // Warn if type is a class that contains any virtual functions
-    std::list<Function>::const_iterator func;
-
-    for (func = type->functionList.begin(); func != type->functionList.end(); ++func) {
-        if (func->isVirtual()) {
+    for (const Function &func : type->functionList) {
+        if (func.isVirtual()) {
             if (allocation)
                 mallocOnClassError(tok, tok->str(), type->classDef, "virtual method");
             else
@@ -1204,20 +1202,18 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     }
 
     // Warn if type is a class or struct that contains any std::* variables
-    std::list<Variable>::const_iterator var;
-
-    for (var = type->varlist.begin(); var != type->varlist.end(); ++var) {
-        if (var->isReference() && !var->isStatic()) {
+    for (const Variable &var : type->varlist) {
+        if (var.isReference() && !var.isStatic()) {
             memsetErrorReference(tok, tok->str(), type->classDef->str());
             continue;
         }
         // don't warn if variable static or const, pointer or array of pointers
-        if (!var->isStatic() && !var->isConst() && !var->isPointer() && (!var->isArray() || var->typeEndToken()->str() != "*")) {
-            const Token *tok1 = var->typeStartToken();
-            const Scope *typeScope = var->typeScope();
+        if (!var.isStatic() && !var.isConst() && !var.isPointer() && (!var.isArray() || var.typeEndToken()->str() != "*")) {
+            const Token *tok1 = var.typeStartToken();
+            const Scope *typeScope = var.typeScope();
 
             // check for std:: type
-            if (var->isStlType() && tok1->strAt(2) != "array" && !mSettings->library.podtype(tok1->strAt(2)))
+            if (var.isStlType() && tok1->strAt(2) != "array" && !mSettings->library.podtype(tok1->strAt(2)))
                 if (allocation)
                     mallocOnClassError(tok, tok->str(), type->classDef, "'std::" + tok1->strAt(2) + "'");
                 else
@@ -1228,7 +1224,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
                 checkMemsetType(start, tok, typeScope, allocation, parsedTypes);
 
             // check for float
-            else if (printPortability && var->isFloatingType() && tok->str() == "memset")
+            else if (printPortability && var.isFloatingType() && tok->str() == "memset")
                 memsetErrorFloat(tok, type->classDef->str());
         }
     }
