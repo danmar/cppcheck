@@ -1193,20 +1193,14 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (Token::Match(tok, "[01]"))
+            if (Token::Match(tok, "[01]|%bool%"))
+                continue;
+            if (Token::Match(tok, "&&|%oror%"))
                 continue;
 
-            if(Token::Match(tok, "&&|%oror%")) {
-                if(Token::Match(tok->astOperand1(), "%num%|%bool%") && !Token::Match(tok->astOperand2(), "%char%|%str%"))
-                    continue;
-                if(Token::Match(tok->astOperand2(), "%num%|%bool%") && !Token::Match(tok->astOperand1(), "%char%|%str%"))
-                    continue;
-            }
-
             const bool constIfWhileExpression =
-                tok->astParent()
-                && Token::Match(tok->astParent()->astOperand1(), "if|while")
-                && !tok->isBoolean();
+                tok->astTop() && Token::Match(tok->astTop()->astOperand1(), "if|while") &&
+                (Token::Match(tok->astParent(),"&&|%oror%") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = Token::Match(tok, "%num%|%char%") && tok->astParent() && Token::Match(tok->astParent(),"&&|%oror%|?"); // just one number or char in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
 
