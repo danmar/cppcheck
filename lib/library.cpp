@@ -603,19 +603,16 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             error |= range | (*(p+1) == '.');
                             range = true;
                             has_dot = false;
-                        }
-                        else if (*p == '-')
+                        } else if (*p == '-')
                             error |= (!std::isdigit(*(p+1)));
                         else if (*p == ',') {
                             range = false;
                             error |= *(p+1) == '.';
                             has_dot = false;
-                        }
-                        else if (*p == '.') {
+                        } else if (*p == '.') {
                             error |= has_dot | (!std::isdigit(*(p+1)));
                             has_dot = true;
-                        }
-                        else
+                        } else
                             error = true;
                     }
                     if (error)
@@ -726,13 +723,13 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     return Error(OK);
 }
 
-bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
+bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
     else if (ac->valid.find('.') != std::string::npos)
-        return isargvalid(ftok, argnr, static_cast<double>(argvalue));
+        return isFloatArgValid(ftok, argnr, argvalue);
     TokenList tokenList(nullptr);
     gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
@@ -748,7 +745,7 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
     return false;
 }
 
-bool Library::isargvalid(const Token *ftok, int argnr, double argvalue) const
+bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())

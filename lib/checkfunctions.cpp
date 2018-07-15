@@ -120,9 +120,9 @@ void CheckFunctions::invalidFunctionUsage()
                         invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
 
                     // Are the values 0 and 1 valid?
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, static_cast<MathLib::bigint>(0)))
+                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 0))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, static_cast<MathLib::bigint>(1)))
+                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
             }

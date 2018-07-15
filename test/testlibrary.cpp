@@ -299,120 +299,120 @@ private:
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         // 1-
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 1, static_cast<MathLib::bigint>(-10)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 1, -10.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 1, static_cast<MathLib::bigint>(0)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 1, 0.0));
-        ASSERT_EQUALS(true, library.isargvalid(tokenList.front(), 1, static_cast<MathLib::bigint>(1)));
-        ASSERT_EQUALS(true, library.isargvalid(tokenList.front(), 1, 1.0));
-        ASSERT_EQUALS(true, library.isargvalid(tokenList.front(), 1, static_cast<MathLib::bigint>(10)));
-        ASSERT_EQUALS(true, library.isargvalid(tokenList.front(), 1, 10.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 1, -10));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 1, -10.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 1, 0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 1, 0.0));
+        ASSERT_EQUALS(true, library.isIntArgValid(tokenList.front(), 1, 1));
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 1, 1.0));
+        ASSERT_EQUALS(true, library.isIntArgValid(tokenList.front(), 1, 10));
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 1, 10.0));
 
         // -7-0
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, static_cast<MathLib::bigint>(-10)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, -10.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, -7.5));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, -7.1));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, static_cast<MathLib::bigint>(-7)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, -7.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, static_cast<MathLib::bigint>(-3)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, -3.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, -3.5));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, static_cast<MathLib::bigint>(0)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 2, 0.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, 0.5));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, static_cast<MathLib::bigint>(1)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 2, 1.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 2, -10));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 2, -10.0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 2, -7.5));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 2, -7.1));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 2, -7));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 2, -7.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 2, -3));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 2, -3.0));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 2, -3.5));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 2, 0));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 2, 0.0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 2, 0.5));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 2, 1));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 2, 1.0));
 
         // 1-5,8
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(0)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 0.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(1)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, 1.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(3)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, 3.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(5)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, 5.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(6)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 6.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(7)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 7.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(8)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 8.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, static_cast<MathLib::bigint>(9)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 3, 9.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 3, 0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 3, 0.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 3, 1));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 3, 1.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 3, 3));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 3, 3.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 3, 5));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 3, 5.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 3, 6));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 3, 6.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 3, 7));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 3, 7.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 3, 8));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 3, 8.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 3, 9));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 3, 9.0));
 
         // -1,5
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 4, static_cast<MathLib::bigint>(-10)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 4, -10.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 4, static_cast<MathLib::bigint>(-1)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 4, -1.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 4, 5.000001));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 4, 5.5));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 4, -10));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 4, -10.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 4, -1));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 4, -1.0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 4, 5.000001));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 4, 5.5));
 
         // :1,5
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 5, static_cast<MathLib::bigint>(-10)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 5, -10.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 5, static_cast<MathLib::bigint>(1)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 5, 1.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 5, static_cast<MathLib::bigint>(2)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 5, 2.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 5, -10));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 5, -10.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 5, 1));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 5, 1.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 5, 2));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 5, 2.0));
 
         // 1.5:
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(0)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, 0.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(1)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 6, 1.499999));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 6, 1.5));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(2)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 6, static_cast<MathLib::bigint>(10)));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 6, 0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 6, 0.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 6, 1));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 6, 1.499999));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 6, 1.5));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 6, 2));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 6, 10));
 
         // -6.7:-5.5,-3.3:-2.7
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-7)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -7.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -6.7000001));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -6.7));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-6)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -6.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -5.5));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -5.4999999));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -3.3000001));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -3.3));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-3)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -3.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 7, -2.7));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -2.6999999));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(-2)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, -2.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(0)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, 0.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(3)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, 3.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, static_cast<MathLib::bigint>(6)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 7, 6.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 7, -7));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, -7.0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, -6.7000001));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 7, -6.7));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 7, -6));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 7, -6.0));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 7, -5.5));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, -5.4999999));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, -3.3000001));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 7, -3.3));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 7, -3));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 7, -3.0));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 7, -2.7));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, -2.6999999));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 7, -2));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, -2.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 7, 0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, 0.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 7, 3));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, 3.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 7, 6));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 7, 6.0));
 
         // 0.0:
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 8, static_cast<MathLib::bigint>(-1)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 8, -1.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 8, -0.00000001));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, static_cast<MathLib::bigint>(0)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, 0.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, 0.000000001));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, static_cast<MathLib::bigint>(1)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 8, 1.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 8, -1));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 8, -1.0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 8, -0.00000001));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 8, 0));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 8, 0.0));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 8, 0.000000001));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 8, 1));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 8, 1.0));
 
         // :2.0
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, static_cast<MathLib::bigint>(-1)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, -1.0));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, static_cast<MathLib::bigint>(2)));
-        ASSERT_EQUALS(true,  library.isargvalid(tokenList.front(), 9, 2.0));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 9, 2.00000001));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 9, static_cast<MathLib::bigint>(200)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 9, 200.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 9, -1));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 9, -1.0));
+        ASSERT_EQUALS(true,  library.isIntArgValid(tokenList.front(), 9, 2));
+        ASSERT_EQUALS(true,  library.isFloatArgValid(tokenList.front(), 9, 2.0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 9, 2.00000001));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 9, 200));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 9, 200.0));
 
         // 0.0
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 10, static_cast<MathLib::bigint>(0)));
-        ASSERT_EQUALS(false, library.isargvalid(tokenList.front(), 10, 0.0));
+        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 10, 0));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 10, 0.0));
     }
 
     void function_arg_minsize() const {
