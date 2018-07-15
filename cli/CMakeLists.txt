@@ -12,7 +12,7 @@ add_executable(cppcheck ${hdrs} ${mainfile} $<TARGET_OBJECTS:cli_objs> $<TARGET_
 if (HAVE_RULES)
     target_link_libraries(cppcheck pcre)
 endif()
-if (MSVC)
+if (WIN32 AND NOT BORLAND)
     target_link_libraries(cppcheck Shlwapi.lib)
 endif()
 
