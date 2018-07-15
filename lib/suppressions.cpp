@@ -269,8 +269,7 @@ std::string Suppressions::Suppression::getText() const
 bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    for (std::list<Suppression>::iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
-        Suppression &s = *it;
+    for (Suppression &s : mSuppressions) {
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
             continue;
         if (s.isMatch(errmsg))
@@ -282,8 +281,7 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
 bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    for (std::list<Suppression>::iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
-        Suppression &s = *it;
+    for (Suppression &s : mSuppressions) {
         if (!s.isLocal())
             continue;
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
@@ -316,8 +314,7 @@ void Suppressions::dump(std::ostream & out)
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
-    for (std::list<Suppression>::const_iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
-        const Suppression &s = *it;
+    for (const Suppression &s : mSuppressions) {
         if (s.matched)
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
@@ -332,8 +329,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
-    for (std::list<Suppression>::const_iterator it = mSuppressions.begin(); it != mSuppressions.end(); ++it) {
-        const Suppression &s = *it;
+    for (const Suppression &s : mSuppressions) {
         if (s.matched)
             continue;
         if (!unusedFunctionChecking && s.errorId == "unusedFunction")
