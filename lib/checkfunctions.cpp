@@ -32,6 +32,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
 #include <ostream>
 #include <vector>
 
@@ -119,9 +120,9 @@ void CheckFunctions::invalidFunctionUsage()
                         invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
 
                     // Are the values 0 and 1 valid?
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, 0))
+                    else if (!mSettings->library.isargvalid(functionToken, argnr, static_cast<MathLib::bigint>(0)))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, 1))
+                    else if (!mSettings->library.isargvalid(functionToken, argnr, static_cast<MathLib::bigint>(1)))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
             }
@@ -139,7 +140,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
     else
         errmsg << "Invalid $symbol() argument nr " << argnr << '.';
     if (invalidValue)
-        errmsg << " The value is " << invalidValue->intvalue << " but the valid values are '" << validstr << "'.";
+        errmsg << " The value is " << std::setprecision(10) << (invalidValue->isIntValue() ? invalidValue->intvalue : invalidValue->floatValue) << " but the valid values are '" << validstr << "'.";
     else
         errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
     if (invalidValue)
@@ -241,11 +242,6 @@ void CheckFunctions::checkMathFunctions()
                     }
                 }
 
-                // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
-                else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )")) {
-                    if (std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0)
-                        mathfunctionCallWarning(tok);
-                }
                 // sqrt( x ): if x is negative the result is undefined
                 else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )")) {
                     if (MathLib::isNegative(tok->strAt(2)))
