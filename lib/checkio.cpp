@@ -62,9 +62,7 @@ void CheckIO::checkCoutCerrMisusage()
         return;
 
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "std :: cout|cerr !!.") && tok->next()->astParent() && tok->next()->astParent()->astOperand1() == tok->next()) {
                 const Token* tok2 = tok->next();
@@ -382,9 +380,7 @@ void CheckIO::invalidScanf()
         return;
 
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t j = 0; j < functions; ++j) {
-        const Scope * scope = symbolDatabase->functionScopes[j];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             const Token *formatToken = nullptr;
             if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
@@ -497,9 +493,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const bool isWindows = mSettings->isWindowsPlatform();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t j = 0; j < functions; ++j) {
-        const Scope * scope = symbolDatabase->functionScopes[j];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isName()) continue;
 
@@ -1294,9 +1288,9 @@ void CheckIO::checkFormatString(const Token * const tok,
 
     if (printWarning) {
         // Check that all parameter positions reference an actual parameter
-        for (std::set<unsigned int>::const_iterator it = parameterPositionsUsed.begin() ; it != parameterPositionsUsed.end() ; ++it) {
-            if ((*it == 0) || (*it > numFormat))
-                wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), *it, numFormat);
+        for (unsigned int i : parameterPositionsUsed) {
+            if ((i == 0) || (i > numFormat))
+                wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), i, numFormat);
         }
     }
 
@@ -1584,11 +1578,10 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
     } else if (variableInfo->type()) {
         const Scope * classScope = variableInfo->type()->classScope;
         if (classScope) {
-            for (std::list<Function>::const_iterator functions = classScope->functionList.begin();
-                 functions != classScope->functionList.end(); ++functions) {
-                if (functions->name() == "operator[]") {
-                    if (Token::Match(functions->retDef, "%type% &")) {
-                        typeToken = functions->retDef;
+            for (const Function &func : classScope->functionList) {
+                if (func.name() == "operator[]") {
+                    if (Token::Match(func.retDef, "%type% &")) {
+                        typeToken = func.retDef;
                         return true;
                     }
                 }
@@ -1599,15 +1592,13 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
     return false;
 }
 
-namespace {
-    const std::set<std::string> stl_container = {
-        "array", "bitset", "deque", "forward_list",
-        "hash_map", "hash_multimap", "hash_set",
-        "list", "map", "multimap", "multiset",
-        "priority_queue", "queue", "set", "stack",
-        "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set", "vector"
-    };
-}
+static const std::set<std::string> stl_container = {
+    "array", "bitset", "deque", "forward_list",
+    "hash_map", "hash_multimap", "hash_set",
+    "list", "map", "multimap", "multiset",
+    "priority_queue", "queue", "set", "stack",
+    "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set", "vector"
+};
 
 bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
 {
@@ -1622,9 +1613,8 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
             typeToken = variable->typeStartToken();
             return true;
         } else if (variable->type() && !variable->type()->derivedFrom.empty()) {
-            const std::vector<Type::BaseInfo>& derivedFrom = variable->type()->derivedFrom;
-            for (std::size_t i = 0, size = derivedFrom.size(); i < size; ++i) {
-                const Token* nameTok = derivedFrom[i].nameTok;
+            for (const Type::BaseInfo &baseInfo : variable->type()->derivedFrom) {
+                const Token* nameTok = baseInfo.nameTok;
                 if (Token::Match(nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
                     typeToken = nameTok->tokAt(4);
                     return true;

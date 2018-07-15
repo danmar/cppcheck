@@ -177,7 +177,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     }
 
     // Dereferencing pointer..
-    if (parent->str() == "*" && !parent->astOperand2() && !Token::Match(parent->tokAt(-2), "sizeof|decltype|typeof"))
+    if (parent->isUnaryOp("*") && !Token::Match(parent->tokAt(-2), "sizeof|decltype|typeof"))
         return true;
 
     // array access
@@ -188,7 +188,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
     const Token *parent2 = parent;
     while (Token::Match(parent2, "[|."))
         parent2 = parent2->astParent();
-    if (parent2 != parent && parent2 && parent2->str() == "&" && !parent2->astOperand2())
+    if (parent2 != parent && parent2 && parent2->isUnaryOp("&"))
         return false;
 
     // read/write member variable
@@ -263,10 +263,10 @@ void CheckNullPointer::nullPointerLinkedList()
     //        if (tok->str() == "hello")
     //            tok = tok->next;   // <- tok might become a null pointer!
     //    }
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        const Token* const tok1 = i->classDef;
+    for (const Scope &forScope : symbolDatabase->scopeList) {
+        const Token* const tok1 = forScope.classDef;
         // search for a "for" scope..
-        if (i->type != Scope::eFor || !tok1)
+        if (forScope.type != Scope::eFor || !tok1)
             continue;
 
         // is there any dereferencing occurring in the for statement
@@ -287,18 +287,18 @@ void CheckNullPointer::nullPointerLinkedList()
 
                 // Check usage of dereferenced variable in the loop..
                 // TODO: Move this to ValueFlow
-                for (const Scope *scope : i->nestedList) {
-                    if (scope->type != Scope::eWhile)
+                for (const Scope *innerScope : forScope.nestedList) {
+                    if (innerScope->type != Scope::eWhile)
                         continue;
 
                     // TODO: are there false negatives for "while ( %varid% ||"
-                    if (Token::Match(scope->classDef->next(), "( %varid% &&|)", varid)) {
+                    if (Token::Match(innerScope->classDef->next(), "( %varid% &&|)", varid)) {
                         // Make sure there is a "break" or "return" inside the loop.
                         // Without the "break" a null pointer could be dereferenced in the
                         // for statement.
-                        for (const Token *tok4 = scope->bodyStart; tok4; tok4 = tok4->next()) {
-                            if (tok4 == i->bodyEnd) {
-                                const ValueFlow::Value v(scope->classDef, 0LL);
+                        for (const Token *tok4 = innerScope->bodyStart; tok4; tok4 = tok4->next()) {
+                            if (tok4 == forScope.bodyEnd) {
+                                const ValueFlow::Value v(innerScope->classDef, 0LL);
                                 nullPointerError(tok1, var->name(), &v, false);
                                 break;
                             }
@@ -418,9 +418,9 @@ void CheckNullPointer::nullConstantDereference()
                     parseFunctionCall(*tok, var, &mSettings->library);
 
                     // is one of the var items a NULL pointer?
-                    for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it) {
-                        if (Token::Match(*it, "0|NULL|nullptr [,)]")) {
-                            nullPointerError(*it);
+                    for (const Token *vartok : var) {
+                        if (Token::Match(vartok, "0|NULL|nullptr [,)]")) {
+                            nullPointerError(vartok);
                         }
                     }
                 }

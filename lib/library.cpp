@@ -213,9 +213,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char *name = node->Attribute("name");
             if (name == nullptr)
                 return Error(MISSING_ATTRIBUTE, "name");
-            const std::vector<std::string> names(getnames(name));
-            for (unsigned int i = 0U; i < names.size(); ++i) {
-                const Error &err = loadFunction(node, names[i], unknown_elements);
+            for (const std::string &s : getnames(name)) {
+                const Error &err = loadFunction(node, s, unknown_elements);
                 if (err.errorcode != ErrorCode::OK)
                     return err;
             }
@@ -453,9 +452,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char * const sign = node->Attribute("sign");
             if (sign)
                 podType.sign = *sign;
-            const std::vector<std::string> names(getnames(name));
-            for (unsigned int i = 0U; i < names.size(); ++i)
-                mPodTypes[names[i]] = podType;
+            for (const std::string &s : getnames(name))
+                mPodTypes[s] = podType;
         }
 
         else if (nodename == "platformtype") {
@@ -499,15 +497,14 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 }
                 mPlatformTypes[type_name] = type;
             } else {
-                std::set<std::string>::const_iterator it;
-                for (it = platform.begin(); it != platform.end(); ++it) {
-                    const PlatformType * const type_ptr = platform_type(type_name, *it);
+                for (const std::string &p : platform) {
+                    const PlatformType * const type_ptr = platform_type(type_name, p);
                     if (type_ptr) {
                         if (*type_ptr == type)
                             return Error(DUPLICATE_PLATFORM_TYPE, type_name);
                         return Error(PLATFORM_TYPE_REDEFINED, type_name);
                     }
-                    mPlatforms[*it].mPlatformTypes[type_name] = type;
+                    mPlatforms[p].mPlatformTypes[type_name] = type;
                 }
             }
         }

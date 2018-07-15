@@ -345,9 +345,7 @@ void CheckStl::mismatchingContainers()
 {
     // Check if different containers are used in various calls of standard functions
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t ii = 0; ii < functions; ++ii) {
-        const Scope * scope = symbolDatabase->functionScopes[ii];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
@@ -404,15 +402,15 @@ void CheckStl::stlOutOfBounds()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Scan through all scopes..
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        const Token* tok = i->classDef;
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        const Token* tok = scope.classDef;
         // only interested in conditions
-        if ((i->type != Scope::eFor && i->type != Scope::eWhile && i->type != Scope::eIf && i->type != Scope::eDo) || !tok)
+        if ((scope.type != Scope::eFor && scope.type != Scope::eWhile && scope.type != Scope::eIf && scope.type != Scope::eDo) || !tok)
             continue;
 
-        if (i->type == Scope::eFor)
+        if (scope.type == Scope::eFor)
             tok = Token::findsimplematch(tok->tokAt(2), ";");
-        else if (i->type == Scope::eDo) {
+        else if (scope.type == Scope::eDo) {
             tok = tok->linkAt(1)->tokAt(2);
         } else
             tok = tok->next();
@@ -442,7 +440,7 @@ void CheckStl::stlOutOfBounds()
         // variable id for the container variable
         const unsigned int declarationId = var->declarationId();
 
-        for (const Token *tok3 = i->bodyStart; tok3 && tok3 != i->bodyEnd; tok3 = tok3->next()) {
+        for (const Token *tok3 = scope.bodyStart; tok3 && tok3 != scope.bodyEnd; tok3 = tok3->next()) {
             if (tok3->varId() == declarationId) {
                 tok3 = tok3->next();
                 if (Token::Match(tok3, ". %name% ( )")) {
@@ -1429,6 +1427,7 @@ void CheckStl::uselessCalls()
                 } else if (Token::simpleMatch(tok->linkAt(3)->tokAt(-2), ", 0 )"))
                     uselessCallsSubstrError(tok, true);
             } else if (printWarning && Token::Match(tok, "[{};] %var% . empty ( ) ;") &&
+                       !tok->tokAt(4)->astParent() &&
                        tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())

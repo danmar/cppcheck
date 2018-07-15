@@ -2766,6 +2766,12 @@ private:
               "    return x ? true : (y.empty());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8360
+        check("void f(std::string s) {\n"
+              "    for (;s.empty();) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void stabilityOfChecks() {

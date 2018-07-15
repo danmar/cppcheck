@@ -547,6 +547,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        {
+            check("void f(Class &c) {\n"
+                  "    if (c.dostuff() == 3) {}\n"
+                  "    else { if (c.dostuff() == 3) {} }\n"
+                  "}");
+            ASSERT_EQUALS("", errout.str());
+
+            check("void f(const Class &c) {\n"
+                  "    if (c.dostuff() == 3) {}\n"
+                  "    else { if (c.dostuff() == 3) {} }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        }
+
         check("void f(int a, int &b) {\n"
               "   x = x / 2;\n"
               "   if (x < 100) { b = 1; }\n"
@@ -617,6 +631,42 @@ private:
               "  else if (x & 0x08) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!b && !!a){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!b && a){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( b && !!a){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( b && !(!a)){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!b && !(!a)){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!(b) && !!(a+b)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkBadBitmaskCheck() {
@@ -1912,6 +1962,15 @@ private:
 
         check("void f2(int a, int b) { if(a!=b) if(a!=b) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+
+        // #6645 false negative: condition is always false
+        check("void f(bool a, bool b) {\n"
+              "  if(a && b) {\n"
+              "     if(a) {}\n"
+              "     else  {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
     }
 
     void identicalConditionAfterEarlyExit() {
@@ -2083,7 +2142,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. '!a || (a && b)' is equivalent to '!a || b'\n", errout.str());
 
 
-        check("void f() {\n"
+        check("void f(const Token *tok) {\n"
               "    if (!tok->next()->function() || \n"
               "        (tok->next()->function() && tok->next()->function()->isConstructor()));\n"
               "}");
@@ -2101,7 +2160,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(const Token *tok) {\n"
               "    if (!tok->next(1)->function(1) || \n"
               "        (tok->next(1)->function(1) && tok->next(1)->function(1)->isConstructor()));\n"
               "}");
@@ -2370,9 +2429,28 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition ''a'' is always true\n"
                       "[test.cpp:3]: (style) Condition 'L'b'' is always true\n"
-                      "[test.cpp:4]: (style) Condition '1' is always true\n"
+                      "[test.cpp:4]: (style) Condition '1&&'c'' is always true\n"
                       "[test.cpp:4]: (style) Condition ''c'' is always true\n"
                       "[test.cpp:5]: (style) Condition ''d'' is always true\n", errout.str());
+
+        // Skip literals
+        check("void f() { if(true) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(false) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(!true) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(!false) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(0) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if(1) {} }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {

@@ -311,8 +311,7 @@ void CheckCondition::comparison()
             continue;
         std::list<MathLib::bigint> numbers;
         getnumchildren(expr1, numbers);
-        for (std::list<MathLib::bigint>::const_iterator num = numbers.begin(); num != numbers.end(); ++num) {
-            const MathLib::bigint num1 = *num;
+        for (const MathLib::bigint num1 : numbers) {
             if (num1 < 0)
                 continue;
             if (Token::Match(tok, "==|!=")) {
@@ -412,13 +411,13 @@ void CheckCondition::multiCondition()
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eIf)
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eIf)
             continue;
 
-        const Token * const cond1 = i->classDef->next()->astOperand2();
+        const Token * const cond1 = scope.classDef->next()->astOperand2();
 
-        const Token * tok2 = i->classDef->next();
+        const Token * tok2 = scope.classDef->next();
         for (;;) {
             tok2 = tok2->link();
             if (!Token::simpleMatch(tok2, ") {"))
@@ -472,12 +471,12 @@ void CheckCondition::multiCondition2()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+    for (const Scope &scope : symbolDatabase->scopeList) {
         const Token *condTok = nullptr;
-        if (scope->type == Scope::eIf || scope->type == Scope::eWhile)
-            condTok = scope->classDef->next()->astOperand2();
-        else if (scope->type == Scope::eFor) {
-            condTok = scope->classDef->next()->astOperand2();
+        if (scope.type == Scope::eIf || scope.type == Scope::eWhile)
+            condTok = scope.classDef->next()->astOperand2();
+        else if (scope.type == Scope::eFor) {
+            condTok = scope.classDef->next()->astOperand2();
             if (!condTok || condTok->str() != ";")
                 continue;
             condTok = condTok->astOperand2();
@@ -489,7 +488,7 @@ void CheckCondition::multiCondition2()
             continue;
         const Token * const cond1 = condTok;
 
-        if (!Token::simpleMatch(scope->classDef->linkAt(1), ") {"))
+        if (!Token::simpleMatch(scope.classDef->linkAt(1), ") {"))
             continue;
 
         bool nonConstFunctionCall = false;
@@ -534,11 +533,11 @@ void CheckCondition::multiCondition2()
         // parse until second condition is reached..
         enum MULTICONDITIONTYPE { INNER, AFTER } type;
         const Token *tok;
-        if (Token::Match(scope->bodyStart, "{ return|throw|continue|break")) {
-            tok = scope->bodyEnd->next();
+        if (Token::Match(scope.bodyStart, "{ return|throw|continue|break")) {
+            tok = scope.bodyEnd->next();
             type = MULTICONDITIONTYPE::AFTER;
         } else {
-            tok = scope->bodyStart;
+            tok = scope.bodyStart;
             type = MULTICONDITIONTYPE::INNER;
         }
         const Token * const endToken = tok->scope()->bodyEnd;
@@ -628,8 +627,8 @@ void CheckCondition::multiCondition2()
                     break;
                 }
                 bool changed = false;
-                for (std::set<unsigned int>::const_iterator it = vars.begin(); it != vars.end(); ++it) {
-                    if (isVariableChanged(tok1, tok2, *it, nonlocal, mSettings, mTokenizer->isCPP())) {
+                for (unsigned int varid : vars) {
+                    if (isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP())) {
                         changed = true;
                         break;
                     }
@@ -643,7 +642,7 @@ void CheckCondition::multiCondition2()
                     break;
                 if (Token::Match(tok->astParent(), "*|.|[")) {
                     const Token *parent = tok;
-                    while (Token::Match(parent->astParent(), ".|[") || (Token::simpleMatch(parent->astParent(), "*") && !parent->astParent()->astOperand2()))
+                    while (Token::Match(parent->astParent(), ".|[") || (parent->astParent() && parent->astParent()->isUnaryOp("*")))
                         parent = parent->astParent();
                     if (Token::Match(parent->astParent(), "%assign%|++|--"))
                         break;
@@ -871,9 +870,7 @@ void CheckCondition::checkIncorrectLogicOperator()
     const bool printInconclusive = mSettings->inconclusive;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t ii = 0; ii < functions; ++ii) {
-        const Scope * scope = symbolDatabase->functionScopes[ii];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
 
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%oror%|&&") || !tok->astOperand1() || !tok->astOperand2())
@@ -1062,9 +1059,7 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp())
                 continue;
@@ -1118,9 +1113,7 @@ void CheckCondition::clarifyCondition()
     const bool isC = mTokenizer->isC();
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "( %name% [=&|^]")) {
                 for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
@@ -1137,7 +1130,7 @@ void CheckCondition::clarifyCondition()
                     } else if (!tok2->isName() && !tok2->isNumber() && tok2->str() != ".")
                         break;
                 }
-            } else if (tok->tokType() == Token::eBitOp && (tok->str() != "&" || tok->astOperand2())) {
+            } else if (tok->tokType() == Token::eBitOp && !tok->isUnaryOp("&")) {
                 if (tok->astOperand2() && tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
                     continue;
 
@@ -1183,25 +1176,24 @@ void CheckCondition::alwaysTrueFalse()
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
 
             if (tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (Token::Match(tok, "[01]|%bool%"))
+            if (Token::Match(tok, "%num%|%bool%"))
                 continue;
-            if (Token::Match(tok, "&&|%oror%"))
+            if (Token::Match(tok, "! %num%|%bool%"))
+                continue;
+            if (Token::Match(tok, "&&|%oror%") && !Token::Match(tok->astOperand1(), "%char%") && !Token::Match(tok->astOperand2(), "%char%"))
                 continue;
 
             const bool constIfWhileExpression =
                 tok->astTop() && Token::Match(tok->astTop()->astOperand1(), "if|while") &&
                 (Token::Match(tok->astParent(),"&&|%oror%") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
-            const bool constValExpr = Token::Match(tok, "%num%|%char%") && tok->astParent() && Token::Match(tok->astParent(),"&&|%oror%|?"); // just one number or char in boolean expression
+            const bool constValExpr = Token::Match(tok, "%num%|%char%") && Token::Match(tok->astParent(),"&&|%oror%|?"); // just one number or char in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
 
             if (!(constIfWhileExpression || constValExpr || compExpr))
@@ -1295,9 +1287,7 @@ void CheckCondition::checkInvalidTestForOverflow()
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
 
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
@@ -1359,9 +1349,7 @@ void CheckCondition::checkPointerAdditionResultNotNull()
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
 
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())

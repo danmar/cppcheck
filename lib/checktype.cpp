@@ -293,9 +293,7 @@ void CheckType::checkLongCast()
 
     // Return..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
 
         // function must return long data
         const Token * def = scope->classDef;
@@ -385,15 +383,15 @@ void CheckType::checkFloatToIntegerOverflow()
         if (!vtfloat || !vtfloat->isFloat())
             continue;
 
-        for (std::list<ValueFlow::Value>::const_iterator it = floatValues->begin(); it != floatValues->end(); ++it) {
-            if (it->valueType != ValueFlow::Value::FLOAT)
+        for (const ValueFlow::Value &f : *floatValues) {
+            if (f.valueType != ValueFlow::Value::FLOAT)
                 continue;
-            if (!mSettings->isEnabled(&(*it), false))
+            if (!mSettings->isEnabled(&f, false))
                 continue;
-            if (it->floatValue > ~0ULL)
-                floatToIntegerOverflowError(tok, *it);
-            else if ((-it->floatValue) > (1ULL<<62))
-                floatToIntegerOverflowError(tok, *it);
+            if (f.floatValue > ~0ULL)
+                floatToIntegerOverflowError(tok, f);
+            else if ((-f.floatValue) > (1ULL<<62))
+                floatToIntegerOverflowError(tok, f);
             else if (mSettings->platformType != Settings::Unspecified) {
                 int bits = 0;
                 if (vtint->type == ValueType::Type::CHAR)
@@ -408,8 +406,8 @@ void CheckType::checkFloatToIntegerOverflow()
                     bits = mSettings->long_long_bit;
                 else
                     continue;
-                if (bits < MathLib::bigint_bits && it->floatValue >= (((MathLib::biguint)1) << bits))
-                    floatToIntegerOverflowError(tok, *it);
+                if (bits < MathLib::bigint_bits && f.floatValue >= (((MathLib::biguint)1) << bits))
+                    floatToIntegerOverflowError(tok, f);
             }
         }
     }

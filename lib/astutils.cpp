@@ -145,6 +145,12 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
             tok2 = tok2->astOperand2();
     }
+    if (Token::simpleMatch(tok1, "!") && Token::simpleMatch(tok1->astOperand1(), "!") && !Token::simpleMatch(tok1->astParent(), "=")) {
+        return isSameExpression(cpp, macro, tok1->astOperand1()->astOperand1(), tok2, library, pure);
+    }
+    if (Token::simpleMatch(tok2, "!") && Token::simpleMatch(tok2->astOperand1(), "!") && !Token::simpleMatch(tok2->astParent(), "=")) {
+        return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure);
+    }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
             (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
@@ -164,10 +170,23 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (tok1->isSigned() != tok2->isSigned())
         return false;
     if (pure && tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
-        if (!tok1->function() && !Token::Match(tok1->previous(), ".|::") && !library.isFunctionConst(tok1->str(), true) && !tok1->isAttributeConst() && !tok1->isAttributePure())
-            return false;
-        else if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
-            return false;
+        if (!tok1->function()) {
+            if (!Token::Match(tok1->previous(), ".|::") && !library.isFunctionConst(tok1) && !tok1->isAttributeConst() && !tok1->isAttributePure())
+                return false;
+            if (Token::simpleMatch(tok1->previous(), ".")) {
+                const Token *lhs = tok1->previous();
+                while (Token::Match(lhs, "(|.|["))
+                    lhs = lhs->astOperand1();
+                bool lhsIsConst = (lhs->variable() && lhs->variable()->isConst()) ||
+                                  (lhs->valueType() && lhs->valueType()->constness > 0) ||
+                                  (Token::Match(lhs, "%var% . %name% (") && library.isFunctionConst(lhs->tokAt(2)));
+                if (!lhsIsConst)
+                    return false;
+            }
+        } else {
+            if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
+                return false;
+        }
     }
     // templates/casts
     if ((Token::Match(tok1, "%name% <") && tok1->next()->link()) ||
@@ -222,14 +241,14 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return true;
 
     // in c++, a+b might be different to b+a, depending on the type of a and b
-    if (cpp && tok1->str() == "+" && tok1->astOperand2()) {
+    if (cpp && tok1->str() == "+" && tok1->isBinaryOp()) {
         const ValueType* vt1 = tok1->astOperand1()->valueType();
         const ValueType* vt2 = tok1->astOperand2()->valueType();
         if (!(vt1 && (vt1->type >= ValueType::VOID || vt1->pointer) && vt2 && (vt2->type >= ValueType::VOID || vt2->pointer)))
             return false;
     }
 
-    const bool commutative = tok1->astOperand1() && tok1->astOperand2() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
+    const bool commutative = tok1->isBinaryOp() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
     bool commutativeEquals = commutative &&
                              isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), library, pure);
     commutativeEquals = commutativeEquals &&
@@ -385,9 +404,9 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
         return false;
     if (isOppositeCond(true, cpp, tok1, tok2, library, pure))
         return true;
-    if (tok1->str() == "-" && !tok1->astOperand2())
+    if (tok1->isUnaryOp("-"))
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure);
-    if (tok2->str() == "-" && !tok2->astOperand2())
+    if (tok2->isUnaryOp("-"))
         return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure);
     return false;
 }
@@ -720,7 +739,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     if (!cpp)
         return false;
 
-    if (!Token::Match(op, "&|>>") || !op->astOperand2())
+    if (!Token::Match(op, "&|>>") || !op->isBinaryOp())
         return false;
 
     if (!Token::Match(op->astOperand2(), "%name%|.|*|[") && op->str() != op->astOperand2()->str())

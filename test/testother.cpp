@@ -3009,6 +3009,9 @@ private:
                       "[test.cpp:10]: (warning) Redundant assignment of 'y' to itself.\n"
                       "[test.cpp:10]: (warning) Redundant assignment of 'z' to itself.\n", errout.str());
 
+        check("void f(int i) { i = !!i; }");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void trac1132() {
@@ -3645,7 +3648,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void f(const Bar &bar) {\n"
               "    bool a = bar.isSet() && bar->isSet();\n"
               "    bool b = bar.isSet() && bar.isSet();\n"
               "}");
@@ -6124,7 +6127,7 @@ private:
         check("bool isInUnoIncludeFile(StringRef name) {"
               "   return  name.startswith(SRCDIR \"/com/\") || name.startswith(SRCDIR \"/uno/\");\n"
               "};", "test.cpp", false, false);
-        TODO_ASSERT_EQUALS("", "[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void raceAfterInterlockedDecrement() {
