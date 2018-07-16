@@ -455,9 +455,9 @@ private:
               "    std::cout <<  sqrtf(-1) << std::endl;\n"
               "    std::cout <<  sqrtl(-1) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1 to sqrt() leads to implementation-defined result.\n"
-                      "[test.cpp:4]: (warning) Passing value -1 to sqrtf() leads to implementation-defined result.\n"
-                      "[test.cpp:5]: (warning) Passing value -1 to sqrtl() leads to implementation-defined result.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid sqrt() argument nr 1. The value is -1 but the valid values are '0.0:'.\n"
+                      "[test.cpp:4]: (error) Invalid sqrtf() argument nr 1. The value is -1 but the valid values are '0.0:'.\n"
+                      "[test.cpp:5]: (error) Invalid sqrtl() argument nr 1. The value is -1 but the valid values are '0.0:'.\n", errout.str());
 
         // implementation-defined behaviour for "finite values of x<0" only:
         check("void foo()\n"
