@@ -154,7 +154,7 @@
                   <element name="not-uninit"><empty/></element>
                   <element name="valid">
                     <data type="string">
-                      <param name="pattern">(-?[0-9]*[,:])*([-]?[0-9]+)?</param>
+                      <param name="pattern">(-?[0-9]*(\.[0-9]+)?[,:])*([-]?[0-9]+(\.[0-9]+)?)?</param>
                     </data>
                   </element>
                   <element name="minsize">

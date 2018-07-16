@@ -3012,6 +3012,9 @@ private:
                       "[test.cpp:10]: (warning) Redundant assignment of 'y' to itself.\n"
                       "[test.cpp:10]: (warning) Redundant assignment of 'z' to itself.\n", errout.str());
 
+        check("void f(int i) { i = !!i; }");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void trac1132() {

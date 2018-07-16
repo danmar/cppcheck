@@ -630,6 +630,42 @@ private:
               "  else if (x & 0x08) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!b && !!a){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!b && a){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( b && !!a){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( b && !(!a)){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!b && !(!a)){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        check("void f(bool a, bool b) {\n"
+              "   if(a && b){}\n"
+              "   else if( !!(b) && !!(a+b)){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkBadBitmaskCheck() {

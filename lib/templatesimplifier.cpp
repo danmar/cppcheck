@@ -456,8 +456,8 @@ namespace {
 static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
 {
     std::string ret;
-    for (std::list<ScopeInfo2>::const_iterator it = scopeInfo.begin(); it != scopeInfo.end(); ++it)
-        ret += (ret.empty() ? "" : " :: ") + (it->name);
+    for (const ScopeInfo2 &i : scopeInfo)
+        ret += (ret.empty() ? "" : " :: ") + i.name;
     return ret;
 }
 static std::string getFullName(const std::list<ScopeInfo2> &scopeInfo, const std::string &name)
@@ -602,7 +602,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateInsta
 void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> &templates,
         std::list<TokenAndName> * const templateInstantiations)
 {
-    for (std::list<TokenAndName>::const_iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1) {
+    for (const TokenAndName &template1 : templates) {
         // template parameters with default value has syntax such as:
         //     x = y
         // this list will contain all the '=' tokens for such arguments
@@ -620,7 +620,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
         std::string classname;
 
         // Scan template declaration..
-        for (Token *tok = iter1->token; tok; tok = tok->next()) {
+        for (Token *tok = template1.token; tok; tok = tok->next()) {
             if (Token::simpleMatch(tok, "template < >")) { // Ticket #5762: Skip specialization tokens
                 tok = tok->tokAt(2);
                 if (0 == templateParmDepth)
@@ -665,8 +665,8 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
             continue;
 
         // iterate through all template instantiations
-        for (std::list<TokenAndName>::const_iterator iter2 = templateInstantiations->begin(); iter2 != templateInstantiations->end(); ++iter2) {
-            Token *tok = iter2->token;
+        for (const TokenAndName &templateInst : *templateInstantiations) {
+            Token *tok = templateInst.token;
 
             if (!Token::simpleMatch(tok, (classname + " <").c_str()))
                 continue;
@@ -707,8 +707,7 @@ void TemplateSimplifier::useDefaultArgumentValues(const std::list<TokenAndName> 
             }
         }
 
-        for (std::list<Token *>::iterator it = eq.begin(); it != eq.end(); ++it) {
-            Token * const eqtok = *it;
+        for (Token * const eqtok : eq) {
             Token *tok2;
             int indentlevel = 0;
             for (tok2 = eqtok->next(); tok2; tok2 = tok2->next()) {

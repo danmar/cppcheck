@@ -1497,7 +1497,8 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int 
     const ValueFlow::Value *ret = nullptr;
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mValues->begin(); it != mValues->end(); ++it) {
-        if (it->isIntValue() && !settings->library.isargvalid(ftok, argnr, it->intvalue)) {
+        if ((it->isIntValue() && !settings->library.isIntArgValid(ftok, argnr, it->intvalue)) ||
+            (it->isFloatValue() && !settings->library.isFloatArgValid(ftok, argnr, it->floatValue))) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
             if (!ret->isInconclusive() && !ret->condition)

@@ -296,8 +296,8 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
 
 static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
 {
-    for (unsigned int i = 0; i < configs_if.size(); ++i) {
-        if (hasDefine(userDefines, configs_if[i]))
+    for (const std::string &cfg : configs_if) {
+        if (hasDefine(userDefines, cfg))
             return true;
     }
     return false;
@@ -451,9 +451,9 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
 
     const std::set<std::string> configs = getConfigs(tokens1);
 
-    for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it) {
-        if (mSettings.userUndefs.find(*it) == mSettings.userUndefs.end()) {
-            result[ *it ] = getcode(tokens1, *it, files, false);
+    for (const std::string &cfg : configs) {
+        if (mSettings.userUndefs.find(cfg) == mSettings.userUndefs.end()) {
+            result[cfg] = getcode(tokens1, cfg, files, false);
         }
     }
 }
@@ -500,8 +500,8 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     const simplecpp::TokenList tokens1(srcCodeStream, files, filename, &outputList);
 
     const std::set<std::string> configs = getConfigs(tokens1);
-    for (std::set<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-        resultConfigurations.push_back(*it);
+    for (const std::string &cfg : configs)
+        resultConfigurations.push_back(cfg);
 
     processedFile = tokens1.stringify();
 }
@@ -528,10 +528,10 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     if (!cfg.empty())
         splitcfg(cfg, dui.defines, emptyString);
 
-    for (std::vector<std::string>::const_iterator it = mSettings.library.defines.begin(); it != mSettings.library.defines.end(); ++it) {
-        if (it->compare(0,8,"#define ")!=0)
+    for (const std::string &def : mSettings.library.defines) {
+        if (def.compare(0,8,"#define ") != 0)
             continue;
-        std::string s = it->substr(8);
+        std::string s = def.substr(8);
         const std::string::size_type pos = s.find_first_of(" (");
         if (pos == std::string::npos) {
             dui.defines.push_back(s);
@@ -699,26 +699,26 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
 
 void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)
 {
-    for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
-        switch (it->type) {
+    for (const simplecpp::Output &out : outputList) {
+        switch (out.type) {
         case simplecpp::Output::ERROR:
-            if (it->msg.compare(0,6,"#error")!=0 || showerror)
-                error(it->location.file(), it->location.line, it->msg);
+            if (out.msg.compare(0,6,"#error")!=0 || showerror)
+                error(out.location.file(), out.location.line, out.msg);
             break;
         case simplecpp::Output::WARNING:
         case simplecpp::Output::PORTABILITY_BACKSLASH:
             break;
         case simplecpp::Output::MISSING_HEADER: {
-            const std::string::size_type pos1 = it->msg.find_first_of("<\"");
-            const std::string::size_type pos2 = it->msg.find_first_of(">\"", pos1 + 1U);
+            const std::string::size_type pos1 = out.msg.find_first_of("<\"");
+            const std::string::size_type pos2 = out.msg.find_first_of(">\"", pos1 + 1U);
             if (pos1 < pos2 && pos2 != std::string::npos)
-                missingInclude(it->location.file(), it->location.line, it->msg.substr(pos1+1, pos2-pos1-1), it->msg[pos1] == '\"' ? UserHeader : SystemHeader);
+                missingInclude(out.location.file(), out.location.line, out.msg.substr(pos1+1, pos2-pos1-1), out.msg[pos1] == '\"' ? UserHeader : SystemHeader);
         }
         break;
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
         case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-            error(it->location.file(), it->location.line, it->msg);
+            error(out.location.file(), out.location.line, out.msg);
             break;
         };
     }
@@ -781,10 +781,10 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
     bool ret = true;
     std::list<std::string> defines;
     splitcfg(cfg, defines, emptyString);
-    for (std::list<std::string>::const_iterator defineIt = defines.begin(); defineIt != defines.end(); ++defineIt) {
-        if (defineIt->find('=') != std::string::npos)
+    for (const std::string &define : defines) {
+        if (define.find('=') != std::string::npos)
             continue;
-        const std::string macroName(defineIt->substr(0, defineIt->find('(')));
+        const std::string macroName(define.substr(0, define.find('(')));
         for (const simplecpp::MacroUsage &mu : macroUsageList) {
             if (mu.macroName != macroName)
                 continue;

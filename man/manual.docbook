@@ -1498,7 +1498,8 @@ Checking range.c...
 -10:20  =&gt;  all values between -10 and 20 are valid
 :0  =&gt;  all values that are less or equal to 0 are valid
 0:  =&gt;  all values that are greater or equal to 0 are valid
-0,2:32  =&gt;  the value 0 and all values between 2 and 32 are valid </programlisting>
+0,2:32  =&gt;  the value 0 and all values between 2 and 32 are valid
+-1.5:5.6  =&gt;  all values between -1.5 and 5.6 are valid </programlisting>
         </section>
 
         <section>
