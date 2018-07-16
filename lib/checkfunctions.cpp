@@ -226,7 +226,7 @@ void CheckFunctions::checkMathFunctions()
                 continue;
             if (printWarnings && Token::Match(tok, "%name% ( !!)")) {
                 if (tok->strAt(-1) != "."
-                    && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
+                    && Token::Match(tok, "log|logf|logl|log10|log10f|log10l|log2|log2f|log2l ( %num% )")) {
                     const std::string& number = tok->strAt(2);
                     const bool isNegative = MathLib::isNegative(number);
                     const bool isInt = MathLib::isInt(number);

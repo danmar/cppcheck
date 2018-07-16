@@ -478,7 +478,7 @@ private:
     }
 
     void mathfunctionCall_log() {
-        // log,log10,logf,logl,log10f,log10l
+        // log,log10,logf,logl,log10f,log10l,log2,log2f,log2l
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(-2) << std::endl;\n"
@@ -487,13 +487,19 @@ private:
               "    std::cout <<  log10(-2) << std::endl;\n"
               "    std::cout <<  log10f(-2) << std::endl;\n"
               "    std::cout <<  log10l(-2) << std::endl;\n"
+              "    std::cout <<  log2(-2) << std::endl;\n"
+              "    std::cout <<  log2f(-2) << std::endl;\n"
+              "    std::cout <<  log2l(-2) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -2 to log() leads to implementation-defined result.\n"
                       "[test.cpp:4]: (warning) Passing value -2 to logf() leads to implementation-defined result.\n"
                       "[test.cpp:5]: (warning) Passing value -2 to logl() leads to implementation-defined result.\n"
                       "[test.cpp:6]: (warning) Passing value -2 to log10() leads to implementation-defined result.\n"
                       "[test.cpp:7]: (warning) Passing value -2 to log10f() leads to implementation-defined result.\n"
-                      "[test.cpp:8]: (warning) Passing value -2 to log10l() leads to implementation-defined result.\n", errout.str());
+                      "[test.cpp:8]: (warning) Passing value -2 to log10l() leads to implementation-defined result.\n"
+                      "[test.cpp:9]: (warning) Passing value -2 to log2() leads to implementation-defined result.\n"
+                      "[test.cpp:10]: (warning) Passing value -2 to log2f() leads to implementation-defined result.\n"
+                      "[test.cpp:11]: (warning) Passing value -2 to log2l() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -503,13 +509,19 @@ private:
               "    std::cout <<  log10(-1) << std::endl;\n"
               "    std::cout <<  log10f(-1) << std::endl;\n"
               "    std::cout <<  log10l(-1) << std::endl;\n"
+              "    std::cout <<  log2(-1) << std::endl;\n"
+              "    std::cout <<  log2f(-1) << std::endl;\n"
+              "    std::cout <<  log2l(-1) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1 to log() leads to implementation-defined result.\n"
                       "[test.cpp:4]: (warning) Passing value -1 to logf() leads to implementation-defined result.\n"
                       "[test.cpp:5]: (warning) Passing value -1 to logl() leads to implementation-defined result.\n"
                       "[test.cpp:6]: (warning) Passing value -1 to log10() leads to implementation-defined result.\n"
                       "[test.cpp:7]: (warning) Passing value -1 to log10f() leads to implementation-defined result.\n"
-                      "[test.cpp:8]: (warning) Passing value -1 to log10l() leads to implementation-defined result.\n", errout.str());
+                      "[test.cpp:8]: (warning) Passing value -1 to log10l() leads to implementation-defined result.\n"
+                      "[test.cpp:9]: (warning) Passing value -1 to log2() leads to implementation-defined result.\n"
+                      "[test.cpp:10]: (warning) Passing value -1 to log2f() leads to implementation-defined result.\n"
+                      "[test.cpp:11]: (warning) Passing value -1 to log2l() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -519,13 +531,19 @@ private:
               "    std::cout <<  log10(-1.0) << std::endl;\n"
               "    std::cout <<  log10f(-1.0) << std::endl;\n"
               "    std::cout <<  log10l(-1.0) << std::endl;\n"
+              "    std::cout <<  log2(-1.0) << std::endl;\n"
+              "    std::cout <<  log2f(-1.0) << std::endl;\n"
+              "    std::cout <<  log2l(-1.0) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -1.0 to log() leads to implementation-defined result.\n"
                       "[test.cpp:4]: (warning) Passing value -1.0 to logf() leads to implementation-defined result.\n"
                       "[test.cpp:5]: (warning) Passing value -1.0 to logl() leads to implementation-defined result.\n"
                       "[test.cpp:6]: (warning) Passing value -1.0 to log10() leads to implementation-defined result.\n"
                       "[test.cpp:7]: (warning) Passing value -1.0 to log10f() leads to implementation-defined result.\n"
-                      "[test.cpp:8]: (warning) Passing value -1.0 to log10l() leads to implementation-defined result.\n", errout.str());
+                      "[test.cpp:8]: (warning) Passing value -1.0 to log10l() leads to implementation-defined result.\n"
+                      "[test.cpp:9]: (warning) Passing value -1.0 to log2() leads to implementation-defined result.\n"
+                      "[test.cpp:10]: (warning) Passing value -1.0 to log2f() leads to implementation-defined result.\n"
+                      "[test.cpp:11]: (warning) Passing value -1.0 to log2l() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -535,13 +553,19 @@ private:
               "    std::cout <<  log10(-0.1) << std::endl;\n"
               "    std::cout <<  log10f(-0.1) << std::endl;\n"
               "    std::cout <<  log10l(-0.1) << std::endl;\n"
+              "    std::cout <<  log2(-0.1) << std::endl;\n"
+              "    std::cout <<  log2f(-0.1) << std::endl;\n"
+              "    std::cout <<  log2l(-0.1) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value -0.1 to log() leads to implementation-defined result.\n"
                       "[test.cpp:4]: (warning) Passing value -0.1 to logf() leads to implementation-defined result.\n"
                       "[test.cpp:5]: (warning) Passing value -0.1 to logl() leads to implementation-defined result.\n"
                       "[test.cpp:6]: (warning) Passing value -0.1 to log10() leads to implementation-defined result.\n"
                       "[test.cpp:7]: (warning) Passing value -0.1 to log10f() leads to implementation-defined result.\n"
-                      "[test.cpp:8]: (warning) Passing value -0.1 to log10l() leads to implementation-defined result.\n", errout.str());
+                      "[test.cpp:8]: (warning) Passing value -0.1 to log10l() leads to implementation-defined result.\n"
+                      "[test.cpp:9]: (warning) Passing value -0.1 to log2() leads to implementation-defined result.\n"
+                      "[test.cpp:10]: (warning) Passing value -0.1 to log2f() leads to implementation-defined result.\n"
+                      "[test.cpp:11]: (warning) Passing value -0.1 to log2l() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -551,13 +575,19 @@ private:
               "    std::cout <<  log10(0.0) << std::endl;\n"
               "    std::cout <<  log10f(0) << std::endl;\n"
               "    std::cout <<  log10l(0.) << std::endl;\n"
+              "    std::cout <<  log2(0.) << std::endl;\n"
+              "    std::cout <<  log2f(0.0) << std::endl;\n"
+              "    std::cout <<  log2l(0) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Passing value 0 to log() leads to implementation-defined result.\n"
                       "[test.cpp:4]: (warning) Passing value 0. to logf() leads to implementation-defined result.\n"
                       "[test.cpp:5]: (warning) Passing value 0.0 to logl() leads to implementation-defined result.\n"
                       "[test.cpp:6]: (warning) Passing value 0.0 to log10() leads to implementation-defined result.\n"
                       "[test.cpp:7]: (warning) Passing value 0 to log10f() leads to implementation-defined result.\n"
-                      "[test.cpp:8]: (warning) Passing value 0. to log10l() leads to implementation-defined result.\n", errout.str());
+                      "[test.cpp:8]: (warning) Passing value 0. to log10l() leads to implementation-defined result.\n"
+                      "[test.cpp:9]: (warning) Passing value 0. to log2() leads to implementation-defined result.\n"
+                      "[test.cpp:10]: (warning) Passing value 0.0 to log2f() leads to implementation-defined result.\n"
+                      "[test.cpp:11]: (warning) Passing value 0 to log2l() leads to implementation-defined result.\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -567,24 +597,36 @@ private:
               "    std::cout <<  log10(1E-3)    << std::endl;\n"
               "    std::cout <<  log10f(1E-3)   << std::endl;\n"
               "    std::cout <<  log10l(1E-3)   << std::endl;\n"
+              "    std::cout <<  log2(1E-3)     << std::endl;\n"
+              "    std::cout <<  log2f(1E-3)    << std::endl;\n"
+              "    std::cout <<  log2l(1E-3)    << std::endl;\n"
               "    std::cout <<  log(1.0E-3)    << std::endl;\n"
               "    std::cout <<  logf(1.0E-3)   << std::endl;\n"
               "    std::cout <<  logl(1.0E-3)   << std::endl;\n"
               "    std::cout <<  log10(1.0E-3)  << std::endl;\n"
               "    std::cout <<  log10f(1.0E-3) << std::endl;\n"
               "    std::cout <<  log10l(1.0E-3) << std::endl;\n"
+              "    std::cout <<  log2(1.0E-3)   << std::endl;\n"
+              "    std::cout <<  log2f(1.0E-3)  << std::endl;\n"
+              "    std::cout <<  log2l(1.0E-3)  << std::endl;\n"
               "    std::cout <<  log(1.0E+3)    << std::endl;\n"
               "    std::cout <<  logf(1.0E+3)   << std::endl;\n"
               "    std::cout <<  logl(1.0E+3)   << std::endl;\n"
               "    std::cout <<  log10(1.0E+3)  << std::endl;\n"
               "    std::cout <<  log10f(1.0E+3) << std::endl;\n"
               "    std::cout <<  log10l(1.0E+3) << std::endl;\n"
+              "    std::cout <<  log2(1.0E+3)   << std::endl;\n"
+              "    std::cout <<  log2f(1.0E+3)  << std::endl;\n"
+              "    std::cout <<  log2l(1.0E+3)  << std::endl;\n"
               "    std::cout <<  log(2.0)       << std::endl;\n"
               "    std::cout <<  logf(2.0)      << std::endl;\n"
               "    std::cout <<  logf(2.0f)     << std::endl;\n"
               "    std::cout <<  log10(2.0)     << std::endl;\n"
               "    std::cout <<  log10f(2.0)    << std::endl;\n"
               "    std::cout <<  log10f(2.0f)   << std::endl;\n"
+              "    std::cout <<  log2(2.0)      << std::endl;\n"
+              "    std::cout <<  log2f(2.0)     << std::endl;\n"
+              "    std::cout <<  log2f(2.0f)    << std::endl;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
