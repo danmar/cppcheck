@@ -1844,8 +1844,8 @@ static bool valueFlowForward(Token * const               startToken,
 
             // noreturn scopes..
             if ((number_of_if > 0 || Token::findmatch(tok2, "%varid%", start, varid)) &&
-                (Token::findmatch(start, "return|continue|break|throw", end) ||
-                 (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break|throw", end->linkAt(2))))) {
+                (Token::findmatch(start, "return|continue|break|throw|goto", end) ||
+                 (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break|throw|goto", end->linkAt(2))))) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + ". noreturn conditional scope.");
                 return false;
@@ -1855,7 +1855,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
-                       Token::findmatch(end, "return|continue|break|throw", end->linkAt(2)))) {
+                       Token::findmatch(end, "return|continue|break|throw|goto", end->linkAt(2)))) {
                     ++number_of_if;
                     tok2 = end;
                 } else {
