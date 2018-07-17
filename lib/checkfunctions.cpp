@@ -228,18 +228,9 @@ void CheckFunctions::checkMathFunctions()
                 if (tok->strAt(-1) != "."
                     && Token::Match(tok, "log|logf|logl|log10|log10f|log10l|log2|log2f|log2l ( %num% )")) {
                     const std::string& number = tok->strAt(2);
-                    const bool isNegative = MathLib::isNegative(number);
-                    const bool isInt = MathLib::isInt(number);
-                    const bool isFloat = MathLib::isFloat(number);
-                    if (isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
-                        mathfunctionCallWarning(tok); // case log(-2)
-                    } else if (isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
-                        mathfunctionCallWarning(tok); // case log(-2.0)
-                    } else if (!isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
-                        mathfunctionCallWarning(tok); // case log(0.0)
-                    } else if (!isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
-                        mathfunctionCallWarning(tok); // case log(0)
-                    }
+                    if ((MathLib::isInt(number) && MathLib::toLongNumber(number) <= 0) ||
+                        (MathLib::isFloat(number) && MathLib::toDoubleNumber(number) <= 0.))
+                        mathfunctionCallWarning(tok);
                 }
                 // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
                 else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )")) {
