@@ -232,6 +232,12 @@ void CheckFunctions::checkMathFunctions()
                         (MathLib::isFloat(number) && MathLib::toDoubleNumber(number) <= 0.))
                         mathfunctionCallWarning(tok);
                 }
+                else if (Token::Match(tok, "log1p|log1pf|log1pl ( %num% )")) {
+                    const std::string& number = tok->strAt(2);
+                    if ((MathLib::isInt(number) && MathLib::toLongNumber(number) <= -1) ||
+                        (MathLib::isFloat(number) && MathLib::toDoubleNumber(number) <= -1.))
+                        mathfunctionCallWarning(tok);
+                }
                 // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
                 else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )")) {
                     if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNullValue(tok->strAt(4)))
