@@ -3136,7 +3136,10 @@ private:
                "  c++;\n"
                "}\n";
         values = tokenValues(code, "c ++ ; }");
-        TODO_ASSERT_EQUALS(true, false, values.empty());
+        ASSERT_EQUALS(true, values.size() == 2);
+        ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
+        ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
+        ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
     }
 };
 
