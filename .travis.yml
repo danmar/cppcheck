@@ -75,7 +75,7 @@ script:
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # check naming conventions
   - ${CPPCHECK} -j 2 --dump -q gui lib
-  - find . -name "*.dump" | grep -P "\.\/(lib|gui)\/[^\/]*\.cpp\.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
+  - find lib gui -maxdepth 1 -name "*.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
 # run extra tests
   - tools/generate_and_run_more_tests.sh
 # Validate XML
