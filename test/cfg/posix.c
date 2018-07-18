@@ -48,6 +48,10 @@ void bufferAccessOutOfBounds(int fd)
     readlinkat(1, "path", a, 5);
     // cppcheck-suppress bufferAccessOutOfBounds
     readlinkat(1, "path", a, 6);
+    // This is valid
+    gethostname(a, 5);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    gethostname(a, 6);
 }
 
 void nullPointer(char *p, int fd)
