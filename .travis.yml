@@ -75,7 +75,9 @@ script:
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # check naming conventions
   - ${CPPCHECK} -j 2 --dump -q gui lib
-  - python addons/naming.py --private-member-variable='m[A-Z].*' gui/*.cpp.dump lib/*.cpp.dump
+  - find . -name "*.dump" | grep -P "\.\/(lib|gui)\/[^\/]*\.cpp\.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
+  # Travis must fail for the following command since the name regex does not match Cppcheck naming. Remove this once it is verified that it fails for incorrect names.
+  - find . -name "*.dump" | grep -P "\.\/(lib|gui)\/[^\/]*\.cpp\.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m_[A-Z].*'
 # run extra tests
   - tools/generate_and_run_more_tests.sh
 # Validate XML
