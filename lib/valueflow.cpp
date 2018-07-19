@@ -444,6 +444,18 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             return;
         }
 
+        // known result when a operand is true.
+        if (Token::simpleMatch(parent, "&&") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
+
+        // known result when a operand is false.
+        if (Token::simpleMatch(parent, "||") && value.isKnown() && value.isIntValue() && value.intvalue!=0) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
+
         for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
             if (!value1.isIntValue() && !value1.isFloatValue() && !value1.isTokValue())
                 continue;
@@ -1019,6 +1031,42 @@ static void valueFlowBitAnd(TokenList *tokenlist)
         if ((((MathLib::bigint)1) << bit) == number) {
             setTokenValue(tok, ValueFlow::Value(0), tokenlist->getSettings());
             setTokenValue(tok, ValueFlow::Value(number), tokenlist->getSettings());
+        }
+    }
+}
+
+static void valueFlowSameExpressions(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->hasKnownValue())
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        if (tok->astOperand1()->isLiteral() || tok->astOperand2()->isLiteral())
+            continue;
+
+        if(astIsFloat(tok->astOperand1(), true) || astIsFloat(tok->astOperand2(), true))
+            continue;
+
+        ValueFlow::Value val;
+
+        if(Token::Match(tok, "==|>=|<=|/")) {
+            val = ValueFlow::Value(1);
+            val.setKnown();
+        }
+
+        if(Token::Match(tok, "!=|>|<|%|-")) {
+            val = ValueFlow::Value(0);
+            val.setKnown();
+        }
+
+        if(!val.isKnown())
+            continue;
+
+        if(isSameExpression(tokenlist->isCPP(), false, tok->astOperand1(), tok->astOperand2(), tokenlist->getSettings()->library, true)) {
+            setTokenValue(tok, val, tokenlist->getSettings());
         }
     }
 }
@@ -3450,6 +3498,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowPointerAlias(tokenlist);
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
+    valueFlowSameExpressions(tokenlist);
     valueFlowOppositeCondition(symboldatabase, settings);
     valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);

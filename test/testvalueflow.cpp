@@ -102,6 +102,8 @@ private:
 
         TEST_CASE(valueFlowInlineAssembly);
 
+        TEST_CASE(valueFlowSameExpression);
+        
         TEST_CASE(valueFlowUninit);
     }
 
@@ -3003,6 +3005,34 @@ private:
                            "    a = x;\n"
                            "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
+    }
+
+    void valueFlowSameExpression() {
+        const char* code;
+        
+        code = "void f(int a) {\n"
+               "    bool x = a == a;\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "void f(int a) {\n"
+               "    bool x = a != a;\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a - a;\n"
+               "    int b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "void f(float a) {\n"
+               "    bool x = a == a;\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
     }
 
     void valueFlowUninit() {
