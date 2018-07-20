@@ -241,12 +241,6 @@ void CheckFunctions::checkMathFunctions()
                         mathfunctionCallWarning(tok); // case log(0)
                     }
                 }
-
-                // sqrt( x ): if x is negative the result is undefined
-                else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )")) {
-                    if (MathLib::isNegative(tok->strAt(2)))
-                        mathfunctionCallWarning(tok);
-                }
                 // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
                 else if (Token::Match(tok, "atan2|atan2f|atan2l ( %num% , %num% )")) {
                     if (MathLib::isNullValue(tok->strAt(2)) && MathLib::isNullValue(tok->strAt(4)))
