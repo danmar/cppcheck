@@ -1360,8 +1360,8 @@ static bool canBeConst(const Variable *var)
 
         const Token* parent = tok2->astParent();
         if (!parent)
-            ;
-        else if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
+            continue;
+        if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
             if (parent->str() == "<<" && parent->astOperand1() == tok2)
                 return false;
             if (parent->str() == ">>" && parent->astOperand2() == tok2)
@@ -1391,7 +1391,7 @@ static bool canBeConst(const Variable *var)
             // TODO: check how pointer is used
             return false;
         } else if (parent->isConstOp())
-            ;
+            continue;
         else if (parent->isAssignmentOp()) {
             if (parent->astOperand1() == tok2)
                 return false;
@@ -1403,7 +1403,7 @@ static bool canBeConst(const Variable *var)
         } else if (Token::Match(tok2, "%var% . %name% (")) {
             const Function* func = tok2->tokAt(2)->function();
             if (func && (func->isConst() || func->isStatic()))
-                ;
+                continue;
             else
                 return false;
         } else
