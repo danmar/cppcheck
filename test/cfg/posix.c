@@ -18,6 +18,7 @@
 #include <regex.h>
 #include <time.h>
 #include <unistd.h>
+#include <pthread.h>
 
 void bufferAccessOutOfBounds(int fd)
 {
@@ -54,7 +55,7 @@ void bufferAccessOutOfBounds(int fd)
     gethostname(a, 6);
 }
 
-void nullPointer(char *p, int fd)
+void nullPointer(char *p, int fd, pthread_mutex_t mutex)
 {
     // cppcheck-suppress ignoredReturnValue
     isatty(0);
@@ -88,6 +89,19 @@ void nullPointer(char *p, int fd)
     // cppcheck-suppress strtokCalled
     // cppcheck-suppress nullPointer
     strtok(p, NULL);
+
+    // cppcheck-suppress nullPointer
+    pthread_mutex_init(NULL, NULL);
+    // Second argument can be NULL
+    pthread_mutex_init(&mutex, NULL);
+    // cppcheck-suppress nullPointer
+    pthread_mutex_destroy(NULL);
+    // cppcheck-suppress nullPointer
+    pthread_mutex_lock(NULL);
+    // cppcheck-suppress nullPointer
+    pthread_mutex_trylock(NULL);
+    // cppcheck-suppress nullPointer
+    pthread_mutex_unlock(NULL);
 }
 
 void memleak_getaddrinfo()
@@ -207,6 +221,7 @@ void uninitvar(int fd)
     int decimal, sign;
     double d;
     void *p;
+    pthread_mutex_t mutex;
     // cppcheck-suppress uninitvar
     write(x,"ab",2);
     // TODO cppcheck-suppress uninitvar
@@ -259,6 +274,18 @@ void uninitvar(int fd)
     // cppcheck-suppress strtokCalled
     // cppcheck-suppress uninitvar
     strtok(strtok_arg1, ";");
+
+    // cppcheck-suppress uninitvar
+    pthread_mutex_lock(&mutex);
+    // cppcheck-suppress uninitvar
+    pthread_mutex_trylock(&mutex);
+    // cppcheck-suppress uninitvar
+    pthread_mutex_unlock(&mutex);
+    // after initialization it must be OK to call lock, trylock and unlock for this mutex
+    pthread_mutex_init(&mutex, NULL);
+    pthread_mutex_lock(&mutex);
+    pthread_mutex_trylock(&mutex);
+    pthread_mutex_unlock(&mutex);
 }
 
 void uninitvar_getcwd(void)
