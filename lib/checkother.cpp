@@ -1354,7 +1354,7 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
 
 static bool canBeConst(const Variable *var)
 {
-	{  // Ticket #8570
+	{  // check initializer list. If variable is moved from it can't be const.
 		const Function* func_scope = var->scope()->function;
 		if (func_scope->type == Function::Type::eConstructor) {
 			//could be initialized in initializer list
@@ -1362,15 +1362,9 @@ static bool canBeConst(const Variable *var)
 				for (const Token* tok2 = func_scope->arg->link()->next()->next(); tok2 != var->scope()->bodyStart; tok2 = tok2->next()) {
 					if (tok2->varId() != var->declarationId())
 						continue;
-
 					const Token* parent = tok2->astParent();
-					if (parent && parent->str() == "{") //is initializer variable
-						return true;
-					else if (parent && parent->str() == "(") { //is initializer variable
-						if (parent->previous() && parent->previous()->str() == "move")
-							return false;
-						return true;
-					}
+					if (parent && Token::simpleMatch(parent->previous(), "move ("))
+						return false;
 				}
 			}
 		}
