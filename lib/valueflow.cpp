@@ -1863,7 +1863,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
-                       Token::findmatch(end, "return|continue|break|throw|goto", end->linkAt(2)))) {
+                       isEscapeScope(end->tokAt(2), tokenlist))) {
                     ++number_of_if;
                     tok2 = end;
                 } else {
