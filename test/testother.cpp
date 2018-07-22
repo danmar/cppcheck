@@ -165,6 +165,7 @@ private:
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
 
         TEST_CASE(checkCommaSeparatedReturn);
+        TEST_CASE(checkPassByReference);
 
         TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
 
@@ -6023,6 +6024,77 @@ private:
               "}", nullptr, true, false, false);
         ASSERT_EQUALS("", errout.str());
     }
+
+	void checkPassByReference() {
+		// #8570 passByValue when std::move is used
+		check("struct A\n"
+			"{\n"
+			"    std::vector<int> x;\n"
+			"};\n"
+			"\n"
+			"struct B\n"
+			"{\n"
+			"    explicit B(A a) : a(std::move(a)) {}\n"
+			"    void Init(A _a) { a = std::move(_a); }\n"
+			"    A a;"
+			"};", nullptr, false, false, true);
+		ASSERT_EQUALS("", errout.str());
+
+		check("struct A\n"
+			"{\n"
+			"    std::vector<int> x;\n"
+			"};\n"
+			"\n"
+			"struct B\n"
+			"{\n"
+			"    explicit B(A a) : a{std::move(a)} {}\n"
+			"    void Init(A _a) { a = std::move(_a); }\n"
+			"    A a;"
+			"};", nullptr, false, false, true);
+		ASSERT_EQUALS("", errout.str());
+
+		check("struct A\n"
+			"{\n"
+			"    std::vector<int> x;\n"
+			"};\n"
+			"\n"
+			"struct B\n"
+			"{\n"
+			"    B(A a, A a2) : a{std::move(a)}, a2{std::move(a2)} {}\n"
+			"    void Init(A _a) { a = std::move(_a); }\n"
+			"    A a;"
+			"    A a2;"
+			"};", nullptr, false, false, true);
+		ASSERT_EQUALS("", errout.str());
+
+		check("struct A\n"
+			"{\n"
+			"    std::vector<int> x;\n"
+			"};\n"
+			"\n"
+			"struct B\n"
+			"{\n"
+			"    B(A a, A a2) : a{std::move(a)}, a2{a2} {}\n"
+			"    void Init(A _a) { a = std::move(_a); }\n"
+			"    A a;"
+			"    A a2;"
+			"};", nullptr, false, false, true);
+		ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' should be passed by const reference.\n", errout.str());
+
+		check("struct A\n"
+			"{\n"
+			"    std::vector<int> x;\n"
+			"};\n"
+			"\n"
+			"struct B\n"
+			"{\n"
+			"    B(A a, A a2) : a{std::move(a)}, a2(a2) {}\n"
+			"    void Init(A _a) { a = std::move(_a); }\n"
+			"    A a;"
+			"    A a2;"
+			"};", nullptr, false, false, true);
+		ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' should be passed by const reference.\n", errout.str());
+	}
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {
         // positive test

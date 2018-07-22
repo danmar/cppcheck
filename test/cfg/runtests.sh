@@ -5,9 +5,11 @@ set -x # be verbose
 if [[ $(pwd) == */test/cfg ]] ; then # we are in test/cfg
 	CPPCHECK="../../cppcheck"
 	DIR=""
+	CFG="../../cfg/"
 else # assume we are in repo root
 	CPPCHECK="./cppcheck"
 	DIR=test/cfg/
+	CFG="cfg/"
 fi
 
 # Cppcheck options
@@ -109,7 +111,7 @@ set -e
 if [ $XMLSTARLET_RETURNCODE -ne 0 ]; then
     echo "xmlstarlet needed to extract defines, skipping defines check."
 else
-    for configfile in cfg/*.cfg; do
+    for configfile in ${CFG}*.cfg; do
         echo "Checking defines in $configfile"
         # Disable debugging output temporarily since there could be many defines
         set +x

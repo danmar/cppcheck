@@ -1354,14 +1354,29 @@ static std::size_t estimateSize(const Type* type, const Settings* settings, cons
 
 static bool canBeConst(const Variable *var)
 {
+	{  // check initializer list. If variable is moved from it can't be const.
+		const Function* func_scope = var->scope()->function;
+		if (func_scope->type == Function::Type::eConstructor) {
+			//could be initialized in initializer list
+			if (func_scope->arg->link()->next()->str() == ":") {
+				for (const Token* tok2 = func_scope->arg->link()->next()->next(); tok2 != var->scope()->bodyStart; tok2 = tok2->next()) {
+					if (tok2->varId() != var->declarationId())
+						continue;
+					const Token* parent = tok2->astParent();
+					if (parent && Token::simpleMatch(parent->previous(), "move ("))
+						return false;
+				}
+			}
+		}
+	}
     for (const Token* tok2 = var->scope()->bodyStart; tok2 != var->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->varId() != var->declarationId())
             continue;
 
         const Token* parent = tok2->astParent();
         if (!parent)
-            ;
-        else if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
+            continue;
+        if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
             if (parent->str() == "<<" && parent->astOperand1() == tok2)
                 return false;
             if (parent->str() == ">>" && parent->astOperand2() == tok2)
@@ -1391,7 +1406,7 @@ static bool canBeConst(const Variable *var)
             // TODO: check how pointer is used
             return false;
         } else if (parent->isConstOp())
-            ;
+            continue;
         else if (parent->isAssignmentOp()) {
             if (parent->astOperand1() == tok2)
                 return false;
@@ -1403,7 +1418,7 @@ static bool canBeConst(const Variable *var)
         } else if (Token::Match(tok2, "%var% . %name% (")) {
             const Function* func = tok2->tokAt(2)->function();
             if (func && (func->isConst() || func->isStatic()))
-                ;
+                continue;
             else
                 return false;
         } else
