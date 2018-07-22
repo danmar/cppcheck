@@ -347,7 +347,7 @@ static const Variable *getContainer(const Token *argtok)
     return nullptr;
 }
 
-bool isIteratorExpression(const Token * tok)
+static bool isIteratorExpression(const Token * tok)
 {
     if(!tok) return false;
     if (Token::Match(tok, "%name% (|{") && 
@@ -380,10 +380,8 @@ static bool isMismatchIteratorExpression(const Token * tok1, const Token * tok2)
 
     if (Token::Match(tok1, "%name% (|{") && 
         Token::Match(tok2, "%name% (|{") &&
-        tok1->next()->link() && 
-        tok2->next()->link() && 
-        tok1->next()->link()->next() &&
-        tok2->next()->link()->next() &&
+        Token::Match(tok1->linkAt(1), ")|} .|::") &&
+        Token::Match(tok2->linkAt(1), ")|} .|::") &&
         isMismatchIteratorExpression(tok1->next()->link()->next()->astOperand2(), tok2->next()->link()->next()->astOperand2())) {
         return true;
     }
@@ -428,7 +426,7 @@ void CheckStl::mismatchingContainers()
                 } else {
                     if(i->first) {
                         firstArg = argTok;
-                    } else if(i->last && firstArg && 
+                    } else if(i->last && 
                             isIteratorExpression(firstArg) && 
                             isIteratorExpression(argTok) && 
                             isMismatchIteratorExpression(firstArg, argTok)) {
