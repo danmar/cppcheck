@@ -3131,6 +3131,17 @@ private:
                "  int c;\n"
                "  if (d)\n"
                "    c = 0;\n"
+               "  if (e)\n"
+               "    exit();\n"
+               "  c++;\n"
+               "}\n";
+        values = tokenValues(code, "c ++ ; }");
+        ASSERT_EQUALS(true, values.empty());
+
+        code = "void b(bool d, bool e) {\n"
+               "  int c;\n"
+               "  if (d)\n"
+               "    c = 0;\n"
                " else if (!d)\n"
                "   c = 0;\n"
                "  c++;\n"
