@@ -147,6 +147,26 @@ void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }
 
+#define     BANK_SIZE     8u
+
+typedef struct
+{
+    uint8_t       byte[BANK_SIZE];
+} byte_bank_t;
+
+static inline uint8_t GET_BYTE_BITS(const byte_bank_t * ctrl, uint8_t num,
+        uint8_t bitmask, uint8_t shift)
+{
+    uint8_t retval = 0;
+
+    if (num < BANK_SIZE)
+    {
+        retval = ((ctrl->byte)[num] & bitmask) >> shift; // no-warning
+    }
+
+    return retval;
+}
+
 void misra_10_1() {
   int32_t i;
   i = 3 << 1; // 10.1
