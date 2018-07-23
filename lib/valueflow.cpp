@@ -444,6 +444,18 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             return;
         }
 
+        // known result when a operand is true.
+        if (Token::simpleMatch(parent, "&&") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
+
+        // known result when a operand is false.
+        if (Token::simpleMatch(parent, "||") && value.isKnown() && value.isIntValue() && value.intvalue!=0) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
+
         for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
             if (!value1.isIntValue() && !value1.isFloatValue() && !value1.isTokValue())
                 continue;
