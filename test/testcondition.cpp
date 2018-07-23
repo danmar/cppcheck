@@ -105,6 +105,7 @@ private:
 
         TEST_CASE(checkInvalidTestForOverflow);
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
+        TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
     }
 
@@ -2505,6 +2506,36 @@ private:
               "    while(a + 1) { return; }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a+1' is always true\n", errout.str());
+    }
+
+    void alwaysTrueFalseInLogicalOperators() {
+        check("bool f();\n"
+              "void foo() { bool x = true; if(x||f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always true\n", errout.str());
+
+        check("void foo(bool b) { bool x = true; if(x||b) {}}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'x' is always true\n", errout.str());
+
+        check("void foo(bool b) { if(true||b) {}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f();\n"
+              "void foo() { bool x = false; if(x||f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always false\n", errout.str());
+
+        check("bool f();\n"
+              "void foo() { bool x = false; if(x&&f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always false\n", errout.str());
+
+        check("void foo(bool b) { bool x = false; if(x&&b) {}}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'x' is always false\n", errout.str());
+
+        check("void foo(bool b) { if(false&&b) {}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f();\n"
+              "void foo() { bool x = true; if(x&&f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always true\n", errout.str());
     }
 
     void pointerAdditionResultNotNull() {
