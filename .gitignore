@@ -105,3 +105,5 @@ snap/.snapcraft
 man/manual.log
 man/manual.tex
 
+# CLion
+.idea

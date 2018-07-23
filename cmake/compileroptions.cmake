@@ -1,6 +1,6 @@
 set(EXTRA_C_FLAGS "")
 set(EXTRA_C_FLAGS_RELEASE "-DNDEBUG")
-set(EXTRA_C_FLAGS_DEBUG "-DDEBUG -O0")
+set(EXTRA_C_FLAGS_DEBUG "-DDEBUG")
 
 if (USE_CLANG)
     set (CMAKE_C_COMPILER_ID            "Clang")
@@ -104,6 +104,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
    endif()
 
    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall -std=c++0x")
+   
+   set(EXTRA_C_FLAGS_DEBUG "${EXTRA_C_FLAGS_DEBUG} -O0")
 
 endif()
 
