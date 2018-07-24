@@ -25,6 +25,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "utils.h"
+#include "astutils.h"
 
 #include <cstddef>
 #include <list>
@@ -304,9 +305,13 @@ void CheckStl::mismatchingContainersError(const Token *tok)
     reportError(tok, Severity::error, "mismatchingContainers", "Iterators of different containers are used together.", CWE664, false);
 }
 
-void CheckStl::mismatchingContainerExpressionError(const Token *tok)
+void CheckStl::mismatchingContainerExpressionError(const Token *tok1, const Token *tok2)
 {
-    reportError(tok, Severity::warning, "mismatchingContainerExpression", "Iterators to containers from different expressions are used together.", CWE664, false);
+    const std::string expr1(tok1 ? tok1->expressionString() : std::string());
+    const std::string expr2(tok2 ? tok2->expressionString() : std::string());
+    reportError(tok1, Severity::warning, "mismatchingContainerExpression", 
+        "Iterators to containers from different expressions '" + 
+        expr1 + "' and '" + expr2 + "' are used together.", CWE664, false);
 }
 
 static const std::set<std::string> algorithm2 = { // func(begin1, end1
@@ -347,46 +352,18 @@ static const Variable *getContainer(const Token *argtok)
     return nullptr;
 }
 
-static bool isIteratorExpression(const Token * tok)
+static const Token * getIteratorExpression(const Token * tok, const Token * end)
 {
-    if(!tok) return false;
-    if (Token::Match(tok, "%name% (|{") && 
-        tok->next()->link() && 
-        !Token::simpleMatch(tok->next()->link()->next(), ",") && 
-        isIteratorExpression(tok->next()->link()->next())) {
-        return true;
+    for(;tok != end;tok = tok->next()) {
+        if(Token::Match(tok, iteratorFuncPattern.c_str())) {
+            if(Token::Match(tok->previous(), ". %name% ( )")) {
+                return tok->previous()->astOperand1();
+            } else if(Token::Match(tok, "%name% ( !!)")) {
+                return tok->next()->astOperand2();
+            }
+        }
     }
-    return Token::Match(tok, iteratorFuncPattern.c_str()) || 
-            isIteratorExpression(tok->astOperand2());
-}
-
-static bool isMismatchIteratorExpression(const Token * tok1, const Token * tok2)
-{
-    if (tok1 == nullptr && tok2 == nullptr)
-        return false;
-    if (tok1 == nullptr || tok2 == nullptr)
-        return true;
-    if (tok1->str() == "." && tok1->astOperand1() && tok1->astOperand1()->str() == "this")
-        tok1 = tok1->astOperand2();
-    if (tok2->str() == "." && tok2->astOperand1() && tok2->astOperand1()->str() == "this")
-        tok2 = tok2->astOperand2();
-
-    if(Token::Match(tok1, iteratorFuncPattern.c_str()) && Token::Match(tok2, iteratorFuncPattern.c_str()) && tok1->next() && tok2->next()) {
-        return isMismatchIteratorExpression(tok1->next()->astOperand2(), tok2->next()->astOperand2());
-    }
-    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
-        return true;
-    }
-
-    if (Token::Match(tok1, "%name% (|{") && 
-        Token::Match(tok2, "%name% (|{") &&
-        Token::Match(tok1->linkAt(1), ")|} .|::") &&
-        Token::Match(tok2->linkAt(1), ")|} .|::") &&
-        isMismatchIteratorExpression(tok1->next()->link()->next()->astOperand2(), tok2->next()->link()->next()->astOperand2())) {
-        return true;
-    }
-    return isMismatchIteratorExpression(tok1->astOperand1(), tok2->astOperand1()) ||
-        isMismatchIteratorExpression(tok1->astOperand2(), tok2->astOperand2());
+    return nullptr;
 }
 
 void CheckStl::mismatchingContainers()
@@ -426,11 +403,12 @@ void CheckStl::mismatchingContainers()
                 } else {
                     if(i->first) {
                         firstArg = argTok;
-                    } else if(i->last && 
-                            isIteratorExpression(firstArg) && 
-                            isIteratorExpression(argTok) && 
-                            isMismatchIteratorExpression(firstArg, argTok)) {
-                        mismatchingContainerExpressionError(argTok);
+                    } else if(i->last && firstArg && argTok) {
+                        const Token * iter1 = getIteratorExpression(firstArg, firstArg->nextArgument());
+                        const Token * iter2 = getIteratorExpression(argTok, argTok->nextArgument());
+                        if(!isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
+                            mismatchingContainerExpressionError(iter1, iter2);
+                        }
                     }
                 }
             }
