@@ -406,7 +406,7 @@ void CheckStl::mismatchingContainers()
                     } else if(i->last && firstArg && argTok) {
                         const Token * iter1 = getIteratorExpression(firstArg, firstArg->nextArgument());
                         const Token * iter2 = getIteratorExpression(argTok, argTok->nextArgument());
-                        if(!isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
+                        if(iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
                             mismatchingContainerExpressionError(iter1, iter2);
                         }
                     }
