@@ -885,7 +885,6 @@ void CheckCondition::checkIncorrectLogicOperator()
                 continue;
             }
 
-
             // 'A && (!A || B)' is equivalent to 'A && B'
             // 'A || (!A && B)' is equivalent to 'A || B'
             if (printStyle &&
@@ -1184,16 +1183,17 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (Token::Match(tok, "%num%|%bool%"))
+            if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "! %num%|%bool%"))
+            if (Token::Match(tok, "! %num%|%bool%|%char%"))
+                continue;
+            if (Token::Match(tok, "%oror%|&&"))
                 continue;
 
             const bool constIfWhileExpression =
-                tok->astParent()
-                && Token::Match(tok->astParent()->astOperand1(), "if|while")
-                && !tok->isBoolean();
-            const bool constValExpr = Token::Match(tok, "%num%|%char%") && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number or char in boolean expression
+                tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") &&
+                (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
+            const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
 
             if (!(constIfWhileExpression || constValExpr || compExpr))

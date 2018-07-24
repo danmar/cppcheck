@@ -155,9 +155,7 @@ void CheckLeakAutoVar::check()
     const std::set<unsigned int> notzero;
 
     // Check function scopes
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         if (scope->hasInlineOrLambdaFunction())
             continue;
 
@@ -416,8 +414,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         continue;
                     } else if (tok3->str() == "(" && Token::Match(tok3->previous(), "%name%")) {
                         const std::vector<const Token *> params = getArguments(tok3->previous());
-                        for (unsigned int i = 0; i < params.size(); ++i) {
-                            const Token *par = params[i];
+                        for (const Token *par : params) {
                             if (!par->isComparisonOp())
                                 continue;
                             const Token *vartok = nullptr;

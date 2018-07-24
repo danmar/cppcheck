@@ -113,6 +113,7 @@ private:
         c.suspiciousStringCompareError(nullptr, "foo");
         c.suspiciousStringCompareError_char(nullptr, "foo");
         c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
+        c.incorrectStringBooleanError(nullptr, "\'x\'");
         c.alwaysTrueFalseStringCompareError(nullptr, "str1", "str2");
         c.alwaysTrueStringVariableCompareError(nullptr, "varname1", "varname2");
         c.overlappingStrcmpError(nullptr, nullptr);
@@ -127,7 +128,7 @@ private:
                "- overlapping buffers passed to sprintf as source and destination\n"
                "- incorrect length arguments for 'substr' and 'strncmp'\n"
                "- suspicious condition (runtime comparison of string literals)\n"
-               "- suspicious condition (string literals as boolean)\n"
+               "- suspicious condition (string/char literals as boolean)\n"
                "- suspicious comparison of a string literal with a char* variable\n"
                "- suspicious comparison of '\\0' with a char* variable\n"
                "- overlapping strcmp() expression\n";

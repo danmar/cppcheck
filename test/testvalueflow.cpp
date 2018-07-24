@@ -559,6 +559,56 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(-10, values.back().intvalue);
 
+        // Logical and
+        code = "void f(bool b) {\n" 
+                "   bool x = false && b;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "void f(bool b) {\n" 
+                "   bool x = b && false;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "void f(bool b) {\n" 
+                "   bool x = true && b;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
+
+        code = "void f(bool b) {\n" 
+                "   bool x = b && true;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
+
+        // Logical or
+        code = "void f(bool b) {\n" 
+                "   bool x = true || b;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "void f(bool b) {\n" 
+                "   bool x = b || true;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "void f(bool b) {\n" 
+                "   bool x = false || b;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "void f(bool b) {\n" 
+                "   bool x = b || false;\n"
+                "   bool a = x;\n"
+                "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
         // function call => calculation
         code  = "void f(int x) {\n"
                 "    a = x + 8;\n"

@@ -43,6 +43,18 @@ static std::vector<std::string> getnames(const char *names)
     return ret;
 }
 
+static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList)
+{
+    std::istringstream istr(valid + ',');
+    tokenList.createTokens(istr);
+    for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok,"- %num%")) {
+            tok->str("-" + tok->strAt(1));
+            tok->deleteNext();
+        }
+    }
+}
+
 Library::Library() : mAllocId(0)
 {
 }
@@ -213,9 +225,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char *name = node->Attribute("name");
             if (name == nullptr)
                 return Error(MISSING_ATTRIBUTE, "name");
-            const std::vector<std::string> names(getnames(name));
-            for (unsigned int i = 0U; i < names.size(); ++i) {
-                const Error &err = loadFunction(node, names[i], unknown_elements);
+            for (const std::string &s : getnames(name)) {
+                const Error &err = loadFunction(node, s, unknown_elements);
                 if (err.errorcode != ErrorCode::OK)
                     return err;
             }
@@ -453,9 +464,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char * const sign = node->Attribute("sign");
             if (sign)
                 podType.sign = *sign;
-            const std::vector<std::string> names(getnames(name));
-            for (unsigned int i = 0U; i < names.size(); ++i)
-                mPodTypes[names[i]] = podType;
+            for (const std::string &s : getnames(name))
+                mPodTypes[s] = podType;
         }
 
         else if (nodename == "platformtype") {
@@ -499,15 +509,14 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 }
                 mPlatformTypes[type_name] = type;
             } else {
-                std::set<std::string>::const_iterator it;
-                for (it = platform.begin(); it != platform.end(); ++it) {
-                    const PlatformType * const type_ptr = platform_type(type_name, *it);
+                for (const std::string &p : platform) {
+                    const PlatformType * const type_ptr = platform_type(type_name, p);
                     if (type_ptr) {
                         if (*type_ptr == type)
                             return Error(DUPLICATE_PLATFORM_TYPE, type_name);
                         return Error(PLATFORM_TYPE_REDEFINED, type_name);
                     }
-                    mPlatforms[*it].mPlatformTypes[type_name] = type;
+                    mPlatforms[p].mPlatformTypes[type_name] = type;
                 }
             }
         }
@@ -581,19 +590,30 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     const char *p = argnode->GetText();
                     bool error = false;
                     bool range = false;
+                    bool has_dot = false;
+
+                    if (!p)
+                        return Error(BAD_ATTRIBUTE_VALUE, "\"\"");
+
+                    error = *p == '.';
                     for (; *p; p++) {
                         if (std::isdigit(*p))
                             error |= (*(p+1) == '-');
-                        else if (*p == ':')
-                            error |= range;
-                        else if (*p == '-')
+                        else if (*p == ':') {
+                            error |= range | (*(p+1) == '.');
+                            range = true;
+                            has_dot = false;
+                        } else if (*p == '-')
                             error |= (!std::isdigit(*(p+1)));
-                        else if (*p == ',')
+                        else if (*p == ',') {
                             range = false;
-                        else
+                            error |= *(p+1) == '.';
+                            has_dot = false;
+                        } else if (*p == '.') {
+                            error |= has_dot | (!std::isdigit(*(p+1)));
+                            has_dot = true;
+                        } else
                             error = true;
-
-                        range |= (*p == ':');
                     }
                     if (error)
                         return Error(BAD_ATTRIBUTE_VALUE, argnode->GetText());
@@ -703,20 +723,15 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     return Error(OK);
 }
 
-bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
+bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
+    else if (ac->valid.find('.') != std::string::npos)
+        return isFloatArgValid(ftok, argnr, argvalue);
     TokenList tokenList(nullptr);
-    std::istringstream istr(ac->valid + ',');
-    tokenList.createTokens(istr);
-    for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok,"- %num%")) {
-            tok->str("-" + tok->strAt(1));
-            tok->deleteNext();
-        }
-    }
+    gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && argvalue == MathLib::toLongNumber(tok->str()))
             return true;
@@ -725,6 +740,24 @@ bool Library::isargvalid(const Token *ftok, int argnr, const MathLib::bigint arg
         if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toLongNumber(tok->str()))
             return true;
         if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toLongNumber(tok->strAt(1)))
+            return true;
+    }
+    return false;
+}
+
+bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) const
+{
+    const ArgumentChecks *ac = getarg(ftok, argnr);
+    if (!ac || ac->valid.empty())
+        return true;
+    TokenList tokenList(nullptr);
+    gettokenlistfromvalid(ac->valid, tokenList);
+    for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toDoubleNumber(tok->str()) && argvalue <= MathLib::toDoubleNumber(tok->strAt(2)))
+            return true;
+        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toDoubleNumber(tok->str()))
+            return true;
+        if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
             return true;
     }
     return false;
