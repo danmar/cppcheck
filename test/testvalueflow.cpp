@@ -1583,6 +1583,23 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
 
+        code = "void f(int i) {\n"
+                "    bool x = false;\n"
+                "    if (i == 0) { x = true; }\n"
+                "    else if (x && i == 1) {}\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "void f(int i) {\n"
+                "    bool x = false;\n"
+                "    while(i > 0) {\n"
+                "        i++;\n"
+                "        if (i == 0) { x = true; }\n"
+                "        else if (x && i == 1) {}\n"
+                "    }\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+
         // multivariables
         code = "void f(int a) {\n"
                "    int x = a;\n"
@@ -3137,6 +3154,53 @@ private:
                "}";
         values = tokenValues(code, "x ; }");
         ASSERT_EQUALS(true, values.empty());
+
+        code = "void b(bool d, bool e) {\n"
+               "  int c;\n"
+               "  if (d)\n"
+               "    c = 0;\n"
+               "  if (e)\n"
+               "    goto;\n"
+               "  c++;\n"
+               "}\n";
+        values = tokenValues(code, "c ++ ; }");
+        ASSERT_EQUALS(true, values.empty());
+
+        code = "void b(bool d, bool e) {\n"
+               "  int c;\n"
+               "  if (d)\n"
+               "    c = 0;\n"
+               "  if (e)\n"
+               "    return;\n"
+               "  c++;\n"
+               "}\n";
+        values = tokenValues(code, "c ++ ; }");
+        ASSERT_EQUALS(true, values.empty());
+
+        code = "void b(bool d, bool e) {\n"
+               "  int c;\n"
+               "  if (d)\n"
+               "    c = 0;\n"
+               "  if (e)\n"
+               "    exit();\n"
+               "  c++;\n"
+               "}\n";
+        values = tokenValues(code, "c ++ ; }");
+        ASSERT_EQUALS(true, values.empty());
+
+        code = "void b(bool d, bool e) {\n"
+               "  int c;\n"
+               "  if (d)\n"
+               "    c = 0;\n"
+               " else if (!d)\n"
+               "   c = 0;\n"
+               "  c++;\n"
+               "}\n";
+        values = tokenValues(code, "c ++ ; }");
+        ASSERT_EQUALS(true, values.size() == 2);
+        ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
+        ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
+        ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
     }
 };
 
