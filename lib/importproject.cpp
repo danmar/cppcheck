@@ -172,20 +172,20 @@ ImportProject::Type ImportProject::import(const std::string &filename)
     std::ifstream fin(filename);
     if (!fin.is_open())
         return MISSING;
-    if (endsWith(filename, "compile_commands.json", 22)) {
+    if (endsWith(filename, "compile_commands.json")) {
         importCompileCommands(fin);
         return COMPILE_DB;
-    } else if (endsWith(filename, ".sln", 5)) {
+    } else if (endsWith(filename, ".sln")) {
         std::string path(Path::getPathFromFilename(Path::fromNativeSeparators(filename)));
         if (!path.empty() && !endsWith(path,'/'))
             path += '/';
         importSln(fin,path);
         return VS_SLN;
-    } else if (endsWith(filename, ".vcxproj", 9)) {
+    } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString);
         return VS_VCXPROJ;
-    } else if (endsWith(filename, ".bpr", 5)) {
+    } else if (endsWith(filename, ".bpr")) {
         importBcb6Prj(filename);
         return BORLAND;
     }
