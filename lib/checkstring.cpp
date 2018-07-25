@@ -276,8 +276,8 @@ void CheckString::checkIncorrectStringCompare()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip "assert(str && ..)" and "assert(.. && str)"
-            if ((endsWith(tok->str(), "assert", 6) || endsWith(tok->str(), "ASSERT", 6)) &&
-                Token::Match(tok, "%name% (") &&
+            if (Token::Match(tok, "%name% (") &&
+                (endsWith(tok->str(), "assert") || endsWith(tok->str(), "ASSERT")) &&
                 (Token::Match(tok->tokAt(2), "%str% &&") || Token::Match(tok->next()->link()->tokAt(-2), "&& %str% )")))
                 tok = tok->next()->link();
 
