@@ -728,6 +728,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (!rule.pattern.empty())
                             _settings->rules.push_back(rule);
                     }
+                } else {
+                    printMessage("cppcheck: error: unable to load rule-file: " + std::string(12+argv[i]));
+                    return false;
                 }
             }
 #endif
