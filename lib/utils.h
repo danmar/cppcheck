@@ -31,9 +31,9 @@ inline bool endsWith(const std::string &str, char c)
     return str[str.size()-1U] == c;
 }
 
-inline bool endsWith(const std::string &str, const std::string &end)
+inline bool endsWith(const std::string &str, const char end[], std::size_t endlen)
 {
-    return (str.size() >= end.size()) && (str.compare(str.size()-end.size(), end.size(), end)==0);
+    return (str.size() >= endlen) && (str.compare(str.size()-endlen, endlen, end)==0);
 }
 
 inline static const char *getOrdinalText(int i)
