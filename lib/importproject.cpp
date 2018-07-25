@@ -167,24 +167,29 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
     includePaths.swap(I);
 }
 
-void ImportProject::import(const std::string &filename)
+ImportProject::Type ImportProject::import(const std::string &filename)
 {
     std::ifstream fin(filename);
     if (!fin.is_open())
-        return;
-    if (filename.find("compile_commands.json") != std::string::npos) {
+        return MISSING;
+    if (endsWith(filename, "compile_commands.json")) {
         importCompileCommands(fin);
-    } else if (filename.find(".sln") != std::string::npos) {
+        return COMPILE_DB;
+    } else if (endsWith(filename, ".sln")) {
         std::string path(Path::getPathFromFilename(Path::fromNativeSeparators(filename)));
         if (!path.empty() && !endsWith(path,'/'))
             path += '/';
         importSln(fin,path);
-    } else if (filename.find(".vcxproj") != std::string::npos) {
+        return VS_SLN;
+    } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString);
-    } else if (filename.find(".bpr") != std::string::npos) {
+        return VS_VCXPROJ;
+    } else if (endsWith(filename, ".bpr")) {
         importBcb6Prj(filename);
+        return BORLAND;
     }
+    return UNKNOWN;
 }
 
 void ImportProject::importCompileCommands(std::istream &istr)
