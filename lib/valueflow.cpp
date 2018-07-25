@@ -1545,10 +1545,10 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
 
 static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
 {
-    if(!Token::simpleMatch(tok, "{"))
+    if (!Token::simpleMatch(tok, "{"))
         return false;
     return Token::findmatch(tok, "return|continue|break|throw|goto", tok->link()) ||
-        (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
+           (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
 }
 
 static bool valueFlowForward(Token * const               startToken,
@@ -1867,7 +1867,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
-                       isEscapeScope(end->tokAt(2), tokenlist))) {
+                      isEscapeScope(end->tokAt(2), tokenlist))) {
                     ++number_of_if;
                     tok2 = end;
                 } else {

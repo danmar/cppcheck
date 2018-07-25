@@ -1584,20 +1584,20 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
 
         code = "void f(int i) {\n"
-                "    bool x = false;\n"
-                "    if (i == 0) { x = true; }\n"
-                "    else if (x && i == 1) {}\n"
-                "}\n";
+               "    bool x = false;\n"
+               "    if (i == 0) { x = true; }\n"
+               "    else if (x && i == 1) {}\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
 
         code = "void f(int i) {\n"
-                "    bool x = false;\n"
-                "    while(i > 0) {\n"
-                "        i++;\n"
-                "        if (i == 0) { x = true; }\n"
-                "        else if (x && i == 1) {}\n"
-                "    }\n"
-                "}\n";
+               "    bool x = false;\n"
+               "    while(i > 0) {\n"
+               "        i++;\n"
+               "        if (i == 0) { x = true; }\n"
+               "        else if (x && i == 1) {}\n"
+               "    }\n"
+               "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
 
         // multivariables
