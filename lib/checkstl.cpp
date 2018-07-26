@@ -404,8 +404,10 @@ void CheckStl::mismatchingContainers()
                     if(i->first) {
                         firstArg = argTok;
                     } else if(i->last && firstArg && argTok) {
-                        const Token * iter1 = getIteratorExpression(firstArg, firstArg->nextArgument());
-                        const Token * iter2 = getIteratorExpression(argTok, argTok->nextArgument());
+                        const Token * firstArgNext = firstArg->nextArgument() ? firstArg->nextArgument() : tok->linkAt(1);
+                        const Token * iter1 = getIteratorExpression(firstArg, firstArgNext);
+                        const Token * argTokNext = argTok->nextArgument() ? argTok->nextArgument() : tok->linkAt(1);
+                        const Token * iter2 = getIteratorExpression(argTok, argTokNext);
                         if(iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
                             mismatchingContainerExpressionError(iter1, iter2);
                         }
