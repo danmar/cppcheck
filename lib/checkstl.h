@@ -183,6 +183,7 @@ private:
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
     void iteratorsError(const Token* tok, const std::string& container1, const std::string& container2);
     void mismatchingContainersError(const Token* tok);
+    void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void invalidIteratorError(const Token* tok, const std::string& func, const std::string& iterator_name);
     void invalidPointerError(const Token* tok, const std::string& func, const std::string& pointer_name);
     void stlBoundariesError(const Token* tok);
@@ -210,6 +211,7 @@ private:
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
         c.mismatchingContainersError(nullptr);
+        c.mismatchingContainerExpressionError(nullptr, nullptr);
         c.dereferenceErasedError(nullptr, nullptr, "iter", false);
         c.stlOutOfBoundsError(nullptr, "i", "foo", false);
         c.negativeIndexError(nullptr, ValueFlow::Value(-1));
