@@ -351,15 +351,23 @@ static const Variable *getContainer(const Token *argtok)
     return nullptr;
 }
 
-static const Token * getIteratorExpression(const Token * tok, const Token * end)
+static const Token * getIteratorExpression(const Token * tok)
 {
-    for (; tok != end; tok = tok->next()) {
-        if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
-            if (Token::Match(tok->previous(), ". %name% ( )"))
-                return tok->previous()->astOperand1();
-            if (Token::Match(tok, "%name% ( !!)"))
-                return tok->next()->astOperand2();
-        }
+    if (!tok)
+        return nullptr;
+    if (!tok->isName()) {
+        const Token *iter1 = getIteratorExpression(tok->astOperand1());
+        if (iter1)
+            return iter1;
+        const Token *iter2 = getIteratorExpression(tok->astOperand2());
+        if (iter2)
+            return iter2;
+    }
+    else if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
+        if (Token::Match(tok->previous(), ". %name% ( )"))
+            return tok->previous()->astOperand1();
+        if (Token::Match(tok, "%name% ( !!)"))
+            return tok->next()->astOperand2();
     }
     return nullptr;
 }
@@ -373,15 +381,18 @@ void CheckStl::mismatchingContainers()
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const ftok = tok;
-            const Token * const arg1 = tok->tokAt(2);
             const Token * firstArg = nullptr;
 
-            int argnr = 1;
+            const std::vector<const Token *> args = getArguments(ftok);
+            if (args.size() < 2)
+                continue;
+
             std::map<const Variable *, unsigned int> containerNr;
-            for (const Token *argTok = arg1; argTok; argTok = argTok->nextArgument()) {
-                const Library::ArgumentChecks::IteratorInfo *i = mSettings->library.getArgIteratorInfo(ftok,argnr++);
+            for (unsigned int argnr = 1; argnr <= args.size(); ++argnr) {
+                const Library::ArgumentChecks::IteratorInfo *i = mSettings->library.getArgIteratorInfo(ftok, argnr);
                 if (!i)
                     continue;
+                const Token * const argTok = args[argnr - 1];
                 const Variable *c = getContainer(argTok);
                 if (c) {
                     std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
@@ -400,10 +411,8 @@ void CheckStl::mismatchingContainers()
                     if (i->first) {
                         firstArg = argTok;
                     } else if (i->last && firstArg && argTok) {
-                        const Token * firstArgNext = firstArg->nextArgument() ? firstArg->nextArgument() : tok->linkAt(1);
-                        const Token * iter1 = getIteratorExpression(firstArg, firstArgNext);
-                        const Token * argTokNext = argTok->nextArgument() ? argTok->nextArgument() : tok->linkAt(1);
-                        const Token * iter2 = getIteratorExpression(argTok, argTokNext);
+                        const Token * iter1 = getIteratorExpression(firstArg);
+                        const Token * iter2 = getIteratorExpression(argTok);
                         if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
                             mismatchingContainerExpressionError(iter1, iter2);
                         }
