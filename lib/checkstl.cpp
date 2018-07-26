@@ -307,8 +307,8 @@ void CheckStl::mismatchingContainersError(const Token *tok)
 
 void CheckStl::mismatchingContainerExpressionError(const Token *tok1, const Token *tok2)
 {
-    const std::string expr1(tok1 ? tok1->expressionString() : std::string());
-    const std::string expr2(tok2 ? tok2->expressionString() : std::string());
+    const std::string expr1(tok1 ? tok1->expressionString() : std::string("v1"));
+    const std::string expr2(tok2 ? tok2->expressionString() : std::string("v2"));
     reportError(tok1, Severity::warning, "mismatchingContainerExpression",
                 "Iterators to containers from different expressions '" +
                 expr1 + "' and '" + expr2 + "' are used together.", CWE664, false);
@@ -334,7 +334,6 @@ static const std::set<std::string> algorithm1x1 = {  // func(begin1, x, end1
 
 static const std::string iteratorBeginFuncPattern = "begin|cbegin|rbegin|crbegin";
 static const std::string iteratorEndFuncPattern = "end|cend|rend|crend";
-static const std::string iteratorFuncPattern = "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (";
 
 static const std::string pattern1x1_1 = "%name% . " + iteratorBeginFuncPattern + " ( ) , ";
 static const std::string pattern1x1_2 = "%name% . " + iteratorEndFuncPattern + " ( ) ,|)";
@@ -355,12 +354,11 @@ static const Variable *getContainer(const Token *argtok)
 static const Token * getIteratorExpression(const Token * tok, const Token * end)
 {
     for (; tok != end; tok = tok->next()) {
-        if (Token::Match(tok, iteratorFuncPattern.c_str())) {
-            if (Token::Match(tok->previous(), ". %name% ( )")) {
+        if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
+            if (Token::Match(tok->previous(), ". %name% ( )"))
                 return tok->previous()->astOperand1();
-            } else if (Token::Match(tok, "%name% ( !!)")) {
+            if (Token::Match(tok, "%name% ( !!)"))
                 return tok->next()->astOperand2();
-            }
         }
     }
     return nullptr;
