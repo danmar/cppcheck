@@ -300,6 +300,14 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
     return nullptr;
 }
 
+static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    return Token::findmatch(tok, "return|continue|break|throw|goto", tok->link()) ||
+           (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
+}
+
 static bool bailoutSelfAssignment(const Token * const tok)
 {
     const Token *parent = tok;
@@ -1035,6 +1043,70 @@ static void valueFlowBitAnd(TokenList *tokenlist)
     }
 }
 
+static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
+{
+    const bool cpp = symboldatabase->isCPP();
+    for (const Scope * scope : symboldatabase->functionScopes) {
+        std::vector<const Token*> conds;
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "if ("))
+                continue;
+            const Token * condTok = tok->next();
+            if (!Token::simpleMatch(condTok->link(), ") {"))
+                continue;
+            const Token * blockTok = condTok->link()->tokAt(1);
+            // Check if the block terminates early
+            if(!isEscapeScope(blockTok, tokenlist))
+                continue;
+            // Check if any variables are modified in scope
+            bool bail = false;
+            for(const Token * tok2=condTok->next();tok2 != condTok->link();tok2 = tok2->next()) {
+                if(const Variable * var = tok2->variable()) {
+                    const Token * endToken = var->scope()->bodyEnd;
+                    if(!var->isLocal() && !var->isConst() && !var->isArgument()) {
+                        bail = true;
+                        break;
+                    }
+                    if(var->isStatic() && !var->isConst()) {
+                        bail = true;
+                        break;
+                    }
+                    if(!var->isConst() && isVariableChanged(blockTok->link(), endToken, tok2->varId(), false, settings, cpp)) {
+                        bail = true;
+                        break;
+                    }
+                }
+            }
+            if(bail)
+                continue;
+            // TODO: Handle multiple conditions
+            if(!Token::Match(condTok->astOperand2(), "%cop%"))
+                continue;
+            conds.push_back(condTok->astOperand2());
+
+        }
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "if ("))
+                continue;
+            Token * condExpr = const_cast<Token*>(tok->next()->astOperand2());
+            for(const Token * cond:conds) {
+                if(cond == condExpr)
+                    continue;
+                if(isOppositeCond(false, cpp, condExpr, cond, settings->library, true)) {
+                    ValueFlow::Value val(1);
+                    val.setKnown();
+                    setTokenValue(condExpr, val, tokenlist->getSettings());
+                } else if(isSameExpression(cpp, false, condExpr, cond, settings->library, true)) {
+                    ValueFlow::Value val(0);
+                    val.setKnown();
+                    setTokenValue(condExpr, val, tokenlist->getSettings());
+                }
+            }
+        }
+    }
+
+}
+
 static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Settings *settings)
 {
     for (const Scope &scope : symboldatabase->scopeList) {
@@ -1541,14 +1613,6 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
         return false;
     }
     return true;
-}
-
-static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
-{
-    if (!Token::simpleMatch(tok, "{"))
-        return false;
-    return Token::findmatch(tok, "return|continue|break|throw|goto", tok->link()) ||
-           (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
 }
 
 static bool valueFlowForward(Token * const               startToken,
@@ -3470,6 +3534,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
     valueFlowOppositeCondition(symboldatabase, settings);
+    valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);
     valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
