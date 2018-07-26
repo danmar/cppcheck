@@ -309,9 +309,9 @@ void CheckStl::mismatchingContainerExpressionError(const Token *tok1, const Toke
 {
     const std::string expr1(tok1 ? tok1->expressionString() : std::string());
     const std::string expr2(tok2 ? tok2->expressionString() : std::string());
-    reportError(tok1, Severity::warning, "mismatchingContainerExpression", 
-        "Iterators to containers from different expressions '" + 
-        expr1 + "' and '" + expr2 + "' are used together.", CWE664, false);
+    reportError(tok1, Severity::warning, "mismatchingContainerExpression",
+                "Iterators to containers from different expressions '" +
+                expr1 + "' and '" + expr2 + "' are used together.", CWE664, false);
 }
 
 static const std::set<std::string> algorithm2 = { // func(begin1, end1
@@ -354,11 +354,11 @@ static const Variable *getContainer(const Token *argtok)
 
 static const Token * getIteratorExpression(const Token * tok, const Token * end)
 {
-    for(;tok != end;tok = tok->next()) {
-        if(Token::Match(tok, iteratorFuncPattern.c_str())) {
-            if(Token::Match(tok->previous(), ". %name% ( )")) {
+    for (; tok != end; tok = tok->next()) {
+        if (Token::Match(tok, iteratorFuncPattern.c_str())) {
+            if (Token::Match(tok->previous(), ". %name% ( )")) {
                 return tok->previous()->astOperand1();
-            } else if(Token::Match(tok, "%name% ( !!)")) {
+            } else if (Token::Match(tok, "%name% ( !!)")) {
                 return tok->next()->astOperand2();
             }
         }
@@ -385,7 +385,7 @@ void CheckStl::mismatchingContainers()
                 if (!i)
                     continue;
                 const Variable *c = getContainer(argTok);
-                if(c) {
+                if (c) {
                     std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
                     if (it == containerNr.end()) {
                         for (it = containerNr.begin(); it != containerNr.end(); ++it) {
@@ -399,14 +399,14 @@ void CheckStl::mismatchingContainers()
                         mismatchingContainersError(argTok);
                     }
                 } else {
-                    if(i->first) {
+                    if (i->first) {
                         firstArg = argTok;
-                    } else if(i->last && firstArg && argTok) {
+                    } else if (i->last && firstArg && argTok) {
                         const Token * firstArgNext = firstArg->nextArgument() ? firstArg->nextArgument() : tok->linkAt(1);
                         const Token * iter1 = getIteratorExpression(firstArg, firstArgNext);
                         const Token * argTokNext = argTok->nextArgument() ? argTok->nextArgument() : tok->linkAt(1);
                         const Token * iter2 = getIteratorExpression(argTok, argTokNext);
-                        if(iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
+                        if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
                             mismatchingContainerExpressionError(iter1, iter2);
                         }
                     }
