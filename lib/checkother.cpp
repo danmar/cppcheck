@@ -1983,7 +1983,7 @@ void CheckOther::checkDuplicateExpression()
                                     continue;
                                 }
                             }
-                            duplicateExpressionError(tok, tok, tok->str());
+                            duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok->str());
                         }
                     }
                 } else if (styleEnabled &&
@@ -1993,7 +1993,7 @@ void CheckOther::checkDuplicateExpression()
                     oppositeExpressionError(tok, tok, tok->str());
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
-                        duplicateExpressionError(tok->astOperand2(), tok->astOperand2(), tok->str());
+                        duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok->str());
                     else if (tok->astOperand2()) {
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) {
@@ -2033,7 +2033,13 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 {
     const std::list<const Token *> toks = { tok2, tok1 };
 
-    reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'.\n"
+    const std::string& expr1 = tok1 ? tok1->expressionString() : "x";
+    const std::string& expr2 = tok2 ? tok2->expressionString() : "x";
+
+    std::string endingPhrase = expr1 == expr2 ? "." : 
+        " because the value of '" + expr1 + "' and '" + expr2 + "' are the same.";
+
+    reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'" + endingPhrase + "\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, false);
