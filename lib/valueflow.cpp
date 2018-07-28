@@ -1086,20 +1086,19 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
 
         }
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::simpleMatch(tok, "if ("))
+            if (!Token::Match(tok, "%cop%"))
                 continue;
-            Token * condExpr = const_cast<Token*>(tok->next()->astOperand2());
             for(const Token * cond:conds) {
-                if(cond == condExpr)
+                if(cond == tok)
                     continue;
-                if(isOppositeCond(false, cpp, condExpr, cond, settings->library, true)) {
+                if(isOppositeCond(false, cpp, tok, cond, settings->library, true)) {
                     ValueFlow::Value val(1);
                     val.setKnown();
-                    setTokenValue(condExpr, val, tokenlist->getSettings());
-                } else if(isSameExpression(cpp, false, condExpr, cond, settings->library, true)) {
+                    setTokenValue(tok, val, tokenlist->getSettings());
+                } else if(isSameExpression(cpp, false, tok, cond, settings->library, true)) {
                     ValueFlow::Value val(0);
                     val.setKnown();
-                    setTokenValue(condExpr, val, tokenlist->getSettings());
+                    setTokenValue(tok, val, tokenlist->getSettings());
                 }
             }
         }

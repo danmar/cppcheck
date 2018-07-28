@@ -103,6 +103,7 @@ private:
         TEST_CASE(valueFlowInlineAssembly);
 
         TEST_CASE(valueFlowUninit);
+        TEST_CASE(valueFlowTerminatingCond);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -3201,6 +3202,38 @@ private:
         ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
         ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
+    }
+
+    void valueFlowTerminatingCond() {
+        const char* code;
+
+        code = "void f(int i, int j) {\n"
+               "    if (i > j) return;\n"
+               "    bool x = i > j;\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "void f(int i, int j) {\n"
+               "    if (i > j) return;\n"
+               "    bool x = i < j;\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 1));
+
+        code = "void f(int i) {\n"
+               "    if (i > 0) return;\n"
+               "    bool x = i > 0;\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "void f(int i) {\n"
+               "    if (i > 0) return;\n"
+               "    bool x = i < 0;\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 1));
     }
 };
 
