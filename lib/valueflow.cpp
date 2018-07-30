@@ -1831,7 +1831,7 @@ static bool valueFlowForward(Token * const               startToken,
                 }
 
                 // Forward known values in the else branch
-                if(Token::Match(end, "} else {")) {
+                if(Token::simpleMatch(end, "} else {")) {
                     std::list<ValueFlow::Value> knownValues;
                     std::copy_if(values.begin(), values.end(), std::back_inserter(knownValues), std::mem_fn(&ValueFlow::Value::isKnown));
                     valueFlowForward(end->tokAt(2),
