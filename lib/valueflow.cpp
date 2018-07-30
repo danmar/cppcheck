@@ -1095,10 +1095,6 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                     ValueFlow::Value val(1);
                     val.setKnown();
                     setTokenValue(tok, val, tokenlist->getSettings());
-                } else if(isSameExpression(cpp, false, tok, cond, settings->library, true)) {
-                    ValueFlow::Value val(0);
-                    val.setKnown();
-                    setTokenValue(tok, val, tokenlist->getSettings());
                 }
             }
         }

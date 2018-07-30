@@ -3212,7 +3212,7 @@ private:
                "    bool x = i > j;\n"
                "    bool b = x;\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 0));
 
         code = "void f(int i, int j) {\n"
                "    if (i > j) return;\n"
@@ -3226,7 +3226,7 @@ private:
                "    bool x = i > 0;\n"
                "    bool b = x;\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 0));
 
         code = "void f(int i) {\n"
                "    if (i > 0) return;\n"
