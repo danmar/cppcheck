@@ -2447,6 +2447,15 @@ private:
 
         check("void f() { if(1) {} }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    bool b = false;\n"
+              "    if (i == 0) b = true;\n"
+              "    else if (!b && i == 1) {}\n"
+              "    if (b)\n"
+              "    {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!b' is always true\n", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
