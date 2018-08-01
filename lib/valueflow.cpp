@@ -1046,8 +1046,9 @@ static void valueFlowBitAnd(TokenList *tokenlist)
 static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
 {
     const bool cpp = symboldatabase->isCPP();
+    typedef std::pair<const Token*, const Scope*> Condition;
     for (const Scope * scope : symboldatabase->functionScopes) {
-        std::vector<const Token*> conds;
+        std::vector<Condition> conds;
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
@@ -1071,7 +1072,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                         bail = true;
                         break;
                     }
-                    if(!var->isConst() && isVariableChanged(blockTok->link(), endToken, tok2->varId(), false, settings, cpp)) {
+                    if(!var->isConst() && var->declEndToken() && isVariableChanged(var->declEndToken()->next(), endToken, tok2->varId(), false, settings, cpp)) {
                         bail = true;
                         break;
                     }
@@ -1080,20 +1081,39 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             if(bail)
                 continue;
             // TODO: Handle multiple conditions
-            if(!Token::Match(condTok->astOperand2(), "%cop%"))
+            if(Token::Match(condTok->astOperand2(), "%oror%|%or%|&|&&"))
                 continue;
-            conds.push_back(condTok->astOperand2());
+            const Scope * condScope = nullptr;
+            for(const Scope * parent = condTok->scope();parent;parent = parent->nestedIn) {
+                if (parent->type == Scope::eIf) {
+                    condScope = parent;
+                    break;
+                }
+            }
+            conds.emplace_back(condTok->astOperand2(), condScope);
 
         }
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%cop%"))
+            if (!Token::Match(tok, "%comp%"))
                 continue;
-            for(const Token * cond:conds) {
-                if(cond == tok)
+            for(Condition cond:conds) {
+                if(cond.first == tok)
                     continue;
-                if(isOppositeCond(false, cpp, tok, cond, settings->library, true)) {
+                if(cond.second) {
+                    bool bail = true;
+                    for(const Scope * parent = tok->scope()->nestedIn;parent;parent = parent->nestedIn) {
+                        if(parent == cond.second) {
+                            bail = false;
+                            break;
+                        }
+                    }
+                    if(bail)
+                        continue;
+                }
+                if(isOppositeCond(!Token::Match(tok, "<|>") || !Token::Match(cond.first, "<|>"), cpp, tok, cond.first, settings->library, true)) {
                     ValueFlow::Value val(1);
                     val.setKnown();
+                    val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
                     setTokenValue(tok, val, tokenlist->getSettings());
                 }
             }
