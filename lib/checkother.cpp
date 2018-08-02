@@ -1965,10 +1965,11 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             }
+            ErrorPath errorPath;
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
-                if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
+                if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, &errorPath)) {
                     if (isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                         const bool assignment = tok->str() == "=";
                         if (assignment && warningEnabled)
@@ -1983,7 +1984,7 @@ void CheckOther::checkDuplicateExpression()
                                     continue;
                                 }
                             }
-                            duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok->str());
+                            duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok->str(), errorPath);
                         }
                     }
                 } else if (styleEnabled &&
@@ -1992,17 +1993,17 @@ void CheckOther::checkDuplicateExpression()
                            isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                     oppositeExpressionError(tok, tok, tok->str());
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
-                        duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok->str());
+                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
+                        duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok->str(), errorPath);
                     else if (tok->astOperand2()) {
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) {
-                            if (isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand1(), tok->astOperand2(), mSettings->library, true) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand1()))
+                            if (isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand1(), tok->astOperand2(), mSettings->library, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand1()))
                                 // TODO: warn if variables are unchanged. See #5683
                                 // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
-                                ;//duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str());
-                            else if (styleEnabled && isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand2(), tok->astOperand2(), mSettings->library, true) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand2()))
-                                duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str());
+                                ;//duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok->str(), errorPath);
+                            else if (styleEnabled && isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand2(), tok->astOperand2(), mSettings->library, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand2()))
+                                duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok->str(), errorPath);
                             if (!isConstExpression(ast1->astOperand2(), mSettings->library, true))
                                 break;
                             ast1 = ast1->astOperand1();
@@ -2029,9 +2030,10 @@ void CheckOther::oppositeExpressionError(const Token *tok1, const Token *tok2, c
                 "determine if it is correct.", CWE398, false);
 }
 
-void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op)
+void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op, ErrorPath errors)
 {
-    const std::list<const Token *> toks = { tok2, tok1 };
+    errors.emplace_back(tok1, "");
+    errors.emplace_back(tok2, "");
 
     const std::string& expr1 = tok1 ? tok1->expressionString() : "x";
     const std::string& expr2 = tok2 ? tok2->expressionString() : "x";
@@ -2039,7 +2041,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     std::string endingPhrase = expr1 == expr2 ? "." : 
         " because the value of '" + expr1 + "' and '" + expr2 + "' are the same.";
 
-    reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'" + endingPhrase + "\n"
+    reportError(errors, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'" + endingPhrase + "\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, false);

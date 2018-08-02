@@ -3911,57 +3911,116 @@ private:
     }
 
     void duplicateExpression7() {
-        check("void f() { const int i = sizeof(int);  if ( i != sizeof (int)){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'i' and 'sizeof(int)' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    const int i = sizeof(int);\n"
+              "    if ( i != sizeof (int)){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'i' and 'sizeof(int)' are the same.\n", errout.str());
 
-        check("void f() { const int i = sizeof(int);  if ( sizeof (int) != i){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'sizeof(int)' and 'i' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    const int i = sizeof(int);\n"
+              "    if ( sizeof (int) != i){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'sizeof(int)' and 'i' are the same.\n", errout.str());
 
         check("void f(int a = 1) { if ( a != 1){}}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() { int a = 1; if ( a != 1){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
 
-        check("void f() { int a = 1; int b = 1; if ( a != b){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    int b = 1;\n"
+              "    if ( a != b){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
 
-        check("void f() { int a = 1; int b = a; if ( a != b){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    int b = a;\n"
+              "    if ( a != b){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
 
         check("void use(int);\n" 
-              "void f() { int a = 1; int b = 1; use(b); if ( a != 1){}}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+              "void f() {\n"
+              "    int a = 1;\n"
+              "    int b = 1;\n"
+              "    use(b);\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
 
         check("void use(int);\n" 
-              "void f() { int a = 1; use(a); a = 2; if ( a != 1){}}\n");
+              "void f() {\n"
+              "    int a = 1;\n"
+              "    use(a);\n"
+              "    a = 2;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void use(int);\n" 
-              "void f() { int a = 2; use(a); a = 1; if ( a != 1){}}\n");
+              "void f() {\n"
+              "    int a = 2;\n"
+              "    use(a);\n"
+              "    a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("const int a = 1; void f() { if ( a != 1){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        check("const int a = 1;\n"
+              "    void f() {\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
 
-        check("int a = 1; void f() { if ( a != 1){}}\n");
+        check("int a = 1;\n"
+              "    void f() {\n"
+              "    if ( a != 1){} \n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() { static const int a = 1; if ( a != 1){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    static const int a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
 
-        check("void f() { static int a = 1; if ( a != 1){}}\n");
+        check("void f() {\n"
+              "    static int a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() { int a = 1; if ( a != 1){ a++; }}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    if ( a != 1){\n"
+              "        a++;\n"
+              "    }}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
 
-        check("void f(int b) { int a = 1; while (b) { if ( a != 1){} a++; } } \n");
+        check("void f(int b) {\n"
+              "    int a = 1;\n"
+              "    while (b) {\n"
+              "        if ( a != 1){}\n"
+              "        a++;\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression8() {
-        check("void f() { int a = 1; int b = a; a = 2; if ( b != a){}}\n");
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    int b = a;\n"
+              "    a = 2;\n"
+              "    if ( b != a){}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int * a, int i) { int b = a[i]; a[i] = 2; if ( b != a[i]){}}\n");
@@ -4010,13 +4069,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() { const int a = {}; if(a == 1) {} }\n");
+        check("void f() {\n"
+              "    const int a = {};\n"
+              "    if(a == 1) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {
-        check("void f() { int a = 1; while ( a != 1){}}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    while ( a != 1){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
 
         check("void f() { int a = 1; while ( a != 1){ a++; }}\n");
         ASSERT_EQUALS("", errout.str());
@@ -4027,8 +4092,14 @@ private:
         check("void f(int b) { int a = 1; while (b) { if ( a != 1){} b++; } a++; } \n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int b) { while (b) { int a = 1; if ( a != 1){} b++; } } \n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());        
+        check("void f(int b) {\n"
+              "    while (b) {\n"
+              "        int a = 1;\n"
+              "        if ( a != 1){}\n"
+              "        b++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());        
     }
 
     void duplicateExpressionTernary() { // #6391
