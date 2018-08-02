@@ -55,6 +55,7 @@ private:
         TEST_CASE(iterator13);
         TEST_CASE(iterator14); // #8191
         TEST_CASE(iteratorExpression);
+        TEST_CASE(iteratorSameExpression);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_break);  // #3644 - handle "break"
@@ -593,6 +594,41 @@ private:
               "    (void)std::find(begin(f()) + 1, end(f()) - 1, 0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void iteratorSameExpression() {
+        check("void f(std::vector<int> v) {\n"
+              "    std::for_each(v.begin(), v.begin(), [](int){});\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same iterators expression are used for algorithm.\n", errout.str());
+
+        check("std::vector<int>& g();\n"
+              "void f() {\n"
+              "    std::for_each(g().begin(), g().begin(), [](int){});\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Same iterators expression are used for algorithm.\n", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    std::for_each(v.end(), v.end(), [](int){});\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same iterators expression are used for algorithm.\n", errout.str());
+
+        check("std::vector<int>& g();\n"
+              "void f() {\n"
+              "    std::for_each(g().end(), g().end(), [](int){});\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Same iterators expression are used for algorithm.\n", errout.str());
+
+        check("std::vector<int>::iterator g();\n"
+              "void f(std::vector<int> v) {\n"
+              "    std::for_each(g(), g(), [](int){});\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Same iterators expression are used for algorithm.\n", errout.str());
+
+        check("void f(std::vector<int>::iterator it) {\n"
+              "    std::for_each(it, it, [](int){});\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same iterators expression are used for algorithm.\n", errout.str());
     }
 
     // Dereferencing invalid pointer
