@@ -251,6 +251,7 @@ private:
                "- out of bounds errors\n"
                "- misuse of iterators when iterating through a container\n"
                "- mismatching containers in calls\n"
+               "- same iterators in calls\n"
                "- dereferencing an erased iterator\n"
                "- for vectors: using iterator/pointer after push_back has been used\n"
                "- optimisation: use empty() instead of size() to guarantee fast code\n"
