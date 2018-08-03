@@ -106,7 +106,7 @@ private:
         TEST_CASE(valueFlowUninit);
     }
 
-    bool testValueOfXKnown(const char code[], unsigned int linenr) {
+    bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -115,8 +115,8 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isKnown())
+                for(const ValueFlow::Value& val:tok->values()) {
+                    if(val.isKnown() && val.intvalue == value)
                         return true;
                 }
             }
@@ -2161,8 +2161,7 @@ private:
                "  if (b) x = 1;\n"
                "  else b = x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
         code = "void f(int i) {\n"
                "    int x = 0;\n"
@@ -2171,8 +2170,8 @@ private:
                "    else if (!x && i == 1) \n"
                "        int b = x;\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
     }
 
     void valueFlowForwardFunction() {
