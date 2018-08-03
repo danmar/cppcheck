@@ -114,7 +114,6 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
                 for(const ValueFlow::Value& val:tok->values()) {
                     if(val.isKnown() && val.intvalue == value)
                         return true;
