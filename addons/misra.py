@@ -1706,138 +1706,141 @@ def generateTable():
     sys.exit(1)
 
 
-def parseDump(dumpfile):
+def parseDumps(dumpfiles):
 
-    data = cppcheckdata.parsedump(dumpfile)
+    number_of_violations = 0
 
-    global suppressions
-    suppressions = data.suppressions
+    for dumpfile in dumpfiles:
 
-    typeBits['CHAR'] = data.platform.char_bit
-    typeBits['SHORT'] = data.platform.short_bit
-    typeBits['INT'] = data.platform.int_bit
-    typeBits['LONG'] = data.platform.long_bit
-    typeBits['LONG_LONG'] = data.platform.long_long_bit
-    typeBits['POINTER'] = data.platform.pointer_bit
+        if not dumpfile.endswith('.dump'):
+            continue
 
-    if VERIFY:
-        for tok in data.rawTokens:
-            if tok.str.startswith('//') and 'TODO' not in tok.str:
-                compiled = re.compile(r'[0-9]+\.[0-9]+')
-                for word in tok.str[2:].split(' '):
-                    if compiled.match(word):
-                        VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
-    else:
-        printStatus('Checking ' + dumpfile + '...')
+        data = cppcheckdata.parsedump(dumpfile)
 
-    cfgNumber = 0
+        global suppressions
+        suppressions = data.suppressions
 
-    for cfg in data.configurations:
-        cfgNumber = cfgNumber + 1
-        if len(data.configurations) > 1:
-            printStatus('Checking ' + dumpfile + ', config "' + cfg.name + '"...')
+        typeBits['CHAR'] = data.platform.char_bit
+        typeBits['SHORT'] = data.platform.short_bit
+        typeBits['INT'] = data.platform.int_bit
+        typeBits['LONG'] = data.platform.long_bit
+        typeBits['LONG_LONG'] = data.platform.long_long_bit
+        typeBits['POINTER'] = data.platform.pointer_bit
 
-        if cfgNumber == 1:
-            misra_3_1(data.rawTokens)
-            misra_4_1(data.rawTokens)
-        misra_5_1(cfg)
-        misra_5_2(cfg)
-        misra_5_3(cfg)
-        misra_5_4(cfg)
-        misra_5_5(cfg)
-        # 6.1 require updates in Cppcheck (type info for bitfields are lost)
-        # 6.2 require updates in Cppcheck (type info for bitfields are lost)
-        if cfgNumber == 1:
-            misra_7_1(data.rawTokens)
-            misra_7_3(data.rawTokens)
-        misra_8_11(cfg)
-        misra_8_12(cfg)
-        if cfgNumber == 1:
-            misra_8_14(data.rawTokens)
-            misra_9_5(data.rawTokens)
-        misra_10_1(cfg)
-        misra_10_4(cfg)
-        misra_10_6(cfg)
-        misra_10_8(cfg)
-        misra_11_3(cfg)
-        misra_11_4(cfg)
-        misra_11_5(cfg)
-        misra_11_6(cfg)
-        misra_11_7(cfg)
-        misra_11_8(cfg)
-        misra_11_9(cfg)
-        if cfgNumber == 1:
-            misra_12_1_sizeof(data.rawTokens)
-        misra_12_1(cfg)
-        misra_12_2(cfg)
-        misra_12_3(cfg)
-        misra_12_4(cfg)
-        misra_13_1(cfg)
-        misra_13_3(cfg)
-        misra_13_4(cfg)
-        misra_13_5(cfg)
-        misra_13_6(cfg)
-        misra_14_1(cfg)
-        misra_14_2(cfg)
-        misra_14_4(cfg)
-        misra_15_1(cfg)
-        misra_15_2(cfg)
-        misra_15_3(cfg)
-        misra_15_5(cfg)
-        if cfgNumber == 1:
-            misra_15_6(data.rawTokens)
-        misra_15_7(cfg)
-        misra_16_2(cfg)
-        if cfgNumber == 1:
-            misra_16_3(data.rawTokens)
-        misra_16_4(cfg)
-        misra_16_5(cfg)
-        misra_16_6(cfg)
-        misra_16_7(cfg)
-        misra_17_1(cfg)
-        if cfgNumber == 1:
-            misra_17_6(data.rawTokens)
-        misra_17_8(cfg)
-        misra_18_5(cfg)
-        misra_18_8(cfg)
-        misra_19_2(cfg)
-        misra_20_1(cfg)
-        misra_20_2(cfg)
-        if cfgNumber == 1:
-            misra_20_3(data.rawTokens)
-        misra_20_4(cfg)
-        misra_20_5(cfg)
-        misra_20_13(cfg)
-        misra_20_14(cfg)
-        misra_21_3(cfg)
-        misra_21_4(cfg)
-        misra_21_5(cfg)
-        misra_21_6(cfg)
-        misra_21_7(cfg)
-        misra_21_8(cfg)
-        misra_21_9(cfg)
-        misra_21_10(cfg)
-        misra_21_11(cfg)
-        # 22.4 is already covered by Cppcheck writeReadOnlyFile
+        if VERIFY:
+            for tok in data.rawTokens:
+                if tok.str.startswith('//') and 'TODO' not in tok.str:
+                    compiled = re.compile(r'[0-9]+\.[0-9]+')
+                    for word in tok.str[2:].split(' '):
+                        if compiled.match(word):
+                            VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+        else:
+            printStatus('Checking ' + dumpfile + '...')
 
-    exitCode = 0
-    if VERIFY:
-        for expected in VERIFY_EXPECTED:
-            if expected not in VERIFY_ACTUAL:
-                print('Expected but not seen: ' + expected)
-                exitCode = 1
-        for actual in VERIFY_ACTUAL:
-            if actual not in VERIFY_EXPECTED:
-                print('Not expected: ' + actual)
-                exitCode = 1
-    else:
-        if len(VIOLATIONS) > 0:
-            if SHOW_SUMMARY:
-                print("\nRule violations found: %d\n" % (len(VIOLATIONS)))
-            exitCode = 1
+        cfgNumber = 0
 
-    sys.exit(exitCode)
+        for cfg in data.configurations:
+            cfgNumber = cfgNumber + 1
+            if len(data.configurations) > 1:
+                printStatus('Checking ' + dumpfile + ', config "' + cfg.name + '"...')
 
+            if cfgNumber == 1:
+                misra_3_1(data.rawTokens)
+                misra_4_1(data.rawTokens)
+            misra_5_1(cfg)
+            misra_5_2(cfg)
+            misra_5_3(cfg)
+            misra_5_4(cfg)
+            misra_5_5(cfg)
+            # 6.1 require updates in Cppcheck (type info for bitfields are lost)
+            # 6.2 require updates in Cppcheck (type info for bitfields are lost)
+            if cfgNumber == 1:
+                misra_7_1(data.rawTokens)
+                misra_7_3(data.rawTokens)
+            misra_8_11(cfg)
+            misra_8_12(cfg)
+            if cfgNumber == 1:
+                misra_8_14(data.rawTokens)
+                misra_9_5(data.rawTokens)
+            misra_10_1(cfg)
+            misra_10_4(cfg)
+            misra_10_6(cfg)
+            misra_10_8(cfg)
+            misra_11_3(cfg)
+            misra_11_4(cfg)
+            misra_11_5(cfg)
+            misra_11_6(cfg)
+            misra_11_7(cfg)
+            misra_11_8(cfg)
+            misra_11_9(cfg)
+            if cfgNumber == 1:
+                misra_12_1_sizeof(data.rawTokens)
+            misra_12_1(cfg)
+            misra_12_2(cfg)
+            misra_12_3(cfg)
+            misra_12_4(cfg)
+            misra_13_1(cfg)
+            misra_13_3(cfg)
+            misra_13_4(cfg)
+            misra_13_5(cfg)
+            misra_13_6(cfg)
+            misra_14_1(cfg)
+            misra_14_2(cfg)
+            misra_14_4(cfg)
+            misra_15_1(cfg)
+            misra_15_2(cfg)
+            misra_15_3(cfg)
+            misra_15_5(cfg)
+            if cfgNumber == 1:
+                misra_15_6(data.rawTokens)
+            misra_15_7(cfg)
+            misra_16_2(cfg)
+            if cfgNumber == 1:
+                misra_16_3(data.rawTokens)
+            misra_16_4(cfg)
+            misra_16_5(cfg)
+            misra_16_6(cfg)
+            misra_16_7(cfg)
+            misra_17_1(cfg)
+            if cfgNumber == 1:
+                misra_17_6(data.rawTokens)
+            misra_17_8(cfg)
+            misra_18_5(cfg)
+            misra_18_8(cfg)
+            misra_19_2(cfg)
+            misra_20_1(cfg)
+            misra_20_2(cfg)
+            if cfgNumber == 1:
+                misra_20_3(data.rawTokens)
+            misra_20_4(cfg)
+            misra_20_5(cfg)
+            misra_20_13(cfg)
+            misra_20_14(cfg)
+            misra_21_3(cfg)
+            misra_21_4(cfg)
+            misra_21_5(cfg)
+            misra_21_6(cfg)
+            misra_21_7(cfg)
+            misra_21_8(cfg)
+            misra_21_9(cfg)
+            misra_21_10(cfg)
+            misra_21_11(cfg)
+            # 22.4 is already covered by Cppcheck writeReadOnlyFile
+
+        if VERIFY:
+            for expected in VERIFY_EXPECTED:
+                if expected not in VERIFY_ACTUAL:
+                    print('Expected but not seen: ' + expected)
+                    number_of_violations += 1
+            for actual in VERIFY_ACTUAL:
+                if actual not in VERIFY_EXPECTED:
+                    print('Not expected: ' + actual)
+                    number_of_violations += 1
+
+    if not VERIFY:
+        number_of_violations = len(VIOLATIONS)
+
+    return number_of_violations
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 
@@ -1879,8 +1882,10 @@ parser.add_argument("--quiet", help="Only print something when there is an error
 parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
 parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
-parser.add_argument("file", help="Path of dump file from cppcheck")
+parser.add_argument("files", nargs='+', help="Path of dump file(s) from cppcheck")
 args = parser.parse_args()
+
+number_of_violations = 0
 
 if args.generate_table:
     generateTable()
@@ -1899,5 +1904,15 @@ else:
         QUIET = True
     if args.no_summary:
         SHOW_SUMMARY = False
-    if args.file:
-        parseDump(args.file)
+    if args.files:
+        number_of_violations = parseDumps(args.files)
+
+    if not VERIFY:
+        if SHOW_SUMMARY:
+            print("\nRule violations found: %d\n" % (number_of_violations))
+
+    exitCode = 0
+    if number_of_violations > 0:
+        exitCode = 1
+
+    sys.exit(exitCode)
