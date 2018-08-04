@@ -39,7 +39,7 @@ matrix:
 before_install:
 # install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common
+ - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
@@ -74,8 +74,8 @@ script:
   - ${CPPCHECK} --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test |& tee --append /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # check naming conventions
-  - ${CPPCHECK} --dump -q gui lib
-  - python addons/naming.py --private-member-variable='m[A-Z].*' gui/*.cpp.dump lib/*.cpp.dump
+  - ${CPPCHECK} -i gui/test -j 2 --dump -q gui lib
+  - find lib gui -maxdepth 1 -name "*.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
 # run extra tests
   - tools/generate_and_run_more_tests.sh
 # Validate XML

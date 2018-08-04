@@ -135,17 +135,17 @@ void CheckBool::checkComparisonOfBoolWithInt()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->isComparisonOp() || !tok->isBinaryOp())
+                continue;
             const Token* const left = tok->astOperand1();
             const Token* const right = tok->astOperand2();
-            if (left && right && tok->isComparisonOp()) {
-                if (left->isBoolean() && right->varId()) { // Comparing boolean constant with variable
-                    if (tok->str() != "==" && tok->str() != "!=") {
-                        comparisonOfBoolWithInvalidComparator(right, left->str());
-                    }
-                } else if (left->varId() && right->isBoolean()) { // Comparing variable with boolean constant
-                    if (tok->str() != "==" && tok->str() != "!=") {
-                        comparisonOfBoolWithInvalidComparator(right, left->str());
-                    }
+            if (left->isBoolean() && right->varId()) { // Comparing boolean constant with variable
+                if (tok->str() != "==" && tok->str() != "!=") {
+                    comparisonOfBoolWithInvalidComparator(right, left->str());
+                }
+            } else if (left->varId() && right->isBoolean()) { // Comparing variable with boolean constant
+                if (tok->str() != "==" && tok->str() != "!=") {
+                    comparisonOfBoolWithInvalidComparator(right, left->str());
                 }
             }
         }
@@ -409,8 +409,7 @@ void CheckBool::pointerArithBoolCond(const Token *tok)
     if (tok->str() != "+" && tok->str() != "-")
         return;
 
-    if (tok->astOperand1() &&
-        tok->astOperand2() &&
+    if (tok->isBinaryOp() &&
         tok->astOperand1()->isName() &&
         tok->astOperand1()->variable() &&
         tok->astOperand1()->variable()->isPointer() &&

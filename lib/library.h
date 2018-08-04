@@ -300,7 +300,8 @@ public:
         return arg && arg->strz;
     }
 
-    bool isargvalid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const;
+    bool isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const;
+    bool isFloatArgValid(const Token *ftok, int argnr, double argvalue) const;
 
     const std::string& validarg(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);

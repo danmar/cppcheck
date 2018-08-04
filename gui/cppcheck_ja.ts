@@ -56,7 +56,7 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation>ここにエラー指摘のあるファイルを開くことのできるアプリケーションを追加できます。そのアプリケーション(Executable:)は実行可能なのもので、適切なコマンドラインパラメータを処理できるものにしてください。 
+        <translation>ここにエラー指摘のあるファイルを開くアプリケーションを追加できます。そのアプリケーションの名前、実行ファイル名、コマンドラインパラメータを指定してください。
 
 パラメータ中の以下の文字列を使用してパラメータ(Parameters:)に設定します。これらの文字列はアプリケーションが実行されたときに、適切な値に変換されます。:
 (file) - エラー指摘のあるファイル
@@ -64,25 +64,24 @@ Parameters: -l(line) (file)</source>
 (message) - エラー指摘メッセージ
 (severity) - エラー指摘重大度
 
-Kate エディタでファイルを開き、適切な行に移動する例:
+Kate テキストエディタでファイルを開き、該当する行に移動する例:
 Executable: kate
-Parameters: -l(line) (file)
-</translation>
+Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <location filename="application.ui" line="76"/>
         <source>&amp;Name:</source>
-        <translation>名称(&amp;N)</translation>
+        <translation>名称(&amp;N):</translation>
     </message>
     <message>
         <location filename="application.ui" line="86"/>
         <source>&amp;Executable:</source>
-        <translation>実行可能(&amp;E)</translation>
+        <translation>実行バイナリ(&amp;E):</translation>
     </message>
     <message>
         <location filename="application.ui" line="96"/>
         <source>&amp;Parameters:</source>
-        <translation>パラメータ：(&amp;P)</translation>
+        <translation>パラメータ(&amp;P):</translation>
     </message>
     <message>
         <location filename="application.ui" line="138"/>
@@ -107,7 +106,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="applicationdialog.cpp" line="78"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
-        <translation>アプリケーションの名称とパスと(オプションの)引数を指定してください</translation>
+        <translation>アプリケーションの名称とパスと(オプションの)引数を指定してください!</translation>
     </message>
 </context>
 <context>
@@ -187,7 +186,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="librarydialog.ui" line="131"/>
         <source>Filter:</source>
-        <translation>フィルタ</translation>
+        <translation>フィルタ:</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="164"/>
@@ -217,12 +216,12 @@ Parameters: -l(line) (file)
     <message>
         <location filename="librarydialog.ui" line="232"/>
         <source>return value must be used</source>
-        <translation>返り値は使用されなければなりません</translation>
+        <translation>返り値は使用されなければならない</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="239"/>
         <source>ignore function in leaks checking</source>
-        <translation>リークチェック中に関数を無視しました</translation>
+        <translation>リークの解析中に無視する関数</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="246"/>
@@ -488,12 +487,12 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="182"/>
         <source>Standard</source>
-        <translation>標準(&amp;S)</translation>
+        <translation>言語規格</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="200"/>
         <source>Categories</source>
-        <translation>カテゴリ(&amp;C)</translation>
+        <translation>カテゴリ</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="230"/>
@@ -633,7 +632,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="567"/>
         <source>Show information messages</source>
-        <translation>情報メッセージを表示します。</translation>
+        <translation>情報メッセージを表示</translation>
     </message>
     <message>
         <source>Portability</source>
@@ -642,7 +641,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="582"/>
         <source>Show portability warnings</source>
-        <translation>潜在的な移植可能性の問題を示しています。</translation>
+        <translation>移植可能性の問題を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="597"/>
@@ -657,7 +656,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="612"/>
         <source>Show Clang results</source>
-        <translation>Clangの結果を表示する</translation>
+        <translation>Clangの結果を表示</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="620"/>
@@ -725,7 +724,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="741"/>
         <source>&amp;Print...</source>
-        <translation>印刷(&amp;P)</translation>
+        <translation>印刷(&amp;P)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="744"/>
@@ -735,7 +734,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="749"/>
         <source>Print Pre&amp;view...</source>
-        <translation>プレビュー(&amp;v)</translation>
+        <translation>印刷プレビュー(&amp;v)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="752"/>
@@ -749,7 +748,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="760"/>
         <source>Open library editor</source>
-        <translation>ライブラリ編集</translation>
+        <translation>ライブラリエディタを開く</translation>
     </message>
     <message>
         <source>Auto-detect language</source>
@@ -803,8 +802,7 @@ Parameters: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="131"/>
         <source>A&amp;nalyze</source>
-        <translation>A&amp;チェック
-A&amp;チェック</translation>
+        <translation>解析(&amp;n)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="219"/>
@@ -815,12 +813,12 @@ A&amp;チェック</translation>
         <location filename="mainwindow.ui" line="285"/>
         <source>&amp;Reanalyze modified files</source>
         <oldsource>&amp;Recheck modified files</oldsource>
-        <translation>変更ありファイルを再チェック(&amp;R)</translation>
+        <translation>変更ありファイルを再解析(&amp;R)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="297"/>
         <source>Reanal&amp;yze all files</source>
-        <translation>全ファイル再チェック(&amp;y)</translation>
+        <translation>全ファイル再解析(&amp;y)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="362"/>
@@ -830,7 +828,7 @@ A&amp;チェック</translation>
     <message>
         <location filename="mainwindow.ui" line="380"/>
         <source>E&amp;rrors</source>
-        <translation>エラー(&amp;E)</translation>
+        <translation>エラー(&amp;r)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="396"/>
@@ -840,7 +838,7 @@ A&amp;チェック</translation>
     <message>
         <location filename="mainwindow.ui" line="401"/>
         <source>Collapse &amp;all</source>
-        <translation>ツリーを折り畳む(&amp;A)</translation>
+        <translation>ツリーを折り畳む(&amp;a)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="406"/>
@@ -850,7 +848,7 @@ A&amp;チェック</translation>
     <message>
         <location filename="mainwindow.ui" line="414"/>
         <source>&amp;Standard</source>
-        <translation>標準(&amp;S)</translation>
+        <translation>言語規格(&amp;S)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="417"/>
@@ -1000,12 +998,12 @@ A&amp;チェック</translation>
     <message>
         <location filename="mainwindow.ui" line="803"/>
         <source>Reanalyze and check library</source>
-        <translation type="unfinished"></translation>
+        <translation>ライブラリを再解析する</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="811"/>
         <source>Check configuration (defines, includes)</source>
-        <translation type="unfinished"></translation>
+        <translation>解析の設定(define、インクルード)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="321"/>
@@ -1014,11 +1012,7 @@ A&amp;チェック</translation>
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
         <translation>エディタアプリの設定の読み込みで問題が発生しました。
 
-2つの理由が考えられます。
-1. 古いバージョンのCppCheckの設定には互換性のないものがあります。
-2. 指定のエディタアプリケーションが正しく起動していない可能性があります。
-エディタアプリの設定を確認し修正してください。
-	</translation>
+Cppcheckの古いバージョンの設定には互換性がありません。エディタアプリケーションの設定を確認して修正してください、そうしないと正しく起動できないかもしれません。</translation>
     </message>
     <message>
         <source>No suitable files found to check!</source>
@@ -1027,7 +1021,7 @@ This is probably because the settings were changed between the Cppcheck versions
     <message>
         <location filename="mainwindow.cpp" line="564"/>
         <source>You must close the project file before selecting new files or directories!</source>
-        <translation>新しいファイル／ディレクトリを解析するには現在のプロジェクトを閉じてください</translation>
+        <translation>新しいファイル／ディレクトリを解析するには現在のプロジェクトを閉じてください!</translation>
     </message>
     <message>
         <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
@@ -1077,7 +1071,8 @@ Do you want to proceed checking without using any of these project files?</sourc
         <location filename="mainwindow.cpp" line="779"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
-        <translation>このライブラリ &apos;%1&apos; には不明要素が含まれています。 </translation>
+        <translation>このライブラリ &apos;%1&apos; には次の不明な要素が含まれています。
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="788"/>
@@ -1128,7 +1123,8 @@ Do you want to proceed checking without using any of these project files?</sourc
         <location filename="mainwindow.cpp" line="817"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
-        <translation>選択したライブラリの読み込みに失敗しました &apos;%1&apos;</translation>
+        <translation>選択したライブラリの読み込みに失敗しました &apos;%1&apos;
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="929"/>
@@ -1240,22 +1236,22 @@ Do you want to stop the checking and exit Cppcheck?</source>
     <message>
         <location filename="mainwindow.cpp" line="578"/>
         <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
+        <translation>C/C++のソースコード</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="579"/>
         <source>Compile database</source>
-        <translation type="unfinished"></translation>
+        <translation>コンパイルデータベース</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="580"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="581"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
+        <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="584"/>
@@ -1371,7 +1367,7 @@ Options:
     -l &lt;file&gt;               指定の、結果XMLファイルを開く
     -d &lt;directory&gt;          フォルダを指定してチェックする。これは -l オプションで 指定した、結果XMLファイルを生成する。
     -v, --version           バージョンを表示する。
-    --data-dir=&lt;directory&gt;  GUI のデータファイル(翻訳やcfg)のあるディレクトリを指定する。</translation>
+    --data-dir=&lt;directory&gt;  GUI のデータファイル(翻訳やcfg)のあるディレクトリを指定する。このオプションを指定した場合、GUIで起動しません。</translation>
     </message>
     <message>
         <location filename="main.cpp" line="120"/>
@@ -1384,27 +1380,27 @@ Options:
     <message>
         <location filename="newsuppressiondialog.ui" line="17"/>
         <source>New suppression</source>
-        <translation type="unfinished"></translation>
+        <translation>新しい指摘の抑制</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="25"/>
         <source>Error ID</source>
-        <translation type="unfinished"></translation>
+        <translation>エラーID</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="32"/>
         <source>File name</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイル名</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="42"/>
         <source>Line number</source>
-        <translation type="unfinished"></translation>
+        <translation>行数</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="52"/>
         <source>Symbol name</source>
-        <translation type="unfinished"></translation>
+        <translation>シンボル名</translation>
     </message>
 </context>
 <context>
@@ -1479,13 +1475,13 @@ Options:
         <location filename="projectfiledialog.ui" line="30"/>
         <source>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</source>
         <oldsource>Import Project (Visual studio / compile database)</oldsource>
-        <translation type="unfinished">プロジェクトのインポート(Visual studio / compile database)</translation>
+        <translation>プロジェクトのインポート(Visual studio / compile database Borland C++ Builder 6))</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="163"/>
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
         <oldsource>Defines must be separated by a semicolon &apos;;&apos;</oldsource>
-        <translation type="unfinished">定義(Define)はセミコロン&apos;;&apos;で区切る必要があります。</translation>
+        <translation>定義(Define)はセミコロン&apos;;&apos;で区切る必要があります。 例: DEF1;DEF2=5;DEF3=int</translation>
     </message>
     <message>
         <source>&amp;Root:</source>
@@ -1504,22 +1500,22 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="376"/>
         <source>Exclude paths</source>
-        <translation type="unfinished"></translation>
+        <translation>除外するパス</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="523"/>
         <source>MISRA C 2012</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C 2012</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="532"/>
         <source>Misra rule texts</source>
-        <translation type="unfinished"></translation>
+        <translation>Misra ルールテキスト</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="539"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012からテキストをコピーペーストしてください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="546"/>
@@ -1535,7 +1531,7 @@ Options:
         <location filename="projectfiledialog.ui" line="60"/>
         <location filename="projectfiledialog.ui" line="288"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>参照...</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="72"/>
@@ -1577,7 +1573,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="558"/>
         <source>External tools</source>
-        <translation type="unfinished"></translation>
+        <translation>外部ツール</translation>
     </message>
     <message>
         <source>Includes</source>
@@ -1600,17 +1596,17 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="273"/>
         <source>Checking</source>
-        <translation type="unfinished"></translation>
+        <translation>解析</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="298"/>
         <source>Platform</source>
-        <translation type="unfinished"></translation>
+        <translation>プラットフォーム</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="346"/>
         <source>Warning options</source>
-        <translation type="unfinished"></translation>
+        <translation>警告オプション</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="352"/>
@@ -1653,7 +1649,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="483"/>
         <source>Addons and tools</source>
-        <translation type="unfinished"></translation>
+        <translation>アドオンとツール</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="489"/>
@@ -1733,7 +1729,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="242"/>
         <source>(no rule texts file)</source>
-        <translation type="unfinished"></translation>
+        <translation>(ルールテキストファイルがない)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="248"/>
@@ -1743,17 +1739,17 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="369"/>
         <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="370"/>
         <source>Compile database</source>
-        <translation type="unfinished"></translation>
+        <translation>コンパイルデータベース</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="371"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
+        <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="372"/>
@@ -1776,12 +1772,12 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="665"/>
         <source>Select MISRA rule texts file</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRAルールテキストファイルを選択</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="665"/>
         <source>Misra rule texts file (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Misraルールテキストファイル (%1)</translation>
     </message>
 </context>
 <context>
@@ -1812,7 +1808,7 @@ Options:
     <message>
         <location filename="translationhandler.cpp" line="103"/>
         <source>Unknown language specified!</source>
-        <translation>指定された未知の言語</translation>
+        <translation>未知の言語が指定されました!</translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="132"/>
@@ -1832,7 +1828,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="184"/>
         <source> (Not found)</source>
-        <translation>(みつかりません)</translation>
+        <translation> (みつかりません)</translation>
     </message>
 </context>
 <context>
@@ -1888,27 +1884,27 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="615"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>コピー</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="798"/>
         <source>Could not find file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルが見つかりません:</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="802"/>
         <source>Please select the folder &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>フォルダ &apos;%1&apos; を選択してください</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="803"/>
         <source>Select Directory &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>ディレクトリ &apos;%1&apos; 選択</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="805"/>
         <source>Please select the directory where file is located.</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルのあるディレクトリを選択してください。</translation>
     </message>
     <message>
         <source>[Inconclusive]</source>
@@ -1999,13 +1995,12 @@ Cppcheckの「設定」からテキストファイルを編集するアプリケ
 Please select the default editor application in preferences/Applications.</source>
         <translation>デフォルトのエディタアプリケーションが指定されていません。
 
-設定からデフォルトのエディタアプリケーションを設定してください。
-</translation>
+設定からデフォルトのエディタアプリケーションを設定してください。</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="738"/>
         <source>Could not find the file!</source>
-        <translation>ファイルが見つかりません</translation>
+        <translation>ファイルが見つかりません!</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="784"/>
@@ -2192,12 +2187,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="20"/>
         <source>Copy or write some C/C++ code here:</source>
-        <translation type="unfinished"></translation>
+        <translation>ここに C/C++のコードをコピーペーストまたは記入してください:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="37"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
-        <translation type="unfinished"></translation>
+        <translation>オプション: ファイル名を入力(言語は自動判定)して&quot;解析&quot;をクリックしてください:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
@@ -2207,7 +2202,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="78"/>
         <source>Check</source>
-        <translation>チェック</translation>
+        <translation>解析</translation>
     </message>
 </context>
 <context>
@@ -2234,7 +2229,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="41"/>
         <source>Number of threads: </source>
-        <translation>解析スレッド数:</translation>
+        <translation>解析用のスレッド数: </translation>
     </message>
     <message>
         <location filename="settings.ui" line="85"/>
@@ -2302,17 +2297,17 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="312"/>
         <source>Misra addon</source>
-        <translation type="unfinished"></translation>
+        <translation>Misraアドオン</translation>
     </message>
     <message>
         <location filename="settings.ui" line="320"/>
         <source>Misra rule texts file</source>
-        <translation type="unfinished"></translation>
+        <translation>Misra ルールテキストファイル</translation>
     </message>
     <message>
         <location filename="settings.ui" line="327"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdfのテキストをテキストファイルにコピー&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="360"/>
@@ -2411,7 +2406,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settingsdialog.cpp" line="227"/>
         <source> [Default]</source>
-        <translation>[デフォルト]</translation>
+        <translation> [デフォルト]</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="252"/>
@@ -2426,7 +2421,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settingsdialog.cpp" line="314"/>
         <source>Select MISRA File</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRAファイルの選択</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="322"/>
@@ -2513,7 +2508,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="290"/>
         <source>Portability warnings:</source>
-        <translation>移植可能性の警告</translation>
+        <translation>移植可能性の警告:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="308"/>
@@ -2523,7 +2518,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="326"/>
         <source>Information messages:</source>
-        <translation>情報メッセージ</translation>
+        <translation>情報メッセージ:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="343"/>
@@ -2644,7 +2639,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="64"/>
         <source>File: </source>
-        <translation>ファイル：</translation>
+        <translation>ファイル: </translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="64"/>
@@ -2687,7 +2682,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="threadresult.cpp" line="54"/>
         <source>%1 of %2 files checked</source>
-        <translation>チェック: %1 / %2 (ファイル数) </translation>
+        <translation>チェック: %1 / %2 (ファイル数)</translation>
     </message>
 </context>
 <context>
@@ -2722,12 +2717,12 @@ The user interface language has been reset to English. Open the Preferences-dial
     <message>
         <location filename="common.cpp" line="52"/>
         <source>All supported files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>全サポートファイル (%1)</translation>
     </message>
     <message>
         <location filename="common.cpp" line="57"/>
         <source>All files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>全ファイル(%1)</translation>
     </message>
 </context>
 </TS>

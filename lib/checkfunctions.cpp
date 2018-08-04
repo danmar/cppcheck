@@ -32,6 +32,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
 #include <ostream>
 #include <vector>
 
@@ -119,9 +120,9 @@ void CheckFunctions::invalidFunctionUsage()
                         invalidFunctionArgBoolError(argtok, functionToken->str(), argnr);
 
                     // Are the values 0 and 1 valid?
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, 0))
+                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 0))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
-                    else if (!mSettings->library.isargvalid(functionToken, argnr, 1))
+                    else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
             }
@@ -139,7 +140,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
     else
         errmsg << "Invalid $symbol() argument nr " << argnr << '.';
     if (invalidValue)
-        errmsg << " The value is " << invalidValue->intvalue << " but the valid values are '" << validstr << "'.";
+        errmsg << " The value is " << std::setprecision(10) << (invalidValue->isIntValue() ? invalidValue->intvalue : invalidValue->floatValue) << " but the valid values are '" << validstr << "'.";
     else
         errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
     if (invalidValue)
@@ -225,30 +226,16 @@ void CheckFunctions::checkMathFunctions()
                 continue;
             if (printWarnings && Token::Match(tok, "%name% ( !!)")) {
                 if (tok->strAt(-1) != "."
-                    && Token::Match(tok, "log|logf|logl|log10|log10f|log10l ( %num% )")) {
+                    && Token::Match(tok, "log|logf|logl|log10|log10f|log10l|log2|log2f|log2l ( %num% )")) {
                     const std::string& number = tok->strAt(2);
-                    const bool isNegative = MathLib::isNegative(number);
-                    const bool isInt = MathLib::isInt(number);
-                    const bool isFloat = MathLib::isFloat(number);
-                    if (isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
-                        mathfunctionCallWarning(tok); // case log(-2)
-                    } else if (isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
-                        mathfunctionCallWarning(tok); // case log(-2.0)
-                    } else if (!isNegative && isFloat && MathLib::toDoubleNumber(number) <= 0.) {
-                        mathfunctionCallWarning(tok); // case log(0.0)
-                    } else if (!isNegative && isInt && MathLib::toLongNumber(number) <= 0) {
-                        mathfunctionCallWarning(tok); // case log(0)
-                    }
-                }
-
-                // acos( x ), asin( x )  where x is defined for interval [-1,+1], but not beyond
-                else if (Token::Match(tok, "acos|acosl|acosf|asin|asinf|asinl ( %num% )")) {
-                    if (std::fabs(MathLib::toDoubleNumber(tok->strAt(2))) > 1.0)
+                    if ((MathLib::isInt(number) && MathLib::toLongNumber(number) <= 0) ||
+                        (MathLib::isFloat(number) && MathLib::toDoubleNumber(number) <= 0.))
                         mathfunctionCallWarning(tok);
                 }
-                // sqrt( x ): if x is negative the result is undefined
-                else if (Token::Match(tok, "sqrt|sqrtf|sqrtl ( %num% )")) {
-                    if (MathLib::isNegative(tok->strAt(2)))
+                else if (Token::Match(tok, "log1p|log1pf|log1pl ( %num% )")) {
+                    const std::string& number = tok->strAt(2);
+                    if ((MathLib::isInt(number) && MathLib::toLongNumber(number) <= -1) ||
+                        (MathLib::isFloat(number) && MathLib::toDoubleNumber(number) <= -1.))
                         mathfunctionCallWarning(tok);
                 }
                 // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined

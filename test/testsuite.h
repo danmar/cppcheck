@@ -37,6 +37,7 @@ private:
     static std::size_t todos_counter;
     static std::size_t succeeded_todos_counter;
     static std::set<std::string> missingLibs;
+    bool mVerbose;
 
 protected:
     std::string testToRun;
@@ -66,6 +67,9 @@ protected:
     void complainMissingLib(const char * const libname) const;
     std::string deleteLineNumber(const std::string &message) const;
 
+    void setVerbose(bool v) {
+        mVerbose = v;
+    }
 
     void processOptions(const options& args);
 public:
@@ -83,7 +87,7 @@ public:
 extern std::ostringstream errout;
 extern std::ostringstream output;
 
-#define TEST_CASE( NAME )  if ( prepareTest(#NAME) ) { NAME(); }
+#define TEST_CASE( NAME )  if ( prepareTest(#NAME) ) { setVerbose(false); NAME(); }
 #define ASSERT( CONDITION )  assert_(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED , ACTUAL )  assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)

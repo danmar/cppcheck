@@ -9,6 +9,15 @@
 
 #include <string.h>
 
+void bufferAccessOutOfBounds()
+{
+    char buf[2];
+    // This is valid
+    sethostname(buf, 2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    sethostname(buf, 4);
+}
+
 void leakReturnValNotUsed()
 {
     // cppcheck-suppress unreadVariable
