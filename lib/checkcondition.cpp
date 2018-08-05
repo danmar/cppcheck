@@ -863,19 +863,19 @@ static std::string conditionString(bool not1, const Token *expr1, const std::str
 
 static std::string conditionString(const Token * tok)
 {
-    if(!tok)
+    if (!tok)
         return "";
-    if(tok->isComparisonOp()) {
+    if (tok->isComparisonOp()) {
         bool inconclusive = false;
         bool not_;
         std::string op, value;
         const Token *expr;
-        if(parseComparison(tok, &not_, &op, &value, &expr, &inconclusive) && expr->isName()) {
+        if (parseComparison(tok, &not_, &op, &value, &expr, &inconclusive) && expr->isName()) {
             return conditionString(not_, expr, op, value);
         }
     }
-    if(Token::Match(tok, "%cop%|&&|%oror%")) {
-        if(tok->astOperand2())
+    if (Token::Match(tok, "%cop%|&&|%oror%")) {
+        if (tok->astOperand2())
             return conditionString(tok->astOperand1()) + " " + tok->str() + " " + conditionString(tok->astOperand2());
         return tok->str() + "(" + conditionString(tok->astOperand1()) + ")";
 
@@ -964,7 +964,7 @@ void CheckCondition::checkIncorrectLogicOperator()
 
             if (inconclusive && !printInconclusive)
                 continue;
-            
+
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             // Opposite comparisons around || or && => always true or always false
@@ -974,8 +974,8 @@ void CheckCondition::checkIncorrectLogicOperator()
                 incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive);
                 continue;
             }
-            
-            if(!parseable)
+
+            if (!parseable)
                 continue;
 
             if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true))

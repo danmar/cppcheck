@@ -1222,13 +1222,13 @@ private:
     void incorrectLogicOperator11() {
         check("void foo(int i, const int n) { if ( i < n && i == n ) {} }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i < n && i == n.\n", errout.str());
-        
+
         check("void foo(int i, const int n) { if ( i > n && i == n ) {} }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i > n && i == n.\n", errout.str());
-        
+
         check("void foo(int i, const int n) { if ( i == n && i > n ) {} }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i > n.\n", errout.str());
-        
+
         check("void foo(int i, const int n) { if ( i == n && i < n ) {} }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i < n.\n", errout.str());
     }
