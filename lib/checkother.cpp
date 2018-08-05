@@ -2049,7 +2049,8 @@ void CheckOther::oppositeExpressionError(const Token *tok1, const Token *tok2, c
 void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op, ErrorPath errors)
 {
     errors.emplace_back(tok1, "");
-    errors.emplace_back(tok2, "");
+    if (tok1 != tok2)
+        errors.emplace_back(tok2, "");
 
     const std::string& expr1 = tok1 ? tok1->expressionString() : "x";
     const std::string& expr2 = tok2 ? tok2->expressionString() : "x";
