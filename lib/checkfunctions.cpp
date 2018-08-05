@@ -231,8 +231,7 @@ void CheckFunctions::checkMathFunctions()
                     if ((MathLib::isInt(number) && MathLib::toLongNumber(number) <= 0) ||
                         (MathLib::isFloat(number) && MathLib::toDoubleNumber(number) <= 0.))
                         mathfunctionCallWarning(tok);
-                }
-                else if (Token::Match(tok, "log1p|log1pf|log1pl ( %num% )")) {
+                } else if (Token::Match(tok, "log1p|log1pf|log1pl ( %num% )")) {
                     const std::string& number = tok->strAt(2);
                     if ((MathLib::isInt(number) && MathLib::toLongNumber(number) <= -1) ||
                         (MathLib::isFloat(number) && MathLib::toDoubleNumber(number) <= -1.))
