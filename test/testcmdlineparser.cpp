@@ -52,7 +52,7 @@ private:
         TEST_CASE(optionwithoutfile);
         TEST_CASE(verboseshort);
         TEST_CASE(verboselong);
-        TEST_CASE(debug);
+        TEST_CASE(debugSimplified);
         TEST_CASE(debugwarnings);
         TEST_CASE(forceshort);
         TEST_CASE(forcelong);
@@ -224,12 +224,12 @@ private:
         ASSERT_EQUALS(true, settings.verbose);
     }
 
-    void debug() {
+    void debugSimplified() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--debug", "file.cpp"};
-        settings.debug = false;
+        const char *argv[] = {"cppcheck", "--debug-simplified", "file.cpp"};
+        settings.debugSimplified = false;
         ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings.debug);
+        ASSERT_EQUALS(true, settings.debugSimplified);
     }
 
     void debugwarnings() {

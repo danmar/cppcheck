@@ -896,7 +896,6 @@ Settings MainWindow::getCppcheckSettings()
     result.addEnabled("missingInclude");
     if (!result.buildDir.empty())
         result.addEnabled("unusedFunction");
-    result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     result.quiet = false;
     result.verbose = true;

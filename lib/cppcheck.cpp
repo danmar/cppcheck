@@ -393,7 +393,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (mSettings.force || mSettings.maxConfigs > 1) {
                     const unsigned long long checksum = mTokenizer.list.calculateChecksum();
                     if (checksums.find(checksum) != checksums.end()) {
-                        if (mSettings.isEnabled(Settings::INFORMATION) && (mSettings.debug || mSettings.verbose))
+                        if (mSettings.debugwarnings)
                             purgedConfigurationMessage(filename, mCurrentConfig);
                         continue;
                     }
