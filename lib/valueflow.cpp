@@ -444,6 +444,18 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             return;
         }
 
+        // known result when a operand is true.
+        if (Token::simpleMatch(parent, "&&") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
+
+        // known result when a operand is false.
+        if (Token::simpleMatch(parent, "||") && value.isKnown() && value.isIntValue() && value.intvalue!=0) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
+
         for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
             if (!value1.isIntValue() && !value1.isFloatValue() && !value1.isTokValue())
                 continue;
@@ -1531,6 +1543,14 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
+static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    return Token::findmatch(tok, "return|continue|break|throw|goto", tok->link()) ||
+           (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
+}
+
 static bool valueFlowForward(Token * const               startToken,
                              const Token * const         endToken,
                              const Variable * const      var,
@@ -1836,8 +1856,8 @@ static bool valueFlowForward(Token * const               startToken,
 
             // noreturn scopes..
             if ((number_of_if > 0 || Token::findmatch(tok2, "%varid%", start, varid)) &&
-                (Token::findmatch(start, "return|continue|break|throw", end) ||
-                 (Token::simpleMatch(end,"} else {") && Token::findmatch(end, "return|continue|break|throw", end->linkAt(2))))) {
+                (isEscapeScope(start, tokenlist) ||
+                 (Token::simpleMatch(end,"} else {") && isEscapeScope(end->tokAt(2), tokenlist)))) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + ". noreturn conditional scope.");
                 return false;
@@ -1847,8 +1867,7 @@ static bool valueFlowForward(Token * const               startToken,
                 if ((!read || number_of_if == 0) &&
                     Token::simpleMatch(tok2, "if (") &&
                     !(Token::simpleMatch(end, "} else {") &&
-                      (Token::findmatch(end, "%varid%", end->linkAt(2), varid) ||
-                       Token::findmatch(end, "return|continue|break|throw", end->linkAt(2))))) {
+                      isEscapeScope(end->tokAt(2), tokenlist))) {
                     ++number_of_if;
                     tok2 = end;
                 } else {

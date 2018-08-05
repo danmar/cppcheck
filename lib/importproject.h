@@ -47,6 +47,15 @@ namespace cppcheck {
  */
 class CPPCHECKLIB ImportProject {
 public:
+    enum Type {
+        UNKNOWN,
+        MISSING,
+        COMPILE_DB,
+        VS_SLN,
+        VS_VCXPROJ,
+        BORLAND
+    };
+
     /** File settings. Multiple configurations for a file is allowed. */
     struct CPPCHECKLIB FileSettings {
         FileSettings() : platformType(cppcheck::Platform::Unspecified), msc(false), useMfc(false) {}
@@ -73,7 +82,7 @@ public:
     void ignoreOtherConfigs(const std::string &cfg);
     void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 
-    void import(const std::string &filename);
+    Type import(const std::string &filename);
 protected:
     void importCompileCommands(std::istream &istr);
 private:

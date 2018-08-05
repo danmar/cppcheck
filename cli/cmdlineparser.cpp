@@ -132,8 +132,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // Flag used for various purposes during debugging
-            else if (std::strcmp(argv[i], "--debug") == 0)
-                _settings->debug = _settings->debugwarnings = true;
+            else if (std::strcmp(argv[i], "--debug-simplified") == 0)
+                _settings->debugSimplified = true;
 
             // Show --debug output after the first simplifications
             else if (std::strcmp(argv[i], "--debug-normal") == 0)
@@ -503,13 +503,22 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
-                _settings->project.import(argv[i]+10);
-                if (std::strstr(argv[i], ".sln") || std::strstr(argv[i], ".vcxproj")) {
+                const std::string projectFile = argv[i]+10;
+                const ImportProject::Type projType = _settings->project.import(projectFile);
+                if (projType == ImportProject::VS_SLN || projType == ImportProject::VS_VCXPROJ) {
                     if (!CppCheckExecutor::tryLoadLibrary(_settings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
                         return false;
                     }
+                }
+                if (projType == ImportProject::MISSING) {
+                    printMessage("cppcheck: Failed to open project '" + projectFile + "'.");
+                    return false;
+                }
+                if (projType == ImportProject::UNKNOWN) {
+                    printMessage("cppcheck: Failed to load project '" + projectFile + "'. The format is unknown.");
+                    return false;
                 }
             }
 
@@ -719,6 +728,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (!rule.pattern.empty())
                             _settings->rules.push_back(rule);
                     }
+                } else {
+                    printMessage("cppcheck: error: unable to load rule-file: " + std::string(12+argv[i]));
+                    return false;
                 }
             }
 #endif

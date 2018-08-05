@@ -501,7 +501,10 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             (comp1 == ">"  && comp2 == "<=") ||
             (comp1 == ">=" && comp2 == "<") ||
             (!isNot && ((comp1 == "<" && comp2 == ">") ||
-                        (comp1 == ">" && comp2 == "<"))));
+                        (comp1 == ">" && comp2 == "<") ||
+                        (comp1 == "==" && (comp2 == "!=" || comp2 == ">" || comp2 == "<")) ||
+                        ((comp1 == "!=" || comp1 == ">" || comp1 == "<") && comp2 == "==")
+                       )));
 }
 
 bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure)

@@ -579,6 +579,18 @@ private:
               "    return f2(\"Hello\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7750 warn about char literals in boolean expressions
+        check("void f() {\n"
+              "  if('a'){}\n"
+              "  if(L'b'){}\n"
+              "  if(1 && 'c'){}\n"
+              "  int x = 'd' ? 1 : 2;\n" // <- TODO
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal 'a' to bool always evaluates to true.\n"
+                      "[test.cpp:3]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
+                      "[test.cpp:4]: (warning) Conversion of char literal 'c' to bool always evaluates to true.\n"
+                      , errout.str());
     }
 
     void deadStrcmp() {

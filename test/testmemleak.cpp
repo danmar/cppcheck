@@ -846,7 +846,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings0.debug = settings0.debugwarnings = true;
+        settings0.debugwarnings = true;
 
         // Tokenize..
         std::istringstream istr(code);
@@ -873,7 +873,7 @@ private:
 
         const Token *tok = CheckMemoryLeakInFunction::findleak(tokens);
 
-        settings0.debug = settings0.debugwarnings = false;
+        settings0.debugwarnings = false;
 
         return (tok ? tok->linenr() : (unsigned int)(-1));
     }

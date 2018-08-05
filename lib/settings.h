@@ -73,8 +73,8 @@ public:
     /** @brief --cppcheck-build-dir */
     std::string buildDir;
 
-    /** @brief Is --debug given? */
-    bool debug;
+    /** @brief Is --debug-simplified given? */
+    bool debugSimplified;
 
     /** @brief Is --debug-normal given? */
     bool debugnormal;

@@ -861,6 +861,28 @@ static std::string conditionString(bool not1, const Token *expr1, const std::str
            (expr1->isName() ? expr1->str() : std::string("EXPR"));
 }
 
+static std::string conditionString(const Token * tok)
+{
+    if (!tok)
+        return "";
+    if (tok->isComparisonOp()) {
+        bool inconclusive = false;
+        bool not_;
+        std::string op, value;
+        const Token *expr;
+        if (parseComparison(tok, &not_, &op, &value, &expr, &inconclusive) && expr->isName()) {
+            return conditionString(not_, expr, op, value);
+        }
+    }
+    if (Token::Match(tok, "%cop%|&&|%oror%")) {
+        if (tok->astOperand2())
+            return conditionString(tok->astOperand1()) + " " + tok->str() + " " + conditionString(tok->astOperand2());
+        return tok->str() + "(" + conditionString(tok->astOperand1()) + ")";
+
+    }
+    return tok->expressionString();
+}
+
 void CheckCondition::checkIncorrectLogicOperator()
 {
     const bool printStyle = mSettings->isEnabled(Settings::STYLE);
@@ -875,15 +897,6 @@ void CheckCondition::checkIncorrectLogicOperator()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%oror%|&&") || !tok->astOperand1() || !tok->astOperand2())
                 continue;
-
-            // Opposite comparisons around || or && => always true or always false
-            if ((tok->astOperand1()->isName() || tok->astOperand2()->isName()) &&
-                isOppositeCond(true, mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
-
-                const bool alwaysTrue(tok->str() == "||");
-                incorrectLogicOperatorError(tok, tok->expressionString(), alwaysTrue, false);
-                continue;
-            }
 
 
             // 'A && (!A || B)' is equivalent to 'A && B'
@@ -935,22 +948,34 @@ void CheckCondition::checkIncorrectLogicOperator()
             const Token *comp2 = tok->astOperand2();
 
             bool inconclusive = false;
+            bool parseable = true;
 
             // Parse LHS
             bool not1;
             std::string op1, value1;
-            const Token *expr1;
-            if (!parseComparison(comp1, &not1, &op1, &value1, &expr1, &inconclusive))
-                continue;
+            const Token *expr1 = nullptr;
+            parseable &= (parseComparison(comp1, &not1, &op1, &value1, &expr1, &inconclusive));
 
             // Parse RHS
             bool not2;
             std::string op2, value2;
-            const Token *expr2;
-            if (!parseComparison(comp2, &not2, &op2, &value2, &expr2, &inconclusive))
-                continue;
+            const Token *expr2 = nullptr;
+            parseable &= (parseComparison(comp2, &not2, &op2, &value2, &expr2, &inconclusive));
 
             if (inconclusive && !printInconclusive)
+                continue;
+
+            const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
+
+            // Opposite comparisons around || or && => always true or always false
+            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
+
+                const bool alwaysTrue(tok->str() == "||");
+                incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive);
+                continue;
+            }
+
+            if (!parseable)
                 continue;
 
             if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true))
@@ -958,12 +983,12 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true))
                 continue;
 
-            const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             // don't check floating point equality comparisons. that is bad
             // and deserves different warnings.
             if (isfloat && (op1 == "==" || op1 == "!=" || op2 == "==" || op2 == "!="))
                 continue;
+
 
             const double d1 = (isfloat) ? MathLib::toDoubleNumber(value1) : 0;
             const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
@@ -1184,16 +1209,17 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (Token::Match(tok, "%num%|%bool%"))
+            if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "! %num%|%bool%"))
+            if (Token::Match(tok, "! %num%|%bool%|%char%"))
+                continue;
+            if (Token::Match(tok, "%oror%|&&"))
                 continue;
 
             const bool constIfWhileExpression =
-                tok->astParent()
-                && Token::Match(tok->astParent()->astOperand1(), "if|while")
-                && !tok->isBoolean();
-            const bool constValExpr = Token::Match(tok, "%num%|%char%") && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number or char in boolean expression
+                tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") &&
+                (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
+            const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
 
             if (!(constIfWhileExpression || constValExpr || compExpr))

@@ -70,6 +70,7 @@ private:
         TEST_CASE(incorrectLogicOperator8); // !
         TEST_CASE(incorrectLogicOperator9);
         TEST_CASE(incorrectLogicOperator10); // enum
+        TEST_CASE(incorrectLogicOperator11);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -105,6 +106,7 @@ private:
 
         TEST_CASE(checkInvalidTestForOverflow);
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
+        TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
     }
 
@@ -1161,12 +1163,12 @@ private:
         check("void f(int i) {\n"
               "  if (i || !i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i||!i.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i || !(i).\n", errout.str());
 
         check("void f(int a, int b) {\n"
               "  if (a>b || a<=b) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: a>b||a<=b.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: a > b || a <= b.\n", errout.str());
 
         check("void f(int a, int b) {\n"
               "  if (a>b || a<b) {}\n"
@@ -1215,6 +1217,20 @@ private:
               "    {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: t == 0 && t == 1.\n", errout.str());
+    }
+
+    void incorrectLogicOperator11() {
+        check("void foo(int i, const int n) { if ( i < n && i == n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i < n && i == n.\n", errout.str());
+
+        check("void foo(int i, const int n) { if ( i > n && i == n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i > n && i == n.\n", errout.str());
+
+        check("void foo(int i, const int n) { if ( i == n && i > n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i > n.\n", errout.str());
+
+        check("void foo(int i, const int n) { if ( i == n && i < n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i < n.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
@@ -2419,18 +2435,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // #7750 warn about char literals in boolean expressions
+        // #7750 char literals in boolean expressions
         check("void f() {\n"
               "  if('a'){}\n"
               "  if(L'b'){}\n"
               "  if(1 && 'c'){}\n"
               "  int x = 'd' ? 1 : 2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Condition ''a'' is always true\n"
-                      "[test.cpp:3]: (style) Condition 'L'b'' is always true\n"
-                      "[test.cpp:4]: (style) Condition '1&&'c'' is always true\n"
-                      "[test.cpp:4]: (style) Condition ''c'' is always true\n"
-                      "[test.cpp:5]: (style) Condition ''d'' is always true\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // Skip literals
         check("void f() { if(true) {} }");
@@ -2509,6 +2521,36 @@ private:
               "    while(a + 1) { return; }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a+1' is always true\n", errout.str());
+    }
+
+    void alwaysTrueFalseInLogicalOperators() {
+        check("bool f();\n"
+              "void foo() { bool x = true; if(x||f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always true\n", errout.str());
+
+        check("void foo(bool b) { bool x = true; if(x||b) {}}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'x' is always true\n", errout.str());
+
+        check("void foo(bool b) { if(true||b) {}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f();\n"
+              "void foo() { bool x = false; if(x||f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always false\n", errout.str());
+
+        check("bool f();\n"
+              "void foo() { bool x = false; if(x&&f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always false\n", errout.str());
+
+        check("void foo(bool b) { bool x = false; if(x&&b) {}}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 'x' is always false\n", errout.str());
+
+        check("void foo(bool b) { if(false&&b) {}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f();\n"
+              "void foo() { bool x = true; if(x&&f()) {}}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always true\n", errout.str());
     }
 
     void pointerAdditionResultNotNull() {
