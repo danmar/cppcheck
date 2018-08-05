@@ -399,9 +399,9 @@ void CheckStl::mismatchingContainers()
                 const Token * const argTok = args[argnr - 1];
                 if (i->first) {
                     firstArg = argTok;
-                } 
-                if(i->last && firstArg && argTok && isSameExpression(true, false, firstArg, argTok, mSettings->library, false)) {
-                     sameIteratorExpressionError(firstArg);
+                }
+                if (i->last && firstArg && argTok && isSameExpression(true, false, firstArg, argTok, mSettings->library, false)) {
+                    sameIteratorExpressionError(firstArg);
                 }
                 const Variable *c = getContainer(argTok);
                 if (c) {
