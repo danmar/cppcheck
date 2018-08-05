@@ -24,7 +24,7 @@ bool Settings::mTerminated;
 
 Settings::Settings()
     : mEnabled(0),
-      debug(false),
+      debugSimplified(false),
       debugnormal(false),
       debugwarnings(false),
       dump(false),

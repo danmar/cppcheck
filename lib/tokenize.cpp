@@ -4038,7 +4038,7 @@ bool Tokenizer::simplifyTokenList2()
 
 void Tokenizer::printDebugOutput(unsigned int simplification) const
 {
-    const bool debug = (simplification != 1U && mSettings->debug) ||
+    const bool debug = (simplification != 1U && mSettings->debugSimplified) ||
                        (simplification != 2U && mSettings->debugnormal);
 
     if (debug && list.front()) {
