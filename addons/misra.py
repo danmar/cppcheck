@@ -1679,7 +1679,7 @@ def generateTable():
     # what rules are handled by this addon?
     addon = []
     compiled = re.compile(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open('__file__'):
+    for line in open(__file__):
         res = compiled.match(line)
         if res is None:
             continue
@@ -1879,7 +1879,7 @@ parser.add_argument("--quiet", help="Only print something when there is an error
 parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
 parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
-parser.add_argument("file", help="Path of dump file from cppcheck")
+parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
 args = parser.parse_args()
 
 if args.generate_table:
@@ -1899,5 +1899,6 @@ else:
         QUIET = True
     if args.no_summary:
         SHOW_SUMMARY = False
-    if args.file:
-        parseDump(args.file)
+    if args.dumpfile:
+        for item in args.dumpfile:
+            parseDump(item)

@@ -2047,7 +2047,9 @@ void CheckOther::oppositeExpressionError(const Token *tok1, const Token *tok2, c
 
 void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op)
 {
-    const std::list<const Token *> toks = { tok2, tok1 };
+    std::list<const Token *> toks = { tok1 };
+    if (tok1 != tok2)
+        toks.push_front(tok2);
 
     reportError(toks, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'.\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
