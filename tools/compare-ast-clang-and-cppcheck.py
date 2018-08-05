@@ -27,7 +27,7 @@ def clang_ast(sourcefile):
         while len(line)>1 and line[-1] in ' \r\n':
             line = line[:-1]
         if line.find('/usr/') > 0:
-			continue
+            continue
         if line.startswith('<Function'):
             ret.append(line)
     ret.sort()
@@ -54,7 +54,7 @@ def cppcheck_ast(sourcefile):
             continue
         argStart = scope.bodyStart
         while argStart and argStart.str != '(':
-			argStart = argStart.previous
+            argStart = argStart.previous
         s = '<Function'
         s = s + ' name="' + scope.className + '"'
         s = s + ' filename="' + argStart.file + '"'
