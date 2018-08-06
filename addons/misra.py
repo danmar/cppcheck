@@ -663,7 +663,7 @@ def misra_5_3(data):
 def misra_5_4(data):
     macro = {}
     compile_name = re.compile(r'#define ([a-zA-Z0-9_]+)')
-    compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[\(]([a-zA-Z0-9_, ]+)[\)]')
+    compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[(]([a-zA-Z0-9_, ]+)[)]')
     for dir in data.directives:
         res1 = compile_name.match(dir.str)
         if res1:
