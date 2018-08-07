@@ -6,6 +6,8 @@ import os
 import sys
 import time
 
+BASE = '1.84'
+
 def compilecppcheck(CPPFLAGS):
     subprocess.call(['nice', 'make', 'clean'])
     subprocess.call(['nice', 'make', 'SRCDIR=build', 'CFGDIR=' +
@@ -17,7 +19,7 @@ def runcppcheck(rev, folder):
     subprocess.call(['rm', '-rf', os.path.expanduser('~/daca2/' + folder)])
     subprocess.call(['nice', '--adjustment=19', 'python',
                     os.path.expanduser('~/cppcheck/tools/daca2.py'), folder, '--rev=' + rev,
-                    '--baseversion=1.84', '--skip=hashdeep', '--skip=lice'])
+                    '--baseversion='+BASE, '--skip=hashdeep', '--skip=lice'])
 
 
 def daca2report(reportfolder):
@@ -45,10 +47,46 @@ def upload(localfolder, webfolder, password):
             time.sleep(10)
             tries = tries + 1
 
+def getDate(filename):
+    for line in open(filename):
+        if line.startswith('DATE ')
+            return line[5:]
+    return None
 
-def daca2(foldernum, password):
+def getFolderNum():
     folders = '0123456789abcdefghijklmnopqrstuvwxyz'
-    folder = folders[foldernum % len(folders)]
+    oldestDate = None
+    oldestFolderNum = 0
+    for folderNum in range(len(folders)):
+        folder = folders[folderNum]
+        path = os.path.expanduser('~/daca2/' + folder)
+        if not os.path.isdir(path):
+            if folder == '0' or folder >= 'a':
+                return folderNum
+            continue
+        if not os.path.isfile(path + '/results-head.txt'):
+            return folderNum
+        if not os.path.isfile(path + '/results-'+BASE+'.txt'):
+            return folderNum
+        d1 = getDate(path + '/results-head.txt')
+        if d1 is None: # results are unfinished so they need to be recreated
+            return folderNum
+        d2 = getDate(path + '/results-'+BASE+'.txt')
+        if d2 is None: # results are unfinished so they need to be recreated
+            return folderNum
+        if oldestDate is None or d1 < oldestDate:
+            oldestDate = d1
+            oldestFolderNum = folderNum
+        if d2 < oldestDate:
+            oldestDate = d2
+            oldestFolderNum = folderNum
+
+    return oldestFolderNum
+
+
+def daca2(folderNum, password):
+    folders = '0123456789abcdefghijklmnopqrstuvwxyz'
+    folder = folders[folderNum % len(folders)]
 
     print('Daca2 folder=' + folder)
 
@@ -73,16 +111,11 @@ def daca2(foldernum, password):
     print('rundaca2.py: upload')
     upload(os.path.expanduser('~/daca2-report'), 'devinfo/', password)
 
-foldernum = 0
-for arg in sys.argv[1:]:
-    if len(arg) == 1:
-        folderNum = '0123456789abcdefghijklmnopqrstuvwxyz'.find(arg)
-        if folderNum < 0:
-            folderNum = 0
 
 print('enter password:')
 password = sys.stdin.readline().rstrip()
+folderNum = getFolderNum()
 while True:
-    daca2(foldernum, password)
-    foldernum = foldernum + 1
+    daca2(folderNum, password)
+    folderNum = folderNum + 1
 
