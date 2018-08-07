@@ -135,14 +135,15 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 static const Token * getVariableInitExpression(const Variable * var)
 {
-    if(!var || !var->declEndToken())
+    if (!var || !var->declEndToken())
         return nullptr;
-    if(Token::Match(var->declEndToken(), "; %varid% =", var->declarationId()))
+    if (Token::Match(var->declEndToken(), "; %varid% =", var->declarationId()))
         return var->declEndToken()->tokAt(2)->astOperand2();
     return var->declEndToken()->astOperand2();
 }
 
-static bool isInLoopCondition(const Token * tok) {
+static bool isInLoopCondition(const Token * tok)
+{
     return Token::Match(tok->astTop()->previous(), "for|while (");
 }
 
@@ -152,29 +153,29 @@ static bool isInLoopCondition(const Token * tok) {
 /// make such substitution then it will return the original token.
 static const Token * followVariableExpression(const Token * tok, bool cpp)
 {
-    if(!tok)
+    if (!tok)
         return tok;
     // Skip array access
-    if(Token::Match(tok, "%var% ["))
+    if (Token::Match(tok, "%var% ["))
         return tok;
     // Skip pointer indirection
-    if(tok->astParent() && tok->isUnaryOp("*"))
+    if (tok->astParent() && tok->isUnaryOp("*"))
         return tok;
     // Skip following variables if it is used in an assignment
-    if(Token::Match(tok->astParent(), "%assign%") || Token::Match(tok->next(), "%assign%"))
+    if (Token::Match(tok->astParent(), "%assign%") || Token::Match(tok->next(), "%assign%"))
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableInitExpression(var);
-    if(!varTok)
+    if (!varTok)
         return tok;
     // Skip array access
-    if(Token::simpleMatch(varTok, "["))
+    if (Token::simpleMatch(varTok, "["))
         return tok;
-    if(!var->isLocal() && !var->isConst())
+    if (!var->isLocal() && !var->isConst())
         return tok;
-    if(var->isStatic() && !var->isConst())
+    if (var->isStatic() && !var->isConst())
         return tok;
-    if(var->isArgument())
+    if (var->isArgument())
         return tok;
     // If this is in a loop then check if variables are modified in the entire scope
     const Token * endToken = (isInLoopCondition(tok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
@@ -182,27 +183,27 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         return tok;
     // Start at begining of initialization
     const Token * startToken = varTok;
-    while(Token::Match(startToken, "%op%|.|(|{") && startToken->astOperand1())
+    while (Token::Match(startToken, "%op%|.|(|{") && startToken->astOperand1())
         startToken = startToken->astOperand1();
     // Skip if the variable its referring to is modified
-    for(const Token * tok2 = startToken;tok2 != endToken;tok2 = tok2->next()) {
-        if(Token::simpleMatch(tok2, ";"))
+    for (const Token * tok2 = startToken; tok2 != endToken; tok2 = tok2->next()) {
+        if (Token::simpleMatch(tok2, ";"))
             break;
-        if(tok2->astParent() && tok2->isUnaryOp("*"))
+        if (tok2->astParent() && tok2->isUnaryOp("*"))
             return tok;
-        if (tok2->tokType() == Token::eIncDecOp || 
-            tok2->isAssignmentOp() || 
+        if (tok2->tokType() == Token::eIncDecOp ||
+            tok2->isAssignmentOp() ||
             Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
             return tok;
         }
 
-        if(const Variable * var2 = tok2->variable()) {
+        if (const Variable * var2 = tok2->variable()) {
             const Token * endToken2 = var2->scope() != tok->scope() ? var2->scope()->bodyEnd : endToken;
-            if(!var2->isLocal() && !var2->isConst() && !var2->isArgument())
+            if (!var2->isLocal() && !var2->isConst() && !var2->isArgument())
                 return tok;
-            if(var2->isStatic() && !var2->isConst())
+            if (var2->isStatic() && !var2->isConst())
                 return tok;
-            if(!var2->isConst() && isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
+            if (!var2->isConst() && isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
                 return tok;
         }
     }
@@ -211,18 +212,18 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
 
 static void followVariableExpressionError(const Token *tok1, const Token *tok2, ErrorPath* errors)
 {
-    if(!errors)
+    if (!errors)
         return;
-    if(!tok1)
+    if (!tok1)
         return;
-    if(!tok2)
+    if (!tok2)
         return;
     errors->push_back(std::make_pair(tok2, "'" + tok1->str() + "' is assigned value '" + tok2->expressionString() + "' here."));
 }
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, ErrorPath* errors)
 {
-    if (tok1 == nullptr && tok2 == nullptr) 
+    if (tok1 == nullptr && tok2 == nullptr)
         return true;
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
@@ -240,18 +241,18 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, errors);
     }
     // Follow variables if possible
-    if(tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
+    if (tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp);
         if (varTok1->str() == tok2->str()) {
             followVariableExpressionError(tok1, varTok1, errors);
             return isSameExpression(cpp, macro, varTok1, tok2, library, pure, errors);
         }
         const Token * varTok2 = followVariableExpression(tok2, cpp);
-        if(tok1->str() == varTok2->str()) {
+        if (tok1->str() == varTok2->str()) {
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, tok1, varTok2, library, pure, errors);
         }
-        if(varTok1->str() == varTok2->str()) {
+        if (varTok1->str() == varTok2->str()) {
             followVariableExpressionError(tok1, varTok1, errors);
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, varTok1, varTok2, library, pure, errors);
@@ -746,10 +747,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     const Variable *arg = tok->function()->getArgumentVar(argnr);
 
     if (addressOf) {
-        if(!(arg && arg->isConst()))
+        if (!(arg && arg->isConst()))
             return true;
         // If const is applied to the pointer, then the value can still be modified
-        if(arg && Token::simpleMatch(arg->typeEndToken(), "* const"))
+        if (arg && Token::simpleMatch(arg->typeEndToken(), "* const"))
             return true;
     }
 

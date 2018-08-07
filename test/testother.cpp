@@ -3947,7 +3947,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
 
-        check("void use(int);\n" 
+        check("void use(int);\n"
               "void f() {\n"
               "    int a = 1;\n"
               "    int b = 1;\n"
@@ -3956,7 +3956,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
 
-        check("void use(int);\n" 
+        check("void use(int);\n"
               "void f() {\n"
               "    int a = 1;\n"
               "    use(a);\n"
@@ -3965,7 +3965,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void use(int);\n" 
+        check("void use(int);\n"
               "void f() {\n"
               "    int a = 2;\n"
               "    use(a);\n"
@@ -4100,7 +4100,7 @@ private:
               "        b++;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());        
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
     }
 
     void duplicateExpressionTernary() { // #6391

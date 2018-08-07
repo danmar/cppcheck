@@ -2053,8 +2053,8 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     const std::string& expr1 = tok1 ? tok1->expressionString() : "x";
     const std::string& expr2 = tok2 ? tok2->expressionString() : "x";
 
-    std::string endingPhrase = expr1 == expr2 ? "." : 
-        " because the value of '" + expr1 + "' and '" + expr2 + "' are the same.";
+    std::string endingPhrase = expr1 == expr2 ? "." :
+                               " because the value of '" + expr1 + "' and '" + expr2 + "' are the same.";
 
     const std::string& op = opTok ? opTok->str() : "&&";
 
