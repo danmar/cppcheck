@@ -49,7 +49,7 @@ def upload(localfolder, webfolder, password):
 
 def getDate(filename):
     for line in open(filename):
-        if line.startswith('DATE ')
+        if line.startswith('DATE '):
             return line[5:]
     return None
 
