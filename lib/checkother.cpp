@@ -1965,6 +1965,7 @@ void CheckOther::checkDuplicateExpression()
                         tok->next()->tokType() != Token::eName &&
                         isSameExpression(mTokenizer->isCPP(), true, tok->next(), nextAssign->next(), mSettings->library, true) &&
                         isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), mSettings->library, true) &&
+                        tok->astOperand2()->expressionString() == nextAssign->astOperand2()->expressionString() &&
                         !isUniqueExpression(tok->astOperand2())) {
                         bool assigned = false;
                         const Scope * varScope = var1->scope() ? var1->scope() : &scope;
