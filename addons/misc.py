@@ -39,7 +39,7 @@ def getArgumentsRecursive(tok, arguments):
         getArgumentsRecursive(tok.astOperand1, arguments)
         getArgumentsRecursive(tok.astOperand2, arguments)
     else:
-        arguments.append(tok);
+        arguments.append(tok)
 
 def getArguments(ftok):
     arguments = []

@@ -195,6 +195,7 @@ private:
         TEST_CASE(constUnion);  // ticket #2111 - fp when there is a union
         TEST_CASE(constArrayOperator); // #4406
         TEST_CASE(constRangeBasedFor); // #5514
+        TEST_CASE(const_shared_ptr);
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -6197,6 +6198,18 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Fred::f2' can be const.\n", errout.str());
+    }
+
+    void const_shared_ptr() { // #8674
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    std::shared_ptr<Data> getData();\n"
+                   "private:\n"
+                   "     std::shared_ptr<Data> data;\n"
+                   "};\n"
+                   "\n"
+                   "std::shared_ptr<Data> Fred::getData() { return data; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInitializerListOrder(const char code[]) {

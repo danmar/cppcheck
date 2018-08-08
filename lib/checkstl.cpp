@@ -314,6 +314,11 @@ void CheckStl::mismatchingContainerExpressionError(const Token *tok1, const Toke
                 expr1 + "' and '" + expr2 + "' are used together.", CWE664, false);
 }
 
+void CheckStl::sameIteratorExpressionError(const Token *tok)
+{
+    reportError(tok, Severity::style, "sameIteratorExpression", "Same iterators expression are used for algorithm.", CWE664, false);
+}
+
 static const std::set<std::string> algorithm2 = { // func(begin1, end1
     "binary_search", "copy", "copy_if", "equal_range"
     , "generate", "is_heap", "is_heap_until", "is_partitioned"
@@ -392,6 +397,12 @@ void CheckStl::mismatchingContainers()
                 if (!i)
                     continue;
                 const Token * const argTok = args[argnr - 1];
+                if (i->first) {
+                    firstArg = argTok;
+                }
+                if (i->last && firstArg && argTok && isSameExpression(true, false, firstArg, argTok, mSettings->library, false)) {
+                    sameIteratorExpressionError(firstArg);
+                }
                 const Variable *c = getContainer(argTok);
                 if (c) {
                     std::map<const Variable *, unsigned int>::const_iterator it = containerNr.find(c);
@@ -407,9 +418,7 @@ void CheckStl::mismatchingContainers()
                         mismatchingContainersError(argTok);
                     }
                 } else {
-                    if (i->first) {
-                        firstArg = argTok;
-                    } else if (i->last && firstArg && argTok) {
+                    if (i->last && firstArg && argTok) {
                         const Token * iter1 = getIteratorExpression(firstArg);
                         const Token * iter2 = getIteratorExpression(argTok);
                         if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {

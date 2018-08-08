@@ -70,6 +70,7 @@ private:
         TEST_CASE(incorrectLogicOperator8); // !
         TEST_CASE(incorrectLogicOperator9);
         TEST_CASE(incorrectLogicOperator10); // enum
+        TEST_CASE(incorrectLogicOperator11);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1162,12 +1163,12 @@ private:
         check("void f(int i) {\n"
               "  if (i || !i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i||!i.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i || !(i).\n", errout.str());
 
         check("void f(int a, int b) {\n"
               "  if (a>b || a<=b) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: a>b||a<=b.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: a > b || a <= b.\n", errout.str());
 
         check("void f(int a, int b) {\n"
               "  if (a>b || a<b) {}\n"
@@ -1216,6 +1217,20 @@ private:
               "    {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: t == 0 && t == 1.\n", errout.str());
+    }
+
+    void incorrectLogicOperator11() {
+        check("void foo(int i, const int n) { if ( i < n && i == n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i < n && i == n.\n", errout.str());
+
+        check("void foo(int i, const int n) { if ( i > n && i == n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i > n && i == n.\n", errout.str());
+
+        check("void foo(int i, const int n) { if ( i == n && i > n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i > n.\n", errout.str());
+
+        check("void foo(int i, const int n) { if ( i == n && i < n ) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i < n.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
@@ -1540,7 +1555,7 @@ private:
               "       if(!b) {}\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(unsigned u) {\n"
               "  if (u != 0) {\n"

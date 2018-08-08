@@ -7,6 +7,7 @@
 # 5. Run the daca2 script:  python daca2.py FOLDER
 
 import argparse
+import logging
 import subprocess
 import sys
 import shutil

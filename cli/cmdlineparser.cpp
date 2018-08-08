@@ -132,8 +132,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // Flag used for various purposes during debugging
-            else if (std::strcmp(argv[i], "--debug") == 0)
-                _settings->debug = _settings->debugwarnings = true;
+            else if (std::strcmp(argv[i], "--debug-simplified") == 0)
+                _settings->debugSimplified = true;
 
             // Show --debug output after the first simplifications
             else if (std::strcmp(argv[i], "--debug-normal") == 0)

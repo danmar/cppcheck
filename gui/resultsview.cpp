@@ -386,11 +386,8 @@ void ResultsView::updateDetails(const QModelIndex &index)
         return;
     }
 
-    const QString summary = data["summary"].toString();
     const QString message = data["message"].toString();
-    QString formattedMsg = QString("%1: %2\n%3: %4")
-                           .arg(tr("Summary")).arg(summary)
-                           .arg(tr("Message")).arg(message);
+    QString formattedMsg = message;
 
     const QString file0 = data["file0"].toString();
     if (!file0.isEmpty() && Path::isHeader(data["file"].toString().toStdString()))

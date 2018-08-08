@@ -130,6 +130,9 @@ private:
         TEST_CASE(duplicateExpression4); // ticket #3354 (++)
         TEST_CASE(duplicateExpression5); // ticket #3749 (macros with same values)
         TEST_CASE(duplicateExpression6); // ticket #4639
+        TEST_CASE(duplicateExpression7);
+        TEST_CASE(duplicateExpression8);
+        TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
@@ -483,7 +486,7 @@ private:
               "  double fStepHelp = 0;\n"
               "   if( (rOuterValue >>= fStepHelp) ) {\n"
               "     if( fStepHelp != 0.0) {\n"
-              "       double fStepMain = 0;\n"
+              "       double fStepMain = 1;\n"
               "       sal_Int32 nIntervalCount = static_cast< sal_Int32 >(fStepMain / fStepHelp);\n"
               "    }\n"
               "  }\n"
@@ -3488,7 +3491,7 @@ private:
         check("void foo(int a) {\n"
               "    if (a == a) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
         check("void fun(int b) {\n"
               "    return  a && a ||\n"
@@ -3497,45 +3500,45 @@ private:
               "            e < e &&\n"
               "            f ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n"
-                      "[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '=='.\n"
-                      "[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '>'.\n"
-                      "[test.cpp:5] -> [test.cpp:5]: (style) Same expression on both sides of '<'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&'.\n"
+                      "[test.cpp:3]: (style) Same expression on both sides of '=='.\n"
+                      "[test.cpp:4]: (style) Same expression on both sides of '>'.\n"
+                      "[test.cpp:5]: (style) Same expression on both sides of '<'.\n", errout.str());
 
         check("void foo() {\n"
               "    return a && a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("void foo() {\n"
               "    a = b && b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("void foo(int b) {\n"
               "    f(a,b == b);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
         check("void foo(int b) {\n"
               "    f(b == b, a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
         check("void foo() {\n"
               "    if (x!=2 || x!=2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo(int a, int b) {\n"
               "    if ((a < b) && (b > a)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because the value of 'a<b' and 'b>a' are the same.\n", errout.str());
 
         check("void foo(int a, int b) {\n"
               "    if ((a <= b) && (b >= a)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because the value of 'a<=b' and 'b>=a' are the same.\n", errout.str());
 
         check("void foo() {\n"
               "    if (x!=2 || y!=3 || x!=2) {}\n"
@@ -3550,7 +3553,7 @@ private:
         check("void foo() {\n"
               "    if (a && b || a && b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (a && b || b && c) {}\n"
@@ -3560,22 +3563,22 @@ private:
         check("void foo() {\n"
               "    if (a && b | b && c) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
 
         check("void foo() {\n"
               "    if ((a + b) | (a + b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
 
         check("void foo() {\n"
               "    if ((a | b) & (a | b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
 
         check("void foo(int a, int b) {\n"
               "    if ((a | b) == (a | b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
         check("void foo() {\n"
               "    if (a1[a2[c & 0xff] & 0xff]) {}\n"
@@ -3599,12 +3602,12 @@ private:
         check("void foo() {\n"
               "    if (a && b && b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (a || b || b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (a / 1000 / 1000) {}\n"
@@ -3614,7 +3617,7 @@ private:
         check("int foo(int i) {\n"
               "    return i/i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '/'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '/'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (a << 1 << 1) {}\n"
@@ -3653,13 +3656,13 @@ private:
               "    bool a = bar.isSet() && bar->isSet();\n"
               "    bool b = bar.isSet() && bar.isSet();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
 
         check("void foo(int a, int b) {\n"
               "    if ((b + a) | (a + b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '|'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '|' because the value of 'b+a' and 'a+b' are the same.\n", errout.str());
 
         check("void foo(const std::string& a, const std::string& b) {\n"
               "  return a.find(b+\"&\") || a.find(\"&\"+b);\n"
@@ -3674,13 +3677,13 @@ private:
         check("void foo(double a, double b) {\n"
               "    if ((b + a) > (a + b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '>'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '>' because the value of 'b+a' and 'a+b' are the same.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x == 1) && (x == 0x00000001))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"
@@ -3718,7 +3721,7 @@ private:
               "    if (sizeof(a) == sizeof(a)) { }\n"
               "    if (sizeof(a) == sizeof(b)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
         check("float bar(int) __attribute__((pure));\n"
               "char foo(int) __attribute__((pure));\n"
@@ -3727,7 +3730,7 @@ private:
               "    if (unknown(a) == unknown(a)) { }\n"
               "    if (foo(a) == foo(a)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Same expression on both sides of '=='.\n", errout.str());
     }
 
     void duplicateExpression2() { // check if float is NaN or Inf
@@ -3751,7 +3754,7 @@ private:
 
         check("struct X { int i; };\n"
               "int f(struct X x) { return x.i == x.i; }");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '=='.\n", errout.str());
 
         // #5284 - when type is unknown, assume it's float
         check("int f() { return x==x; }");
@@ -3784,7 +3787,7 @@ private:
               "void A::foo() const {\n"
               "    if (bar() && bar()) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("struct A {\n"
               "  void foo();\n"
@@ -3808,7 +3811,7 @@ private:
               "    if (b.bar(1) && b.bar(1)) {}\n"
               "    if (a.bar(1) && a.bar(1)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:11]: (style) Same expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) Same expression on both sides of '&&'.\n", errout.str());
 
         check("class D { void strcmp(); };\n"
               "void foo() {\n"
@@ -3820,7 +3823,7 @@ private:
         check("void foo() {\n"
               "    if ((mystrcmp(a, b) == 0) || (mystrcmp(a, b) == 0)) {}\n"
               "}", "test.cpp", false, false, true, &settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void GetValue() { return rand(); }\n"
               "void foo() {\n"
@@ -3832,19 +3835,19 @@ private:
               "void foo() {\n"
               "    if ((GetValue() == 0) || (GetValue() == 0)) { dostuff(); }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void GetValue() __attribute__((const));\n"
               "void GetValue() { return X; }\n"
               "void foo() {\n"
               "    if ((GetValue() == 0) || (GetValue() == 0)) { dostuff(); }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (str == \"(\" || str == \"(\") {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (bar(a) && !strcmp(a, b) && bar(a) && !strcmp(a, b)) {}\n"
@@ -3861,7 +3864,7 @@ private:
         check("void f(A *src) {\n"
               "    if (dynamic_cast<B*>(src) || dynamic_cast<B*>(src)) {}\n"
               "}\n", "test.cpp", false, false, false); // don't run simplifications
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         // #5819
         check("Vector func(Vector vec1) {\n"
@@ -3872,7 +3875,7 @@ private:
         check("Vector func(int vec1) {\n"
               "    return fabs(vec1 & vec1 & vec1);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&'.\n", errout.str());
 
     }
 
@@ -3906,6 +3909,198 @@ private:
               "double IsNan(double value) { return !(value == value); }\n"
               "long double IsNan(long double value) { return !(value == value); }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression7() {
+        check("void f() {\n"
+              "    const int i = sizeof(int);\n"
+              "    if ( i != sizeof (int)){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'i' and 'sizeof(int)' are the same.\n", errout.str());
+
+        check("void f() {\n"
+              "    const int i = sizeof(int);\n"
+              "    if ( sizeof (int) != i){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'sizeof(int)' and 'i' are the same.\n", errout.str());
+
+        check("void f(int a = 1) { if ( a != 1){}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    int b = 1;\n"
+              "    if ( a != b){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    int b = a;\n"
+              "    if ( a != b){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
+
+        check("void use(int);\n"
+              "void f() {\n"
+              "    int a = 1;\n"
+              "    int b = 1;\n"
+              "    use(b);\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+
+        check("void use(int);\n"
+              "void f() {\n"
+              "    int a = 1;\n"
+              "    use(a);\n"
+              "    a = 2;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void use(int);\n"
+              "void f() {\n"
+              "    int a = 2;\n"
+              "    use(a);\n"
+              "    a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const int a = 1;\n"
+              "    void f() {\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+
+        check("int a = 1;\n"
+              "    void f() {\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static const int a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+
+        check("void f() {\n"
+              "    static int a = 1;\n"
+              "    if ( a != 1){} \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    if ( a != 1){\n"
+              "        a++;\n"
+              "    }}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+
+        check("void f(int b) {\n"
+              "    int a = 1;\n"
+              "    while (b) {\n"
+              "        if ( a != 1){}\n"
+              "        a++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression8() {
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    int b = a;\n"
+              "    a = 2;\n"
+              "    if ( b != a){}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int * a, int i) { int b = a[i]; a[i] = 2; if ( b != a[i]){}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int * a, int i) { int b = *a; *a = 2; if ( b != *a){}}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int f() const; };\n"
+              "A g();\n"
+              "void foo() {\n"
+              "    for (const A x = A();;) {\n"
+              "        const int a = x.f();\n"
+              "        x = g();\n"
+              "        if (x.f() == a) break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i);\n"
+              "struct A {\n"
+              "    enum E { B, C };\n"
+              "    bool f(E);\n"
+              "};\n"
+              "void foo() {\n"
+              "    A a;\n"
+              "    const bool x = a.f(A::B);\n"
+              "    const bool y = a.f(A::C);\n"
+              "    if(!x && !y) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() { \n"
+              "    const bool x = a.f(A::B);\n"
+              "    const bool y = a.f(A::C);\n"
+              "    if (!x && !y) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool * const b);\n"
+              "void foo() { \n"
+              "    bool x = true;\n"
+              "    bool y = true;\n"
+              "    f(&x);\n"
+              "    if (!x && !y) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const int a = {};\n"
+              "    if(a == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpressionLoop() {
+        check("void f() {\n"
+              "    int a = 1;\n"
+              "    while ( a != 1){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+
+        check("void f() { int a = 1; while ( a != 1){ a++; }}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { int a = 1; for ( int i=0; i < 3 && a != 1; i++){ a++; }}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int b) { int a = 1; while (b) { if ( a != 1){} b++; } a++; } \n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int b) {\n"
+              "    while (b) {\n"
+              "        int a = 1;\n"
+              "        if ( a != 1){}\n"
+              "        b++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
     }
 
     void duplicateExpressionTernary() { // #6391
@@ -4057,6 +4252,23 @@ private:
         check("int f() __attribute__((pure));\n"
               "int g() __attribute__((pure));\n"
               "void test() {\n"
+              "    int i = f() + 1;\n"
+              "    int j = 1 + f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() __attribute__((pure));\n"
+              "int g() __attribute__((pure));\n"
+              "void test() {\n"
+              "    int x = f();\n"
+              "    int i = x + 1;\n"
+              "    int j = f() + 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() __attribute__((pure));\n"
+              "int g() __attribute__((pure));\n"
+              "void test() {\n"
               "    int i = f() + f();\n"
               "    int j = f() + f();\n"
               "}");
@@ -4069,6 +4281,15 @@ private:
               "    int j = f(0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("int f(int) __attribute__((pure));\n"
+              "int g(int) __attribute__((pure));\n"
+              "void test() {\n"
+              "    const int x = 0;\n"
+              "    int i = f(0);\n"
+              "    int j = f(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void test(int * p, int * q) {\n"
               "    int i = *p;\n"
@@ -4167,6 +4388,12 @@ private:
         check("void test(int x) {\n"
               "    int i = x--;\n"
               "    int j = x--;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = x + 1;\n"
+              "    int j = 1 + x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
