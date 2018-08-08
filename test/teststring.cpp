@@ -591,6 +591,11 @@ private:
                       "[test.cpp:3]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
                       "[test.cpp:4]: (warning) Conversion of char literal 'c' to bool always evaluates to true.\n"
                       , errout.str());
+
+        check("void f() {\n"
+              "  if('\\0'){}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deadStrcmp() {
