@@ -1650,28 +1650,27 @@ void MainWindow::enableProjectOpenActions(bool enable)
 void MainWindow::openRecentProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
-    if (action) {
-        const QString project = action->data().toString();
-        QFileInfo inf(project);
-        if (inf.exists()) {
-            loadProjectFile(project);
-        } else {
-            const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
-                                  "Do you want to remove the file from the recently "
-                                  "used projects -list?").arg(project));
+    if (!action)
+        return;
+    const QString project = action->data().toString();
+    QFileInfo inf(project);
+    if (inf.exists()) {
+        loadProjectFile(project);
+    } else {
+        const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
+                              "Do you want to remove the file from the recently "
+                              "used projects -list?").arg(project));
 
-            QMessageBox msg(QMessageBox::Warning,
-                            tr("Cppcheck"),
-                            text,
-                            QMessageBox::Yes | QMessageBox::No,
-                            this);
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Cppcheck"),
+                        text,
+                        QMessageBox::Yes | QMessageBox::No,
+                        this);
 
-            msg.setDefaultButton(QMessageBox::No);
-            int rv = msg.exec();
-            if (rv == QMessageBox::Yes) {
-                removeProjectMRU(project);
-            }
-
+        msg.setDefaultButton(QMessageBox::No);
+        int rv = msg.exec();
+        if (rv == QMessageBox::Yes) {
+            removeProjectMRU(project);
         }
     }
 }
