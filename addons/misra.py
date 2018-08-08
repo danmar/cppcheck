@@ -1836,7 +1836,7 @@ def parseDump(dumpfile):
                 print("\nRule violations found: %d\n" % (len(VIOLATIONS)))
             exitCode = 1
 
-    sys.exit(exitCode)
+    return exitCode
 
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
@@ -1900,5 +1900,9 @@ else:
     if args.no_summary:
         SHOW_SUMMARY = False
     if args.dumpfile:
+        exitCode = 0
         for item in args.dumpfile:
-            parseDump(item)
+            checkCode = parseDump(item)
+            if checkCode != 0:
+                exitCode = checkCode
+        sys.exit(exitCode)
