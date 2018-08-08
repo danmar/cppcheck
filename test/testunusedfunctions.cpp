@@ -40,6 +40,7 @@ private:
         TEST_CASE(return1);
         TEST_CASE(return2);
         TEST_CASE(callback1);
+        TEST_CASE(callback2);
         TEST_CASE(else1);
         TEST_CASE(functionpointer);
         TEST_CASE(template1);
@@ -117,6 +118,19 @@ private:
               "    void (*f)() = cond ? f1 : NULL;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void callback2() { // #8677
+        check("class C {\n"
+              "public:\n"
+              "    void callback();\n"
+              "    void start();\n"
+              "};\n"
+              "\n"
+              "void C::callback() {}\n" // <- not unused
+              "\n"
+              "void C::start() { ev.set<C, &C::callback>(this); }");
+        ASSERT_EQUALS("[test.cpp:9]: (style) The function 'start' is never used.\n", errout.str());
     }
 
     void else1() {
