@@ -1685,11 +1685,10 @@ void MainWindow::updateMRUMenuItems()
 
     QStringList projects = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
 
-    // Do a sanity check - remove duplicates and empty or space only items
+    // Do a sanity check - remove duplicates and non-existing projects
     int removed = projects.removeDuplicates();
     for (int i = projects.size() - 1; i >= 0; i--) {
-        QString text = projects[i].trimmed();
-        if (text.isEmpty()) {
+        if (!QFileInfo(projects[i]).exists()) {
             projects.removeAt(i);
             removed++;
         }
