@@ -4252,6 +4252,23 @@ private:
         check("int f() __attribute__((pure));\n"
               "int g() __attribute__((pure));\n"
               "void test() {\n"
+              "    int i = f() + 1;\n"
+              "    int j = 1 + f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() __attribute__((pure));\n"
+              "int g() __attribute__((pure));\n"
+              "void test() {\n"
+              "    int x = f();\n"
+              "    int i = x + 1;\n"
+              "    int j = f() + 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() __attribute__((pure));\n"
+              "int g() __attribute__((pure));\n"
+              "void test() {\n"
               "    int i = f() + f();\n"
               "    int j = f() + f();\n"
               "}");
@@ -4264,6 +4281,15 @@ private:
               "    int j = f(0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
+
+        check("int f(int) __attribute__((pure));\n"
+              "int g(int) __attribute__((pure));\n"
+              "void test() {\n"
+              "    const int x = 0;\n"
+              "    int i = f(0);\n"
+              "    int j = f(x);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void test(int * p, int * q) {\n"
               "    int i = *p;\n"
@@ -4362,6 +4388,12 @@ private:
         check("void test(int x) {\n"
               "    int i = x--;\n"
               "    int j = x--;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void test(int x) {\n"
+              "    int i = x + 1;\n"
+              "    int j = 1 + x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
