@@ -233,17 +233,18 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         if (!mSettings.buildDir.empty()) {
             // Get toolinfo
-            std::string toolinfo;
-            toolinfo += CPPCHECK_VERSION_STRING;
-            toolinfo += mSettings.isEnabled(Settings::WARNING) ? 'w' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::STYLE) ? 's' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
-            toolinfo += mSettings.userDefines;
+            std::ostringstream toolinfo;
+            toolinfo << CPPCHECK_VERSION_STRING;
+            toolinfo << (mSettings.isEnabled(Settings::WARNING) ? 'w' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::STYLE) ? 's' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::INFORMATION) ? 'i' : ' ');
+            toolinfo << mSettings.userDefines;
+            mSettings.nomsg.dump(toolinfo);
 
             // Calculate checksum so it can be compared with old checksum / future checksums
-            const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
+            const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo.str());
             std::list<ErrorLogger::ErrorMessage> errors;
             if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, checksum, &errors)) {
                 while (!errors.empty()) {
