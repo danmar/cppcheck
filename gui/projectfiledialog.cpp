@@ -672,7 +672,7 @@ void ProjectFileDialog::editSuppression(const QModelIndex &)
     }
 }
 
-int ProjectFileDialog::getSuppressionIndex(const QString shortText) const
+int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
 {
     const std::string s = shortText.toStdString();
     for (int i = 0; i < mSuppressions.size(); ++i) {
