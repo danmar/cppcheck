@@ -80,6 +80,7 @@ private:
         TEST_CASE(valueFlowAfterCondition);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
+        TEST_CASE(valueFlowForwardModifiedVariables);
         TEST_CASE(valueFlowForwardFunction);
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
@@ -105,6 +106,24 @@ private:
         TEST_CASE(valueFlowUninit);
 
         TEST_CASE(valueFlowContainerSize);
+    }
+
+    bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for(const ValueFlow::Value& val:tok->values()) {
+                    if(val.isKnown() && val.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -2133,6 +2152,27 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+    }
+
+    void valueFlowForwardModifiedVariables() {
+        const char *code;
+
+        code = "void f(bool b) {\n"
+               "  int x = 0;\n"
+               "  if (b) x = 1;\n"
+               "  else b = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(int i) {\n"
+               "    int x = 0;\n"
+               "    if (i == 0) \n"
+               "        x = 1;\n"
+               "    else if (!x && i == 1) \n"
+               "        int b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
     }
 
     void valueFlowForwardFunction() {

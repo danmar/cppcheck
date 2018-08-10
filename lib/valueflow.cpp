@@ -92,6 +92,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <set>
@@ -1827,6 +1829,22 @@ static bool valueFlowForward(Token * const               startToken,
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " bailout when conditional code that contains var is seen");
                     return false;
+                }
+
+                // Forward known values in the else branch
+                if(Token::simpleMatch(end, "} else {")) {
+                    std::list<ValueFlow::Value> knownValues;
+                    std::copy_if(values.begin(), values.end(), std::back_inserter(knownValues), std::mem_fn(&ValueFlow::Value::isKnown));
+                    valueFlowForward(end->tokAt(2),
+                                     end->linkAt(2),
+                                     var,
+                                     varid,
+                                     knownValues,
+                                     constValue,
+                                     subFunction,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
                 }
 
                 // Remove conditional values
