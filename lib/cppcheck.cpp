@@ -174,8 +174,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  it->msg,
                                                  "syntaxError",
                                                  false);
-                mErrorLogger.reportErr(errmsg);
-                return 1;
+                reportErr(errmsg);
+                return mExitCode;
             }
         }
 
