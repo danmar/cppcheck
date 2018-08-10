@@ -1718,8 +1718,42 @@ void CheckStl::readingEmptyStlContainer()
     }
 }
 
-void CheckStl::readingEmptyStlContainerError(const Token *tok)
+
+void CheckStl::readingEmptyStlContainer2()
+{
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            if (!tok->isName() || !tok->valueType())
+                continue;
+            const Library::Container *container = tok->valueType()->container;
+            if (!container)
+                continue;
+            const ValueFlow::Value *value = tok->getContainerSizeValue(0);
+            if (!value)
+                continue;
+            if (value->isInconclusive() && !mSettings->inconclusive)
+                continue;
+            if (!value->errorSeverity() && !mSettings->isEnabled(Settings::WARNING))
+                continue;
+            if (Token::Match(tok, "%name% . %name% (")) {
+                if (container->getYield(tok->strAt(2)) == Library::Container::Yield::ITEM)
+                    readingEmptyStlContainerError(tok,value);
+            }
+        }
+    }
+}
+
+void CheckStl::readingEmptyStlContainerError(const Token *tok, const ValueFlow::Value *value)
 {
     const std::string varname = tok ? tok->str() : std::string("var");
-    reportError(tok, Severity::style, "reademptycontainer", "$symbol:" + varname +"\nReading from empty STL container '$symbol'", CWE398, true);
+
+    std::string errmsg;
+    if (value && value->condition)
+        errmsg = "Reading from container '$symbol'. " + ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or '$symbol' can be empty.";
+    else
+        errmsg = "Reading from empty STL container '$symbol'";
+
+    const ErrorPath errorPath = getErrorPath(tok, value, "Reading from empty container");
+
+    reportError(errorPath, value ? (value->errorSeverity() ? Severity::error : Severity::warning) : Severity::style, "reademptycontainer", "$symbol:" + varname +"\n" + errmsg, CWE398, !value);
 }

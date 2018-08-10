@@ -3413,6 +3413,38 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
     }
 }
 
+static void valueFlowContainerReverse(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
+{
+    while (nullptr != (tok = tok->previous())) {
+        if (Token::Match(tok, "[{}]"))
+            break;
+        if (tok->varId() != containerId)
+            continue;
+        if (!tok->valueType() || !tok->valueType()->container)
+            continue;
+        setTokenValue(const_cast<Token *>(tok), value, settings);
+    }
+}
+
+static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
+{
+    for (const Scope &scope : symboldatabase->scopeList) {
+        if (scope.type != Scope::ScopeType::eIf) // TODO: while
+            continue;
+        for (const Token *tok = scope.classDef; tok && tok->str() != "{"; tok = tok->next()) {
+            if (!tok->isName() || !tok->valueType() || tok->valueType()->type != ValueType::CONTAINER)
+                continue;
+            if (!Token::Match(tok, "%name% . %name% ("))
+                continue;
+            if (tok->valueType()->container->getYield(tok->strAt(2)) != Library::Container::Yield::EMPTY)
+                continue;
+            ValueFlow::Value value(tok->tokAt(3), 0LL);
+            value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+            valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token *c, long long val)
     : valueType(INT),
       intvalue(val),
@@ -3442,6 +3474,8 @@ std::string ValueFlow::Value::infoString() const
         return "<Moved>";
     case UNINIT:
         return "<Uninit>";
+    case CONTAINER_SIZE:
+        return "size=" + MathLib::toString(intvalue);
     };
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
@@ -3479,6 +3513,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowSubFunction(tokenlist, errorLogger, settings);
     valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
+    if (tokenlist->isCPP())
+        valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
 }
 
 

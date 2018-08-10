@@ -79,6 +79,7 @@ public:
         checkStl.redundantCondition();
         checkStl.missingComparison();
         checkStl.readingEmptyStlContainer();
+        checkStl.readingEmptyStlContainer2();
     }
 
 
@@ -169,6 +170,9 @@ public:
     /** @brief Reading from empty stl container */
     void readingEmptyStlContainer();
 
+
+    /** @brief Reading from empty stl container (using valueflow) */
+    void readingEmptyStlContainer2();
 private:
     void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
 
@@ -205,7 +209,7 @@ private:
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
 
-    void readingEmptyStlContainerError(const Token* tok);
+    void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckStl c(nullptr, settings, errorLogger);

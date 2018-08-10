@@ -143,6 +143,7 @@ private:
         TEST_CASE(dereference_auto);
 
         TEST_CASE(readingEmptyStlContainer);
+        TEST_CASE(readingEmptyStlContainer2);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -3253,6 +3254,15 @@ private:
               "  }\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void readingEmptyStlContainer2() {
+        check("void f(std::vector<int> v) {\n"
+              "    v.front();\n"
+              "    if (v.empty());\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Reading from container 'v'. Either the condition 'v.empty()' is redundant or 'v' can be empty.\n", errout.str());
+
     }
 };
 

@@ -103,6 +103,8 @@ private:
         TEST_CASE(valueFlowInlineAssembly);
 
         TEST_CASE(valueFlowUninit);
+
+        TEST_CASE(valueFlowContainerSize);
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -3201,6 +3203,31 @@ private:
         ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
         ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
+    }
+
+    void valueFlowContainerSize() {
+        const char *code;
+        std::list<ValueFlow::Value> values;
+
+        LOAD_LIB_2(settings.library, "std.cfg");
+
+        // valueFlowContainerReverse
+        code = "void f(const std::list<int> &ints) {\n"
+               "  ints.front();\n"
+               "  if (ints.empty()) {}\n"
+               "}";
+        values = tokenValues(code, "ints . front");
+        ASSERT_EQUALS(1,    values.size());
+        ASSERT_EQUALS(true, values.empty() ? true : values.front().isContainerSizeValue());
+        ASSERT_EQUALS(0,    values.empty() ? 0    : values.front().intvalue);
+
+        code = "void f(std::list<int> ints) {\n"
+               "  ints.front();\n"
+               "  ints.pop_back();\n"
+               "  if (ints.empty()) {}\n"
+               "}";
+        values = tokenValues(code, "ints . front");
+        ASSERT_EQUALS(true, values.empty());
     }
 };
 
