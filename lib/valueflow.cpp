@@ -3420,6 +3420,8 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
             break;
         if (tok->varId() != containerId)
             continue;
+        if (Token::Match(tok, "%name% ="))
+            break;
         if (!tok->valueType() || !tok->valueType()->container)
             continue;
         if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
