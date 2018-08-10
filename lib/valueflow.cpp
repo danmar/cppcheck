@@ -1832,7 +1832,7 @@ static bool valueFlowForward(Token * const               startToken,
                 }
 
                 // Forward known values in the else branch
-                if(Token::simpleMatch(end, "} else {")) {
+                if (Token::simpleMatch(end, "} else {")) {
                     std::list<ValueFlow::Value> knownValues;
                     std::copy_if(values.begin(), values.end(), std::back_inserter(knownValues), std::mem_fn(&ValueFlow::Value::isKnown));
                     valueFlowForward(end->tokAt(2),
@@ -3441,7 +3441,24 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
         if (Token::Match(tok, "%name% ="))
             break;
         if (!tok->valueType() || !tok->valueType()->container)
+            break;
+        if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
+            break;
+        setTokenValue(const_cast<Token *>(tok), value, settings);
+    }
+}
+
+static void valueFlowContainerForward(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
+{
+    while (nullptr != (tok = tok->next())) {
+        if (Token::Match(tok, "[{}]"))
+            break;
+        if (tok->varId() != containerId)
             continue;
+        if (Token::Match(tok, "%name% ="))
+            break;
+        if (!tok->valueType() || !tok->valueType()->container)
+            break;
         if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
             break;
         setTokenValue(const_cast<Token *>(tok), value, settings);
@@ -3483,6 +3500,10 @@ static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* sy
             ValueFlow::Value value(conditionToken, intval);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
+            const Token *after = scope.bodyEnd;
+            if (Token::simpleMatch(after, "} else {"))
+                after = after->linkAt(2);
+            valueFlowContainerForward(after, tok->varId(), value, settings);
         }
     }
 }

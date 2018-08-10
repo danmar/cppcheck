@@ -116,8 +116,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for(const ValueFlow::Value& val:tok->values()) {
-                    if(val.isKnown() && val.intvalue == value)
+                for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isKnown() && val.intvalue == value)
                         return true;
                 }
             }
@@ -3245,9 +3245,16 @@ private:
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
     }
 
+    static bool isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
+        return values.size() == 1 &&
+               values.front().isContainerSizeValue() &&
+               values.front().isPossible() &&
+               values.front().intvalue == i;
+    }
+
     void valueFlowContainerSize() {
         const char *code;
-        std::list<ValueFlow::Value> values;
+
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -3256,37 +3263,33 @@ private:
                "  ints.front();\n"
                "  if (ints.empty()) {}\n"
                "}";
-        values = tokenValues(code, "ints . front");
-        ASSERT_EQUALS(1,    values.size());
-        ASSERT_EQUALS(true, values.empty() ? true : values.front().isContainerSizeValue());
-        ASSERT_EQUALS(0,    values.empty() ? 0    : values.front().intvalue);
+        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(const std::list<int> &ints) {\n"
                "  ints.front();\n"
                "  if (ints.size()==0) {}\n"
                "}";
-        values = tokenValues(code, "ints . front");
-        ASSERT_EQUALS(1,    values.size());
-        ASSERT_EQUALS(true, values.empty() ? true : values.front().isContainerSizeValue());
-        ASSERT_EQUALS(0,    values.empty() ? 0    : values.front().intvalue);
+        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(std::list<int> ints) {\n"
                "  ints.front();\n"
                "  ints.pop_back();\n"
                "  if (ints.empty()) {}\n"
                "}";
-        values = tokenValues(code, "ints . front");
-        ASSERT_EQUALS(true, values.empty());
+        ASSERT(tokenValues(code, "ints . front").empty());
 
         code = "void f(std::vector<int> v) {\n"
                "  v[10] = 0;\n"
                "  if (v.size() == 10) {}\n"
                "}";
-        values = tokenValues(code, "v [");
-        ASSERT_EQUALS(1,    values.size());
-        ASSERT_EQUALS(true, values.empty() ? true : values.front().isContainerSizeValue());
-        ASSERT_EQUALS(10,   values.empty() ? 10   : values.front().intvalue);
+        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
 
+        // valueFlowContainerForward
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) {}\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
     }
 };
 
