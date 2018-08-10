@@ -3422,6 +3422,8 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
             continue;
         if (!tok->valueType() || !tok->valueType()->container)
             continue;
+        if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
+            break;
         setTokenValue(const_cast<Token *>(tok), value, settings);
     }
 }
@@ -3436,9 +3438,23 @@ static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* sy
                 continue;
             if (!Token::Match(tok, "%name% . %name% ("))
                 continue;
-            if (tok->valueType()->container->getYield(tok->strAt(2)) != Library::Container::Yield::EMPTY)
+
+            const Token *conditionToken;
+
+            if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE) {
+                const Token *parent = tok->tokAt(3)->astParent();
+                if (!parent || !parent->isComparisonOp() || !parent->astOperand2())
+                    continue;
+                if (parent->astOperand1()->str() != "0" && parent->astOperand2()->str() != "0")
+                    continue;
+                conditionToken = parent;
+            } else if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY) {
+                conditionToken = tok->tokAt(3);
+            } else {
                 continue;
-            ValueFlow::Value value(tok->tokAt(3), 0LL);
+            }
+
+            ValueFlow::Value value(conditionToken, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
         }

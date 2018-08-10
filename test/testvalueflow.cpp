@@ -3221,6 +3221,15 @@ private:
         ASSERT_EQUALS(true, values.empty() ? true : values.front().isContainerSizeValue());
         ASSERT_EQUALS(0,    values.empty() ? 0    : values.front().intvalue);
 
+        code = "void f(const std::list<int> &ints) {\n"
+               "  ints.front();\n"
+               "  if (ints.size()==0) {}\n"
+               "}";
+        values = tokenValues(code, "ints . front");
+        ASSERT_EQUALS(1,    values.size());
+        ASSERT_EQUALS(true, values.empty() ? true : values.front().isContainerSizeValue());
+        ASSERT_EQUALS(0,    values.empty() ? 0    : values.front().intvalue);
+
         code = "void f(std::list<int> ints) {\n"
                "  ints.front();\n"
                "  ints.pop_back();\n"
