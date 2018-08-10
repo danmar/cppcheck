@@ -839,9 +839,9 @@ public:
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mValues)
             return nullptr;
-        for (std::list<ValueFlow::Value>::const_iterator it = mValues->begin(); it != mValues->end(); ++it) {
-            if (it->isIntValue() && it->intvalue == val)
-                return &(*it);
+        for (const ValueFlow::Value &value : *mValues) {
+            if (value.isIntValue() && value.intvalue == val)
+                return &value;
         }
         return nullptr;
     }
@@ -850,12 +850,12 @@ public:
         if (!mValues)
             return nullptr;
         const ValueFlow::Value *ret = nullptr;
-        for (std::list<ValueFlow::Value>::const_iterator it = mValues->begin(); it != mValues->end(); ++it) {
-            if (!it->isIntValue())
+        for (const ValueFlow::Value &value : *mValues) {
+            if (!value.isIntValue())
                 continue;
-            if ((!ret || it->intvalue > ret->intvalue) &&
-                ((it->condition != nullptr) == condition))
-                ret = &(*it);
+            if ((!ret || value.intvalue > ret->intvalue) &&
+                ((value.condition != nullptr) == condition))
+                ret = &value;
         }
         return ret;
     }
@@ -863,9 +863,9 @@ public:
     const ValueFlow::Value * getMovedValue() const {
         if (!mValues)
             return nullptr;
-        for (std::list<ValueFlow::Value>::const_iterator it = mValues->begin(); it != mValues->end(); ++it) {
-            if (it->isMovedValue() && it->moveKind != ValueFlow::Value::NonMovedVariable)
-                return &(*it);
+        for (const ValueFlow::Value &value : *mValues) {
+            if (value.isMovedValue() && value.moveKind != ValueFlow::Value::NonMovedVariable)
+                return &value;
         }
         return nullptr;
     }
