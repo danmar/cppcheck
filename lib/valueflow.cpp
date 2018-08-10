@@ -3436,7 +3436,7 @@ static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* sy
         if (scope.type != Scope::ScopeType::eIf) // TODO: while
             continue;
         for (const Token *tok = scope.classDef; tok && tok->str() != "{"; tok = tok->next()) {
-            if (!tok->isName() || !tok->valueType() || tok->valueType()->type != ValueType::CONTAINER)
+            if (!tok->isName() || !tok->valueType() || tok->valueType()->type != ValueType::CONTAINER || !tok->valueType()->container)
                 continue;
             if (!Token::Match(tok, "%name% . %name% ("))
                 continue;
