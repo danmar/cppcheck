@@ -3277,6 +3277,16 @@ private:
                "}";
         values = tokenValues(code, "ints . front");
         ASSERT_EQUALS(true, values.empty());
+
+        code = "void f(std::vector<int> v) {\n"
+               "  v[10] = 0;\n"
+               "  if (v.size() == 10) {}\n"
+               "}";
+        values = tokenValues(code, "v [");
+        ASSERT_EQUALS(1,    values.size());
+        ASSERT_EQUALS(true, values.empty() ? true : values.front().isContainerSizeValue());
+        ASSERT_EQUALS(10,   values.empty() ? 10   : values.front().intvalue);
+
     }
 };
 

@@ -3460,21 +3460,27 @@ static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* sy
                 continue;
 
             const Token *conditionToken;
+            MathLib::bigint intval;
 
             if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE) {
                 const Token *parent = tok->tokAt(3)->astParent();
                 if (!parent || !parent->isComparisonOp() || !parent->astOperand2())
                     continue;
-                if (parent->astOperand1()->str() != "0" && parent->astOperand2()->str() != "0")
+                if (parent->astOperand1()->hasKnownIntValue())
+                    intval = parent->astOperand1()->values().front().intvalue;
+                else if (parent->astOperand2()->hasKnownIntValue())
+                    intval = parent->astOperand2()->values().front().intvalue;
+                else
                     continue;
                 conditionToken = parent;
             } else if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY) {
                 conditionToken = tok->tokAt(3);
+                intval = 0;
             } else {
                 continue;
             }
 
-            ValueFlow::Value value(conditionToken, 0LL);
+            ValueFlow::Value value(conditionToken, intval);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
         }
