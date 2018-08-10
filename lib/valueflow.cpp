@@ -3499,11 +3499,26 @@ static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* sy
 
             ValueFlow::Value value(conditionToken, intval);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+
+            // possible value before condition
             valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
+
+            // possible value after condition
             const Token *after = scope.bodyEnd;
             if (Token::simpleMatch(after, "} else {"))
                 after = after->linkAt(2);
             valueFlowContainerForward(after, tok->varId(), value, settings);
+
+            // known value in conditional code
+            if (conditionToken->str() == "==" || conditionToken->str() == "(") {
+                const Token *parent = conditionToken;
+                while (parent && parent->str() != "!")
+                    parent = parent->astParent();
+                if (!parent) {
+                    value.setKnown();
+                    valueFlowContainerForward(scope.bodyStart, tok->varId(), value, settings);
+                }
+            }
         }
     }
 }

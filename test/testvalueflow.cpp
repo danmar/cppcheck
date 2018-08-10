@@ -3245,16 +3245,32 @@ private:
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
     }
 
-    static bool isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
-        return values.size() == 1 &&
-               values.front().isContainerSizeValue() &&
-               values.front().isPossible() &&
-               values.front().intvalue == i;
+    static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isPossible())
+            return "Possible";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
+    static std::string isKnownContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isKnown())
+            return "Known";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
     }
 
     void valueFlowContainerSize() {
         const char *code;
-
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -3263,13 +3279,13 @@ private:
                "  ints.front();\n"
                "  if (ints.empty()) {}\n"
                "}";
-        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(const std::list<int> &ints) {\n"
                "  ints.front();\n"
                "  if (ints.size()==0) {}\n"
                "}";
-        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(std::list<int> ints) {\n"
                "  ints.front();\n"
@@ -3282,14 +3298,21 @@ private:
                "  v[10] = 0;\n"
                "  if (v.size() == 10) {}\n"
                "}";
-        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
 
         // valueFlowContainerForward
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) {}\n"
                "  ints.front();\n"
                "}";
-        ASSERT(isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) {\n"
+               "    ints.front();\n"
+               "  }\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
     }
 };
 
