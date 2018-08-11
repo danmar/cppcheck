@@ -3431,6 +3431,31 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
     }
 }
 
+static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
+{
+    for (; tok && tok->astParent(); tok = tok->astParent()) {
+        const Token *parent = tok->astParent();
+        if (tok != parent->astOperand2())
+            continue;
+        if (!Token::Match(parent, "%oror%|&&|?"))
+            continue;
+        // is container found in lhs?
+        std::stack<const Token *> tokens;
+        tokens.push(parent->astOperand1());
+        while (!tokens.empty()) {
+            const Token *t = tokens.top();
+            tokens.pop();
+            if (!t)
+                continue;
+            if (t->varId() == containerId)
+                return true;
+            tokens.push(t->astOperand1());
+            tokens.push(t->astOperand2());
+        }
+    }
+    return false;
+}
+
 static void valueFlowContainerReverse(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
 {
     while (nullptr != (tok = tok->previous())) {
@@ -3444,7 +3469,8 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
             break;
         if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
             break;
-        setTokenValue(const_cast<Token *>(tok), value, settings);
+        if (!hasContainerSizeGuard(tok, containerId))
+            setTokenValue(const_cast<Token *>(tok), value, settings);
     }
 }
 
@@ -3461,7 +3487,8 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
             break;
         if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
             break;
-        setTokenValue(const_cast<Token *>(tok), value, settings);
+        if (!hasContainerSizeGuard(tok, containerId))
+            setTokenValue(const_cast<Token *>(tok), value, settings);
     }
 }
 
