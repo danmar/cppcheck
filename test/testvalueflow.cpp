@@ -3276,26 +3276,26 @@ private:
 
         // valueFlowContainerReverse
         code = "void f(const std::list<int> &ints) {\n"
-               "  ints.front();\n"
+               "  ints.front();\n" // <- container can be empty
                "  if (ints.empty()) {}\n"
                "}";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(const std::list<int> &ints) {\n"
-               "  ints.front();\n"
+               "  ints.front();\n" // <- container can be empty
                "  if (ints.size()==0) {}\n"
                "}";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(std::list<int> ints) {\n"
-               "  ints.front();\n"
+               "  ints.front();\n" // <- no container size
                "  ints.pop_back();\n"
                "  if (ints.empty()) {}\n"
                "}";
         ASSERT(tokenValues(code, "ints . front").empty());
 
         code = "void f(std::vector<int> v) {\n"
-               "  v[10] = 0;\n"
+               "  v[10] = 0;\n" // <- container size can be 10
                "  if (v.size() == 10) {}\n"
                "}";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
@@ -3303,13 +3303,19 @@ private:
         // valueFlowContainerForward
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) {}\n"
-               "  ints.front();\n"
+               "  ints.front();\n" // <- container can be empty
                "}";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) { continue; }\n"
+               "  ints.front();\n" // <- no container size
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
+        code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) {\n"
-               "    ints.front();\n"
+               "    ints.front();\n" // <- container is empty
                "  }\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));

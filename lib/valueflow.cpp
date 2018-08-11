@@ -3465,7 +3465,7 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
     }
 }
 
-static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
+static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
 {
     for (const Scope &scope : symboldatabase->scopeList) {
         if (scope.type != Scope::ScopeType::eIf) // TODO: while
@@ -3504,10 +3504,13 @@ static void valueFlowContainerSize(TokenList * /*tokenlist*/, SymbolDatabase* sy
             valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
 
             // possible value after condition
-            const Token *after = scope.bodyEnd;
-            if (Token::simpleMatch(after, "} else {"))
-                after = after->linkAt(2);
-            valueFlowContainerForward(after, tok->varId(), value, settings);
+            if (!isEscapeScope(scope.bodyStart, tokenlist)) {
+                const Token *after = scope.bodyEnd;
+                if (Token::simpleMatch(after, "} else {"))
+                    after = isEscapeScope(after->tokAt(2), tokenlist) ? nullptr : after->linkAt(2);
+                if (after)
+                    valueFlowContainerForward(after, tok->varId(), value, settings);
+            }
 
             // known value in conditional code
             if (conditionToken->str() == "==" || conditionToken->str() == "(") {
