@@ -53,6 +53,16 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
+    /** run checks, the token list is not simplified */
+    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
+        if (!tokenizer->isCPP()) {
+            return;
+        }
+
+        CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.outOfBounds();
+    }
+
     /** Simplified checks. The token list is simplified. */
     void runSimplifiedChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) override {
         if (!tokenizer->isCPP()) {
@@ -79,9 +89,10 @@ public:
         checkStl.redundantCondition();
         checkStl.missingComparison();
         checkStl.readingEmptyStlContainer();
-        checkStl.readingEmptyStlContainer2();
     }
 
+    /** Accessing container out of bounds using ValueFlow */
+    void outOfBounds();
 
     /**
      * Finds errors like this:
@@ -182,6 +193,7 @@ private:
     void string_c_strReturn(const Token* tok);
     void string_c_strParam(const Token* tok, unsigned int number);
 
+    void outOfBoundsError(const Token *tok, const ValueFlow::Value *containerSize, const ValueFlow::Value *index);
     void stlOutOfBoundsError(const Token* tok, const std::string& num, const std::string& var, bool at);
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
@@ -213,6 +225,7 @@ private:
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckStl c(nullptr, settings, errorLogger);
+        c.outOfBoundsError(nullptr, nullptr, nullptr);
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
         c.mismatchingContainersError(nullptr);

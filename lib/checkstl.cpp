@@ -50,6 +50,103 @@ static const struct CWE CWE788(788U);   // Access of Memory Location After End o
 static const struct CWE CWE825(825U);   // Expired Pointer Dereference
 static const struct CWE CWE834(834U);   // Excessive Iteration
 
+
+
+void CheckStl::outOfBounds()
+{
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            if (!tok->isName() || !tok->valueType())
+                continue;
+            const Library::Container *container = tok->valueType()->container;
+            if (!container)
+                continue;
+            for (const ValueFlow::Value &value : tok->values()) {
+                if (!value.isContainerSizeValue())
+                    continue;
+                if (value.isInconclusive() && !mSettings->inconclusive)
+                    continue;
+                if (!value.errorSeverity() && !mSettings->isEnabled(Settings::WARNING))
+                    continue;
+                if (value.intvalue == 0 && Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::ITEM) {
+                    outOfBoundsError(tok, &value, nullptr);
+                    continue;
+                }
+                if (value.intvalue == 0 && Token::Match(tok, "%name% [")) {
+                    outOfBoundsError(tok, &value, nullptr);
+                    continue;
+                }
+                if (container->arrayLike_indexOp && Token::Match(tok, "%name% [")) {
+                    const ValueFlow::Value *indexValue = tok->next()->astOperand2() ? tok->next()->astOperand2()->getMaxValue(false) : nullptr;
+                    if (indexValue && indexValue->intvalue >= value.intvalue) {
+                        outOfBoundsError(tok, &value, indexValue);
+                        continue;
+                    }
+                    if (mSettings->isEnabled(Settings::WARNING)) {
+                        indexValue = tok->next()->astOperand2() ? tok->next()->astOperand2()->getMaxValue(true) : nullptr;
+                        if (indexValue && indexValue->intvalue >= value.intvalue) {
+                            outOfBoundsError(tok, &value, indexValue);
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckStl::outOfBoundsError(const Token *tok, const ValueFlow::Value *containerSize, const ValueFlow::Value *index)
+{
+    // Do not warn if both the container size and index are possible
+    if (containerSize && index && containerSize->isPossible() && index->isPossible())
+        return;
+
+    const std::string varname = tok ? tok->str() : std::string("var");
+
+    std::string errmsg;
+    if (!containerSize)
+        errmsg = "Out of bounds access of item in container '$symbol'";
+    else if (containerSize->intvalue == 0) {
+        if (containerSize->condition)
+            errmsg = "Accessing an item in container '$symbol'. " + ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or '$symbol' can be empty.";
+        else
+            errmsg = "Accessing an item in container '$symbol' that is empty.";
+    } else {
+        if (containerSize->condition || index->condition)
+            errmsg = "Possible access out of bounds";
+        else
+            errmsg = "Access out of bounds";
+
+        errmsg += " of container '$symbol'; size=" +
+                  MathLib::toString(containerSize->intvalue) + ", index=" +
+                  MathLib::toString(index->intvalue);
+    }
+
+    ErrorPath errorPath;
+    if (!index)
+        errorPath = getErrorPath(tok, containerSize, "Access out of bounds");
+    else {
+        ErrorPath errorPath1 = getErrorPath(tok, containerSize, "Access out of bounds");
+        ErrorPath errorPath2 = getErrorPath(tok, index, "Access out of bounds");
+        if (errorPath1.size() <= 1)
+            errorPath = errorPath2;
+        else if (errorPath2.size() <= 1)
+            errorPath = errorPath1;
+        else {
+            errorPath = errorPath1;
+            errorPath.splice(errorPath.end(), errorPath2);
+        }
+    }
+
+    reportError(errorPath,
+                (containerSize && !containerSize->errorSeverity()) || (index && !index->errorSeverity()) ? Severity::warning : Severity::error,
+                "containerOutOfBounds",
+                "$symbol:" + varname +"\n" + errmsg,
+                CWE398,
+                (containerSize && containerSize->isInconclusive()) || (index && index->isInconclusive()));
+}
+
+
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {

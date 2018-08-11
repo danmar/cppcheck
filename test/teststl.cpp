@@ -40,6 +40,8 @@ private:
         settings.addEnabled("performance");
         LOAD_LIB_2(settings.library, "std.cfg");
 
+        TEST_CASE(outOfBounds);
+
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
         TEST_CASE(iterator3);
@@ -143,7 +145,6 @@ private:
         TEST_CASE(dereference_auto);
 
         TEST_CASE(readingEmptyStlContainer);
-        TEST_CASE(readingEmptyStlContainer2);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -167,6 +168,55 @@ private:
         check(code.c_str(), inconclusive);
     }
 
+    void checkNormal(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckStl checkStl(&tokenizer, &settings, this);
+        checkStl.runChecks(&tokenizer, &settings, this);
+    }
+
+    void outOfBounds() {
+        setMultiline();
+
+        checkNormal("void f(std::vector<int> v) {\n"
+                    "    v.front();\n"
+                    "    if (v.empty()) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:2:warning:Accessing an item in container 'v'. Either the condition 'v.empty()' is redundant or 'v' can be empty.\n"
+                      "test.cpp:3:note:condition 'v.empty()'\n"
+                      "test.cpp:2:note:Access out of bounds\n", errout.str());
+
+        checkNormal("void f(std::vector<int> v) {\n"
+                    "    if (v.size() == 3) {}\n"
+                    "    v[16] = 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:warning:Possible access out of bounds of container 'v'; size=3, index=16\n"
+                      "test.cpp:2:note:condition 'v.size()==3'\n"
+                      "test.cpp:3:note:Access out of bounds\n", errout.str());
+
+        checkNormal("void f(std::vector<int> v) {\n"
+                    "    int i = 16;\n"
+                    "    if (v.size() == 3) {\n"
+                    "        v[i] = 0;\n"
+                    "    }\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:4:warning:Possible access out of bounds of container 'v'; size=3, index=16\n"
+                      "test.cpp:3:note:condition 'v.size()==3'\n"
+                      "test.cpp:4:note:Access out of bounds\n", errout.str());
+
+        checkNormal("void f(std::vector<int> v, int i) {\n"
+                    "    if (v.size() == 3 || i == 16) {}\n"
+                    "    v[i] = 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void iterator1() {
         check("void f()\n"
@@ -3254,15 +3304,6 @@ private:
               "  }\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void readingEmptyStlContainer2() {
-        check("void f(std::vector<int> v) {\n"
-              "    v.front();\n"
-              "    if (v.empty());\n"
-              "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Reading from container 'v'. Either the condition 'v.empty()' is redundant or 'v' can be empty.\n", errout.str());
-
     }
 };
 

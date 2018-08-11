@@ -83,6 +83,10 @@ TestFixture::TestFixture(const char * const _name)
 
 bool TestFixture::prepareTest(const char testname[])
 {
+    mVerbose = false;
+    mTemplateFormat.clear();
+    mTemplateLocation.clear();
+
     // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
         // Tests will be executed - prepare them
@@ -330,7 +334,7 @@ void TestFixture::reportOut(const std::string & outmsg)
 
 void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    const std::string errormessage(msg.toString(mVerbose));
+    const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;
 }

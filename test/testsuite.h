@@ -38,6 +38,8 @@ private:
     static std::size_t succeeded_todos_counter;
     static std::set<std::string> missingLibs;
     bool mVerbose;
+    std::string mTemplateFormat;
+    std::string mTemplateLocation;
 
 protected:
     std::string testToRun;
@@ -69,6 +71,11 @@ protected:
 
     void setVerbose(bool v) {
         mVerbose = v;
+    }
+
+    void setMultiline() {
+        mTemplateFormat = "{file}:{line}:{severity}:{message}";
+        mTemplateLocation = "{file}:{line}:note:{info}";
     }
 
     void processOptions(const options& args);
