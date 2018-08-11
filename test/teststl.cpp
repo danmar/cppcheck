@@ -216,6 +216,20 @@ private:
                     "    v[i] = 0;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(std::map<int,int> x) {\n"
+                    "    if (x.empty()) { x[1] = 2; }\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(std::string s) {\n"
+                    "    if (s.size() == 1) {\n"
+                    "        s[2] = 0;\n"
+                    "    }\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:warning:Possible access out of bounds of container 's'; size=1, index=2\n"
+                      "test.cpp:2:note:condition 's.size()==1'\n"
+                      "test.cpp:3:note:Access out of bounds\n", errout.str());
     }
 
     void iterator1() {

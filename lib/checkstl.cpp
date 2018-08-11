@@ -72,6 +72,8 @@ void CheckStl::outOfBounds()
                     outOfBoundsError(tok, &value, nullptr);
                     continue;
                 }
+                if (!container->arrayLike_indexOp && !container->stdStringLike)
+                    continue;
                 if (value.intvalue == 0 && Token::Match(tok, "%name% [")) {
                     outOfBoundsError(tok, &value, nullptr);
                     continue;
