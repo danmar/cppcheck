@@ -59,7 +59,7 @@ void TxtReport::writeError(const ErrorItem &error)
     for (int i = 0; i < error.errorPath.size(); i++) {
         const QString file = QDir::toNativeSeparators(error.errorPath[i].file);
         line += QString("[%1:%2]").arg(file).arg(error.errorPath[i].line);
-        if (i < error.errorPath.size() - 1 && !error.errorPath.isEmpty()) {
+        if (i < error.errorPath.size() - 1) {
             line += " -> ";
         }
 
