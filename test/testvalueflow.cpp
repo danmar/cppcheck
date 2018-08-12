@@ -3325,6 +3325,12 @@ private:
                "  if (!v.empty() && v[10]==0) {}\n" // <- no container size for 'v[10]'
                "}";
         ASSERT(tokenValues(code, "v [").empty());
+
+        code = "void f() {\n"
+               "  std::list<int> ints;\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
     }
 };
 

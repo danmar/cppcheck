@@ -3494,6 +3494,21 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
 {
+    // declaration
+    for (const Variable *var : symboldatabase->variableList()) {
+        if (!var || !var->isLocal() || var->isPointer() || var->isReference())
+            continue;
+        if (!var->valueType() || !var->valueType()->container)
+            continue;
+        if (!Token::Match(var->nameToken(), "%name% ;"))
+            continue;
+        ValueFlow::Value value(0);
+        value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+        value.setKnown();
+        valueFlowContainerForward(var->nameToken()->next(), var->declarationId(), value, settings);
+    }
+
+    // conditional conditionSize
     for (const Scope &scope : symboldatabase->scopeList) {
         if (scope.type != Scope::ScopeType::eIf) // TODO: while
             continue;
