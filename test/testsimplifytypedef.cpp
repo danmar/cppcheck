@@ -161,6 +161,7 @@ private:
         TEST_CASE(simplifyTypedef121); // ticket #5766
         TEST_CASE(simplifyTypedef122); // segmentation fault
         TEST_CASE(simplifyTypedef123); // ticket #7406
+        TEST_CASE(simplifyTypedef124); // ticket #7792
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2508,6 +2509,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void simplifyTypedef124() { // ticket #7792
+        const char code[] = "typedef long unsigned int size_t;\n"
+                            "typedef size_t (my_func)(char *, size_t, size_t, void *);";
+
+        // Check for output..
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Failed to parse 'typedef long unsigned int size_t ;'. The checking continues anyway.\n", errout.str());
+
+        const char code1[] = "typedef long unsigned int uint32_t;\n"
+                             "typedef uint32_t (my_func)(char *, uint32_t, uint32_t, void *);";
+
+        // Check for output..
+        checkSimplifyTypedef(code1);
+        ASSERT_EQUALS("", errout.str());
+
+    }
 
     void simplifyTypedefFunction1() {
         {
