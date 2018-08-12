@@ -3492,6 +3492,38 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
     }
 }
 
+static bool isContainerSizeChanged(unsigned int varId, const Token *start, const Token *end)
+{
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() != varId)
+            continue;
+        if (!tok->valueType() || !tok->valueType()->container)
+            return true;
+        if (Token::Match(tok, "%name% ="))
+            return true;
+        if (Token::Match(tok, "%name% . %name% (")) {
+            Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            switch (action) {
+            case Library::Container::Action::RESIZE:
+            case Library::Container::Action::CLEAR:
+            case Library::Container::Action::PUSH:
+            case Library::Container::Action::POP:
+            case Library::Container::Action::CHANGE:
+            case Library::Container::Action::INSERT:
+            case Library::Container::Action::ERASE:
+            case Library::Container::Action::CHANGE_INTERNAL:
+                return true;
+            case Library::Container::Action::NO_ACTION: // might be unknown action
+                return true;
+            case Library::Container::Action::FIND:
+            case Library::Container::Action::CHANGE_CONTENT:
+                break;
+            };
+        }
+    }
+    return false;
+}
+
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
 {
     // declaration
@@ -3565,7 +3597,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 const Token *after = scope.bodyEnd;
                 if (Token::simpleMatch(after, "} else {"))
                     after = isEscapeScope(after->tokAt(2), tokenlist) ? nullptr : after->linkAt(2);
-                if (after)
+                if (after && !isContainerSizeChanged(tok->varId(), scope.bodyStart, after))
                     valueFlowContainerForward(after, tok->varId(), value, settings);
             }
 

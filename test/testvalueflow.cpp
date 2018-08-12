@@ -3314,6 +3314,12 @@ private:
         ASSERT(tokenValues(code, "ints . front").empty());
 
         code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) { ints.push_back(0); }\n"
+               "  ints.front();\n" // <- container is not empty
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
+        code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) {\n"
                "    ints.front();\n" // <- container is empty
                "  }\n"
