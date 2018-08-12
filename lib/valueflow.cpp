@@ -3508,6 +3508,21 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         valueFlowContainerForward(var->nameToken()->next(), var->declarationId(), value, settings);
     }
 
+    // after assignment
+    for (const Scope *functionScope : symboldatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "[;{}] %var% = %str% ;")) {
+                const Token *containerTok = tok->next();
+                if (containerTok && containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
+                    ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
+                    value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                    value.setKnown();
+                    valueFlowContainerForward(containerTok->next(), containerTok->varId(), value, settings);
+                }
+            }
+        }
+    }
+
     // conditional conditionSize
     for (const Scope &scope : symboldatabase->scopeList) {
         if (scope.type != Scope::ScopeType::eIf) // TODO: while
