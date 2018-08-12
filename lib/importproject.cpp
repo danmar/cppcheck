@@ -639,7 +639,7 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     {
         std::string arg;
 
-        for (int i = 0; i < cflag1.size(); ++i) {
+        for (auto i = 0; i < cflag1.size(); ++i) {
             if (cflag1.at(i) == ' ' && !arg.empty()) {
                 cflags.insert(arg);
                 arg.clear();
