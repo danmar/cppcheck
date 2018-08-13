@@ -3456,6 +3456,16 @@ static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
     return false;
 }
 
+static bool isContainerSizeChangedByFunction(const Token *tok)
+{
+    const Token *parent = tok->astParent();
+    if (parent && parent->str() == "&")
+        parent = parent->astParent();
+    while (parent && parent->str() == ",")
+        parent = parent->astParent();
+    return parent && Token::Match(parent->previous(), "%name% (");
+}
+
 static void valueFlowContainerReverse(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
 {
     while (nullptr != (tok = tok->previous())) {
@@ -3464,6 +3474,8 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))
+            break;
+        if (isContainerSizeChangedByFunction(tok))
             break;
         if (!tok->valueType() || !tok->valueType()->container)
             break;
@@ -3482,6 +3494,8 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))
+            break;
+        if (isContainerSizeChangedByFunction(tok))
             break;
         if (!tok->valueType() || !tok->valueType()->container)
             break;

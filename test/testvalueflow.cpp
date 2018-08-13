@@ -3343,6 +3343,14 @@ private:
                "  s.size();\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        // valueFlowContainerForward, function call
+        code = "void f() {\n"
+               "  std::list<int> x;\n"
+               "  f(x);\n"
+               "  x.front();\n" // <- unknown container size
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
     }
 };
 
