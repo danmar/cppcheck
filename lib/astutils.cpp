@@ -178,7 +178,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     if (var->isArgument())
         return tok;
     // If this is in a loop then check if variables are modified in the entire scope
-    const Token * endToken = (isInLoopCondition(tok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
+    const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
     if (!var->isConst() && isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
         return tok;
     // Start at begining of initialization
