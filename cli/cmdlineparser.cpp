@@ -146,6 +146,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // dump cppcheck data
             else if (std::strcmp(argv[i], "--dump") == 0)
                 _settings->dump = true;
+            else if (std::strncmp(argv[i], "--dump=", 7) == 0) {
+                _settings->dump = true;
+                _settings->dumpFile = Path::fromNativeSeparators(argv[i] + 7);
+            }
 
             // (Experimental) exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0)
@@ -864,9 +868,12 @@ void CmdLineParser::printHelp()
               "                         be considered for evaluation.\n"
               "    --config-excludes-file=<file>\n"
               "                         A file that contains a list of config-excludes\n"
-              "    --dump               Dump xml data for each translation unit. The dump\n"
+              "    --dump               Dump XML data for each translation unit. The dump\n"
               "                         files have the extension .dump and contain ast,\n"
               "                         tokenlist, symboldatabase, valueflow.\n"
+              "    --dump=<file>        Dump XML data for a single translation unit. The dump\n"
+              "                         contain ast, tokenlist, symboldatabase, valueflow.\n"
+              "                         Should be used only when single file is processed.\n"
               "    -D<ID>               Define preprocessor symbol. Unless --max-configs or\n"
               "                         --force is used, Cppcheck will only check the given\n"
               "                         configuration when -D is used.\n"
