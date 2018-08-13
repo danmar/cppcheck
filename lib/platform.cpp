@@ -173,7 +173,7 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
         filenames.push_back(cfgdir + ("../platforms/" + filename + ".xml"));
 #endif
         bool success = false;
-        for (int i = 0; i < filenames.size(); ++i) {
+        for (auto i = 0; i < filenames.size(); ++i) {
             if (doc.LoadFile(filenames[i].c_str()) == tinyxml2::XML_SUCCESS) {
                 success = true;
                 break;
