@@ -2,7 +2,7 @@
 import os
 import sys
 import re
-
+import subprocess
 
 def readdate(data):
     if data[:5] == 'DATE ':
@@ -45,82 +45,35 @@ def summaryHtml(style, font, severity, categories, totalNumber):
     ret = ret + '</tr>\n'
     return ret
 
-def getWarnings(filename):
-    ftp = ''
-    warnings = {}
-    warnings[''] = []
-    pattern = re.compile(r'(.*:[0-9]+):[0-9]+: (error|warning|style|performance|portability)(:.* \[[a-zA-Z0-9_\\-]+\])')
-    for line in open(filename, 'rt'):
-        line = line.strip('\r\n')
-        if line.startswith('ftp://'):
-            ftp = line
-            warnings[ftp] = []
-            continue
-        res = pattern.match(line)
-        if res:
-            warnings[ftp].append(res.group(1) + ': ' + res.group(2) + res.group(3))
-    return warnings
-
-def diffWarnings(warnings1, warnings2):
-    ret = ''
-    count1 = 0
-    count2 = 0
-    for ftp in warnings1.keys():
-        if len(ftp)<4:
-            continue
-        w1 = sorted(warnings1[ftp])
-        w2 = sorted(warnings2[ftp])
-        i1 = 0
-        i2 = 0
-
-        while i1 < len(w1) and i2 < len(w2):
-            if w1[i1] == w2[i2]:
-                i1 = i1 + 1
-                i2 = i2 + 1
-            elif w1[i1] < w2[i2]:
-                ret = ret + '1.84: ' + w1[i1] + '\n'
-                count1 = count1 + 1
-                i1 = i1 + 1
-            else:
-                ret = ret + 'head: ' + w2[i2] + '\n'
-                count2 = count2 + 1
-                i2 = i2 + 1
-        while i1 < len(w1):
-            ret = ret + '1.84: ' + w1[i1] + '\n'
-            count1 = count1 + 1
-            i1 = i1 + 1
-        while i2 < len(w2):
-            ret = ret + 'head: ' + w2[i2] + '\n'
-            count2 = count2 + 1
-            i2 = i2 + 1
-
-    return ret, count1, count2
-
 def diffResults(reportpath):
     diff = ''
     count_negatives = 0
     count_positives = 0
 
+    f = open(reportpath + 'diff.txt', 'wt')
+
     for lib in ['', 'lib']:
         for a in "0123456789abcdefghijklmnopqrstuvwxyz":
-            if not os.path.isfile(daca2folder + lib + a + '/results-1.84.txt'):
+            baseFileName = daca2folder + lib + a + '/results-1.84.txt'
+            headFileName = daca2folder + lib + a + '/results-head.txt'
+            if not os.path.isfile(baseFileName):
                 continue
-            if not os.path.isfile(daca2folder + lib + a + '/results-head.txt'):
+            if not os.path.isfile(headFileName):
                 continue
 
             print('diffResults:' + lib + a)
 
-            warnings_base = getWarnings(daca2folder + lib + a + '/results-1.84.txt')
-            warnings_head = getWarnings(daca2folder + lib + a + '/results-head.txt')
+            diffCmd = ['diff', baseFileName, headFileName]
+            p = subprocess.Popen(diffCmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            comm = p.communicate()
 
-            s, count1, count2 = diffWarnings(warnings_base, warnings_head)
-            diff = diff + s
-            count_negatives += count1
-            count_positives += count2
-
-    f = open(reportpath + 'diff.txt', 'wt')
-    f.write(diff)
-    f.close()
+            for line in comm[0].split('\n'):
+                if re.match(r'^> [a-z0-9].+', line):
+                    f.write('head: ' + line[2:] + '\n')
+                    count_positives += 1
+                elif re.match(r'^< [a-z0-9].+', line):
+                    f.write('1.84: ' + line[2:] + '\n')
+                    count_negatives += 1
 
     return count_negatives, count_positives
 
