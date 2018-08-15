@@ -1050,6 +1050,7 @@ void CmdLineParser::printHelp()
               "                           {severity}          severity\n"
               "                           {message}           warning message\n"
               "                           {id}                warning id\n"
+              "                           {cwe}               CWE id (Common Weakness Enumeration)\n"
               "                           {code}              show the real code\n"
               "                           \\t                 insert tab\n"
               "                           \\n                 insert newline\n"
