@@ -131,11 +131,11 @@ private:
                          bool result);
     void multiConditionError(const Token *tok, unsigned int line1);
 
-    void oppositeInnerConditionError(const Token *tok1, const Token* tok2);
+    void oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
 
-    void identicalInnerConditionError(const Token *tok1, const Token* tok2);
+    void identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
 
-    void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2);
+    void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2, ErrorPath errorPath);
 
     void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
     void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
@@ -152,14 +152,16 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckCondition c(nullptr, settings, errorLogger);
 
+        ErrorPath errorPath;
+
         c.assignIfError(nullptr, nullptr, emptyString, false);
         c.badBitmaskCheckError(nullptr);
         c.comparisonError(nullptr, "&", 6, "==", 1, false);
         c.multiConditionError(nullptr,1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
-        c.oppositeInnerConditionError(nullptr, nullptr);
-        c.identicalInnerConditionError(nullptr, nullptr);
-        c.identicalConditionAfterEarlyExitError(nullptr, nullptr);
+        c.oppositeInnerConditionError(nullptr, nullptr, errorPath);
+        c.identicalInnerConditionError(nullptr, nullptr, errorPath);
+        c.identicalConditionAfterEarlyExitError(nullptr, nullptr, errorPath);
         c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
