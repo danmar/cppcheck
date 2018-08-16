@@ -54,7 +54,7 @@ static TimerResults S_timerResults;
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), mExitCode(0), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
+    : mErrorLogger(errorLogger), mExitCode(0), mSuppressExitCode(false), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
 {
 }
 
@@ -499,6 +499,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (internalErrorFound && (mExitCode==0)) {
         mExitCode = 1;
     }
+
+    if (mSuppressExitCode) {
+        mExitCode = 0;
+    }
+
     return mExitCode;
 }
 
@@ -763,11 +768,15 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
     if (mUseGlobalSuppressions) {
-        if (mSettings.nomsg.isSuppressed(errorMessage))
+        if (mSettings.nomsg.isSuppressed(errorMessage)) {
+            mSuppressExitCode = true;
             return;
+        }
     } else {
-        if (mSettings.nomsg.isSuppressedLocal(errorMessage))
+        if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
+            mSuppressExitCode = true;
             return;
+        }
     }
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && (mUseGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))

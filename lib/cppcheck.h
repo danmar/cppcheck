@@ -215,6 +215,8 @@ private:
 
     unsigned int mExitCode;
 
+    bool mSuppressExitCode;
+
     bool mUseGlobalSuppressions;
 
     /** Are there too many configs? */

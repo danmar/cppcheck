@@ -64,6 +64,8 @@ private:
         TEST_CASE(unusedFunction);
 
         TEST_CASE(matchglob);
+
+        TEST_CASE(suppressingSyntaxErrorAndExitCode);
     }
 
     void suppressionsBadId1() const {
@@ -564,6 +566,15 @@ private:
         ASSERT_EQUALS(true, Suppressions::matchglob("?y?", "xyz"));
         ASSERT_EQUALS(true, Suppressions::matchglob("?/?/?", "x/y/z"));
     }
+
+    void suppressingSyntaxErrorAndExitCode() {
+        std::map<std::string, std::string> files;
+        files["test.cpp"] = "fi if;";
+
+        ASSERT_EQUALS(0, checkSuppression(files, "*:test.cpp"));
+        ASSERT_EQUALS("", errout.str());
+   }
+
 };
 
 REGISTER_TEST(TestSuppressions)
