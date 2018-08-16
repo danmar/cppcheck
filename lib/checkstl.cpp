@@ -484,6 +484,14 @@ void CheckStl::mismatchingContainers()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if(Token::Match(tok, "%comp%|-")) {
+                const Token * iter1 = getIteratorExpression(tok->astOperand1());
+                const Token * iter2 = getIteratorExpression(tok->astOperand2());
+                if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
+                    mismatchingContainerExpressionError(iter1, iter2);
+                    continue;
+                }
+            }
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const ftok = tok;
