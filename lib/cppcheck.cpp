@@ -108,6 +108,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     mExitCode = 0;
+    mSuppressExitCode = false;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
