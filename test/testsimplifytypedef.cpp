@@ -161,7 +161,7 @@ private:
         TEST_CASE(simplifyTypedef121); // ticket #5766
         TEST_CASE(simplifyTypedef122); // segmentation fault
         TEST_CASE(simplifyTypedef123); // ticket #7406
-        TEST_CASE(simplifyTypedef124); // ticket #7792
+        TEST_CASE(simplifyTypedef124);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2509,7 +2509,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef124() { // ticket #7792
+    void simplifyTypedef124() {
         const char code[] = "typedef long unsigned int size_t;\n"
                             "typedef size_t (my_func)(char *, size_t, size_t, void *);";
 
