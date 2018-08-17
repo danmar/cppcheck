@@ -1067,7 +1067,7 @@ void TemplateSimplifier::expandTemplate(
             if (Token::Match(tok3, "%type% <") && Token::Match(tok3->next()->findClosingBracket(), ">|>>")) {
                 const Token *closingBracket = tok3->next()->findClosingBracket();
                 if (Token::simpleMatch(closingBracket->next(), "&")) {
-                    int num = 0;
+                    std::size_t num = 0;
                     const Token *par = tok3->next();
                     while (num < typeParametersInDeclaration.size() && par != closingBracket) {
                         const std::string pattern("[<,] " + typeParametersInDeclaration[num]->str() + " [,>]");
@@ -1455,7 +1455,7 @@ static bool matchSpecialization(const Token *templateDeclarationNameToken, const
         const Token * const endToken = (*it)->next()->findClosingBracket();
         while (declToken != endToken) {
             if (declToken->str() != instToken->str()) {
-                int nr = 0;
+                std::size_t nr = 0;
                 while (nr < templateParameters.size() && templateParameters[nr]->str() != declToken->str())
                     ++nr;
 
