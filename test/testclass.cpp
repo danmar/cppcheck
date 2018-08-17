@@ -214,6 +214,7 @@ private:
         TEST_CASE(unsafeClassDivZero);
 
         TEST_CASE(override1);
+        TEST_CASE(overrideCVRefQualifiers);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -6825,6 +6826,24 @@ private:
 
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { virtual void f() final; };");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void overrideCVRefQualifiers() {
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() const; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() volatile; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() &; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() &&; }");
         ASSERT_EQUALS("", errout.str());
     }
 };
