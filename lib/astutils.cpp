@@ -178,7 +178,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     if (var->isArgument())
         return tok;
     // If this is in a loop then check if variables are modified in the entire scope
-    const Token * endToken = (isInLoopCondition(tok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
+    const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
     if (!var->isConst() && isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
         return tok;
     // Start at begining of initialization
@@ -393,7 +393,7 @@ static bool isZeroBoundCond(const Token * const cond)
     return false;
 }
 
-bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure)
+bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, ErrorPath* errors)
 {
     if (!cond1 || !cond2)
         return false;
@@ -401,11 +401,11 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (cond1->str() == "!") {
         if (cond2->str() == "!=") {
             if (cond2->astOperand1() && cond2->astOperand1()->str() == "0")
-                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure);
+                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, errors);
             if (cond2->astOperand2() && cond2->astOperand2()->str() == "0")
-                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure);
+                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, errors);
         }
-        return isSameExpression(cpp, true, cond1->astOperand1(), cond2, library, pure);
+        return isSameExpression(cpp, true, cond1->astOperand1(), cond2, library, pure, errors);
     }
 
     if (cond2->str() == "!")
@@ -413,9 +413,9 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 
     if (!isNot) {
         if (cond1->str() == "==" && cond2->str() == "==") {
-            if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure))
+            if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, errors))
                 return isDifferentKnownValues(cond1->astOperand2(), cond2->astOperand2());
-            if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure))
+            if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, errors))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
         // TODO: Handle reverse conditions
@@ -480,7 +480,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
         if (!expr1 || !value1 || !expr2 || !value2) {
             return false;
         }
-        if (!isSameExpression(cpp, true, expr1, expr2, library, pure))
+        if (!isSameExpression(cpp, true, expr1, expr2, library, pure, errors))
             return false;
 
         const ValueFlow::Value &rhsValue1 = value1->values().front();
@@ -508,16 +508,16 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                        )));
 }
 
-bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure)
+bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, ErrorPath* errors)
 {
     if (!tok1 || !tok2)
         return false;
     if (isOppositeCond(true, cpp, tok1, tok2, library, pure))
         return true;
     if (tok1->isUnaryOp("-"))
-        return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure);
+        return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, errors);
     if (tok2->isUnaryOp("-"))
-        return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure);
+        return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure, errors);
     return false;
 }
 

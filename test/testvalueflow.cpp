@@ -3314,17 +3314,50 @@ private:
         ASSERT(tokenValues(code, "ints . front").empty());
 
         code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) { ints.push_back(0); }\n"
+               "  ints.front();\n" // <- container is not empty
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
+        code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) {\n"
                "    ints.front();\n" // <- container is empty
                "  }\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty() == false) {\n"
+               "    ints.front();\n" // <- container is not empty
+               "  }\n"
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
         code = "void f(const std::vector<int> &v) {\n"
                "  if (v.empty()) {}\n"
                "  if (!v.empty() && v[10]==0) {}\n" // <- no container size for 'v[10]'
                "}";
         ASSERT(tokenValues(code, "v [").empty());
+
+        code = "void f() {\n"
+               "  std::list<int> ints;\n"  // No value => ints is empty
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        code = "void f() {\n"
+               "  std::string s=\"abc\";\n" // size of s is 3
+               "  s.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        // valueFlowContainerForward, function call
+        code = "void f() {\n"
+               "  std::list<int> x;\n"
+               "  f(x);\n"
+               "  x.front();\n" // <- unknown container size
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
     }
 };
 

@@ -4093,6 +4093,45 @@ private:
         check("void f(int b) { int a = 1; while (b) { if ( a != 1){} b++; } a++; } \n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    for(int i = 0; i < 10;) {\n"
+              "        if( i != 0 ) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'i' and '0' are the same.\n", errout.str());
+
+        check("void f() {\n"
+              "    for(int i = 0; i < 10;) {\n"
+              "        if( i != 0 ) {}\n"
+              "        i++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    for(int i = 0; i < 10;) {\n"
+              "        if( i != 0 ) { i++; }\n"
+              "        i++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    for(int i = 0; i < 10;) {\n"
+              "        if( i != 0 ) { i++; }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int i = 0;\n"
+              "    while(i < 10) {\n"
+              "        if( i != 0 ) {}\n"
+              "        i++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int b) {\n"
               "    while (b) {\n"
               "        int a = 1;\n"
