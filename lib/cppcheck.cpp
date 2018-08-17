@@ -755,6 +755,8 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
+    mSuppressExitCode = false;
+
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 

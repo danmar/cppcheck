@@ -592,6 +592,20 @@ private:
 
         ASSERT_EQUALS(0, checkSuppression(files, "*:test.cpp"));
         ASSERT_EQUALS("", errout.str());
+
+        // multi files, but only suppression one
+        std::map<std::string, std::string> mfiles;
+        mfiles["test.cpp"] = "fi if;";
+        mfiles["test2.cpp"] = "fi if";
+        ASSERT_EQUALS(1, checkSuppression(mfiles, "*:test.cpp"));
+        ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
+
+        // multi error in file, but only suppression one error
+        std::map<std::string, std::string> file2;
+        file2["test.cpp"] = "fi fi\n"
+                            "if if;";
+        ASSERT_EQUALS(1, checkSuppression(file2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
    }
 
 };
