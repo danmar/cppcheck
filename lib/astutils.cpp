@@ -218,7 +218,10 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
         return;
     if (!tok2)
         return;
-    errors->push_back(std::make_pair(tok2, "'" + tok1->str() + "' is assigned value '" + tok2->expressionString() + "' here."));
+    ErrorPathItem item = std::make_pair(tok2, "'" + tok1->str() + "' is assigned value '" + tok2->expressionString() + "' here.");
+    if(std::find(errors->begin(), errors->end(), item) != errors->end())
+        return;
+    errors->push_back(item);
 }
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, ErrorPath* errors)
