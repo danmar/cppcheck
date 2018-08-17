@@ -2039,9 +2039,9 @@ void CheckOther::checkDuplicateExpression()
 
 void CheckOther::oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op, ErrorPath errors)
 {
-    if(tok1)
+    if (tok1)
         errors.emplace_back(tok1, "");
-    if(tok2)
+    if (tok2)
         errors.emplace_back(tok2, "");
 
     reportError(errors, Severity::style, "oppositeExpression", "Opposite expression on both sides of \'" + op + "\'.\n"

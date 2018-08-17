@@ -3207,10 +3207,10 @@ const Function * Function::getOverridenFunctionRecursive(const ::Type* baseType,
 
                 // check for matching cv-ref qualifiers
                 match = match
-                    && isConst() == func->isConst()
-                    && isVolatile() == func->isVolatile()
-                    && hasRvalRefQualifier() == func->hasRvalRefQualifier()
-                    && hasLvalRefQualifier() == func->hasLvalRefQualifier();
+                        && isConst() == func->isConst()
+                        && isVolatile() == func->isVolatile()
+                        && hasRvalRefQualifier() == func->hasRvalRefQualifier()
+                        && hasLvalRefQualifier() == func->hasLvalRefQualifier();
 
                 // it's a match
                 if (match) {

@@ -674,12 +674,12 @@ void Tokenizer::simplifyTypedef()
             typeEnd = tokOffset;
             tokOffset = tokOffset->next();
 
-            while(Token::Match(tokOffset, "%type%") &&
-	            (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed")) ) {
-	            typeEnd = tokOffset;
-	            tokOffset = tokOffset->next();
+            while (Token::Match(tokOffset, "%type%") &&
+                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed"))) {
+                typeEnd = tokOffset;
+                tokOffset = tokOffset->next();
             }
-			
+
             bool atEnd = false;
             while (!atEnd) {
                 if (tokOffset && tokOffset->str() == "::") {

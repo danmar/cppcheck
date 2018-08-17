@@ -51,9 +51,9 @@ static bool isAcceptedErrorIdChar(char c)
     case '_':
     case '-':
     case '.':
-      return true;
+        return true;
     default:
-      return std::isalnum(c);
+        return std::isalnum(c);
     }
 }
 
