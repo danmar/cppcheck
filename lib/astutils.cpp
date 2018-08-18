@@ -219,7 +219,7 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     if (!tok2)
         return;
     ErrorPathItem item = std::make_pair(tok2, "'" + tok1->str() + "' is assigned value '" + tok2->expressionString() + "' here.");
-    if(std::find(errors->begin(), errors->end(), item) != errors->end())
+    if (std::find(errors->begin(), errors->end(), item) != errors->end())
         return;
     errors->push_back(item);
 }
