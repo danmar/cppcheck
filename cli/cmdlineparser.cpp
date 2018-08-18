@@ -44,7 +44,7 @@
 #include <tinyxml2.h>
 #endif
 
-static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
+static void addFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
     std::istream *Files;
@@ -65,7 +65,7 @@ static void AddFilesToList(const std::string& FileList, std::vector<std::string>
     }
 }
 
-static void AddInclPathsToList(const std::string& FileList, std::list<std::string>* PathNames)
+static void addIncludePathsToList(const std::string& FileList, std::list<std::string>* PathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
     std::ifstream Files(FileList);
@@ -86,10 +86,10 @@ static void AddInclPathsToList(const std::string& FileList, std::list<std::strin
     }
 }
 
-static void AddPathsToSet(const std::string& FileName, std::set<std::string>* set)
+static void addPathsToSet(const std::string& FileName, std::set<std::string>* set)
 {
     std::list<std::string> templist;
-    AddInclPathsToList(FileName, &templist);
+    addIncludePathsToList(FileName, &templist);
     set->insert(templist.begin(), templist.end());
 }
 
@@ -446,20 +446,20 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->userIncludes.push_back(path);
             } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
                 // open this file and read every input file (1 file name per line)
-                AddInclPathsToList(16 + argv[i], &mSettings->includePaths);
+                addIncludePathsToList(16 + argv[i], &mSettings->includePaths);
             } else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
                 std::string path = argv[i] + 17;
                 path = Path::fromNativeSeparators(path);
                 mSettings->configExcludePaths.insert(path);
             } else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
                 // open this file and read every input file (1 file name per line)
-                AddPathsToSet(23 + argv[i], &mSettings->configExcludePaths);
+                addPathsToSet(23 + argv[i], &mSettings->configExcludePaths);
             }
 
             // file list specified
             else if (std::strncmp(argv[i], "--file-list=", 12) == 0) {
                 // open this file and read every input file (1 file name per line)
-                AddFilesToList(12 + argv[i], mPathNames);
+                addFilesToList(12 + argv[i], mPathNames);
             }
 
             // Ignored paths
