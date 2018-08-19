@@ -435,6 +435,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         // delete the "template < >"
         tok->deleteNext(2);
         tok->deleteThis();
+
         Token * tok3 = tok2->next();
         // Use this special template in the code..
         while (nullptr != (tok2 = const_cast<Token *>(Token::findsimplematch(tok2, name.c_str())))) {
