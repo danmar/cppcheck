@@ -457,7 +457,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
                     if (Token::Match(tok4->next(), pattern.c_str())) {
                         size_t nameOffset = tok3->strAt(2) == "~" ? 3 : 2;
                         // fix up constructor and destructor names
-                        if (tok4->tokAt(nameOffset)->str() == templateName)
+                        if (tok4->strAt(nameOffset) == templateName)
                             tok4->tokAt(nameOffset)->str(name);
 
                         // fix up variable names
