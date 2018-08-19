@@ -400,6 +400,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         Token *tok2 = tok->tokAt(3);
         while (tok2 && (tok2->isName() || tok2->str() == "*"))
             tok2 = tok2->next();
+
         if (!TemplateSimplifier::templateParameters(tok2))
             continue;
 
