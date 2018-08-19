@@ -400,7 +400,6 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         Token *tok2 = tok->tokAt(3);
         while (tok2 && (tok2->isName() || tok2->str() == "*"))
             tok2 = tok2->next();
-
         if (!TemplateSimplifier::templateParameters(tok2))
             continue;
 
@@ -409,6 +408,7 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
             continue;
 
         tok2 = tok2->previous();
+        std::string templateName = tok2->str();
         std::string s;
         {
             std::ostringstream ostr;
@@ -434,11 +434,48 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         // delete the "template < >"
         tok->deleteNext(2);
         tok->deleteThis();
-
+        Token * tok3 = tok2->next();
         // Use this special template in the code..
         while (nullptr != (tok2 = const_cast<Token *>(Token::findsimplematch(tok2, name.c_str())))) {
             Token::eraseTokens(tok2, Token::findsimplematch(tok2, "<")->findClosingBracket()->next());
             tok2->str(name);
+        }
+
+        // fix up class template names
+        if (tok3->str() == "{" && tok3->link()) {
+            Token * classEnd = tok3->link();
+            while (nullptr != (tok3 = const_cast<Token *>(Token::findsimplematch(tok3, templateName.c_str(), classEnd)))) {
+                tok3->str(name);
+            }
+
+            // fix up out of line class functions
+            Token * tok4 = classEnd;
+            std::string pattern(":: ~| %name% (");
+            while (tok4) {
+                if (tok4->str() == name) {
+                    if (Token::Match(tok4->next(), pattern.c_str())) {
+                        size_t nameOffset = tok3->strAt(2) == "~" ? 3 : 2;
+                        // fix up constructor and destructor names
+                        if (tok4->tokAt(nameOffset)->str() == templateName)
+                            tok4->tokAt(nameOffset)->str(name);
+
+                        // fix up variable names
+                        Token * tok5 = tok4->tokAt(nameOffset + 1);
+                        if (!tok5->link())
+                            break;
+                        Token * functionStart = tok5->link()->next();
+                        if (functionStart->str() == "const")
+                            functionStart = functionStart->next();
+                        if (!functionStart || !functionStart->link())
+                            break;
+                        Token * functionEnd = functionStart->link();
+                        while (nullptr != (tok5 = const_cast<Token *>(Token::findsimplematch(tok5, templateName.c_str(), functionEnd)))) {
+                            tok5->str(name);
+                        }
+                    }
+                }
+                tok4 = tok4->next();
+            }
         }
     }
 
