@@ -658,6 +658,13 @@ private:
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
+              "    if(bar(f().begin()) == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
               "    auto it = f().end();\n"
               "    f().begin() - it\n"
               "    f().begin()+1 - it\n"

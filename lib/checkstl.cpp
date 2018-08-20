@@ -466,6 +466,8 @@ static const Token * getIteratorExpression(const Token * tok)
         const Token *iter1 = getIteratorExpression(tok->astOperand1());
         if (iter1)
             return iter1;
+        if(tok->str() == "(")
+            return nullptr;
         const Token *iter2 = getIteratorExpression(tok->astOperand2());
         if (iter2)
             return iter2;
