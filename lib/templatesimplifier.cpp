@@ -417,9 +417,18 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
             for (; tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
                 if (tok3 != tok2)
                     ostr << " ";
+
+                // add type information back
+                if (tok3->isUnsigned())
+                    ostr << " unsigned";
+                else if (tok3->isSigned())
+                    ostr << " signed";
+                else if (tok3->isLong())
+                    ostr << " long";
+
                 ostr << tok3->str();
             }
-            if (!Token::Match(tok3, "> (|{|:"))
+            if (!Token::Match(tok3, "> (|{|:|final"))
                 continue;
             s = ostr.str();
         }
@@ -441,6 +450,19 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
         while (nullptr != (tok2 = const_cast<Token *>(Token::findsimplematch(tok2, name.c_str())))) {
             Token::eraseTokens(tok2, Token::findsimplematch(tok2, "<")->findClosingBracket()->next());
             tok2->str(name);
+        }
+
+        // skip final
+        if (tok3->str() == "final")
+            tok3 = tok3->next();
+
+        // skip base class
+        if (tok3->str() == ":") {
+            while (tok3->str() != "{") {
+                if (Token::Match(tok3, ";|}"))
+                    break;
+                tok3 = tok3->next();
+            }
         }
 
         // fix up class template names

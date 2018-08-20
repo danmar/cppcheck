@@ -1608,6 +1608,8 @@ private:
                       tok("template<> class A<int> { A(); ~A(); }; A<int>::A() { } ~A<int>::A() {}"));
         ASSERT_EQUALS("class A<int> { A<int> ( ) ; A<int> ( const A<int> & ) ; A<int> foo ( ) ; } ; A<int> :: A<int> ( ) { } A<int> :: A<int> ( const A<int> & ) { } A<int> A<int> :: foo ( ) { A<int> a ; return a ; }",
                       tok("template<> class A<int> { A(); A(const A &) ; A foo(); }; A<int>::A() { } A<int>::A(const A &) { } A<int> A<int>::foo() { A a; return a; }"));
+        ASSERT_EQUALS("struct A<unsignedchar> final : B { explicit A<unsignedchar> ( ) { } ; } ;",
+                      tok("template <> struct A<unsigned char> final : B { explicit A() {}; };"));
     }
 
     void templateAlias1() {
