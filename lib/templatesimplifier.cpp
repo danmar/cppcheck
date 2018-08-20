@@ -417,15 +417,6 @@ std::set<std::string> TemplateSimplifier::expandSpecialized(Token *tokens)
             for (; tok3 && tok3->str() != ">"; tok3 = tok3->next()) {
                 if (tok3 != tok2)
                     ostr << " ";
-
-                // add type information back
-                if (tok3->isUnsigned())
-                    ostr << " unsigned";
-                else if (tok3->isSigned())
-                    ostr << " signed";
-                else if (tok3->isLong())
-                    ostr << " long";
-
                 ostr << tok3->str();
             }
             if (!Token::Match(tok3, "> (|{|:|final"))
