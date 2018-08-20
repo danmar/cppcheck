@@ -54,3 +54,10 @@ unsigned char int31(int x)
     x = (unsigned char)-1; // cert-INT31-c
     x = (unsigned long long)-1; // cert-INT31-c
 }
+
+void msc30()
+{
+    unsigned int num = rand(); // cert-MSC30-c
+    int rand = 5;
+    int a = rand;
+}

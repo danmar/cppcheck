@@ -215,6 +215,13 @@ def int31(data, platform):
                     'cert-INT31-c')
                 break
 
+# MSC30-C
+# Do not use the rand() function for generating pseudorandom numbers
+def msc30(data):
+    for token in data.tokenlist:
+        if simpleMatch(token, "rand ( )"):
+            reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'cert-MSC30-c')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -238,6 +245,7 @@ for arg in sys.argv[1:]:
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+        msc30(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
