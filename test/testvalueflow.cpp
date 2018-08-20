@@ -3251,32 +3251,31 @@ private:
         const char* code;
 
         code = "void f(int i, int j) {\n"
-               "    if (i > j) return;\n"
-               "    bool x = i > j;\n"
-               "    bool b = x;\n"
+               "    if (i == j) return;\n"
+               "    if(i != j) {}\n"
                "}\n";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
 
         code = "void f(int i, int j) {\n"
-               "    if (i > j) return;\n"
-               "    bool x = i < j;\n"
-               "    bool b = x;\n"
+               "    if (i == j) return;\n"
+               "    i++;\n"
+               "    if (i != j) {}\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 1));
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
 
-        code = "void f(int i) {\n"
-               "    if (i > 0) return;\n"
-               "    bool x = i > 0;\n"
-               "    bool b = x;\n"
+        code = "void f(int i, int j, bool a) {\n"
+               "    if (a) {\n"
+               "        if (i == j) return;\n"
+               "    }\n"
+               "    if (i != j) {}\n"
                "}\n";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
 
-        code = "void f(int i) {\n"
-               "    if (i > 0) return;\n"
-               "    bool x = i < 0;\n"
-               "    bool b = x;\n"
+        code = "void f(int i, int j, bool a) {\n"
+               "    if (i != j) {}\n"
+               "    if (i == j) return; \n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 1));
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {

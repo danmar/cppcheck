@@ -1112,7 +1112,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                     if(bail)
                         continue;
                 }
-                if(isOppositeCond(!Token::Match(tok, "<|>") || !Token::Match(cond.first, "<|>"), cpp, tok, cond.first, settings->library, true)) {
+                if(isOppositeCond(true, cpp, tok, cond.first, settings->library, true)) {
                     ValueFlow::Value val(1);
                     val.setKnown();
                     val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
