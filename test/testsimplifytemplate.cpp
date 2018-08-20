@@ -1602,6 +1602,15 @@ private:
     void expandSpecialized() {
         ASSERT_EQUALS("class A<int> { } ;", tok("template<> class A<int> {};"));
         ASSERT_EQUALS("class A<int> : public B { } ;", tok("template<> class A<int> : public B {};"));
+        ASSERT_EQUALS("class A<int> { A<int> ( ) ; ~ A<int> ( ) ; } ;", tok("template<> class A<int> { A(); ~A(); };"));
+        ASSERT_EQUALS("class A<int> { A<int> ( ) { } ~ A<int> ( ) { } } ;", tok("template<> class A<int> { A() {} ~A() {} };"));
+        ASSERT_EQUALS("class A<int> { A<int> ( ) ; ~ A<int> ( ) ; } ; A<int> :: A<int> ( ) { } ~ A<int> :: A<int> ( ) { }",
+                      tok("template<> class A<int> { A(); ~A(); }; A<int>::A() { } ~A<int>::A() {}"));
+        ASSERT_EQUALS("class A<int> { A<int> ( ) ; A<int> ( const A<int> & ) ; A<int> foo ( ) ; } ; A<int> :: A<int> ( ) { } A<int> :: A<int> ( const A<int> & ) { } A<int> A<int> :: foo ( ) { A<int> a ; return a ; }",
+                      tok("template<> class A<int> { A(); A(const A &) ; A foo(); }; A<int>::A() { } A<int>::A(const A &) { } A<int> A<int>::foo() { A a; return a; }"));
+        TODO_ASSERT_EQUALS("struct A<unsignedchar> final : B { explicit A<unsignedchar> ( ) { } ; } ; A<unsignedchar> a ;",
+                           "struct A<char> final : B { explicit A<char> ( ) { } ; } ; A<char> a ;",
+                           tok("template <> struct A<unsigned char> final : B { explicit A() {}; }; A<unsigned char> a;"));
     }
 
     void templateAlias1() {
