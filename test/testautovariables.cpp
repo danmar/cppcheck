@@ -274,6 +274,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Assignment of function parameter has no effect outside the function.\n", errout.str());
 
+        check("void foo(int b) {\n"
+              "    b += 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Assignment of function parameter has no effect outside the function.\n", errout.str());
+
         check("void foo(std::string s) {\n"
               "    s = foo(b);\n"
               "}");

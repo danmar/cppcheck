@@ -3617,8 +3617,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
 
             // known value in conditional code
             if (conditionToken->str() == "==" || conditionToken->str() == "(") {
-                const Token *parent = conditionToken;
-                while (parent && parent->str() != "!")
+                const Token *parent = conditionToken->astParent();
+                while (parent && !Token::Match(parent, "!|==|!="))
                     parent = parent->astParent();
                 if (!parent) {
                     value.setKnown();

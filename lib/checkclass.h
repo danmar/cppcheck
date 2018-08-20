@@ -193,7 +193,7 @@ private:
     void selfInitializationError(const Token* tok, const std::string& varname);
     void pureVirtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void virtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &funcname);
-    void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
+    void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedName, const std::string &baseName, const std::string &variableName, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
     void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);

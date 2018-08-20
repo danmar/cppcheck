@@ -214,6 +214,7 @@ private:
         TEST_CASE(unsafeClassDivZero);
 
         TEST_CASE(override1);
+        TEST_CASE(overrideCVRefQualifiers);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -456,7 +457,7 @@ private:
                                   "struct Derived : Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   protected:\n"
@@ -465,7 +466,7 @@ private:
                                   "struct Derived : public Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   int x;\n"
@@ -488,7 +489,7 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:9]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   protected:\n"
@@ -501,8 +502,8 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
-                      "[test.cpp:10] -> [test.cpp:7]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
+                      "[test.cpp:7] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   int x;\n"
@@ -6825,6 +6826,24 @@ private:
 
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { virtual void f() final; };");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void overrideCVRefQualifiers() {
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() const; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() volatile; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() &; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() &&; }");
         ASSERT_EQUALS("", errout.str());
     }
 };

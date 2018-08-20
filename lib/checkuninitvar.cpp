@@ -1076,8 +1076,12 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
                     return 1;
                 while (argStart->previous() && argStart->previous()->isName())
                     argStart = argStart->previous();
-                if (Token::Match(argStart, "const %type% & %name% [,)]"))
+                if (Token::Match(argStart, "const %type% & %name% [,)]")) {
+                    // If it's a record it's ok to pass a partially uninitialized struct.
+                    if (vartok->variable() && vartok->variable()->valueType() && vartok->variable()->valueType()->type == ValueType::Type::RECORD)
+                        return -1;
                     return 1;
+                }
                 if ((pointer || address) && alloc == NO_ALLOC && Token::Match(argStart, "const struct| %type% * %name% [,)]"))
                     return 1;
                 if ((pointer || address) && Token::Match(argStart, "const %type% %name% [") && Token::Match(argStart->linkAt(3), "] [,)]"))

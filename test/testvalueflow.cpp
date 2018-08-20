@@ -3326,6 +3326,13 @@ private:
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty() == false) {\n"
+               "    ints.front();\n" // <- container is not empty
+               "  }\n"
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
         code = "void f(const std::vector<int> &v) {\n"
                "  if (v.empty()) {}\n"
                "  if (!v.empty() && v[10]==0) {}\n" // <- no container size for 'v[10]'
