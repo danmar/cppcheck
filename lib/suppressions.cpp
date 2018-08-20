@@ -45,6 +45,18 @@ static bool isValidGlobPattern(const std::string &pattern)
     return true;
 }
 
+static bool isAcceptedErrorIdChar(char c)
+{
+    switch (c) {
+    case '_':
+    case '-':
+    case '.':
+        return true;
+    default:
+        return std::isalnum(c);
+    }
+}
+
 std::string Suppressions::parseFile(std::istream &istr)
 {
     // Change '\r' to '\n' in the istr
@@ -155,7 +167,7 @@ std::string Suppressions::addSuppression(const Suppressions::Suppression &suppre
     }
     if (suppression.errorId != "*") {
         for (std::string::size_type pos = 0; pos < suppression.errorId.length(); ++pos) {
-            if (suppression.errorId[pos] < 0 || (!std::isalnum(suppression.errorId[pos]) && suppression.errorId[pos] != '_')) {
+            if (suppression.errorId[pos] < 0 || !isAcceptedErrorIdChar(suppression.errorId[pos])) {
                 return "Failed to add suppression. Invalid id \"" + suppression.errorId + "\"";
             }
             if (pos == 0 && std::isdigit(suppression.errorId[pos])) {

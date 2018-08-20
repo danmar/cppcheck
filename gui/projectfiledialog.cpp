@@ -151,6 +151,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI.mBtnIncludeDown, &QPushButton::clicked, this, &ProjectFileDialog::moveIncludePathDown);
     connect(mUI.mBtnAddSuppression, &QPushButton::clicked, this, &ProjectFileDialog::addSuppression);
     connect(mUI.mBtnRemoveSuppression, &QPushButton::clicked, this, &ProjectFileDialog::removeSuppression);
+    connect(mUI.mListSuppressions, &QListWidget::doubleClicked, this, &ProjectFileDialog::editSuppression);
     connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
 
     loadFromProjectFile(projectFile);
@@ -650,14 +651,35 @@ void ProjectFileDialog::removeSuppression()
 {
     const int row = mUI.mListSuppressions->currentRow();
     QListWidgetItem *item = mUI.mListSuppressions->takeItem(row);
-    const std::string s = item->text().toStdString();
+    int suppressionIndex = getSuppressionIndex(item->text());
+    if (suppressionIndex >= 0)
+        mSuppressions.removeAt(suppressionIndex);
     delete item;
-    for (int i = 0; i < mSuppressions.size(); ++i) {
-        if (mSuppressions[i].getText() == s) {
-            mSuppressions.removeAt(i);
-            break;
+}
+
+void ProjectFileDialog::editSuppression(const QModelIndex &)
+{
+    const int row = mUI.mListSuppressions->currentRow();
+    QListWidgetItem *item = mUI.mListSuppressions->item(row);
+    int suppressionIndex = getSuppressionIndex(item->text());
+    if (suppressionIndex >= 0) { // TODO what if suppression is not found?
+        NewSuppressionDialog dlg;
+        dlg.setSuppression(mSuppressions[suppressionIndex]);
+        if (dlg.exec() == QDialog::Accepted) {
+            mSuppressions[suppressionIndex] = dlg.getSuppression();
+            setSuppressions(mSuppressions);
         }
     }
+}
+
+int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
+{
+    const std::string s = shortText.toStdString();
+    for (int i = 0; i < mSuppressions.size(); ++i) {
+        if (mSuppressions[i].getText() == s)
+            return i;
+    }
+    return -1;
 }
 
 void ProjectFileDialog::browseMisraFile()

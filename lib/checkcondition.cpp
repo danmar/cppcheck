@@ -565,6 +565,8 @@ void CheckCondition::multiCondition2()
                 // Condition..
                 const Token *cond2 = tok->next()->astOperand2();
 
+                ErrorPath errorPath;
+
                 if (type == MULTICONDITIONTYPE::INNER) {
                     std::stack<const Token *> tokens1;
                     tokens1.push(cond1);
@@ -576,11 +578,11 @@ void CheckCondition::multiCondition2()
                         if (firstCondition->str() == "&&") {
                             tokens1.push(firstCondition->astOperand1());
                             tokens1.push(firstCondition->astOperand2());
-                        } else if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true)) {
+                        } else if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, &errorPath)) {
                             if (!isAliased(vars))
-                                oppositeInnerConditionError(firstCondition, cond2);
-                        } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true)) {
-                            identicalInnerConditionError(firstCondition, cond2);
+                                oppositeInnerConditionError(firstCondition, cond2, errorPath);
+                        } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, &errorPath)) {
+                            identicalInnerConditionError(firstCondition, cond2, errorPath);
                         }
                     }
                 } else {
@@ -594,9 +596,9 @@ void CheckCondition::multiCondition2()
                         if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
                             tokens2.push(secondCondition->astOperand1());
                             tokens2.push(secondCondition->astOperand2());
-                        } else if (isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true)) {
+                        } else if (isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, &errorPath)) {
                             if (!isAliased(vars))
-                                identicalConditionAfterEarlyExitError(cond1, secondCondition);
+                                identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                         }
                     }
                 }
@@ -674,39 +676,36 @@ void CheckCondition::multiCondition2()
     }
 }
 
-void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2)
+void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
-    ErrorPath errorPath = {
-        ErrorPathItem(tok1, "outer condition: " + s1),
-        ErrorPathItem(tok2, "opposite inner condition: " + s2)
-    };
+    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
+    errorPath.emplace_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
+
     const std::string msg("Opposite inner 'if' condition leads to a dead code block.\n"
                           "Opposite inner 'if' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
 }
 
-void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2)
+void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
-    ErrorPath errorPath = {
-        ErrorPathItem(tok1, "outer condition: " + s1),
-        ErrorPathItem(tok2, "identical inner condition: " + s2)
-    };
+    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
+    errorPath.emplace_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
+
     const std::string msg("Identical inner 'if' condition is always true.\n"
                           "Identical inner 'if' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, false);
 }
 
-void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2)
+void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
 {
     const std::string cond(cond1 ? cond1->expressionString() : "x");
-    ErrorPath errorPath = {
-        ErrorPathItem(cond1, "first condition"),
-        ErrorPathItem(cond2, "second condition")
-    };
+    errorPath.emplace_back(ErrorPathItem(cond1, "first condition"));
+    errorPath.emplace_back(ErrorPathItem(cond2, "second condition"));
+
     reportError(errorPath, Severity::warning, "identicalConditionAfterEarlyExit", "Identical condition '" + cond + "', second condition is always false", CWE398, false);
 }
 
@@ -861,6 +860,28 @@ static std::string conditionString(bool not1, const Token *expr1, const std::str
            (expr1->isName() ? expr1->str() : std::string("EXPR"));
 }
 
+static std::string conditionString(const Token * tok)
+{
+    if (!tok)
+        return "";
+    if (tok->isComparisonOp()) {
+        bool inconclusive = false;
+        bool not_;
+        std::string op, value;
+        const Token *expr;
+        if (parseComparison(tok, &not_, &op, &value, &expr, &inconclusive) && expr->isName()) {
+            return conditionString(not_, expr, op, value);
+        }
+    }
+    if (Token::Match(tok, "%cop%|&&|%oror%")) {
+        if (tok->astOperand2())
+            return conditionString(tok->astOperand1()) + " " + tok->str() + " " + conditionString(tok->astOperand2());
+        return tok->str() + "(" + conditionString(tok->astOperand1()) + ")";
+
+    }
+    return tok->expressionString();
+}
+
 void CheckCondition::checkIncorrectLogicOperator()
 {
     const bool printStyle = mSettings->isEnabled(Settings::STYLE);
@@ -876,14 +897,6 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!Token::Match(tok, "%oror%|&&") || !tok->astOperand1() || !tok->astOperand2())
                 continue;
 
-            // Opposite comparisons around || or && => always true or always false
-            if ((tok->astOperand1()->isName() || tok->astOperand2()->isName()) &&
-                isOppositeCond(true, mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
-
-                const bool alwaysTrue(tok->str() == "||");
-                incorrectLogicOperatorError(tok, tok->expressionString(), alwaysTrue, false);
-                continue;
-            }
 
             // 'A && (!A || B)' is equivalent to 'A && B'
             // 'A || (!A && B)' is equivalent to 'A || B'
@@ -934,22 +947,34 @@ void CheckCondition::checkIncorrectLogicOperator()
             const Token *comp2 = tok->astOperand2();
 
             bool inconclusive = false;
+            bool parseable = true;
 
             // Parse LHS
             bool not1;
             std::string op1, value1;
-            const Token *expr1;
-            if (!parseComparison(comp1, &not1, &op1, &value1, &expr1, &inconclusive))
-                continue;
+            const Token *expr1 = nullptr;
+            parseable &= (parseComparison(comp1, &not1, &op1, &value1, &expr1, &inconclusive));
 
             // Parse RHS
             bool not2;
             std::string op2, value2;
-            const Token *expr2;
-            if (!parseComparison(comp2, &not2, &op2, &value2, &expr2, &inconclusive))
-                continue;
+            const Token *expr2 = nullptr;
+            parseable &= (parseComparison(comp2, &not2, &op2, &value2, &expr2, &inconclusive));
 
             if (inconclusive && !printInconclusive)
+                continue;
+
+            const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
+
+            // Opposite comparisons around || or && => always true or always false
+            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
+
+                const bool alwaysTrue(tok->str() == "||");
+                incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive);
+                continue;
+            }
+
+            if (!parseable)
                 continue;
 
             if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true))
@@ -957,12 +982,12 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true))
                 continue;
 
-            const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             // don't check floating point equality comparisons. that is bad
             // and deserves different warnings.
             if (isfloat && (op1 == "==" || op1 == "!=" || op2 == "==" || op2 == "!="))
                 continue;
+
 
             const double d1 = (isfloat) ? MathLib::toDoubleNumber(value1) : 0;
             const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;

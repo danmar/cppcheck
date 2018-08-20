@@ -58,7 +58,7 @@ private:
         TEST_CASE(suppressionWithRelativePaths); // #4733
         TEST_CASE(suppressingSyntaxErrors); // #7076
         TEST_CASE(suppressingSyntaxErrorsInline); // #5917
-
+        TEST_CASE(suppressingSyntaxErrorsWhileFileRead) // PR #1333
         TEST_CASE(symbol);
 
         TEST_CASE(unusedFunction);
@@ -520,6 +520,25 @@ private:
                             "   pop   EAX               ; restore EAX\n"
                             "}";
         checkSuppression(files, "");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressable (PR #1333)
+        std::map<std::string, std::string> files;
+        files["test.cpp"] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
+                            "{\n"
+                            "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
+                            "[!IF \"(as:modconf('Ks')[1]/KsGeneral/KsType = 'KS_CFG_TYPE_KS_MASTER') and\n"
+                            "      (as:modconf('Ks')[1]/KsGeneral/KsUseShe = 'true')\"!][!//\n"
+                            "  {\n"
+                            "      &varNB_GetErrorStatus,\n"
+                            "      &varNB_WriteBlock,\n"
+                            "      &varNB_ReadBlock\n"
+                            "  },\n"
+                            "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
+                            "[!ENDIF!][!//\n"
+                            "};";
+        checkSuppression(files, "syntaxError:test.cpp:4");
         ASSERT_EQUALS("", errout.str());
     }
 

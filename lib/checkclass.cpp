@@ -1805,6 +1805,9 @@ void CheckClass::checkConst()
                 const std::string& opName = func->tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
+            } else if (Token::simpleMatch(func->retDef, "std :: shared_ptr <")) {
+                // Don't warn if a std::shared_ptr is returned
+                continue;
             } else {
                 // don't warn for unknown types..
                 // LPVOID, HDC, etc
@@ -2377,8 +2380,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
     }
 
     reportError(errorPath, Severity::warning, "virtualCallInConstructor",
-                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ".\n"
-                "Call of pure virtual function '" + funcname + "' in " + scopeFunctionTypeName + ". Dynamic binding is not used.", CWE(0U), false);
+                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ". Dynamic binding is not used.", CWE(0U), false);
 }
 
 void CheckClass::pureVirtualFunctionCallInConstructorError(

@@ -239,8 +239,8 @@ private:
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateAssignExpressionError(const Token *tok1, const Token *tok2);
-    void oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
-    void duplicateExpressionError(const Token *tok1, const Token *tok2, const std::string &op);
+    void oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op, ErrorPath errors);
+    void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
     void duplicateValueTernaryError(const Token *tok);
     void duplicateExpressionTernaryError(const Token *tok);
     void duplicateBreakError(const Token *tok, bool inconclusive);
@@ -266,6 +266,8 @@ private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
+
+        ErrorPath errorPath;
 
         // error
         c.zerodivError(nullptr, nullptr);
@@ -300,8 +302,8 @@ private:
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
         c.duplicateBranchError(nullptr, nullptr);
-        c.oppositeExpressionError(nullptr, nullptr, "&&");
-        c.duplicateExpressionError(nullptr, nullptr, "&&");
+        c.oppositeExpressionError(nullptr, nullptr, "&&", errorPath);
+        c.duplicateExpressionError(nullptr, nullptr, nullptr, errorPath);
         c.duplicateValueTernaryError(nullptr);
         c.duplicateExpressionTernaryError(nullptr);
         c.duplicateBreakError(nullptr,  false);

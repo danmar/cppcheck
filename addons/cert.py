@@ -35,7 +35,7 @@ def isUnpackedStruct(token):
     if token.valueType is None:
         return False
     if token.valueType.typeScope is None:
-        return False;
+        return False
     if token.valueType.typeScope.type != "Struct":
         return False
     startToken = token.valueType.typeScope.bodyStart
@@ -78,7 +78,8 @@ def getArgumentsRecursive(tok, arguments):
         getArgumentsRecursive(tok.astOperand1, arguments)
         getArgumentsRecursive(tok.astOperand2, arguments)
     else:
-        arguments.append(tok);
+        arguments.append(tok)
+
 
 def getArguments(ftok):
     arguments = []

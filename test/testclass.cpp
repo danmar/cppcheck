@@ -195,6 +195,7 @@ private:
         TEST_CASE(constUnion);  // ticket #2111 - fp when there is a union
         TEST_CASE(constArrayOperator); // #4406
         TEST_CASE(constRangeBasedFor); // #5514
+        TEST_CASE(const_shared_ptr);
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -213,6 +214,7 @@ private:
         TEST_CASE(unsafeClassDivZero);
 
         TEST_CASE(override1);
+        TEST_CASE(overrideCVRefQualifiers);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -6199,6 +6201,18 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Fred::f2' can be const.\n", errout.str());
     }
 
+    void const_shared_ptr() { // #8674
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    std::shared_ptr<Data> getData();\n"
+                   "private:\n"
+                   "     std::shared_ptr<Data> data;\n"
+                   "};\n"
+                   "\n"
+                   "std::shared_ptr<Data> Fred::getData() { return data; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void checkInitializerListOrder(const char code[]) {
         // Clear the error log
         errout.str("");
@@ -6533,14 +6547,14 @@ private:
                                  "};\n"
                                  "A::A()\n"
                                  "{f();}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Virtual function 'f' is called from constructor 'A()' at line 7.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Virtual function 'f' is called from constructor 'A()' at line 7. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class A {\n"
                                  "    virtual int f();\n"
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
@@ -6812,6 +6826,24 @@ private:
 
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { virtual void f() final; };");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void overrideCVRefQualifiers() {
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() const; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() volatile; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() &; }");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base { virtual void f(); };\n"
+                      "class Derived : Base { void f() &&; }");
         ASSERT_EQUALS("", errout.str());
     }
 };

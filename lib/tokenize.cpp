@@ -674,6 +674,12 @@ void Tokenizer::simplifyTypedef()
             typeEnd = tokOffset;
             tokOffset = tokOffset->next();
 
+            while (Token::Match(tokOffset, "%type%") &&
+                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed"))) {
+                typeEnd = tokOffset;
+                tokOffset = tokOffset->next();
+            }
+
             bool atEnd = false;
             while (!atEnd) {
                 if (tokOffset && tokOffset->str() == "::") {
@@ -4038,7 +4044,7 @@ bool Tokenizer::simplifyTokenList2()
 
 void Tokenizer::printDebugOutput(unsigned int simplification) const
 {
-    const bool debug = (simplification != 1U && mSettings->debug) ||
+    const bool debug = (simplification != 1U && mSettings->debugSimplified) ||
                        (simplification != 2U && mSettings->debugnormal);
 
     if (debug && list.front()) {

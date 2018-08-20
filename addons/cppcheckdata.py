@@ -776,7 +776,7 @@ def reportError(template, callstack=(), severity='', message='', errorId='', sup
         :param template: format string, or 'gcc', 'vs' or 'edit'.
         :param callstack: e.g. [['file1.cpp',10],['file2.h','20'], ... ]
         :param severity: e.g. 'error', 'warning' ...
-        :param id: message ID.
+        :param errorId: message ID.
         :param message: message text.
     """
     # expand predefined templates

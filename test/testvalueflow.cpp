@@ -80,6 +80,7 @@ private:
         TEST_CASE(valueFlowAfterCondition);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
+        TEST_CASE(valueFlowForwardModifiedVariables);
         TEST_CASE(valueFlowForwardFunction);
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
@@ -103,7 +104,28 @@ private:
         TEST_CASE(valueFlowInlineAssembly);
 
         TEST_CASE(valueFlowUninit);
+
         TEST_CASE(valueFlowTerminatingCond);
+
+        TEST_CASE(valueFlowContainerSize);
+    }
+
+    bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isKnown() && val.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     bool testValueOfX(const char code[], unsigned int linenr, int value) {
@@ -2134,6 +2156,27 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
+    void valueFlowForwardModifiedVariables() {
+        const char *code;
+
+        code = "void f(bool b) {\n"
+               "  int x = 0;\n"
+               "  if (b) x = 1;\n"
+               "  else b = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(int i) {\n"
+               "    int x = 0;\n"
+               "    if (i == 0) \n"
+               "        x = 1;\n"
+               "    else if (!x && i == 1) \n"
+               "        int b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
+    }
+
     void valueFlowForwardFunction() {
         const char *code;
 
@@ -3234,6 +3277,121 @@ private:
                "    bool b = x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 1));
+    }
+
+    static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isPossible())
+            return "Possible";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
+    static std::string isKnownContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isKnown())
+            return "Known";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
+    void valueFlowContainerSize() {
+        const char *code;
+
+        LOAD_LIB_2(settings.library, "std.cfg");
+
+        // valueFlowContainerReverse
+        code = "void f(const std::list<int> &ints) {\n"
+               "  ints.front();\n" // <- container can be empty
+               "  if (ints.empty()) {}\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  ints.front();\n" // <- container can be empty
+               "  if (ints.size()==0) {}\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        code = "void f(std::list<int> ints) {\n"
+               "  ints.front();\n" // <- no container size
+               "  ints.pop_back();\n"
+               "  if (ints.empty()) {}\n"
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
+        code = "void f(std::vector<int> v) {\n"
+               "  v[10] = 0;\n" // <- container size can be 10
+               "  if (v.size() == 10) {}\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
+
+        // valueFlowContainerForward
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) {}\n"
+               "  ints.front();\n" // <- container can be empty
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) { continue; }\n"
+               "  ints.front();\n" // <- no container size
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) { ints.push_back(0); }\n"
+               "  ints.front();\n" // <- container is not empty
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty()) {\n"
+               "    ints.front();\n" // <- container is empty
+               "  }\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.empty() == false) {\n"
+               "    ints.front();\n" // <- container is not empty
+               "  }\n"
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
+        code = "void f(const std::vector<int> &v) {\n"
+               "  if (v.empty()) {}\n"
+               "  if (!v.empty() && v[10]==0) {}\n" // <- no container size for 'v[10]'
+               "}";
+        ASSERT(tokenValues(code, "v [").empty());
+
+        code = "void f() {\n"
+               "  std::list<int> ints;\n"  // No value => ints is empty
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        code = "void f() {\n"
+               "  std::string s=\"abc\";\n" // size of s is 3
+               "  s.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        // valueFlowContainerForward, function call
+        code = "void f() {\n"
+               "  std::list<int> x;\n"
+               "  f(x);\n"
+               "  x.front();\n" // <- unknown container size
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
     }
 };
 

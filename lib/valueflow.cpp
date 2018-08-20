@@ -92,6 +92,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <set>
@@ -1908,6 +1910,22 @@ static bool valueFlowForward(Token * const               startToken,
                     return false;
                 }
 
+                // Forward known values in the else branch
+                if (Token::simpleMatch(end, "} else {")) {
+                    std::list<ValueFlow::Value> knownValues;
+                    std::copy_if(values.begin(), values.end(), std::back_inserter(knownValues), std::mem_fn(&ValueFlow::Value::isKnown));
+                    valueFlowForward(end->tokAt(2),
+                                     end->linkAt(2),
+                                     var,
+                                     varid,
+                                     knownValues,
+                                     constValue,
+                                     subFunction,
+                                     tokenlist,
+                                     errorLogger,
+                                     settings);
+                }
+
                 // Remove conditional values
                 std::list<ValueFlow::Value>::iterator it;
                 for (it = values.begin(); it != values.end();) {
@@ -3492,6 +3510,204 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
     }
 }
 
+static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
+{
+    for (; tok && tok->astParent(); tok = tok->astParent()) {
+        const Token *parent = tok->astParent();
+        if (tok != parent->astOperand2())
+            continue;
+        if (!Token::Match(parent, "%oror%|&&|?"))
+            continue;
+        // is container found in lhs?
+        std::stack<const Token *> tokens;
+        tokens.push(parent->astOperand1());
+        while (!tokens.empty()) {
+            const Token *t = tokens.top();
+            tokens.pop();
+            if (!t)
+                continue;
+            if (t->varId() == containerId)
+                return true;
+            tokens.push(t->astOperand1());
+            tokens.push(t->astOperand2());
+        }
+    }
+    return false;
+}
+
+static bool isContainerSizeChangedByFunction(const Token *tok)
+{
+    const Token *parent = tok->astParent();
+    if (parent && parent->str() == "&")
+        parent = parent->astParent();
+    while (parent && parent->str() == ",")
+        parent = parent->astParent();
+    return parent && Token::Match(parent->previous(), "%name% (");
+}
+
+static void valueFlowContainerReverse(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
+{
+    while (nullptr != (tok = tok->previous())) {
+        if (Token::Match(tok, "[{}]"))
+            break;
+        if (tok->varId() != containerId)
+            continue;
+        if (Token::Match(tok, "%name% ="))
+            break;
+        if (isContainerSizeChangedByFunction(tok))
+            break;
+        if (!tok->valueType() || !tok->valueType()->container)
+            break;
+        if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
+            break;
+        if (!hasContainerSizeGuard(tok, containerId))
+            setTokenValue(const_cast<Token *>(tok), value, settings);
+    }
+}
+
+static void valueFlowContainerForward(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
+{
+    while (nullptr != (tok = tok->next())) {
+        if (Token::Match(tok, "[{}]"))
+            break;
+        if (tok->varId() != containerId)
+            continue;
+        if (Token::Match(tok, "%name% ="))
+            break;
+        if (isContainerSizeChangedByFunction(tok))
+            break;
+        if (!tok->valueType() || !tok->valueType()->container)
+            break;
+        if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
+            break;
+        if (!hasContainerSizeGuard(tok, containerId))
+            setTokenValue(const_cast<Token *>(tok), value, settings);
+    }
+}
+
+static bool isContainerSizeChanged(unsigned int varId, const Token *start, const Token *end)
+{
+    for (const Token *tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() != varId)
+            continue;
+        if (!tok->valueType() || !tok->valueType()->container)
+            return true;
+        if (Token::Match(tok, "%name% ="))
+            return true;
+        if (Token::Match(tok, "%name% . %name% (")) {
+            Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            switch (action) {
+            case Library::Container::Action::RESIZE:
+            case Library::Container::Action::CLEAR:
+            case Library::Container::Action::PUSH:
+            case Library::Container::Action::POP:
+            case Library::Container::Action::CHANGE:
+            case Library::Container::Action::INSERT:
+            case Library::Container::Action::ERASE:
+            case Library::Container::Action::CHANGE_INTERNAL:
+                return true;
+            case Library::Container::Action::NO_ACTION: // might be unknown action
+                return true;
+            case Library::Container::Action::FIND:
+            case Library::Container::Action::CHANGE_CONTENT:
+                break;
+            };
+        }
+    }
+    return false;
+}
+
+static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
+{
+    // declaration
+    for (const Variable *var : symboldatabase->variableList()) {
+        if (!var || !var->isLocal() || var->isPointer() || var->isReference())
+            continue;
+        if (!var->valueType() || !var->valueType()->container)
+            continue;
+        if (!Token::Match(var->nameToken(), "%name% ;"))
+            continue;
+        ValueFlow::Value value(0);
+        value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+        value.setKnown();
+        valueFlowContainerForward(var->nameToken()->next(), var->declarationId(), value, settings);
+    }
+
+    // after assignment
+    for (const Scope *functionScope : symboldatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "[;{}] %var% = %str% ;")) {
+                const Token *containerTok = tok->next();
+                if (containerTok && containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
+                    ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
+                    value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                    value.setKnown();
+                    valueFlowContainerForward(containerTok->next(), containerTok->varId(), value, settings);
+                }
+            }
+        }
+    }
+
+    // conditional conditionSize
+    for (const Scope &scope : symboldatabase->scopeList) {
+        if (scope.type != Scope::ScopeType::eIf) // TODO: while
+            continue;
+        for (const Token *tok = scope.classDef; tok && tok->str() != "{"; tok = tok->next()) {
+            if (!tok->isName() || !tok->valueType() || tok->valueType()->type != ValueType::CONTAINER || !tok->valueType()->container)
+                continue;
+            if (!Token::Match(tok, "%name% . %name% ("))
+                continue;
+
+            const Token *conditionToken;
+            MathLib::bigint intval;
+
+            if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE) {
+                const Token *parent = tok->tokAt(3)->astParent();
+                if (!parent || !parent->isComparisonOp() || !parent->astOperand2())
+                    continue;
+                if (parent->astOperand1()->hasKnownIntValue())
+                    intval = parent->astOperand1()->values().front().intvalue;
+                else if (parent->astOperand2()->hasKnownIntValue())
+                    intval = parent->astOperand2()->values().front().intvalue;
+                else
+                    continue;
+                conditionToken = parent;
+            } else if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY) {
+                conditionToken = tok->tokAt(3);
+                intval = 0;
+            } else {
+                continue;
+            }
+
+            ValueFlow::Value value(conditionToken, intval);
+            value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+
+            // possible value before condition
+            valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
+
+            // possible value after condition
+            if (!isEscapeScope(scope.bodyStart, tokenlist)) {
+                const Token *after = scope.bodyEnd;
+                if (Token::simpleMatch(after, "} else {"))
+                    after = isEscapeScope(after->tokAt(2), tokenlist) ? nullptr : after->linkAt(2);
+                if (after && !isContainerSizeChanged(tok->varId(), scope.bodyStart, after))
+                    valueFlowContainerForward(after, tok->varId(), value, settings);
+            }
+
+            // known value in conditional code
+            if (conditionToken->str() == "==" || conditionToken->str() == "(") {
+                const Token *parent = conditionToken->astParent();
+                while (parent && !Token::Match(parent, "!|==|!="))
+                    parent = parent->astParent();
+                if (!parent) {
+                    value.setKnown();
+                    valueFlowContainerForward(scope.bodyStart, tok->varId(), value, settings);
+                }
+            }
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token *c, long long val)
     : valueType(INT),
       intvalue(val),
@@ -3521,6 +3737,8 @@ std::string ValueFlow::Value::infoString() const
         return "<Moved>";
     case UNINIT:
         return "<Uninit>";
+    case CONTAINER_SIZE:
+        return "size=" + MathLib::toString(intvalue);
     };
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
@@ -3559,6 +3777,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowSubFunction(tokenlist, errorLogger, settings);
     valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
+    if (tokenlist->isCPP())
+        valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
 }
 
 
