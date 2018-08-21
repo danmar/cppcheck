@@ -131,6 +131,8 @@ script:
   - python3 ../misc.py -verify misc-test.cpp.dump
   - ${CPPCHECK} --dump cert-test.c
   - python3 ../cert.py -verify cert-test.c.dump
+  - ${CPPCHECK} --dump cert-test.cpp
+  - python3 ../cert.py -verify cert-test.cpp.dump
   - ${CPPCHECK} --dump misra-test.c
   - python3 ../misra.py -verify misra-test.c.dump
   - ${CPPCHECK} --dump misra-test.cpp
