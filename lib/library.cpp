@@ -904,6 +904,14 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     if (unknownFunc)
         unknownFunc->clear();
 
+    if (Token::Match(end->tokAt(-2), "!!{ ; }")) {
+        const Token *lastTop = end->tokAt(-2)->astTop();
+        if (Token::simpleMatch(lastTop, "<<") &&
+            Token::simpleMatch(lastTop->astOperand1(), "(") &&
+            Token::Match(lastTop->astOperand1()->previous(), "%name% ("))
+            return isnoreturn(lastTop->astOperand1()->previous());
+    }
+
     if (!Token::simpleMatch(end->tokAt(-2), ") ; }"))
         return false;
 
