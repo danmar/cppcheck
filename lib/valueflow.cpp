@@ -1095,11 +1095,9 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             conds.emplace_back(condTok->astOperand2(), condScope);
 
         }
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%comp%"))
-                continue;
-            for(Condition cond:conds) {
-                if(cond.first == tok)
+        for(Condition cond:conds) {
+            for (Token* tok = cond.first->next(); tok != scope->bodyEnd; tok = tok->next()) {
+                if (!Token::Match(tok, "%comp%"))
                     continue;
                 if(cond.second) {
                     bool bail = true;
