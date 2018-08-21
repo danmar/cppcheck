@@ -1096,6 +1096,8 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
 
         }
         for(Condition cond:conds) {
+            if(!cond.first)
+                continue;
             for (Token* tok = cond.first->next(); tok != scope->bodyEnd; tok = tok->next()) {
                 if (!Token::Match(tok, "%comp%"))
                     continue;
