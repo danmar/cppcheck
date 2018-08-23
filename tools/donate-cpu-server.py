@@ -50,6 +50,7 @@ while True:
                 url = data[:pos]
                 res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
                 if res and (url+'\n' in packages):
+                    print('results added for package ' + res.group(1))
                     f = open(resultPath + '/' + res.group(1), 'wt')
                     f.write(data[pos+1:])
                     f.close()
