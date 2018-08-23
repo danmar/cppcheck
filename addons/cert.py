@@ -74,10 +74,13 @@ def isStandardFunction(token):
     if token.function:
         return False
     prev = token.previous
-    if prev and prev.str == '::':
-        prevprev = prev.previous
-        if prevprev and not prevprev.str == 'std':
+    if prev:
+        if prev.str == '.':
             return False
+        if prev.str == '::':
+            prevprev = prev.previous
+            if prevprev and not prevprev.str == 'std':
+                return False
     return True
 
 # Get function arguments
