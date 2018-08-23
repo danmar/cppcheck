@@ -67,12 +67,12 @@ def wget(url, destfile):
 def scanPackage(workPath, package):
     print('Download package ' + package)
     destfile = workPath + '/temp.tgz'
+    tempPath = workPath + '/temp'
+    subprocess.call(['rm', '-rf', tempPath, destfile])
     if not wget(package, destfile):
         if not wget(filepath, destfile):
             return None
     print('Unpacking..')
-    tempPath = workPath + '/temp'
-    subprocess.call(['rm', '-rf', tempPath])
     os.mkdir(tempPath)
     os.chdir(tempPath)
     subprocess.call(['tar', 'xzvf', destfile])
@@ -110,4 +110,3 @@ while True:
     results = scanPackage(workpath, package)
     if results:
         uploadResults(package, results)
-    break
