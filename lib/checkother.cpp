@@ -2060,12 +2060,12 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     const std::string& op = opTok ? opTok->str() : "&&";
     std::string msg = "Same expression on both sides of \'" + op + "\'";
     if (expr1 != expr2) {
-        std::string exprMsg = "Expression \'" + expr1 + " " + op +  " " + expr2 + "\' is always ";
+        std::string exprMsg = "The expression \'" + expr1 + " " + op +  " " + expr2 + "\' is always ";
         if(Token::Match(opTok, "==|>=|<="))
             msg = exprMsg + "true";
         else if(Token::Match(opTok, "!=|>|<"))
             msg = exprMsg + "false";
-        msg += " because the value of '" + expr1 + "' and '" + expr2 + "' are the same";
+        msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
     }
 
 
