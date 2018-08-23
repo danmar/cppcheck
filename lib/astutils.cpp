@@ -781,9 +781,13 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
 
         // Member function call
         if(Token::Match(tok, "%name% . %name% (")) {
+            const Variable * var = tok->variable();
+            const ValueType * valueType = var->valueType();
+            bool isConst = var->isConst() || (valueType && valueType->pointer == 1 && valueType->constness == 1);
+            
             const Token *ftok = tok->tokAt(2);
             const Function * fun = ftok->function();
-            if(fun && !fun->isConst())
+            if(!isConst && (!fun || !fun->isConst()))
                 return true;
         }
 
