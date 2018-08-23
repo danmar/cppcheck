@@ -466,7 +466,7 @@ static const Token * getIteratorExpression(const Token * tok)
         const Token *iter1 = getIteratorExpression(tok->astOperand1());
         if (iter1)
             return iter1;
-        if(tok->str() == "(")
+        if (tok->str() == "(")
             return nullptr;
         const Token *iter2 = getIteratorExpression(tok->astOperand2());
         if (iter2)
@@ -486,7 +486,7 @@ void CheckStl::mismatchingContainers()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if(Token::Match(tok, "%comp%|-")) {
+            if (Token::Match(tok, "%comp%|-")) {
                 const Token * iter1 = getIteratorExpression(tok->astOperand1());
                 const Token * iter2 = getIteratorExpression(tok->astOperand2());
                 if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
