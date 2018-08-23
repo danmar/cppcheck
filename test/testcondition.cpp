@@ -1258,6 +1258,24 @@ private:
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a) {\n"
+              "  A x = a;\n"
+              "  A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a) {\n"
+              "  const A x = a;\n"
+              "  const A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
