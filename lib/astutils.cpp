@@ -779,6 +779,14 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         if (isLikelyStreamRead(cpp, tok->previous()))
             return true;
 
+        // Member function call
+        if(Token::Match(tok, "%name% . %name% (")) {
+            const Token *ftok = tok->tokAt(2);
+            const Function * fun = ftok->function();
+            if(fun && !fun->isConst())
+                return true;
+        }
+
         const Token *ftok = tok;
         while (ftok && !Token::Match(ftok, "[({[]"))
             ftok = ftok->astParent();
