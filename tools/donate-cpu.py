@@ -76,7 +76,7 @@ def scanPackage(workPath, package):
     tempPath = workPath + '/temp'
     subprocess.call(['rm', '-rf', tempPath, destfile])
     if not wget(package, destfile):
-        if not wget(filepath, destfile):
+        if not wget(package, destfile):
             return None
     print('Unpacking..')
     os.mkdir(tempPath)
