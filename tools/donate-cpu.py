@@ -17,10 +17,11 @@ import subprocess
 import sys
 import socket
 import time
+import re
 
 def checkRequirements():
     result = True
-    for app in ['g++', 'git', 'make', 'wget', 'tar']:
+    for app in ['g++', 'git', 'make', 'wget', 'rm', 'tar']:
         try:
             subprocess.call([app, '--version'])
         except OSError:
@@ -40,7 +41,12 @@ def getCppcheck(workPath):
 
 def compile(cppcheckPath):
     print('Compiling Cppcheck..')
-    subprocess.call(['make', 'SRCDIR=build', 'CXXFLAGS=-O2'])
+    try:
+        subprocess.call(['make', 'SRCDIR=build', 'CXXFLAGS=-O2'])
+        subprocess.call(['./cppcheck', '--version'])
+    except OSError:
+        return False
+    return True
 
 def getPackage():
     print('Connecting to server to get assigned work..')
@@ -82,7 +88,16 @@ def scanPackage(workPath, package):
     print(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
-    return comm[1]
+    errout = comm[1]
+    count = 0
+    for line in errout.split('\n'):
+        if re.match(r'.*:[0-9]+:[0-9]+: [a-z]+: .*\]$', line):
+            count += 1
+    if count == 0:
+        errout = None
+    else:
+        print('Number of issues: ' + str(count))
+    return errout
 
 def uploadResults(package, results):
     print('Uploading results..')
@@ -105,8 +120,12 @@ if not os.path.exists(workpath):
 cppcheckPath = workpath + '/cppcheck'
 while True:
     getCppcheck(workpath)
-    compile(cppcheckPath)
+    if compile(cppcheckPath) == False:
+        print('Failed to compile Cppcheck, retry later')
+        sys.exit(1)
     package = getPackage()
     results = scanPackage(workpath, package)
-    if results:
+    if results is None:
+        print('No results to upload')
+    else:
         uploadResults(package, results)
