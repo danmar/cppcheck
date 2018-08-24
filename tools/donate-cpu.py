@@ -38,6 +38,7 @@ def getCppcheck(workPath):
         subprocess.call(['git', 'pull'])
     else:
         subprocess.call(['git', 'clone', 'http://github.com/danmar/cppcheck.git', cppcheckPath])
+    time.sleep(2)
 
 def compile(cppcheckPath):
     print('Compiling Cppcheck..')
