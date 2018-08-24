@@ -70,6 +70,19 @@ def isCast(expr):
         return False
     return True
 
+def isStandardFunction(token):
+    if token.function:
+        return False
+    prev = token.previous
+    if prev:
+        if prev.str == '.':
+            return False
+        if prev.str == '::':
+            prevprev = prev.previous
+            if prevprev and not prevprev.str == 'std':
+                return False
+    return True
+
 # Get function arguments
 def getArgumentsRecursive(tok, arguments):
     if tok is None:
@@ -215,6 +228,13 @@ def int31(data, platform):
                     'cert-INT31-c')
                 break
 
+# MSC30-C
+# Do not use the rand() function for generating pseudorandom numbers
+def msc30(data):
+    for token in data.tokenlist:
+        if simpleMatch(token, "rand ( )") and isStandardFunction(token):
+            reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'cert-MSC30-c')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -238,6 +258,7 @@ for arg in sys.argv[1:]:
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+        msc30(cfg)
 
     if VERIFY:
         for expected in VERIFY_EXPECTED:
