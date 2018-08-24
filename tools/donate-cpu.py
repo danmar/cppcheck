@@ -29,25 +29,30 @@ def checkRequirements():
            result = False
     return result
 
-def getCppcheck(workPath):
+def getCppcheck(cppcheckPath):
     print('Get Cppcheck..')
-    cppcheckPath = workPath + '/cppcheck'
     if os.path.exists(cppcheckPath):
         os.chdir(cppcheckPath)
         subprocess.call(['git', 'checkout', '-f'])
         subprocess.call(['git', 'pull'])
     else:
         subprocess.call(['git', 'clone', 'http://github.com/danmar/cppcheck.git', cppcheckPath])
+        if not os.path.exists(cppcheckPath):
+            return False
     time.sleep(2)
+    return True
+
 
 def compile(cppcheckPath):
     print('Compiling Cppcheck..')
     try:
+        os.chdir(cppcheckPath)
         subprocess.call(['make', 'SRCDIR=build', 'CXXFLAGS=-O2'])
-        subprocess.call(['./cppcheck', '--version'])
+        subprocess.call([cppcheckPath + '/cppcheck', '--version'])
     except OSError:
         return False
     return True
+
 
 def getPackage():
     print('Connecting to server to get assigned work..')
@@ -61,6 +66,7 @@ def getPackage():
     finally:
         sock.close()
     return package
+
 
 def wget(url, destfile):
     subprocess.call(
@@ -120,7 +126,11 @@ if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
 while True:
-    getCppcheck(workpath)
+    if not getCppcheck(cppcheckPath):
+        time.sleep(5)
+        if not getCppcheck(cppcheckPath):
+            print('Failed to clone Cppcheck, retry later')
+            sys.exit(1)
     if compile(cppcheckPath) == False:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
