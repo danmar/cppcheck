@@ -487,6 +487,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
         findAndReplace(result, replaceFrom, replaceWith);
     }
     findAndReplace(result, "{severity}", Severity::toString(_severity));
+    findAndReplace(result, "{cwe}", MathLib::toString(_cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     findAndReplace(result, "{callstack}", _callStack.empty() ? emptyString : callStackToString(_callStack));
     if (!_callStack.empty()) {

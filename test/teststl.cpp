@@ -607,6 +607,20 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
 
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    if(f().begin() == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    auto size = f().end() - g().begin();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
+
         check("struct A {\n"
               "    std::vector<int>& f();\n"
               "    std::vector<int>& g();\n"
@@ -644,7 +658,20 @@ private:
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
-              "    auto it = f().end();"
+              "    if(bar(f().begin()) == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    auto it = f().end();\n"
+              "    f().begin() - it\n"
+              "    f().begin()+1 - it\n"
+              "    f().begin() - (it + 1)\n"
+              "    f().begin() - f().end()\n"
+              "    f().begin()+1 - f().end()\n"
+              "    f().begin() - (f().end() + 1)\n"
               "    (void)std::find(f().begin(), it, 0);\n"
               "    (void)std::find(f().begin(), it + 1, 0);\n"
               "    (void)std::find(f().begin() + 1, it + 1, 0);\n"
@@ -657,6 +684,16 @@ private:
               "    (void)std::find(begin(f()) + 1, end(f()), 0);\n"
               "    (void)std::find(begin(f()), end(f()) - 1, 0);\n"
               "    (void)std::find(begin(f()) + 1, end(f()) - 1, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    if(f().begin() == f().end()) {}\n"
+              "    if(f().begin() == f().end()+1) {}\n"
+              "    if(f().begin()+1 == f().end()) {}\n"
+              "    if(f().begin()+1 == f().end()+1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

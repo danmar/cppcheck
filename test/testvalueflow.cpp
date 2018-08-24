@@ -3358,6 +3358,14 @@ private:
                "  x.front();\n" // <- unknown container size
                "}";
         ASSERT(tokenValues(code, "x . front").empty());
+
+        code = "void f(std::vector<int> ints) {\n" // #8697
+               "  if (ints.empty())\n"
+               "    abort() << 123;\n"
+               "  ints[0] = 0;\n"
+               "}";
+        ASSERT(tokenValues(code, "ints [").empty());
+
     }
 };
 
