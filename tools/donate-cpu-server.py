@@ -4,6 +4,13 @@
 import os
 import socket
 import re
+import datetime
+
+def strDateTime():
+    d = datetime.date.strftime(datetime.datetime.now().date(), '%Y-%m-%d')
+    t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
+    return d + ' ' + t
+
 
 resultPath = os.path.expanduser('~/donated-results')
 
@@ -27,14 +34,14 @@ sock.listen(1)
 
 while True:
     # wait for a connection
-    print 'waiting for a connection'
+    print('[' + strDateTime() + '] waiting for a connection')
     connection, client_address = sock.accept()
 
     try:
         cmd = connection.recv(16)
         if cmd=='get\n':
             packages[packageIndex] = packages[packageIndex].strip()
-            print('get:' + packages[packageIndex])
+            print('[' + strDateTime() + '] get:' + packages[packageIndex])
             connection.sendall(packages[packageIndex])
             packageIndex += 1
             if packageIndex >= len(packages):
@@ -50,15 +57,15 @@ while True:
             pos = data.find('\n')
             if data.startswith('ftp://') and pos > 10:
                 url = data[:pos]
-                print('write:'+url)
+                print('[' + strDateTime() + '] write:'+url)
                 res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
                 if res and url in packages:
                     print('results added for package ' + res.group(1))
                     f = open(resultPath + '/' + res.group(1), 'wt')
-                    f.write(data[pos+1:])
+                    f.write(strDateTime() + '\n' + data[pos+1:])
                     f.close()
         else:
-            print('invalid cmd')
+            print('[' + strDateTime() + '] invalid cmd')
 
     finally:
         connection.close()
