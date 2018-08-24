@@ -43,6 +43,21 @@ def getCppcheck(cppcheckPath):
     return True
 
 
+def compile_version(workPath, version):
+    if os.path.isfile(workPath + '/' + version + '/cppcheck'):
+        return
+    os.chdir(workPath + '/cppcheck')
+    subprocess.call(['git', 'checkout', version])
+    subprocess.call(['make', 'clean'])
+    subprocess.call(['make', 'SRCDIR=build', 'CXXFLAGS=-O2'])
+    if os.path.isfile(workPath + '/cppcheck/cppcheck'):
+        os.mkdir(workpath + '/' + version)
+        destPath = workpath + '/' + version + '/'
+        subprocess.call(['cp', '-R', workPath + '/cppcheck/cfg', destPath])
+        subprocess.call(['cp', 'cppcheck', destPath])
+    subprocess.call(['git', 'checkout', 'master'])
+
+
 def compile(cppcheckPath):
     print('Compiling Cppcheck..')
     try:
@@ -69,6 +84,7 @@ def getPackage():
 
 
 def wget(url, destfile):
+    subprocess.call(['rm', '-f', destfile])
     subprocess.call(
             ['wget', '--tries=10', '--timeout=300', '-O', destfile, url])
     if os.path.isfile(destfile):
@@ -77,21 +93,30 @@ def wget(url, destfile):
     time.sleep(10)
     return False
 
-def scanPackage(workPath, package):
+
+def downloadPackage(workPath, package):
     print('Download package ' + package)
     destfile = workPath + '/temp.tgz'
-    tempPath = workPath + '/temp'
-    subprocess.call(['rm', '-rf', tempPath, destfile])
     if not wget(package, destfile):
         if not wget(package, destfile):
             return None
+    return destfile
+
+
+def unpackPackage(workPath, tgz):
     print('Unpacking..')
+    tempPath = workPath + '/temp'
+    subprocess.call(['rm', '-rf', tempPath])
     os.mkdir(tempPath)
     os.chdir(tempPath)
-    subprocess.call(['tar', 'xzvf', destfile])
+    subprocess.call(['tar', 'xzvf', tgz])
     os.chdir(workPath)
+
+
+def scanPackage(workPath, cppcheck):
     print('Analyze..')
-    cmd = 'nice ' + workPath + '/cppcheck/cppcheck -D__GCC__ --enable=style --library=posix --platform=unix64 --template=daca2 -rp=temp temp'
+    os.chdir(workPath)
+    cmd = 'nice ' + cppcheck + ' -D__GCC__ --enable=style --library=posix --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
@@ -105,6 +130,7 @@ def scanPackage(workPath, package):
     else:
         print('Number of issues: ' + str(count))
     return errout
+
 
 def uploadResults(package, results):
     print('Uploading results..')
@@ -131,12 +157,26 @@ while True:
         if not getCppcheck(cppcheckPath):
             print('Failed to clone Cppcheck, retry later')
             sys.exit(1)
+    compile_version(workpath, '1.84')
     if compile(cppcheckPath) == False:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
     package = getPackage()
-    results = scanPackage(workpath, package)
+    tgz = downloadPackage(workpath, package)
+    unpackPackage(workpath, tgz)
+    results = None
+    for cppcheck in ['cppcheck/cppcheck', '1.84/cppcheck']:
+        cmd = workpath + '/' + cppcheck
+        if not os.path.isfile(cmd):
+            continue
+        res = scanPackage(workpath, cmd)
+        if res:
+            if results is None:
+                results = ''
+            results += 'cppcheck:' + cppcheck + '\n' + res
     if results is None:
         print('No results to upload')
     else:
         uploadResults(package, results)
+        print('Results are uploaded')
+        time.sleep(2)

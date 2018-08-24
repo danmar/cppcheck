@@ -65,7 +65,7 @@ while True:
                     f.write(strDateTime() + '\n' + data[pos+1:])
                     f.close()
         else:
-            print('[' + strDateTime() + '] invalid cmd')
+            print('[' + strDateTime() + '] invalid command: ' + cmd)
 
     finally:
         connection.close()
