@@ -28,13 +28,16 @@ def fmt(a,b,c,d):
     while len(ret) < 37-len(d):
         ret += ' '
     ret += d
+    if a != 'Package':
+        pos = ret.find(' ')
+        ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
     return ret
 
 
 def latestReport(latestResults):
     html = '<html><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Time','head','1.84') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package','Date       Time ','head','1.84') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -65,6 +68,14 @@ def sendAll(connection, data):
         else:
             data = None
     time.sleep(0.5)
+
+def httpGetResponse(data, contentType):
+    resp = 'HTTP/1.1 200 OK\n'
+    resp += 'Connection: close\n'
+    resp += 'Content-length: ' + str(len(data)) + '\n'
+    resp += 'Content-type: ' + contentType + '\n\n'
+    resp += data
+    sendAll(connection, resp)
 
 resultPath = os.path.expanduser('~/donated-results')
 
@@ -127,19 +138,24 @@ while True:
         elif cmd=='GET /latest.html':
             print('[' + strDateTime() + '] ' + cmd)
             html = latestReport(latestResults)
-            resp = 'HTTP/1.1 200 OK\n'
-            resp += 'Connection: close\n'
-            resp += 'Content-length: ' + str(len(html)) + '\n'
-            resp += 'Content-type: text/html\n\n'
-            print(resp + '...')
-            resp += html
-            sendAll(connection, resp)
+            httpGetResponse(html, 'text/html')
         elif cmd.startswith('GET /'):
             print('[' + strDateTime() + '] ' + cmd)
-            connection.send('HTTP/1.1 404 Not Found\n\n')
+            package = cmd[5:]
+            if package.endswith(' HTTP'):
+                package = package[:-5]
+            filename = resultPath + '/' + package
+            print('filename:"' + filename + '"')
+            if not os.path.isfile(filename):
+                connection.send('HTTP/1.1 404 Not Found\n\n')
+                print(404)
+            else:
+                f = open(filename,'rt')
+                data = f.read()
+                f.close()
+                httpGetResponse(data, 'text/plain')
         else:
             print('[' + strDateTime() + '] invalid command: ' + cmd)
-
     finally:
         connection.close()
 
