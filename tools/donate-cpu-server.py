@@ -100,16 +100,17 @@ class HttpClientThread(Thread):
                     package = package[:package.find(' ')]
                 filename = os.path.expanduser('~/donated-results/') + package
                 if not os.path.isfile(filename):
-                    print('HTTP/1.1 404 Not Found\n\n')
+                    print('HTTP/1.1 404 Not Found')
                     connection.send('HTTP/1.1 404 Not Found\n\n')
                 else:
                     f = open(filename,'rt')
                     data = f.read()
                     f.close()
                     httpGetResponse(self.connection, data, 'text/plain')
-            print('HttpClientThread: sleep 30 seconds..')
-            time.sleep(30)
-            print('HttpClientThread: stopping')
+                    print('HttpClientThread: sleep 30 seconds..')
+                    time.sleep(30)
+                    print('HttpClientThread: stopping')
+            time.sleep(1)
             self.connection.close()
         except:
             return
@@ -127,7 +128,13 @@ if __name__ == "__main__":
         print('fatal: there are no packages')
         sys.exit(1)
 
-    packageIndex = int(time.time()) % len(packages)
+    packageIndex = 0
+    if os.path.isfile('package-index.txt'):
+        f = open('package-index.txt', 'rt')
+        packageIndex = int(f.read())
+        if packageIndex < 0 or packageIndex >= len(packages):
+            packageIndex = 0
+        f.close()
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -162,6 +169,9 @@ if __name__ == "__main__":
             packageIndex += 1
             if packageIndex >= len(packages):
                 packageIndex = 0
+            f = open('package-index.txt', 'wt')
+            f.write(str(packageIndex) + '\n')
+            f.close()
             connection.close()
         elif cmd.startswith('write\nftp://'):
             # read data
