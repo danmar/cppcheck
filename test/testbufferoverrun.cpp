@@ -224,6 +224,7 @@ private:
         TEST_CASE(crash1);  // Ticket #1587 - crash
         TEST_CASE(crash2);  // Ticket #3034 - crash
         TEST_CASE(crash3);  // Ticket #5426 - crash
+        TEST_CASE(crash4);  // Ticket #8679 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -3639,6 +3640,19 @@ private:
               "void d() { struct b *f; f = malloc(108); }");
     }
 
+    void crash4() { // #8679
+        check("__thread void *thread_local_var; "
+              "int main() { "
+              "  thread_local_var = malloc(1337); "
+              "  return 0; "
+              "}");
+
+        check("thread_local void *thread_local_var; "
+              "int main() { "
+              "  thread_local_var = malloc(1337); "
+              "  return 0; "
+              "}");
+    }
 
     void executionPaths1() {
         check("void f(int a)\n"
