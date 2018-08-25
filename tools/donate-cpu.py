@@ -139,7 +139,6 @@ def sendAll(connection, data):
             data = data[bytes:]
         else:
             data = None
-    time.sleep(0.5)
 
 
 def uploadResults(package, results):
@@ -148,9 +147,10 @@ def uploadResults(package, results):
     server_address = ('cppcheck.osuosl.org', 8000)
     sock.connect(server_address)
     try:
-        sendAll(sock, 'write\n' + package + '\n' + results)
-    finally:
+        sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
         sock.close()
+    except socket.error as e:
+        pass
     return package
 
 
@@ -188,5 +188,5 @@ while True:
         print('No results to upload')
     else:
         uploadResults(package, results)
-        print('Results are uploaded')
-        time.sleep(2)
+        print('Results have been uploaded')
+        time.sleep(5)

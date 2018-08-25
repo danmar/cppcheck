@@ -7,6 +7,7 @@ import socket
 import re
 import datetime
 import time
+from threading import Thread
 
 def strDateTime():
     d = datetime.date.strftime(datetime.datetime.now().date(), '%Y-%m-%d')
@@ -60,16 +61,17 @@ def latestReport(latestResults):
     html += '</pre></body></html>\n'
     return html
 
+
 def sendAll(connection, data):
     while data:
-        bytes = connection.send(data)
-        if bytes < len(data):
-            data = data[bytes:]
+        num = connection.send(data)
+        if num < len(data):
+            data = data[num:]
         else:
             data = None
-    time.sleep(0.5)
 
-def httpGetResponse(data, contentType):
+
+def httpGetResponse(connection, data, contentType):
     resp = 'HTTP/1.1 200 OK\n'
     resp += 'Connection: close\n'
     resp += 'Content-length: ' + str(len(data)) + '\n'
@@ -77,85 +79,122 @@ def httpGetResponse(data, contentType):
     resp += data
     sendAll(connection, resp)
 
-resultPath = os.path.expanduser('~/donated-results')
 
-f = open('packages.txt', 'rt')
-packages = f.readlines()
-f.close()
+class HttpClientThread(Thread):
+    def __init__(self, connection, cmd, latestResults):
+        Thread.__init__(self)
+        self.connection = connection
+        self.cmd = cmd[:cmd.find('\n')]
+        self.latestResults = latestResults
 
-print('packages:'+str(len(packages)))
+    def run(self):
+        try:
+            cmd = self.cmd
+            print('[' + strDateTime() + '] ' + cmd)
+            if cmd.startswith('GET /latest.html '):
+                html = latestReport(self.latestResults)
+                httpGetResponse(self.connection, html, 'text/html')
+            else:
+                package = cmd[5:]
+                if package.find(' ') > 0:
+                    package = package[:package.find(' ')]
+                filename = os.path.expanduser('~/donated-results/') + package
+                if not os.path.isfile(filename):
+                    print('HTTP/1.1 404 Not Found\n\n')
+                    connection.send('HTTP/1.1 404 Not Found\n\n')
+                else:
+                    f = open(filename,'rt')
+                    data = f.read()
+                    f.close()
+                    httpGetResponse(self.connection, data, 'text/plain')
+            print('HttpClientThread: sleep 30 seconds..')
+            time.sleep(30)
+            print('HttpClientThread: stopping')
+            self.connection.close()
+        except:
+            return
 
-if len(packages) == 0:
-    print('fatal: there are no packages')
-    sys.exit(1)
+if __name__ == "__main__":
+    resultPath = os.path.expanduser('~/donated-results')
 
-packageIndex = 0
+    f = open('packages.txt', 'rt')
+    packages = f.readlines()
+    f.close()
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_address = ('', 8000)
-sock.bind(server_address)
+    print('packages: ' + str(len(packages)))
 
-sock.listen(1)
+    if len(packages) == 0:
+        print('fatal: there are no packages')
+        sys.exit(1)
 
-latestResults = []
+    packageIndex = int(time.time()) % len(packages)
 
-while True:
-    # wait for a connection
-    print('[' + strDateTime() + '] waiting for a connection')
-    connection, client_address = sock.accept()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_address = ('', 8000)
+    sock.bind(server_address)
 
-    try:
-        cmd = connection.recv(16)
-        if cmd=='get\n':
+    sock.listen(1)
+
+    latestResults = []
+
+    while True:
+        # wait for a connection
+        print('[' + strDateTime() + '] waiting for a connection')
+        connection, client_address = sock.accept()
+        cmd = connection.recv(128)
+        if cmd.find('\n') < 1:
+            continue
+        firstLine = cmd[:cmd.find('\n')]
+        if re.match('[a-zA-Z0-9./ ]+',firstLine) is None:
+            connection.close()
+            continue;
+        if cmd.startswith('GET /'):
+            newThread = HttpClientThread(connection, cmd, latestResults)
+            newThread.start()
+        elif cmd=='get\n':
             packages[packageIndex] = packages[packageIndex].strip()
             print('[' + strDateTime() + '] get:' + packages[packageIndex])
-            connection.sendall(packages[packageIndex])
+            connection.send(packages[packageIndex])
             packageIndex += 1
             if packageIndex >= len(packages):
                 packageIndex = 0
-        elif cmd.startswith('write\n'):
+            connection.close()
+        elif cmd.startswith('write\nftp://'):
+            # read data
             data = cmd[6:]
-            while len(data) < 1024 * 1024:
-                d = connection.recv(1024)
-                if d:
-                    data += d
-                else:
-                    break
-            pos = data.find('\n')
-            if data.startswith('ftp://') and pos > 10:
-                url = data[:pos]
-                print('[' + strDateTime() + '] write:'+url)
-                res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
-                if res and url in packages:
-                    print('results added for package ' + res.group(1))
-                    filename = resultPath + '/' + res.group(1)
-                    f = open(filename, 'wt')
-                    f.write(strDateTime() + '\n' + data[pos+1:])
-                    f.close()
-                    if len(latestResults) >= 20:
-                        latestResults = latestResults[1:]
-                    latestResults.append(filename)
-        elif cmd=='GET /latest.html':
-            print('[' + strDateTime() + '] ' + cmd)
-            html = latestReport(latestResults)
-            httpGetResponse(html, 'text/html')
-        elif cmd.startswith('GET /'):
-            print('[' + strDateTime() + '] ' + cmd)
-            package = cmd[5:]
-            if package.find(' ') > 0:
-                package = package[:package.find(' ')]
-            filename = resultPath + '/' + package
-            print('filename:"' + filename + '"')
-            if not os.path.isfile(filename):
-                connection.send('HTTP/1.1 404 Not Found\n\n')
-                print(404)
-            else:
-                f = open(filename,'rt')
-                data = f.read()
-                f.close()
-                httpGetResponse(data, 'text/plain')
-        else:
-            print('[' + strDateTime() + '] invalid command: ' + cmd)
-    finally:
-        connection.close()
+            try:
+                t = 0
+                while (len(data) < 1024 * 1024) and (not data.endswith('\nDONE')) and (t < 10):
+                    d = connection.recv(1024)
+                    if d:
+                        t = 0
+                        data += d
+                    else:
+                        time.sleep(0.2)
+                        t += 0.2
+                connection.close()
+            except socket.error as e:
+                pass
 
+            pos = data.find('\n')
+            if pos < 10:
+                continue
+            url = data[:pos]
+            print('[' + strDateTime() + '] write:'+url)
+
+            # save data
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
+            if res and url in packages:
+                print('results added for package ' + res.group(1))
+                filename = resultPath + '/' + res.group(1)
+                f = open(filename, 'wt')
+                f.write(strDateTime() + '\n' + data[pos+1:])
+                f.close()
+                # track latest added results..
+                if len(latestResults) >= 20:
+                    latestResults = latestResults[1:]
+                latestResults.append(filename)
+        else:
+            print('[' + strDateTime() + '] invalid command: ' + firstLine)
+            connection.close()
