@@ -144,7 +144,7 @@ if __name__ == "__main__":
         connection, client_address = sock.accept()
         try:
             cmd = connection.recv(128)
-        except socket.error as e:
+        except socket.error:
             continue
         if cmd.find('\n') < 1:
             continue

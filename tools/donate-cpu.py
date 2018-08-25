@@ -150,7 +150,7 @@ def uploadResults(package, results):
     try:
         sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
         sock.close()
-    except socket.error as e:
+    except socket.error:
         pass
     return package
 
