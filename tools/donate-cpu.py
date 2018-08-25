@@ -76,11 +76,11 @@ def getPackage():
     server_address = ('cppcheck.osuosl.org', 8000)
     sock.connect(server_address)
     try:
-        sock.sendall('get\n')
+        sock.send(b'get\n')
         package = sock.recv(256)
     finally:
         sock.close()
-    return package
+    return package.decode('utf-8')
 
 
 def wget(url, destfile):
@@ -120,7 +120,7 @@ def scanPackage(workPath, cppcheck):
     print(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
-    errout = comm[1]
+    errout = comm[1].decode('utf-8')
     count = 0
     for line in errout.split('\n'):
         if re.match(r'.*:[0-9]+:[0-9]+: [a-z]+: .*\]$', line):
@@ -133,12 +133,13 @@ def scanPackage(workPath, cppcheck):
 
 
 def sendAll(connection, data):
-    while data:
-        bytes = connection.send(data)
-        if bytes < len(data):
-            data = data[bytes:]
+    bytes = data.encode()
+    while bytes:
+        num = connection.send(bytes)
+        if num < len(bytes):
+            bytes = bytes[num:]
         else:
-            data = None
+            bytes = None
 
 
 def uploadResults(package, results):
