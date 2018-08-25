@@ -142,8 +142,8 @@ while True:
         elif cmd.startswith('GET /'):
             print('[' + strDateTime() + '] ' + cmd)
             package = cmd[5:]
-            if package.endswith(' HTTP'):
-                package = package[:-5]
+            if package.find(' ') > 0:
+                package = package[:package.find(' ')]
             filename = resultPath + '/' + package
             print('filename:"' + filename + '"')
             if not os.path.isfile(filename):
