@@ -142,7 +142,10 @@ if __name__ == "__main__":
         # wait for a connection
         print('[' + strDateTime() + '] waiting for a connection')
         connection, client_address = sock.accept()
-        cmd = connection.recv(128)
+        try:
+            cmd = connection.recv(128)
+        except socket.error as e:
+            continue
         if cmd.find('\n') < 1:
             continue
         firstLine = cmd[:cmd.find('\n')]
