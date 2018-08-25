@@ -31,27 +31,13 @@ def fmt(a,b,c,d):
     return ret
 
 
-def latestReport():
-    # Get date/time of results
-    allResults = []
-    for filename in sorted(glob.glob(os.path.expanduser('~/donated-results/*'))):
-        if not os.path.isfile(filename):
-            continue
-        datestr = '0000-00-00 00:00'
-        for line in open(filename,'rt'):
-            if line.startswith('2018-'):
-                datestr = line.strip()
-                break
-        allResults.append(datestr + '\t' + filename)
-    allResults.sort()
-
+def latestReport(latestResults):
     html = '<html><body>\n'
     html += '<h1>Latest daca@home results</h1>'
     html += '<pre>\n<b>' + fmt('Package','Time','head','1.84') + '</b>\n'
 
     # Write report for latest results
-    for res in allResults[20:]:
-        filename = res[res.find('\t')+1:]
+    for filename in latestResults:
         package = filename[filename.rfind('/')+1:]
 
         datestr = ''
@@ -92,6 +78,8 @@ sock.bind(server_address)
 
 sock.listen(1)
 
+latestResults = []
+
 while True:
     # wait for a connection
     print('[' + strDateTime() + '] waiting for a connection')
@@ -121,12 +109,16 @@ while True:
                 res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
                 if res and url in packages:
                     print('results added for package ' + res.group(1))
-                    f = open(resultPath + '/' + res.group(1), 'wt')
+                    filename = resultPath + '/' + res.group(1)
+                    f = open(filename, 'wt')
                     f.write(strDateTime() + '\n' + data[pos+1:])
                     f.close()
+                    if len(latestResults) >= 20:
+                        latestResults = latestResults[1:]
+                    latestResults.append(filename)
         elif cmd=='GET /latest.html':
             print('[' + strDateTime() + '] ' + cmd)
-            html = latestReport()
+            html = latestReport(latestResults)
             resp = 'HTTP/1.1 200 OK\n'
             resp += 'Connection: close\n'
             resp += 'Content-length: ' + str(len(html)) + '\n'
