@@ -1,15 +1,75 @@
 
 # Server for 'donate-cpu.py'
 
+import glob
 import os
 import socket
 import re
 import datetime
+import time
 
 def strDateTime():
     d = datetime.date.strftime(datetime.datetime.now().date(), '%Y-%m-%d')
     t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
     return d + ' ' + t
+
+def fmt(a,b,c,d):
+    ret = a + ' '
+    while len(ret)<10:
+        ret += ' '
+    if len(ret) == 10:
+        ret += b[:10] + ' '
+    while len(ret)<21:
+        ret += ' '
+    ret += b[-5:] + ' '
+    while len(ret) < 32-len(c):
+        ret += ' '
+    ret += c + ' '
+    while len(ret) < 37-len(d):
+        ret += ' '
+    ret += d
+    return ret
+
+
+def latestReport():
+    # Get date/time of results
+    allResults = []
+    for filename in sorted(glob.glob(os.path.expanduser('~/donated-results/*'))):
+        if not os.path.isfile(filename):
+            continue
+        datestr = '0000-00-00 00:00'
+        for line in open(filename,'rt'):
+            if line.startswith('2018-'):
+                datestr = line.strip()
+                break
+        allResults.append(datestr + '\t' + filename)
+    allResults.sort()
+
+    html = '<html><body>\n'
+    html += '<h1>Latest daca@home results</h1>'
+    html += '<pre>\n<b>' + fmt('Package','Time','head','1.84') + '</b>\n'
+
+    # Write report for latest results
+    for res in allResults[20:]:
+        filename = res[res.find('\t')+1:]
+        package = filename[filename.rfind('/')+1:]
+
+        datestr = ''
+        cppcheck = 'cppcheck/cppcheck'
+        count = {'cppcheck/cppcheck':0, '1.84/cppcheck':0}
+        for line in open(filename,'rt'):
+            line = line.strip()
+            if line.startswith('2018-'):
+                datestr = line
+            elif line.startswith('cppcheck:'):
+                cppcheck = line[9:]
+            elif re.match(r'.*:[0-9]+:[0-9]+: [a-z]+: .*\]$', line):
+                count[cppcheck] += 1
+
+        html += fmt(package, datestr, str(count['cppcheck/cppcheck']), str(count['1.84/cppcheck'])) + '\n'
+
+    html += '</pre></body></html>\n'
+    return html
 
 
 resultPath = os.path.expanduser('~/donated-results')
@@ -64,6 +124,26 @@ while True:
                     f = open(resultPath + '/' + res.group(1), 'wt')
                     f.write(strDateTime() + '\n' + data[pos+1:])
                     f.close()
+        elif cmd=='GET /latest.html':
+            print('[' + strDateTime() + '] ' + cmd)
+            html = latestReport()
+            resp = 'HTTP/1.1 200 OK\n'
+            resp += 'Connection: close\n'
+            resp += 'Content-length: ' + str(len(html)) + '\n'
+            resp += 'Content-type: text/html\n\n'
+            print(resp + '...')
+            resp += html
+            while resp:
+                bytes = connection.send(resp)
+                print('sent:' + str(bytes))
+                if bytes < len(resp):
+                    resp = resp[bytes:]
+                else:
+                    resp = None
+            time.sleep(0.5)
+        elif cmd.startswith('GET /'):
+            print('[' + strDateTime() + '] ' + cmd)
+            connection.send('HTTP/1.1 404 Not Found\n\n')
         else:
             print('[' + strDateTime() + '] invalid command: ' + cmd)
 
