@@ -57,6 +57,14 @@ def latestReport(latestResults):
     html += '</pre></body></html>\n'
     return html
 
+def sendAll(connection, data):
+    while data:
+        bytes = connection.send(data)
+        if bytes < len(data):
+            data = data[bytes:]
+        else:
+            data = None
+    time.sleep(0.5)
 
 resultPath = os.path.expanduser('~/donated-results')
 
@@ -125,14 +133,7 @@ while True:
             resp += 'Content-type: text/html\n\n'
             print(resp + '...')
             resp += html
-            while resp:
-                bytes = connection.send(resp)
-                print('sent:' + str(bytes))
-                if bytes < len(resp):
-                    resp = resp[bytes:]
-                else:
-                    resp = None
-            time.sleep(0.5)
+            sendAll(connection, resp)
         elif cmd.startswith('GET /'):
             print('[' + strDateTime() + '] ' + cmd)
             connection.send('HTTP/1.1 404 Not Found\n\n')

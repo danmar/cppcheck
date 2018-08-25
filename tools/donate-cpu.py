@@ -132,13 +132,23 @@ def scanPackage(workPath, cppcheck):
     return errout
 
 
+def sendAll(connection, data):
+    while data:
+        bytes = connection.send(data)
+        if bytes < len(data):
+            data = data[bytes:]
+        else:
+            data = None
+    time.sleep(0.5)
+
+
 def uploadResults(package, results):
     print('Uploading results..')
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('cppcheck.osuosl.org', 8000)
     sock.connect(server_address)
     try:
-        sock.sendall('write\n' + package + '\n' + results)
+        sendAll(sock, 'write\n' + package + '\n' + results)
     finally:
         sock.close()
     return package
