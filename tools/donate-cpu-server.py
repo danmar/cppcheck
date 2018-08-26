@@ -14,7 +14,7 @@ def strDateTime():
     t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
     return d + ' ' + t
 
-def fmt(a,b,c,d):
+def fmt(a,b,c,d,e):
     ret = a + ' '
     while len(ret)<10:
         ret += ' '
@@ -29,6 +29,7 @@ def fmt(a,b,c,d):
     while len(ret) < 37-len(d):
         ret += ' '
     ret += d
+    ret += ' ' + e
     if a != 'Package':
         pos = ret.find(' ')
         ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
@@ -36,27 +37,36 @@ def fmt(a,b,c,d):
 
 
 def latestReport(latestResults):
-    html = '<html><body>\n'
+    html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Date       Time ','head','1.84') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package','Date       Time ','head','1.84','Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
         package = filename[filename.rfind('/')+1:]
 
         datestr = ''
-        cppcheck = 'cppcheck/cppcheck'
-        count = {'cppcheck/cppcheck':0, '1.84/cppcheck':0}
+        count = ['0','0']
+        lost = 0
+        added = 0
         for line in open(filename,'rt'):
             line = line.strip()
             if line.startswith('2018-'):
                 datestr = line
-            elif line.startswith('cppcheck:'):
-                cppcheck = line[9:]
-            elif re.match(r'.*:[0-9]+:[0-9]+: [a-z]+: .*\]$', line):
-                count[cppcheck] += 1
-
-        html += fmt(package, datestr, str(count['cppcheck/cppcheck']), str(count['1.84/cppcheck'])) + '\n'
+            #elif line.startswith('cppcheck:'):
+            #    cppcheck = line[9:]
+            elif line.startswith('count: '):
+                count = line.split(' ')[1:]
+            elif line.startswith('1.84 '):
+                lost += 1
+            elif line.startswith('head '):
+                added += 1
+        diff = ''
+        if lost > 0:
+            diff += '-' + str(lost)
+        if added > 0:
+            diff += '-' + str(added)
+        html += fmt(package, datestr, count[0], count[1], diff) + '\n'
 
     html += '</pre></body></html>\n'
     return html
@@ -190,7 +200,7 @@ if __name__ == "__main__":
             if pos < 10:
                 continue
             url = data[:pos]
-            print('[' + strDateTime() + '] write:'+url)
+            print('[' + strDateTime() + '] write:' + url)
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
@@ -198,7 +208,7 @@ if __name__ == "__main__":
                 print('results added for package ' + res.group(1))
                 filename = resultPath + '/' + res.group(1)
                 f = open(filename, 'wt')
-                f.write(strDateTime() + '\n' + data[pos+1:])
+                f.write(strDateTime() + '\n' + data)
                 f.close()
                 # track latest added results..
                 if len(latestResults) >= 20:

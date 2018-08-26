@@ -213,6 +213,9 @@ while True:
         c,errout = scanPackage(workpath, cppcheck)
         output += ' ' + str(c)
         resultsToDiff.append(errout)
+    if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
+        print('No results')
+        continue
     output += '\ndiff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1])
     uploadResults(package, output)
     print('Results have been uploaded')
