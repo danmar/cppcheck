@@ -132,6 +132,35 @@ def scanPackage(workPath, cppcheck):
     return errout
 
 
+def diffResults(workPath, ver1, results1, ver2, results2):
+    print('Diff results..')
+    ret = ''
+    r1 = sorted(results1.split('\n'))
+    r2 = sorted(results2.split('\n'))
+    i1 = 0
+    i2 = 0
+    while i1 < len(r1) and i2 < len(r2):
+        if r1[i1] == r2[i2]:
+            i1 += 1
+            i2 += 1
+        elif r1[i1] < r2[i2]:
+            ret += ver1 + ' ' + r1[i1] + '\n'
+            i1 += 1
+        else:
+            ret += ver2 + ' ' + r2[i2] + '\n'
+            i2 += 1
+    while i1 < len(r1):
+        ret += ver1 + ' ' + r1[i1] + '\n'
+        i1 += 1
+    while i2 < len(r2):
+        ret += ver2 + ' ' + r2[i2] + '\n'
+        i2 += 1
+    if len(ret)==0:
+        return None
+    print(ret)
+    return ret
+
+
 def sendAll(connection, data):
     bytes = data.encode()
     while bytes:
@@ -175,19 +204,23 @@ while True:
     package = getPackage()
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
-    results = None
+    allResults = ''
+    resultsToDiff = []
     for cppcheck in ['cppcheck/cppcheck', '1.84/cppcheck']:
         cmd = workpath + '/' + cppcheck
         if not os.path.isfile(cmd):
             continue
         res = scanPackage(workpath, cmd)
         if res:
-            if results is None:
-                results = ''
-            results += 'cppcheck:' + cppcheck + '\n' + res
-    if results is None:
+            resultsToDiff.append(res)
+            allResults += 'cppcheck:' + cppcheck + '\n' + res
+    if len(resultsToDiff) == 0:
         print('No results to upload')
-    else:
-        uploadResults(package, results)
-        print('Results have been uploaded')
-        time.sleep(5)
+        continue
+    if len(resultsToDiff) == 2:
+        diff = diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1])
+        if diff:
+            allResults += 'diff:\n' + diff
+    uploadResults(package, allResults)
+    print('Results have been uploaded')
+    time.sleep(5)
