@@ -1921,8 +1921,8 @@ void CheckStl::loopAlgo()
             const Token * assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
             if(assignTok) {
                 unsigned int assignVarId = assignTok->astOperand1()->varId();
+                std::string algo;
                 if(assignVarId == loopVar->varId()) {
-                    std::string algo;
                     if(useLoopVarInAssign)
                         algo = "std::transform";
                     else if(Token::Match(assignTok->next(), "%var%|%bool%|%num%|%char% ;"))
@@ -1931,8 +1931,20 @@ void CheckStl::loopAlgo()
                         algo = "std::generate";
                     else
                         algo = "std::fill or std::generate";
-                    useStlAlgorithmError(assignTok, algo);
+                } else {
+                    algo = "std::accumulate";
+                    if(Token::Match(assignTok, "+= %any% ;") && 
+                        assignTok->tokAt(1)->hasKnownIntValue() && 
+                        assignTok->tokAt(1)->getValue(1)) {
+                        algo = "std::distance";
+                    }
+                    if(Token::Match(assignTok, "= %varid% + %any% ;", assignVarId) && 
+                        assignTok->tokAt(3)->hasKnownIntValue() && 
+                        assignTok->tokAt(3)->getValue(1)) {
+                        algo = "std::distance";
+                    }
                 }
+                useStlAlgorithmError(assignTok, algo);
                 continue;
             }
 

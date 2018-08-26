@@ -145,7 +145,8 @@ private:
         TEST_CASE(dereference_auto);
 
         TEST_CASE(readingEmptyStlContainer);
-        TEST_CASE(loopAlgo);
+        TEST_CASE(loopAlgoElementAssign);
+        TEST_CASE(loopAlgoAccumulateAssign);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -3358,7 +3359,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void loopAlgo() {
+    void loopAlgoElementAssign() {
         check("void foo() {\n"
               "    for(int x:v)\n"
               "        x = 1;\n"
@@ -3388,6 +3389,67 @@ private:
               "        x = f();\n"
               "}\n",true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::generate algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    for(int x:v) {\n"
+              "        f();\n"
+              "        x = 1;\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        // There should be probably be a message for unconditional break
+        check("void foo() {\n"
+              "    for(int x:v) {\n"
+              "        x = 1;\n"
+              "        break;\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    for(int x:v)\n"
+              "        x = ++x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+    }
+
+    void loopAlgoAccumulateAssign() {
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n += x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n = n + x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n += 1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n = n + 1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int& x:v)\n"
+              "        n = ++x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
