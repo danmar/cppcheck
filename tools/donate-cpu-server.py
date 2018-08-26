@@ -72,10 +72,10 @@ def sendAll(connection, data):
 
 
 def httpGetResponse(connection, data, contentType):
-    resp = 'HTTP/1.1 200 OK\n'
-    resp += 'Connection: close\n'
-    resp += 'Content-length: ' + str(len(data)) + '\n'
-    resp += 'Content-type: ' + contentType + '\n\n'
+    resp = 'HTTP/1.1 200 OK\r\n'
+    resp += 'Connection: close\r\n'
+    resp += 'Content-length: ' + str(len(data)) + '\r\n'
+    resp += 'Content-type: ' + contentType + '\r\n\r\n'
     resp += data
     sendAll(connection, resp)
 
@@ -101,19 +101,15 @@ class HttpClientThread(Thread):
                 filename = os.path.expanduser('~/donated-results/') + package
                 if not os.path.isfile(filename):
                     print('HTTP/1.1 404 Not Found')
-                    connection.send('HTTP/1.1 404 Not Found\n\n')
+                    connection.send('HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
                     f = open(filename,'rt')
                     data = f.read()
                     f.close()
                     httpGetResponse(self.connection, data, 'text/plain')
-                    print('HttpClientThread: sleep 30 seconds..')
-                    time.sleep(30)
-                    print('HttpClientThread: stopping')
+        finally:
             time.sleep(1)
             self.connection.close()
-        except:
-            return
 
 if __name__ == "__main__":
     resultPath = os.path.expanduser('~/donated-results')
