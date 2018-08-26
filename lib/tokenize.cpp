@@ -9024,6 +9024,7 @@ static const std::set<std::string> keywords = {
     , "register"
     , "__restrict"
     , "__restrict__"
+    , "__thread"
 };
 // Remove "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
@@ -9092,6 +9093,11 @@ void Tokenizer::simplifyKeyword()
                 Token * braceStart = tokNoExcept->next();
                 tok = tok->tokAt(3);
                 Token::createMutualLinks(braceStart, braceEnd);
+            }
+
+            // 3) thread_local
+            else if (tok->str() == "thread_local") {
+                tok->deleteThis();
             }
         }
     }
@@ -10410,4 +10416,3 @@ bool Tokenizer::VariableMap::hasVariable(const std::string &varname) const
 {
     return mVariableId.find(varname) != mVariableId.end();
 }
-
