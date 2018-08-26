@@ -145,6 +145,7 @@ private:
         TEST_CASE(dereference_auto);
 
         TEST_CASE(readingEmptyStlContainer);
+        TEST_CASE(loopAlgo);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -3355,6 +3356,38 @@ private:
               "  }\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void loopAlgo() {
+        check("void foo() {\n"
+              "    for(int x:v)\n"
+              "        x = 1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::fill algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    for(int x:v)\n"
+              "        x = x + 1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo(int a, int b) {\n"
+              "    for(int x:v)\n"
+              "        x = a + b;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::fill or std::generate algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    for(int x:v)\n"
+              "        x += 1;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    for(int x:v)\n"
+              "        x = f();\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::generate algorithm instead of a raw loop.\n", errout.str());
     }
 };
 

@@ -89,6 +89,7 @@ public:
         checkStl.redundantCondition();
         checkStl.missingComparison();
         checkStl.readingEmptyStlContainer();
+        checkStl.loopAlgo();
     }
 
     /** Accessing container out of bounds using ValueFlow */
@@ -184,6 +185,9 @@ public:
 
     /** @brief Reading from empty stl container (using valueflow) */
     void readingEmptyStlContainer2();
+
+    /** @brief Look for loops that can replaced with std algorithms */
+    void loopAlgo();
 private:
     void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
 
@@ -223,6 +227,8 @@ private:
 
     void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
 
+    void useStlAlgorithmError(const Token* tok, const std::string &algoName);
+
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckStl c(nullptr, settings, errorLogger);
         c.outOfBoundsError(nullptr, nullptr, nullptr);
@@ -257,6 +263,7 @@ private:
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
         c.readingEmptyStlContainerError(nullptr);
+        c.useStlAlgorithmError(nullptr, "");
     }
 
     static std::string myName() {

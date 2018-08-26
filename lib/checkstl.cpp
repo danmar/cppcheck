@@ -1869,3 +1869,73 @@ void CheckStl::readingEmptyStlContainerError(const Token *tok, const ValueFlow::
 
     reportError(errorPath, value ? (value->errorSeverity() ? Severity::error : Severity::warning) : Severity::style, "reademptycontainer", "$symbol:" + varname +"\n" + errmsg, CWE398, !value);
 }
+
+void CheckStl::useStlAlgorithmError(const Token* tok, const std::string &algoName)
+{
+    reportError(tok, Severity::style, "useStlAlgorithm",
+                "Considering using " + algoName + " algorithm instead of a raw loop.", CWE398, false);
+}
+
+static const Token* singleAssignInScope(const Token* start, unsigned int varid, bool& input)
+{
+    if(start->str() != "{")
+        return nullptr;
+    const Token * endToken = start->link();
+    if(!Token::Match(start->next(), "%var% %assign%"))
+        return nullptr;
+    const Token * endStatement = Token::findsimplematch(start->next(), ";");
+    if(!Token::simpleMatch(endStatement, "; }"))
+        return nullptr;
+    if(endStatement->next() != endToken)
+        return nullptr;
+    const Token * assignTok = start->tokAt(2);
+    if(isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), false, nullptr, false))
+        return nullptr;
+    if(isVariableChanged(assignTok->next(), endStatement, varid, false, nullptr, false))
+        return nullptr;
+    input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid);
+    return assignTok;        
+}
+
+void CheckStl::loopAlgo()
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            // Parse range-based for loop
+            if(!Token::simpleMatch(tok, "for ("))
+                continue;
+            if(!Token::simpleMatch(tok->next()->link(), ") {"))
+                continue;
+            const Token * bodyTok = tok->next()->link()->next();
+            const Token * splitTok = Token::findsimplematch(tok->next(), ":", bodyTok);
+            if(!splitTok)
+                continue;
+            const Token * loopVar = splitTok->previous();
+            if(!Token::Match(loopVar, "%var%"))
+                continue;
+
+            // Check for single assignment
+            bool useLoopVarInAssign;
+            const Token * assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
+            if(assignTok) {
+                unsigned int assignVarId = assignTok->astOperand1()->varId();
+                if(assignVarId == loopVar->varId()) {
+                    std::string algo;
+                    if(useLoopVarInAssign)
+                        algo = "std::transform";
+                    else if(Token::Match(assignTok->next(), "%var%|%bool%|%num%|%char% ;"))
+                        algo = "std::fill";
+                    else if(Token::Match(assignTok->next(), "%name% ( )"))
+                        algo = "std::generate";
+                    else
+                        algo = "std::fill or std::generate";
+                    useStlAlgorithmError(assignTok, algo);
+                }
+                continue;
+            }
+
+        }
+    }
+}
