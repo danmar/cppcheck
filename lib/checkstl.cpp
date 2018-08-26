@@ -1897,6 +1897,28 @@ static const Token* singleAssignInScope(const Token* start, unsigned int varid, 
     return assignTok;        
 }
 
+static const Token* singleMemberCallInScope(const Token* start, unsigned int varid, bool& input)
+{
+    if(start->str() != "{")
+        return nullptr;
+    const Token * endToken = start->link();
+    if(!Token::Match(start->next(), "%var% . %name% ("))
+        return nullptr;
+    if(!Token::Match(start->tokAt(4)->link(), ") ; }"))
+        return nullptr;
+    const Token * endStatement = start->tokAt(4)->link()->next();
+    if(endStatement->next() != endToken)
+        return nullptr;
+
+    const Token * dotTok = start->tokAt(2);
+    if(!Token::findmatch(dotTok->tokAt(2), "%varid%", endStatement, varid))
+        return nullptr;
+    input = Token::Match(start->next(), "%var% . %name% ( %varid% )", varid);
+    if(isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), false, nullptr, false))
+        return nullptr;
+    return dotTok;      
+}
+
 void CheckStl::loopAlgo()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
@@ -1945,6 +1967,26 @@ void CheckStl::loopAlgo()
                     }
                 }
                 useStlAlgorithmError(assignTok, algo);
+                continue;
+            }
+            // Check for container calls
+            bool useLoopVarInMemCall;
+            const Token * memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall);
+            if(memberAccessTok) {
+                const Token * memberCallTok = memberAccessTok->astOperand2();
+                unsigned int contVarId = memberAccessTok->astOperand1()->varId();
+                if(contVarId == loopVar->varId())
+                    continue;
+                if(memberCallTok->str() == "push_back" || 
+                    memberCallTok->str() == "push_front" ||
+                    memberCallTok->str() == "emplace_back") {
+                    std::string algo;
+                    if(useLoopVarInMemCall)
+                        algo = "std::copy";
+                    else
+                        algo = "std::transform";
+                    useStlAlgorithmError(assignTok, algo);
+                }
                 continue;
             }
 

@@ -147,6 +147,7 @@ private:
         TEST_CASE(readingEmptyStlContainer);
         TEST_CASE(loopAlgoElementAssign);
         TEST_CASE(loopAlgoAccumulateAssign);
+        TEST_CASE(loopAlgoContainerInsert);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -3448,6 +3449,64 @@ private:
               "    int n = 0;\n"
               "    for(int& x:v)\n"
               "        n = ++x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void loopAlgoContainerInsert() {
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_back(x);\n"
+              "}\n",true);
+        ASSERT_EQUALS("(style) Considering using std::copy algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_back(f(x));\n"
+              "}\n",true);
+        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_back(x + 1);\n"
+              "}\n",true);
+        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_front(x);\n"
+              "}\n",true);
+        ASSERT_EQUALS("(style) Considering using std::copy algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_front(f(x));\n"
+              "}\n",true);
+        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_front(x + 1);\n"
+              "}\n",true);
+        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_back(v);\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v)\n"
+              "        c.push_back(0);\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
     }
