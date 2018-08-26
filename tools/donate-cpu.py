@@ -31,21 +31,25 @@ def checkRequirements():
 
 def getCppcheck(cppcheckPath):
     print('Get Cppcheck..')
-    if os.path.exists(cppcheckPath):
-        os.chdir(cppcheckPath)
-        subprocess.call(['git', 'checkout', '-f'])
-        subprocess.call(['git', 'pull'])
-    else:
-        subprocess.call(['git', 'clone', 'http://github.com/danmar/cppcheck.git', cppcheckPath])
-        if not os.path.exists(cppcheckPath):
-            return False
-    time.sleep(2)
-    return True
+    for i in range(5):
+        if os.path.exists(cppcheckPath):
+            os.chdir(cppcheckPath)
+            subprocess.call(['git', 'checkout', '-f'])
+            subprocess.call(['git', 'pull'])
+        else:
+            subprocess.call(['git', 'clone', 'http://github.com/danmar/cppcheck.git', cppcheckPath])
+            if not os.path.exists(cppcheckPath):
+                print('Failed to clone, will try again in 10 minutes..')
+                time.sleep(600)
+                continue
+        time.sleep(2)
+        return True
+    return False
 
 
 def compile_version(workPath, version):
     if os.path.isfile(workPath + '/' + version + '/cppcheck'):
-        return
+        return True
     os.chdir(workPath + '/cppcheck')
     subprocess.call(['git', 'checkout', version])
     subprocess.call(['make', 'clean'])
@@ -56,6 +60,11 @@ def compile_version(workPath, version):
         subprocess.call(['cp', '-R', workPath + '/cppcheck/cfg', destPath])
         subprocess.call(['cp', 'cppcheck', destPath])
     subprocess.call(['git', 'checkout', 'master'])
+    try:
+        subprocess.call([workPath + '/' + version + '/cppcheck', '--version'])
+    except OSError:
+        return False
+    return True
 
 
 def compile(cppcheckPath):
@@ -116,20 +125,17 @@ def unpackPackage(workPath, tgz):
 def scanPackage(workPath, cppcheck):
     print('Analyze..')
     os.chdir(workPath)
-    cmd = 'nice ' + cppcheck + ' -D__GCC__ --enable=style --library=posix --platform=unix64 --template=daca2 -rp=temp temp'
+    cmd = 'nice ' + cppcheck + ' -D__GCC__ --enable=style --library=posix --platform=unix64 --template={file}:{line}:{message}[{id}] -rp=temp temp'
     print(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     errout = comm[1].decode('utf-8')
     count = 0
     for line in errout.split('\n'):
-        if re.match(r'.*:[0-9]+:[0-9]+: [a-z]+: .*\]$', line):
+        if re.match(r'.*:[0-9]+:.*\]$', line):
             count += 1
-    if count == 0:
-        errout = None
-    else:
-        print('Number of issues: ' + str(count))
-    return errout
+    print('Number of issues: ' + str(count))
+    return count, errout
 
 
 def diffResults(workPath, ver1, results1, ver2, results2):
@@ -155,9 +161,6 @@ def diffResults(workPath, ver1, results1, ver2, results2):
     while i2 < len(r2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
-    if len(ret)==0:
-        return None
-    print(ret)
     return ret
 
 
@@ -193,34 +196,25 @@ if not os.path.exists(workpath):
 cppcheckPath = workpath + '/cppcheck'
 while True:
     if not getCppcheck(cppcheckPath):
-        time.sleep(5)
-        if not getCppcheck(cppcheckPath):
-            print('Failed to clone Cppcheck, retry later')
-            sys.exit(1)
-    compile_version(workpath, '1.84')
+        print('Failed to clone Cppcheck, retry later')
+        sys.exit(1)
+    if compile_version(workpath, '1.84') == False:
+        print('Failed to compile Cppcheck-1.84, retry later')
+        sys.exit(1)
     if compile(cppcheckPath) == False:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
     package = getPackage()
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
-    allResults = ''
+    output = 'cppcheck:head 1.84\ncount:'
     resultsToDiff = []
     for cppcheck in ['cppcheck/cppcheck', '1.84/cppcheck']:
-        cmd = workpath + '/' + cppcheck
-        if not os.path.isfile(cmd):
-            continue
-        res = scanPackage(workpath, cmd)
-        if res:
-            resultsToDiff.append(res)
-            allResults += 'cppcheck:' + cppcheck + '\n' + res
-    if len(resultsToDiff) == 0:
-        print('No results to upload')
-        continue
-    if len(resultsToDiff) == 2:
-        diff = diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1])
-        if diff:
-            allResults += 'diff:\n' + diff
-    uploadResults(package, allResults)
+        c,errout = scanPackage(workpath, cppcheck)
+        output += ' ' + str(c)
+        resultsToDiff.append(errout)
+    output += '\ndiff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1])
+    uploadResults(package, output)
     print('Results have been uploaded')
+    print('Sleep 5 seconds..')
     time.sleep(5)
