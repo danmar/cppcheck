@@ -39,7 +39,7 @@ def fmt(a,b,c,d,e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Date       Time ','head','1.84','Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package','Date       Time ','1.84','Head','Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -57,16 +57,16 @@ def latestReport(latestResults):
             #    cppcheck = line[9:]
             elif line.startswith('count: '):
                 count = line.split(' ')[1:]
-            elif line.startswith('1.84 '):
-                lost += 1
             elif line.startswith('head '):
                 added += 1
+            elif line.startswith('1.84 '):
+                lost += 1
         diff = ''
         if lost > 0:
             diff += '-' + str(lost)
         if added > 0:
-            diff += '-' + str(added)
-        html += fmt(package, datestr, count[0], count[1], diff) + '\n'
+            diff += '+' + str(added)
+        html += fmt(package, datestr, count[1], count[0], diff) + '\n'
 
     html += '</pre></body></html>\n'
     return html
