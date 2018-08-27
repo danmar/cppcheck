@@ -3586,47 +3586,69 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::count_if algorithm instead of a raw loop.\n", errout.str());
 
         check("bool pred(int x);\n"
-            "void foo() {\n"
-            "    for(int x:v) {\n"
-            "        if (pred(x)) {\n"
-            "            x = x + 1; \n"
-            "        }\n"
-            "    }\n"
-            "}\n",true);
+              "void foo() {\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            x = x + 1; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
         ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("bool pred(int x);\n"
-            "void foo() {\n"
-            "    std::vector<int> c;\n"
-            "    for(int x:v) {\n"
-            "        if (pred(x)) {\n"
-            "            c.push_back(x); \n"
-            "        }\n"
-            "    }\n"
-            "}\n",true);
+              "void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            c.push_back(x); \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
         ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::copy_if algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+              "bool foo() {\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            return false; \n"
+              "        }\n"
+              "    }\n"
+              "    return true;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        
+        check("bool pred(int x);\n"
+              "bool foo() {\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            return false; \n"
+              "        }\n"
+              "        return true;\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
 
         // There is no transform_if
         check("bool pred(int x);\n"
-            "void foo() {\n"
-            "    std::vector<int> c;\n"
-            "    for(int x:v) {\n"
-            "        if (pred(x)) {\n"
-            "            c.push_back(x + 1); \n"
-            "        }\n"
-            "    }\n"
-            "}\n",true);
+              "void foo() {\n"
+              "    std::vector<int> c;\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            c.push_back(x + 1); \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
         ASSERT_EQUALS("", errout.str());
 
         check("bool pred(int x);\n"
-            "void foo() {\n"
-            "    for(int x:v) {\n"
-            "        x++;\n"
-            "        if (pred(x)) {\n"
-            "            x = 1; \n"
-            "        }\n"
-            "    }\n"
-            "}\n",true);
+              "void foo() {\n"
+              "    for(int x:v) {\n"
+              "        x++;\n"
+              "        if (pred(x)) {\n"
+              "            x = 1; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
         ASSERT_EQUALS("", errout.str());
     }
 };

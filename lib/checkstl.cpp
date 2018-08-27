@@ -2054,10 +2054,11 @@ void CheckStl::loopAlgo()
             }
 
             // Check for conditionals
-            const Token * condTok = singleConditionalInScope(bodyTok, loopVar->varId());
-            if(condTok) {
+            const Token * condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId());
+            if(condBodyTok) {
+                const Token * beginCondTok = condBodyTok->previous()->link();
                 // Check for single assign
-                assignTok = singleAssignInScope(condTok, loopVar->varId(), useLoopVarInAssign);
+                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
                 if(assignTok) {
                     unsigned int assignVarId = assignTok->astOperand1()->varId();
                     std::string algo;
@@ -2076,7 +2077,7 @@ void CheckStl::loopAlgo()
                 }
 
                 // Check for container call
-                memberAccessTok = singleMemberCallInScope(condTok, loopVar->varId(), useLoopVarInMemCall);
+                memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall);
                 if(memberAccessTok) {
                     const Token * memberCallTok = memberAccessTok->astOperand2();
                     unsigned int contVarId = memberAccessTok->astOperand1()->varId();
@@ -2093,7 +2094,7 @@ void CheckStl::loopAlgo()
                 }
 
                 // Check for increment in loop
-                incrementTok = singleIncrementInScope(condTok, loopVar->varId(), useLoopVarInIncrement);
+                incrementTok = singleIncrementInScope(condBodyTok, loopVar->varId(), useLoopVarInIncrement);
                 if(incrementTok) {
                     std::string algo;
                     if(useLoopVarInIncrement)
@@ -2101,6 +2102,12 @@ void CheckStl::loopAlgo()
                     else
                         algo = "std::count_if";
                     useStlAlgorithmError(incrementTok, algo);
+                    continue;
+                }
+
+                // Check returning bool
+                if(Token::Match(condBodyTok, "{ return %bool% ; }")) {
+                    useStlAlgorithmError(beginCondTok, "std::any_of");
                     continue;
                 }
             }
