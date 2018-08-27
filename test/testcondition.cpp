@@ -71,6 +71,7 @@ private:
         TEST_CASE(incorrectLogicOperator9);
         TEST_CASE(incorrectLogicOperator10); // enum
         TEST_CASE(incorrectLogicOperator11);
+        TEST_CASE(incorrectLogicOperator12);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1231,6 +1232,50 @@ private:
 
         check("void foo(int i, const int n) { if ( i == n && i < n ) {} }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i < n.\n", errout.str());
+    }
+
+    void incorrectLogicOperator12() { // #8696
+        check("struct A {\n"
+              "    void f() const;\n"
+              "};\n"
+              "void foo(A a) {\n"
+              "  A x = a;\n"
+              "  A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+
+        check("struct A {\n"
+              "    void f();\n"
+              "};\n"
+              "void foo(A a) {\n"
+              "  A x = a;\n"
+              "  A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a) {\n"
+              "  A x = a;\n"
+              "  A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a) {\n"
+              "  const A x = a;\n"
+              "  const A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {

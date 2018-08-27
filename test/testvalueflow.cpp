@@ -3126,11 +3126,18 @@ private:
         ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
 
         code = "void f() {\n"
-               "    C *c;\n"
+               "    const C *c;\n"
                "    if (c->x() == 4) {}\n"
                "}";
         values = tokenValues(code, "c .");
         ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
+
+        code = "void f() {\n"
+               "    C *c;\n"
+               "    if (c->x() == 4) {}\n"
+               "}";
+        values = tokenValues(code, "c .");
+        TODO_ASSERT_EQUALS(true, false, values.size()==1U && values.front().isUninitValue());
 
         code = "void f() {\n"
                "    int **x;\n"
