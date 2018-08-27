@@ -1919,6 +1919,27 @@ static const Token* singleMemberCallInScope(const Token* start, unsigned int var
     return dotTok;      
 }
 
+static const Token* singleIncrementInScope(const Token* start, unsigned int varid, bool& input)
+{
+    if(start->str() != "{")
+        return nullptr;
+    const Token * endToken = start->link();
+    const Token * varTok = nullptr;
+    if(Token::Match(start->next(), "++ %var% ;"))
+        varTok = start->tokAt(2);
+    else if(Token::Match(start->next(), "%var% ++ ;"))
+        varTok = start->tokAt(1);
+    const Token * endStatement = start->tokAt(3);
+    if(endStatement->next() != endToken)
+        return nullptr;
+    
+    if(!varTok)
+        return nullptr;
+
+    input = varTok->varId() == varid;
+    return varTok;      
+}
+
 void CheckStl::loopAlgo()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
@@ -1987,6 +2008,19 @@ void CheckStl::loopAlgo()
                         algo = "std::transform";
                     useStlAlgorithmError(assignTok, algo);
                 }
+                continue;
+            }
+
+            // Check for increment in loop
+            bool useLoopVarInIncrement;
+            const Token * incrementTok = singleIncrementInScope(bodyTok, loopVar->varId(), useLoopVarInIncrement);
+            if(incrementTok) {
+                std::string algo;
+                if(useLoopVarInIncrement)
+                    algo = "std::transform";
+                else
+                    algo = "std::distance";
+                useStlAlgorithmError(incrementTok, algo);
                 continue;
             }
 

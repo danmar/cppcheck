@@ -148,6 +148,7 @@ private:
         TEST_CASE(loopAlgoElementAssign);
         TEST_CASE(loopAlgoAccumulateAssign);
         TEST_CASE(loopAlgoContainerInsert);
+        TEST_CASE(loopAlgoIncrement);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -3509,6 +3510,34 @@ private:
               "        c.push_back(0);\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void loopAlgoIncrement() {
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n++;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        ++n;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    for(int x:v)\n"
+              "        x++;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    for(int x:v)\n"
+              "        ++x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
     }
 };
 
