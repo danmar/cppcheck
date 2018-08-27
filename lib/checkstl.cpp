@@ -1873,7 +1873,7 @@ void CheckStl::readingEmptyStlContainerError(const Token *tok, const ValueFlow::
 void CheckStl::useStlAlgorithmError(const Token* tok, const std::string &algoName)
 {
     reportError(tok, Severity::style, "useStlAlgorithm",
-                "Considering using " + algoName + " algorithm instead of a raw loop.", CWE398, false);
+                "Consider using " + algoName + " algorithm instead of a raw loop.", CWE398, false);
 }
 
 static const Token* singleAssignInScope(const Token* start, unsigned int varid, bool& input)
@@ -1889,9 +1889,9 @@ static const Token* singleAssignInScope(const Token* start, unsigned int varid, 
     if(endStatement->next() != endToken)
         return nullptr;
     const Token * assignTok = start->tokAt(2);
-    if(isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), false, nullptr, false))
+    if(isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), false, nullptr, true))
         return nullptr;
-    if(isVariableChanged(assignTok->next(), endStatement, varid, false, nullptr, false))
+    if(isVariableChanged(assignTok->next(), endStatement, varid, false, nullptr, true))
         return nullptr;
     input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid);
     return assignTok;        
@@ -1914,7 +1914,7 @@ static const Token* singleMemberCallInScope(const Token* start, unsigned int var
     if(!Token::findmatch(dotTok->tokAt(2), "%varid%", endStatement, varid))
         return nullptr;
     input = Token::Match(start->next(), "%var% . %name% ( %varid% )", varid);
-    if(isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), false, nullptr, false))
+    if(isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), false, nullptr, true))
         return nullptr;
     return dotTok;      
 }
@@ -1938,6 +1938,43 @@ static const Token* singleIncrementInScope(const Token* start, unsigned int vari
 
     input = varTok->varId() == varid;
     return varTok;      
+}
+
+static const Token* singleConditionalInScope(const Token* start, unsigned int varid)
+{
+    if(start->str() != "{")
+        return nullptr;
+    const Token * endToken = start->link();
+    if(!Token::Match(start->next(), "if ("))
+        return nullptr;
+    if(!Token::Match(start->tokAt(2)->link(), ") {"))
+        return nullptr;
+    const Token * bodyTok = start->tokAt(2)->link()->next();
+    const Token * endBodyTok = bodyTok->link();
+    if(!Token::Match(endBodyTok, "} }"))
+        return nullptr;
+    if(endBodyTok->next() != endToken)
+        return nullptr;
+    if(!Token::findmatch(start, "%varid%", bodyTok, varid))
+        return nullptr;
+    if(isVariableChanged(start, bodyTok, varid, false, nullptr, true))
+        return nullptr;
+    return bodyTok;
+}
+
+static bool addByOne(const Token * tok, unsigned int varid)
+{
+    if(Token::Match(tok, "+= %any% ;") && 
+        tok->tokAt(1)->hasKnownIntValue() && 
+        tok->tokAt(1)->getValue(1)) {
+        return true;
+    }
+    if(Token::Match(tok, "= %varid% + %any% ;", varid) && 
+        tok->tokAt(3)->hasKnownIntValue() && 
+        tok->tokAt(3)->getValue(1)) {
+        return true;
+    }
+    return false;
 }
 
 void CheckStl::loopAlgo()
@@ -1976,16 +2013,8 @@ void CheckStl::loopAlgo()
                         algo = "std::fill or std::generate";
                 } else {
                     algo = "std::accumulate";
-                    if(Token::Match(assignTok, "+= %any% ;") && 
-                        assignTok->tokAt(1)->hasKnownIntValue() && 
-                        assignTok->tokAt(1)->getValue(1)) {
+                    if(addByOne(assignTok, assignVarId))
                         algo = "std::distance";
-                    }
-                    if(Token::Match(assignTok, "= %varid% + %any% ;", assignVarId) && 
-                        assignTok->tokAt(3)->hasKnownIntValue() && 
-                        assignTok->tokAt(3)->getValue(1)) {
-                        algo = "std::distance";
-                    }
                 }
                 useStlAlgorithmError(assignTok, algo);
                 continue;
@@ -2022,6 +2051,58 @@ void CheckStl::loopAlgo()
                     algo = "std::distance";
                 useStlAlgorithmError(incrementTok, algo);
                 continue;
+            }
+
+            // Check for conditionals
+            const Token * condTok = singleConditionalInScope(bodyTok, loopVar->varId());
+            if(condTok) {
+                // Check for single assign
+                assignTok = singleAssignInScope(condTok, loopVar->varId(), useLoopVarInAssign);
+                if(assignTok) {
+                    unsigned int assignVarId = assignTok->astOperand1()->varId();
+                    std::string algo;
+                    if(assignVarId == loopVar->varId()) {
+                        if(useLoopVarInAssign)
+                            algo = "std::transform";
+                        else
+                            algo = "std::replace_if";
+                    } else {
+                        algo = "std::accumulate";
+                        if(addByOne(assignTok, assignVarId))
+                            algo = "std::count_if";
+                    }
+                    useStlAlgorithmError(assignTok, algo);
+                    continue;
+                }
+
+                // Check for container call
+                memberAccessTok = singleMemberCallInScope(condTok, loopVar->varId(), useLoopVarInMemCall);
+                if(memberAccessTok) {
+                    const Token * memberCallTok = memberAccessTok->astOperand2();
+                    unsigned int contVarId = memberAccessTok->astOperand1()->varId();
+                    if(contVarId == loopVar->varId())
+                        continue;
+                    if(memberCallTok->str() == "push_back" || 
+                        memberCallTok->str() == "push_front" ||
+                        memberCallTok->str() == "emplace_back") {
+                        if(useLoopVarInMemCall)
+                            useStlAlgorithmError(memberAccessTok, "std::copy_if");
+                        // There is no transform_if to suggest
+                    }
+                    continue;
+                }
+
+                // Check for increment in loop
+                incrementTok = singleIncrementInScope(condTok, loopVar->varId(), useLoopVarInIncrement);
+                if(incrementTok) {
+                    std::string algo;
+                    if(useLoopVarInIncrement)
+                        algo = "std::transform";
+                    else
+                        algo = "std::count_if";
+                    useStlAlgorithmError(incrementTok, algo);
+                    continue;
+                }
             }
 
         }

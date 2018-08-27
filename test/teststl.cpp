@@ -149,6 +149,7 @@ private:
         TEST_CASE(loopAlgoAccumulateAssign);
         TEST_CASE(loopAlgoContainerInsert);
         TEST_CASE(loopAlgoIncrement);
+        TEST_CASE(loopAlgoConditional);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -3366,31 +3367,31 @@ private:
               "    for(int x:v)\n"
               "        x = 1;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::fill algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::fill algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    for(int x:v)\n"
               "        x = x + 1;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo(int a, int b) {\n"
               "    for(int x:v)\n"
               "        x = a + b;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::fill or std::generate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::fill or std::generate algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    for(int x:v)\n"
               "        x += 1;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    for(int x:v)\n"
               "        x = f();\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::generate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::generate algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    for(int x:v) {\n"
@@ -3423,28 +3424,28 @@ private:
               "    for(int x:v)\n"
               "        n += x;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int x:v)\n"
               "        n = n + x;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int x:v)\n"
               "        n += 1;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int x:v)\n"
               "        n = n + 1;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    int n = 0;\n"
@@ -3460,42 +3461,42 @@ private:
               "    for(int x:v)\n"
               "        c.push_back(x);\n"
               "}\n",true);
-        ASSERT_EQUALS("(style) Considering using std::copy algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("(style) Consider using std::copy algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
               "    for(int x:v)\n"
               "        c.push_back(f(x));\n"
               "}\n",true);
-        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
               "    for(int x:v)\n"
               "        c.push_back(x + 1);\n"
               "}\n",true);
-        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
               "    for(int x:v)\n"
               "        c.push_front(x);\n"
               "}\n",true);
-        ASSERT_EQUALS("(style) Considering using std::copy algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("(style) Consider using std::copy algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
               "    for(int x:v)\n"
               "        c.push_front(f(x));\n"
               "}\n",true);
-        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
               "    for(int x:v)\n"
               "        c.push_front(x + 1);\n"
               "}\n",true);
-        ASSERT_EQUALS("(style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
@@ -3518,26 +3519,115 @@ private:
               "    for(int x:v)\n"
               "        n++;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int x:v)\n"
               "        ++n;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style) Considering using std::distance algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    for(int x:v)\n"
               "        x++;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    for(int x:v)\n"
               "        ++x;\n"
               "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Considering using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
+    }
+
+    void loopAlgoConditional() {
+      check("bool pred(int x);\n"
+            "void foo() {\n"
+            "    for(int x:v) {\n"
+            "        if (pred(x)) {\n"
+            "            x = 1; \n"
+            "        }\n"
+            "    }\n"
+            "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::replace_if algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+              "void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            n += x; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+              "void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            n += 1; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::count_if algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+              "void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            n++; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::count_if algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+            "void foo() {\n"
+            "    for(int x:v) {\n"
+            "        if (pred(x)) {\n"
+            "            x = x + 1; \n"
+            "        }\n"
+            "    }\n"
+            "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+            "void foo() {\n"
+            "    std::vector<int> c;\n"
+            "    for(int x:v) {\n"
+            "        if (pred(x)) {\n"
+            "            c.push_back(x); \n"
+            "        }\n"
+            "    }\n"
+            "}\n",true);
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::copy_if algorithm instead of a raw loop.\n", errout.str());
+
+        // There is no transform_if
+        check("bool pred(int x);\n"
+            "void foo() {\n"
+            "    std::vector<int> c;\n"
+            "    for(int x:v) {\n"
+            "        if (pred(x)) {\n"
+            "            c.push_back(x + 1); \n"
+            "        }\n"
+            "    }\n"
+            "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool pred(int x);\n"
+            "void foo() {\n"
+            "    for(int x:v) {\n"
+            "        x++;\n"
+            "        if (pred(x)) {\n"
+            "            x = 1; \n"
+            "        }\n"
+            "    }\n"
+            "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
