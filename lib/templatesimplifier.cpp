@@ -811,7 +811,7 @@ void TemplateSimplifier::simplifyTemplateAliases(std::list<TemplateSimplifier::T
                 aliasUsage.token->str(templateAlias.token->str());
             } else {
                 tok2 = TokenList::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
-                aliasUsage.token->deleteThis();
+                deleteThis(aliasUsage.token);
                 aliasUsage.token = tok2;
             }
             tok2 = aliasUsage.token->next(); // the '<'
