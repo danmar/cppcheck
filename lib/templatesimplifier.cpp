@@ -320,6 +320,15 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     return 0;
 }
 
+// The token following tok may have a pointer to it so don't invalidate it.
+static void deleteThis(Token * tok)
+{
+    if (tok->next())
+        tok->next()->deletePrevious();
+    else
+        tok->deleteThis();
+}
+
 bool TemplateSimplifier::removeTemplate(Token *tok)
 {
     if (!Token::simpleMatch(tok, "template <"))
@@ -333,7 +342,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
             tok2 = tok2->link();
         } else if (tok2->str() == ")") {  // garbage code! (#3504)
             Token::eraseTokens(tok,tok2);
-            tok->deleteThis();
+            deleteThis(tok);
             return false;
         }
 
@@ -342,11 +351,11 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
             Token::eraseTokens(tok, tok2);
             if (tok2 && tok2->str() == ";" && tok2->next())
                 tok->deleteNext();
-            tok->deleteThis();
+            deleteThis(tok);
             return true;
         } else if (tok2->str() == "}") {  // garbage code! (#3449)
             Token::eraseTokens(tok,tok2);
-            tok->deleteThis();
+            deleteThis(tok);
             return false;
         }
 
@@ -359,14 +368,14 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
             (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") &&
              Tokenizer::startOfExecutableScope(tok2->linkAt(1)))) {
             Token::eraseTokens(tok, tok2);
-            tok->deleteThis();
+            deleteThis(tok);
             return true;
         }
 
         if (tok2->str() == ";") {
             tok2 = tok2->next();
             Token::eraseTokens(tok, tok2);
-            tok->deleteThis();
+            deleteThis(tok);
             return true;
         }
 
@@ -379,7 +388,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         else if (Token::Match(tok2, "> class|struct %name% [,)]")) {
             tok2 = tok2->next();
             Token::eraseTokens(tok, tok2);
-            tok->deleteThis();
+            deleteThis(tok);
             return true;
         }
     }
