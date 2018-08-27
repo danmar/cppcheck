@@ -3133,6 +3133,13 @@ private:
         ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
 
         code = "void f() {\n"
+               "    C *c;\n"
+               "    if (c->x() == 4) {}\n"
+               "}";
+        values = tokenValues(code, "c .");
+        TODO_ASSERT_EQUALS(true, false, values.size()==1U && values.front().isUninitValue());
+
+        code = "void f() {\n"
                "    int **x;\n"
                "    y += 10;\n"
                "    x = dostuff(sizeof(*x)*y);\n"
