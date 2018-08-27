@@ -140,10 +140,10 @@ def diffReport():
 
     return html
 
-def diffMessageIdReport(messageId):
+def diffMessageIdReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
-    for filename in sorted(glob.glob(os.path.expanduser('~/donated-results/*'))):
+    for filename in sorted(glob.glob(resultPath + '/*')):
         url = None
         diff = False
         for line in open(filename,'rt'):
@@ -203,8 +203,7 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, html, 'text/html')
             elif url.startswith('diff-'):
                 messageId = url[5:]
-                text = diffMessageIdReport(messageId)
-                print(text)
+                text = diffMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + '/' + url
