@@ -129,7 +129,7 @@ def scanPackage(workPath, cppcheck):
     print(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
-    errout = comm[1].decode('utf-8')
+    errout = comm[1].decode(encoding='utf-8', errors='ignore')
     count = 0
     for line in errout.split('\n'):
         if re.match(r'.*:[0-9]+:.*\]$', line):
