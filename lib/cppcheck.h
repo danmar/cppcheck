@@ -143,6 +143,15 @@ public:
      * and if it's possible at all */
     bool isUnusedFunctionCheckEnabled() const;
 
+    /**
+     * @brief Errors and warnings are directed here.
+     *
+     * @param msg Errors messages are normally in format
+     * "[filepath:line number] Message", e.g.
+     * "[main.cpp:4] Uninitialized member variable"
+     */
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
+
 private:
 
     /** @brief There has been an internal error => Report information message */
@@ -181,15 +190,6 @@ private:
      * @param tokenizer tokenizer
      */
     void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
-
-    /**
-     * @brief Errors and warnings are directed here.
-     *
-     * @param msg Errors messages are normally in format
-     * "[filepath:line number] Message", e.g.
-     * "[main.cpp:4] Uninitialized member variable"
-     */
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
 
     /**
      * @brief Information about progress is directed here.

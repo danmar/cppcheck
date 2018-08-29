@@ -22,6 +22,7 @@
 #include "suppressions.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
+#include "path.h"
 
 #include <cstddef>
 #include <list>
@@ -46,6 +47,7 @@ private:
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
+        TEST_CASE(suppressionsLine0);
 
         TEST_CASE(inlinesuppress);
         TEST_CASE(inlinesuppress_symbolname);
@@ -399,6 +401,62 @@ private:
 
         const Suppressions::Suppression s2("abc", "include/1.h");
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
+    }
+
+    void suppressionsLine0() {
+
+      const std::string filename("test.cpp");
+      std::map<std::string, std::string> files;
+      files.insert(std::make_pair(filename, ""));
+
+      std::map<std::string, std::string> tests;
+      tests.insert(std::make_pair("", "[test.cpp:0] -> [:0]: (error) syntax error\n"));
+      tests.insert(std::make_pair("syntaxError:*:0", ""));
+
+      for (auto it = tests.cbegin(); tests.cend() != it; ++it)
+      {
+        errout.str("");
+
+        CppCheck cppCheck(*this, true);
+        Settings& settings = cppCheck.settings();
+        settings.exitCode = 1;
+        settings.inlineSuppressions = true;
+        settings.addEnabled("information");
+        settings.jointSuppressionReport = true;
+        std::string r = settings.nomsg.addSuppressionLine(it->first);
+        ASSERT_EQUALS("", r);
+        Tokenizer mTokenizer(&settings, this);
+
+        try
+        {
+          mTokenizer.syntaxError(nullptr);
+        }
+        catch (const InternalError& e)
+        {
+          std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+          ErrorLogger::ErrorMessage::FileLocation loc;
+          if (e.token) {
+            loc.line = e.token->linenr();
+            const std::string fixedpath = Path::toNativeSeparators(mTokenizer.list.file(e.token));
+            loc.setfile(fixedpath);
+          }
+          else {
+            ErrorLogger::ErrorMessage::FileLocation loc2;
+            loc2.setfile(Path::toNativeSeparators(filename));
+            locationList.push_back(loc2);
+            loc.setfile(mTokenizer.list.getSourceFilePath());
+          }
+          locationList.push_back(loc);
+          ErrorLogger::ErrorMessage errmsg(locationList,
+            mTokenizer.list.getSourceFilePath(),
+            Severity::error,
+            e.errorMessage,
+            e.id,
+            false);
+          cppCheck.reportErr(errmsg);
+        }
+        ASSERT_EQUALS(it->second, errout.str());
+      }
     }
 
     void inlinesuppress() {
