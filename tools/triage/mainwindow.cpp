@@ -50,6 +50,8 @@ void MainWindow::loadFile()
             if (!errorMessage.isEmpty())
                 errorMessage += '\n';
             errorMessage += line;
+        } else if (!url.isEmpty() && QRegExp("(head|1.8.) .*:[0-9]+:.*\\]").exactMatch(line)) {
+            allErrors << (url + '\n' + line);
         }
     }
     if (!url.isEmpty() && !errorMessage.isEmpty())
@@ -102,8 +104,9 @@ void MainWindow::showResult(QListWidgetItem *item)
     if (lines.size() < 2)
         return;
     const QString url = lines[0];
-    const QString msg = lines[1];
-
+    QString msg = lines[1];
+    if (msg.startsWith("head ") || msg.startsWith("1.84 "))
+        msg = msg.mid(5);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);
