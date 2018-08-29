@@ -64,12 +64,6 @@ public:
     static unsigned int templateParameters(const Token *tok);
 
     /**
-     * Expand specialized templates : "template<>.."
-     * @return names of expanded templates
-     */
-    std::set<std::string> expandSpecialized();
-
-    /**
      * Token and its full scopename
      */
     struct TokenAndName {
@@ -98,19 +92,6 @@ public:
      * of the template name.
      */
     static int getTemplateNamePosition(const Token *tok);
-
-    /**
-     * @brief TemplateParametersInDeclaration
-     * @param tok  template < typename T, typename S >
-     *                        ^ tok
-     * @param typeParametersInDeclaration  template < typename T, typename S >
-     *                                                         ^ [0]       ^ [1]
-     * @return  template < typename T, typename S >
-     *                                              ^ return
-     */
-    const Token * getTemplateParametersInDeclaration(
-        const Token * tok,
-        std::vector<const Token *> & typeParametersInDeclaration);
 
     /**
      * Simplify templates
@@ -207,6 +188,25 @@ private:
                               const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
                               const std::string &newName,
                               const std::vector<const Token *> &typesUsedInTemplateInstantiation);
+
+    /**
+     * Expand specialized templates : "template<>.."
+     * @return names of expanded templates
+     */
+    std::set<std::string> expandSpecialized();
+
+    /**
+     * @brief TemplateParametersInDeclaration
+     * @param tok  template < typename T, typename S >
+     *                        ^ tok
+     * @param typeParametersInDeclaration  template < typename T, typename S >
+     *                                                         ^ [0]       ^ [1]
+     * @return  template < typename T, typename S >
+     *                                              ^ return
+     */
+    const Token * getTemplateParametersInDeclaration(
+        const Token * tok,
+        std::vector<const Token *> & typeParametersInDeclaration);
 
     /**
      * Remove a specific "template < ..." template class/function
