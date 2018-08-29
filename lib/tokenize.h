@@ -24,6 +24,7 @@
 #include "config.h"
 #include "errorlogger.h"
 #include "tokenlist.h"
+#include "templatesimplifier.h"
 
 #include <ctime>
 #include <list>
@@ -873,6 +874,8 @@ private:
 
     /** Symbol database that all checks etc can use */
     SymbolDatabase *mSymbolDatabase;
+
+    TemplateSimplifier *mTemplateSimplifier;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
