@@ -131,14 +131,19 @@ def scanPackage(workPath, cppcheck):
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     stopTime = time.time()
+    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
+    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
+    if p.returncode != 0 and 'cppcheck: error: could not find or open any of the paths given.' not in stdout:
+        # Crash!
+        print('Crash!')
+        return -1, '', -1
     elapsedTime = stopTime - startTime
-    errout = comm[1].decode(encoding='utf-8', errors='ignore')
     count = 0
-    for line in errout.split('\n'):
+    for line in stderr.split('\n'):
         if re.match(r'.*:[0-9]+:.*\]$', line):
             count += 1
     print('Number of issues: ' + str(count))
-    return count, errout, elapsedTime
+    return count, stderr, elapsedTime
 
 
 def diffResults(workPath, ver1, results1, ver2, results2):
@@ -219,21 +224,27 @@ while True:
     package = getPackage()
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
+    crash = False
     count = ''
     elapsedTime = ''
     resultsToDiff = []
     for cppcheck in ['cppcheck/cppcheck', '1.84/cppcheck']:
         c,errout,t = scanPackage(workpath, cppcheck)
-        count += ' ' + str(c)
+        if c < 0:
+            crash = True
+            count += ' Crash!'
+        else:
+            count += ' ' + str(c)
         elapsedTime += " {:.1f}".format(t)
         resultsToDiff.append(errout)
-    if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
+    if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         print('No results')
         continue
     output = 'cppcheck: head 1.84\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
-    output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1]) + '\n'
+    if not crash:
+        output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1]) + '\n'
     uploadResults(package, output)
     print('Results have been uploaded')
     print('Sleep 5 seconds..')
