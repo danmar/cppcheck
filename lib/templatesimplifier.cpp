@@ -320,6 +320,19 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     return 0;
 }
 
+static void eraseTokens(Token *begin, const Token *end)
+{
+    if (!begin || begin == end)
+        return;
+
+    while (begin->next() && begin->next() != end) {
+        if (begin->next()->hasPointer()) {
+            // FIXME do something
+        }
+        begin->deleteNext();
+    }
+}
+
 // The token following tok may have a pointer to it so don't invalidate it.
 static void deleteThis(Token * tok)
 {
@@ -1311,7 +1324,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                         break;
                 }
                 if (tok2) {
-                    Token::eraseTokens(tok, tok2);
+                    eraseTokens(tok, tok2);
                     ret = true;
                 }
                 continue;
@@ -1341,7 +1354,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                            Token::Match(tok->previous(), "return|case 0 *|&& (")) {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        Token::eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->next()->link());
                     tok->deleteNext();
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=[(,] 0 && *|& %any% ,|]|)|;|=|%cop%") ||
@@ -1349,7 +1362,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok->deleteNext();
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        Token::eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->next()->link());
                     tok->deleteNext();
                     ret = true;
                 }
@@ -1360,7 +1373,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     Token::Match(tok->previous(), "return|case 1 %oror% %any% ,|:|;|=|%cop%")) {
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        Token::eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->next()->link());
                     tok->deleteNext();
                     ret = true;
                 } else if (Token::Match(tok->previous(), "[=[(,] 1 %oror% *|& %any% ,|]|)|;|=|%cop%") ||
@@ -1368,7 +1381,7 @@ bool TemplateSimplifier::simplifyCalculations(Token *_tokens)
                     tok->deleteNext();
                     tok->deleteNext();
                     if (tok->next()->str() == "(")
-                        Token::eraseTokens(tok, tok->next()->link());
+                        eraseTokens(tok, tok->next()->link());
                     tok->deleteNext();
                     ret = true;
                 }
@@ -1732,7 +1745,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
         nameTok = tok2;
     }
     while (!removeTokens.empty()) {
-        Token::eraseTokens(removeTokens.back().first, removeTokens.back().second);
+        eraseTokens(removeTokens.back().first, removeTokens.back().second);
         removeTokens.pop_back();
     }
 }

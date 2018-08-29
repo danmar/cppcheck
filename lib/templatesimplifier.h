@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "token.h"
 
 #include <ctime>
 #include <list>
@@ -32,7 +33,6 @@
 
 class ErrorLogger;
 class Settings;
-class Token;
 class TokenList;
 
 
@@ -76,7 +76,10 @@ public:
      * Token and its full scopename
      */
     struct TokenAndName {
-        TokenAndName(Token *tok, const std::string &s, const std::string &n) : token(tok), scope(s), name(n) {}
+        TokenAndName(Token *tok, const std::string &s, const std::string &n) :
+            token(tok), scope(s), name(n) {
+            token->hasPointer(true);
+        }
         Token *token;
         std::string scope;
         std::string name;
