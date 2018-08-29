@@ -423,8 +423,11 @@ private:
         settings.inlineSuppressions = true;
         settings.addEnabled("information");
         settings.jointSuppressionReport = true;
-        std::string r = settings.nomsg.addSuppressionLine(it->first);
-        ASSERT_EQUALS("", r);
+        if (it->first.size() > 0)
+        {
+          std::string r = settings.nomsg.addSuppressionLine(it->first);
+          ASSERT_EQUALS("", r);
+        }
         Tokenizer mTokenizer(&settings, this);
 
         try
