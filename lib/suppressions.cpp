@@ -312,7 +312,7 @@ void Suppressions::dump(std::ostream & out)
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
         if (!suppression.fileName.empty())
             out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
-        if (suppression.lineNumber > Suppression::Suppression::NO_LINE)
+        if (suppression.lineNumber > Suppression::NO_LINE)
             out << " lineNumber=\"" << suppression.lineNumber << '"';
         if (!suppression.symbolName.empty())
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
