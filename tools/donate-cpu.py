@@ -189,7 +189,11 @@ def uploadResults(package, results):
         pass
     return package
 
-
+stopTime = None
+for arg in sys.argv[1:]:
+    # --stop-time=12:00 => run until ~12:00 and then stop
+    if arg.startswith('--stop-time='):
+        stopTime = arg[-5:]
 print('Thank you!')
 if not checkRequirements():
     sys.exit(1)
@@ -198,6 +202,11 @@ if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
 while True:
+    if stopTime:
+        print('stopTime:' + stopTime + '. Time:' + time.strftime('%H:%M') + '.')
+        if stopTime < time.strftime('%H:%M'):
+            print('Stopping. Thank you!')
+            sys.exit(0)
     if not getCppcheck(cppcheckPath):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
