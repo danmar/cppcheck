@@ -127,15 +127,18 @@ def scanPackage(workPath, cppcheck):
     os.chdir(workPath)
     cmd = 'nice ' + cppcheck + ' -D__GCC__ --enable=style --library=posix --platform=unix64 --template={file}:{line}:{message}[{id}] -rp=temp temp'
     print(cmd)
+    startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
+    stopTime = time.time()
+    elapsedTime = stopTime - startTime
     errout = comm[1].decode(encoding='utf-8', errors='ignore')
     count = 0
     for line in errout.split('\n'):
         if re.match(r'.*:[0-9]+:.*\]$', line):
             count += 1
     print('Number of issues: ' + str(count))
-    return count, errout
+    return count, errout, elapsedTime
 
 
 def diffResults(workPath, ver1, results1, ver2, results2):
@@ -207,16 +210,21 @@ while True:
     package = getPackage()
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
-    output = 'cppcheck:head 1.84\ncount:'
+    count = ''
+    elapsedTime = ''
     resultsToDiff = []
     for cppcheck in ['cppcheck/cppcheck', '1.84/cppcheck']:
-        c,errout = scanPackage(workpath, cppcheck)
-        output += ' ' + str(c)
+        c,errout,t = scanPackage(workpath, cppcheck)
+        count += ' ' + str(c)
+        elapsedTime += " {:.1f}".format(t)
         resultsToDiff.append(errout)
     if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         print('No results')
         continue
-    output += '\ndiff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1])
+    output = 'cppcheck: head 1.84\n'
+    output += 'count:' + count + '\n'
+    output += 'elapsed-time:' + elapsedTime + '\n'
+    output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1]) + '\n'
     uploadResults(package, output)
     print('Results have been uploaded')
     print('Sleep 5 seconds..')
