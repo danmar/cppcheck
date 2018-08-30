@@ -283,6 +283,17 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
     for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
 
         std::string str = tok->str();
+        bool singleLineComment = str[0] == '/' && str[1] == '/';
+        bool multiLineComment = str[0] == '/' && str[1] == '*' && str.compare(str.length() - 2, 2, "*/") == 0;
+
+        if (singleLineComment)
+        {
+            str = str.substr(2);
+        }
+        if (multiLineComment)
+        {
+            str = str.substr(2, str.length()-4);
+        }
 
         // Replace hexadecimal value with decimal
         // TODO: Remove this
@@ -318,6 +329,7 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
         mTokensFrontBack.back->linenr(tok->location.line);
         mTokensFrontBack.back->col(tok->location.col);
         mTokensFrontBack.back->isExpandedMacro(!tok->macro.empty());
+        mTokensFrontBack.back->isComment(multiLineComment || singleLineComment);
     }
 
     if (mSettings && mSettings->relativePaths) {
