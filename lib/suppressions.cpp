@@ -146,7 +146,7 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
                 } catch (...) {
                     suppression.lineNumber = Suppressions::Suppression::NO_LINE;
                 }
-                
+
                 if (suppression.lineNumber >= Suppressions::Suppression::NO_LINE) {
                     suppression.fileName.erase(pos);
                 }
