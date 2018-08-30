@@ -454,9 +454,15 @@ static int multiComparePercent(const Token *tok, const char*& haystack, unsigned
                 return 1;
         }
         // Comparison operator (%comp%)
-        else {
+        else if (haystack[1] == 'm') {
             haystack += 4;
             if (tok->isComparisonOp())
+                return 1;
+        }
+        // Commented out token (%comment%)
+        else {
+            haystack += 7;
+            if (tok->isComment())
                 return 1;
         }
     }
