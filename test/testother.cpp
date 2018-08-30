@@ -3931,7 +3931,7 @@ private:
               "    int a = 1;\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false because 'a' and '1' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 1;\n"
@@ -3954,7 +3954,7 @@ private:
               "    use(b);\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) The expression 'a != 1' is always false because 'a' and '1' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void use(int);\n"
               "void f() {\n"
@@ -3978,7 +3978,7 @@ private:
               "    void f() {\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The expression 'a != 1' is always false because 'a' and '1' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("int a = 1;\n"
               "    void f() {\n"
@@ -3990,7 +3990,7 @@ private:
               "    static const int a = 1;\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false because 'a' and '1' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f() {\n"
               "    static int a = 1;\n"
@@ -4003,7 +4003,7 @@ private:
               "    if ( a != 1){\n"
               "        a++;\n"
               "    }}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false because 'a' and '1' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f(int b) {\n"
               "    int a = 1;\n"
@@ -4082,7 +4082,7 @@ private:
               "    int a = 1;\n"
               "    while ( a != 1){}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false because 'a' and '1' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f() { int a = 1; while ( a != 1){ a++; }}\n");
         ASSERT_EQUALS("", errout.str());
@@ -4098,7 +4098,7 @@ private:
               "        if( i != 0 ) {}\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'i != 0' is always false because 'i' and '0' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'i != 0' is always false.\n", errout.str());
 
         check("void f() {\n"
               "    for(int i = 0; i < 10;) {\n"
@@ -4139,7 +4139,7 @@ private:
               "        b++;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The expression 'a != 1' is always false because 'a' and '1' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The expression 'a != 1' is always false.\n", errout.str());
     }
 
     void duplicateExpressionTernary() { // #6391
