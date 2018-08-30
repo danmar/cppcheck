@@ -635,8 +635,6 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
         }
     }
 
-    tokens2.removeComments();
-
     // ensure that guessed define macros without value are not used in the code
     if (!validateCfg(cfg, macroUsage))
         return simplecpp::TokenList(files);
@@ -679,8 +677,6 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::istringstream istr(filedata);
     simplecpp::TokenList tokens1(istr, files, Path::simplifyPath(filename), &outputList);
     inlineSuppressions(tokens1);
-    tokens1.removeComments();
-    removeComments();
     setDirectives(tokens1);
 
     reportOutput(outputList, true);
@@ -905,13 +901,11 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
     std::ostringstream ostr;
     ostr << toolinfo << '\n';
     for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
-        if (!tok->comment)
-            ostr << tok->str();
+        ostr << tok->str();
     }
     for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
-            if (!tok->comment)
-                ostr << tok->str();
+            ostr << tok->str();
         }
     }
     return crc32(ostr.str());
