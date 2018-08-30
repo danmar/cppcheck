@@ -446,7 +446,12 @@ public:
     void isEnumType(const bool value) {
         setFlag(fIsEnumType, value);
     }
-
+    bool isComment() const {
+        return getFlag(fIsCommentedOut);
+    }
+    void isComment(const bool value) {
+        setFlag(fIsCommentedOut, value);
+    }
     bool isBitfield() const {
         return mBits > 0;
     }
@@ -972,6 +977,7 @@ private:
         fIsLiteral              = (1 << 21),
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
+        fIsCommentedOut			= (1 << 24),
     };
 
     unsigned int mFlags;
