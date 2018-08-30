@@ -181,7 +181,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
     if (!var->isConst() && isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
         return tok;
-    // Start at begining of initialization
+    // Start at beginning of initialization
     const Token * startToken = varTok;
     while (Token::Match(startToken, "%op%|.|(|{") && startToken->astOperand1())
         startToken = startToken->astOperand1();
