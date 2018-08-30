@@ -178,6 +178,11 @@ public:
     static void eraseDeadCode(Token *begin, const Token *end);
 
     /**
+     * Removes all tokens that are commented out.
+     */
+    void removeComments();
+
+    /**
      * Simplify '* & ( %name% ) =' or any combination of '* &' and '()'
      * parentheses around '%name%' to '%name% ='
      */
