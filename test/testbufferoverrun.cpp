@@ -225,6 +225,7 @@ private:
         TEST_CASE(crash2);  // Ticket #3034 - crash
         TEST_CASE(crash3);  // Ticket #5426 - crash
         TEST_CASE(crash4);  // Ticket #8679 - crash
+        TEST_CASE(crash5);  // Ticket #8644 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -3651,6 +3652,14 @@ private:
               "int main() { "
               "  thread_local_var = malloc(1337); "
               "  return 0; "
+              "}");
+    }
+
+    void crash5() { // 8644 - token has varId() but variable() is null
+        check("int a() {\n"
+              "    void b(char **dst) {\n"
+              "        *dst = malloc(50);\n"
+              "    }\n"
               "}");
     }
 

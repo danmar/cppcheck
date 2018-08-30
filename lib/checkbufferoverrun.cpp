@@ -1265,6 +1265,10 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
             // varid : The variable id for the array
             const Variable *var = tok->next()->variable();
+            // FIXME: This is an ugly fix for a crash. The SymbolDatabase
+            // should create the variable.
+            if (!var)
+                continue;
 
             if (mTokenizer->isCPP() && Token::Match(tok, "[*;{}] %var% = new %type% [")) {
                 tok = tok->tokAt(5);
