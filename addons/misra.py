@@ -21,9 +21,7 @@ import re
 import os
 import argparse
 
-ruleTexts = {}
-suppressRules = {}
-suppressions = None
+
 typeBits = {
     'CHAR': None,
     'SHORT': None,
@@ -36,10 +34,6 @@ typeBits = {
 VERIFY = False
 QUIET = False
 SHOW_SUMMARY = True
-VERIFY_EXPECTED = []
-VERIFY_ACTUAL = []
-VIOLATIONS = []
-
 
 def printStatus(*args, **kwargs):
     if not QUIET:
@@ -530,7 +524,29 @@ def generateTable():
 class MisraChecker:
 
     def __init__(self):
-        pass
+
+        # Test validation rules lists
+        self.verify_expected    = list()
+        self.verify_actual      = list()
+
+        # List of formatted violation messages
+        self.violations         = list()
+
+        # if --rule-texts is specified this dictionary
+        # is loaded with descriptions of each rule
+        # by rule number (in hundreds).
+        # ie rule 1.2 becomes 102
+        self.ruleTexts          = dict()
+
+        # Dictionary of dictionary for rules to supress for all files
+        # Dict 1 is the major grouping that contains a 2nd dict
+        # indicating the rule that should be supressed.
+        # Existance in both dictionaries means the rule
+        # is suppressed.
+        self.suppressedRules    = dict()
+
+        # List of suppression extracted from the dumpfile
+        self.dumpfileSuppressions = None
 
 
     def misra_3_1(self, rawTokens):
@@ -1628,35 +1644,33 @@ class MisraChecker:
     def setSuppressionList(self, suppressionlist):
         num1 = 0
         num2 = 0
-        global suppressRules
         rule_pattern = re.compile(r'([0-9]+).([0-9]+)')
         strlist = suppressionlist.split(",")
 
         # build ignore list
-        suppressRules = {}
         for item in strlist:
             res = rule_pattern.match(item)
             if res:
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
-                if num1 in suppressRules:
-                    suppressRules[num1][num2] = True
+                if num1 in self.suppressedRules:
+                    self.suppressedRules[num1][num2] = True
                 else:
-                    suppressRules[num1] = {num2: True}
+                    self.suppressedRules[num1] = {num2: True}
 
 
     def reportError(self, location, num1, num2):
         if VERIFY:
-            VERIFY_ACTUAL.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
-        elif num1 in suppressRules and num2 in suppressRules[num1]:
+            self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
+        elif num1 in self.suppressedRules and num2 in self.suppressedRules[num1]:
             # ignore error
             return
         else:
             num = num1 * 100 + num2
             id = 'misra-c2012-' + str(num1) + '.' + str(num2)
-            if num in ruleTexts:
-                errmsg = ruleTexts[num] + ' [' + id + ']'
-            elif len(ruleTexts) == 0:
+            if num in self.ruleTexts:
+                errmsg = self.ruleTexts[num] + ' [' + id + ']'
+            elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
             else:
                 return
@@ -1665,11 +1679,11 @@ class MisraChecker:
                                                     severity='style',
                                                     message = errmsg,
                                                     errorId = id,
-                                                    suppressions = suppressions)
+                                                    suppressions = self.dumpfileSuppressions)
             if formattedMsg:
                 sys.stderr.write(formattedMsg)
                 sys.stderr.write('\n')
-                VIOLATIONS.append(errmsg)
+                self.violations.append(errmsg)
 
 
     def loadRuleTexts(self, filename):
@@ -1677,7 +1691,7 @@ class MisraChecker:
         num2 = 0
         appendixA = False
         ruleText = False
-        global ruleTexts
+
         Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
         Choice_pattern = re.compile(r'^[ ]*(Advisory|Required|Mandatory)$')
         xA_Z_pattern = re.compile(r'^[#A-Z].*')
@@ -1708,11 +1722,11 @@ class MisraChecker:
                 if ruleText:
                     num2 = num2 + 1
                 num = num1 * 100 + num2
-                ruleTexts[num] = line
+                self.ruleTexts[num] = line
                 ruleText = True
             elif ruleText and a_z_pattern.match(line):
                 num = num1 * 100 + num2
-                ruleTexts[num] = ruleTexts[num] + ' ' + line
+                self.ruleTexts[num] = self.ruleTexts[num] + ' ' + line
                 continue
 
 
@@ -1720,8 +1734,7 @@ class MisraChecker:
 
         data = cppcheckdata.parsedump(dumpfile)
 
-        global suppressions
-        suppressions = data.suppressions
+        self.dumpfileSuppressions = data.suppressions
 
         typeBits['CHAR'] = data.platform.char_bit
         typeBits['SHORT'] = data.platform.short_bit
@@ -1736,7 +1749,7 @@ class MisraChecker:
                     compiled = re.compile(r'[0-9]+\.[0-9]+')
                     for word in tok.str[2:].split(' '):
                         if compiled.match(word):
-                            VERIFY_EXPECTED.append(str(tok.linenr) + ':' + word)
+                            self.verify_expected.append(str(tok.linenr) + ':' + word)
         else:
             printStatus('Checking ' + dumpfile + '...')
 
@@ -1832,18 +1845,18 @@ class MisraChecker:
 
         exitCode = 0
         if VERIFY:
-            for expected in VERIFY_EXPECTED:
-                if expected not in VERIFY_ACTUAL:
+            for expected in self.verify_expected:
+                if expected not in self.verify_actual:
                     print('Expected but not seen: ' + expected)
                     exitCode = 1
-            for actual in VERIFY_ACTUAL:
-                if actual not in VERIFY_EXPECTED:
+            for actual in self.verify_actual:
+                if actual not in self.verify_expected:
                     print('Not expected: ' + actual)
                     exitCode = 1
         else:
-            if len(VIOLATIONS) > 0:
+            if len(self.violations) > 0:
                 if SHOW_SUMMARY:
-                    print("\nRule violations found: %d\n" % (len(VIOLATIONS)))
+                    print("\nRule violations found: %d\n" % (len(self.violations)))
                 exitCode = 1
 
         return exitCode
