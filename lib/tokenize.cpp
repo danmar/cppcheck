@@ -7867,6 +7867,20 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
     }
 }
 
+void Tokenizer::removeComments()
+{
+    while (list.front() && list.front()->isComment())
+    {
+        list.front()->deleteThis();
+    }
+
+    for (Token* tok = list.front(); tok && tok->next(); tok = tok->next())
+    {
+        while (tok->next() && tok->next()->isComment())
+            tok->deleteNext();
+    }
+}
+
 //---------------------------------------------------------------------------
 
 void Tokenizer::syntaxError(const Token *tok) const
