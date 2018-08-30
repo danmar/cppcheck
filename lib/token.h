@@ -977,7 +977,7 @@ private:
         fIsLiteral              = (1 << 21),
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
-        fIsCommentedOut			= (1 << 24),
+        fIsCommentedOut         = (1 << 24),
     };
 
     unsigned int mFlags;
