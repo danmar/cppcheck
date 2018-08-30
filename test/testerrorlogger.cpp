@@ -301,7 +301,7 @@ private:
         errout.str("");
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "*", Suppressions::Suppression::NO_LINE);
+        suppressions.emplace_back("unmatchedSuppression", "*", /*Suppressions::Suppression::NO_LINE*/-1); //TODO find out why clang can't link with Suppressions::Suppression::NO_LINE
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
@@ -309,7 +309,7 @@ private:
         errout.str("");
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", Suppressions::Suppression::NO_LINE);
+        suppressions.emplace_back("unmatchedSuppression", "a.c", /*Suppressions::Suppression::NO_LINE*/-1); //TODO find out why clang can't link with Suppressions::Suppression::NO_LINE
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("", errout.str());
 
@@ -325,7 +325,7 @@ private:
         errout.str("");
         suppressions.clear();
         suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "b.c", Suppressions::Suppression::NO_LINE);
+        suppressions.emplace_back("unmatchedSuppression", "b.c", /*Suppressions::Suppression::NO_LINE*/-1); //TODO find out why clang can't link with Suppressions::Suppression::NO_LINE
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
 
