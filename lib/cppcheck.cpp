@@ -228,8 +228,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (mSettings.dump && fdump.is_open()) {
             mSettings.nomsg.dump(fdump);
         }
-        tokens1.removeComments();
-        preprocessor.removeComments();
 
         if (!mSettings.buildDir.empty()) {
             // Get toolinfo
@@ -371,6 +369,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // skip rest of iteration if just checking configuration
                 if (mSettings.checkConfiguration)
                     continue;
+
+                // Run checks on raw tokens with comments
+                checkRawTokensWithComments(mTokenizer);
+
+                // After the comments have been checked, remove them
+                mTokenizer.removeComments();
 
                 // Check raw tokens
                 checkRawTokens(mTokenizer);
@@ -533,6 +537,28 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
     // Execute rules for "raw" code
     executeRules("raw", tokenizer);
 }
+
+//---------------------------------------------------------------------------
+// CppCheck - A function that checks a raw token list with comments in
+//---------------------------------------------------------------------------
+void CppCheck::checkRawTokensWithComments(const Tokenizer &tokenizer)
+{	
+    // call all "runChecksWithComments" in all registered Check classes
+    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        if (mSettings.terminated())
+            return;
+
+        if (tokenizer.isMaxTime())
+            return;
+
+        Timer timerRunChecks((*it)->name() + "::runChecks", mSettings.showtime, &S_timerResults);
+        (*it)->runChecksWithComments(&tokenizer, &mSettings, this);
+	}
+
+	// Execute rules for "rawWithComments" code
+	executeRules("rawWithComments", tokenizer);
+}
+
 
 //---------------------------------------------------------------------------
 // CppCheck - A function that checks a normal token list
