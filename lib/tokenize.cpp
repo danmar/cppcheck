@@ -4133,6 +4133,9 @@ void Tokenizer::dump(std::ostream &out) const
             else if (tok->tokType() == Token::eLogicalOp)
                 out << " isLogicalOp=\"True\"";
         }
+        else if (tok->isComment())
+            out << " isComment=\"True\"";
+
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0U)
