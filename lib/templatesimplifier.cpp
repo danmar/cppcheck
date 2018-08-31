@@ -53,6 +53,12 @@ namespace {
     };
 }
 
+TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s, const std::string &n) :
+    token(tok), scope(s), name(n)
+{
+    token->hasTemplateSimplifierPointer(true);
+}
+
 TemplateSimplifier::TemplateSimplifier(TokenList &tokenlist, const Settings *settings, ErrorLogger *errorLogger)
     : mTokenList(tokenlist), mSettings(settings), mErrorLogger(errorLogger)
 {

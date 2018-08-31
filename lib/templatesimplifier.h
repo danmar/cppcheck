@@ -23,7 +23,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "token.h"
 
 #include <ctime>
 #include <list>
@@ -33,7 +32,9 @@
 
 class ErrorLogger;
 class Settings;
+class Token;
 class Tokenizer;
+class TokenList;
 
 /// @addtogroup Core
 /// @{
@@ -67,10 +68,7 @@ public:
      * Token and its full scopename
      */
     struct TokenAndName {
-        TokenAndName(Token *tok, const std::string &s, const std::string &n) :
-            token(tok), scope(s), name(n) {
-            token->hasTemplateSimplifierPointer(true);
-        }
+        TokenAndName(Token *tok, const std::string &s, const std::string &n);
         Token *token;
         std::string scope;
         std::string name;
