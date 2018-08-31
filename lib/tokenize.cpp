@@ -3274,6 +3274,7 @@ void Tokenizer::createLinks2()
                     continue;
                 if (token->next() &&
                     !Token::Match(token->next(), "%name%|>|&|&&|*|::|,|(|)|{|}|;|[|:") &&
+                    !Token::simpleMatch(token->next(), ". . .") &&
                     !Token::Match(token->next(), "&& %name% ="))
                     continue;
             }

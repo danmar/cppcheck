@@ -4700,6 +4700,17 @@ private:
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
+        {
+            // #8654
+            const char code[] = "template<int N> struct A {}; "
+                                "template<int... Ns> struct foo : A<Ns>... {};";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
+            ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
+        }
     }
 
     void simplifyString() {
