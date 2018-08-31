@@ -74,6 +74,38 @@ def latestReport(latestResults):
     return html
 
 
+def crashReport():
+    html = '<html><head><title>Crash report</title></head><body>\n'
+    html += '<h1>Crash report</h1>\n'
+    html += '<pre>\n'
+    html += '<b>Package                                 1.84  Head</b>\n'
+    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+        if not os.path.isfile(filename):
+            continue
+        for line in open(filename, 'rt'):
+            if not line.startswith('count:'):
+                continue
+            if line.find('Crash') < 0:
+                break
+            packageName = filename[filename.rfind('/')+1:]
+            counts = line.strip().split(' ')
+            out = packageName + ' '
+            while len(out) < 40:
+                out += ' '
+            if counts[2] == 'Crash!':
+                out += 'Crash '
+            else:
+                out += '      '
+            if counts[1] == 'Crash!':
+                out += 'Crash'
+            out = '<a href=/"' + packageName + '">' + packageName + '</a>' + out[out.find(' '):]
+            html += out + '\n'
+            break
+    html += '</pre>\n'
+    html += '</body></html>\n'
+    return html
+
+
 def diffReport():
     html = '<html><head><title>Diff report</title></head><body>\n'
     html += '<h1>Diff report</h1>\n'
@@ -197,6 +229,9 @@ class HttpClientThread(Thread):
             url = res.group(1)
             if url == 'latest.html':
                 html = latestReport(self.latestResults)
+                httpGetResponse(self.connection, html, 'text/html')
+            elif url == 'crash':
+                html = crashReport()
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff':
                 html = diffReport()
