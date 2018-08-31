@@ -3093,6 +3093,13 @@ private:
               "    tab4[20] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n" // #8721
+              "  unsigned char **cache = malloc(32);\n"
+              "  cache[i] = malloc(65536);\n"
+              "  cache[i][0xFFFF] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // statically allocated buffer
