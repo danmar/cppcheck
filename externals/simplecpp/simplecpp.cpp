@@ -2243,8 +2243,7 @@ static bool preprocessToken(simplecpp::TokenList &output, const simplecpp::Token
         }
         output.takeTokens(value);
     } else {
-        if (!tok->comment)
-            output.push_back(new simplecpp::Token(*tok));
+        output.push_back(new simplecpp::Token(*tok));
         *tok1 = tok->next;
     }
     return true;
@@ -2385,8 +2384,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             } else if (ifstates.top() == TRUE && rawtok->str() == INCLUDE) {
                 TokenList inc1(files);
                 for (const Token *inctok = rawtok->next; sameline(rawtok,inctok); inctok = inctok->next) {
-                    if (!inctok->comment)
-                        inc1.push_back(new Token(*inctok));
+                    inc1.push_back(new Token(*inctok));
                 }
                 TokenList inc2(files);
                 if (!inc1.empty() && inc1.cfront()->name) {
@@ -2555,8 +2553,6 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             } else if (rawtok->str() == UNDEF) {
                 if (ifstates.top() == TRUE) {
                     const Token *tok = rawtok->next;
-                    while (sameline(rawtok,tok) && tok->comment)
-                        tok = tok->next;
                     if (sameline(rawtok, tok))
                         macros.erase(tok->str());
                 }
