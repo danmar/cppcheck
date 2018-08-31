@@ -24,7 +24,6 @@
 #include "config.h"
 #include "errorlogger.h"
 #include "tokenlist.h"
-#include "templatesimplifier.h"
 
 #include <ctime>
 #include <list>
@@ -36,6 +35,7 @@ class Settings;
 class SymbolDatabase;
 class TimerResults;
 class Token;
+class TemplateSimplifier;
 
 namespace simplecpp {
     class TokenList;

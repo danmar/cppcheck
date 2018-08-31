@@ -329,7 +329,6 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     return 0;
 }
 
-// Same as Token::eraseTokens() but tries to fix up lists with pointers to the deleted tokens.
 void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
 {
     if (!begin || begin == end)
@@ -337,23 +336,22 @@ void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
 
     while (begin->next() && begin->next() != end) {
         // check if token has a pointer to it
-        if (begin->next()->hasPointer()) {
+        if (begin->next()->hasTemplateSimplifierPointer()) {
             // check if the token is in a list
-            const std::list<TokenAndName>::iterator it2 = std::find_if(mTemplateInstantiations.begin(),
+            const std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
                     mTemplateInstantiations.end(),
                     FindToken(begin->next()));
-            if (it2 != mTemplateInstantiations.end()) {
+            if (it != mTemplateInstantiations.end()) {
                 // remove the pointer flag and prevent the deleted pointer from being used
-                it2->token->hasPointer(false);
-                it2->token = nullptr;
+                it->token->hasTemplateSimplifierPointer(false);
+                it->token = nullptr;
             }
         }
         begin->deleteNext();
     }
 }
 
-// The token following tok may have a pointer to it so don't invalidate it.
-void TemplateSimplifier::deleteThis(Token * tok)
+void TemplateSimplifier::deleteToken(Token *tok)
 {
     if (tok->next())
         tok->next()->deletePrevious();
@@ -374,7 +372,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
             tok2 = tok2->link();
         } else if (tok2->str() == ")") {  // garbage code! (#3504)
             Token::eraseTokens(tok,tok2);
-            deleteThis(tok);
+            deleteToken(tok);
             return false;
         }
 
@@ -383,11 +381,11 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
             Token::eraseTokens(tok, tok2);
             if (tok2 && tok2->str() == ";" && tok2->next())
                 tok->deleteNext();
-            deleteThis(tok);
+            deleteToken(tok);
             return true;
         } else if (tok2->str() == "}") {  // garbage code! (#3449)
             Token::eraseTokens(tok,tok2);
-            deleteThis(tok);
+            deleteToken(tok);
             return false;
         }
 
@@ -400,14 +398,14 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
             (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") &&
              Tokenizer::startOfExecutableScope(tok2->linkAt(1)))) {
             Token::eraseTokens(tok, tok2);
-            deleteThis(tok);
+            deleteToken(tok);
             return true;
         }
 
         if (tok2->str() == ";") {
             tok2 = tok2->next();
             Token::eraseTokens(tok, tok2);
-            deleteThis(tok);
+            deleteToken(tok);
             return true;
         }
 
@@ -420,7 +418,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         else if (Token::Match(tok2, "> class|struct %name% [,)]")) {
             tok2 = tok2->next();
             Token::eraseTokens(tok, tok2);
-            deleteThis(tok);
+            deleteToken(tok);
             return true;
         }
     }
@@ -839,7 +837,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
                 aliasUsage.token->str(templateAlias.token->str());
             } else {
                 tok2 = TokenList::copyTokens(aliasUsage.token, aliasToken1, templateAlias.token, true);
-                deleteThis(aliasUsage.token);
+                deleteToken(aliasUsage.token);
                 aliasUsage.token = tok2;
             }
             tok2 = aliasUsage.token->next(); // the '<'

@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
+#include "templatesimplifier.h"
 #include "timer.h"
 #include "token.h"
 #include "utils.h"

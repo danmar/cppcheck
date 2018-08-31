@@ -69,7 +69,7 @@ public:
     struct TokenAndName {
         TokenAndName(Token *tok, const std::string &s, const std::string &n) :
             token(tok), scope(s), name(n) {
-            token->hasPointer(true);
+            token->hasTemplateSimplifierPointer(true);
         }
         Token *token;
         std::string scope;
@@ -145,8 +145,6 @@ private:
     /**
      * Simplify templates : expand all instantiations for a template
      * @todo It seems that inner templates should be instantiated recursively
-     * @param tokenlist token list
-     * @param errorlogger error logger
      * @param templateDeclaration template declaration
      * @param specializations template specializations (list each template name token)
      * @param maxtime time when the simplification will stop
@@ -161,8 +159,6 @@ private:
 
     /**
      * Expand a template. Create "expanded" class/function at end of tokenlist.
-     * @param tokenlist                         The tokenlist that is changed
-     * @param templateDeclarationToken          The template declaration token for the template that will be "expanded"
      * @param fullName                          Full name of template
      * @param typeParametersInDeclaration       The type parameters of the template
      * @param newName                           New name of class/function.
@@ -221,8 +217,19 @@ private:
         const Token *templateInstantiationNameToken,
         const std::list<const Token *> & specializations);
 
+    /*
+     * Same as Token::eraseTokens() but tries to fix up lists with pointers to the deleted tokens.
+     * @param begin Tokens after this will be erased.
+     * @param end Tokens before this will be erased.
+     */
     void eraseTokens(Token *begin, const Token *end);
-    void deleteThis(Token *tok);
+
+    /**
+     * Delete specified token without invalidating pointer to following token.
+     * tok will be invalidated.
+     * @param tok token to delete
+     */
+    void deleteToken(Token *tok);
 
     Tokenizer *mTokenizer;
     const Settings *mSettings;
