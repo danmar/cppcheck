@@ -95,8 +95,6 @@ public:
 
     /**
      * Simplify templates
-     * @param tokenlist token list
-     * @param errorlogger error logger
      * @param maxtime time when the simplification should be stopped
      * @param codeWithTemplates output parameter that is set if code contains templates
      */
