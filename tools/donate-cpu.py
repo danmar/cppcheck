@@ -2,6 +2,12 @@
 #
 # A script a user can run to donate CPU to cppcheck project
 #
+# Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-folder=path]
+#  -jN                  Use N threads in compilation/analysis. Default is 1.
+#  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
+#  --work-folder=path   Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
+#
+# What this script does:
 # 1. Check requirements
 # 2. Pull & compile Cppcheck
 # 3. Select a package
@@ -9,6 +15,8 @@
 # 5. Analyze source code
 # 6. Upload results
 # 7. Repeat from step 2
+#
+# Quick start: just run this script without any arguments
 
 import shutil
 import glob
@@ -47,13 +55,13 @@ def getCppcheck(cppcheckPath):
     return False
 
 
-def compile_version(workPath, version):
+def compile_version(workPath, jobs, version):
     if os.path.isfile(workPath + '/' + version + '/cppcheck'):
         return True
     os.chdir(workPath + '/cppcheck')
     subprocess.call(['git', 'checkout', version])
     subprocess.call(['make', 'clean'])
-    subprocess.call(['make', 'SRCDIR=build', 'CXXFLAGS=-O2'])
+    subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2'])
     if os.path.isfile(workPath + '/cppcheck/cppcheck'):
         os.mkdir(workpath + '/' + version)
         destPath = workpath + '/' + version + '/'
@@ -67,11 +75,11 @@ def compile_version(workPath, version):
     return True
 
 
-def compile(cppcheckPath):
+def compile(cppcheckPath, jobs):
     print('Compiling Cppcheck..')
     try:
         os.chdir(cppcheckPath)
-        subprocess.call(['make', 'SRCDIR=build', 'CXXFLAGS=-O2'])
+        subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2'])
         subprocess.call([cppcheckPath + '/cppcheck', '--version'])
     except OSError:
         return False
@@ -122,10 +130,10 @@ def unpackPackage(workPath, tgz):
     os.chdir(workPath)
 
 
-def scanPackage(workPath, cppcheck):
+def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
-    cmd = 'nice ' + cppcheck + ' -D__GCC__ --enable=style --library=posix --platform=unix64 --template={file}:{line}:{message}[{id}] -rp=temp temp'
+    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --enable=style --library=posix --platform=unix64 --template={file}:{line}:{message}[{id}] -rp=temp temp'
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -194,15 +202,40 @@ def uploadResults(package, results):
         pass
     return package
 
+jobs = '-j1'
 stopTime = None
+workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
         stopTime = arg[-5:]
+        print('Stop time:' + stopTime)
+    elif arg.startswith('-j'):
+        jobs = arg
+        print('Jobs:' + jobs[2:])
+    elif arg.startswith('--work-path='):
+        workpath = arg[arg.find('=')+1:]
+        print('workpath:' + workpath)
+        if not os.path.exists(workpath):
+            print('work path does not exist!')
+            sys.exit(1)
+    elif arg == '--help':
+        print('Donate CPU to Cppcheck project')
+        print('')
+        print('Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-folder=path]')
+        print('  -jN                  Use N threads in compilation/analysis. Default is 1.')
+        print('  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.')
+        print('  --work-folder=path   Work folder path. Default path is ' + workpath)
+        print('')
+        print('Quick start: just run this script without any arguments')
+        sys.exit(0)
+    else:
+        print('Unhandled argument: ' + arg)
+        sys.exit(1)
+
 print('Thank you!')
 if not checkRequirements():
     sys.exit(1)
-workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
@@ -215,10 +248,10 @@ while True:
     if not getCppcheck(cppcheckPath):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
-    if compile_version(workpath, '1.84') == False:
+    if compile_version(workpath, jobs, '1.84') == False:
         print('Failed to compile Cppcheck-1.84, retry later')
         sys.exit(1)
-    if compile(cppcheckPath) == False:
+    if compile(cppcheckPath, jobs) == False:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
     package = getPackage()
@@ -229,7 +262,7 @@ while True:
     elapsedTime = ''
     resultsToDiff = []
     for cppcheck in ['cppcheck/cppcheck', '1.84/cppcheck']:
-        c,errout,t = scanPackage(workpath, cppcheck)
+        c,errout,t = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
             count += ' Crash!'
