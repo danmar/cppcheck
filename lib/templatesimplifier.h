@@ -41,7 +41,7 @@ class Tokenizer;
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class CPPCHECKLIB TemplateSimplifier {
 public:
-    TemplateSimplifier(Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    TemplateSimplifier(TokenList &tokenlist, const Settings *settings, ErrorLogger *errorLogger);
     ~TemplateSimplifier();
 
     /**
@@ -229,7 +229,7 @@ private:
      */
     void deleteToken(Token *tok);
 
-    Tokenizer *mTokenizer;
+    TokenList &mTokenList;
     const Settings *mSettings;
     ErrorLogger *mErrorLogger;
 
