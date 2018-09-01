@@ -1298,7 +1298,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 }
 
                 /** @todo false negatives: this may be too conservative */
-                if (!var || !var->isPointer() || var->typeStartToken()->next() != var->typeEndToken())
+                if (!var->isPointer() || var->typeStartToken()->next() != var->typeEndToken())
                     continue;
 
                 // malloc() gets count of bytes and not count of
