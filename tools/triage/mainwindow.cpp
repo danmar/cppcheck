@@ -134,17 +134,5 @@ void MainWindow::showResult(QListWidgetItem *item)
     f.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream textStream(&f);
     const QString fileData = textStream.readAll();
-    ui->code->setPlainText(fileData);
-    for (int pos = 0, line = 1; pos < fileData.size(); ++pos) {
-        if (fileData[pos] == '\n') {
-            ++line;
-            if (line == lineNumber) {
-                QTextCursor textCursor = ui->code->textCursor();
-                textCursor.setPosition(pos+1);
-                ui->code->setTextCursor(textCursor);
-                ui->code->centerCursor();
-                break;
-            }
-        }
-    }
+    ui->code->setError(fileData, lineNumber, QStringList());
 }
