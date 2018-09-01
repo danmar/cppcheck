@@ -6848,6 +6848,14 @@ private:
               "  while (a=x(), a==123) {}\n"
               "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        // # 8717
+        check("void f(int argc, char *const argv[]) {\n"
+              "    char **local_argv = safe_malloc(sizeof (*local_argv));\n"
+              "    int local_argc = 0;\n"
+              "    local_argv[local_argc++] = argv[0];\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testEvaluationOrderSelfAssignment() {
