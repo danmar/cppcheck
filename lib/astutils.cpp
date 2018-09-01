@@ -147,7 +147,6 @@ static bool isInLoopCondition(const Token * tok)
 {
     return Token::Match(tok->astTop()->previous(), "for|while (");
 }
-*/
 
 
 /// This takes a token that refers to a variable and it will return the token
@@ -155,11 +154,6 @@ static bool isInLoopCondition(const Token * tok)
 /// make such substitution then it will return the original token.
 static const Token * followVariableExpression(const Token * tok, bool cpp)
 {
-    // DM: followVariableExpression is disabled for now because it cause problems.
-    // See #8717 and #8722
-    (void)cpp;
-    return tok;
-    /*
     if (!tok)
         return tok;
     // Skip array access
@@ -215,7 +209,6 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         }
     }
     return varTok;
-    */
 }
 
 static void followVariableExpressionError(const Token *tok1, const Token *tok2, ErrorPath* errors)
@@ -231,6 +224,7 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
         return;
     errors->push_back(item);
 }
+*/
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, ErrorPath* errors)
 {
@@ -252,6 +246,9 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, errors);
     }
     // Follow variables if possible
+    // DM: followVariableExpression is disabled for now because it cause problems.
+    // See #8717 and #8722
+    /*
     if (tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp);
         if (varTok1->str() == tok2->str()) {
@@ -269,6 +266,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             return isSameExpression(cpp, macro, varTok1, varTok2, library, pure, errors);
         }
     }
+    */
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
             (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
