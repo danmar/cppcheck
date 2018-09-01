@@ -133,6 +133,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+/*
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())
@@ -146,6 +147,7 @@ static bool isInLoopCondition(const Token * tok)
 {
     return Token::Match(tok->astTop()->previous(), "for|while (");
 }
+*/
 
 
 /// This takes a token that refers to a variable and it will return the token
@@ -153,6 +155,11 @@ static bool isInLoopCondition(const Token * tok)
 /// make such substitution then it will return the original token.
 static const Token * followVariableExpression(const Token * tok, bool cpp)
 {
+    // DM: followVariableExpression is disabled for now because it cause problems.
+    // See #8717 and #8722
+    (void)cpp;
+    return tok;
+    /*
     if (!tok)
         return tok;
     // Skip array access
@@ -208,6 +215,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         }
     }
     return varTok;
+    */
 }
 
 static void followVariableExpressionError(const Token *tok1, const Token *tok2, ErrorPath* errors)
