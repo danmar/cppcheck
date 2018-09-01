@@ -29,7 +29,7 @@ import re
 
 def checkRequirements():
     result = True
-    for app in ['g++', 'git', 'make', 'wget', 'rm', 'tar']:
+    for app in ['g++', 'git', 'make', 'wget', 'tar']:
         try:
             subprocess.call([app, '--version'])
         except OSError:
@@ -100,8 +100,33 @@ def getPackage():
     return package.decode('utf-8')
 
 
+
+def handleRemoveReadonly(func, path, exc):
+    import stat
+    if not os.access(path, os.W_OK):
+        # Is the error an access error ?
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+
+
+def removeTree(folderName):
+    if not os.path.exists(folderName):
+        return
+    count = 5
+    while count > 0:
+        count -= 1
+        try:
+            shutil.rmtree(folderName, onerror=handleRemoveReadonly)
+            break
+        except OSError as err:
+            time.sleep(30)
+            if count == 0:
+                print('Failed to cleanup {}: {}'.format(folderName, err))
+                sys.exit(1)
+
+
 def wget(url, destfile):
-    subprocess.call(['rm', '-f', destfile])
+    os.remove(destfile)
     subprocess.call(
             ['wget', '--tries=10', '--timeout=300', '-O', destfile, url])
     if os.path.isfile(destfile):
@@ -123,7 +148,7 @@ def downloadPackage(workPath, package):
 def unpackPackage(workPath, tgz):
     print('Unpacking..')
     tempPath = workPath + '/temp'
-    subprocess.call(['rm', '-rf', tempPath])
+    removeTree(tempPath)
     os.mkdir(tempPath)
     os.chdir(tempPath)
     subprocess.call(['tar', 'xzvf', tgz])
