@@ -135,4 +135,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     QTextStream textStream(&f);
     const QString fileData = textStream.readAll();
     ui->code->setError(fileData, lineNumber, QStringList());
+
+    ui->edit1->setText(url);
+    ui->edit2->setText(WORK_FOLDER + '/' + fileName);
 }
