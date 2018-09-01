@@ -4554,6 +4554,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("template <typename T>\n"
+              "T f() {\n"
+              "  T a = T();\n"
+              "}\n"
+              "int &a = f<int&>();\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Issue #8713
         check("class A {\n"
               "  int64_t B = 32768;\n"
