@@ -162,7 +162,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     if (tok->astParent() && tok->isUnaryOp("*"))
         return tok;
     // Skip following variables if it is used in an assignment
-    if (Token::Match(tok->astParent(), "%assign%") || Token::Match(tok->next(), "%assign%"))
+    if (Token::Match(tok->astTop(), "%assign%") || Token::Match(tok->next(), "%assign%"))
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableInitExpression(var);
@@ -198,6 +198,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         }
 
         if (const Variable * var2 = tok2->variable()) {
+            if(!var2->scope())
+                return tok;
             const Token * endToken2 = var2->scope() != tok->scope() ? var2->scope()->bodyEnd : endToken;
             if (!var2->isLocal() && !var2->isConst() && !var2->isArgument())
                 return tok;
