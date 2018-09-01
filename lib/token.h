@@ -453,6 +453,12 @@ public:
     unsigned char bits() const {
         return mBits;
     }
+    bool hasTemplateSimplifierPointer() const {
+        return getFlag(fHasTemplateSimplifierPointer);
+    }
+    void hasTemplateSimplifierPointer(const bool value) {
+        setFlag(fHasTemplateSimplifierPointer, value);
+    }
     void setBits(const unsigned char b) {
         mBits = b;
     }
@@ -972,6 +978,7 @@ private:
         fIsLiteral              = (1 << 21),
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
+        fHasTemplateSimplifierPointer = (1 << 24), // used by template simplifier to indicate it has a pointer to this token
     };
 
     unsigned int mFlags;
