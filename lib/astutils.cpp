@@ -247,7 +247,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     }
     // Follow variables if possible
     // DM: followVariableExpression is disabled for now because it cause problems.
-    // See #8717 and #8722
+    // See #8709, #8713, #8717 and #8722
     /*
     if (tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp);
