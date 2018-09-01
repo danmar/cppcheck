@@ -4133,6 +4133,9 @@ void Tokenizer::dump(std::ostream &out) const
             else if (tok->tokType() == Token::eLogicalOp)
                 out << " isLogicalOp=\"True\"";
         }
+        else if (tok->isComment())
+            out << " isComment=\"True\"";
+
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0U)
@@ -7861,6 +7864,20 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
             }
             tok->deleteNext();
         }
+    }
+}
+
+void Tokenizer::removeComments()
+{
+    while (list.front() && list.front()->isComment())
+    {
+        list.front()->deleteThis();
+    }
+
+    for (Token* tok = list.front(); tok && tok->next(); tok = tok->next())
+    {
+        while (tok->next() && tok->next()->isComment())
+            tok->deleteNext();
     }
 }
 
