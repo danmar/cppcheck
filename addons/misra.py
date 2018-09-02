@@ -538,11 +538,14 @@ class MisraChecker:
         # ie rule 1.2 becomes 102
         self.ruleTexts          = dict()
 
-        # Dictionary of dictionary for rules to supress for all files
-        # Dict 1 is the major grouping that contains a 2nd dict
-        # indicating the rule that should be supressed.
-        # Existance in both dictionaries means the rule
-        # is suppressed.
+        # Dictionary of dictionaries for rules to suppress
+        # Dict1 is keyed by rule number in the hundreds format of
+        # Major *  100 + minor. ie Rule 5.2 = (5*100) + 2
+        # Dict 2 is keyed by filename.  An entry of None means suppress globaly.
+        # Each file name entry contails a list of tuples of (lineNumber, symbolName)
+        # or None which indicates suppress rule for the entire file.
+        # The line and symbol name tuple may have None as either of its elements but
+        # should not be None for both.
         self.suppressedRules    = dict()
 
         # List of suppression extracted from the dumpfile
@@ -1656,6 +1659,160 @@ class MisraChecker:
         return self.violations
 
 
+    def addSuppressedRule(self, ruleNum,
+                          fileName   = None,
+                          lineNumber = None,
+                          symbolName = None):
+        """
+        Add a suppression to the suppressions data structure
+
+        Suppressions are stored in a dictionary of dictionaries that
+        contains a list of tuples.
+
+        The first dictionary is keyed by the MISRA rule in hundreds
+        format. The value of that dictionary is a dictionary of filenames.
+        If the value is None then the rule is assumed to be suppressed for
+        all files.
+        If the filename exists then the value of that dictionary contains the
+        scope of the suppression.  If the value is None then the rule is assumed
+        to be suppresed for the entire file. Otherwise the value of the dictionary
+        is a list of line number, symbol name tuples.
+        For each tuple either line number or symbol name can can be none.
+
+        """
+
+        if lineNumber is not None or symbolName is not None:
+            line_symbol = (lineNumber, symbolName)
+        else:
+            line_symbol = None
+
+        # If the rule is not in the dict already then add it
+        if not ruleNum in self.suppressedRules:
+            ruleItemList = list()
+            ruleItemList.append(line_symbol)
+
+            fileDict = dict()
+            fileDict[fileName] = ruleItemList
+
+            self.suppressedRules[ruleNum] = fileDict
+
+            # Rule is added.  Done.
+            return
+
+        # Rule existed in the dictionary. Check for
+        # filename entries.
+
+        # Get the dictionary for the rule numer
+        fileDict = self.suppressedRules[ruleNum]
+
+        # If the filename is not in the dict already add it
+        if not fileName in fileDict:
+            ruleItemList = list()
+            ruleItemList.append(line_symbol)
+
+            fileDict[fileName] = ruleItemList
+
+            # Rule is added with a file scope. Done
+            return
+
+        # Rule has a matching filename. Check for
+        # rule a rule item list.
+
+        # If it exists then check the lists of rule items
+        # to see if the lineNumber, symbonName combination
+        # exists
+        ruleItemList = fileDict[fileName]
+
+        if line_symbol is None:
+            # is it already in the list?
+            if not line_symbol in ruleItemList:
+                ruleItemList.append(line_symbol)
+        else:
+            # Check the list looking for matches
+            matched = False
+            for each in ruleItemList:
+                if each is not None:
+                    if (each[0] == line_symbol[0]) and (each[1] == line_symbol[1]):
+                        matched = True
+
+            # Append the rule item if it was not already found
+            if not matched:
+                ruleItemList.append(line_symbol)
+
+
+    def isRuleSuppressed(self, location, ruleNum):
+        """
+        Check to see if a rule is suppressed.
+        ruleNum is the rule number in hundreds format
+
+        If the rule exists in the dict then check for a filename
+        If the filename is None then rule is suppressed globally
+        for all files.
+        If the filename exists then look for list of
+        line number, symbol name tuples.  If the list is None then
+        the rule is suppressed for the entire file
+        If the list of tuples exists then search the list looking for
+        maching line numbers.  Symbol names are currently ignored
+        because they can include regular expressions.
+        TODO: Support symbol names and expression matching.
+
+        """
+        ruleIsSuppressed = False
+        filename = location.file
+        linenr    = location.linenr
+
+        if ruleNum in self.suppressedRules:
+            fileDict = self.suppressedRules[ruleNum]
+
+            # a file name entry of None means that the rule is suppressed
+            # globally
+            if None in fileDict:
+                ruleIsSuppressed = True
+            else:
+                # Does the filename match one of the names in
+                # the file list
+                if filename in fileDict:
+                    # Get the list of ruleItems
+                    ruleItemList = fileDict[filename]
+
+                    if ruleItemList is None:
+                        # None for itemRuleList means the rule is suppressed
+                        # for all lines in the filename
+                        ruleIsSuppressed = True
+                    else:
+                        # Iterate though the the list of line numbers
+                        # and symbols looking for a match of the line
+                        # number.  Matching the symbol is a TODO:
+                        for each in ruleItemList:
+                            if each is not None:
+                                if each[0] == linenr:
+                                    ruleIsSuppressed = True
+
+        return ruleIsSuppressed
+
+
+    def parseSuppressions(self):
+        """
+        Parse the suppression list provided by cppcheck looking for
+        rules that start with 'misra' or MISRA.  The MISRA rule number
+        follows using either '_' or '.' to separate the numbers.
+        Examples:
+            misra_6.0
+            misra_7_0
+            misra.21.11
+        """
+        rule_pattern = re.compile(r'^(misra|MISRA)[_.]([0-9]+)[_.]([0-9]+)')
+
+        for each in self.dumpfileSuppressions:
+            res = rule_pattern.match(each.errorId)
+
+            if res:
+                num1 = int(res.group(2)) * 100
+                ruleNum = num1 + int(res.group(3))
+                self.addSuppressedRule(ruleNum, each.fileName,
+                                       each.lineNumber, each.symbolName)
+
+
     def setSuppressionList(self, suppressionlist):
         num1 = 0
         num2 = 0
@@ -1668,23 +1825,23 @@ class MisraChecker:
             if res:
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
-                if num1 in self.suppressedRules:
-                    self.suppressedRules[num1][num2] = True
-                else:
-                    self.suppressedRules[num1] = {num2: True}
+                ruleNum = (num1*100)+num2
+
+                self.addSuppressedRule(ruleNum)
 
 
     def reportError(self, location, num1, num2):
+        ruleNum = num1 * 100 + num2
+
         if VERIFY:
             self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
-        elif num1 in self.suppressedRules and num2 in self.suppressedRules[num1]:
-            # ignore error
+        elif self.isRuleSuppressed(location, ruleNum):
+            # Error is suppressed. Ignore
             return
         else:
-            num = num1 * 100 + num2
             id = 'misra-c2012-' + str(num1) + '.' + str(num2)
-            if num in self.ruleTexts:
-                errmsg = self.ruleTexts[num] + ' [' + id + ']'
+            if ruleNum in self.ruleTexts:
+                errmsg = self.ruleTexts[ruleNum] + ' [' + id + ']'
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
             else:
@@ -1750,6 +1907,7 @@ class MisraChecker:
         data = cppcheckdata.parsedump(dumpfile)
 
         self.dumpfileSuppressions = data.suppressions
+        self.parseSuppressions()
 
         typeBits['CHAR'] = data.platform.char_bit
         typeBits['SHORT'] = data.platform.short_bit
