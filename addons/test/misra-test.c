@@ -2,7 +2,8 @@
 // ~/cppcheck/cppcheck --dump misra-test.c && python ../misra.py -verify misra-test.c.dump
 
 #include "path\file.h" // 20.2
-#include /*abc*/ "file.h" // 20.3
+#include /*abc*/ "file.h" // no warning
+#include PATH "file.h" // 20.3
 #include<file.h> // no warning
 #include <setjmp.h> // 21.4
 #include <signal.h> // 21.5

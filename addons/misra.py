@@ -1476,7 +1476,12 @@ def misra_20_3(rawTokens):
         if not simpleMatch(token, '# include'):
             continue
         headerToken = token.next.next
-        if not headerToken or not (headerToken.str.startswith('<') or headerToken.str.startswith('"')):
+        num = 0
+        while headerToken and headerToken.linenr == linenr:
+            if not headerToken.str.startswith('/*') and not headerToken.str.startswith('//'):
+                num += 1
+            headerToken = headerToken.next
+        if num != 1:
             reportError(token, 20, 3)
 
 
