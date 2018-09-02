@@ -19,9 +19,10 @@ def strDateTime():
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
-    html += '<a href="latest.html">Latest results</a><br>\n'
-    html += '<a href="diff">Diff report (1.84 / head)</a><br>\n'
     html += '<a href="crash">Crash report</a><br>\n'
+    html += '<a href="diff">Diff report</a><br>\n'
+    html += '<a href="latest.html">Latest results</a><br>\n'
+    html += '<a href="time">Time report</a><br>\n'
     html += '</body></html>'
     return html
 
@@ -201,6 +202,30 @@ def diffMessageIdReport(resultPath, messageId):
                 text += line
     return text
 
+def timeReport(resultPath):
+    text = 'Time report\n\n'
+    text += 'Package 1.84 Head\n'
+
+    totalTime184 = 0.0
+    totalTimeHead = 0.0
+    for filename in glob.glob(resultPath + '/*'):
+        for line in open(filename,'rt'):
+            if not line.startswith('elapsed-time:'):
+                continue
+            splitline = line.strip().split()
+            t184 = float(splitline[2])
+            thead = float(splitline[1])
+            totalTime184 += t184
+            totalTimeHead += thead
+            if t184>1 and t184*2 < thead:
+                text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
+            elif thead>1 and thead*2 < t184:
+                text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
+            break
+
+    text += '\nTotal time: ' + str(totalTime184) + ' ' + str(totalTimeHead)
+    return text
+
 def sendAll(connection, data):
     while data:
         num = connection.send(data)
@@ -251,6 +276,9 @@ class HttpClientThread(Thread):
             elif url.startswith('diff-'):
                 messageId = url[5:]
                 text = diffMessageIdReport(self.resultPath, messageId)
+                httpGetResponse(self.connection, text, 'text/plain')
+            elif url == 'time':
+                text = timeReport(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + '/' + url
