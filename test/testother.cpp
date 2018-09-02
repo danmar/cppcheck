@@ -4546,6 +4546,32 @@ private:
               "        (void)b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Issue #8712
+        check("void f() {\n"
+              "  unsigned char d;\n"
+              "  d = d % 5;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T>\n"
+              "T f() {\n"
+              "  T a = T();\n"
+              "}\n"
+              "int &a = f<int&>();\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Issue #8713
+        check("class A {\n"
+              "  int64_t B = 32768;\n"
+              "  P<uint8_t> m = MakeP<uint8_t>(B);\n"
+              "};\n"
+              "void f() {\n"
+              "  uint32_t a = 42;\n"
+              "  uint32_t b = uint32_t(A ::B / 1024);\n"
+              "  int32_t c = int32_t(a / b);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkSignOfUnsignedVariable() {
@@ -6828,6 +6854,14 @@ private:
               "  int a;\n"
               "  while (a=x(), a==123) {}\n"
               "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        // # 8717
+        check("void f(int argc, char *const argv[]) {\n"
+              "    char **local_argv = safe_malloc(sizeof (*local_argv));\n"
+              "    int local_argc = 0;\n"
+              "    local_argv[local_argc++] = argv[0];\n"
+              "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
