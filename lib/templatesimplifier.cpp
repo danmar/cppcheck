@@ -1031,9 +1031,11 @@ void TemplateSimplifier::expandTemplate(
                  instantiateMatch(tok3, typeParametersInDeclaration.size(), ":: ~| %name% (")) {
             // there must be template..
             bool istemplate = false;
+            const Token * tok5 = nullptr; // start of function return type
             for (const Token *prev = tok3; prev && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
                 if (prev->str() == "template") {
                     istemplate = true;
+                    tok5 = prev;
                     break;
                 }
             }
@@ -1045,6 +1047,15 @@ void TemplateSimplifier::expandTemplate(
                 tok4 = tok4->next();
             if (!Tokenizer::isFunctionHead(tok4, ":{", true))
                 continue;
+            // find function return type start
+            tok5 = tok5->next()->findClosingBracket();
+            if (tok5)
+                tok5 = tok5->next();
+            // copy return type
+            while (tok5 && tok5 != tok3) {
+                mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
+                tok5 = tok5->next();
+            }
             mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
             while (tok3 && tok3->str() != "::")
                 tok3 = tok3->next();

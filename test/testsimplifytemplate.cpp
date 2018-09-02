@@ -103,6 +103,7 @@ private:
         TEST_CASE(template63);  // #8576 - qualified type
         TEST_CASE(template64);  // #8683
         TEST_CASE(template65);  // #8321
+        TEST_CASE(template66);  // #8725
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -949,11 +950,11 @@ private:
                                 "template void Fred<float> :: f ( ) ; "
                                 "template void Fred<int> :: g ( ) ; "
                                 "class Fred<float> { void f ( ) ; void g ( ) ; } ; "
-                                "Fred<float> :: f ( ) { } "
-                                "Fred<float> :: g ( ) { } "
+                                "void Fred<float> :: f ( ) { } "
+                                "void Fred<float> :: g ( ) { } "
                                 "class Fred<int> { void f ( ) ; void g ( ) ; } ; "
-                                "Fred<int> :: f ( ) { } "
-                                "Fred<int> :: g ( ) { }";
+                                "void Fred<int> :: f ( ) { } "
+                                "void Fred<int> :: g ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -1190,6 +1191,24 @@ private:
                             " return 1;\n"
                             "}";
         tok(code); // don't crash
+    }
+
+    void template66() { // #8725
+        const char code[] = "template <class T> struct Fred {\n"
+                            "    const int ** foo();\n"
+                            "};\n"
+                            "template <class T> const int ** Fred<T>::foo() { return nullptr; }\n"
+                            "Fred<int> fred;";
+        const char exp [] = "Fred<int> fred ; struct Fred<int> { "
+                            "const int * * foo ( ) ; "
+                            "} ; "
+                            "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
+        const char curr[] = "template < class T > const int * * Fred < T > :: foo ( ) { return nullptr ; } "
+                            "Fred<int> fred ; struct Fred<int> { "
+                            "const int * * foo ( ) ; "
+                            "} ; "
+                            "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
+        TODO_ASSERT_EQUALS(exp, curr, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
