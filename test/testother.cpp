@@ -4572,6 +4572,16 @@ private:
               "  int32_t c = int32_t(a / b);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Issue #8709
+        check("a b;\n"
+              "void c() {\n"
+              "  switch (d) { case b:; }\n"
+              "  double e(b);\n"
+              "  if(e <= 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void checkSignOfUnsignedVariable() {

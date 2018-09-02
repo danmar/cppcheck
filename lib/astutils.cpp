@@ -204,6 +204,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         if (const Variable * var2 = tok2->variable()) {
             if(!var2->scope())
                 return tok;
+            // If type is `case` then we haven't found the correct variable declaration
+            if(Token::simpleMatch(var2->typeStartToken(), "case"))
+                return tok;
             const Token * endToken2 = var2->scope() != tok->scope() ? var2->scope()->bodyEnd : endToken;
             if (!var2->isLocal() && !var2->isConst() && !var2->isArgument())
                 return tok;
