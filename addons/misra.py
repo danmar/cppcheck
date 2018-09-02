@@ -1641,6 +1641,21 @@ class MisraChecker:
             self.reportError(directive, 21, 11)
 
 
+    def get_verify_expected(self):
+        """Return the list of expected violations in the verify test"""
+        return self.verify_expected
+
+
+    def get_verify_actual(self):
+        """Return the list of actual violations in for the verify test"""
+        return self.verify_actual
+
+
+    def get_violations(self):
+        """Return the list of violations for a normal checker run"""
+        return self.violations
+
+
     def setSuppressionList(self, suppressionlist):
         num1 = 0
         num2 = 0
@@ -1843,23 +1858,6 @@ class MisraChecker:
             self.misra_21_11(cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
 
-        exitCode = 0
-        if VERIFY:
-            for expected in self.verify_expected:
-                if expected not in self.verify_actual:
-                    print('Expected but not seen: ' + expected)
-                    exitCode = 1
-            for actual in self.verify_actual:
-                if actual not in self.verify_expected:
-                    print('Not expected: ' + actual)
-                    exitCode = 1
-        else:
-            if len(self.violations) > 0:
-                if SHOW_SUMMARY:
-                    print("\nRule violations found: %d\n" % (len(self.violations)))
-                exitCode = 1
-
-        return exitCode
 
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
@@ -1929,7 +1927,36 @@ else:
     if args.dumpfile:
         exitCode = 0
         for item in args.dumpfile:
-            checkCode = checker.parseDump(item)
-            if checkCode != 0:
-                exitCode = checkCode
+            checker.parseDump(item)
+
+            if VERIFY:
+                verify_expected = checker.get_verify_expected()
+                verify_actual   = checker.get_verify_actual()
+
+                for expected in verify_expected:
+                    if expected not in verify_actual:
+                        print('Expected but not seen: ' + expected)
+                        exitCode = 1
+                for actual in verify_actual:
+                    if actual not in verify_expected:
+                        print('Not expected: ' + actual)
+                        exitCode = 1
+
+                # Exisitng behavior of verify mode is to exit
+                # on the first un-expected output.
+                # TODO: Is this required? or can it be moved to after
+                # all input files have been processed
+                if exitCode != 0:
+                    sys.exit(exitCode)
+
+        # Under normal operation exit with a non-zero exit code
+        # if there were any violations.
+        if not VERIFY:
+            number_of_violations = len(checker.get_violations())
+            if number_of_violations > 0:
+                exitCode = 1
+
+                if SHOW_SUMMARY:
+                    print("\nMISRA rule violations found: %d\n" % (number_of_violations))
+
         sys.exit(exitCode)
