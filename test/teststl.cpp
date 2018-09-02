@@ -56,6 +56,7 @@ private:
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
         TEST_CASE(iterator14); // #8191
+        TEST_CASE(iterator15); // #8341
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -595,6 +596,14 @@ private:
               "    std::map<int,Foo> x;\n"
               "    std::map<int,Foo>::const_iterator it;\n"
               "    for (it = x.find(0)->second.begin(); it != x.find(0)->second.end(); ++it) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator15() {
+        check("void f(C1* x, std::list<int> a) {\n"
+              "  std::list<int>::iterator pos = a.begin();\n"
+              "  for(pos = x[0]->plist.begin(); pos != x[0]->plist.end(); ++pos) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
