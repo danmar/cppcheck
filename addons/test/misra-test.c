@@ -3,6 +3,7 @@
 
 #include "path\file.h" // 20.2
 #include /*abc*/ "file.h" // 20.3
+#include<file.h> // no warning
 #include <setjmp.h> // 21.4
 #include <signal.h> // 21.5
 #include <stdio.h> //21.6

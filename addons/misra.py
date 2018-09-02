@@ -1496,10 +1496,9 @@ def misra_20_5(data):
 def misra_20_13(data):
     for directive in data.directives:
         dir = directive.str
-        if dir.find(' ') > 0:
-            dir = dir[:dir.find(' ')]
-        if dir.find('(') > 0:
-            dir = dir[:dir.find('(')]
+        for sep in ' (<':
+            if dir.find(sep) > 0:
+                dir = dir[:dir.find(sep)]
         if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include',
                        '#pragma', '#undef', '#warning']:
             reportError(directive, 20, 13)
