@@ -3372,6 +3372,13 @@ private:
                "}";
         ASSERT(tokenValues(code, "x . front").empty());
 
+        code = "void f() {\n" // #8689
+               "  std::list<int> x;\n"
+               "  f<ns::a>(x);\n"
+               "  x.front();\n" // <- unknown container size
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
+
         code = "void f(std::vector<int> ints) {\n" // #8697
                "  if (ints.empty())\n"
                "    abort() << 123;\n"

@@ -3463,7 +3463,14 @@ static bool isContainerSizeChangedByFunction(const Token *tok)
         parent = parent->astParent();
     while (parent && parent->str() == ",")
         parent = parent->astParent();
-    return parent && Token::Match(parent->previous(), "%name% (");
+    if (!parent)
+        return false;
+    if (Token::Match(parent->previous(), "%name% ("))
+        return true;
+    // some unsimplified template function, assume it modifies the container.
+    if (Token::simpleMatch(parent->previous(), ">") && parent->linkAt(-1))
+        return true;
+    return false;
 }
 
 static void valueFlowContainerReverse(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
