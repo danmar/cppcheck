@@ -1214,6 +1214,8 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "%oror%|&&"))
                 continue;
+            if (Token::Match(tok, "%comp%") && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true))
+                continue;
 
             const bool constIfWhileExpression =
                 tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") &&
