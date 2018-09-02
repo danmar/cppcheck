@@ -16,6 +16,15 @@ def strDateTime():
     t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
     return d + ' ' + t
 
+def overviewReport():
+    html = '<html><head><title>daca@home</title></head><body>\n'
+    html += '<h1>daca@home</h1>\n'
+    html += '<a href="latest.html">Latest results</a><br>\n'
+    html += '<a href="diff">Diff report (1.84 / head)</a><br>\n'
+    html += '<a href="crash">Crash report</a><br>\n'
+    html += '</body></html>'
+    return html
+
 def fmt(a,b,c,d,e):
     ret = a + ' '
     while len(ret)<10:
@@ -222,12 +231,15 @@ class HttpClientThread(Thread):
         try:
             cmd = self.cmd
             print('[' + strDateTime() + '] ' + cmd)
-            res = re.match(r'GET /([a-zA-Z0-9_\-\.]+) HTTP', cmd)
+            res = re.match(r'GET /([a-zA-Z0-9_\-\.]*) HTTP', cmd)
             if res is None:
                 self.connection.close()
                 return
             url = res.group(1)
-            if url == 'latest.html':
+            if url == '':
+                html = overviewReport()
+                httpGetResponse(self.connection, html, 'text/html')
+            elif url == 'latest.html':
                 html = latestReport(self.latestResults)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'crash':
@@ -255,6 +267,7 @@ class HttpClientThread(Thread):
             self.connection.close()
 
 def server(server_address_port, packages, packageIndex, resultPath):
+    socket.setdefaulttimeout(30)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_address = ('', server_address_port)
@@ -359,6 +372,8 @@ if __name__ == "__main__":
     if '--test' in sys.argv[1:]:
         server_address_port = 8001
 
-    server(server_address_port, packages, packageIndex, resultPath)
-
+    try:
+        server(server_address_port, packages, packageIndex, resultPath)
+    except socket.timeout:
+        print('Timeout!')
 
