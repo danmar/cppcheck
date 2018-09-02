@@ -843,7 +843,7 @@ private:
                                 "2: Containter<int> ( ) ;\n"
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"
-                                "5: Containter<int> :: Containter ( ) : mElements@2 ( nullptr ) { }\n";
+                                "5: Containter<int> :: Containter<int> ( ) : mElements@2 ( nullptr ) { }\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
         }
     }

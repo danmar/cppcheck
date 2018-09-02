@@ -104,6 +104,7 @@ private:
         TEST_CASE(template64);  // #8683
         TEST_CASE(template65);  // #8321
         TEST_CASE(template66);  // #8725
+        TEST_CASE(template67);  // #8122
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -210,12 +211,16 @@ private:
                             "template <class T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const char expected[] = "template < class T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
-                                "Fred<float> fred ; "
+        const char expected[] = "Fred<float> fred ; "
                                 "class Fred<float> { } ; "
-                                "Fred<float> :: Fred ( ) { }";
+                                "Fred<float> :: Fred<float> ( ) { }";
 
-        ASSERT_EQUALS(expected, tok(code));
+        const char actual[] = "template < class T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
+                              "Fred<float> fred ; "
+                              "class Fred<float> { } ; "
+                              "Fred<float> :: Fred<float> ( ) { }";
+
+        TODO_ASSERT_EQUALS(expected, actual, tok(code));
     }
 
     void template6() {
@@ -1209,6 +1214,56 @@ private:
                             "} ; "
                             "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
         TODO_ASSERT_EQUALS(exp, curr, tok(code));
+    }
+
+    void template67() { // ticket #8122
+        const char code[] = "template <class T> struct Containter {\n"
+                            "  Containter();\n"
+                            "  Containter(const Containter &);\n"
+                            "  Containter & operator = (const Containter &);\n"
+                            "  ~Containter();\n"
+                            "  T* mElements;\n"
+                            "  const Containter * c;\n"
+                            "};\n"
+                            "template <class T> Containter<T>::Containter() : mElements(nullptr), c(nullptr) {}\n"
+                            "template <class T> Containter<T>::Containter(const Containter & x) { nElements = x.nElements; c = x.c; }\n"
+                            "template <class T> Containter<T> & Containter<T>::operator = (const Containter & x) { mElements = x.mElements; c = x.c; return *this; }\n"
+                            "template <class T> Containter<T>::~Containter() {}\n"
+                            "Containter<int> intContainer;";
+
+        const char expected[] = "Containter<int> intContainer ; "
+                                "struct Containter<int> { "
+                                "Containter<int> ( ) ; "
+                                "Containter<int> ( const Containter<int> & ) ; "
+                                "Containter<int> & operator= ( const Containter<int> & ) ; "
+                                "~ Containter<int> ( ) ; "
+                                "int * mElements ; "
+                                "const Containter<int> * c ; "
+                                "} ; "
+                                "Containter<int> :: Containter<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
+                                "Containter<int> :: Containter<int> ( const Containter<int> & ) { nElements = x . nElements ; c = x . c ; } "
+                                "Containter<int> & Containter<int> :: operator= ( const Containter<int> & x) { mElements = x . mElements ; c = x . c ; return * this ; }\n"
+                                "Containter<int> :: ~ Containter<int> ( ) { }";
+
+        const char actual[] = "template < class T > Containter < T > :: Containter ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
+                              "template < class T > Containter < T > :: Containter ( const Containter & x ) { nElements = x . nElements ; c = x . c ; } "
+                              "template < class T > Containter < T > & Containter < T > :: operator= ( const Containter & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
+                              "template < class T > Containter < T > :: ~ Containter ( ) { } "
+                              "Containter<int> intContainer ; "
+                              "struct Containter<int> { "
+                              "Containter<int> ( ) ; "
+                              "Containter<int> ( const Containter<int> & ) ; "
+                              "Containter<int> & operator= ( const Containter<int> & ) ; "
+                              "~ Containter<int> ( ) ; "
+                              "int * mElements ; "
+                              "const Containter<int> * c ; "
+                              "} ; "
+                              "Containter<int> :: Containter<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
+                              "Containter<int> :: Containter<int> ( const Containter<int> & x ) { nElements = x . nElements ; c = x . c ; } "
+                              "Containter<int> & Containter<int> :: operator= ( const Containter<int> & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
+                              "Containter<int> :: ~ Containter<int> ( ) { }";
+
+        TODO_ASSERT_EQUALS(expected, actual, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

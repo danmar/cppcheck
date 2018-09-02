@@ -942,11 +942,11 @@ static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos
     if (!templateParmEnd)
         return false;
 
-    if (Token::Match(templateParmEnd->next(), ":: %type% (")) {
+    if (Token::Match(templateParmEnd->next(), ":: ~| %type% (")) {
         // We have a match, and currPos points at the template list opening '<'. Move it to the closing '>'
         for (const Token *tok2 = tok->tokAt(currPos) ; tok2 != templateParmEnd ; tok2 = tok2->next())
             ++currPos;
-        namepos = currPos + 2;
+        namepos = currPos + (templateParmEnd->strAt(2) == "~" ? 3 : 2);
         return true;
     }
     return false;
@@ -1053,7 +1053,12 @@ void TemplateSimplifier::expandTemplate(
                 tok5 = tok5->next();
             // copy return type
             while (tok5 && tok5 != tok3) {
-                mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
+                // replace name if found
+                if (Token::Match(tok5, "%name% <") && tok5->str() == fullName) {
+                    mTokenList.addtoken(newName, tok5->linenr(), tok5->fileIndex());
+                    tok5 = tok5->next()->findClosingBracket();
+                } else
+                    mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
                 tok5 = tok5->next();
             }
             mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
@@ -1100,9 +1105,7 @@ void TemplateSimplifier::expandTemplate(
 
             // replace name..
             if (tok3->str() == lastName) {
-                if (Token::Match(tok3->tokAt(-2), "> :: %name% ( )")) {
-                    ; // Ticket #7942: Replacing for out-of-line constructors generates invalid syntax
-                } else if (!Token::simpleMatch(tok3->next(), "<")) {
+                if (!Token::simpleMatch(tok3->next(), "<")) {
                     mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
                     continue;
                 } else if (tok3 == templateDeclarationNameToken) {
