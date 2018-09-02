@@ -304,6 +304,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
     sock.listen(1)
 
     latestResults = []
+    with open('latest.txt', 'rt') as f:
+        latestResults = f.read().strip().split(' ')
 
     while True:
         # wait for a connection
@@ -362,13 +364,14 @@ def server(server_address_port, packages, packageIndex, resultPath):
             if res and url in packages:
                 print('results added for package ' + res.group(1))
                 filename = resultPath + '/' + res.group(1)
-                f = open(filename, 'wt')
-                f.write(strDateTime() + '\n' + data)
-                f.close()
+                with open(filename, 'wt') as f:
+                    f.write(strDateTime() + '\n' + data)
                 # track latest added results..
                 if len(latestResults) >= 20:
                     latestResults = latestResults[1:]
                 latestResults.append(filename)
+                with open('latest.txt', 'wt') as f:
+                    f.write(' '.join(latestResults))
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
