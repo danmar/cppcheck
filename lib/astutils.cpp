@@ -171,6 +171,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     // Skip array access
     if (Token::simpleMatch(varTok, "["))
         return tok;
+    if (var->isVolatile())
+        return tok;
     if (!var->isLocal() && !var->isConst())
         return tok;
     if (var->isStatic() && !var->isConst())
