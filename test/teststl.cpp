@@ -3401,6 +3401,14 @@ private:
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo() {\n"
+              "    for(int x:v) {\n"
+              "        x = 1;\n"
+              "        f();\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
         // There should be probably be a message for unconditional break
         check("void foo() {\n"
               "    for(int x:v) {\n"
