@@ -89,7 +89,7 @@ public:
         checkStl.redundantCondition();
         checkStl.missingComparison();
         checkStl.readingEmptyStlContainer();
-        checkStl.loopAlgo();
+        checkStl.useStlAlgorithm();
     }
 
     /** Accessing container out of bounds using ValueFlow */
@@ -187,7 +187,7 @@ public:
     void readingEmptyStlContainer2();
 
     /** @brief Look for loops that can replaced with std algorithms */
-    void loopAlgo();
+    void useStlAlgorithm();
 private:
     void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
 

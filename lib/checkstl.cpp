@@ -1876,17 +1876,25 @@ void CheckStl::useStlAlgorithmError(const Token* tok, const std::string &algoNam
                 "Consider using " + algoName + " algorithm instead of a raw loop.", CWE398, false);
 }
 
-static const Token* singleAssignInScope(const Token* start, unsigned int varid, bool& input)
+static const Token* singleStatement(const Token* start)
 {
     if(start->str() != "{")
         return nullptr;
     const Token * endToken = start->link();
-    if(!Token::Match(start->next(), "%var% %assign%"))
-        return nullptr;
     const Token * endStatement = Token::findsimplematch(start->next(), ";");
     if(!Token::simpleMatch(endStatement, "; }"))
         return nullptr;
     if(endStatement->next() != endToken)
+        return nullptr;
+    return endStatement;        
+}
+
+static const Token* singleAssignInScope(const Token* start, unsigned int varid, bool& input)
+{
+    const Token * endStatement = singleStatement(start);
+    if(!endStatement)
+        return nullptr;
+    if(!Token::Match(start->next(), "%var% %assign%"))
         return nullptr;
     const Token * assignTok = start->tokAt(2);
     if(isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), false, nullptr, true))
@@ -1923,19 +1931,13 @@ static const Token* singleIncrementInScope(const Token* start, unsigned int vari
 {
     if(start->str() != "{")
         return nullptr;
-    const Token * endToken = start->link();
     const Token * varTok = nullptr;
-    if(Token::Match(start->next(), "++ %var% ;"))
+    if(Token::Match(start->next(), "++ %var% ; }"))
         varTok = start->tokAt(2);
-    else if(Token::Match(start->next(), "%var% ++ ;"))
-        varTok = start->tokAt(1);
-    const Token * endStatement = start->tokAt(3);
-    if(endStatement->next() != endToken)
-        return nullptr;
-    
+    else if(Token::Match(start->next(), "%var% ++ ; }"))
+        varTok = start->tokAt(1);    
     if(!varTok)
         return nullptr;
-
     input = varTok->varId() == varid;
     return varTok;      
 }
@@ -1977,7 +1979,7 @@ static bool addByOne(const Token * tok, unsigned int varid)
     return false;
 }
 
-void CheckStl::loopAlgo()
+void CheckStl::useStlAlgorithm()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
@@ -1989,8 +1991,8 @@ void CheckStl::loopAlgo()
             if(!Token::simpleMatch(tok->next()->link(), ") {"))
                 continue;
             const Token * bodyTok = tok->next()->link()->next();
-            const Token * splitTok = Token::findsimplematch(tok->next(), ":", bodyTok);
-            if(!splitTok)
+            const Token *splitTok = tok->next()->astOperand2();
+            if (splitTok->str() != ":")
                 continue;
             const Token * loopVar = splitTok->previous();
             if(!Token::Match(loopVar, "%var%"))
@@ -2012,9 +2014,10 @@ void CheckStl::loopAlgo()
                     else
                         algo = "std::fill or std::generate";
                 } else {
-                    algo = "std::accumulate";
                     if(addByOne(assignTok, assignVarId))
                         algo = "std::distance";
+                    else
+                        algo = "std::accumulate";
                 }
                 useStlAlgorithmError(assignTok, algo);
                 continue;
