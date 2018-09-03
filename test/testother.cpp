@@ -4075,6 +4075,10 @@ private:
               "    if(a == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("volatile const int var = 42;\n"
+              "void f() { if(var == 42) {} }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {
