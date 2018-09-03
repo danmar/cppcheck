@@ -1979,6 +1979,19 @@ static bool addByOne(const Token * tok, unsigned int varid)
     return false;
 }
 
+static bool accumulateBool(const Token * tok, unsigned int varid)
+{
+    if(Token::Match(tok, "=|&=|%or%= %bool% ;") && 
+        tok->tokAt(1)->hasKnownIntValue()) {
+        return true;
+    }
+    if(Token::Match(tok, "= %varid% &|%oror%|%or%|&& %bool% ;", varid) && 
+        tok->tokAt(3)->hasKnownIntValue()) {
+        return true;
+    }
+    return false;
+}
+
 void CheckStl::useStlAlgorithm()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
@@ -2071,9 +2084,12 @@ void CheckStl::useStlAlgorithm()
                         else
                             algo = "std::replace_if";
                     } else {
-                        algo = "std::accumulate";
                         if(addByOne(assignTok, assignVarId))
                             algo = "std::count_if";
+                        else if(accumulateBool(assignTok, assignVarId))
+                            algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
+                        else
+                            algo = "std::accumulate";
                     }
                     useStlAlgorithmError(assignTok, algo);
                     continue;
