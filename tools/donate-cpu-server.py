@@ -108,7 +108,7 @@ def crashReport():
                 out += '      '
             if counts[1] == 'Crash!':
                 out += 'Crash'
-            out = '<a href=/"' + packageName + '">' + packageName + '</a>' + out[out.find(' '):]
+            out = '<a href="' + packageName + '">' + packageName + '</a>' + out[out.find(' '):]
             html += out + '\n'
             break
     html += '</pre>\n'
