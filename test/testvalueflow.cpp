@@ -3307,6 +3307,19 @@ private:
                "}";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
 
+        code = "void f(std::vector<std::string> params) {\n"
+               "  switch(x) {\n"
+               "  case CMD_RESPONSE:\n"
+               "    if(y) { break; }\n"
+               "    params[2];\n" // <- container use
+               "    break;\n"
+               "  case CMD_DELETE:\n"
+               "    if (params.size() < 2) { }\n" // <- condition
+               "    break;\n"
+               "  }\n"
+               "}";
+        ASSERT(tokenValues(code, "params [ 2 ]").empty());
+
         // valueFlowContainerForward
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) {}\n"
