@@ -4256,6 +4256,14 @@ private:
 
         check("bool f(unsigned i){ return (x > 0) && (x & (x-1)) == 0; }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void A::f(bool a, bool c)\n"
+              "{\n"
+              "    const bool b = a;\n"
+              "    if(c) { a = false; } \n"
+              "    if(b && !a) { }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateVarExpression() {
