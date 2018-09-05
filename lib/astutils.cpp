@@ -212,6 +212,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
                 return tok;
             if (!var2->isConst() && isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
                 return tok;
+        // Recognized as a variable but the declaration is unknown
+        } else if(tok2->varId() > 0) {
+            return tok;
         }
     }
     return varTok;
