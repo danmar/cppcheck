@@ -1876,6 +1876,22 @@ void CheckStl::useStlAlgorithmError(const Token* tok, const std::string &algoNam
                 "Consider using " + algoName + " algorithm instead of a raw loop.", CWE398, false);
 }
 
+static bool isEarlyExit(const Token* start)
+{
+    if(start->str() != "{")
+        return false;
+    const Token * endToken = start->link();
+    const Token * tok = Token::findmatch(start, "return|throw|break", endToken);
+    if(!tok)
+        return false;
+    const Token * endStatement = Token::findmatch(tok, "; }", endToken);
+    if(!endStatement)
+        return false;
+    if(endStatement->next() != endToken)
+        return false;
+    return true;
+}
+
 static const Token* singleStatement(const Token* start)
 {
     if(start->str() != "{")
@@ -2139,9 +2155,15 @@ void CheckStl::useStlAlgorithm()
                     continue;
                 }
 
-                // Check returning bool
-                if(Token::Match(condBodyTok, "{ return %bool% ; }")) {
-                    useStlAlgorithmError(beginCondTok, "std::any_of");
+                // Check early return
+                if(isEarlyExit(condBodyTok)) {
+                    const Token * loopVar2 = Token::findmatch(condBodyTok, "%varid%", condBodyTok->link(), loopVar->varId());
+                    std::string algo;
+                    if(loopVar2)
+                        algo = "std::find_if";
+                    else
+                        algo = "std::any_of";
+                    useStlAlgorithmError(condBodyTok, algo);
                     continue;
                 }
             }

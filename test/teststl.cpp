@@ -3659,6 +3659,41 @@ private:
 
         check("bool pred(int x);\n"
               "bool foo() {\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            break; \n"
+              "        }\n"
+              "    }\n"
+              "    return true;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+              "void f();\n"
+              "void foo() {\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            f(); \n"
+              "            break; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+              "void f(int x);\n"
+              "void foo() {\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            f(x); \n"
+              "            break; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool pred(int x);\n"
+              "bool foo() {\n"
               "    bool b = false;\n"
               "    for(int x:v) {\n"
               "        if (pred(x)) {\n"
@@ -3723,6 +3758,18 @@ private:
               "        x++;\n"
               "        if (pred(x)) {\n"
               "            x = 1; \n"
+              "        }\n"
+              "    }\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool pred(int x);\n"
+              "void f();\n"
+              "void foo() {\n"
+              "    for(int x:v) {\n"
+              "        if (pred(x)) {\n"
+              "            if(x) { return; }\n"
+              "            break; \n"
               "        }\n"
               "    }\n"
               "}\n",true);
