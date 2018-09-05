@@ -1979,7 +1979,7 @@ static bool addByOne(const Token * tok, unsigned int varid)
     return false;
 }
 
-static bool accumulateBool(const Token * tok, unsigned int varid)
+static bool accumulateBoolLiteral(const Token * tok, unsigned int varid)
 {
     // TODO: Missing %oreq%
     if(Token::Match(tok, "=|&= %bool% ;") && 
@@ -1988,6 +1988,18 @@ static bool accumulateBool(const Token * tok, unsigned int varid)
     }
     if(Token::Match(tok, "= %varid% %oror%|%or%|&&|& %bool% ;", varid) && 
         tok->tokAt(3)->hasKnownIntValue()) {
+        return true;
+    }
+    return false;
+}
+
+static bool accumulateBool(const Token * tok, unsigned int varid)
+{
+    // TODO: Missing %oreq%
+    if(Token::Match(tok, "&=")) {
+        return true;
+    }
+    if(Token::Match(tok, "= %varid% %oror%|%or%|&&|&", varid)) {
         return true;
     }
     return false;
@@ -2030,6 +2042,8 @@ void CheckStl::useStlAlgorithm()
                 } else {
                     if(addByOne(assignTok, assignVarId))
                         algo = "std::distance";
+                    else if(accumulateBool(assignTok, assignVarId))
+                        algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
                     else
                         algo = "std::accumulate";
                 }
@@ -2087,7 +2101,7 @@ void CheckStl::useStlAlgorithm()
                     } else {
                         if(addByOne(assignTok, assignVarId))
                             algo = "std::count_if";
-                        else if(accumulateBool(assignTok, assignVarId))
+                        else if(accumulateBoolLiteral(assignTok, assignVarId))
                             algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
                         else
                             algo = "std::accumulate";

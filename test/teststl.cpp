@@ -3455,6 +3455,38 @@ private:
               "}\n",true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout.str());
 
+        check("bool f(int);\n"
+              "void foo() {\n"
+              "    bool b = false;\n"
+              "    for(int x:v)\n"
+              "        b &= f(x);\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool f(int);\n"
+              "void foo() {\n"
+              "    bool b = false;\n"
+              "    for(int x:v)\n"
+              "        b |= f(x);\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool f(int);\n"
+              "void foo() {\n"
+              "    bool b = false;\n"
+              "    for(int x:v)\n"
+              "        b = b && f(x);\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool f(int);\n"
+              "void foo() {\n"
+              "    bool b = false;\n"
+              "    for(int x:v)\n"
+              "        b = b || f(x);\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int& x:v)\n"
