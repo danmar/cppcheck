@@ -65,9 +65,8 @@ static void addFilesToList(const std::string& FileList, std::vector<std::string>
     }
 }
 
-static void addIncludePathsToList(const std::string& FileList, std::list<std::string>* PathNames)
+static bool addIncludePathsToList(const std::string& FileList, std::list<std::string>* PathNames)
 {
-    // To keep things initially simple, if the file can't be opened, just be silent and move on.
     std::ifstream Files(FileList);
     if (Files) {
         std::string PathName;
@@ -83,14 +82,18 @@ static void addIncludePathsToList(const std::string& FileList, std::list<std::st
                 PathNames->push_back(PathName);
             }
         }
+        return true;
     }
+    return false;
 }
 
-static void addPathsToSet(const std::string& FileName, std::set<std::string>* set)
+static bool addPathsToSet(const std::string& FileName, std::set<std::string>* set)
 {
     std::list<std::string> templist;
-    addIncludePathsToList(FileName, &templist);
+    if (!addIncludePathsToList(FileName, &templist))
+        return false;
     set->insert(templist.begin(), templist.end());
+    return true;
 }
 
 CmdLineParser::CmdLineParser(Settings *settings)
@@ -446,14 +449,22 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->userIncludes.push_back(path);
             } else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
                 // open this file and read every input file (1 file name per line)
-                addIncludePathsToList(16 + argv[i], &mSettings->includePaths);
+                const std::string includesFile(16 + argv[i]);
+                if (!addIncludePathsToList(includesFile, &mSettings->includePaths)) {
+                    printMessage("Cppcheck: unable to open includes file at '" + includesFile + "'");
+                    return false;
+                }
             } else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
                 std::string path = argv[i] + 17;
                 path = Path::fromNativeSeparators(path);
                 mSettings->configExcludePaths.insert(path);
             } else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
                 // open this file and read every input file (1 file name per line)
-                addPathsToSet(23 + argv[i], &mSettings->configExcludePaths);
+                const std::string cfgExcludesFile(23 + argv[i]);
+                if (!addPathsToSet(cfgExcludesFile, &mSettings->configExcludePaths)) {
+                    printMessage("Cppcheck: unable to open config excludes file at '" + cfgExcludesFile + "'");
+                    return false;
+                }
             }
 
             // file list specified

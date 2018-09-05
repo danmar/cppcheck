@@ -3478,6 +3478,8 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
     while (nullptr != (tok = tok->previous())) {
         if (Token::Match(tok, "[{}]"))
             break;
+        if (Token::Match(tok, "return|break|continue"))
+            break;
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))

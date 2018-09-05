@@ -74,6 +74,7 @@ private:
         TEST_CASE(includesnospace);
         TEST_CASE(includes2);
         TEST_CASE(includesFile);
+        TEST_CASE(configExcludesFile);
         TEST_CASE(enabledAll);
         TEST_CASE(enabledStyle);
         TEST_CASE(enabledPerformance);
@@ -450,11 +451,17 @@ private:
     }
 
     void includesFile() {
-        // TODO: Fails since cannot open the file
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--includes-file=inclpaths.txt", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--includes-file=fileThatDoesNotExist.txt", "file.cpp"};
         settings.includePaths.clear();
-        ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
+    }
+
+    void configExcludesFile() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--config-excludes-file=fileThatDoesNotExist.txt", "file.cpp"};
+        settings.includePaths.clear();
+        ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void enabledAll() {

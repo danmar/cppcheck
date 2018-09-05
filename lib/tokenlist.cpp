@@ -391,6 +391,9 @@ static bool iscast(const Token *tok)
     if (!Token::Match(tok, "( ::| %name%"))
         return false;
 
+    if (Token::simpleMatch(tok->link(), ") ( )"))
+        return false;
+
     if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return")
         return false;
 
