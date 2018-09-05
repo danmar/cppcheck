@@ -165,7 +165,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
     if (Token::Match(tok->astTop(), "%assign%") || Token::Match(tok->next(), "%assign%"))
         return tok;
     // Skip references
-    if (Token::Match(tok->astTop(), "& %var%;") && Token::Match(tok->astTop()->astOperand1(), "%type%"))
+    if (Token::Match(tok->astTop(), "& %var% ;") && Token::Match(tok->astTop()->astOperand1(), "%type%"))
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableInitExpression(var);
