@@ -1981,11 +1981,12 @@ static bool addByOne(const Token * tok, unsigned int varid)
 
 static bool accumulateBool(const Token * tok, unsigned int varid)
 {
-    if(Token::Match(tok, "=|&=|%or%= %bool% ;") && 
+    // TODO: Missing %oreq%
+    if(Token::Match(tok, "=|&= %bool% ;") && 
         tok->tokAt(1)->hasKnownIntValue()) {
         return true;
     }
-    if(Token::Match(tok, "= %varid% &|%oror%|%or%|&& %bool% ;", varid) && 
+    if(Token::Match(tok, "= %varid% %oror%|%or%|&&|& %bool% ;", varid) && 
         tok->tokAt(3)->hasKnownIntValue()) {
         return true;
     }
