@@ -2005,7 +2005,7 @@ void CheckStl::useStlAlgorithm()
                 continue;
             const Token * bodyTok = tok->next()->link()->next();
             const Token *splitTok = tok->next()->astOperand2();
-            if (splitTok->str() != ":")
+            if (!Token::simpleMatch(splitTok, ":"))
                 continue;
             const Token * loopVar = splitTok->previous();
             if(!Token::Match(loopVar, "%var%"))
