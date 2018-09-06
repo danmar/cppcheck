@@ -126,7 +126,8 @@ def removeTree(folderName):
 
 
 def wget(url, destfile):
-    os.remove(destfile)
+    if os.path.exists(destfile):
+        os.remove(destfile)
     subprocess.call(
             ['wget', '--tries=10', '--timeout=300', '-O', destfile, url])
     if os.path.isfile(destfile):
