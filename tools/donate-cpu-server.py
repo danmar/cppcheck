@@ -21,7 +21,6 @@ def overviewReport():
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash">Crash report</a><br>\n'
     html += '<a href="diff">Diff report</a><br>\n'
-    html += '<a href="diff-today">Diff report - today</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time">Time report</a><br>\n'
     html += '</body></html>'
@@ -117,57 +116,27 @@ def crashReport():
     return html
 
 
-def diffReport():
-    html = '<html><head><title>Diff report</title></head><body>\n'
-    html += '<h1>Diff report</h1>\n'
-    html += '<pre>\n'
-
-    out = {}
-
-    # grep '^1.84 .*\]$' donated-results/* | sed 's/.*\[\(.*\)\]/\1/' | sort | uniq -c
-    p = subprocess.Popen(['./getdiff.sh', '1.84'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
-    stdout = comm[0]
-    for line in stdout.split('\n'):
-        a = line.strip().split()
-        if len(a) == 2:
-            count     = a[0]
-            messageId = a[1]
-            out[messageId] = [count, '0']
-
-    # grep '^head .*\]$' donated-results/* | sed 's/.*\[\(.*\)\]/\1/' | sort | uniq -c
-    p = subprocess.Popen(['./getdiff.sh', 'head'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
-    stdout = comm[0]
-    for line in stdout.split('\n'):
-        a = line.strip().split()
-        if len(a) == 2:
-            count     = a[0]
-            messageId = a[1]
-            if messageId in out:
-                out[messageId][1] = count
-            else:
-                out[messageId] = ['0',count]
-
+def diffReportFromDict(out, today):
+    html = '<pre>\n'
     html += '<b>MessageID                           1.84    Head</b>\n'
     sum0 = 0
     sum1 = 0
     for messageId in sorted(out.keys()):
         line = messageId + ' '
         counts = out[messageId]
-        sum0 += int(counts[0])
-        sum1 += int(counts[1])
+        sum0 += counts[0]
+        sum1 += counts[1]
         if counts[0] > 0:
-            c = counts[0]
+            c = str(counts[0])
             while len(line) < 40 - len(c):
                 line += ' '
             line += c + ' '
         if counts[1] > 0:
-            c = counts[1]
+            c = str(counts[1])
             while len(line) < 48 - len(c):
                 line += ' '
             line += c
-        line = '<a href="diff-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
+        line = '<a href="diff' + today + '-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
         html += line + '\n'
 
     # Sum
@@ -180,31 +149,29 @@ def diffReport():
         line += ' '
     line += str(sum1)
     html += line + '\n'
+    html += '</pre>\n'
 
     return html
 
 
-def diffReportToday(resultsPath):
-    html = '<html><head><title>Diff report - today</title></head><body>\n'
-    html += '<h1>Diff report - today</h1>\n'
-    html += '<pre>\n'
-
+def diffReport(resultsPath):
     out = {}
-
+    outToday = {}
     today = strDateTime()[:10]
 
-    # grep '^1.84 .*\]$' donated-results/* | sed 's/.*\[\(.*\)\]/\1/' | sort | uniq -c
     for filename in sorted(glob.glob(resultsPath + '/*')):
         if not os.path.isfile(filename):
             continue
+        uploadedToday = False
         firstLine = True
-        for line in filename:
+        for line in open(filename, 'rt'):
             if firstLine:
-                if not line.startswith(today):
-                    break
+                if line.startswith(today):
+                    uploadedToday = True
                 firstLine = False
                 continue
-            if not line.endswith(']\n'):
+            line = line.strip()
+            if not line.endswith(']'):
                 continue
             index = None
             if line.startswith('1.84 '):
@@ -213,43 +180,22 @@ def diffReportToday(resultsPath):
                 index = 1
             else:
                 continue
-            messageId = line[line.rfind('[')+1:len(line)-2]
+            messageId = line[line.rfind('[')+1:len(line)-1]
 
             if not messageId in out:
                 out[messageId] = [0,0]
             out[messageId][index] += 1
+            if uploadedToday:
+                if not messageId in outToday:
+                    outToday[messageId] = [0,0]
+                outToday[messageId][index] += 1
 
-    html += '<b>MessageID                           1.84    Head</b>\n'
-    sum0 = 0
-    sum1 = 0
-    for messageId in sorted(out.keys()):
-        line = messageId + ' '
-        counts = out[messageId]
-        sum0 += int(counts[0])
-        sum1 += int(counts[1])
-        if counts[0] > 0:
-            c = counts[0]
-            while len(line) < 40 - len(c):
-                line += ' '
-            line += c + ' '
-        if counts[1] > 0:
-            c = counts[1]
-            while len(line) < 48 - len(c):
-                line += ' '
-            line += c
-        line = '<a href="diff-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
-        html += line + '\n'
-
-    # Sum
-    html += '================================================\n'
-    line = ''
-    while len(line) < 40 - len(str(sum0)):
-        line += ' '
-    line += str(sum0) + ' '
-    while len(line) < 48 - len(str(sum1)):
-        line += ' '
-    line += str(sum1)
-    html += line + '\n'
+    html = '<html><head><title>Diff report</title></head><body>\n'
+    html += '<h1>Diff report</h1>\n'
+    html += '<h2>Uploaded today</h2>'
+    html += diffReportFromDict(outToday, 'today')
+    html += '<h2>All</h2>'
+    html += diffReportFromDict(out, '')
 
     return html
 
@@ -273,6 +219,34 @@ def diffMessageIdReport(resultPath, messageId):
                     url = None
                 text += line
     return text
+
+
+def diffMessageIdTodayReport(resultPath, messageId):
+    text = messageId + '\n'
+    e = '[' + messageId + ']\n'
+    today = strDateTime()[:10]
+    for filename in sorted(glob.glob(resultPath + '/*')):
+        url = None
+        diff = False
+        firstLine = True
+        for line in open(filename,'rt'):
+            if firstLine:
+                firstLine = False
+                if not line.startswith(today):
+                    break
+            if line.startswith('ftp://'):
+                url = line
+            elif line == 'diff:\n':
+                diff = True
+            elif not diff:
+                continue
+            elif line.endswith(e):
+                if url:
+                    text += url
+                    url = None
+                text += line
+    return text
+
 
 def timeReport(resultPath):
     text = 'Time report\n\n'
@@ -343,11 +317,12 @@ class HttpClientThread(Thread):
                 html = crashReport()
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff':
-                html = diffReport()
+                html = diffReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'diff-today':
-                html = diffReportToday(self.resultPath)
-                httpGetResponse(self.connection, html, 'text/html')
+            elif url.startswith('difftoday-'):
+                messageId = url[10:]
+                text = diffMessageIdTodayReport(self.resultPath, messageId)
+                httpGetResponse(self.connection, text, 'text/plain')
             elif url.startswith('diff-'):
                 messageId = url[5:]
                 text = diffMessageIdReport(self.resultPath, messageId)
@@ -454,7 +429,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
 if __name__ == "__main__":
     workPath = os.path.expanduser('~/daca@home')
     os.chdir(workPath)
-    resultPath = 'donated-results'
+    resultPath = workPath + '/donated-results'
 
     f = open('packages.txt', 'rt')
     packages = f.readlines()
