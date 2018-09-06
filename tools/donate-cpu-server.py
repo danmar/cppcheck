@@ -21,6 +21,7 @@ def overviewReport():
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash">Crash report</a><br>\n'
     html += '<a href="diff">Diff report</a><br>\n'
+    html += '<a href="diff-today">Diff report - today</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time">Time report</a><br>\n'
     html += '</body></html>'
@@ -182,6 +183,77 @@ def diffReport():
 
     return html
 
+
+def diffReportToday(resultsPath):
+    html = '<html><head><title>Diff report - today</title></head><body>\n'
+    html += '<h1>Diff report - today</h1>\n'
+    html += '<pre>\n'
+
+    out = {}
+
+    today = strDateTime()[:10]
+
+    # grep '^1.84 .*\]$' donated-results/* | sed 's/.*\[\(.*\)\]/\1/' | sort | uniq -c
+    for filename in sorted(glob.glob(resultsPath + '/*')):
+        if not os.path.isfile(filename):
+            continue
+        firstLine = True
+        for line in filename:
+            if firstLine:
+                if not line.startswith(today):
+                    break
+                firstLine = False
+                continue
+            if not line.endswith(']\n'):
+                continue
+            index = None
+            if line.startswith('1.84 '):
+                index = 0
+            elif line.startswith('head '):
+                index = 1
+            else:
+                continue
+            messageId = line[line.rfind('[')+1:len(line)-2]
+
+            if not messageId in out:
+                out[messageId] = [0,0]
+            out[messageId][index] += 1
+
+    html += '<b>MessageID                           1.84    Head</b>\n'
+    sum0 = 0
+    sum1 = 0
+    for messageId in sorted(out.keys()):
+        line = messageId + ' '
+        counts = out[messageId]
+        sum0 += int(counts[0])
+        sum1 += int(counts[1])
+        if counts[0] > 0:
+            c = counts[0]
+            while len(line) < 40 - len(c):
+                line += ' '
+            line += c + ' '
+        if counts[1] > 0:
+            c = counts[1]
+            while len(line) < 48 - len(c):
+                line += ' '
+            line += c
+        line = '<a href="diff-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
+        html += line + '\n'
+
+    # Sum
+    html += '================================================\n'
+    line = ''
+    while len(line) < 40 - len(str(sum0)):
+        line += ' '
+    line += str(sum0) + ' '
+    while len(line) < 48 - len(str(sum1)):
+        line += ' '
+    line += str(sum1)
+    html += line + '\n'
+
+    return html
+
+
 def diffMessageIdReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
@@ -272,6 +344,9 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff':
                 html = diffReport()
+                httpGetResponse(self.connection, html, 'text/html')
+            elif url == 'diff-today':
+                html = diffReportToday(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url.startswith('diff-'):
                 messageId = url[5:]
