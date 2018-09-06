@@ -2523,28 +2523,25 @@ private:
         check("void f() {\n"
               "  int val = 0;\n"
               "  if (val < 0) continue;\n"
-              "  if ((val > 0)) {}\n"
+              "  if (val > 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
-                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val > 0' is always false.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int val = 0;\n"
               "  if (val < 0) {\n"
-              "    if ((val > 0)) {}\n"
+              "    if (val > 0) {}\n"
               "  }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
-                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val > 0' is always false.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int val = 0;\n"
               "  if (val < 0) {\n"
-              "    if ((val < 0)) {}\n"
+              "    if (val < 0) {}\n"
               "  }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
-                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val < 0' is always false.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {

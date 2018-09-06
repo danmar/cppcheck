@@ -141,6 +141,7 @@ private:
         TEST_CASE(duplicateVarExpressionUnique);
         TEST_CASE(duplicateVarExpressionAssign);
         TEST_CASE(duplicateVarExpressionCrash);
+        TEST_CASE(multiConditionSameExpression);
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -4594,6 +4595,34 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    void multiConditionSameExpression() {
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) continue;\n"
+              "  if ((val > 0)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val > 0' is always false.\n", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) {\n"
+              "    if ((val > 0)) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val > 0' is always false.\n", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) {\n"
+              "    if ((val < 0)) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val < 0' is always false.\n", errout.str());
     }
 
     void checkSignOfUnsignedVariable() {
