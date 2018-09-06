@@ -705,6 +705,12 @@ private:
               "    if(f().begin()+1 == f().end()+1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  if (a.begin().x == b.begin().x) {}\n"
+              "  if (begin(a).x == begin(b).x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iteratorSameExpression() {
