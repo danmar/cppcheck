@@ -2,10 +2,10 @@
 #
 # A script a user can run to donate CPU to cppcheck project
 #
-# Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-folder=path]
+# Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-path=path]
 #  -jN                  Use N threads in compilation/analysis. Default is 1.
 #  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
-#  --work-folder=path   Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
+#  --work-path=path     Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
 #
 # What this script does:
 # 1. Check requirements
@@ -247,10 +247,10 @@ for arg in sys.argv[1:]:
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
-        print('Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-folder=path]')
+        print('Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-path=path]')
         print('  -jN                  Use N threads in compilation/analysis. Default is 1.')
         print('  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.')
-        print('  --work-folder=path   Work folder path. Default path is ' + workpath)
+        print('  --work-path=path     Work folder path. Default path is ' + workpath)
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
