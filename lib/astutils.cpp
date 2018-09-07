@@ -154,7 +154,7 @@ static bool precedes(const Token * tok1, const Token * tok2)
         return false;
     if(!tok2)
         return false;
-    return std::make_pair(tok1->linenr(), tok1->col()) < std::make_pair(tok2->linenr(), tok2->col());
+    return tok1->progressValue() < tok2->progressValue();
 }
 
 /// This takes a token that refers to a variable and it will return the token
@@ -163,6 +163,9 @@ static bool precedes(const Token * tok1, const Token * tok2)
 static const Token * followVariableExpression(const Token * tok, bool cpp, const Token * end = nullptr)
 {
     if (!tok)
+        return tok;
+    // Skip following variables that is across multiple files
+    if(end && end->fileIndex() != tok->fileIndex())
         return tok;
     // Skip array access
     if (Token::Match(tok, "%var% ["))
