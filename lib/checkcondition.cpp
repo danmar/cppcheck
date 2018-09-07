@@ -427,7 +427,11 @@ void CheckCondition::multiCondition()
                 break;
             tok2 = tok2->tokAt(4);
 
-            if (isOverlappingCond(cond1, tok2->astOperand2(), true))
+            if (cond1 && 
+                tok2->astOperand2() && 
+                !cond1->hasKnownValue() && 
+                !tok2->astOperand2()->hasKnownValue() && 
+                isOverlappingCond(cond1, tok2->astOperand2(), true))
                 multiConditionError(tok2, cond1->linenr());
         }
     }

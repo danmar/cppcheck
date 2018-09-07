@@ -2542,6 +2542,15 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int activate = 0;\n"
+              "  int foo = 0;\n"
+              "  if (activate) {}\n"
+              "  else if (foo) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'activate' is always false\n"
+                      "[test.cpp:5]: (style) Condition 'foo' is always false\n", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
