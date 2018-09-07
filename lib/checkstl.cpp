@@ -467,9 +467,9 @@ static const Token * getIteratorExpression(const Token * tok)
         if (iter2)
             return iter2;
     } else if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
-        if (Token::Match(tok->previous(), ". %name% ( )"))
+        if (Token::Match(tok->previous(), ". %name% ( ) !!."))
             return tok->previous()->astOperand1();
-        if (Token::Match(tok, "%name% ( !!)"))
+        if (Token::Match(tok, "%name% ( !!)") && !Token::simpleMatch(tok->linkAt(1), ") ."))
             return tok->next()->astOperand2();
     }
     return nullptr;
