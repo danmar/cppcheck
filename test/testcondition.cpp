@@ -2032,6 +2032,18 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+
+        check("void f() {\n"
+              "    uint32_t value;\n"
+              "    get_value(&value);\n"
+              "    int opt_function_capable = (value >> 28) & 1;\n"
+              "    if (opt_function_capable) {\n"
+              "        value = 0;\n"
+              "        get_value (&value);\n"
+              "        if ((value >> 28) & 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalConditionAfterEarlyExit() {
