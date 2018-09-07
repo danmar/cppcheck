@@ -147,13 +147,25 @@ static bool isInLoopCondition(const Token * tok)
     return Token::Match(tok->astTop()->previous(), "for|while (");
 }
 
+/// If tok2 comes after tok1
+static bool precedes(const Token * tok1, const Token * tok2)
+{
+    if(!tok1)
+        return false;
+    if(!tok2)
+        return false;
+    return tok1->progressValue() < tok2->progressValue();
+}
 
 /// This takes a token that refers to a variable and it will return the token
 /// to the expression that the variable is assigned to. If its not valid to
 /// make such substitution then it will return the original token.
-static const Token * followVariableExpression(const Token * tok, bool cpp)
+static const Token * followVariableExpression(const Token * tok, bool cpp, const Token * end = nullptr)
 {
     if (!tok)
+        return tok;
+    // Skip following variables that is across multiple files
+    if(end && end->fileIndex() != tok->fileIndex())
         return tok;
     // Skip array access
     if (Token::Match(tok, "%var% ["))
@@ -182,8 +194,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp)
         return tok;
     if (var->isArgument())
         return tok;
+    const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
-    const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : tok;
+    const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
     if (!var->isConst() && isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
         return tok;
     // Start at beginning of initialization
@@ -254,12 +267,12 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, errors);
     }
     if (tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
-        const Token * varTok1 = followVariableExpression(tok1, cpp);
+        const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if (varTok1->str() == tok2->str()) {
             followVariableExpressionError(tok1, varTok1, errors);
             return isSameExpression(cpp, macro, varTok1, tok2, library, pure, errors);
         }
-        const Token * varTok2 = followVariableExpression(tok2, cpp);
+        const Token * varTok2 = followVariableExpression(tok2, cpp, tok1);
         if (tok1->str() == varTok2->str()) {
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, tok1, varTok2, library, pure, errors);
