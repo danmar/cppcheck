@@ -790,7 +790,7 @@ private:
     }
 
     void garbageCode95() { // #6804
-        ASSERT_THROW(checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }"), InternalError);    // do not crash
+        ASSERT_THROW(checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }"), InternalError); // do not crash
     }
 
     void garbageCode96() { // #6807
@@ -1434,9 +1434,10 @@ private:
 
     void garbageCode184() { // #7699
         ASSERT_THROW(checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
-                  "    NSArray* pScreens = [NSScreen screens];\n"
-                  "    return pScreens ? [pScreens count] : 1;\n"
-                  "}"), InternalError);
+                               "    NSArray* pScreens = [NSScreen screens];\n"
+                               "    return pScreens ? [pScreens count] : 1;\n"
+                               "}"),
+                     InternalError);
     }
 
     void garbageCode185() { // #6011 crash in libreoffice failure to create proper AST
@@ -1474,10 +1475,11 @@ private:
 
     void garbageCode190() { // #8307
         ASSERT_THROW(checkCode("void foo() {\n"
-                  "    int i;\n"
-                  "    i *= 0;\n"
-                  "    !i <;\n"
-                  "}"), InternalError);
+                               "    int i;\n"
+                               "    i *= 0;\n"
+                               "    !i <;\n"
+                               "}"),
+                     InternalError);
     }
 
     void garbageCode191() { // #8333
@@ -1493,11 +1495,13 @@ private:
         ASSERT_THROW(checkCode("{(()[((0||0xf||))]0[])}"), InternalError);
     }
 
-    void garbageCode193() { // #8740
+    void garbageCode193()
+    { // #8740
         ASSERT_THROW(checkCode("d f(){!=[]&&0()!=0}"), InternalError);
     }
 
-    void garbageCode194() { // #8384
+    void garbageCode194()
+    { // #8384
         ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
     }
 
