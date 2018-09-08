@@ -427,10 +427,10 @@ void CheckCondition::multiCondition()
                 break;
             tok2 = tok2->tokAt(4);
 
-            if (cond1 && 
-                tok2->astOperand2() && 
-                !cond1->hasKnownValue() && 
-                !tok2->astOperand2()->hasKnownValue() && 
+            if (cond1 &&
+                tok2->astOperand2() &&
+                !cond1->hasKnownValue() &&
+                !tok2->astOperand2()->hasKnownValue() &&
                 isOverlappingCond(cond1, tok2->astOperand2(), true))
                 multiConditionError(tok2, cond1->linenr());
         }
@@ -583,7 +583,7 @@ void CheckCondition::multiCondition2()
                             tokens1.push(firstCondition->astOperand1());
                             tokens1.push(firstCondition->astOperand2());
                         } else if (!firstCondition->hasKnownValue()) {
-                            if(isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, &errorPath)) {
+                            if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, &errorPath)) {
                                 if (!isAliased(vars))
                                     oppositeInnerConditionError(firstCondition, cond2, errorPath);
                             } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, &errorPath)) {
@@ -602,8 +602,8 @@ void CheckCondition::multiCondition2()
                         if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
                             tokens2.push(secondCondition->astOperand1());
                             tokens2.push(secondCondition->astOperand2());
-                        } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) && 
-                            isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, &errorPath)) {
+                        } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) &&
+                                   isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, &errorPath)) {
                             if (!isAliased(vars))
                                 identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                         }

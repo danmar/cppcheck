@@ -150,9 +150,9 @@ static bool isInLoopCondition(const Token * tok)
 /// If tok2 comes after tok1
 static bool precedes(const Token * tok1, const Token * tok2)
 {
-    if(!tok1)
+    if (!tok1)
         return false;
-    if(!tok2)
+    if (!tok2)
         return false;
     return tok1->progressValue() < tok2->progressValue();
 }
@@ -165,7 +165,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     if (!tok)
         return tok;
     // Skip following variables that is across multiple files
-    if(end && end->fileIndex() != tok->fileIndex())
+    if (end && end->fileIndex() != tok->fileIndex())
         return tok;
     // Skip array access
     if (Token::Match(tok, "%var% ["))
@@ -216,7 +216,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
         }
 
         if (const Variable * var2 = tok2->variable()) {
-            if(!var2->scope())
+            if (!var2->scope())
                 return tok;
             const Token * endToken2 = var2->scope() != tok->scope() ? var2->scope()->bodyEnd : endToken;
             if (!var2->isLocal() && !var2->isConst() && !var2->isArgument())
@@ -225,8 +225,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
                 return tok;
             if (!var2->isConst() && isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
                 return tok;
-        // Recognized as a variable but the declaration is unknown
-        } else if(tok2->varId() > 0) {
+            // Recognized as a variable but the declaration is unknown
+        } else if (tok2->varId() > 0) {
             return tok;
         }
     }
