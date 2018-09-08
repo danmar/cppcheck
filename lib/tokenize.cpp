@@ -1761,8 +1761,7 @@ void Tokenizer::checkOperators() const
             // FIXME
             if(Token::Match(tok->previous(), "%name%") && Token::Match(tok->next(), "%name%"))
                 continue;
-            // Skip lambda assignment
-            // FIXME: `= {` is not valid syntax
+            // Skip lambda assignment and/or initializer
             if(Token::Match(tok, "= {|^"))
                 continue;
             if(!tok->astOperand1() || !tok->astOperand2())
