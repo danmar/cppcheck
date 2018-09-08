@@ -451,7 +451,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  false);
 
                 reportErr(errmsg);
-                if(mSuppressInternalErrorFound){
+                if (mSuppressInternalErrorFound) {
                     internalErrorFound = false;
                     continue;
                 }

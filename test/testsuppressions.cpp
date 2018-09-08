@@ -615,7 +615,7 @@ private:
                             "}\n"
                             "f(0, 1);\n";
         ASSERT_EQUALS(1, checkSuppression(file3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
-   }
+    }
 
 };
 
