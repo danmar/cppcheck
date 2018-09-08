@@ -19,7 +19,8 @@ typedef unsigned int       u32;
 typedef signed int         s32;
 typedef unsigned long long u64;
 
-//// 3.1
+//   // 3.1
+////
 
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1

@@ -503,7 +503,8 @@ def isNoReturnScope(tok):
 def misra_3_1(rawTokens):
     for token in rawTokens:
         if token.str.startswith('/*') or token.str.startswith('//'):
-            if '//' in token.str[2:] or '/*' in token.str[2:]:
+            s = token.str.lstrip('/')
+            if '//' in s or '/*' in s:
                 reportError(token, 3, 1)
 
 
