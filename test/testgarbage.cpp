@@ -224,6 +224,7 @@ private:
         TEST_CASE(garbageCode191); // #8333
         TEST_CASE(garbageCode192); // #8386 (segmentation fault)
         TEST_CASE(garbageCode193); // #8740
+        TEST_CASE(garbageCode194); // #8384
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1494,6 +1495,10 @@ private:
 
     void garbageCode193() { // #8740
         ASSERT_THROW(checkCode("d f(){!=[]&&0()!=0}"), InternalError);
+    }
+
+    void garbageCode194() { // #8384
+        ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
