@@ -1742,34 +1742,6 @@ void Tokenizer::createTokens(const simplecpp::TokenList *tokenList)
     list.createTokens(tokenList);
 }
 
-void Tokenizer::checkOperators() const
-{
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%or%|%oror%|%assign%|%comp%")) {
-            // Skip lambda captures
-            if (Token::Match(tok, "= ,|]"))
-                continue;
-            // Dont check templates
-            if (tok->link())
-                continue;
-            // Skip pure virtual functions
-            if (Token::simpleMatch(tok->previous(), ") = 0"))
-                continue;
-            // Skip incomplete code
-            if (!tok->astOperand1() && !tok->astOperand2() && !tok->astParent())
-                continue;
-            // FIXME
-            if (Token::Match(tok->previous(), "%name%") && Token::Match(tok->next(), "%name%"))
-                continue;
-            // Skip lambda assignment and/or initializer
-            if (Token::Match(tok, "= {|^"))
-                continue;
-            if (!tok->astOperand1() || !tok->astOperand2())
-                syntaxError(tok);
-        }
-    }
-}
-
 bool Tokenizer::simplifyTokens1(const std::string &configuration)
 {
     // Fill the map mTypeSize..
@@ -1784,8 +1756,6 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     list.validateAst();
 
     createSymbolDatabase();
-
-    checkOperators();
 
     // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
     for (const Variable* var : mSymbolDatabase->variableList()) {

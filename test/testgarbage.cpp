@@ -1495,13 +1495,15 @@ private:
         ASSERT_THROW(checkCode("{(()[((0||0xf||))]0[])}"), InternalError);
     }
 
+    // #8740
     void garbageCode193()
-    { // #8740
+    {
         ASSERT_THROW(checkCode("d f(){!=[]&&0()!=0}"), InternalError);
     }
 
+    // #8384
     void garbageCode194()
-    { // #8384
+    {
         ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
     }
 
