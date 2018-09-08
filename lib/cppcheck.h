@@ -215,7 +215,7 @@ private:
 
     unsigned int mExitCode;
 
-    bool mSuppressExitCode;
+    bool mSuppressInternalErrorFound;
 
     bool mUseGlobalSuppressions;
 

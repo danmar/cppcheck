@@ -54,7 +54,7 @@ static TimerResults S_timerResults;
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), mExitCode(0), mSuppressExitCode(false), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
+    : mErrorLogger(errorLogger), mExitCode(0), mSuppressInternalErrorFound(false), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
 {
 }
 
@@ -108,7 +108,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     mExitCode = 0;
-    mSuppressExitCode = false;
+    mSuppressInternalErrorFound = false;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
@@ -451,7 +451,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  false);
 
                 reportErr(errmsg);
-                if(mSuppressExitCode){
+                if(mSuppressInternalErrorFound){
                     internalErrorFound = false;
                     continue;
                 }
@@ -755,7 +755,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    mSuppressExitCode = false;
+    mSuppressInternalErrorFound = false;
 
     if (!mSettings.library.reportErrors(msg.file0))
         return;
@@ -772,12 +772,12 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     if (mUseGlobalSuppressions) {
         if (mSettings.nomsg.isSuppressed(errorMessage)) {
-            mSuppressExitCode = true;
+            mSuppressInternalErrorFound = true;
             return;
         }
     } else {
         if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
-            mSuppressExitCode = true;
+            mSuppressInternalErrorFound = true;
             return;
         }
     }
