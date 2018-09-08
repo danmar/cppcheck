@@ -3372,6 +3372,13 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 10));
 
         code = "void f() {\n"
+               "  std::string s;\n"
+               "  cin >> s;\n"
+               "  s[0];\n"
+               "}";
+        ASSERT(tokenValues(code, "s [").empty());
+
+        code = "void f() {\n"
                "  std::string s=\"abc\";\n" // size of s is 3
                "  s.size();\n"
                "}";
