@@ -108,6 +108,7 @@ public:
 
     bool createTokens(std::istream &code, const std::string& FileName);
     void createTokens(const simplecpp::TokenList *tokenList);
+    void checkOperators() const;
 
     bool simplifyTokens1(const std::string &configuration);
     /**
