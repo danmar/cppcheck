@@ -223,6 +223,8 @@ private:
         TEST_CASE(garbageCode190); // #8307
         TEST_CASE(garbageCode191); // #8333
         TEST_CASE(garbageCode192); // #8386 (segmentation fault)
+        TEST_CASE(garbageCode193); // #8740
+        TEST_CASE(garbageCode194); // #8384
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -630,15 +632,15 @@ private:
     }
 
     void garbageCode49() { // #6715
-        checkCode(" ( ( ) ) { } ( { ( __builtin_va_arg_pack ( ) ) ; } ) { ( int { ( ) ( ( ) ) } ( ) { } ( ) ) += ( ) }");
+        ASSERT_THROW(checkCode(" ( ( ) ) { } ( { ( __builtin_va_arg_pack ( ) ) ; } ) { ( int { ( ) ( ( ) ) } ( ) { } ( ) ) += ( ) }"), InternalError);
     }
 
     void garbageCode51() { // #6719
-        checkCode(" (const \"C\" ...); struct base { int f2; base (int arg1, int arg2); }; global_base(0x55, 0xff); { ((global_base.f1 0x55) (global_base.f2 0xff)) { } } base::base(int arg1, int arg2) { f2 = }");
+        ASSERT_THROW(checkCode(" (const \"C\" ...); struct base { int f2; base (int arg1, int arg2); }; global_base(0x55, 0xff); { ((global_base.f1 0x55) (global_base.f2 0xff)) { } } base::base(int arg1, int arg2) { f2 = }"), InternalError);
     }
 
     void garbageCode53() { // #6721
-        checkCode("{ { } }; void foo (struct int i) { x->b[i] = = }");
+        ASSERT_THROW(checkCode("{ { } }; void foo (struct int i) { x->b[i] = = }"), InternalError);
     }
 
     void garbageCode54() { // #6722
@@ -659,7 +661,7 @@ private:
 
     void garbageCode58() { // #6732, #6762
         checkCode("{ }> {= ~A()^{} }P { }");
-        checkCode("{= ~A()^{} }P { } { }> is");
+        ASSERT_THROW(checkCode("{= ~A()^{} }P { } { }> is"), InternalError);
     }
 
     void garbageCode59() { // #6735
@@ -763,7 +765,7 @@ private:
     }
 
     void garbageCode87() { // #6788
-        checkCode("((X (128))) (int a) { v[ = {} (x 42) a] += }"); // do not crash
+        ASSERT_THROW(checkCode("((X (128))) (int a) { v[ = {} (x 42) a] += }"), InternalError); // do not crash
     }
 
     void garbageCode88() { // #6786
@@ -788,7 +790,7 @@ private:
     }
 
     void garbageCode95() { // #6804
-        checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }");    // do not crash
+        ASSERT_THROW(checkCode("{ } x x ; { } h h [ ] ( ) ( ) { struct x ( x ) ; int __attribute__ ( ) f ( ) { h - > first = & x ; struct x * n = h - > first ; ( ) n > } }"), InternalError); // do not crash
     }
 
     void garbageCode96() { // #6807
@@ -813,7 +815,7 @@ private:
     }
 
     void garbageCode100() { // #6840
-        checkCode("( ) { ( i< ) } int foo ( ) { int i ; ( for ( i => 1 ) ; ) }");
+        ASSERT_THROW(checkCode("( ) { ( i< ) } int foo ( ) { int i ; ( for ( i => 1 ) ; ) }"), InternalError);
     }
 
     void garbageCode101() { // #6835
@@ -832,7 +834,7 @@ private:
     }
 
     void garbageCode104() { // #6847
-        checkCode("template < Types > struct S {> ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) } { ( )> >} { ( ) { } } ( ) { ( ) }");
+        ASSERT_THROW(checkCode("template < Types > struct S {> ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) } { ( )> >} { ( ) { } } ( ) { ( ) }"), InternalError);
     }
 
     void garbageCode105() { // #6859
@@ -930,7 +932,7 @@ private:
     }
 
     void garbageCode125() {
-        checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }");
+        ASSERT_THROW(checkCode("{ T struct B : T valueA_AA ; } T : [ T > ( ) { B } template < T > struct A < > : ] { ( ) { return valueA_AC struct { : } } b A < int > AC ( ) a_aa.M ; ( ) ( ) }"), InternalError);
         ASSERT_THROW(checkCode("template < Types > struct S :{ ( S < ) S >} { ( ) { } } ( ) { return S < void > ( ) }"),
                      InternalError);
     }
@@ -1020,7 +1022,7 @@ private:
     void garbageCode134() {
         // Ticket #5605, #5759, #5762, #5774, #5823, #6059
         ASSERT_THROW(checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }"), InternalError);
-        checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }");
+        ASSERT_THROW(checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }"), InternalError);
         checkCode("() template < T = typename = x > struct a {} { f <int> () }");
         checkCode("template < T = typename = > struct a { f <int> }");
         checkCode("struct S { int i, j; }; "
@@ -1060,7 +1062,7 @@ private:
     }
 
     void garbageCode137() { // #7034
-        checkCode("\" \" typedef signed char f; \" \"; void a() { f * s = () &[]; (; ) (; ) }");
+        ASSERT_THROW(checkCode("\" \" typedef signed char f; \" \"; void a() { f * s = () &[]; (; ) (; ) }"), InternalError);
     }
 
     void garbageCode138() { // #6660
@@ -1229,7 +1231,7 @@ private:
 
         // 6122 survive garbage code
         code = "; { int i ; for ( i = 0 ; = 123 ; ) - ; }";
-        checkCode(code);
+        ASSERT_THROW(checkCode(code), InternalError);
 
         code = "void f1() { for (int n = 0 n < 10 n++); }";
         checkCode(code);
@@ -1401,7 +1403,7 @@ private:
     }
 
     void garbageCode174() { // #7356
-        checkCode("{r e() { w*constD = (())D = cast< }}");
+        ASSERT_THROW(checkCode("{r e() { w*constD = (())D = cast< }}"), InternalError);
     }
 
     void garbageCode175() { // #7027
@@ -1431,10 +1433,11 @@ private:
     }
 
     void garbageCode184() { // #7699
-        checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
-                  "    NSArray* pScreens = [NSScreen screens];\n"
-                  "    return pScreens ? [pScreens count] : 1;\n"
-                  "}");
+        ASSERT_THROW(checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
+                               "    NSArray* pScreens = [NSScreen screens];\n"
+                               "    return pScreens ? [pScreens count] : 1;\n"
+                               "}"),
+                     InternalError);
     }
 
     void garbageCode185() { // #6011 crash in libreoffice failure to create proper AST
@@ -1471,11 +1474,12 @@ private:
     }
 
     void garbageCode190() { // #8307
-        checkCode("void foo() {\n"
-                  "    int i;\n"
-                  "    i *= 0;\n"
-                  "    !i <;\n"
-                  "}");
+        ASSERT_THROW(checkCode("void foo() {\n"
+                               "    int i;\n"
+                               "    i *= 0;\n"
+                               "    !i <;\n"
+                               "}"),
+                     InternalError);
     }
 
     void garbageCode191() { // #8333
@@ -1489,6 +1493,18 @@ private:
 
     void garbageCode192() { // #8386 (segmentation fault)
         ASSERT_THROW(checkCode("{(()[((0||0xf||))]0[])}"), InternalError);
+    }
+
+    // #8740
+    void garbageCode193()
+    {
+        ASSERT_THROW(checkCode("d f(){!=[]&&0()!=0}"), InternalError);
+    }
+
+    // #8384
+    void garbageCode194()
+    {
+        ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {

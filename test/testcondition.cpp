@@ -2353,7 +2353,8 @@ private:
     }
 
     void clarifyCondition5() { // ticket #3609 (using | in template instantiation)
-        check("CWinTraits<WS_CHILD|WS_VISIBLE>::GetWndStyle(0);");
+        check("template<bool B> struct CWinTraits;\n"
+              "CWinTraits<WS_CHILD|WS_VISIBLE>::GetWndStyle(0);");
         ASSERT_EQUALS("", errout.str());
     }
 
