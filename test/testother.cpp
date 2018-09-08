@@ -4265,6 +4265,12 @@ private:
               "    if(b && !a) { }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  const bool b = g();\n"
+              "  if (!b && g()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateVarExpression() {
