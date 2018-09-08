@@ -606,6 +606,15 @@ private:
                             "if if;";
         ASSERT_EQUALS(1, checkSuppression(file2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
         ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
+
+        // multi error in file, but only suppression one error (2)
+        std::map<std::string, std::string> file3;
+        file3["test.cpp"] = "void f(int x, int y){\n"
+                            "    int a = x/0;\n"
+                            "    int b = y/0;\n"
+                            "}\n"
+                            "f(0, 1);\n";
+        ASSERT_EQUALS(1, checkSuppression(file3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
    }
 
 };

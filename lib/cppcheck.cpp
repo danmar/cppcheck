@@ -451,6 +451,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  false);
 
                 reportErr(errmsg);
+                if(mSuppressExitCode){
+                    internalErrorFound = false;
+                    continue;
+                }
             }
         }
 
@@ -499,10 +503,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     mErrorList.clear();
     if (internalErrorFound && (mExitCode==0)) {
         mExitCode = 1;
-    }
-
-    if (mSuppressExitCode) {
-        mExitCode = 0;
     }
 
     return mExitCode;
