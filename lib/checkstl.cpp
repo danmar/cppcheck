@@ -2021,6 +2021,38 @@ static bool accumulateBool(const Token * tok, unsigned int varid)
     return false;
 }
 
+static bool hasVarIds(const Token * tok, unsigned int var1, unsigned int var2)
+{
+    if(tok->astOperand1()->varId() == tok->astOperand2()->varId())
+        return false;
+    unsigned int varids[] = {var1, var2};
+    unsigned int * varidsEnd = varids+2;
+    if(std::find(varids, varidsEnd, tok->astOperand1()->varId()) == varidsEnd)
+        return false;
+    if(std::find(varids, varidsEnd, tok->astOperand2()->varId()) == varidsEnd)
+        return false;
+    return true;
+}
+
+static std::string minmaxCompare(const Token * condTok, unsigned int loopVar, unsigned int assignVar, bool invert=false)
+{
+    static const std::vector<std::string> minmaxAlgos = {
+        "std::max_element", "std::min_element"
+    };
+    if(!Token::Match(condTok, "<|<=|>=|>"))
+        return "std::accumulate";
+    if(!hasVarIds(condTok, loopVar, assignVar))
+        return "std::accumulate";
+    int algo = 0;
+    if(Token::Match(condTok, "<|<="))
+        algo = 1;
+    if(condTok->astOperand1()->varId() == assignVar)
+        algo = (algo + 1) % 2;
+    if(invert)
+        algo = (algo + 1) % 2;
+    return minmaxAlgos[algo];
+}
+
 void CheckStl::useStlAlgorithm()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
@@ -2060,6 +2092,8 @@ void CheckStl::useStlAlgorithm()
                         algo = "std::distance";
                     else if(accumulateBool(assignTok, assignVarId))
                         algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
+                    else if(Token::Match(assignTok, "= %var% <|<=|>=|> %var% ? %var% : %var%") && hasVarIds(assignTok->tokAt(6), loopVar->varId(), assignVarId))
+                        algo = minmaxCompare(assignTok->tokAt(2), loopVar->varId(), assignVarId, assignTok->tokAt(5)->varId() == assignVarId);
                     else
                         algo = "std::accumulate";
                 }

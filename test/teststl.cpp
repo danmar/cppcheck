@@ -150,6 +150,7 @@ private:
         TEST_CASE(loopAlgoContainerInsert);
         TEST_CASE(loopAlgoIncrement);
         TEST_CASE(loopAlgoConditional);
+        TEST_CASE(loopAlgoMinMax);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -3774,6 +3775,43 @@ private:
               "    }\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void loopAlgoMinMax() {
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n = x > n ? x : n;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n = x < n ? x : n;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::min_element algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n = x > n ? n : x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::min_element algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo() {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n = x < n ? n : x;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n", errout.str());
+
+        check("void foo(int m) {\n"
+              "    int n = 0;\n"
+              "    for(int x:v)\n"
+              "        n = x > m ? x : n;\n"
+              "}\n",true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
     }
 };
 
