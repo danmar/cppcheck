@@ -9765,7 +9765,22 @@ void Tokenizer::simplifyOperatorName()
     if (isC())
         return;
 
+    bool isUsingStmt = false;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == ";") {
+            if (isUsingStmt && Token::Match(tok->tokAt(-3), "using|:: operator %op% ;")) {
+                tok->previous()->previous()->str("operator" + tok->previous()->str());
+                tok->deletePrevious();
+            }
+            isUsingStmt = false;
+            continue;
+        }
+        if (tok->str() == "using") {
+            isUsingStmt = true;
+            continue;
+        }
+
         if (tok->str() != "operator")
             continue;
         // operator op
@@ -9783,18 +9798,15 @@ void Tokenizer::simplifyOperatorName()
                     par = par->next();
                 }
                 done = false;
-            }
-            if (Token::Match(par, ".|%op%|,")) {
+            } else if (Token::Match(par, ".|%op%|,")) {
                 op += par->str();
                 par = par->next();
                 done = false;
-            }
-            if (Token::simpleMatch(par, "[ ]")) {
+            } else if (Token::simpleMatch(par, "[ ]")) {
                 op += "[]";
                 par = par->tokAt(2);
                 done = false;
-            }
-            if (Token::Match(par, "( *| )")) {
+            } else if (Token::Match(par, "( *| )")) {
                 // break out and simplify..
                 if (operatorEnd(par->next()))
                     break;
