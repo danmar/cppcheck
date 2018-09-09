@@ -56,6 +56,7 @@ private:
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
         TEST_CASE(iterator14); // #8191
+        TEST_CASE(iterator15); // #8341
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -604,6 +605,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void iterator15() {
+        check("void f(C1* x, std::list<int> a) {\n"
+              "  std::list<int>::iterator pos = a.begin();\n"
+              "  for(pos = x[0]->plist.begin(); pos != x[0]->plist.end(); ++pos) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void iteratorExpression() {
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
@@ -699,6 +708,12 @@ private:
               "    if(f().begin() == f().end()+1) {}\n"
               "    if(f().begin()+1 == f().end()) {}\n"
               "    if(f().begin()+1 == f().end()+1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  if (a.begin().x == b.begin().x) {}\n"
+              "  if (begin(a).x == begin(b).x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -2463,6 +2463,10 @@ enum CtorType {
 
 void CheckClass::checkCopyCtorAndEqOperator()
 {
+    // This is disabled because of #8388
+    // The message must be clarified. How is the behaviour different?
+    return;
+
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 

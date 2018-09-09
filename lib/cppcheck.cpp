@@ -54,7 +54,7 @@ static TimerResults S_timerResults;
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), mExitCode(0), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
+    : mErrorLogger(errorLogger), mExitCode(0), mSuppressInternalErrorFound(false), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
 {
 }
 
@@ -108,6 +108,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     mExitCode = 0;
+    mSuppressInternalErrorFound = false;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
@@ -450,6 +451,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  false);
 
                 reportErr(errmsg);
+                if (mSuppressInternalErrorFound) {
+                    internalErrorFound = false;
+                    continue;
+                }
             }
         }
 
@@ -499,6 +504,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (internalErrorFound && (mExitCode==0)) {
         mExitCode = 1;
     }
+
     return mExitCode;
 }
 
@@ -749,6 +755,8 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
+    mSuppressInternalErrorFound = false;
+
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 
@@ -763,11 +771,15 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
     if (mUseGlobalSuppressions) {
-        if (mSettings.nomsg.isSuppressed(errorMessage))
+        if (mSettings.nomsg.isSuppressed(errorMessage)) {
+            mSuppressInternalErrorFound = true;
             return;
+        }
     } else {
-        if (mSettings.nomsg.isSuppressedLocal(errorMessage))
+        if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
+            mSuppressInternalErrorFound = true;
             return;
+        }
     }
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && (mUseGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))

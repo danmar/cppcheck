@@ -843,7 +843,7 @@ private:
                                 "2: Containter<int> ( ) ;\n"
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"
-                                "5: Containter<int> :: Containter ( ) : mElements@2 ( nullptr ) { }\n";
+                                "5: Containter<int> :: Containter<int> ( ) : mElements@2 ( nullptr ) { }\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
         }
     }
@@ -4081,6 +4081,13 @@ private:
 
             ASSERT_EQUALS(out5, tokenizeAndStringify(in5));
         }
+        {
+            // Ticket #8679
+            const char code[] = "thread_local void *thread_local_var; "
+                                "__thread void *thread_local_var_2;";
+            ASSERT_EQUALS("void * thread_local_var ; "
+                          "void * thread_local_var_2 ;", tokenizeAndStringify(code));
+        }
     }
 
     /**
@@ -4692,6 +4699,17 @@ private:
             const Token *tok2 = tok1->tokAt(2);
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+        {
+            // #8654
+            const char code[] = "template<int N> struct A {}; "
+                                "template<int... Ns> struct foo : A<Ns>... {};";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
+            ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
         }
     }
 
@@ -8493,6 +8511,7 @@ private:
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
+        ASSERT_EQUALS("abc::(=", testAst("a = (b::c)();"));
     }
 
     void astlambda() {
