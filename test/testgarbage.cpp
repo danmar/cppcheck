@@ -1496,14 +1496,12 @@ private:
     }
 
     // #8740
-    void garbageCode193()
-    {
+    void garbageCode193() {
         ASSERT_THROW(checkCode("d f(){!=[]&&0()!=0}"), InternalError);
     }
 
     // #8384
-    void garbageCode194()
-    {
+    void garbageCode194() {
         ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
     }
 
