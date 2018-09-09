@@ -9766,56 +9766,56 @@ void Tokenizer::simplifyOperatorName()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "operator") {
-            // operator op
-            std::string op;
-            Token *par = tok->next();
-            bool done = false;
-            while (!done && par) {
-                done = true;
-                if (par->isName()) {
+        if (tok->str() != "operator")
+            continue;
+        // operator op
+        std::string op;
+        Token *par = tok->next();
+        bool done = false;
+        while (!done && par) {
+            done = true;
+            if (par->isName()) {
+                op += par->str();
+                par = par->next();
+                // merge namespaces eg. 'operator std :: string () const {'
+                if (Token::Match(par, ":: %name%|%op%|.")) {
                     op += par->str();
                     par = par->next();
-                    // merge namespaces eg. 'operator std :: string () const {'
-                    if (Token::Match(par, ":: %name%|%op%|.")) {
-                        op += par->str();
-                        par = par->next();
-                    }
-                    done = false;
                 }
-                if (Token::Match(par, ".|%op%|,")) {
+                done = false;
+            }
+            if (Token::Match(par, ".|%op%|,")) {
+                op += par->str();
+                par = par->next();
+                done = false;
+            }
+            if (Token::simpleMatch(par, "[ ]")) {
+                op += "[]";
+                par = par->tokAt(2);
+                done = false;
+            }
+            if (Token::Match(par, "( *| )")) {
+                // break out and simplify..
+                if (operatorEnd(par->next()))
+                    break;
+
+                while (par->str() != ")") {
                     op += par->str();
                     par = par->next();
-                    done = false;
                 }
-                if (Token::simpleMatch(par, "[ ]")) {
-                    op += "[]";
-                    par = par->tokAt(2);
-                    done = false;
-                }
-                if (Token::Match(par, "( *| )")) {
-                    // break out and simplify..
-                    if (operatorEnd(par->next()))
-                        break;
-
-                    while (par->str() != ")") {
-                        op += par->str();
-                        par = par->next();
-                    }
-                    op += ")";
-                    par = par->next();
-                    done = false;
-                }
+                op += ")";
+                par = par->next();
+                done = false;
             }
-
-            if (par && operatorEnd(par->link())) {
-                tok->str("operator" + op);
-                Token::eraseTokens(tok, par);
-            }
-
-            if (!op.empty())
-                tok->isOperatorKeyword(true);
         }
+
+        if (par && operatorEnd(par->link())) {
+            tok->str("operator" + op);
+            Token::eraseTokens(tok, par);
+        }
+
+        if (!op.empty())
+            tok->isOperatorKeyword(true);
     }
 
     if (mSettings->debugwarnings) {
