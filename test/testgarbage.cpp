@@ -226,6 +226,7 @@ private:
         TEST_CASE(garbageCode193); // #8740
         TEST_CASE(garbageCode194); // #8384
         TEST_CASE(garbageCode195); // #8709
+        TEST_CASE(garbageCode196); // #8265
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1516,6 +1517,12 @@ private:
                   "}");
     }
 
+    // #8265
+    void garbageCode196() {
+        ASSERT_THROW(checkCode("0|,0<<V"), InternalError);
+        ASSERT_THROW(checkCode(";|4|<0;"), InternalError);
+    }
+
     void syntaxErrorFirstToken() {
         ASSERT_THROW(checkCode("&operator(){[]};"), InternalError); // #7818
         ASSERT_THROW(checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }"), InternalError); // #6858
@@ -1523,7 +1530,6 @@ private:
         ASSERT_THROW(checkCode("&p(!{}e x){({(0?:?){({})}()})}"), InternalError); // #7118
         ASSERT_THROW(checkCode("<class T> { struct { typename D4:typename Base<T*> }; };"), InternalError); // #3533
         ASSERT_THROW(checkCode(" > template < . > struct Y < T > { = } ;\n"), InternalError); // #6108
-
     }
 
     void syntaxErrorLastToken() {
