@@ -228,6 +228,7 @@ private:
         TEST_CASE(garbageCode195); // #8709
         TEST_CASE(garbageCode196); // #8265
         TEST_CASE(garbageCode197); // #8385
+        TEST_CASE(garbageCode198); // #8383
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1527,6 +1528,16 @@ private:
     // #8385
     void garbageCode197() {
         ASSERT_THROW(checkCode("(){e break,{(case)|{e:[()]}}}"), InternalError);
+    }
+
+    // #8383
+    void garbageCode198() {
+        ASSERT_THROW(checkCode("void f(){\n"
+                               "x= ={(continue continue { ( struct continue { ( ++ name5 name5 ) ( name5 name5 n\n"
+                               "ame5 ( name5 struct ( name5 name5 < ) ) ( default ) { name4 != name5 name5 name5\n"
+                               " ( name5 name5 name5 ( { 1 >= void { ( ()) } 1 name3 return >= >= ( ) >= name5 (\n"
+                               " name5 name6 :nam00 [ ()])}))})})})};\n"
+                               "}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
