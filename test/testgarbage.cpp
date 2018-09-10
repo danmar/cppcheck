@@ -225,6 +225,7 @@ private:
         TEST_CASE(garbageCode192); // #8386 (segmentation fault)
         TEST_CASE(garbageCode193); // #8740
         TEST_CASE(garbageCode194); // #8384
+        TEST_CASE(garbageCode195); // #8709
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1503,6 +1504,16 @@ private:
     // #8384
     void garbageCode194() {
         ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
+    }
+
+    // #8709 - no garbarge but to avoid stability regression
+    void garbageCode195() {
+        checkCode("a b;\n"
+                  "void c() {\n"
+                  "  switch (d) { case b:; }\n"
+                  "  double e(b);\n"
+                  "  if(e <= 0) {}\n"
+                  "}");
     }
 
     void syntaxErrorFirstToken() {
