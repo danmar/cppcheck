@@ -227,6 +227,7 @@ private:
         TEST_CASE(garbageCode194); // #8384
         TEST_CASE(garbageCode195); // #8709
         TEST_CASE(garbageCode196); // #8265
+        TEST_CASE(garbageCode197); // #8385
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1521,6 +1522,11 @@ private:
     void garbageCode196() {
         ASSERT_THROW(checkCode("0|,0<<V"), InternalError);
         ASSERT_THROW(checkCode(";|4|<0;"), InternalError);
+    }
+
+    // #8385
+    void garbageCode197() {
+        ASSERT_THROW(checkCode("(){e break,{(case)|{e:[()]}}}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
