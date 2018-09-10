@@ -225,6 +225,10 @@ private:
         TEST_CASE(garbageCode192); // #8386 (segmentation fault)
         TEST_CASE(garbageCode193); // #8740
         TEST_CASE(garbageCode194); // #8384
+        TEST_CASE(garbageCode195); // #8709
+        TEST_CASE(garbageCode196); // #8265
+        TEST_CASE(garbageCode197); // #8385
+        TEST_CASE(garbageCode198); // #8383
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1496,15 +1500,44 @@ private:
     }
 
     // #8740
-    void garbageCode193()
-    {
+    void garbageCode193() {
         ASSERT_THROW(checkCode("d f(){!=[]&&0()!=0}"), InternalError);
     }
 
     // #8384
-    void garbageCode194()
-    {
+    void garbageCode194() {
         ASSERT_THROW(checkCode("{((()))(return 1||);}"), InternalError);
+    }
+
+    // #8709 - no garbarge but to avoid stability regression
+    void garbageCode195() {
+        checkCode("a b;\n"
+                  "void c() {\n"
+                  "  switch (d) { case b:; }\n"
+                  "  double e(b);\n"
+                  "  if(e <= 0) {}\n"
+                  "}");
+    }
+
+    // #8265
+    void garbageCode196() {
+        ASSERT_THROW(checkCode("0|,0<<V"), InternalError);
+        ASSERT_THROW(checkCode(";|4|<0;"), InternalError);
+    }
+
+    // #8385
+    void garbageCode197() {
+        ASSERT_THROW(checkCode("(){e break,{(case)|{e:[()]}}}"), InternalError);
+    }
+
+    // #8383
+    void garbageCode198() {
+        ASSERT_THROW(checkCode("void f(){\n"
+                               "x= ={(continue continue { ( struct continue { ( ++ name5 name5 ) ( name5 name5 n\n"
+                               "ame5 ( name5 struct ( name5 name5 < ) ) ( default ) { name4 != name5 name5 name5\n"
+                               " ( name5 name5 name5 ( { 1 >= void { ( ()) } 1 name3 return >= >= ( ) >= name5 (\n"
+                               " name5 name6 :nam00 [ ()])}))})})})};\n"
+                               "}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
@@ -1514,7 +1547,6 @@ private:
         ASSERT_THROW(checkCode("&p(!{}e x){({(0?:?){({})}()})}"), InternalError); // #7118
         ASSERT_THROW(checkCode("<class T> { struct { typename D4:typename Base<T*> }; };"), InternalError); // #3533
         ASSERT_THROW(checkCode(" > template < . > struct Y < T > { = } ;\n"), InternalError); // #6108
-
     }
 
     void syntaxErrorLastToken() {
