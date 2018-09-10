@@ -3126,11 +3126,18 @@ private:
         ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
 
         code = "void f() {\n"
-               "    C *c;\n"
+               "    const C *c;\n"
                "    if (c->x() == 4) {}\n"
                "}";
         values = tokenValues(code, "c .");
         ASSERT_EQUALS(true, values.size()==1U && values.front().isUninitValue());
+
+        code = "void f() {\n"
+               "    C *c;\n"
+               "    if (c->x() == 4) {}\n"
+               "}";
+        values = tokenValues(code, "c .");
+        TODO_ASSERT_EQUALS(true, false, values.size()==1U && values.front().isUninitValue());
 
         code = "void f() {\n"
                "    int **x;\n"
@@ -3300,6 +3307,19 @@ private:
                "}";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
 
+        code = "void f(std::vector<std::string> params) {\n"
+               "  switch(x) {\n"
+               "  case CMD_RESPONSE:\n"
+               "    if(y) { break; }\n"
+               "    params[2];\n" // <- container use
+               "    break;\n"
+               "  case CMD_DELETE:\n"
+               "    if (params.size() < 2) { }\n" // <- condition
+               "    break;\n"
+               "  }\n"
+               "}";
+        ASSERT(tokenValues(code, "params [ 2 ]").empty());
+
         // valueFlowContainerForward
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty()) {}\n"
@@ -3346,6 +3366,19 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f() {\n"
+               "  std::array<int,10> ints;\n" // Array size is 10
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 10));
+
+        code = "void f() {\n"
+               "  std::string s;\n"
+               "  cin >> s;\n"
+               "  s[0];\n"
+               "}";
+        ASSERT(tokenValues(code, "s [").empty());
+
+        code = "void f() {\n"
                "  std::string s=\"abc\";\n" // size of s is 3
                "  s.size();\n"
                "}";
@@ -3355,6 +3388,13 @@ private:
         code = "void f() {\n"
                "  std::list<int> x;\n"
                "  f(x);\n"
+               "  x.front();\n" // <- unknown container size
+               "}";
+        ASSERT(tokenValues(code, "x . front").empty());
+
+        code = "void f() {\n" // #8689
+               "  std::list<int> x;\n"
+               "  f<ns::a>(x);\n"
                "  x.front();\n" // <- unknown container size
                "}";
         ASSERT(tokenValues(code, "x . front").empty());

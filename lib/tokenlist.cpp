@@ -391,6 +391,9 @@ static bool iscast(const Token *tok)
     if (!Token::Match(tok, "( ::| %name%"))
         return false;
 
+    if (Token::simpleMatch(tok->link(), ") ( )"))
+        return false;
+
     if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return")
         return false;
 
@@ -1198,6 +1201,30 @@ void TokenList::validateAst() const
             safeAstTokens.clear();
         } else {
             safeAstTokens.insert(tok);
+        }
+
+        // Check binary operators
+        if (Token::Match(tok, "%or%|%oror%|%assign%|%comp%")) {
+            // Skip lambda captures
+            if (Token::Match(tok, "= ,|]"))
+                continue;
+            // Dont check templates
+            if (tok->link())
+                continue;
+            // Skip pure virtual functions
+            if (Token::simpleMatch(tok->previous(), ") = 0"))
+                continue;
+            // Skip incomplete code
+            if (!tok->astOperand1() && !tok->astOperand2() && !tok->astParent())
+                continue;
+            // FIXME
+            if (Token::Match(tok->previous(), "%name%") && Token::Match(tok->next(), "%name%"))
+                continue;
+            // Skip lambda assignment and/or initializer
+            if (Token::Match(tok, "= {|^"))
+                continue;
+            if (!tok->astOperand1() || !tok->astOperand2())
+                throw InternalError(tok, "Syntax Error: AST broken, binary operator doesn't have two operands.", InternalError::AST);
         }
     }
 }

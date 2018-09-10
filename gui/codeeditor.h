@@ -55,6 +55,12 @@ public:
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
 
+    /**
+     * Set source code to show, goto error line and highlight that line.
+     * \param code         The source code.
+     * \param errorLine    line number
+     * \param symbols      the related symbols, these are marked
+     */
     void setError(const QString &code, int errorLine, const QStringList &symbols);
 
 protected:

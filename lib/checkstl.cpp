@@ -363,12 +363,7 @@ void CheckStl::iterators()
 
             // Reassign the iterator
             else if (Token::Match(tok2, "%varid% =", iteratorId)) {
-                // Assume that the iterator becomes valid.
-                // TODO: add checking that checks if the iterator becomes valid or not
-                validatingToken = Token::findmatch(tok2->tokAt(2), "[;)]");
-
-                // skip ahead
-                tok2 = tok2->tokAt(2);
+                break;
             }
 
             // Passing iterator to function. Iterator might be initialized
@@ -472,9 +467,9 @@ static const Token * getIteratorExpression(const Token * tok)
         if (iter2)
             return iter2;
     } else if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
-        if (Token::Match(tok->previous(), ". %name% ( )"))
+        if (Token::Match(tok->previous(), ". %name% ( ) !!."))
             return tok->previous()->astOperand1();
-        if (Token::Match(tok, "%name% ( !!)"))
+        if (Token::Match(tok, "%name% ( !!)") && !Token::simpleMatch(tok->linkAt(1), ") ."))
             return tok->next()->astOperand2();
     }
     return nullptr;

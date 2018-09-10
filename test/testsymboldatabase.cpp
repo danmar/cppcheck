@@ -139,6 +139,7 @@ private:
         TEST_CASE(isVariableDeclarationDoesNotIdentifyCppCast);
         TEST_CASE(isVariableDeclarationPointerConst);
         TEST_CASE(isVariableDeclarationRValueRef);
+        TEST_CASE(isVariableDeclarationDoesNotIdentifyCase);
         TEST_CASE(isVariableStlType);
 
         TEST_CASE(VariableValueType1);
@@ -786,6 +787,18 @@ private:
         ASSERT(true == v.isReference());
         ASSERT(true == v.isRValueReference());
         ASSERT(var.tokens()->tokAt(2)->scope() != 0);
+    }
+
+    void isVariableDeclarationDoesNotIdentifyCase() {
+        GET_SYMBOL_DB_C("a b;\n"
+                        "void f() {\n"
+                        "  switch (c) {\n"
+                        "    case b:;\n"
+                        "  }"
+                        "}");
+        const Variable* b = db->getVariableFromVarId(1);
+        ASSERT_EQUALS("b", b->name());
+        ASSERT_EQUALS("a", b->typeStartToken()->str());
     }
 
     void VariableValueType1() {

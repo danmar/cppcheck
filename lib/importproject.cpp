@@ -172,7 +172,7 @@ ImportProject::Type ImportProject::import(const std::string &filename)
     std::ifstream fin(filename);
     if (!fin.is_open())
         return MISSING;
-    if (endsWith(filename, "compile_commands.json", 21)) {
+    if (endsWith(filename, ".json", 5)) {
         importCompileCommands(fin);
         return COMPILE_DB;
     } else if (endsWith(filename, ".sln", 4)) {

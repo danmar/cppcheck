@@ -503,7 +503,8 @@ def isNoReturnScope(tok):
 def misra_3_1(rawTokens):
     for token in rawTokens:
         if token.str.startswith('/*') or token.str.startswith('//'):
-            if '//' in token.str[2:] or '/*' in token.str[2:]:
+            s = token.str.lstrip('/')
+            if '//' in s or '/*' in s:
                 reportError(token, 3, 1)
 
 
@@ -1476,7 +1477,12 @@ def misra_20_3(rawTokens):
         if not simpleMatch(token, '# include'):
             continue
         headerToken = token.next.next
-        if not headerToken or not (headerToken.str.startswith('<') or headerToken.str.startswith('"')):
+        num = 0
+        while headerToken and headerToken.linenr == linenr:
+            if not headerToken.str.startswith('/*') and not headerToken.str.startswith('//'):
+                num += 1
+            headerToken = headerToken.next
+        if num != 1:
             reportError(token, 20, 3)
 
 
@@ -1496,10 +1502,9 @@ def misra_20_5(data):
 def misra_20_13(data):
     for directive in data.directives:
         dir = directive.str
-        if dir.find(' ') > 0:
-            dir = dir[:dir.find(' ')]
-        if dir.find('(') > 0:
-            dir = dir[:dir.find('(')]
+        for sep in ' (<':
+            if dir.find(sep) > 0:
+                dir = dir[:dir.find(sep)]
         if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include',
                        '#pragma', '#undef', '#warning']:
             reportError(directive, 20, 13)

@@ -2065,9 +2065,9 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
             msg = exprMsg + "true";
         else if (Token::Match(opTok, "!=|>|<"))
             msg = exprMsg + "false";
-        msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
+        if (!Token::Match(tok1, "%num%|NULL|nullptr") && !Token::Match(tok2, "%num%|NULL|nullptr"))
+            msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
     }
-
 
     reportError(errors, Severity::style, "duplicateExpression", msg + ".\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "

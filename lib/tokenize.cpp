@@ -143,6 +143,7 @@ Tokenizer::Tokenizer() :
     mSettings(nullptr),
     mErrorLogger(nullptr),
     mSymbolDatabase(nullptr),
+    mTemplateSimplifier(nullptr),
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
@@ -158,6 +159,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mSettings(settings),
     mErrorLogger(errorLogger),
     mSymbolDatabase(nullptr),
+    mTemplateSimplifier(nullptr),
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
@@ -168,11 +170,14 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
 {
     // make sure settings are specified
     assert(mSettings);
+
+    mTemplateSimplifier = new TemplateSimplifier(list, settings, errorLogger);
 }
 
 Tokenizer::~Tokenizer()
 {
     delete mSymbolDatabase;
+    delete mTemplateSimplifier;
 }
 
 
@@ -1786,7 +1791,7 @@ bool Tokenizer::tokenize(std::istream &code,
 void Tokenizer::findComplicatedSyntaxErrorsInTemplates()
 {
     validate();
-    TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates(list.front());
+    mTemplateSimplifier->checkComplicatedSyntaxErrorsInTemplates();
 }
 
 void Tokenizer::checkForEnumsWithTypedef()
@@ -2287,7 +2292,7 @@ void Tokenizer::simplifyTemplates()
             tok3->insertToken(MathLib::toString(sizeOfResult));
         }
         // Ticket #6181: normalize C++11 template parameter list closing syntax
-        if (tok->str() == "<" && TemplateSimplifier::templateParameters(tok)) {
+        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok)) {
             Token *endTok = tok->findClosingBracket();
             if (endTok && endTok->str() == ">>") {
                 endTok->str(">");
@@ -2296,10 +2301,7 @@ void Tokenizer::simplifyTemplates()
         }
     }
 
-    TemplateSimplifier::simplifyTemplates(
-        list,
-        mErrorLogger,
-        mSettings,
+    mTemplateSimplifier->simplifyTemplates(
 #ifdef MAXTIME
         mMaxTime,
 #else
@@ -2570,7 +2572,7 @@ void Tokenizer::setVarId()
 
 
 // Variable declarations can't start with "return" etc.
-#define NOTSTART_C "goto", "NOT", "return", "sizeof", "typedef"
+#define NOTSTART_C "case", "default", "goto", "NOT", "return", "sizeof", "typedef"
 static const std::set<std::string> notstart_c = { NOTSTART_C };
 static const std::set<std::string> notstart_cpp = { NOTSTART_C,
                                                     "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
@@ -3274,6 +3276,7 @@ void Tokenizer::createLinks2()
                     continue;
                 if (token->next() &&
                     !Token::Match(token->next(), "%name%|>|&|&&|*|::|,|(|)|{|}|;|[|:") &&
+                    !Token::simpleMatch(token->next(), ". . .") &&
                     !Token::Match(token->next(), "&& %name% ="))
                     continue;
             }
@@ -3654,7 +3657,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
                 const Token * const end = tok;
                 for (tok = lt; tok != end; tok = tok->next()) {
                     if (tok->isNumber())
-                        TemplateSimplifier::simplifyNumericCalculations(tok);
+                        mTemplateSimplifier->simplifyNumericCalculations(tok);
                 }
                 lt = tok->next();
             }
@@ -3816,7 +3819,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (!isC()) {
         // TODO: Only simplify template parameters
         for (Token *tok = list.front(); tok; tok = tok->next())
-            while (TemplateSimplifier::simplifyNumericCalculations(tok))
+            while (mTemplateSimplifier->simplifyNumericCalculations(tok))
                 ;
 
         // Handle templates..
@@ -3830,7 +3833,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         // function calls etc remain. These have the "wrong" syntax. So
         // this function will just fix so that the syntax is corrected.
         validate(); // #6847 - invalid code
-        TemplateSimplifier::cleanupAfterSimplify(list.front());
+        mTemplateSimplifier->cleanupAfterSimplify();
     }
 
     // Simplify pointer to standard types (C only)
@@ -5062,7 +5065,7 @@ bool Tokenizer::simplifyConstTernaryOp()
     bool ret = false;
     const Token *templateParameterEnd = nullptr; // The end of the current template parameter list, if any
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "<" && TemplateSimplifier::templateParameters(tok))
+        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok))
             templateParameterEnd = tok->findClosingBracket();
         if (tok == templateParameterEnd)
             templateParameterEnd = nullptr; // End of the current template parameter list
@@ -5076,7 +5079,7 @@ bool Tokenizer::simplifyConstTernaryOp()
         const int offset = (tok->previous()->str() == ")") ? 2 : 1;
 
         if (tok->strAt(-2*offset) == "<") {
-            if (isC() || !TemplateSimplifier::templateParameters(tok->tokAt(-2*offset)))
+            if (isC() || !mTemplateSimplifier->templateParameters(tok->tokAt(-2*offset)))
                 continue; // '<' is less than; the condition is not a constant
         }
 
@@ -5695,7 +5698,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
         //skip combinations of templates and namespaces
         while (!isC() && (Token::Match(tok2, "%type% <") || Token::Match(tok2, "%type% ::"))) {
-            if (tok2->next()->str() == "<" && !TemplateSimplifier::templateParameters(tok2->next())) {
+            if (tok2->next()->str() == "<" && !mTemplateSimplifier->templateParameters(tok2->next())) {
                 tok2 = nullptr;
                 break;
             }
@@ -5773,7 +5776,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                         while (tok2 && tok2->str() != "," && tok2->str() != ";") {
                             if (Token::Match(tok2, "{|(|["))
                                 tok2 = tok2->link();
-                            if (!isC() && tok2->str() == "<" && TemplateSimplifier::templateParameters(tok2) > 0) {
+                            if (!isC() && tok2->str() == "<" && mTemplateSimplifier->templateParameters(tok2) > 0) {
                                 tok2 = tok2->findClosingBracket();
                             }
                             if (!tok2)
@@ -7346,7 +7349,7 @@ void Tokenizer::simplifyReference()
 
 bool Tokenizer::simplifyCalculations()
 {
-    return TemplateSimplifier::simplifyCalculations(list.front());
+    return mTemplateSimplifier->simplifyCalculations();
 }
 
 void Tokenizer::simplifyOffsetPointerDereference()
@@ -9024,6 +9027,7 @@ static const std::set<std::string> keywords = {
     , "register"
     , "__restrict"
     , "__restrict__"
+    , "__thread"
 };
 // Remove "inline", "register", "restrict", "override", "final", "static" and "constexpr"
 // "restrict" keyword
@@ -9092,6 +9096,11 @@ void Tokenizer::simplifyKeyword()
                 Token * braceStart = tokNoExcept->next();
                 tok = tok->tokAt(3);
                 Token::createMutualLinks(braceStart, braceEnd);
+            }
+
+            // 3) thread_local
+            else if (tok->str() == "thread_local") {
+                tok->deleteThis();
             }
         }
     }
@@ -10410,4 +10419,3 @@ bool Tokenizer::VariableMap::hasVariable(const std::string &varname) const
 {
     return mVariableId.find(varname) != mVariableId.end();
 }
-
