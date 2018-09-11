@@ -457,6 +457,8 @@ static const Token * getIteratorExpression(const Token * tok)
 {
     if (!tok)
         return nullptr;
+    if (tok->isUnaryOp("*"))
+        return nullptr;
     if (!tok->isName()) {
         const Token *iter1 = getIteratorExpression(tok->astOperand1());
         if (iter1)
