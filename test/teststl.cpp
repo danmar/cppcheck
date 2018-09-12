@@ -709,6 +709,13 @@ private:
               "  if (begin(a).x == begin(b).x) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  std::list<int*> a;\n"
+              "  std::list<int*> b;\n"
+              "  if (*a.begin() == *b.begin()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iteratorSameExpression() {
