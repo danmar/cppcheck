@@ -929,25 +929,24 @@ bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::size
 // hence this pattern: "> %type% [%type%] < ... > :: %type% ("
 static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos)
 {
-    if (!Token::Match(tok, "> %type% <") && !Token::Match(tok, "> %type% %type% <"))
-        return false;
-
-    int currPos = 0;
-    currPos = 2 + (Token::Match(tok, "> %type% %type%"));
-
-    // Find the end of the template argument list
-    const Token *templateParmEnd = tok->linkAt(currPos);
-    if (!templateParmEnd)
-        templateParmEnd = tok->tokAt(currPos)->findClosingBracket();
-    if (!templateParmEnd)
-        return false;
-
-    if (Token::Match(templateParmEnd->next(), ":: ~| %type% (")) {
-        // We have a match, and currPos points at the template list opening '<'. Move it to the closing '>'
-        for (const Token *tok2 = tok->tokAt(currPos) ; tok2 != templateParmEnd ; tok2 = tok2->next())
-            ++currPos;
-        namepos = currPos + (templateParmEnd->strAt(2) == "~" ? 3 : 2);
-        return true;
+    namepos = 2;
+    while (tok && tok->next()) {
+        if (Token::Match(tok->next(), ";|{"))
+            return false;
+        else if (Token::Match(tok->next(), "%type% <")) {
+            const Token *closing = tok->tokAt(2)->findClosingBracket();
+            if (closing && Token::Match(closing->next(), ":: ~| %name% (")) {
+                if (closing->strAt(1) == "~")
+                    closing = closing->next();
+                while (tok && tok->next() != closing->next()) {
+                    tok = tok->next();
+                    namepos++;
+                }
+                return true;
+            }
+        }
+        tok = tok->next();
+        namepos++;
     }
     return false;
 }
@@ -990,6 +989,7 @@ void TemplateSimplifier::expandTemplate(
 {
     std::list<ScopeInfo2> scopeInfo;
     bool inTemplateDefinition = false;
+    const Token *startOfTemplateDeclaration = nullptr;
     const Token *endOfTemplateDefinition = nullptr;
     const Token * const templateDeclarationNameToken = templateDeclarationToken->tokAt(getTemplateNamePosition(templateDeclarationToken));
     for (const Token *tok3 = mTokenList.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
@@ -1000,8 +1000,10 @@ void TemplateSimplifier::expandTemplate(
         if (inTemplateDefinition) {
             if (!endOfTemplateDefinition && tok3->str() == "{")
                 endOfTemplateDefinition = tok3->link();
-            if (tok3 == endOfTemplateDefinition)
+            if (tok3 == endOfTemplateDefinition) {
                 inTemplateDefinition = false;
+                startOfTemplateDeclaration = nullptr;
+            }
         }
 
         if (tok3->str()=="template") {
@@ -1015,6 +1017,7 @@ void TemplateSimplifier::expandTemplate(
             } else {
                 inTemplateDefinition = false; // Only template instantiation
             }
+            startOfTemplateDeclaration = tok3;
         }
         if (Token::Match(tok3, "(|["))
             tok3 = tok3->link();
@@ -1064,6 +1067,12 @@ void TemplateSimplifier::expandTemplate(
             mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
             while (tok3 && tok3->str() != "::")
                 tok3 = tok3->next();
+
+            std::list<TokenAndName>::iterator it = std::find_if(mTemplateDeclarations.begin(),
+                                                   mTemplateDeclarations.end(),
+                                                   FindToken(startOfTemplateDeclaration));
+            if (it != mTemplateDeclarations.end())
+                mMemberFunctionsToDelete.push_back(*it);
         }
 
         // not part of template.. go on to next token
@@ -1854,6 +1863,13 @@ void TemplateSimplifier::simplifyTemplates(
                 mTemplateDeclarations.erase(decl);
                 removeTemplate(it->token);
             }
+        }
+
+        // remove out of line member functions
+        while (!mMemberFunctionsToDelete.empty()) {
+            removeTemplate(mMemberFunctionsToDelete.begin()->token);
+            mTemplateDeclarations.remove(mMemberFunctionsToDelete.front());
+            mMemberFunctionsToDelete.erase(mMemberFunctionsToDelete.begin());
         }
     }
 }
