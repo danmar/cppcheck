@@ -69,7 +69,7 @@ public:
      */
     struct TokenAndName {
         TokenAndName(Token *tok, const std::string &s, const std::string &n);
-        bool operator == (const TokenAndName & rhs) {
+        bool operator == (const TokenAndName & rhs) const {
             return token == rhs.token && scope == rhs.scope && name == rhs.name;
         }
         Token *token;
