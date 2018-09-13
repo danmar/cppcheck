@@ -229,6 +229,7 @@ private:
         TEST_CASE(garbageCode196); // #8265
         TEST_CASE(garbageCode197); // #8385
         TEST_CASE(garbageCode198); // #8383
+        TEST_CASE(garbageCode199); // #8752
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1538,6 +1539,11 @@ private:
                                " ( name5 name5 name5 ( { 1 >= void { ( ()) } 1 name3 return >= >= ( ) >= name5 (\n"
                                " name5 name6 :nam00 [ ()])}))})})})};\n"
                                "}"), InternalError);
+    }
+
+    // #8752
+    void garbageCode199() {
+        checkCode("d f(){e n00e0[]n00e0&""0+f=0}");
     }
 
     void syntaxErrorFirstToken() {

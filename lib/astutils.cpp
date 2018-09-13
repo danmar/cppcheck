@@ -174,10 +174,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     if (tok->astParent() && tok->isUnaryOp("*"))
         return tok;
     // Skip following variables if it is used in an assignment
-    if (Token::Match(tok->astTop(), "%assign%") || Token::Match(tok->next(), "%assign%"))
-        return tok;
-    // Skip references
-    if (Token::Match(tok->astTop(), "& %var% ;") && Token::Match(tok->astTop()->astOperand1(), "%type%"))
+    if (Token::Match(tok->next(), "%assign%"))
         return tok;
     const Variable * var = tok->variable();
     const Token * varTok = getVariableInitExpression(var);
@@ -197,7 +194,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
-    if (!var->isConst() && isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp))
+    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp)))
         return tok;
     // Start at beginning of initialization
     const Token * startToken = varTok;
@@ -223,7 +220,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
                 return tok;
             if (var2->isStatic() && !var2->isConst())
                 return tok;
-            if (!var2->isConst() && isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp))
+            if (!var2->isConst() && (!precedes(tok2, endToken2) || isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp)))
                 return tok;
             // Recognized as a variable but the declaration is unknown
         } else if (tok2->varId() > 0) {
