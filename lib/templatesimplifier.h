@@ -69,6 +69,9 @@ public:
      */
     struct TokenAndName {
         TokenAndName(Token *tok, const std::string &s, const std::string &n);
+        bool operator == (const TokenAndName & rhs) const {
+            return token == rhs.token && scope == rhs.scope && name == rhs.name;
+        }
         Token *token;
         std::string scope;
         std::string name;
@@ -234,6 +237,7 @@ private:
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
+    std::list<TokenAndName> mMemberFunctionsToDelete;
 };
 
 /// @}

@@ -215,12 +215,7 @@ private:
                                 "class Fred<float> { } ; "
                                 "Fred<float> :: Fred<float> ( ) { }";
 
-        const char actual[] = "template < class T > Fred < T > :: Fred ( ) { } " // <- TODO: this should be removed
-                              "Fred<float> fred ; "
-                              "class Fred<float> { } ; "
-                              "Fred<float> :: Fred<float> ( ) { }";
-
-        TODO_ASSERT_EQUALS(expected, actual, tok(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template6() {
@@ -563,8 +558,7 @@ private:
                             "A<int> a;\n";
 
         // The expected result..
-        const char expected[] = "template < class T > A < T > :: ~ A ( ) { } "  // <- TODO: this should be removed
-                                "A<int> a ; "
+        const char expected[] = "A<int> a ; "
                                 "class A<int> { public: ~ A<int> ( ) ; } ; "
                                 "A<int> :: ~ A<int> ( ) { }";
         ASSERT_EQUALS(expected, tok(code));
@@ -950,9 +944,7 @@ private:
                             "template void Fred<float>::f();\n"
                             "template void Fred<int>::g();\n";
 
-        const char expected[] = "template < class T > void Fred < T > :: f ( ) { } "
-                                "template < class T > void Fred < T > :: g ( ) { } "
-                                "template void Fred<float> :: f ( ) ; "
+        const char expected[] = "template void Fred<float> :: f ( ) ; "
                                 "template void Fred<int> :: g ( ) ; "
                                 "class Fred<float> { void f ( ) ; void g ( ) ; } ; "
                                 "void Fred<float> :: f ( ) { } "
@@ -1147,7 +1139,6 @@ private:
                             "template <class T, unsigned S> C3<T, S>::C3(const C3<T, S> &v) { C1<T *> c1; }\n"
                             "C3<int,6> c3;";
         const char exp[] = "template < class T > void f ( ) { x = y ? C1 < int > :: allocate ( 1 ) : 0 ; } "
-                           "template < class T , int S > C3 < T , S > :: C3 ( const C3 < T , S > & v ) { C1 < T * > c1 ; } "
                            "C3<int,6> c3 ; "
                            "class C3<int,6> { } ; "
                            "C3<int,6> :: C3<int,6> ( const C3<int,6> & v ) { C1<int*> c1 ; } "
@@ -1208,12 +1199,7 @@ private:
                             "const int * * foo ( ) ; "
                             "} ; "
                             "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
-        const char curr[] = "template < class T > const int * * Fred < T > :: foo ( ) { return nullptr ; } "
-                            "Fred<int> fred ; struct Fred<int> { "
-                            "const int * * foo ( ) ; "
-                            "} ; "
-                            "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
-        TODO_ASSERT_EQUALS(exp, curr, tok(code));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template67() { // ticket #8122
@@ -1241,29 +1227,11 @@ private:
                                 "const Containter<int> * c ; "
                                 "} ; "
                                 "Containter<int> :: Containter<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
-                                "Containter<int> :: Containter<int> ( const Containter<int> & ) { nElements = x . nElements ; c = x . c ; } "
-                                "Containter<int> & Containter<int> :: operator= ( const Containter<int> & x) { mElements = x . mElements ; c = x . c ; return * this ; }\n"
+                                "Containter<int> :: Containter<int> ( const Containter<int> & x ) { nElements = x . nElements ; c = x . c ; } "
+                                "Containter<int> & Containter<int> :: operator= ( const Containter<int> & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
                                 "Containter<int> :: ~ Containter<int> ( ) { }";
 
-        const char actual[] = "template < class T > Containter < T > :: Containter ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
-                              "template < class T > Containter < T > :: Containter ( const Containter & x ) { nElements = x . nElements ; c = x . c ; } "
-                              "template < class T > Containter < T > & Containter < T > :: operator= ( const Containter & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
-                              "template < class T > Containter < T > :: ~ Containter ( ) { } "
-                              "Containter<int> intContainer ; "
-                              "struct Containter<int> { "
-                              "Containter<int> ( ) ; "
-                              "Containter<int> ( const Containter<int> & ) ; "
-                              "Containter<int> & operator= ( const Containter<int> & ) ; "
-                              "~ Containter<int> ( ) ; "
-                              "int * mElements ; "
-                              "const Containter<int> * c ; "
-                              "} ; "
-                              "Containter<int> :: Containter<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
-                              "Containter<int> :: Containter<int> ( const Containter<int> & x ) { nElements = x . nElements ; c = x . c ; } "
-                              "Containter<int> & Containter<int> :: operator= ( const Containter<int> & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
-                              "Containter<int> :: ~ Containter<int> ( ) { }";
-
-        TODO_ASSERT_EQUALS(expected, actual, tok(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
