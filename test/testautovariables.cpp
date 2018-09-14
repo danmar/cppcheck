@@ -274,6 +274,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Assignment of function parameter has no effect outside the function.\n", errout.str());
 
+        check("void foo(int b) {\n"
+              "    b += 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Assignment of function parameter has no effect outside the function.\n", errout.str());
+
         check("void foo(std::string s) {\n"
               "    s = foo(b);\n"
               "}");
@@ -385,7 +390,7 @@ private:
     }
 
     void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
-        check("void f(int* a) { a = }");
+        ASSERT_THROW(check("void f(int* a) { a = }"), InternalError);
         check("struct custom_type { custom_type(int) {} };\n"
               "void func(int) {}\n"
               "int var;\n"

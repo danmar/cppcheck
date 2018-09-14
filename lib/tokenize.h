@@ -35,6 +35,7 @@ class Settings;
 class SymbolDatabase;
 class TimerResults;
 class Token;
+class TemplateSimplifier;
 
 namespace simplecpp {
     class TokenList;
@@ -873,6 +874,8 @@ private:
 
     /** Symbol database that all checks etc can use */
     SymbolDatabase *mSymbolDatabase;
+
+    TemplateSimplifier *mTemplateSimplifier;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */

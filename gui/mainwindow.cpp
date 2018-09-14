@@ -896,7 +896,6 @@ Settings MainWindow::getCppcheckSettings()
     result.addEnabled("missingInclude");
     if (!result.buildDir.empty())
         result.addEnabled("unusedFunction");
-    result.debug = false;
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     result.quiet = false;
     result.verbose = true;
@@ -1651,28 +1650,28 @@ void MainWindow::enableProjectOpenActions(bool enable)
 void MainWindow::openRecentProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
-    if (action) {
-        const QString project = action->data().toString();
-        QFileInfo inf(project);
-        if (inf.exists()) {
-            loadProjectFile(project);
-        } else {
-            const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
-                                  "Do you want to remove the file from the recently "
-                                  "used projects -list?").arg(project));
+    if (!action)
+        return;
+    const QString project = action->data().toString();
+    QFileInfo inf(project);
+    if (inf.exists()) {
+        loadProjectFile(project);
+        loadLastResults();
+    } else {
+        const QString text(tr("The project file\n\n%1\n\n could not be found!\n\n"
+                              "Do you want to remove the file from the recently "
+                              "used projects -list?").arg(project));
 
-            QMessageBox msg(QMessageBox::Warning,
-                            tr("Cppcheck"),
-                            text,
-                            QMessageBox::Yes | QMessageBox::No,
-                            this);
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Cppcheck"),
+                        text,
+                        QMessageBox::Yes | QMessageBox::No,
+                        this);
 
-            msg.setDefaultButton(QMessageBox::No);
-            int rv = msg.exec();
-            if (rv == QMessageBox::Yes) {
-                removeProjectMRU(project);
-            }
-
+        msg.setDefaultButton(QMessageBox::No);
+        int rv = msg.exec();
+        if (rv == QMessageBox::Yes) {
+            removeProjectMRU(project);
         }
     }
 }
@@ -1686,11 +1685,10 @@ void MainWindow::updateMRUMenuItems()
 
     QStringList projects = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
 
-    // Do a sanity check - remove duplicates and empty or space only items
+    // Do a sanity check - remove duplicates and non-existing projects
     int removed = projects.removeDuplicates();
     for (int i = projects.size() - 1; i >= 0; i--) {
-        QString text = projects[i].trimmed();
-        if (text.isEmpty()) {
+        if (!QFileInfo(projects[i]).exists()) {
             projects.removeAt(i);
             removed++;
         }

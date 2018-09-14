@@ -206,7 +206,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
 
-            if (!Token::Match(funcname, "%name% [(),;]:}]"))
+            if (!Token::Match(funcname, "%name% [(),;]:}>]"))
                 continue;
         }
 

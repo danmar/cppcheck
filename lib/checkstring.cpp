@@ -305,9 +305,9 @@ void CheckString::checkIncorrectStringCompare()
                         incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
                     }
                 }
-            } else if (Token::Match(tok, "&&|%oror%|( %str% &&|%oror%|)") && !Token::Match(tok, "( %str% )")) {
+            } else if (Token::Match(tok, "&&|%oror%|( %str%|%char% &&|%oror%|)") && !Token::Match(tok, "( %str%|%char% )")) {
                 incorrectStringBooleanError(tok->next(), tok->strAt(1));
-            } else if (Token::Match(tok, "if|while ( %str% )")) {
+            } else if (Token::Match(tok, "if|while ( %str%|%char% )") && !tok->tokAt(2)->getValue(0)) {
                 incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
             }
         }
@@ -321,7 +321,13 @@ void CheckString::incorrectStringCompareError(const Token *tok, const std::strin
 
 void CheckString::incorrectStringBooleanError(const Token *tok, const std::string& string)
 {
-    reportError(tok, Severity::warning, "incorrectStringBooleanError", "Conversion of string literal " + string + " to bool always evaluates to true.", CWE571, false);
+    const bool charLiteral = string[0] == '\'';
+    const std::string literalType = charLiteral ? "char" : "string";
+    const std::string result = (string == "\'\\0\'") ? "false" : "true";
+    reportError(tok,
+                Severity::warning,
+                charLiteral ? "incorrectCharBooleanError" : "incorrectStringBooleanError",
+                "Conversion of " + literalType + " literal " + string + " to bool always evaluates to " + result + '.', CWE571, false);
 }
 
 //---------------------------------------------------------------------------

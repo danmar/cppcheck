@@ -299,7 +299,7 @@ def isFloatCounterInWhileLoop(whileToken):
     else:
         return False
     token = whileBodyStart
-    while (token != whileBodyStart.link):
+    while token != whileBodyStart.link:
         token = token.next
         for counterToken in counterTokens:
             if not counterToken.valueType or not counterToken.valueType.isFloat():
@@ -480,7 +480,7 @@ def isHexDigit(c):
 
 
 def isOctalDigit(c):
-    return (c >= '0' and c <= '7')
+    return c >= '0' and c <= '7'
 
 
 def isNoReturnScope(tok):
@@ -503,7 +503,8 @@ def isNoReturnScope(tok):
 def misra_3_1(rawTokens):
     for token in rawTokens:
         if token.str.startswith('/*') or token.str.startswith('//'):
-            if '//' in token.str[2:] or '/*' in token.str[2:]:
+            s = token.str.lstrip('/')
+            if '//' in s or '/*' in s:
                 reportError(token, 3, 1)
 
 
@@ -591,7 +592,7 @@ def misra_5_2(data):
                     else:
                         reportError(variable2.nameToken, 5, 2)
             for innerscope in scopeVars[scope]["scopelist"]:
-                if (variable1.nameToken.str[:31] == innerscope.className[:31]):
+                if variable1.nameToken.str[:31] == innerscope.className[:31]:
                     if int(variable1.nameToken.linenr) > int(innerscope.bodyStart.linenr):
                         reportError(variable1.nameToken, 5, 2)
                     else:
@@ -600,7 +601,7 @@ def misra_5_2(data):
             continue
         for i, scopename1 in enumerate(scopeVars[scope]["scopelist"]):
             for scopename2 in scopeVars[scope]["scopelist"][i + 1:]:
-                if (scopename1.className[:31] == scopename2.className[:31]):
+                if scopename1.className[:31] == scopename2.className[:31]:
                     if int(scopename1.bodyStart.linenr) > int(scopename2.bodyStart.linenr):
                         reportError(scopename1.bodyStart, 5, 2)
                     else:
@@ -642,7 +643,7 @@ def misra_5_3(data):
                             reportError(outerVar.nameToken, 5, 3)
                 outerScope = outerScope.nestedIn
             for scope in data.scopes:
-                if (scope.className and innerVar.nameToken.str[:31] == scope.className[:31]):
+                if scope.className and innerVar.nameToken.str[:31] == scope.className[:31]:
                     if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
                         reportError(innerVar.nameToken, 5, 3)
                     else:
@@ -656,14 +657,14 @@ def misra_5_3(data):
                         reportError(innerScope.bodyStart, 5, 3)
     for e in enum:
         for scope in data.scopes:
-            if (scope.className and scope.className[:31] == e[:31]):
+            if scope.className and scope.className[:31] == e[:31]:
                 reportError(scope.bodyStart, 5, 3)
 
 
 def misra_5_4(data):
     macro = {}
     compile_name = re.compile(r'#define ([a-zA-Z0-9_]+)')
-    compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[\(]([a-zA-Z0-9_, ]+)[\)]')
+    compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[(]([a-zA-Z0-9_, ]+)[)]')
     for dir in data.directives:
         res1 = compile_name.match(dir.str)
         if res1:
@@ -1476,7 +1477,12 @@ def misra_20_3(rawTokens):
         if not simpleMatch(token, '# include'):
             continue
         headerToken = token.next.next
-        if not headerToken or not (headerToken.str.startswith('<') or headerToken.str.startswith('"')):
+        num = 0
+        while headerToken and headerToken.linenr == linenr:
+            if not headerToken.str.startswith('/*') and not headerToken.str.startswith('//'):
+                num += 1
+            headerToken = headerToken.next
+        if num != 1:
             reportError(token, 20, 3)
 
 
@@ -1496,10 +1502,9 @@ def misra_20_5(data):
 def misra_20_13(data):
     for directive in data.directives:
         dir = directive.str
-        if dir.find(' ') > 0:
-            dir = dir[:dir.find(' ')]
-        if dir.find('(') > 0:
-            dir = dir[:dir.find('(')]
+        for sep in ' (<':
+            if dir.find(sep) > 0:
+                dir = dir[:dir.find(sep)]
         if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include',
                        '#pragma', '#undef', '#warning']:
             reportError(directive, 20, 13)
@@ -1679,7 +1684,7 @@ def generateTable():
     # what rules are handled by this addon?
     addon = []
     compiled = re.compile(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open('__file__'):
+    for line in open(__file__):
         res = compiled.match(line)
         if res is None:
             continue
@@ -1836,7 +1841,7 @@ def parseDump(dumpfile):
                 print("\nRule violations found: %d\n" % (len(VIOLATIONS)))
             exitCode = 1
 
-    sys.exit(exitCode)
+    return exitCode
 
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
@@ -1879,7 +1884,7 @@ parser.add_argument("--quiet", help="Only print something when there is an error
 parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
 parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
-parser.add_argument("file", help="Path of dump file from cppcheck")
+parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
 args = parser.parse_args()
 
 if args.generate_table:
@@ -1899,5 +1904,10 @@ else:
         QUIET = True
     if args.no_summary:
         SHOW_SUMMARY = False
-    if args.file:
-        parseDump(args.file)
+    if args.dumpfile:
+        exitCode = 0
+        for item in args.dumpfile:
+            checkCode = parseDump(item)
+            if checkCode != 0:
+                exitCode = checkCode
+        sys.exit(exitCode)

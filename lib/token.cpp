@@ -1248,7 +1248,7 @@ std::string Token::expressionString() const
     const Token * const top = this;
     const Token *start = top;
     while (start->astOperand1() &&
-           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )")))
+           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )") || start->str() == "{"))
         start = start->astOperand1();
     const Token *end = top;
     while (end->astOperand1() && (end->astOperand2() || end->isUnaryPreOp())) {
@@ -1374,61 +1374,67 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             if (tok->mValues->size() > 1U)
                 out << '{';
         }
-        for (std::list<ValueFlow::Value>::const_iterator it=tok->mValues->begin(); it!=tok->mValues->end(); ++it) {
+        for (const ValueFlow::Value &value : *tok->mValues) {
             if (xml) {
                 out << "      <value ";
-                switch (it->valueType) {
+                switch (value.valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-                        out << "intvalue=\"" << (MathLib::biguint)it->intvalue << '\"';
+                        out << "intvalue=\"" << (MathLib::biguint)value.intvalue << '\"';
                     else
-                        out << "intvalue=\"" << it->intvalue << '\"';
+                        out << "intvalue=\"" << value.intvalue << '\"';
                     break;
                 case ValueFlow::Value::TOK:
-                    out << "tokvalue=\"" << it->tokvalue << '\"';
+                    out << "tokvalue=\"" << value.tokvalue << '\"';
                     break;
                 case ValueFlow::Value::FLOAT:
-                    out << "floatvalue=\"" << it->floatValue << '\"';
+                    out << "floatvalue=\"" << value.floatValue << '\"';
                     break;
                 case ValueFlow::Value::MOVED:
-                    out << "movedvalue=\"" << ValueFlow::Value::toString(it->moveKind) << '\"';
+                    out << "movedvalue=\"" << ValueFlow::Value::toString(value.moveKind) << '\"';
                     break;
                 case ValueFlow::Value::UNINIT:
                     out << "uninit=\"1\"";
                     break;
+                case ValueFlow::Value::CONTAINER_SIZE:
+                    out << "container-size=\"" << value.intvalue << '\"';
+                    break;
                 }
-                if (it->condition)
-                    out << " condition-line=\"" << it->condition->linenr() << '\"';
-                if (it->isKnown())
+                if (value.condition)
+                    out << " condition-line=\"" << value.condition->linenr() << '\"';
+                if (value.isKnown())
                     out << " known=\"true\"";
-                else if (it->isPossible())
+                else if (value.isPossible())
                     out << " possible=\"true\"";
-                else if (it->isInconclusive())
+                else if (value.isInconclusive())
                     out << " inconclusive=\"true\"";
                 out << "/>" << std::endl;
             }
 
             else {
-                if (it != tok->mValues->begin())
+                if (&value != &tok->mValues->front())
                     out << ",";
-                switch (it->valueType) {
+                switch (value.valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-                        out << (MathLib::biguint)it->intvalue;
+                        out << (MathLib::biguint)value.intvalue;
                     else
-                        out << it->intvalue;
+                        out << value.intvalue;
                     break;
                 case ValueFlow::Value::TOK:
-                    out << it->tokvalue->str();
+                    out << value.tokvalue->str();
                     break;
                 case ValueFlow::Value::FLOAT:
-                    out << it->floatValue;
+                    out << value.floatValue;
                     break;
                 case ValueFlow::Value::MOVED:
-                    out << ValueFlow::Value::toString(it->moveKind);
+                    out << ValueFlow::Value::toString(value.moveKind);
                     break;
                 case ValueFlow::Value::UNINIT:
                     out << "Uninit";
+                    break;
+                case ValueFlow::Value::CONTAINER_SIZE:
+                    out << "size=" << value.intvalue;
                     break;
                 }
             }

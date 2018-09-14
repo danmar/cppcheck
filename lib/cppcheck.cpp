@@ -54,7 +54,7 @@ static TimerResults S_timerResults;
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 CppCheck::CppCheck(ErrorLogger &errorLogger, bool useGlobalSuppressions)
-    : mErrorLogger(errorLogger), mExitCode(0), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
+    : mErrorLogger(errorLogger), mExitCode(0), mSuppressInternalErrorFound(false), mUseGlobalSuppressions(useGlobalSuppressions), mTooManyConfigs(false), mSimplify(true)
 {
 }
 
@@ -108,6 +108,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     mExitCode = 0;
+    mSuppressInternalErrorFound = false;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
@@ -174,8 +175,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  it->msg,
                                                  "syntaxError",
                                                  false);
-                mErrorLogger.reportErr(errmsg);
-                return 1;
+                reportErr(errmsg);
+                return mExitCode;
             }
         }
 
@@ -233,17 +234,18 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         if (!mSettings.buildDir.empty()) {
             // Get toolinfo
-            std::string toolinfo;
-            toolinfo += CPPCHECK_VERSION_STRING;
-            toolinfo += mSettings.isEnabled(Settings::WARNING) ? 'w' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::STYLE) ? 's' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ';
-            toolinfo += mSettings.isEnabled(Settings::INFORMATION) ? 'i' : ' ';
-            toolinfo += mSettings.userDefines;
+            std::ostringstream toolinfo;
+            toolinfo << CPPCHECK_VERSION_STRING;
+            toolinfo << (mSettings.isEnabled(Settings::WARNING) ? 'w' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::STYLE) ? 's' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::PERFORMANCE) ? 'p' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::PORTABILITY) ? 'p' : ' ');
+            toolinfo << (mSettings.isEnabled(Settings::INFORMATION) ? 'i' : ' ');
+            toolinfo << mSettings.userDefines;
+            mSettings.nomsg.dump(toolinfo);
 
             // Calculate checksum so it can be compared with old checksum / future checksums
-            const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo);
+            const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo.str());
             std::list<ErrorLogger::ErrorMessage> errors;
             if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, checksum, &errors)) {
                 while (!errors.empty()) {
@@ -393,7 +395,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (mSettings.force || mSettings.maxConfigs > 1) {
                     const unsigned long long checksum = mTokenizer.list.calculateChecksum();
                     if (checksums.find(checksum) != checksums.end()) {
-                        if (mSettings.isEnabled(Settings::INFORMATION) && (mSettings.debug || mSettings.verbose))
+                        if (mSettings.debugwarnings)
                             purgedConfigurationMessage(filename, mCurrentConfig);
                         continue;
                     }
@@ -427,7 +429,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
 
             } catch (const InternalError &e) {
-                internalErrorFound=true;
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
                 if (e.token) {
@@ -449,6 +450,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  false);
 
                 reportErr(errmsg);
+                if (!mSuppressInternalErrorFound)
+                    internalErrorFound = true;
             }
         }
 
@@ -498,6 +501,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (internalErrorFound && (mExitCode==0)) {
         mExitCode = 1;
     }
+
     return mExitCode;
 }
 
@@ -748,6 +752,8 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
+    mSuppressInternalErrorFound = false;
+
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 
@@ -762,11 +768,15 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
     if (mUseGlobalSuppressions) {
-        if (mSettings.nomsg.isSuppressed(errorMessage))
+        if (mSettings.nomsg.isSuppressed(errorMessage)) {
+            mSuppressInternalErrorFound = true;
             return;
+        }
     } else {
-        if (mSettings.nomsg.isSuppressedLocal(errorMessage))
+        if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
+            mSuppressInternalErrorFound = true;
             return;
+        }
     }
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && (mUseGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))

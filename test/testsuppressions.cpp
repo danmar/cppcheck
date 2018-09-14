@@ -58,12 +58,14 @@ private:
         TEST_CASE(suppressionWithRelativePaths); // #4733
         TEST_CASE(suppressingSyntaxErrors); // #7076
         TEST_CASE(suppressingSyntaxErrorsInline); // #5917
-
+        TEST_CASE(suppressingSyntaxErrorsWhileFileRead) // PR #1333
         TEST_CASE(symbol);
 
         TEST_CASE(unusedFunction);
 
         TEST_CASE(matchglob);
+
+        TEST_CASE(suppressingSyntaxErrorAndExitCode);
     }
 
     void suppressionsBadId1() const {
@@ -523,6 +525,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressable (PR #1333)
+        std::map<std::string, std::string> files;
+        files["test.cpp"] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
+                            "{\n"
+                            "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
+                            "[!IF \"(as:modconf('Ks')[1]/KsGeneral/KsType = 'KS_CFG_TYPE_KS_MASTER') and\n"
+                            "      (as:modconf('Ks')[1]/KsGeneral/KsUseShe = 'true')\"!][!//\n"
+                            "  {\n"
+                            "      &varNB_GetErrorStatus,\n"
+                            "      &varNB_WriteBlock,\n"
+                            "      &varNB_ReadBlock\n"
+                            "  },\n"
+                            "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
+                            "[!ENDIF!][!//\n"
+                            "};";
+        checkSuppression(files, "syntaxError:test.cpp:4");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void symbol() {
         Suppressions::Suppression s;
         s.errorId = "foo";
@@ -564,6 +585,38 @@ private:
         ASSERT_EQUALS(true, Suppressions::matchglob("?y?", "xyz"));
         ASSERT_EQUALS(true, Suppressions::matchglob("?/?/?", "x/y/z"));
     }
+
+    void suppressingSyntaxErrorAndExitCode() {
+        std::map<std::string, std::string> files;
+        files["test.cpp"] = "fi if;";
+
+        ASSERT_EQUALS(0, checkSuppression(files, "*:test.cpp"));
+        ASSERT_EQUALS("", errout.str());
+
+        // multi files, but only suppression one
+        std::map<std::string, std::string> mfiles;
+        mfiles["test.cpp"] = "fi if;";
+        mfiles["test2.cpp"] = "fi if";
+        ASSERT_EQUALS(1, checkSuppression(mfiles, "*:test.cpp"));
+        ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
+
+        // multi error in file, but only suppression one error
+        std::map<std::string, std::string> file2;
+        file2["test.cpp"] = "fi fi\n"
+                            "if if;";
+        ASSERT_EQUALS(1, checkSuppression(file2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
+
+        // multi error in file, but only suppression one error (2)
+        std::map<std::string, std::string> file3;
+        file3["test.cpp"] = "void f(int x, int y){\n"
+                            "    int a = x/0;\n"
+                            "    int b = y/0;\n"
+                            "}\n"
+                            "f(0, 1);\n";
+        ASSERT_EQUALS(1, checkSuppression(file3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
+    }
+
 };
 
 REGISTER_TEST(TestSuppressions)

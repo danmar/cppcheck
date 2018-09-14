@@ -52,7 +52,7 @@ private:
         TEST_CASE(optionwithoutfile);
         TEST_CASE(verboseshort);
         TEST_CASE(verboselong);
-        TEST_CASE(debug);
+        TEST_CASE(debugSimplified);
         TEST_CASE(debugwarnings);
         TEST_CASE(forceshort);
         TEST_CASE(forcelong);
@@ -74,6 +74,7 @@ private:
         TEST_CASE(includesnospace);
         TEST_CASE(includes2);
         TEST_CASE(includesFile);
+        TEST_CASE(configExcludesFile);
         TEST_CASE(enabledAll);
         TEST_CASE(enabledStyle);
         TEST_CASE(enabledPerformance);
@@ -224,12 +225,12 @@ private:
         ASSERT_EQUALS(true, settings.verbose);
     }
 
-    void debug() {
+    void debugSimplified() {
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--debug", "file.cpp"};
-        settings.debug = false;
+        const char *argv[] = {"cppcheck", "--debug-simplified", "file.cpp"};
+        settings.debugSimplified = false;
         ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings.debug);
+        ASSERT_EQUALS(true, settings.debugSimplified);
     }
 
     void debugwarnings() {
@@ -450,11 +451,17 @@ private:
     }
 
     void includesFile() {
-        // TODO: Fails since cannot open the file
         REDIRECT;
-        const char *argv[] = {"cppcheck", "--includes-file=inclpaths.txt", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--includes-file=fileThatDoesNotExist.txt", "file.cpp"};
         settings.includePaths.clear();
-        ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
+    }
+
+    void configExcludesFile() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--config-excludes-file=fileThatDoesNotExist.txt", "file.cpp"};
+        settings.includePaths.clear();
+        ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void enabledAll() {

@@ -391,6 +391,7 @@ private:
         TEST_CASE(simplifyOperatorName7); // ticket #4619
         TEST_CASE(simplifyOperatorName8); // ticket #5706
         TEST_CASE(simplifyOperatorName9); // ticket #5709 - comma operator not properly tokenized
+        TEST_CASE(simplifyOperatorName10); // #8746 - using a::operator=
 
         TEST_CASE(simplifyNullArray);
 
@@ -838,12 +839,11 @@ private:
                                 "};\n"
                                 "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
                                 "Containter<int> intContainer;";
-            const char exp [] = "5: template < class T > Containter < T > :: Containter ( ) : mElements ( nullptr ) { }\n"
-                                "6: Containter<int> intContainer@1 ; struct Containter<int> {\n"
+            const char exp [] = "6: Containter<int> intContainer@1 ; struct Containter<int> {\n"
                                 "2: Containter<int> ( ) ;\n"
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"
-                                "5: Containter<int> :: Containter ( ) : mElements@2 ( nullptr ) { }\n";
+                                "5: Containter<int> :: Containter<int> ( ) : mElements@2 ( nullptr ) { }\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
         }
     }
@@ -4081,6 +4081,13 @@ private:
 
             ASSERT_EQUALS(out5, tokenizeAndStringify(in5));
         }
+        {
+            // Ticket #8679
+            const char code[] = "thread_local void *thread_local_var; "
+                                "__thread void *thread_local_var_2;";
+            ASSERT_EQUALS("void * thread_local_var ; "
+                          "void * thread_local_var_2 ;", tokenizeAndStringify(code));
+        }
     }
 
     /**
@@ -4692,6 +4699,17 @@ private:
             const Token *tok2 = tok1->tokAt(2);
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+        {
+            // #8654
+            const char code[] = "template<int N> struct A {}; "
+                                "template<int... Ns> struct foo : A<Ns>... {};";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
+            ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
         }
     }
 
@@ -5932,6 +5950,8 @@ private:
         ASSERT_EQUALS("void f ( ) { if ( not = x ) { } }", tokenizeAndStringify("void f() { if (not=x){} }", false, true, Settings::Native, "test.cpp"));
         // #8029
         ASSERT_EQUALS("void f ( struct S * s ) { x = s . and + 1 ; }", tokenizeAndStringify("void f(struct S *s) { x = s->and + 1; }", false, true, Settings::Native, "test.c"));
+        // #8745
+        ASSERT_EQUALS("void f ( ) { if ( x ) { or = 0 ; } }", tokenizeAndStringify("void f() { if (x) or = 0; }"));
     }
 
     void simplifyCalculations() {
@@ -6101,6 +6121,11 @@ private:
     void simplifyOperatorName9() { // Ticket #5709
         const char code[] = "struct R { R operator, ( R b ) ; } ;";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName10() { // #8746
+        const char code[] = "using a::operator=;";
+        ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code));
     }
 
     void simplifyNullArray() {
@@ -8493,6 +8518,7 @@ private:
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
+        ASSERT_EQUALS("abc::(=", testAst("a = (b::c)();"));
     }
 
     void astlambda() {

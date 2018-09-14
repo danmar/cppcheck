@@ -50,6 +50,8 @@ void MainWindow::loadFile()
             if (!errorMessage.isEmpty())
                 errorMessage += '\n';
             errorMessage += line;
+        } else if (!url.isEmpty() && QRegExp("(head|1.8.) .*:[0-9]+:.*\\]").exactMatch(line)) {
+            allErrors << (url + '\n' + line);
         }
     }
     if (!url.isEmpty() && !errorMessage.isEmpty())
@@ -102,8 +104,9 @@ void MainWindow::showResult(QListWidgetItem *item)
     if (lines.size() < 2)
         return;
     const QString url = lines[0];
-    const QString msg = lines[1];
-
+    QString msg = lines[1];
+    if (msg.startsWith("head ") || msg.startsWith("1.84 "))
+        msg = msg.mid(5);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);
@@ -131,17 +134,8 @@ void MainWindow::showResult(QListWidgetItem *item)
     f.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream textStream(&f);
     const QString fileData = textStream.readAll();
-    ui->code->setPlainText(fileData);
-    for (int pos = 0, line = 1; pos < fileData.size(); ++pos) {
-        if (fileData[pos] == '\n') {
-            ++line;
-            if (line == lineNumber) {
-                QTextCursor textCursor = ui->code->textCursor();
-                textCursor.setPosition(pos+1);
-                ui->code->setTextCursor(textCursor);
-                ui->code->centerCursor();
-                break;
-            }
-        }
-    }
+    ui->code->setError(fileData, lineNumber, QStringList());
+
+    ui->edit1->setText(url);
+    ui->edit2->setText(WORK_FOLDER + '/' + fileName);
 }

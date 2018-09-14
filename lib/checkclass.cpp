@@ -1805,6 +1805,9 @@ void CheckClass::checkConst()
                 const std::string& opName = func->tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
+            } else if (Token::simpleMatch(func->retDef, "std :: shared_ptr <")) {
+                // Don't warn if a std::shared_ptr is returned
+                continue;
             } else {
                 // don't warn for unknown types..
                 // LPVOID, HDC, etc
@@ -2377,8 +2380,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
     }
 
     reportError(errorPath, Severity::warning, "virtualCallInConstructor",
-                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ".\n"
-                "Call of pure virtual function '" + funcname + "' in " + scopeFunctionTypeName + ". Dynamic binding is not used.", CWE(0U), false);
+                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ". Dynamic binding is not used.", CWE(0U), false);
 }
 
 void CheckClass::pureVirtualFunctionCallInConstructorError(
@@ -2433,17 +2435,19 @@ void CheckClass::checkDuplInheritedMembers()
 }
 
 void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
-        const std::string &derivedname, const std::string &basename,
-        const std::string &variablename, bool derivedIsStruct, bool baseIsStruct)
+        const std::string &derivedName, const std::string &baseName,
+        const std::string &variableName, bool derivedIsStruct, bool baseIsStruct)
 {
-    std::list<const Token *> toks = { tok1, tok2 };
+    ErrorPath errorPath;
+    errorPath.emplace_back(tok2, "Parent variable '" + baseName + "::" + variableName + "'");
+    errorPath.emplace_back(tok1, "Derived variable '" + derivedName + "::" + variableName + "'");
 
-    const std::string symbols = "$symbol:" + derivedname + "\n$symbol:" + variablename + "\n$symbol:" + basename;
+    const std::string symbols = "$symbol:" + derivedName + "\n$symbol:" + variableName + "\n$symbol:" + baseName;
 
-    const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedname +
-                                "' defines member variable with name '" + variablename + "' also defined in its parent " +
-                                std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
-    reportError(toks, Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, false);
+    const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedName +
+                                "' defines member variable with name '" + variableName + "' also defined in its parent " +
+                                std::string(baseIsStruct ? "struct" : "class") + " '" + baseName + "'.";
+    reportError(errorPath, Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, false);
 }
 
 
@@ -2459,6 +2463,10 @@ enum CtorType {
 
 void CheckClass::checkCopyCtorAndEqOperator()
 {
+    // This is disabled because of #8388
+    // The message must be clarified. How is the behaviour different?
+    return;
+
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 

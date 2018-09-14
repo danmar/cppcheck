@@ -53,6 +53,16 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
+    /** run checks, the token list is not simplified */
+    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+        if (!tokenizer->isCPP()) {
+            return;
+        }
+
+        CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.outOfBounds();
+    }
+
     /** Simplified checks. The token list is simplified. */
     void runSimplifiedChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) override {
         if (!tokenizer->isCPP()) {
@@ -78,9 +88,10 @@ public:
         checkStl.size();
         checkStl.redundantCondition();
         checkStl.missingComparison();
-        checkStl.readingEmptyStlContainer();
     }
 
+    /** Accessing container out of bounds using ValueFlow */
+    void outOfBounds();
 
     /**
      * Finds errors like this:
@@ -166,23 +177,23 @@ public:
      */
     void dereferenceErasedError(const Token* erased, const Token* deref, const std::string& itername, bool inconclusive);
 
-    /** @brief Reading from empty stl container */
-    void readingEmptyStlContainer();
-
+    /** @brief Reading from empty stl container (using valueflow) */
+    void readingEmptyStlContainer2();
 private:
-    void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
-
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);
     void string_c_strReturn(const Token* tok);
     void string_c_strParam(const Token* tok, unsigned int number);
 
+    void outOfBoundsError(const Token *tok, const ValueFlow::Value *containerSize, const ValueFlow::Value *index);
     void stlOutOfBoundsError(const Token* tok, const std::string& num, const std::string& var, bool at);
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
     void iteratorsError(const Token* tok, const std::string& container1, const std::string& container2);
     void mismatchingContainersError(const Token* tok);
+    void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
+    void sameIteratorExpressionError(const Token *tok);
     void invalidIteratorError(const Token* tok, const std::string& func, const std::string& iterator_name);
     void invalidPointerError(const Token* tok, const std::string& func, const std::string& pointer_name);
     void stlBoundariesError(const Token* tok);
@@ -203,13 +214,16 @@ private:
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
 
-    void readingEmptyStlContainerError(const Token* tok);
+    void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckStl c(nullptr, settings, errorLogger);
+        c.outOfBoundsError(nullptr, nullptr, nullptr);
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
         c.mismatchingContainersError(nullptr);
+        c.mismatchingContainerExpressionError(nullptr, nullptr);
+        c.sameIteratorExpressionError(nullptr);
         c.dereferenceErasedError(nullptr, nullptr, "iter", false);
         c.stlOutOfBoundsError(nullptr, "i", "foo", false);
         c.negativeIndexError(nullptr, ValueFlow::Value(-1));
@@ -247,6 +261,7 @@ private:
                "- out of bounds errors\n"
                "- misuse of iterators when iterating through a container\n"
                "- mismatching containers in calls\n"
+               "- same iterators in calls\n"
                "- dereferencing an erased iterator\n"
                "- for vectors: using iterator/pointer after push_back has been used\n"
                "- optimisation: use empty() instead of size() to guarantee fast code\n"
