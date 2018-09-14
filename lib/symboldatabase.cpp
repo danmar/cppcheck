@@ -3435,6 +3435,13 @@ void Scope::getVariableList(const Settings* settings)
             continue;
         }
 
+        // skip case/default
+        if (Token::Match(tok, "case|default")) {
+            while (tok->next() && !Token::Match(tok->next(), "[:;{}]"))
+                tok = tok->next();
+            continue;
+        }
+
         // Search for start of statement..
         else if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|public:|protected:|private:"))
             continue;

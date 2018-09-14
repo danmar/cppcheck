@@ -2057,12 +2057,19 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     const std::string& expr1 = tok1 ? tok1->expressionString() : "x";
     const std::string& expr2 = tok2 ? tok2->expressionString() : "x";
 
-    std::string endingPhrase = expr1 == expr2 ? "." :
-                               " because the value of '" + expr1 + "' and '" + expr2 + "' are the same.";
-
     const std::string& op = opTok ? opTok->str() : "&&";
+    std::string msg = "Same expression on both sides of \'" + op + "\'";
+    if (expr1 != expr2) {
+        std::string exprMsg = "The expression \'" + expr1 + " " + op +  " " + expr2 + "\' is always ";
+        if (Token::Match(opTok, "==|>=|<="))
+            msg = exprMsg + "true";
+        else if (Token::Match(opTok, "!=|>|<"))
+            msg = exprMsg + "false";
+        if (!Token::Match(tok1, "%num%|NULL|nullptr") && !Token::Match(tok2, "%num%|NULL|nullptr"))
+            msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
+    }
 
-    reportError(errors, Severity::style, "duplicateExpression", "Same expression on both sides of \'" + op + "\'" + endingPhrase + "\n"
+    reportError(errors, Severity::style, "duplicateExpression", msg + ".\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, false);

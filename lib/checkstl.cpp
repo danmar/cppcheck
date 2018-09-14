@@ -363,12 +363,7 @@ void CheckStl::iterators()
 
             // Reassign the iterator
             else if (Token::Match(tok2, "%varid% =", iteratorId)) {
-                // Assume that the iterator becomes valid.
-                // TODO: add checking that checks if the iterator becomes valid or not
-                validatingToken = Token::findmatch(tok2->tokAt(2), "[;)]");
-
-                // skip ahead
-                tok2 = tok2->tokAt(2);
+                break;
             }
 
             // Passing iterator to function. Iterator might be initialized
@@ -462,17 +457,21 @@ static const Token * getIteratorExpression(const Token * tok)
 {
     if (!tok)
         return nullptr;
+    if (tok->isUnaryOp("*"))
+        return nullptr;
     if (!tok->isName()) {
         const Token *iter1 = getIteratorExpression(tok->astOperand1());
         if (iter1)
             return iter1;
+        if (tok->str() == "(")
+            return nullptr;
         const Token *iter2 = getIteratorExpression(tok->astOperand2());
         if (iter2)
             return iter2;
     } else if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
-        if (Token::Match(tok->previous(), ". %name% ( )"))
+        if (Token::Match(tok->previous(), ". %name% ( ) !!."))
             return tok->previous()->astOperand1();
-        if (Token::Match(tok, "%name% ( !!)"))
+        if (Token::Match(tok, "%name% ( !!)") && !Token::simpleMatch(tok->linkAt(1), ") ."))
             return tok->next()->astOperand2();
     }
     return nullptr;
@@ -484,6 +483,14 @@ void CheckStl::mismatchingContainers()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "%comp%|-")) {
+                const Token * iter1 = getIteratorExpression(tok->astOperand1());
+                const Token * iter2 = getIteratorExpression(tok->astOperand2());
+                if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
+                    mismatchingContainerExpressionError(iter1, iter2);
+                    continue;
+                }
+            }
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const ftok = tok;
@@ -1698,126 +1705,6 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "$symbol:" + iterName + "\n"
                 "Possible dereference of an invalid iterator: $symbol\n"
                 "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, false);
-}
-
-
-
-void CheckStl::readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror)
-{
-    // Check for various conditions for the way stl containers and variables can be used
-    if (tok->strAt(1) == "=" || (tok->strAt(1) == "[" && Token::simpleMatch(tok->linkAt(1), "] ="))) {
-        // Assignment (LHS)
-        empty.erase(tok->varId());
-    } else if (Token::Match(tok, "%name% [")) {
-        // Access through operator[]
-        if (!container->arrayLike_indexOp) { // operator[] inserts an element if used on a std::map
-            if (!noerror && tok->strAt(-1) == "=")
-                readingEmptyStlContainerError(tok);
-            empty.erase(tok->varId());
-        } else if (!noerror)
-            readingEmptyStlContainerError(tok);
-    } else if (Token::Match(tok, "%name% . %type% (")) {
-        // Member function call
-        const Library::Container::Action action = container->getAction(tok->strAt(2));
-        if ((action == Library::Container::FIND || action == Library::Container::ERASE || action == Library::Container::POP || action == Library::Container::CLEAR) && !noerror) {
-            readingEmptyStlContainerError(tok);
-            return;
-        }
-
-        const Token* parent = tok->tokAt(3)->astParent();
-        const Library::Container::Yield yield = container->getYield(tok->strAt(2));
-        const bool yieldsIterator = (yield == Library::Container::ITERATOR || yield == Library::Container::START_ITERATOR || yield == Library::Container::END_ITERATOR);
-        if (yield != Library::Container::NO_YIELD &&
-            (!parent || Token::Match(parent, "%cop%|*") || parent->isAssignmentOp() || !yieldsIterator)) { // These functions read from the container
-            if (!noerror && (!yieldsIterator || !parent || !parent->isAssignmentOp()))
-                readingEmptyStlContainerError(tok);
-        } else
-            empty.erase(tok->varId());
-    } else if (tok->strAt(-1) == "=") {
-        // Assignment (RHS)
-        if (!noerror)
-            readingEmptyStlContainerError(tok);
-    } else {
-        // Unknown usage. Assume it is initialized.
-        empty.erase(tok->varId());
-    }
-}
-
-void CheckStl::readingEmptyStlContainer()
-{
-    if (!mSettings->isEnabled(Settings::STYLE))
-        return;
-
-    if (!mSettings->inconclusive)
-        return;
-
-    std::map<unsigned int, const Library::Container*> emptyContainer;
-
-    for (const Scope &scope : mTokenizer->getSymbolDatabase()->scopeList) {
-        if (scope.type != Scope::eFunction)
-            continue;
-
-        for (const Token *tok = scope.bodyStart->next(); tok != scope.bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "for|while")) { // Loops and end of scope clear the sets.
-                const Token* tok2 = tok->linkAt(1);
-                if (!tok2)
-                    continue;
-                tok2 = tok2->next();
-                for (const Token* end2 = tok2->link(); tok2 && tok2 != end2; tok2 = tok2->next()) {
-                    if (!tok2->varId())
-                        continue;
-
-                    const std::map<unsigned int, const Library::Container*>::const_iterator container = emptyContainer.find(tok2->varId());
-                    if (container == emptyContainer.end())
-                        continue;
-
-                    readingEmptyStlContainer_parseUsage(tok2, container->second, emptyContainer, true);
-                }
-            } else if (Token::Match(tok, "do|}|break|case")) {
-                emptyContainer.clear();
-            } else if (tok->str() == "{" && tok->next()->scope()->type == Scope::eLambda)
-                tok = tok->link();
-
-            // function call
-            if (Token::Match(tok, "!!. %name% (") && !Token::simpleMatch(tok->linkAt(2), ") {")) {
-                for (std::map<unsigned int, const Library::Container*>::iterator it = emptyContainer.begin(); it != emptyContainer.end();) {
-                    const Variable *var = mTokenizer->getSymbolDatabase()->getVariableFromVarId(it->first);
-                    if (var && (var->isLocal() || var->isArgument()))
-                        ++it;
-                    else
-                        emptyContainer.erase(it++);
-                }
-            }
-
-            if (!tok->varId())
-                continue;
-
-            // Check whether a variable should be marked as "empty"
-            const Variable* var = tok->variable();
-            if (var && !var->isArrayOrPointer() && !var->typeStartToken()->isStandardType()) {
-                bool insert = false;
-                if (var->nameToken() == tok && var->isLocal() && !var->isStatic()) { // Local variable declared
-                    insert = !Token::Match(tok->next(), "[(=:]"); // Only if not initialized
-                } else if (Token::Match(tok, "%var% . clear ( ) ;")) {
-                    insert = true;
-                }
-
-                if (insert) {
-                    const Library::Container* container = mSettings->library.detectContainer(var->typeStartToken());
-                    if (container)
-                        emptyContainer[var->declarationId()] = container;
-                    continue;
-                }
-            }
-
-            const std::map<unsigned int, const Library::Container*>::const_iterator container = emptyContainer.find(tok->varId());
-            if (container == emptyContainer.end())
-                continue;
-
-            readingEmptyStlContainer_parseUsage(tok, container->second, emptyContainer, false);
-        }
-        emptyContainer.clear();
-    }
 }
 
 

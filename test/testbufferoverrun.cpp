@@ -224,6 +224,8 @@ private:
         TEST_CASE(crash1);  // Ticket #1587 - crash
         TEST_CASE(crash2);  // Ticket #3034 - crash
         TEST_CASE(crash3);  // Ticket #5426 - crash
+        TEST_CASE(crash4);  // Ticket #8679 - crash
+        TEST_CASE(crash5);  // Ticket #8644 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -3091,6 +3093,13 @@ private:
               "    tab4[20] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'tab4[20]' accessed at index 20, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n" // #8721
+              "  unsigned char **cache = malloc(32);\n"
+              "  cache[i] = malloc(65536);\n"
+              "  cache[i][0xFFFF] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // statically allocated buffer
@@ -3639,6 +3648,27 @@ private:
               "void d() { struct b *f; f = malloc(108); }");
     }
 
+    void crash4() { // #8679
+        check("__thread void *thread_local_var; "
+              "int main() { "
+              "  thread_local_var = malloc(1337); "
+              "  return 0; "
+              "}");
+
+        check("thread_local void *thread_local_var; "
+              "int main() { "
+              "  thread_local_var = malloc(1337); "
+              "  return 0; "
+              "}");
+    }
+
+    void crash5() { // 8644 - token has varId() but variable() is null
+        check("int a() {\n"
+              "    void b(char **dst) {\n"
+              "        *dst = malloc(50);\n"
+              "    }\n"
+              "}");
+    }
 
     void executionPaths1() {
         check("void f(int a)\n"

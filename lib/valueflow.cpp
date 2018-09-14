@@ -3542,13 +3542,22 @@ static bool isContainerSizeChangedByFunction(const Token *tok)
         parent = parent->astParent();
     while (parent && parent->str() == ",")
         parent = parent->astParent();
-    return parent && Token::Match(parent->previous(), "%name% (");
+    if (!parent)
+        return false;
+    if (Token::Match(parent->previous(), "%name% ("))
+        return true;
+    // some unsimplified template function, assume it modifies the container.
+    if (Token::simpleMatch(parent->previous(), ">") && parent->linkAt(-1))
+        return true;
+    return false;
 }
 
 static void valueFlowContainerReverse(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
 {
     while (nullptr != (tok = tok->previous())) {
         if (Token::Match(tok, "[{}]"))
+            break;
+        if (Token::Match(tok, "return|break|continue"))
             break;
         if (tok->varId() != containerId)
             continue;
@@ -3565,7 +3574,7 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
     }
 }
 
-static void valueFlowContainerForward(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings)
+static void valueFlowContainerForward(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings, bool cpp)
 {
     while (nullptr != (tok = tok->next())) {
         if (Token::Match(tok, "[{}]"))
@@ -3573,6 +3582,8 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))
+            break;
+        if (isLikelyStreamRead(cpp, tok->astParent()))
             break;
         if (isContainerSizeChangedByFunction(tok))
             break;
@@ -3628,9 +3639,15 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!Token::Match(var->nameToken(), "%name% ;"))
             continue;
         ValueFlow::Value value(0);
+        if (var->valueType()->container->size_templateArgNo >= 0) {
+            if (var->dimensions().size() == 1 && var->dimensions().front().known)
+                value.intvalue = var->dimensions().front().num;
+            else
+                continue;
+        }
         value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         value.setKnown();
-        valueFlowContainerForward(var->nameToken()->next(), var->declarationId(), value, settings);
+        valueFlowContainerForward(var->nameToken()->next(), var->declarationId(), value, settings, tokenlist->isCPP());
     }
 
     // after assignment
@@ -3642,7 +3659,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(containerTok->next(), containerTok->varId(), value, settings);
+                    valueFlowContainerForward(containerTok->next(), containerTok->varId(), value, settings, tokenlist->isCPP());
                 }
             }
         }
@@ -3691,7 +3708,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 if (Token::simpleMatch(after, "} else {"))
                     after = isEscapeScope(after->tokAt(2), tokenlist) ? nullptr : after->linkAt(2);
                 if (after && !isContainerSizeChanged(tok->varId(), scope.bodyStart, after))
-                    valueFlowContainerForward(after, tok->varId(), value, settings);
+                    valueFlowContainerForward(after, tok->varId(), value, settings, tokenlist->isCPP());
             }
 
             // known value in conditional code
@@ -3701,7 +3718,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                     parent = parent->astParent();
                 if (!parent) {
                     value.setKnown();
-                    valueFlowContainerForward(scope.bodyStart, tok->varId(), value, settings);
+                    valueFlowContainerForward(scope.bodyStart, tok->varId(), value, settings, tokenlist->isCPP());
                 }
             }
         }

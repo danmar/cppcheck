@@ -141,6 +141,7 @@ private:
         TEST_CASE(duplicateVarExpressionUnique);
         TEST_CASE(duplicateVarExpressionAssign);
         TEST_CASE(duplicateVarExpressionCrash);
+        TEST_CASE(multiConditionSameExpression);
 
         TEST_CASE(checkSignOfUnsignedVariable);
         TEST_CASE(checkSignOfPointer);
@@ -3533,12 +3534,12 @@ private:
         check("void foo(int a, int b) {\n"
               "    if ((a < b) && (b > a)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because the value of 'a<b' and 'b>a' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because 'a<b' and 'b>a' represent the same value.\n", errout.str());
 
         check("void foo(int a, int b) {\n"
               "    if ((a <= b) && (b >= a)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because the value of 'a<=b' and 'b>=a' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '&&' because 'a<=b' and 'b>=a' represent the same value.\n", errout.str());
 
         check("void foo() {\n"
               "    if (x!=2 || y!=3 || x!=2) {}\n"
@@ -3662,7 +3663,7 @@ private:
         check("void foo(int a, int b) {\n"
               "    if ((b + a) | (a + b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '|' because the value of 'b+a' and 'a+b' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '|' because 'b+a' and 'a+b' represent the same value.\n", errout.str());
 
         check("void foo(const std::string& a, const std::string& b) {\n"
               "  return a.find(b+\"&\") || a.find(\"&\"+b);\n"
@@ -3677,7 +3678,7 @@ private:
         check("void foo(double a, double b) {\n"
               "    if ((b + a) > (a + b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '>' because the value of 'b+a' and 'a+b' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) The expression 'b+a > a+b' is always false because 'b+a' and 'a+b' represent the same value.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x == 1) && (x == 0x00000001))\n"
@@ -3916,13 +3917,13 @@ private:
               "    const int i = sizeof(int);\n"
               "    if ( i != sizeof (int)){}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'i' and 'sizeof(int)' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'i != sizeof(int)' is always false because 'i' and 'sizeof(int)' represent the same value.\n", errout.str());
 
         check("void f() {\n"
               "    const int i = sizeof(int);\n"
               "    if ( sizeof (int) != i){}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'sizeof(int)' and 'i' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'sizeof(int) != i' is always false because 'sizeof(int)' and 'i' represent the same value.\n", errout.str());
 
         check("void f(int a = 1) { if ( a != 1){}}\n");
         ASSERT_EQUALS("", errout.str());
@@ -3931,21 +3932,21 @@ private:
               "    int a = 1;\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 1;\n"
               "    int b = 1;\n"
               "    if ( a != b){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:4]: (style) The expression 'a != b' is always false because 'a' and 'b' represent the same value.\n", errout.str());
 
         check("void f() {\n"
               "    int a = 1;\n"
               "    int b = a;\n"
               "    if ( a != b){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and 'b' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The expression 'a != b' is always false because 'a' and 'b' represent the same value.\n", errout.str());
 
         check("void use(int);\n"
               "void f() {\n"
@@ -3954,7 +3955,7 @@ private:
               "    use(b);\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void use(int);\n"
               "void f() {\n"
@@ -3978,7 +3979,7 @@ private:
               "    void f() {\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("int a = 1;\n"
               "    void f() {\n"
@@ -3990,7 +3991,7 @@ private:
               "    static const int a = 1;\n"
               "    if ( a != 1){} \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f() {\n"
               "    static int a = 1;\n"
@@ -4003,7 +4004,7 @@ private:
               "    if ( a != 1){\n"
               "        a++;\n"
               "    }}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f(int b) {\n"
               "    int a = 1;\n"
@@ -4075,6 +4076,10 @@ private:
               "    if(a == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("volatile const int var = 42;\n"
+              "void f() { if(var == 42) {} }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {
@@ -4082,7 +4087,7 @@ private:
               "    int a = 1;\n"
               "    while ( a != 1){}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'a != 1' is always false.\n", errout.str());
 
         check("void f() { int a = 1; while ( a != 1){ a++; }}\n");
         ASSERT_EQUALS("", errout.str());
@@ -4098,7 +4103,7 @@ private:
               "        if( i != 0 ) {}\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '!=' because the value of 'i' and '0' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'i != 0' is always false.\n", errout.str());
 
         check("void f() {\n"
               "    for(int i = 0; i < 10;) {\n"
@@ -4139,7 +4144,7 @@ private:
               "        b++;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '!=' because the value of 'a' and '1' are the same.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The expression 'a != 1' is always false.\n", errout.str());
     }
 
     void duplicateExpressionTernary() { // #6391
@@ -4251,6 +4256,34 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("bool f(unsigned i){ return (x > 0) && (x & (x-1)) == 0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void A::f(bool a, bool c)\n"
+              "{\n"
+              "    const bool b = a;\n"
+              "    if(c) { a = false; } \n"
+              "    if(b && !a) { }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool c) {\n"
+              "    const bool b = a;\n"
+              "    if(c) { a = false; } \n"
+              "    if(b && !a) { }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    bool x = a;\n"
+              "    dostuff();\n"
+              "    if (x && a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  const bool b = g();\n"
+              "  if (!b && g()) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4544,6 +4577,78 @@ private:
               "        int b = x.f();\n"
               "        (void)a;\n"
               "        (void)b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Issue #8712
+        check("void f() {\n"
+              "  unsigned char d;\n"
+              "  d = d % 5;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T>\n"
+              "T f() {\n"
+              "  T a = T();\n"
+              "}\n"
+              "int &a = f<int&>();\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Issue #8713
+        check("class A {\n"
+              "  int64_t B = 32768;\n"
+              "  P<uint8_t> m = MakeP<uint8_t>(B);\n"
+              "};\n"
+              "void f() {\n"
+              "  uint32_t a = 42;\n"
+              "  uint32_t b = uint32_t(A ::B / 1024);\n"
+              "  int32_t c = int32_t(a / b);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Issue #8709
+        check("a b;\n"
+              "void c() {\n"
+              "  switch (d) { case b:; }\n"
+              "  double e(b);\n"
+              "  if(e <= 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+    }
+
+    void multiConditionSameExpression() {
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) continue;\n"
+              "  if ((val > 0)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val > 0' is always false.\n", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) {\n"
+              "    if ((val > 0)) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val > 0' is always false.\n", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) {\n"
+              "    if ((val < 0)) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The expression 'val < 0' is always false.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) The expression 'val < 0' is always false.\n", errout.str());
+
+        check("void f() {\n"
+              "  int activate = 0;\n"
+              "  int foo = 0;\n"
+              "  if (activate) {}\n"
+              "  else if (foo) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -6828,6 +6933,14 @@ private:
               "  int a;\n"
               "  while (a=x(), a==123) {}\n"
               "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        // # 8717
+        check("void f(int argc, char *const argv[]) {\n"
+              "    char **local_argv = safe_malloc(sizeof (*local_argv));\n"
+              "    int local_argc = 0;\n"
+              "    local_argv[local_argc++] = argv[0];\n"
+              "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -2,7 +2,9 @@
 // ~/cppcheck/cppcheck --dump misra-test.c && python ../misra.py -verify misra-test.c.dump
 
 #include "path\file.h" // 20.2
-#include /*abc*/ "file.h" // 20.3
+#include /*abc*/ "file.h" // no warning
+#include PATH "file.h" // 20.3
+#include<file.h> // no warning
 #include <setjmp.h> // 21.4
 #include <signal.h> // 21.5
 #include <stdio.h> //21.6
@@ -17,7 +19,8 @@ typedef unsigned int       u32;
 typedef signed int         s32;
 typedef unsigned long long u64;
 
-//// 3.1
+//   // 3.1
+////
 
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1

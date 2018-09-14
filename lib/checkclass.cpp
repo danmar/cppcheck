@@ -2435,17 +2435,19 @@ void CheckClass::checkDuplInheritedMembers()
 }
 
 void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
-        const std::string &derivedname, const std::string &basename,
-        const std::string &variablename, bool derivedIsStruct, bool baseIsStruct)
+        const std::string &derivedName, const std::string &baseName,
+        const std::string &variableName, bool derivedIsStruct, bool baseIsStruct)
 {
-    std::list<const Token *> toks = { tok1, tok2 };
+    ErrorPath errorPath;
+    errorPath.emplace_back(tok2, "Parent variable '" + baseName + "::" + variableName + "'");
+    errorPath.emplace_back(tok1, "Derived variable '" + derivedName + "::" + variableName + "'");
 
-    const std::string symbols = "$symbol:" + derivedname + "\n$symbol:" + variablename + "\n$symbol:" + basename;
+    const std::string symbols = "$symbol:" + derivedName + "\n$symbol:" + variableName + "\n$symbol:" + baseName;
 
-    const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedname +
-                                "' defines member variable with name '" + variablename + "' also defined in its parent " +
-                                std::string(baseIsStruct ? "struct" : "class") + " '" + basename + "'.";
-    reportError(toks, Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, false);
+    const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedName +
+                                "' defines member variable with name '" + variableName + "' also defined in its parent " +
+                                std::string(baseIsStruct ? "struct" : "class") + " '" + baseName + "'.";
+    reportError(errorPath, Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, false);
 }
 
 
@@ -2461,6 +2463,10 @@ enum CtorType {
 
 void CheckClass::checkCopyCtorAndEqOperator()
 {
+    // This is disabled because of #8388
+    // The message must be clarified. How is the behaviour different?
+    return;
+
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 

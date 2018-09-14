@@ -138,12 +138,12 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
     uniqueIncludePaths.sort();
     uniqueIncludePaths.unique();
 
-    for (std::list<std::string>::const_iterator it = uniqueIncludePaths.begin(); it != uniqueIncludePaths.end(); ++it) {
-        if (it->empty())
+    for (const std::string &it : uniqueIncludePaths) {
+        if (it.empty())
             continue;
-        if (it->compare(0,2,"%(")==0)
+        if (it.compare(0,2,"%(")==0)
             continue;
-        std::string s(Path::fromNativeSeparators(*it));
+        std::string s(Path::fromNativeSeparators(it));
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
@@ -154,10 +154,10 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         if (endsWith(s,'/')) // this is a temporary hack, simplifyPath can crash if path ends with '/'
             s.erase(s.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
 
-        if (s.find("$(")==std::string::npos) {
+        if (s.find("$(") == std::string::npos) {
             s = Path::simplifyPath(basepath + s);
         } else {
-            if (!simplifyPathWithVariables(s,variables))
+            if (!simplifyPathWithVariables(s, variables))
                 continue;
         }
         if (s.empty())
@@ -172,7 +172,7 @@ ImportProject::Type ImportProject::import(const std::string &filename)
     std::ifstream fin(filename);
     if (!fin.is_open())
         return MISSING;
-    if (endsWith(filename, "compile_commands.json", 21)) {
+    if (endsWith(filename, ".json", 5)) {
         importCompileCommands(fin);
         return COMPILE_DB;
     } else if (endsWith(filename, ".sln", 4)) {
@@ -551,26 +551,26 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         }
     }
 
-    for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
-        for (std::list<ProjectConfiguration>::const_iterator p = projectConfigurationList.begin(); p != projectConfigurationList.end(); ++p) {
+    for (const std::string &c : compileList) {
+        for (const ProjectConfiguration &p : projectConfigurationList) {
             FileSettings fs;
-            fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : Path::getPathFromFilename(filename) + *c);
-            fs.cfg = p->name;
+            fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
+            fs.cfg = p.name;
             fs.msc = true;
             fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
-            if (p->platform == ProjectConfiguration::Win32)
+            if (p.platform == ProjectConfiguration::Win32)
                 fs.platformType = cppcheck::Platform::Win32W;
-            else if (p->platform == ProjectConfiguration::x64) {
+            else if (p.platform == ProjectConfiguration::x64) {
                 fs.platformType = cppcheck::Platform::Win64;
                 fs.defines += ";_WIN64=1";
             }
             std::string additionalIncludePaths;
-            for (std::list<ItemDefinitionGroup>::const_iterator i = itemDefinitionGroupList.begin(); i != itemDefinitionGroupList.end(); ++i) {
-                if (!i->conditionIsTrue(*p))
+            for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
+                if (!i.conditionIsTrue(p))
                     continue;
-                fs.defines += ';' + i->preprocessorDefinitions;
-                additionalIncludePaths += ';' + i->additionalIncludePaths;
+                fs.defines += ';' + i.preprocessorDefinitions;
+                additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
             fs.setDefines(fs.defines);
             fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
@@ -820,7 +820,7 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     const std::string cppDefines  = cppPredefines + ";" + defines;
     const bool forceCppMode = (cflags.find("-P") != cflags.end());
 
-    for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
+    for (const std::string &c : compileList) {
         // C++ compilation is selected by file extension by default, so these
         // defines have to be configured on a per-file base.
         //
@@ -830,11 +830,11 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
         // (http://docwiki.embarcadero.com/RADStudio/Tokyo/en/BCC32.EXE,_the_C%2B%2B_32-bit_Command-Line_Compiler)
         //
         // We can also force C++ compilation for all files using the -P command line switch.
-        const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(*c) == ".cpp";
+        const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(c) == ".cpp";
         FileSettings fs;
         fs.setIncludePaths(projectDir, toStringList(includePath), variables);
         fs.setDefines(cppMode ? cppDefines : defines);
-        fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : projectDir + *c);
+        fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c);
         fileSettings.push_back(fs);
     }
 }

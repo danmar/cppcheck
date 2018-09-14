@@ -266,14 +266,16 @@ private:
                                    "    A(const A& other) { } \n"
                                    "    int x;\n"
                                    "};");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'copy constructor' but lack of 'operator='.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'copy constructor' but lack of 'operator='.\n", "", errout.str());
+        // TODO the error message should be clarified. It should say something like 'copy constructor is empty and will not assign i and therefore the behaviour is different to the default assignment operator'
 
         checkCopyCtorAndEqOperator("class A \n"
                                    "{ \n"
                                    "    A& operator=(const A& other) { return *this; }\n"
                                    "    int x;\n"
                                    "};");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'operator=' but lack of 'copy constructor'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'operator=' but lack of 'copy constructor'.\n", "", errout.str());
+        // TODO the error message should be clarified. It should say something like 'assignment operator does not assign i and therefore the behaviour is different to the default copy constructor'
 
         checkCopyCtorAndEqOperator("class A \n"
                                    "{ \n"
@@ -457,7 +459,7 @@ private:
                                   "struct Derived : Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   protected:\n"
@@ -466,7 +468,7 @@ private:
                                   "struct Derived : public Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   int x;\n"
@@ -489,7 +491,7 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:9]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   protected:\n"
@@ -502,8 +504,8 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:3]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
-                      "[test.cpp:10] -> [test.cpp:7]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
+                      "[test.cpp:7] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   int x;\n"

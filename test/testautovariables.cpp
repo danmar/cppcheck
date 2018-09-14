@@ -390,7 +390,7 @@ private:
     }
 
     void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
-        check("void f(int* a) { a = }");
+        ASSERT_THROW(check("void f(int* a) { a = }"), InternalError);
         check("struct custom_type { custom_type(int) {} };\n"
               "void func(int) {}\n"
               "int var;\n"

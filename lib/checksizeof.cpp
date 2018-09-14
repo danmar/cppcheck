@@ -336,7 +336,7 @@ void CheckSizeof::sizeofFunction()
                 if (checkToken->tokType() == Token::eName)
                     break;
                 const Function * fun = checkToken->function();
-                // Dont report error if the function is overloaded
+                // Don't report error if the function is overloaded
                 if (fun && fun->nestedIn->functionMap.count(checkToken->str()) == 1) {
                     sizeofFunctionError(tok);
                 }

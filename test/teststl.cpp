@@ -56,6 +56,7 @@ private:
         TEST_CASE(iterator12);
         TEST_CASE(iterator13);
         TEST_CASE(iterator14); // #8191
+        TEST_CASE(iterator15); // #8341
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -143,8 +144,6 @@ private:
         TEST_CASE(dereferenceInvalidIterator);
         TEST_CASE(dereferenceInvalidIterator2); // #6572
         TEST_CASE(dereference_auto);
-
-        TEST_CASE(readingEmptyStlContainer);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -599,11 +598,33 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void iterator15() {
+        check("void f(C1* x, std::list<int> a) {\n"
+              "  std::list<int>::iterator pos = a.begin();\n"
+              "  for(pos = x[0]->plist.begin(); pos != x[0]->plist.end(); ++pos) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void iteratorExpression() {
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
               "    (void)std::find(f().begin(), g().end(), 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    if(f().begin() == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    auto size = f().end() - g().begin();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
 
@@ -644,7 +665,20 @@ private:
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
-              "    auto it = f().end();"
+              "    if(bar(f().begin()) == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    auto it = f().end();\n"
+              "    f().begin() - it\n"
+              "    f().begin()+1 - it\n"
+              "    f().begin() - (it + 1)\n"
+              "    f().begin() - f().end()\n"
+              "    f().begin()+1 - f().end()\n"
+              "    f().begin() - (f().end() + 1)\n"
               "    (void)std::find(f().begin(), it, 0);\n"
               "    (void)std::find(f().begin(), it + 1, 0);\n"
               "    (void)std::find(f().begin() + 1, it + 1, 0);\n"
@@ -657,6 +691,29 @@ private:
               "    (void)std::find(begin(f()) + 1, end(f()), 0);\n"
               "    (void)std::find(begin(f()), end(f()) - 1, 0);\n"
               "    (void)std::find(begin(f()) + 1, end(f()) - 1, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>& f();\n"
+              "std::vector<int>& g();\n"
+              "void foo() {\n"
+              "    if(f().begin() == f().end()) {}\n"
+              "    if(f().begin() == f().end()+1) {}\n"
+              "    if(f().begin()+1 == f().end()) {}\n"
+              "    if(f().begin()+1 == f().end()+1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  if (a.begin().x == b.begin().x) {}\n"
+              "  if (begin(a).x == begin(b).x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  std::list<int*> a;\n"
+              "  std::list<int*> b;\n"
+              "  if (*a.begin() == *b.begin()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3098,226 +3155,6 @@ private:
               "    return it; \n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:18]: (error, inconclusive) Invalid iterator 'it' used.\n", errout.str());
-    }
-
-    void readingEmptyStlContainer() {
-        check("void f() {\n"
-              "    std::map<int, std::string> CMap;\n"
-              "    std::string strValue = CMap[1]; \n"
-              "    std::cout << strValue << CMap.size() << std::endl;\n"
-              "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'CMap'\n", errout.str());
-
-        check("void f() {\n"
-              "    std::map<int,std::string> CMap;\n"
-              "    std::string strValue = CMap[1];"
-              "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'CMap'\n", errout.str());
-
-        check("void f() {\n"
-              "    std::map<int,std::string> CMap;\n"
-              "    CMap[1] = \"123\";\n"
-              "    std::string strValue = CMap[1];"
-              "}\n",true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("std::vector<std::string> f() {\n"
-              "    try {\n"
-              "        std::vector<std::string> Vector;\n"
-              "        std::vector<std::string> v2 = Vector;\n"
-              "        std::string strValue = v2[1]; \n" // Do not complain here - this is a consecutive fault of the line above.
-              "    }\n"
-              "    return Vector;\n"
-              "}\n",true);
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container 'Vector'\n", errout.str());
-
-        check("Vector f() {\n"
-              "    try {\n"
-              "        std::vector<std::string> Vector;\n"
-              "        Vector.push_back(\"123\");\n"
-              "        std::vector<std::string> v2 = Vector;\n"
-              "        std::string strValue = v2[0]; \n"
-              "    }\n"
-              "    return Vector;\n"
-              "}\n", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    std::map<std::string,std::string> mymap;\n"
-              "    mymap[\"Bakery\"] = \"Barbara\";\n"
-              "    std:string bakery_name = mymap[\"Bakery\"];\n"
-              "}\n", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    std::vector<int> v;\n"
-              "    v.insert(1);\n"
-              "    int i = v[0];\n"
-              "}\n", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    std::vector<int> v;\n"
-              "    initialize(v);\n"
-              "    int i = v[0];\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("char f() {\n"
-              "    std::string s(foo);\n"
-              "    return s[0];\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    std::vector<int> v = foo();\n"
-              "    if(bar) v.clear();\n"
-              "    int i = v.find(foobar);\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(std::set<int> v) {\n"
-              "    v.clear();\n"
-              "    int i = v.find(foobar);\n"
-              "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
-
-        check("void f(std::set<int> v) {\n"
-              "    v.clear();\n"
-              "    v.begin();\n"
-              "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
-
-        check("void f(std::set<int> v) {\n"
-              "    v.clear();\n"
-              "    *v.begin();\n"
-              "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
-
-        check("void f(std::set<int> v) {\n"
-              "    v.clear();\n"
-              "    for(auto i = v.cbegin();\n"
-              "        i != v.cend(); ++i) {}\n"
-              "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
-
-        check("void f(std::set<int> v) {\n"
-              "    v.clear();\n"
-              "    foo(v.begin());\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f() {\n"
-              "    std::map<int, std::string> CMap;\n"
-              "    std::string strValue = CMap[1];\n"
-              "    std::string strValue2 = CMap[1];\n"
-              "}\n", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'CMap'\n", errout.str());
-
-        // #4306
-        check("void f(std::vector<int> v) {\n"
-              "    v.clear();\n"
-              "    for(int i = 0; i < v.size(); i++) { cout << v[i]; }\n"
-              "}", true);
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
-
-        // #7449 - nonlocal vector
-        check("std::vector<int> v;\n"
-              "void f() {\n"
-              "  v.clear();\n"
-              "  dostuff()\n"
-              "  if (v.empty()) { }\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("std::vector<int> v;\n"
-              "void f() {\n"
-              "  v.clear();\n"
-              "  if (v.empty()) { }\n"
-              "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Reading from empty STL container 'v'\n", errout.str());
-
-        // #6663
-        check("void foo() {\n"
-              "    std::set<int> container;\n"
-              "    while (container.size() < 5)\n"
-              "        container.insert(22);\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        // #6679
-        check("class C {\n"
-              "    C() {\n"
-              "        switch (ret) {\n"
-              "            case 1:\n"
-              "                vec.clear();\n"
-              "                break;\n"
-              "            case 2:\n"
-              "                if (vec.empty())\n"
-              "                    ;\n"
-              "                break;\n"
-              "        }\n"
-              "    }\n"
-              "    std::vector<int> vec;\n"
-              "};", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("class C {\n"
-              "    C() {\n"
-              "        switch (ret) {\n"
-              "            case 1:\n"
-              "                vec.clear();\n"
-              "            case 2:\n"
-              "                if (vec.empty())\n"
-              "                    ;\n"
-              "                break;\n"
-              "        }\n"
-              "    }\n"
-              "    std::vector<int> vec;\n"
-              "};", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("class C {\n"
-              "    C() {\n"
-              "        switch (ret) {\n"
-              "            case 1:\n"
-              "                vec.clear();\n"
-              "                if (vec.empty())\n"
-              "                    ;\n"
-              "                break;\n"
-              "        }\n"
-              "    }\n"
-              "    std::vector<int> vec;\n"
-              "};", true);
-        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Reading from empty STL container 'vec'\n", errout.str());
-
-        // #7560
-        check("std::vector<int> test;\n"
-              "std::vector<int>::iterator it;\n"
-              "void Reset() {\n"
-              "    test.clear();\n"
-              "    it = test.end();\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // #8055
-        check("int main() {\n"
-              "    std::string str;\n"
-              "    auto l = [&]() {\n"
-              "        if (str[0] == 'A')\n"
-              "            std::cout << \"!\";\n"
-              "    }\n"
-              "    str = \"A\";\n"
-              "    l();\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(const std::vector<std::string> &v) {\n"
-              "  for (const std::string& s : v) {\n"
-              "    if (s.find(x) != string::npos) {}\n"
-              "  }\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
     }
 };
 

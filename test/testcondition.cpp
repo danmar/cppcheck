@@ -71,6 +71,7 @@ private:
         TEST_CASE(incorrectLogicOperator9);
         TEST_CASE(incorrectLogicOperator10); // enum
         TEST_CASE(incorrectLogicOperator11);
+        TEST_CASE(incorrectLogicOperator12);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -103,6 +104,7 @@ private:
         TEST_CASE(clarifyCondition8);
 
         TEST_CASE(alwaysTrue);
+        TEST_CASE(multiConditionAlwaysTrue);
 
         TEST_CASE(checkInvalidTestForOverflow);
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
@@ -1233,6 +1235,50 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i < n.\n", errout.str());
     }
 
+    void incorrectLogicOperator12() { // #8696
+        check("struct A {\n"
+              "    void f() const;\n"
+              "};\n"
+              "void foo(A a) {\n"
+              "  A x = a;\n"
+              "  A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+
+        check("struct A {\n"
+              "    void f();\n"
+              "};\n"
+              "void foo(A a) {\n"
+              "  A x = a;\n"
+              "  A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a) {\n"
+              "  A x = a;\n"
+              "  A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a) {\n"
+              "  const A x = a;\n"
+              "  const A y = a;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+    }
+
     void secondAlwaysTrueFalseWhenFirstTrueError() {
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
@@ -1986,6 +2032,18 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+
+        check("void f() {\n"
+              "    uint32_t value;\n"
+              "    get_value(&value);\n"
+              "    int opt_function_capable = (value >> 28) & 1;\n"
+              "    if (opt_function_capable) {\n"
+              "        value = 0;\n"
+              "        get_value (&value);\n"
+              "        if ((value >> 28) & 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalConditionAfterEarlyExit() {
@@ -2295,7 +2353,8 @@ private:
     }
 
     void clarifyCondition5() { // ticket #3609 (using | in template instantiation)
-        check("CWinTraits<WS_CHILD|WS_VISIBLE>::GetWndStyle(0);");
+        check("template<bool B> struct CWinTraits;\n"
+              "CWinTraits<WS_CHILD|WS_VISIBLE>::GetWndStyle(0);");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2471,6 +2530,40 @@ private:
               "    {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!b' is always true\n", errout.str());
+    }
+
+    void multiConditionAlwaysTrue() {
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) continue;\n"
+              "  if (val > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) {\n"
+              "    if (val > 0) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int val = 0;\n"
+              "  if (val < 0) {\n"
+              "    if (val < 0) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int activate = 0;\n"
+              "  int foo = 0;\n"
+              "  if (activate) {}\n"
+              "  else if (foo) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'activate' is always false\n"
+                      "[test.cpp:5]: (style) Condition 'foo' is always false\n", errout.str());
     }
 
     void checkInvalidTestForOverflow() {

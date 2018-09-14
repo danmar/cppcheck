@@ -31,59 +31,18 @@
  *  - %SymbolDatabase - Information about all types/variables/functions/etc
  *    in the current translation unit
  *  - Library - Configuration of functions/types
- *  - Value flow analysis - Context sensitive analysis that determine possible values for each token
+ *  - Value flow analysis - Data flow analysis that determine possible values for each token
  *
- * Use --debug on the command line to see debug output for the token list
- * and the syntax tree. If both --debug and --verbose is used, the symbol
+ * Use --debug-normal on the command line to see debug output for the token list
+ * and the syntax tree. If both --debug-normal and --verbose is used, the symbol
  * database is also written.
  *
- * The checks are written in C++. The checks are addons that can be
- * easily added/removed.
- *
- * @section writing_checks_sec Writing a check
- * Below is a simple example of a check that detect division with zero:
- * @code
-void CheckOther::checkZeroDivision()
-{
-    // Iterate through all tokens in the token list
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        // is this a division or modulo?
-        if (Token::Match(tok, "[/%]")) {
-            // try to get value '0' of rhs
-            const ValueFlow::Value *value = tok->astOperand2()->getValue(0);
-
-            // if 'value' is not NULL, rhs can be zero.
-            if (value)
-                reportError(tok, Severity::error, "zerodiv", "Division by zero");
-        }
-    }
-}
- @endcode
- *
- * The function Token::Match is often used in the checks. Through it
- * you can match tokens against patterns. It is currently not possible
- * to write match expressions that uses the syntax tree, the symbol database,
- * nor the library. Only the token list is used.
- *
- * @section checkclass_sec Creating a new check class from scratch
- * %Check classes inherit from the Check class. The Check class specifies the interface that you must use.
- * To integrate a check class into cppcheck all you need to do is:
- * - Add your source file(s) so they are compiled into the executable.
- * - Create an instance of the class (the Check::Check() constructor registers the class as an addon that Cppcheck then can use).
- *
- *
- * @section embedding_sec Embedding Cppcheck
- * Cppcheck is designed to be easily embeddable into other programs.
- *
- * The "cli/main.cpp" and "cli/cppcheckexecutor.*" files illustrate how cppcheck
- * can be embedded into an application.
- *
+ * The checks are written in C++.
  *
  * @section detailed_overview_sec Detailed overview
  * This happens when you execute cppcheck from the command line:
  * -# CppCheckExecutor::check this function executes the Cppcheck
- * -# CppCheck::parseFromArgs parse command line arguments
+ * -# CmdLineParser::parseFromArgs parse command line arguments
  *   - The Settings class is used to maintain settings
  *   - Use FileLister and command line arguments to get files to check
  * -# ThreadExecutor create more instances of CppCheck if needed
@@ -96,7 +55,7 @@ void CheckOther::checkZeroDivision()
  * -# Simplify the tokenlist (Tokenizer::simplifyTokenList2)
  * -# Run the runSimplifiedChecks of all check classes
  *
- * When errors are found, they are reported back to the CppCheckExecutor through the ErrorLogger interface
+ * When errors are found, they are reported back to the CppCheckExecutor through the ErrorLogger interface.
  */
 
 
