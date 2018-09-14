@@ -2020,32 +2020,40 @@ static bool hasVarIds(const Token * tok, unsigned int var1, unsigned int var2)
 {
     if(tok->astOperand1()->varId() == tok->astOperand2()->varId())
         return false;
-    unsigned int varids[] = {var1, var2};
-    unsigned int * varidsEnd = varids+2;
-    if(std::find(varids, varidsEnd, tok->astOperand1()->varId()) == varidsEnd)
-        return false;
-    if(std::find(varids, varidsEnd, tok->astOperand2()->varId()) == varidsEnd)
-        return false;
-    return true;
+    if(tok->astOperand1()->varId() == var1)
+        return true;
+    if(tok->astOperand1()->varId() == var2)
+        return true;
+    if(tok->astOperand2()->varId() == var1)
+        return true;
+    if(tok->astOperand2()->varId() == var2)
+        return true;
+    return false;
+}
+
+static std::string flipMinMax(const std::string& algo)
+{
+    if(algo == "std::max_element")
+        return "std::min_element";
+    if(algo == "std::min_element")
+        return "std::max_element";
+    return algo;
 }
 
 static std::string minmaxCompare(const Token * condTok, unsigned int loopVar, unsigned int assignVar, bool invert=false)
 {
-    static const std::vector<std::string> minmaxAlgos = {
-        "std::max_element", "std::min_element"
-    };
     if(!Token::Match(condTok, "<|<=|>=|>"))
         return "std::accumulate";
     if(!hasVarIds(condTok, loopVar, assignVar))
         return "std::accumulate";
-    int algo = 0;
+    std::string algo = "std::max_element";
     if(Token::Match(condTok, "<|<="))
-        algo = 1;
+        algo = "std::min_element";
     if(condTok->astOperand1()->varId() == assignVar)
-        algo = (algo + 1) % 2;
+        algo = flipMinMax(algo);
     if(invert)
-        algo = (algo + 1) % 2;
-    return minmaxAlgos[algo];
+        algo = flipMinMax(algo);
+    return algo;
 }
 
 void CheckStl::useStlAlgorithm()
