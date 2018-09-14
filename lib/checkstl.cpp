@@ -1902,14 +1902,11 @@ static bool hasVarIds(const Token * tok, unsigned int var1, unsigned int var2)
 {
     if(tok->astOperand1()->varId() == tok->astOperand2()->varId())
         return false;
-    if(tok->astOperand1()->varId() == var1)
-        return true;
-    if(tok->astOperand1()->varId() == var2)
-        return true;
-    if(tok->astOperand2()->varId() == var1)
-        return true;
-    if(tok->astOperand2()->varId() == var2)
-        return true;
+    if(tok->astOperand1()->varId() == var1 || tok->astOperand1()->varId() == var2) {
+        if(tok->astOperand2()->varId() == var1 || tok->astOperand2()->varId() == var2) {
+            return true;
+        }
+    }
     return false;
 }
 
