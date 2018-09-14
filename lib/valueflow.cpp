@@ -1054,6 +1054,9 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
+            // Skip known values
+            if (tok->next()->hasKnownValue())
+                continue;
             const Token * condTok = tok->next();
             if (!Token::simpleMatch(condTok->link(), ") {"))
                 continue;
@@ -1101,6 +1104,9 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             for (Token* tok = cond.first->next(); tok != scope->bodyEnd; tok = tok->next()) {
                 if (!Token::Match(tok, "%comp%"))
                     continue;
+                // Skip known values
+                if (tok->hasKnownValue())
+                    continue;
                 if(cond.second) {
                     bool bail = true;
                     for(const Scope * parent = tok->scope()->nestedIn;parent;parent = parent->nestedIn) {
@@ -1116,6 +1122,14 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                 if(isOppositeCond(true, cpp, tok, cond.first, settings->library, true, &errorPath)) {
                     ValueFlow::Value val(1);
                     val.setKnown();
+                    val.condition = cond.first;
+                    val.errorPath = errorPath;
+                    val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
+                    setTokenValue(tok, val, tokenlist->getSettings());
+                } else if(isSameExpression(cpp, true, tok, cond.first, settings->library, true, &errorPath)) {
+                    ValueFlow::Value val(0);
+                    val.setKnown();
+                    val.condition = cond.first;
                     val.errorPath = errorPath;
                     val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
                     setTokenValue(tok, val, tokenlist->getSettings());

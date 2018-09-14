@@ -1894,8 +1894,7 @@ private:
 
     void oppositeInnerCondition3() {
         check("void f3(char c) { if(c=='x') if(c=='y') {}} ");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      "[test.cpp:1] -> [test.cpp:1]: (style) Condition 'c=='y'' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f4(char *p) { if(*p=='x') if(*p=='y') {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
@@ -1913,8 +1912,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f8(int i) { if(i==4) if(i==2) {}} ");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      "[test.cpp:1] -> [test.cpp:1]: (style) Condition 'i==2' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f9(int *p) { if (*p==4) if(*p==2) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
@@ -1946,8 +1944,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) { if (x == 1) if (x != 1) {} }");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      "[test.cpp:1] -> [test.cpp:1]: (style) Condition 'x!=1' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
     }
 
     void oppositeInnerConditionAnd() {

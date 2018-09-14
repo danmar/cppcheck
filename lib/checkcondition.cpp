@@ -1215,6 +1215,9 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
+            // Skip conditional values
+            if (tok->values().front().condition)
+                continue;
             if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;
             if (Token::Match(tok, "! %num%|%bool%|%char%"))
