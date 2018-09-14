@@ -183,7 +183,8 @@ public:
 
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
-private:
+
+  private:
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);
@@ -220,7 +221,7 @@ private:
 
     void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
 
-    void useStlAlgorithmError(const Token* tok, const std::string &algoName);
+    void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckStl c(nullptr, settings, errorLogger);
