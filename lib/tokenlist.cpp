@@ -1224,7 +1224,7 @@ void TokenList::validateAst() const
             if (Token::Match(tok, "= {|^"))
                 continue;
             if (!tok->astOperand1() || !tok->astOperand2())
-                throw InternalError(tok, "Syntax Error: AST broken, binary operator doesn't have two operands.", InternalError::AST);
+                throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);
         }
     }
 }

@@ -6252,6 +6252,8 @@ bool Tokenizer::simplifyCAlternativeTokens()
         if (cOpIt != cAlternativeTokens.end()) {
             if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
+            if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^"))
+                continue;
             tok->str(cOpIt->second);
             ret = true;
         } else if (Token::Match(tok, "not|compl")) {
@@ -9763,57 +9765,69 @@ void Tokenizer::simplifyOperatorName()
     if (isC())
         return;
 
+    bool isUsingStmt = false;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "operator") {
-            // operator op
-            std::string op;
-            Token *par = tok->next();
-            bool done = false;
-            while (!done && par) {
-                done = true;
-                if (par->isName()) {
-                    op += par->str();
-                    par = par->next();
-                    // merge namespaces eg. 'operator std :: string () const {'
-                    if (Token::Match(par, ":: %name%|%op%|.")) {
-                        op += par->str();
-                        par = par->next();
-                    }
-                    done = false;
-                }
-                if (Token::Match(par, ".|%op%|,")) {
-                    op += par->str();
-                    par = par->next();
-                    done = false;
-                }
-                if (Token::simpleMatch(par, "[ ]")) {
-                    op += "[]";
-                    par = par->tokAt(2);
-                    done = false;
-                }
-                if (Token::Match(par, "( *| )")) {
-                    // break out and simplify..
-                    if (operatorEnd(par->next()))
-                        break;
-
-                    while (par->str() != ")") {
-                        op += par->str();
-                        par = par->next();
-                    }
-                    op += ")";
-                    par = par->next();
-                    done = false;
-                }
+        if (tok->str() == ";") {
+            if (isUsingStmt && Token::Match(tok->tokAt(-3), "using|:: operator %op% ;")) {
+                tok->previous()->previous()->str("operator" + tok->previous()->str());
+                tok->deletePrevious();
             }
-
-            if (par && operatorEnd(par->link())) {
-                tok->str("operator" + op);
-                Token::eraseTokens(tok, par);
-            }
-
-            if (!op.empty())
-                tok->isOperatorKeyword(true);
+            isUsingStmt = false;
+            continue;
         }
+        if (tok->str() == "using") {
+            isUsingStmt = true;
+            continue;
+        }
+
+        if (tok->str() != "operator")
+            continue;
+        // operator op
+        std::string op;
+        Token *par = tok->next();
+        bool done = false;
+        while (!done && par) {
+            done = true;
+            if (par->isName()) {
+                op += par->str();
+                par = par->next();
+                // merge namespaces eg. 'operator std :: string () const {'
+                if (Token::Match(par, ":: %name%|%op%|.")) {
+                    op += par->str();
+                    par = par->next();
+                }
+                done = false;
+            } else if (Token::Match(par, ".|%op%|,")) {
+                op += par->str();
+                par = par->next();
+                done = false;
+            } else if (Token::simpleMatch(par, "[ ]")) {
+                op += "[]";
+                par = par->tokAt(2);
+                done = false;
+            } else if (Token::Match(par, "( *| )")) {
+                // break out and simplify..
+                if (operatorEnd(par->next()))
+                    break;
+
+                while (par->str() != ")") {
+                    op += par->str();
+                    par = par->next();
+                }
+                op += ")";
+                par = par->next();
+                done = false;
+            }
+        }
+
+        if (par && operatorEnd(par->link())) {
+            tok->str("operator" + op);
+            Token::eraseTokens(tok, par);
+        }
+
+        if (!op.empty())
+            tok->isOperatorKeyword(true);
     }
 
     if (mSettings->debugwarnings) {

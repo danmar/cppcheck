@@ -391,6 +391,7 @@ private:
         TEST_CASE(simplifyOperatorName7); // ticket #4619
         TEST_CASE(simplifyOperatorName8); // ticket #5706
         TEST_CASE(simplifyOperatorName9); // ticket #5709 - comma operator not properly tokenized
+        TEST_CASE(simplifyOperatorName10); // #8746 - using a::operator=
 
         TEST_CASE(simplifyNullArray);
 
@@ -5950,6 +5951,8 @@ private:
         ASSERT_EQUALS("void f ( ) { if ( not = x ) { } }", tokenizeAndStringify("void f() { if (not=x){} }", false, true, Settings::Native, "test.cpp"));
         // #8029
         ASSERT_EQUALS("void f ( struct S * s ) { x = s . and + 1 ; }", tokenizeAndStringify("void f(struct S *s) { x = s->and + 1; }", false, true, Settings::Native, "test.c"));
+        // #8745
+        ASSERT_EQUALS("void f ( ) { if ( x ) { or = 0 ; } }", tokenizeAndStringify("void f() { if (x) or = 0; }"));
     }
 
     void simplifyCalculations() {
@@ -6119,6 +6122,11 @@ private:
     void simplifyOperatorName9() { // Ticket #5709
         const char code[] = "struct R { R operator, ( R b ) ; } ;";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName10() { // #8746
+        const char code[] = "using a::operator=;";
+        ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code));
     }
 
     void simplifyNullArray() {

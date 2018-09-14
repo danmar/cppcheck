@@ -88,7 +88,6 @@ public:
         checkStl.size();
         checkStl.redundantCondition();
         checkStl.missingComparison();
-        checkStl.readingEmptyStlContainer();
         checkStl.useStlAlgorithm();
     }
 
@@ -179,18 +178,12 @@ public:
      */
     void dereferenceErasedError(const Token* erased, const Token* deref, const std::string& itername, bool inconclusive);
 
-    /** @brief Reading from empty stl container */
-    void readingEmptyStlContainer();
-
-
     /** @brief Reading from empty stl container (using valueflow) */
     void readingEmptyStlContainer2();
 
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
 private:
-    void readingEmptyStlContainer_parseUsage(const Token* tok, const Library::Container* container, std::map<unsigned int, const Library::Container*>& empty, bool noerror);
-
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);

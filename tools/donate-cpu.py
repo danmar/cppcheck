@@ -163,7 +163,7 @@ def unpackPackage(workPath, tgz):
 def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
-    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --enable=style --library=posix --platform=unix64 --template={file}:{line}:{message}[{id}] -rp=temp temp'
+    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --inconclusive --enable=style --library=posix --platform=unix64 --template={file}:{line}:{inconclusive:inconclusive:}{message}[{id}] -rp=temp temp'
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)

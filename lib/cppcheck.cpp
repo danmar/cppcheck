@@ -429,7 +429,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
 
             } catch (const InternalError &e) {
-                internalErrorFound=true;
                 std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                 ErrorLogger::ErrorMessage::FileLocation loc;
                 if (e.token) {
@@ -451,10 +450,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  false);
 
                 reportErr(errmsg);
-                if (mSuppressInternalErrorFound) {
-                    internalErrorFound = false;
-                    continue;
-                }
+                if (!mSuppressInternalErrorFound)
+                    internalErrorFound = true;
             }
         }
 
