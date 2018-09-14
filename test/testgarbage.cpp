@@ -230,6 +230,7 @@ private:
         TEST_CASE(garbageCode197); // #8385
         TEST_CASE(garbageCode198); // #8383
         TEST_CASE(garbageCode199); // #8752
+        TEST_CASE(garbageCode200); // #8757
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -975,7 +976,7 @@ private:
     }
 
     void garbageCode131() {
-        checkCode("( void ) { ( ) } ( ) / { ( ) }");
+        ASSERT_THROW(checkCode("( void ) { ( ) } ( ) / { ( ) }"), InternalError);
         // actually the invalid code should trigger an syntax error...
     }
 
@@ -1544,6 +1545,11 @@ private:
     // #8752
     void garbageCode199() {
         checkCode("d f(){e n00e0[]n00e0&""0+f=0}");
+    }
+
+    // #8757
+    void garbageCode200() {
+        ASSERT_THROW(checkCode("(){e break,{(case)!{e:[]}}}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
