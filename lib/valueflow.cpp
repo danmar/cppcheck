@@ -1067,7 +1067,7 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
         if(!val.isKnown())
             continue;
 
-        if(isSameExpression(tokenlist->isCPP(), false, tok->astOperand1(), tok->astOperand2(), tokenlist->getSettings()->library, true)) {
+        if(isSameExpression(tokenlist->isCPP(), false, tok->astOperand1(), tok->astOperand2(), tokenlist->getSettings()->library, true, &val.errorPath)) {
             setTokenValue(tok, val, tokenlist->getSettings());
         }
     }
