@@ -1761,7 +1761,7 @@ static bool isEarlyExit(const Token* start)
     const Token * tok = Token::findmatch(start, "return|throw|break", endToken);
     if(!tok)
         return false;
-    const Token * endStatement = Token::findmatch(tok, "; }", endToken);
+    const Token * endStatement = Token::findsimplematch(tok, "; }", endToken);
     if(!endStatement)
         return false;
     if(endStatement->next() != endToken)
@@ -1805,9 +1805,9 @@ static const Token* singleMemberCallInScope(const Token* start, unsigned int var
     const Token * endToken = start->link();
     if(!Token::Match(start->next(), "%var% . %name% ("))
         return nullptr;
-    if(!Token::Match(start->tokAt(4)->link(), ") ; }"))
+    if(!Token::simpleMatch(start->linkAt(4), ") ; }"))
         return nullptr;
-    const Token * endStatement = start->tokAt(4)->link()->next();
+    const Token * endStatement = start->linkAt(4)->next();
     if(endStatement->next() != endToken)
         return nullptr;
 
@@ -1840,13 +1840,13 @@ static const Token* singleConditionalInScope(const Token* start, unsigned int va
     if(start->str() != "{")
         return nullptr;
     const Token * endToken = start->link();
-    if(!Token::Match(start->next(), "if ("))
+    if(!Token::simpleMatch(start->next(), "if ("))
         return nullptr;
-    if(!Token::Match(start->tokAt(2)->link(), ") {"))
+    if(!Token::simpleMatch(start->linkAt(2), ") {"))
         return nullptr;
-    const Token * bodyTok = start->tokAt(2)->link()->next();
+    const Token * bodyTok = start->linkAt(2)->next();
     const Token * endBodyTok = bodyTok->link();
-    if(!Token::Match(endBodyTok, "} }"))
+    if(!Token::simpleMatch(endBodyTok, "} }"))
         return nullptr;
     if(endBodyTok->next() != endToken)
         return nullptr;
@@ -1889,7 +1889,7 @@ static bool accumulateBoolLiteral(const Token * tok, unsigned int varid)
 static bool accumulateBool(const Token * tok, unsigned int varid)
 {
     // TODO: Missing %oreq%
-    if(Token::Match(tok, "&=")) {
+    if(Token::simpleMatch(tok, "&=")) {
         return true;
     }
     if(Token::Match(tok, "= %varid% %oror%|%or%|&&|&", varid)) {
