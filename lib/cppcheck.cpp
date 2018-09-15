@@ -618,15 +618,15 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
 
-        const char *error = nullptr;
+        const char *pcreCompileErrorStr = nullptr;
         int erroffset = 0;
-        pcre *re = pcre_compile(rule.pattern.c_str(),0,&error,&erroffset,nullptr);
+        pcre * const re = pcre_compile(rule.pattern.c_str(),0,&pcreCompileErrorStr,&erroffset,nullptr);
         if (!re) {
-            if (error) {
-                ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+            if (pcreCompileErrorStr) {
+                const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
                                                  emptyString,
                                                  Severity::error,
-                                                 error,
+                                                 pcreCompileErrorStr,
                                                  "pcre_compile",
                                                  false);
 
@@ -635,16 +635,17 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             continue;
         }
 
-        const char *pcreErrorStr;
+        const char *pcreStudyErrorStr = nullptr;
         // Optimize the regex
-        pcre_extra * const pcreExtra = pcre_study(re, 0, &pcreErrorStr);
-        // pcre_study() returns NULL for both errors and when it can not optimize the regex.  The last argument is how one checks for
-        // errors (it is NULL if everything works, and points to an error string otherwise. */
-        if (!pcreErrorStr) {
-            ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+        pcre_extra * const pcreExtra = pcre_study(re, 0, &pcreStudyErrorStr);
+        // pcre_study() returns NULL for both errors and when it can not optimize the regex.
+        // The last argument is how one checks for errors.
+        // It is NULL if everything works, and points to an error string otherwise.
+        if (pcreStudyErrorStr) {
+            const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
                                              emptyString,
                                              Severity::error,
-                                             pcreErrorStr,
+                                             pcreStudyErrorStr,
                                              "pcre_study",
                                              false);
 
@@ -654,7 +655,40 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
         int pos = 0;
         int ovector[30]= {0};
-        while (pos < (int)str.size() && 0 <= pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
+        while (pos < (int)str.size()) {
+            const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30);
+            if (pcreExecRet < 0) {
+                std::string errorMessage;
+                switch (pcreExecRet) {
+                case PCRE_ERROR_NULL:
+                    errorMessage = "PCRE_ERROR_NULL";
+                    break;
+                case PCRE_ERROR_BADOPTION:
+                    errorMessage = "PCRE_ERROR_BADOPTION";
+                    break;
+                case PCRE_ERROR_BADMAGIC:
+                    errorMessage = "PCRE_ERROR_BADMAGIC";
+                    break;
+                case PCRE_ERROR_UNKNOWN_NODE:
+                    errorMessage = "PCRE_ERROR_UNKNOWN_NODE";
+                    break;
+                case PCRE_ERROR_NOMEMORY:
+                    errorMessage = "PCRE_ERROR_NOMEMORY";
+                    break;
+                default:
+                    errorMessage = "Unknown error";
+                    break;
+                }
+                const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                                                 emptyString,
+                                                 Severity::error,
+                                                 errorMessage,
+                                                 "pcre_exec",
+                                                 false);
+
+                reportErr(errmsg);
+                break;
+            }
             const unsigned int pos1 = (unsigned int)ovector[0];
             const unsigned int pos2 = (unsigned int)ovector[1];
 
@@ -693,7 +727,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         pcre_free(re);
 
         // Free up the EXTRA PCRE value (may be NULL at this point)
-        if (pcreExtra != NULL) {
+        if (pcreExtra) {
 #ifdef PCRE_CONFIG_JIT
             pcre_free_study(pcreExtra);
 #else
