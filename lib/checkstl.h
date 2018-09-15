@@ -279,7 +279,8 @@ public:
                "- using auto pointer (auto_ptr)\n"
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
-               "- reading from empty STL container\n";
+               "- reading from empty STL container\n"
+               "- consider using an STL algorithm instead of raw loop\n";
     }
 };
 /// @}
