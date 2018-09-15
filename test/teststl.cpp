@@ -789,6 +789,35 @@ private:
             "    }\n"
             "}");
       ASSERT_EQUALS("[test.cpp:7]: (error) Same iterator is used with containers 'l1' from different scopes.\n", errout.str());
+
+      check("void foo()\n"
+            "{\n"
+            "    list<int> l1;\n"
+            "    list<int>::iterator it1 = l1.begin();\n"
+            "    {\n"
+            "        list<int> l1;\n"
+            "        list<int>::iterator it2 = l1.begin();\n"
+            "        if (it1 != it2)\n"
+            "        {\n"
+            "        }\n"
+            "    }\n"
+            "}");
+      ASSERT_EQUALS("[test.cpp:8]: (error) Same iterator is used with containers 'l1' from different scopes.\n", errout.str());
+
+      check("void foo()\n"
+            "{\n"
+            "    list<int> l1;\n"
+            "    list<int>::iterator it1 = l1.begin();\n"
+            "    {\n"
+            "        list<int> l1;\n"
+            "        list<int>::iterator it2 = l1.begin();\n"
+            "        if (it2 != it1)\n"
+            "        {\n"
+            "        }\n"
+            "    }\n"
+            "}");
+      ASSERT_EQUALS("[test.cpp:8]: (error) Same iterator is used with containers 'l1' from different scopes.\n", errout.str());
+
     }
 
     void iterator20() {

@@ -340,7 +340,7 @@ void CheckStl::iterators()
                             iteratorsError(tok2, firstContainerName, secondContainerName);
                         else
                             iteratorsError(tok2, secondContainerName, firstContainerName);
-                        }
+                    }
                     else
                     {
                         iteratorsError(tok2, firstContainerName);
@@ -355,10 +355,19 @@ void CheckStl::iterators()
                         const Token* otherContainerToken = findIteratorContainer(iteratorScopeBegin[otherId], tok2->astOperand1(), otherId);
                         if (otherContainerToken && otherContainerToken->varId() != containerToken->varId())
                         {
-                            if (operandPosition == OperandPosition::Right)
-                                iteratorsError(tok2, getContainerName(containerToken), getContainerName(otherContainerToken));
+                            const std::string& firstContainerName = getContainerName(containerToken);
+                            const std::string& secondContainerName = getContainerName(otherContainerToken);
+                            if (firstContainerName != secondContainerName)
+                            {
+                                if (operandPosition == OperandPosition::Right)
+                                    iteratorsError(tok2, firstContainerName, secondContainerName);
+                                else
+                                    iteratorsError(tok2, secondContainerName, firstContainerName);
+                            }
                             else
-                                iteratorsError(tok2, getContainerName(otherContainerToken), getContainerName(containerToken));
+                            {
+                                iteratorsError(tok2, firstContainerName);
+                            }
                         }
                     }
                 }
