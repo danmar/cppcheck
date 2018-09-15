@@ -635,9 +635,26 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             continue;
         }
 
+        const char *pcreErrorStr;
+        // Optimize the regex
+        pcre_extra * const pcreExtra = pcre_study(re, 0, &pcreErrorStr);
+        // pcre_study() returns NULL for both errors and when it can not optimize the regex.  The last argument is how one checks for
+        // errors (it is NULL if everything works, and points to an error string otherwise. */
+        if (!pcreErrorStr) {
+            ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                                             emptyString,
+                                             Severity::error,
+                                             pcreErrorStr,
+                                             "pcre_study",
+                                             false);
+
+            reportErr(errmsg);
+            continue;
+        }
+
         int pos = 0;
         int ovector[30]= {0};
-        while (pos < (int)str.size() && 0 <= pcre_exec(re, nullptr, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
+        while (pos < (int)str.size() && 0 <= pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30)) {
             const unsigned int pos1 = (unsigned int)ovector[0];
             const unsigned int pos2 = (unsigned int)ovector[1];
 
@@ -674,6 +691,15 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         }
 
         pcre_free(re);
+
+        // Free up the EXTRA PCRE value (may be NULL at this point)
+        if (pcreExtra != NULL) {
+#ifdef PCRE_CONFIG_JIT
+            pcre_free_study(pcreExtra);
+#else
+            pcre_free(pcreExtra);
+#endif
+        }
     }
 #endif
 }
