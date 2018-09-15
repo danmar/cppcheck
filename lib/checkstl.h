@@ -191,6 +191,7 @@ private:
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
     void iteratorsError(const Token* tok, const std::string& container1, const std::string& container2);
+    void iteratorsError(const Token* tok, const std::string& container);
     void mismatchingContainersError(const Token* tok);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
