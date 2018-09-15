@@ -590,6 +590,112 @@ void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
         executeRules("simple", tokenizer);
 }
 
+#ifdef HAVE_RULES
+
+static std::string pcreErrorCodeToString(const int pcreExecRet)
+{
+    std::string errorMessage;
+    switch (pcreExecRet) {
+    case PCRE_ERROR_NULL:
+        errorMessage = "PCRE_ERROR_NULL";
+        break;
+    case PCRE_ERROR_BADOPTION:
+        errorMessage = "PCRE_ERROR_BADOPTION";
+        break;
+    case PCRE_ERROR_BADMAGIC:
+        errorMessage = "PCRE_ERROR_BADMAGIC";
+        break;
+    case PCRE_ERROR_UNKNOWN_NODE:
+        errorMessage = "PCRE_ERROR_UNKNOWN_NODE";
+        break;
+    case PCRE_ERROR_NOMEMORY:
+        errorMessage = "PCRE_ERROR_NOMEMORY";
+        break;
+    case PCRE_ERROR_NOSUBSTRING:
+        errorMessage = "PCRE_ERROR_NOSUBSTRING";
+        break;
+    case PCRE_ERROR_MATCHLIMIT:
+        errorMessage = "PCRE_ERROR_MATCHLIMIT";
+        break;
+    case PCRE_ERROR_CALLOUT:
+        errorMessage = "PCRE_ERROR_CALLOUT";
+        break;
+    case PCRE_ERROR_BADUTF8:
+        errorMessage = "PCRE_ERROR_BADUTF8";
+        break;
+    case PCRE_ERROR_BADUTF8_OFFSET:
+        errorMessage = "PCRE_ERROR_BADUTF8_OFFSET";
+        break;
+    case PCRE_ERROR_PARTIAL:
+        errorMessage = "PCRE_ERROR_PARTIAL";
+        break;
+    case PCRE_ERROR_BADPARTIAL:
+        errorMessage = "PCRE_ERROR_BADPARTIAL";
+        break;
+    case PCRE_ERROR_INTERNAL:
+        errorMessage = "PCRE_ERROR_INTERNAL";
+        break;
+    case PCRE_ERROR_BADCOUNT:
+        errorMessage = "PCRE_ERROR_BADCOUNT";
+        break;
+    case PCRE_ERROR_DFA_UITEM:
+        errorMessage = "PCRE_ERROR_DFA_UITEM";
+        break;
+    case PCRE_ERROR_DFA_UCOND:
+        errorMessage = "PCRE_ERROR_DFA_UCOND";
+        break;
+    case PCRE_ERROR_DFA_WSSIZE:
+        errorMessage = "PCRE_ERROR_DFA_WSSIZE";
+        break;
+    case PCRE_ERROR_DFA_RECURSE:
+        errorMessage = "PCRE_ERROR_DFA_RECURSE";
+        break;
+    case PCRE_ERROR_RECURSIONLIMIT:
+        errorMessage = "PCRE_ERROR_RECURSIONLIMIT";
+        break;
+    case PCRE_ERROR_NULLWSLIMIT:
+        errorMessage = "PCRE_ERROR_NULLWSLIMIT";
+        break;
+    case PCRE_ERROR_BADNEWLINE:
+        errorMessage = "PCRE_ERROR_BADNEWLINE";
+        break;
+    case PCRE_ERROR_BADOFFSET:
+        errorMessage = "PCRE_ERROR_BADOFFSET";
+        break;
+    case PCRE_ERROR_SHORTUTF8:
+        errorMessage = "PCRE_ERROR_SHORTUTF8";
+        break;
+    case PCRE_ERROR_RECURSELOOP:
+        errorMessage = "PCRE_ERROR_RECURSELOOP";
+        break;
+    case PCRE_ERROR_JIT_STACKLIMIT:
+        errorMessage = "PCRE_ERROR_JIT_STACKLIMIT";
+        break;
+    case PCRE_ERROR_BADMODE:
+        errorMessage = "PCRE_ERROR_BADMODE";
+        break;
+    case PCRE_ERROR_BADENDIANNESS:
+        errorMessage = "PCRE_ERROR_BADENDIANNESS";
+        break;
+    case PCRE_ERROR_DFA_BADRESTART:
+        errorMessage = "PCRE_ERROR_DFA_BADRESTART";
+        break;
+    case PCRE_ERROR_JIT_BADOPTION:
+        errorMessage = "PCRE_ERROR_JIT_BADOPTION";
+        break;
+    case PCRE_ERROR_BADLENGTH:
+        errorMessage = "PCRE_ERROR_BADLENGTH";
+        break;
+    case PCRE_ERROR_UNSET:
+        errorMessage = "PCRE_ERROR_UNSET";
+        break;
+    }
+    return errorMessage;
+}
+
+#endif
+
+
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
 {
     (void)tokenlist;
@@ -658,35 +764,17 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         while (pos < (int)str.size()) {
             const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30);
             if (pcreExecRet < 0) {
-                std::string errorMessage;
-                switch (pcreExecRet) {
-                case PCRE_ERROR_NULL:
-                    errorMessage = "PCRE_ERROR_NULL";
-                    break;
-                case PCRE_ERROR_BADOPTION:
-                    errorMessage = "PCRE_ERROR_BADOPTION";
-                    break;
-                case PCRE_ERROR_BADMAGIC:
-                    errorMessage = "PCRE_ERROR_BADMAGIC";
-                    break;
-                case PCRE_ERROR_UNKNOWN_NODE:
-                    errorMessage = "PCRE_ERROR_UNKNOWN_NODE";
-                    break;
-                case PCRE_ERROR_NOMEMORY:
-                    errorMessage = "PCRE_ERROR_NOMEMORY";
-                    break;
-                default:
-                    errorMessage = "Unknown error";
-                    break;
-                }
-                const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
-                                                       emptyString,
-                                                       Severity::error,
-                                                       errorMessage,
-                                                       "pcre_exec",
-                                                       false);
+                const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
+                if (!errorMessage.empty()) {
+                    const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
+                                                           emptyString,
+                                                           Severity::error,
+                                                           errorMessage,
+                                                           "pcre_exec",
+                                                           false);
 
-                reportErr(errmsg);
+                    reportErr(errmsg);
+                }
                 break;
             }
             const unsigned int pos1 = (unsigned int)ovector[0];
