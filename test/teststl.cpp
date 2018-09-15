@@ -3167,42 +3167,42 @@ private:
     void loopAlgoElementAssign()
     {
         check("void foo() {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        x = 1;\n"
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::fill algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        x = x + 1;\n"
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo(int a, int b) {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        x = a + b;\n"
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::fill or std::generate algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        x += 1;\n"
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        x = f();\n"
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::generate algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v) {\n"
+              "    for(int& x:v) {\n"
               "        f();\n"
               "        x = 1;\n"
               "    }\n"
@@ -3211,7 +3211,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v) {\n"
+              "    for(int& x:v) {\n"
               "        x = 1;\n"
               "        f();\n"
               "    }\n"
@@ -3221,7 +3221,7 @@ private:
 
         // There should be probably be a message for unconditional break
         check("void foo() {\n"
-              "    for(int x:v) {\n"
+              "    for(int& x:v) {\n"
               "        x = 1;\n"
               "        break;\n"
               "    }\n"
@@ -3230,7 +3230,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        x = ++x;\n"
               "}\n",
               true);
@@ -3402,14 +3402,14 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        x++;\n"
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
-              "    for(int x:v)\n"
+              "    for(int& x:v)\n"
               "        ++x;\n"
               "}\n",
               true);
@@ -3420,7 +3420,7 @@ private:
     {
         check("bool pred(int x);\n"
               "void foo() {\n"
-              "    for(int x:v) {\n"
+              "    for(int& x:v) {\n"
               "        if (pred(x)) {\n"
               "            x = 1; \n"
               "        }\n"
@@ -3467,7 +3467,7 @@ private:
 
         check("bool pred(int x);\n"
               "void foo() {\n"
-              "    for(int x:v) {\n"
+              "    for(int& x:v) {\n"
               "        if (pred(x)) {\n"
               "            x = x + 1; \n"
               "        }\n"
@@ -3605,7 +3605,7 @@ private:
 
         check("bool pred(int x);\n"
               "void foo() {\n"
-              "    for(int x:v) {\n"
+              "    for(int& x:v) {\n"
               "        x++;\n"
               "        if (pred(x)) {\n"
               "            x = 1; \n"
