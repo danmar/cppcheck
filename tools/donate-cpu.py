@@ -26,10 +26,11 @@ import sys
 import socket
 import time
 import re
+import tarfile
 
 def checkRequirements():
     result = True
-    for app in ['g++', 'git', 'make', 'wget', 'tar']:
+    for app in ['g++', 'git', 'make', 'wget']:
         try:
             subprocess.call([app, '--version'])
         except OSError:
@@ -156,7 +157,16 @@ def unpackPackage(workPath, tgz):
     removeTree(tempPath)
     os.mkdir(tempPath)
     os.chdir(tempPath)
-    subprocess.call(['tar', 'xzvf', tgz])
+    if tarfile.is_tarfile(tgz):
+        tf = tarfile.open(tgz)
+        for member in tf:
+            if member.name.startswith(('/', '..')):
+                # Skip dangerous file names
+                continue
+            elif member.name.lower().endswith(('.c', '.cl', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
+                tf.extract(member.name)
+                print(member.name)
+        tf.close()
     os.chdir(workPath)
 
 
