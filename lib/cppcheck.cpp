@@ -624,11 +624,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (!re) {
             if (pcreCompileErrorStr) {
                 const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
-                                                 emptyString,
-                                                 Severity::error,
-                                                 pcreCompileErrorStr,
-                                                 "pcre_compile",
-                                                 false);
+                                                       emptyString,
+                                                       Severity::error,
+                                                       pcreCompileErrorStr,
+                                                       "pcre_compile",
+                                                       false);
 
                 reportErr(errmsg);
             }
@@ -643,11 +643,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         // It is NULL if everything works, and points to an error string otherwise.
         if (pcreStudyErrorStr) {
             const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
-                                             emptyString,
-                                             Severity::error,
-                                             pcreStudyErrorStr,
-                                             "pcre_study",
-                                             false);
+                                                   emptyString,
+                                                   Severity::error,
+                                                   pcreStudyErrorStr,
+                                                   "pcre_study",
+                                                   false);
 
             reportErr(errmsg);
             continue;
@@ -680,11 +680,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                     break;
                 }
                 const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
-                                                 emptyString,
-                                                 Severity::error,
-                                                 errorMessage,
-                                                 "pcre_exec",
-                                                 false);
+                                                       emptyString,
+                                                       Severity::error,
+                                                       errorMessage,
+                                                       "pcre_exec",
+                                                       false);
 
                 reportErr(errmsg);
                 break;
