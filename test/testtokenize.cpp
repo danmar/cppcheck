@@ -8624,6 +8624,7 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"))
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { label: switch (a) {} }"));
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { UNKNOWN_MACRO if (a) {} }"))
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() { []() -> int * {}; }"));
         // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"));
         // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"));
 
