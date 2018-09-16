@@ -242,10 +242,12 @@ static const Token* findIteratorContainer(const Token* start, const Token* end, 
     const Token* containerToken = nullptr;
     for(const Token* tok = start; tok != end; tok = tok->next())
     {
-        if (Token::Match(tok, "%varid% = %name% .", id) &&
-            Token::Match(skipMembers(tok->tokAt(2)), "begin|rbegin|cbegin|crbegin|end|cend|rend|crend|find ("))
+        if (Token::Match(tok, "%varid% = %name% . %name% (", id))
         {
-            containerToken = skipMembers(tok->tokAt(2))->tokAt(-2);
+            if (tok->tokAt(5)->valueType() && tok->tokAt(5)->valueType()->type == ValueType::Type::ITERATOR)
+            {
+                containerToken = tok->tokAt(2);
+            }
         }
         else if (Token::Match(tok, "%varid% = %name% (", id))
         {
