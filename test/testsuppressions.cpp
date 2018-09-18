@@ -22,6 +22,7 @@
 #include "suppressions.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
+#include "path.h"
 
 #include <cstddef>
 #include <list>
@@ -46,6 +47,7 @@ private:
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
+        TEST_CASE(suppressionsLine0);
 
         TEST_CASE(inlinesuppress);
         TEST_CASE(inlinesuppress_symbolname);
@@ -401,6 +403,12 @@ private:
 
         const Suppressions::Suppression s2("abc", "include/1.h");
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
+    }
+
+    void suppressionsLine0() {
+        Suppressions suppressions;
+        suppressions.addSuppressionLine("syntaxError:*:0");
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("syntaxError", "test.cpp", 0)));
     }
 
     void inlinesuppress() {
