@@ -88,6 +88,7 @@ public:
         checkStl.size();
         checkStl.redundantCondition();
         checkStl.missingComparison();
+        checkStl.useStlAlgorithm();
     }
 
     /** Accessing container out of bounds using ValueFlow */
@@ -179,7 +180,11 @@ public:
 
     /** @brief Reading from empty stl container (using valueflow) */
     void readingEmptyStlContainer2();
-private:
+
+    /** @brief Look for loops that can replaced with std algorithms */
+    void useStlAlgorithm();
+
+  private:
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);
@@ -216,6 +221,8 @@ private:
 
     void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
 
+    void useStlAlgorithmError(const Token *tok, const std::string &algoName);
+
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckStl c(nullptr, settings, errorLogger);
         c.outOfBoundsError(nullptr, nullptr, nullptr);
@@ -250,6 +257,7 @@ private:
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
         c.readingEmptyStlContainerError(nullptr);
+        c.useStlAlgorithmError(nullptr, "");
     }
 
     static std::string myName() {
@@ -271,7 +279,8 @@ private:
                "- using auto pointer (auto_ptr)\n"
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
-               "- reading from empty STL container\n";
+               "- reading from empty STL container\n"
+               "- consider using an STL algorithm instead of raw loop\n";
     }
 };
 /// @}
