@@ -703,9 +703,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             continue;
         }
 
+        pcre_extra * pcreExtra = nullptr;
+        // Optimize the regex, but only if PCRE_CONFIG_JIT is available
+#ifdef PCRE_CONFIG_JIT
         const char *pcreStudyErrorStr = nullptr;
-        // Optimize the regex
-        pcre_extra * const pcreExtra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &pcreStudyErrorStr);
+        pcreExtra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &pcreStudyErrorStr);
         // pcre_study() returns NULL for both errors and when it can not optimize the regex.
         // The last argument is how one checks for errors.
         // It is NULL if everything works, and points to an error string otherwise.
@@ -720,6 +722,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             reportErr(errmsg);
             continue;
         }
+#endif
 
         int pos = 0;
         int ovector[30]= {0};
@@ -778,11 +781,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
         // Free up the EXTRA PCRE value (may be NULL at this point)
         if (pcreExtra) {
-#ifdef PCRE_CONFIG_JIT
             pcre_free_study(pcreExtra);
-#else
-            pcre_free(pcreExtra);
-#endif
         }
     }
 #endif
