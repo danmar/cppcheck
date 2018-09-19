@@ -592,108 +592,70 @@ void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
 
 #ifdef HAVE_RULES
 
-static std::string pcreErrorCodeToString(const int pcreExecRet)
+static const char * pcreErrorCodeToString(const int pcreExecRet)
 {
-    std::string errorMessage;
     switch (pcreExecRet) {
     case PCRE_ERROR_NULL:
-        errorMessage = "PCRE_ERROR_NULL";
-        break;
+        return "PCRE_ERROR_NULL";
     case PCRE_ERROR_BADOPTION:
-        errorMessage = "PCRE_ERROR_BADOPTION";
-        break;
+        return "PCRE_ERROR_BADOPTION";
     case PCRE_ERROR_BADMAGIC:
-        errorMessage = "PCRE_ERROR_BADMAGIC";
-        break;
+        return "PCRE_ERROR_BADMAGIC";
     case PCRE_ERROR_UNKNOWN_NODE:
-        errorMessage = "PCRE_ERROR_UNKNOWN_NODE";
-        break;
+        return "PCRE_ERROR_UNKNOWN_NODE";
     case PCRE_ERROR_NOMEMORY:
-        errorMessage = "PCRE_ERROR_NOMEMORY";
-        break;
+        return "PCRE_ERROR_NOMEMORY";
     case PCRE_ERROR_NOSUBSTRING:
-        errorMessage = "PCRE_ERROR_NOSUBSTRING";
-        break;
+        return "PCRE_ERROR_NOSUBSTRING";
     case PCRE_ERROR_MATCHLIMIT:
-        errorMessage = "PCRE_ERROR_MATCHLIMIT";
-        break;
+        return "PCRE_ERROR_MATCHLIMIT";
     case PCRE_ERROR_CALLOUT:
-        errorMessage = "PCRE_ERROR_CALLOUT";
-        break;
+        return "PCRE_ERROR_CALLOUT";
     case PCRE_ERROR_BADUTF8:
-        errorMessage = "PCRE_ERROR_BADUTF8";
-        break;
+        return "PCRE_ERROR_BADUTF8";
     case PCRE_ERROR_BADUTF8_OFFSET:
-        errorMessage = "PCRE_ERROR_BADUTF8_OFFSET";
-        break;
+        return "PCRE_ERROR_BADUTF8_OFFSET";
     case PCRE_ERROR_PARTIAL:
-        errorMessage = "PCRE_ERROR_PARTIAL";
-        break;
+        return "PCRE_ERROR_PARTIAL";
     case PCRE_ERROR_BADPARTIAL:
-        errorMessage = "PCRE_ERROR_BADPARTIAL";
-        break;
+        return "PCRE_ERROR_BADPARTIAL";
     case PCRE_ERROR_INTERNAL:
-        errorMessage = "PCRE_ERROR_INTERNAL";
-        break;
+        return "PCRE_ERROR_INTERNAL";
     case PCRE_ERROR_BADCOUNT:
-        errorMessage = "PCRE_ERROR_BADCOUNT";
-        break;
+        return"PCRE_ERROR_BADCOUNT";
     case PCRE_ERROR_DFA_UITEM:
-        errorMessage = "PCRE_ERROR_DFA_UITEM";
-        break;
+        return "PCRE_ERROR_DFA_UITEM";
     case PCRE_ERROR_DFA_UCOND:
-        errorMessage = "PCRE_ERROR_DFA_UCOND";
-        break;
+        return "PCRE_ERROR_DFA_UCOND";
     case PCRE_ERROR_DFA_WSSIZE:
-        errorMessage = "PCRE_ERROR_DFA_WSSIZE";
-        break;
+        return "PCRE_ERROR_DFA_WSSIZE";
     case PCRE_ERROR_DFA_RECURSE:
-        errorMessage = "PCRE_ERROR_DFA_RECURSE";
-        break;
+        return "PCRE_ERROR_DFA_RECURSE";
     case PCRE_ERROR_RECURSIONLIMIT:
-        errorMessage = "PCRE_ERROR_RECURSIONLIMIT";
-        break;
+        return "PCRE_ERROR_RECURSIONLIMIT";
     case PCRE_ERROR_NULLWSLIMIT:
-        errorMessage = "PCRE_ERROR_NULLWSLIMIT";
-        break;
+        return "PCRE_ERROR_NULLWSLIMIT";
     case PCRE_ERROR_BADNEWLINE:
-        errorMessage = "PCRE_ERROR_BADNEWLINE";
-        break;
+        return "PCRE_ERROR_BADNEWLINE";
     case PCRE_ERROR_BADOFFSET:
-        errorMessage = "PCRE_ERROR_BADOFFSET";
-        break;
+        return "PCRE_ERROR_BADOFFSET";
     case PCRE_ERROR_SHORTUTF8:
-        errorMessage = "PCRE_ERROR_SHORTUTF8";
-        break;
+        return "PCRE_ERROR_SHORTUTF8";
     case PCRE_ERROR_RECURSELOOP:
-        errorMessage = "PCRE_ERROR_RECURSELOOP";
-        break;
+        return "PCRE_ERROR_RECURSELOOP";
     case PCRE_ERROR_JIT_STACKLIMIT:
-        errorMessage = "PCRE_ERROR_JIT_STACKLIMIT";
-        break;
+        return "PCRE_ERROR_JIT_STACKLIMIT";
     case PCRE_ERROR_BADMODE:
-        errorMessage = "PCRE_ERROR_BADMODE";
-        break;
+        return "PCRE_ERROR_BADMODE";
     case PCRE_ERROR_BADENDIANNESS:
-        errorMessage = "PCRE_ERROR_BADENDIANNESS";
-        break;
+        return "PCRE_ERROR_BADENDIANNESS";
     case PCRE_ERROR_DFA_BADRESTART:
-        errorMessage = "PCRE_ERROR_DFA_BADRESTART";
-        break;
-    case PCRE_ERROR_JIT_BADOPTION:
-        errorMessage = "PCRE_ERROR_JIT_BADOPTION";
-        break;
-    case PCRE_ERROR_BADLENGTH:
-        errorMessage = "PCRE_ERROR_BADLENGTH";
-        break;
-    case PCRE_ERROR_UNSET:
-        errorMessage = "PCRE_ERROR_UNSET";
-        break;
+        return "PCRE_ERROR_DFA_BADRESTART";
     }
-    return errorMessage;
+    return "";
 }
 
-#endif
+#endif // HAVE_RULES
 
 
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
@@ -743,7 +705,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
         const char *pcreStudyErrorStr = nullptr;
         // Optimize the regex
-        pcre_extra * const pcreExtra = pcre_study(re, 0, &pcreStudyErrorStr);
+        pcre_extra * const pcreExtra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &pcreStudyErrorStr);
         // pcre_study() returns NULL for both errors and when it can not optimize the regex.
         // The last argument is how one checks for errors.
         // It is NULL if everything works, and points to an error string otherwise.
