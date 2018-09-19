@@ -720,6 +720,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                                                    false);
 
             reportErr(errmsg);
+            // pcre_compile() worked, but pcre_study() returned an error. Free the resources allocated by pcre_compile().
+            pcre_free(re);
             continue;
         }
 #endif
