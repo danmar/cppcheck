@@ -311,6 +311,13 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
             mTokensFrontBack.back = mTokensFrontBack.front;
             mTokensFrontBack.back->str(str);
         }
+        if (tok->commentToken) {
+            Token* commentToken = new Token();
+            commentToken->str(tok->commentToken->str());
+            commentToken->linenr(tok->commentToken->location.line);
+            commentToken->fileIndex(tok->commentToken->location.fileIndex);
+            mTokensFrontBack.back->commentToken(commentToken);
+        }
 
         if (isCPP() && mTokensFrontBack.back->str() == "delete")
             mTokensFrontBack.back->isKeyword(true);
