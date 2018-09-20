@@ -45,6 +45,7 @@ class Variable;
 struct TokensFrontBack {
     Token *front;
     Token *back;
+    Token *leadingComment;
 };
 
 /// @addtogroup Core
@@ -896,6 +897,13 @@ public:
 
     const Token *getValueTokenDeadPointer() const;
 
+    const Token *commentToken() const {
+        return mCommentToken;
+    }
+    void commentToken(Token* commentToken) {
+        mCommentToken = commentToken;
+    }
+
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
 
@@ -1025,6 +1033,8 @@ private:
     // ValueFlow
     std::list<ValueFlow::Value>* mValues;
     static const std::list<ValueFlow::Value> mEmptyValueList;
+
+    Token* mCommentToken;
 
 public:
     void astOperand1(Token *tok);
