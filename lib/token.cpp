@@ -55,7 +55,8 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
     mAstParent(nullptr),
     mOriginalName(nullptr),
     mValueType(nullptr),
-    mValues(nullptr)
+    mValues(nullptr),
+    mCommentToken(nullptr)
 {
 }
 
@@ -64,6 +65,7 @@ Token::~Token()
     delete mOriginalName;
     delete mValueType;
     delete mValues;
+    delete mCommentToken;
 }
 
 static const std::set<std::string> controlFlowKeywords = {
@@ -212,6 +214,15 @@ void Token::deleteNext(unsigned long index)
         if (n->mLink && n->mLink->mLink == n)
             n->mLink->link(nullptr);
 
+        if (n->mCommentToken) {
+            if (!mCommentToken) {
+                mCommentToken = n->mCommentToken;
+            } else {
+                mCommentToken->mStr.append(n->mCommentToken->mStr);
+            }
+            n->mCommentToken = nullptr;
+        }
+
         mNext = n->next();
         delete n;
         --index;
@@ -232,9 +243,31 @@ void Token::deletePrevious(unsigned long index)
         if (p->mLink && p->mLink->mLink == p)
             p->mLink->link(nullptr);
 
+        Token* pCommentToken = p->mCommentToken;
+        p->mCommentToken = nullptr;
+
         mPrevious = p->previous();
         delete p;
         --index;
+
+        if (pCommentToken) {
+            if (mPrevious) {
+                if (!mPrevious->mCommentToken) {
+                    mPrevious->mCommentToken = pCommentToken;
+                } else {
+                    mPrevious->mCommentToken->mStr.append(pCommentToken->mStr);
+                }
+            } else {
+                if (!mTokensFrontBack->leadingComment) {
+                    mTokensFrontBack->leadingComment = new Token();
+                    mTokensFrontBack->leadingComment->linenr(1);
+                    mTokensFrontBack->leadingComment->fileIndex(0);
+                    mTokensFrontBack->leadingComment->str(pCommentToken->mStr);
+                } else {
+                    mTokensFrontBack->leadingComment->mStr.append(pCommentToken->mStr);
+                }
+            }
+        }
     }
 
     if (mPrevious)
@@ -263,6 +296,7 @@ void Token::swapWithNext()
         std::swap(mValues, mNext->mValues);
         std::swap(mValueType, mNext->mValueType);
         std::swap(mProgressValue, mNext->mProgressValue);
+        std::swap(mCommentToken, mNext->mCommentToken);
     }
 }
 
@@ -290,6 +324,11 @@ void Token::takeData(Token *fromToken)
     fromToken->mValueType = nullptr;
     if (mLink)
         mLink->link(this);
+    if (fromToken->mCommentToken) {
+        delete mCommentToken;
+        mCommentToken = fromToken->mCommentToken;
+        fromToken->mCommentToken = nullptr;
+    }
 }
 
 void Token::deleteThis()
@@ -454,9 +493,16 @@ static int multiComparePercent(const Token *tok, const char*& haystack, unsigned
                 return 1;
         }
         // Comparison operator (%comp%)
-        else {
+        else if (haystack[1] == 'm') {
             haystack += 4;
             if (tok->isComparisonOp())
+                return 1;
+        }
+        // Commented out token (%comment%)
+        else {
+            haystack += 7;
+            tok = tok->previous();
+            if (tok->commentToken())
                 return 1;
         }
     }
