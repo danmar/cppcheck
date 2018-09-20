@@ -1057,7 +1057,8 @@ void simplecpp::TokenList::removeComments()
                 deleteToken(tok1->previous);
             }
             tok->next = tok1;
-            tok1->previous = tok;
+            if (tok1)
+                tok1->previous = tok;
         }
         tok = tok->next;
     }
