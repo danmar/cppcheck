@@ -97,12 +97,12 @@ namespace simplecpp {
     class SIMPLECPP_LIB Token {
     public:
         Token(const TokenString &s, const Location &loc) :
-            location(loc), previous(NULL), next(NULL), string(s) {
+            location(loc), previous(NULL), next(NULL), commentToken(NULL), string(s) {
             flags();
         }
 
         Token(const Token &tok) :
-            macro(tok.macro), location(tok.location), previous(NULL), next(NULL), string(tok.string) {
+            macro(tok.macro), location(tok.location), previous(NULL), next(NULL), commentToken(tok.commentToken), string(tok.string) {
             flags();
         }
 
@@ -131,6 +131,7 @@ namespace simplecpp {
         Location location;
         Token *previous;
         Token *next;
+		Token *commentToken;
 
         const Token *previousSkipComments() const {
             const Token *tok = this->previous;
@@ -264,6 +265,7 @@ namespace simplecpp {
 
         Token *frontToken;
         Token *backToken;
+		Token *leadingComment;
         std::vector<std::string> &files;
     };
 
