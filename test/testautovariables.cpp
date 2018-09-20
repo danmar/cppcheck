@@ -96,6 +96,7 @@ private:
         TEST_CASE(returnLocalVariable4); // x+y
         TEST_CASE(returnLocalVariable5); // cast
         TEST_CASE(returnLocalVariable6); // valueflow
+        TEST_CASE(returnLocalVariable7); // struct
 
         // return reference..
         TEST_CASE(returnReference1);
@@ -773,6 +774,19 @@ private:
               "    return p;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Address of auto-variable 'x' returned\n", errout.str());
+    }
+
+    void returnLocalVariable7() {
+        check("struct s {\n"
+              "    int f;\n"
+              "};\n"
+              "int *foo(int *v) {\n"
+              "    struct s *p = malloc(sizeof *p);\n"
+              "    p->f = *v;\n"
+              "    int *r = &p->f;\n"
+              "    return r;\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:8]: (error) Address of auto-variable 'p->f' returned\n", errout.str());
     }
 
     void returnReference1() {
