@@ -1031,36 +1031,35 @@ void simplecpp::TokenList::removeComments()
 {
     Token *tok = frontToken;
 
-	if (tok && tok->comment)
-	{
-		leadingComment = tok;
-		tok = tok->next;
-		leadingComment->next = nullptr;
-	}
-	while (tok && tok->comment)
-	{
-		leadingComment->setstr(leadingComment->str() + '\n' + tok->str());
-		tok = tok->next;
-		deleteToken(tok->previous);
-	}
+    if (tok && tok->comment) {
+        leadingComment = tok;
+        tok = tok->next;
+        leadingComment->next = nullptr;
+    }
+	
+    while (tok && tok->comment) {
+        leadingComment->setstr(leadingComment->str() + '\n' + tok->str());
+        tok = tok->next;
+        deleteToken(tok->previous);
+    }
 
-	frontToken = tok;
+    frontToken = tok;
 
     while (tok) {
-		Token *tok1 = tok->next;
+        Token *tok1 = tok->next;
         if (tok1 && tok1->comment) {
-			tok->commentToken = tok1;
-			tok1 = tok1->next;
+            tok->commentToken = tok1;
+            tok1 = tok1->next;
 
-			while (tok1 && tok1->comment){
-				tok->commentToken->setstr(tok->commentToken->str() + '\n' + tok1->str());
-				tok1 = tok1->next;
-				deleteToken(tok1->previous);
-			}
-			tok->next = tok1;
-			tok1->previous = tok;
-		}
-		tok = tok->next;
+            while (tok1 && tok1->comment) {
+                tok->commentToken->setstr(tok->commentToken->str() + '\n' + tok1->str());
+                tok1 = tok1->next;
+                deleteToken(tok1->previous);
+            }
+            tok->next = tok1;
+            tok1->previous = tok;
+        }
+        tok = tok->next;
     }
 }
 
@@ -2269,8 +2268,8 @@ static bool preprocessToken(simplecpp::TokenList &output, const simplecpp::Token
         }
         output.takeTokens(value);
     } else {
-		output.push_back(new simplecpp::Token(*tok));
-		*tok1 = tok->next;
+        output.push_back(new simplecpp::Token(*tok));
+        *tok1 = tok->next;
     }
     return true;
 }
