@@ -164,6 +164,12 @@ private:
     void checkRawTokens(const Tokenizer &tokenizer);
 
     /**
+     * @brief Check raw tokens before comments are removed
+     * @param tokenizer tokenizer instance
+     */
+    void checkRawTokensWithComments(const Tokenizer & tokenizer);
+
+    /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
      */
