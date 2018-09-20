@@ -1040,7 +1040,8 @@ void simplecpp::TokenList::removeComments()
     while (tok && tok->comment) {
         leadingComment->setstr(leadingComment->str() + '\n' + tok->str());
         tok = tok->next;
-        deleteToken(tok->previous);
+        if (tok)
+            deleteToken(tok->previous);
     }
 
     frontToken = tok;
@@ -1054,7 +1055,8 @@ void simplecpp::TokenList::removeComments()
             while (tok1 && tok1->comment) {
                 tok->commentToken->setstr(tok->commentToken->str() + '\n' + tok1->str());
                 tok1 = tok1->next;
-                deleteToken(tok1->previous);
+                if (tok1)
+                    deleteToken(tok1->previous);
             }
             tok->next = tok1;
             if (tok1)
