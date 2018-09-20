@@ -131,7 +131,7 @@ namespace simplecpp {
         Location location;
         Token *previous;
         Token *next;
-		Token *commentToken;
+        Token *commentToken;
 
         const Token *previousSkipComments() const {
             const Token *tok = this->previous;
@@ -265,7 +265,7 @@ namespace simplecpp {
 
         Token *frontToken;
         Token *backToken;
-		Token *leadingComment;
+        Token *leadingComment;
         std::vector<std::string> &files;
     };
 
