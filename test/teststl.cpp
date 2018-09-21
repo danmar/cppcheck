@@ -3321,7 +3321,7 @@ private:
               "        c.push_back(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("(style) Consider using std::copy algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::copy algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
@@ -3329,7 +3329,7 @@ private:
               "        c.push_back(f(x));\n"
               "}\n",
               true);
-        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
@@ -3337,7 +3337,7 @@ private:
               "        c.push_back(x + 1);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
@@ -3345,7 +3345,7 @@ private:
               "        c.push_front(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("(style) Consider using std::copy algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::copy algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
@@ -3353,7 +3353,7 @@ private:
               "        c.push_front(f(x));\n"
               "}\n",
               true);
-        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"
@@ -3361,7 +3361,7 @@ private:
               "        c.push_front(x + 1);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("(style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
 
         check("void foo() {\n"
               "    std::vector<int> c;\n"

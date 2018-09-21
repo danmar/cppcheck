@@ -1998,7 +1998,7 @@ void CheckStl::useStlAlgorithm()
                         algo = "std::copy";
                     else
                         algo = "std::transform";
-                    useStlAlgorithmError(assignTok, algo);
+                    useStlAlgorithmError(memberCallTok, algo);
                 }
                 continue;
             }
