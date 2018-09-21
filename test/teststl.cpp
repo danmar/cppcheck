@@ -3164,8 +3164,7 @@ private:
         ASSERT_EQUALS("[test.cpp:18]: (error, inconclusive) Invalid iterator 'it' used.\n", errout.str());
     }
 
-    void loopAlgoElementAssign()
-    {
+    void loopAlgoElementAssign() {
         check("void foo() {\n"
               "    for(int& x:v)\n"
               "        x = 1;\n"
@@ -3237,8 +3236,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void loopAlgoAccumulateAssign()
-    {
+    void loopAlgoAccumulateAssign() {
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int x:v)\n"
@@ -3316,8 +3314,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void loopAlgoContainerInsert()
-    {
+    void loopAlgoContainerInsert() {
         check("void foo() {\n"
               "    std::vector<int> c;\n"
               "    for(int x:v)\n"
@@ -3383,8 +3380,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void loopAlgoIncrement()
-    {
+    void loopAlgoIncrement() {
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int x:v)\n"
@@ -3416,8 +3412,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout.str());
     }
 
-    void loopAlgoConditional()
-    {
+    void loopAlgoConditional() {
         check("bool pred(int x);\n"
               "void foo() {\n"
               "    for(int& x:v) {\n"
@@ -3629,8 +3624,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void loopAlgoMinMax()
-    {
+    void loopAlgoMinMax() {
         check("void foo() {\n"
               "    int n = 0;\n"
               "    for(int x:v)\n"

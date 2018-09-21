@@ -184,7 +184,7 @@ public:
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
 
-  private:
+private:
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);
