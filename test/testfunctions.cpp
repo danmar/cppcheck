@@ -499,6 +499,9 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strcmp() argument nr 1. A nul-terminated string is required.\n"
                       "[test.cpp:1]: (error) Invalid strcmp() argument nr 2. A nul-terminated string is required.\n", errout.str());
 
+        check("size_t f() { char x[] = ""Hello world""; return strlen(&x[0]) }");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S {\n"
               "  char x;\n"
               "};\n"
