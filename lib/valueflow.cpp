@@ -1067,20 +1067,21 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             // Check if any variables are modified in scope
             bool bail = false;
             for(const Token * tok2=condTok->next();tok2 != condTok->link();tok2 = tok2->next()) {
-                if(const Variable * var = tok2->variable()) {
-                    const Token * endToken = var->scope()->bodyEnd;
-                    if(!var->isLocal() && !var->isConst() && !var->isArgument()) {
-                        bail = true;
-                        break;
-                    }
-                    if(var->isStatic() && !var->isConst()) {
-                        bail = true;
-                        break;
-                    }
-                    if(!var->isConst() && var->declEndToken() && isVariableChanged(var->declEndToken()->next(), endToken, tok2->varId(), false, settings, cpp)) {
-                        bail = true;
-                        break;
-                    }
+                const Variable * var = tok2->variable();
+                if(!var)
+                    continue;
+                const Token * endToken = var->scope()->bodyEnd;
+                if(!var->isLocal() && !var->isConst() && !var->isArgument()) {
+                    bail = true;
+                    break;
+                }
+                if(var->isStatic() && !var->isConst()) {
+                    bail = true;
+                    break;
+                }
+                if(!var->isConst() && var->declEndToken() && isVariableChanged(var->declEndToken()->next(), endToken, tok2->varId(), false, settings, cpp)) {
+                    bail = true;
+                    break;
                 }
             }
             if(bail)
