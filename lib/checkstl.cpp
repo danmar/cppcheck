@@ -264,6 +264,13 @@ static std::string getContainerName(const Token *containerToken)
     return ret;
 }
 
+enum OperandPosition
+{
+    None,
+    Left,
+    Right
+};
+
 static const Token* findIteratorContainer(const Token* start, const Token* end, unsigned int id)
 {
     const Token* containerToken = nullptr;
@@ -286,12 +293,23 @@ static const Token* findIteratorContainer(const Token* start, const Token* end, 
     return containerToken;
 }
 
-enum OperandPosition
+static void getOperandData(const Token* tok, const unsigned int iteratorId, const Token*& otherOperand, OperandPosition& operandPosition)
 {
-    None,
-    Left,
-    Right
-};
+    if (tok->astOperand1()->varId() == iteratorId)
+    {
+        otherOperand = tok->astOperand2();
+        operandPosition = OperandPosition::Right;
+    }
+    else if (tok->astOperand2()->varId() == iteratorId)
+    {
+        otherOperand = tok->astOperand1();
+        operandPosition = OperandPosition::Left;
+    }
+    else
+    {
+        return;
+    }
+}
 
 void CheckStl::iterators()
 {
@@ -351,16 +369,8 @@ void CheckStl::iterators()
                 
                 const Token *otherOperand = nullptr;
                 OperandPosition operandPosition = OperandPosition::None;
-                if (tok2->astOperand1()->varId() == iteratorId)
-                {
-                    otherOperand = tok2->astOperand2();
-                    operandPosition = OperandPosition::Right;
-                }
-                else if (tok2->astOperand2()->varId() == iteratorId)
-                {
-                    otherOperand = tok2->astOperand1();
-                    operandPosition = OperandPosition::Left;
-                }
+                getOperandData(tok2, iteratorId, otherOperand, operandPosition);
+
                 if (otherOperand)
                 {
                     const Token * const otherExprPart = otherOperand->tokAt(-3);
