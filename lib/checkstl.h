@@ -191,10 +191,10 @@ private:
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
     void iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2);
-    void iteratorsError(const Token *tok, const Token* containerTok, const std::string &containerName1, const std::string &containerName2);
+    void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName);
     void iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName1, const std::string& containerName2);    
-    void iteratorsCmpError(const Token *cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string &containerName);
+    void iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName);
     void mismatchingContainersError(const Token* tok);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
@@ -225,6 +225,10 @@ private:
         c.outOfBoundsError(nullptr, nullptr, nullptr);
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
+        c.iteratorsError(nullptr, nullptr, "container1", "container2");
+        c.iteratorsError(nullptr, nullptr, "container");
+        c.iteratorsCmpError(nullptr, nullptr, nullptr, "container1", "container2");
+        c.iteratorsCmpError(nullptr, nullptr, nullptr, "container");
         c.mismatchingContainersError(nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);
         c.sameIteratorExpressionError(nullptr);

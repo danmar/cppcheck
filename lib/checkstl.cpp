@@ -159,18 +159,18 @@ void CheckStl::invalidIteratorError(const Token *tok, const std::string &iterato
     reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, false);
 }
 
-void CheckStl::iteratorsError(const Token *tok, const std::string &containerName1, const std::string &containerName2)
+void CheckStl::iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2)
 {
-    reportError(tok, Severity::error, "iterators",
+    reportError(tok, Severity::error, "iterators1",
                 "$symbol:" + containerName1 + "\n"
                 "$symbol:" + containerName2 + "\n"
                 "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
 }
 
-void CheckStl::iteratorsError(const Token *tok, const Token* containerTok, const std::string &containerName1, const std::string &containerName2)
+void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2)
 {
     std::list<const Token*> callstack = { tok, containerTok };
-    reportError(callstack, Severity::error, "iterators",
+    reportError(callstack, Severity::error, "iterators2",
                 "$symbol:" + containerName1 + "\n"
                 "$symbol:" + containerName2 + "\n"
                 "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
@@ -179,24 +179,24 @@ void CheckStl::iteratorsError(const Token *tok, const Token* containerTok, const
 void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName)
 {
     std::list<const Token*> callstack = { tok, containerTok };
-    reportError(callstack, Severity::error, "iterators",
+    reportError(callstack, Severity::error, "iterators3",
                 "$symbol:" + containerName + "\n"
                 "Same iterator is used with containers '" + containerName + "' that are defined in different scopes.", CWE664, false);
 }
 
-void CheckStl::iteratorsCmpError(const Token *cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string &containerName1, const std::string &containerName2)
+void CheckStl::iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName1, const std::string& containerName2)
 {
     std::list<const Token*> callstack = { cmpOperatorTok, containerTok1, containerTok2 };
-    reportError(callstack, Severity::error, "iterators",
+    reportError(callstack, Severity::error, "iteratorsCmp1",
                 "$symbol:" + containerName1 + "\n"
                 "$symbol:" + containerName2 + "\n"
                 "Comparison of iterators from containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
 }
 
-void CheckStl::iteratorsCmpError(const Token *cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string &containerName)
+void CheckStl::iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName)
 {
     std::list<const Token*> callstack = { cmpOperatorTok, containerTok1, containerTok2 };
-    reportError(callstack, Severity::error, "iterators",
+    reportError(callstack, Severity::error, "iteratorsCmp2",
                 "$symbol:" + containerName + "\n"
                 "Comparison of iterators from containers '" + containerName + "' that are defined in different scopes.", CWE664, false);
 }
