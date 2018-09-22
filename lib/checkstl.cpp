@@ -2019,7 +2019,6 @@ void CheckStl::useStlAlgorithm()
             // Check for conditionals
             const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId());
             if (condBodyTok) {
-                const Token *beginCondTok = condBodyTok->previous()->link();
                 // Check for single assign
                 assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
                 if (assignTok) {
