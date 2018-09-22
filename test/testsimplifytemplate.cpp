@@ -1138,7 +1138,7 @@ private:
                             "template <class T, unsigned S> class C3 {};\n"
                             "template <class T, unsigned S> C3<T, S>::C3(const C3<T, S> &v) { C1<T *> c1; }\n"
                             "C3<int,6> c3;";
-        const char exp[] = "template < class T > void f ( ) { x = y ? C1 < int > :: allocate ( 1 ) : 0 ; } "
+        const char exp[] = "template < class T > void f ( ) { x = y ? ( C1 < int > :: allocate ( 1 ) ) : 0 ; } "
                            "C3<int,6> c3 ; "
                            "class C3<int,6> { } ; "
                            "C3<int,6> :: C3<int,6> ( const C3<int,6> & v ) { C1<int*> c1 ; } "
