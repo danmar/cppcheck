@@ -708,15 +708,15 @@ static const char * pcreErrorCodeToString(const int pcreExecRet)
                "can be used to convert such a pattern so that it runs on the new host (PCRE_ERROR_BADENDIANNESS)";
     case PCRE_ERROR_DFA_BADRESTART:
         return "PCRE_ERROR_DFA_BADRESTART";
-#if PCRE_MAJOR >= 8 && PCRE_MINOR >= 32         
+#if PCRE_MAJOR >= 8 && PCRE_MINOR >= 32
     case PCRE_ERROR_BADLENGTH:
-        return "This error is given if pcre_exec() is called with a negative value for the length argument (PCRE_ERROR_BADLENGTH)";      
+        return "This error is given if pcre_exec() is called with a negative value for the length argument (PCRE_ERROR_BADLENGTH)";
     case PCRE_ERROR_JIT_BADOPTION:
         return "This error is returned when a pattern that was successfully studied using a JIT compile "
                "option is being matched, but the matching mode (partial or complete match) does not correspond "
                "to any JIT compilation mode. When the JIT fast path function is used, this error may be "
                "also given for invalid options. See the pcrejit documentation for more details (PCRE_ERROR_JIT_BADOPTION)";
-#endif                
+#endif
     }
     return "";
 }
