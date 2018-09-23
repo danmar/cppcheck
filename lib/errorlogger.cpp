@@ -401,7 +401,8 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         if (!file0.empty() && (*it).getfile() != file0)
             printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
-        printer.PushAttribute("line", (*it).line);
+        if (it->line != (unsigned int)Suppressions::Suppression::NO_LINE)
+            printer.PushAttribute("line", (*it).line);
         if (!it->getinfo().empty())
             printer.PushAttribute("info", it->getinfo().c_str());
         printer.CloseElement(false);
@@ -568,7 +569,7 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty())
-            callStack.emplace_back(s.fileName, std::max(0, s.lineNumber));
+            callStack.emplace_back(s.fileName, s.lineNumber);
         reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", false));
     }
 }
