@@ -10162,6 +10162,8 @@ void Tokenizer::prepareTernaryOpForAST()
                     break;
                 else if (tok2->str() == ",")
                     parenthesesNeeded = true;
+                else if (tok2->str() == "<")
+                    parenthesesNeeded = true;
                 else if (tok2->str() == "?") {
                     depth++;
                     parenthesesNeeded = true;
