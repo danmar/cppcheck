@@ -522,7 +522,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 // nested class or friend function?
                 else {
                     /** @todo check entire qualification for match */
-                    Scope * nested = scope->findInNestedListRecursive(tok->strAt(-2));
+                    const Scope * const nested = scope->findInNestedListRecursive(tok->strAt(-2));
 
                     if (nested)
                         addClassFunction(&scope, &tok, argStart);
@@ -579,7 +579,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                     // regular function
                     else {
-                        Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
+                        const Function* const function = addGlobalFunction(scope, tok, argStart, funcStart);
 
                         if (!function)
                             mTokenizer->syntaxError(tok);
@@ -679,7 +679,7 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
             // only find if not already found
             if (i->scope == nullptr) {
                 // check scope for match
-                Scope *scope = findScope(i->start->tokAt(2), &(*it));
+                const Scope * const scope = findScope(i->start->tokAt(2), &(*it));
                 if (scope) {
                     // set found scope
                     i->scope = scope;
