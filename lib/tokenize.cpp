@@ -8463,6 +8463,14 @@ void Tokenizer::findGarbageCode() const
     // Operators without operands..
     const Token *templateEndToken = nullptr;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        // Skip preprocessor directives
+        if(Token::Match(tok, "# line|pragma")) {
+            unsigned int fidx = tok->fileIndex();
+            while(tok && tok->fileIndex() == fidx)
+                tok = tok->next();
+            if(!tok)
+                break;
+        }
         if (!templateEndToken) {
             if (tok->str() == "<" && isCPP())
                 templateEndToken = tok->findClosingBracket();
@@ -8475,6 +8483,8 @@ void Tokenizer::findGarbageCode() const
         if (Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|++|--|::|sizeof|throw|decltype|typeof {|if|else|try|catch|while|do|for|return|switch|break|namespace"))
             syntaxError(tok);
         if (Token::Match(tok, "( %any% )") && tok->next()->isKeyword() && !Token::simpleMatch(tok->next(), "void"))
+            syntaxError(tok);
+        if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);

@@ -1606,6 +1606,10 @@ private:
         // case must be inside switch block
         ASSERT_THROW(checkCode("void f() { switch (a) {}; case 1: }"), InternalError); // #8184
         ASSERT_THROW(checkCode("struct V : { public case {} ; struct U : U  void { V *f (int x) (x) } }"), InternalError); // #5120
+        ASSERT_THROW(checkCode("void f() { 0 0; }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { true 0; }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { 'a' 0; }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { 1 \"\"; }"), InternalError);
     }
 
     void enumTrailingComma() {
