@@ -568,7 +568,7 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty())
-            callStack.emplace_back(s.fileName, s.lineNumber);
+            callStack.emplace_back(s.fileName, std::max(0, s.lineNumber));
         reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", false));
     }
 }
