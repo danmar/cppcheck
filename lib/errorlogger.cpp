@@ -611,7 +611,7 @@ std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const
 {
     std::ostringstream oss;
     oss << '[' << Path::toNativeSeparators(mFileName);
-    if (line != 0)
+    if (line != Suppressions::Suppression::NO_LINE)
         oss << ':' << line;
     oss << ']';
     return oss.str();

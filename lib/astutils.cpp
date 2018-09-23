@@ -225,7 +225,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
             // Recognized as a variable but the declaration is unknown
         } else if (tok2->varId() > 0) {
             return tok;
-        } else if(tok2->tokType() == Token::eName && !Token::Match(tok2, "sizeof|decltype|typeof") && !tok2->function()) {
+        } else if (tok2->tokType() == Token::eName && !Token::Match(tok2, "sizeof|decltype|typeof") && !tok2->function()) {
             return tok;
         }
     }

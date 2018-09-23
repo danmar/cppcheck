@@ -98,7 +98,7 @@ public:
         std::string symbolName;
         bool matched;
 
-        static const int NO_LINE = 0;
+        enum { NO_LINE = -1 };
     };
 
     /**
