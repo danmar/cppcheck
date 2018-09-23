@@ -366,7 +366,7 @@ void CheckStl::iterators()
             // Check whether iterator compared against different container or iterator of different container?
             if (tok2->isComparisonOp() && tok2->astOperand1() && tok2->astOperand2() &&
                 (foundOperatorErrors.find(tok2) == foundOperatorErrors.end()) &&
-                compareIteratorAgainstDifferentContainer(tok2, containerToken, iteratorId, iteratorScopeBegin)) {
+                compareIteratorAgainstDifferentContainer(tok2, containerToken, iteratorId, iteratorScopeBeginInfo)) {
                 foundOperatorErrors.insert(tok2);
             }
 
