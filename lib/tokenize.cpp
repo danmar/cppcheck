@@ -8472,7 +8472,7 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok, "> %cop%"))
                 continue;
         }
-        if (Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|++|--|::|sizeof|throw|decltype|typeof {"))
+        if (Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|++|--|::|sizeof|throw|decltype|typeof {|if|else|try|catch|while|do|for|return|switch|break|namespace"))
             syntaxError(tok);
         if (Token::Match(tok, "( %any% )") && tok->next()->isKeyword() && !Token::simpleMatch(tok->next(), "void"))
             syntaxError(tok);
