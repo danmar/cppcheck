@@ -471,10 +471,10 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
 
-        check("int f() { char x = '\\0'; return strcmp(""Hello world"", &x); }");
+        check("int f() { char x = '\\0'; return strcmp(\"Hello world\", &x); }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int f() { char x = 'x'; return strcmp(""Hello world"", &x); }");
+        check("int f() { char x = 'x'; return strcmp(\"Hello world\", &x); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strcmp() argument nr 2. A nul-terminated string is required.\n", errout.str());
 
         check("size_t f(char x) { char * y = &x; return strlen(y) }");
@@ -489,7 +489,7 @@ private:
         check("size_t f() { char x = '\\0'; char * y = &x; char *z = y; return strlen(z) }");
         ASSERT_EQUALS("", errout.str());
 
-        check("size_t f() { char x[] = ""Hello world""; return strlen(x) }");
+        check("size_t f() { char x[] = \"Hello world\"; return strlen(x) }");
         ASSERT_EQUALS("", errout.str());
 
         check("size_t f(char x[]) { return strlen(x) }");
@@ -499,7 +499,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strcmp() argument nr 1. A nul-terminated string is required.\n"
                       "[test.cpp:1]: (error) Invalid strcmp() argument nr 2. A nul-terminated string is required.\n", errout.str());
 
-        check("size_t f() { char x[] = ""Hello world""; return strlen(&x[0]) }");
+        check("size_t f() { char x[] = \"Hello world\"; return strlen(&x[0]) }");
         ASSERT_EQUALS("", errout.str());
 
         check("struct S {\n"
@@ -530,7 +530,7 @@ private:
         // #5225
         check("int main(void)\n"
               "{\n"
-              "  char str[80] = ""hello worl"";\n"
+              "  char str[80] = \"hello worl\";\n"
               "  char d = 'd';\n"
               "  strcat(str, &d);\n"
               "  puts(str);\n"
