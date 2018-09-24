@@ -4080,6 +4080,15 @@ private:
         check("volatile const int var = 42;\n"
               "void f() { if(var == 42) {} }\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    struct b c;\n"
+              "    c.a = &a;\n"
+              "    g(&c);\n"
+              "    if (a == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {

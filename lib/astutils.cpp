@@ -158,6 +158,15 @@ static bool precedes(const Token * tok1, const Token * tok2)
     return tok1->progressValue() < tok2->progressValue();
 }
 
+static bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
+{
+    for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
+        if (Token::Match(tok, "= & %varid% ;", varid))
+            return true;
+    }
+    return false;
+}
+
 /// This takes a token that refers to a variable and it will return the token
 /// to the expression that the variable is assigned to. If its not valid to
 /// make such substitution then it will return the original token.
@@ -197,6 +206,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
     if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp)))
         return tok;
+    if (precedes(varTok, endToken) && isAliased(varTok, endToken, tok->varId()))
+        return tok;
     // Start at beginning of initialization
     const Token * startToken = varTok;
     while (Token::Match(startToken, "%op%|.|(|{") && startToken->astOperand1())
@@ -222,6 +233,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
             if (var2->isStatic() && !var2->isConst())
                 return tok;
             if (!var2->isConst() && (!precedes(tok2, endToken2) || isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp)))
+                return tok;
+            if (precedes(tok2, endToken2) && isAliased(tok2, endToken2, tok2->varId()))
                 return tok;
             // Recognized as a variable but the declaration is unknown
         } else if (tok2->varId() > 0) {
