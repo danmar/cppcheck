@@ -266,7 +266,6 @@ static std::string getContainerName(const Token *containerToken)
 
 enum OperandPosition
 {
-    None,
     Left,
     Right
 };
@@ -475,7 +474,7 @@ bool CheckStl::compareIteratorAgainstDifferentContainer(const Token* operatorTok
         return false;
 
     const Token *otherOperand = nullptr;
-    OperandPosition operandPosition = OperandPosition::None;
+    OperandPosition operandPosition;
     if (operatorTok->astOperand1()->varId() == iteratorId)
     {
         otherOperand = operatorTok->astOperand2();
