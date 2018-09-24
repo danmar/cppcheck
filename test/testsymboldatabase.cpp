@@ -779,7 +779,7 @@ private:
     void isVariableDeclarationRValueRef() {
         reset();
         givenACodeSampleToTokenize var("int&& i;");
-        const const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
         ASSERT(false == v.isArray());
