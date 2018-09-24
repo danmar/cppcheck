@@ -318,9 +318,9 @@ validatePlatforms: ${PlatformFilesCHECKED}
 
 # Validate XML output (to detect regressions)
 /tmp/errorlist.xml: cppcheck
-	cppcheck --errorlist >$@
+	./cppcheck --errorlist >$@
 /tmp/example.xml: cppcheck
-	cppcheck --xml --inconclusive -j 4 --suppress=operatorEqVarError:*check.h --enable=all cli externals gui lib test 2>/tmp/example.xml
+	./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h cli externals gui lib test 2>/tmp/example.xml
 createXMLExamples:/tmp/errorlist.xml /tmp/example.xml
 .PHONY: validateXML
 validateXML: createXMLExamples
