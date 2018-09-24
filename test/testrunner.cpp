@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
         options args(argc, const_cast<const char**>(argv));
 
-		const std::size_t failedTestsCount = TestFixture::runTests(args);
+        const std::size_t failedTestsCount = TestFixture::runTests(args);
         return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 #ifdef NDEBUG
     } catch (const InternalError& e) {
