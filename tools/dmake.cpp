@@ -418,7 +418,7 @@ int main(int argc, char **argv)
     fout << "/tmp/errorlist.xml: cppcheck\n";
     fout << "\t./cppcheck --errorlist >$@\n";
     fout << "/tmp/example.xml: cppcheck\n";
-    fout << "\t./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h cli externals gui lib test 2>/tmp/example.xml\n";
+    fout << "\t./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h -j 4 cli externals gui lib test 2>/tmp/example.xml\n";
     fout << "createXMLExamples:/tmp/errorlist.xml /tmp/example.xml\n";
     fout << ".PHONY: validateXML\n";
     fout << "validateXML: createXMLExamples\n";
