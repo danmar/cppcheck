@@ -133,6 +133,7 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+/*
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())
@@ -155,6 +156,15 @@ static bool precedes(const Token * tok1, const Token * tok2)
     if (!tok2)
         return false;
     return tok1->progressValue() < tok2->progressValue();
+}
+
+static bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
+{
+    for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
+        if (Token::Match(tok, "= & %varid% ;", varid))
+            return true;
+    }
+    return false;
 }
 
 /// This takes a token that refers to a variable and it will return the token
@@ -196,6 +206,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
     if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, nullptr, cpp)))
         return tok;
+    if (precedes(varTok, endToken) && isAliased(varTok, endToken, tok->varId()))
+        return tok;
     // Start at beginning of initialization
     const Token * startToken = varTok;
     while (Token::Match(startToken, "%op%|.|(|{") && startToken->astOperand1())
@@ -222,6 +234,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
                 return tok;
             if (!var2->isConst() && (!precedes(tok2, endToken2) || isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp)))
                 return tok;
+            if (precedes(tok2, endToken2) && isAliased(tok2, endToken2, tok2->varId()))
+                return tok;
             // Recognized as a variable but the declaration is unknown
         } else if (tok2->varId() > 0) {
             return tok;
@@ -245,7 +259,7 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
         return;
     errors->push_back(item);
 }
-
+*/
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, ErrorPath* errors)
 {
     if (tok1 == nullptr && tok2 == nullptr)
@@ -266,6 +280,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, errors);
     }
     if (tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
+        // TODO this code is temporarily commented out because there are false positives. See #8717, #8744, #8775.
+        /*
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if (varTok1->str() == tok2->str()) {
             followVariableExpressionError(tok1, varTok1, errors);
@@ -281,6 +297,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, varTok1, varTok2, library, true, errors);
         }
+        */
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
@@ -308,9 +325,9 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                 const Token *lhs = tok1->previous();
                 while (Token::Match(lhs, "(|.|["))
                     lhs = lhs->astOperand1();
-                bool lhsIsConst = (lhs->variable() && lhs->variable()->isConst()) ||
-                                  (lhs->valueType() && lhs->valueType()->constness > 0) ||
-                                  (Token::Match(lhs, "%var% . %name% (") && library.isFunctionConst(lhs->tokAt(2)));
+                const bool lhsIsConst = (lhs->variable() && lhs->variable()->isConst()) ||
+                                        (lhs->valueType() && lhs->valueType()->constness > 0) ||
+                                        (Token::Match(lhs, "%var% . %name% (") && library.isFunctionConst(lhs->tokAt(2)));
                 if (!lhsIsConst)
                     return false;
             }

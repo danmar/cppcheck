@@ -522,7 +522,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 // nested class or friend function?
                 else {
                     /** @todo check entire qualification for match */
-                    Scope * nested = scope->findInNestedListRecursive(tok->strAt(-2));
+                    const Scope * const nested = scope->findInNestedListRecursive(tok->strAt(-2));
 
                     if (nested)
                         addClassFunction(&scope, &tok, argStart);
@@ -579,7 +579,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                     // regular function
                     else {
-                        Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
+                        const Function* const function = addGlobalFunction(scope, tok, argStart, funcStart);
 
                         if (!function)
                             mTokenizer->syntaxError(tok);
@@ -679,7 +679,7 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
             // only find if not already found
             if (i->scope == nullptr) {
                 // check scope for match
-                Scope *scope = findScope(i->start->tokAt(2), &(*it));
+                const Scope * const scope = findScope(i->start->tokAt(2), &(*it));
                 if (scope) {
                     // set found scope
                     i->scope = scope;
@@ -2864,7 +2864,12 @@ void SymbolDatabase::printOut(const char *title) const
         std::cout << "    name: " << type->name() << std::endl;
         std::cout << "    classDef: " << tokenToString(type->classDef, mTokenizer) << std::endl;
         std::cout << "    classScope: " << type->classScope << std::endl;
-        std::cout << "    enclosingScope: " << type->enclosingScope << std::endl;
+        std::cout << "    enclosingScope: " << type->enclosingScope;
+        if (type->enclosingScope) {
+            std::cout << " " << type->enclosingScope->type << " "
+                      << type->enclosingScope->className;
+        }
+        std::cout << std::endl;
         std::cout << "    needInitialization: " << (type->needInitialization == Type::Unknown ? "Unknown" :
                   type->needInitialization == Type::True ? "True" :
                   type->needInitialization == Type::False ? "False" :
@@ -5654,11 +5659,11 @@ std::string ValueType::str() const
         ret += " long double";
     else if ((type == ValueType::Type::NONSTD || type == ValueType::Type::RECORD) && typeScope) {
         std::string className(typeScope->className);
-        const Scope *scope = typeScope->nestedIn;
+        const Scope *scope = typeScope->definedType ? typeScope->definedType->enclosingScope : typeScope->nestedIn;
         while (scope && scope->type != Scope::eGlobal) {
             if (scope->type == Scope::eClass || scope->type == Scope::eStruct || scope->type == Scope::eNamespace)
                 className = scope->className + "::" + className;
-            scope = scope->nestedIn;
+            scope = scope->definedType ? scope->definedType->enclosingScope : scope->nestedIn;
         }
         ret += ' ' + className;
     } else if (type == ValueType::Type::CONTAINER && container) {

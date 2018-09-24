@@ -84,7 +84,7 @@ script:
   - xmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml
 # check test/cfg
   - make checkcfg
-  - make validateCFG
+  - make validateXML
   - cd ./gui
 # clean rebuild
   - git clean -dfx .

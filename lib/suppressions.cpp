@@ -147,7 +147,7 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
                     suppression.lineNumber = Suppressions::Suppression::NO_LINE;
                 }
 
-                if (suppression.lineNumber > Suppressions::Suppression::NO_LINE) {
+                if (suppression.lineNumber != Suppressions::Suppression::NO_LINE) {
                     suppression.fileName.erase(pos);
                 }
             }
@@ -233,7 +233,7 @@ bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &e
         return false;
     if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
         return false;
-    if (lineNumber > NO_LINE && lineNumber != errmsg.lineNumber)
+    if (lineNumber != NO_LINE && lineNumber != errmsg.lineNumber)
         return false;
     if (!symbolName.empty()) {
         for (std::string::size_type pos = 0; pos < errmsg.symbolNames.size();) {
@@ -269,7 +269,7 @@ std::string Suppressions::Suppression::getText() const
         ret = errorId;
     if (!fileName.empty())
         ret += " fileName=" + fileName;
-    if (lineNumber > NO_LINE)
+    if (lineNumber != NO_LINE)
         ret += " lineNumber=" + MathLib::toString(lineNumber);
     if (!symbolName.empty())
         ret += " symbolName=" + symbolName;
@@ -312,7 +312,7 @@ void Suppressions::dump(std::ostream & out)
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
         if (!suppression.fileName.empty())
             out << " fileName=\"" << ErrorLogger::toxml(suppression.fileName) << '"';
-        if (suppression.lineNumber > Suppression::NO_LINE)
+        if (suppression.lineNumber != Suppression::NO_LINE)
             out << " lineNumber=\"" << suppression.lineNumber << '"';
         if (!suppression.symbolName.empty())
             out << " symbolName=\"" << ErrorLogger::toxml(suppression.symbolName) << '\"';
