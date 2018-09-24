@@ -64,7 +64,7 @@ private:
             CLEAR_REDIRECT_ERROUT;
             char* path = new char[i->first.size() + 1];
             strcpy(path, i->first.c_str());
-            const char* argv[] = {
+            const char * const argv[] = {
 #ifdef _WIN32
                 ".\\..\\testrunner",
 #else

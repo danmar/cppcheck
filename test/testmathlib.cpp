@@ -1088,7 +1088,7 @@ private:
     void incdec() const {
         // increment
         {
-            MathLib::biguint num = ~10U;
+			const MathLib::biguint num = ~10U;
             const std::string op = "++";
             const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
             const MathLib::biguint incrementedNum = MathLib::toULongNumber(strNum);
@@ -1096,7 +1096,7 @@ private:
         }
         // decrement
         {
-            MathLib::biguint num = ~10U;
+			const MathLib::biguint num = ~10U;
             const std::string op = "--";
             const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
             const MathLib::biguint decrementedNum = MathLib::toULongNumber(strNum);

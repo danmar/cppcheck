@@ -272,8 +272,8 @@ private:
     // This function ensure that test works with different compilers. Floats can
     // be stringified differently.
     static std::string removeFloat(const std::string& msg) {
-        std::string::size_type pos1 = msg.find("float (");
-        std::string::size_type pos2 = msg.find(") to integer conversion");
+		const std::string::size_type pos1 = msg.find("float (");
+		const std::string::size_type pos2 = msg.find(") to integer conversion");
         if (pos1 == std::string::npos || pos2 == std::string::npos || pos1 > pos2)
             return msg;
         return msg.substr(0,pos1+7) + msg.substr(pos2);
