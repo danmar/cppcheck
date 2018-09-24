@@ -800,12 +800,12 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         while (pos < (int)str.size()) {
             const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30);
             if (pcreExecRet < 0) {
-                const std::string errorMessage = std::string("pcre_exec failed: ") + pcreErrorCodeToString(pcreExecRet);
+                const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
                     const ErrorLogger::ErrorMessage errmsg(std::list<ErrorLogger::ErrorMessage::FileLocation>(),
                                                            emptyString,
                                                            Severity::error,
-                                                           errorMessage,
+                                                           std::string("pcre_exec failed: ") + errorMessage,
                                                            "pcre_exec",
                                                            false);
 
