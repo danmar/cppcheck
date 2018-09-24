@@ -277,6 +277,7 @@ static const Token* findIteratorContainer(const Token* start, const Token* end, 
     {
         if (Token::Match(tok, "%varid% = %name% . %name% (", id))
         {
+            // Iterator is assigned to value
             if (tok->tokAt(5)->valueType() && tok->tokAt(5)->valueType()->type == ValueType::Type::ITERATOR)
             {
                 containerToken = tok->tokAt(2);
@@ -343,7 +344,7 @@ void CheckStl::iterators()
                 invalidationScope = nullptr;
             }
 
-            // Is here we have comparison expression?
+            // Is comparison expression?
             // Check whether iterator compared against different container or iterator of different container?
             if (tok2->isComparisonOp() && tok2->astOperand1() && tok2->astOperand2() &&
                 (foundOperatorErrors.find(tok2) == foundOperatorErrors.end()) &&
