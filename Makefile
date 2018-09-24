@@ -320,7 +320,7 @@ validatePlatforms: ${PlatformFilesCHECKED}
 /tmp/errorlist.xml: cppcheck
 	cppcheck --errorlist >$@
 /tmp/example.xml: cppcheck
-	cppcheck --xml --inconclusive -j 4 cli externals gui lib test 2>/tmp/example.xml
+	cppcheck --xml --inconclusive -j 4 --suppress=operatorEqVarError:*check.h --enable=all cli externals gui lib test 2>/tmp/example.xml
 createXMLExamples:/tmp/errorlist.xml /tmp/example.xml
 .PHONY: validateXML
 validateXML: createXMLExamples
