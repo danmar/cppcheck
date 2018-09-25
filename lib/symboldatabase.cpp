@@ -3550,6 +3550,17 @@ static const Token* skipPointers(const Token* tok)
     return tok;
 }
 
+static const Token* skipPointersAndQualifiers(const Token* tok)
+{
+    tok = skipPointers(tok);
+    while (Token::Match(tok, "const|volatile")) {
+        tok = tok->next();
+        tok = skipPointers(tok);
+    }
+
+    return tok;
+}
+
 bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const
 {
     const bool isCPP = check && check->mTokenizer->isCPP();
@@ -3582,7 +3593,7 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
             }
         }
     } else if (Token::Match(localTypeTok, "%type%")) {
-        localVarTok = skipPointers(localTypeTok->strAt(1)=="const"?localTypeTok->tokAt(2):localTypeTok->next());
+        localVarTok = skipPointersAndQualifiers(localTypeTok->next());
     }
 
     if (!localVarTok)

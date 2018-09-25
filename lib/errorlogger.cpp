@@ -401,8 +401,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         if (!file0.empty() && (*it).getfile() != file0)
             printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
-        if (it->line != (unsigned int)Suppressions::Suppression::NO_LINE)
-            printer.PushAttribute("line", (*it).line);
+        printer.PushAttribute("line", std::max((*it).line,0));
         if (!it->getinfo().empty())
             printer.PushAttribute("info", it->getinfo().c_str());
         printer.CloseElement(false);

@@ -141,6 +141,10 @@ private:
         TEST_CASE(isVariableDeclarationRValueRef);
         TEST_CASE(isVariableDeclarationDoesNotIdentifyCase);
         TEST_CASE(isVariableStlType);
+        TEST_CASE(isVariablePointerToConstPointer);
+        TEST_CASE(isVariablePointerToVolatilePointer);
+        TEST_CASE(isVariablePointerToConstVolatilePointer);
+        TEST_CASE(isVariableMultiplePointersAndQualifiers);
 
         TEST_CASE(VariableValueType1);
         TEST_CASE(VariableValueType2);
@@ -952,6 +956,50 @@ private:
             ASSERT_EQUALS(false, v.isStlType(types));
             ASSERT_EQUALS(false, v.isStlStringType());
         }
+    }
+
+    void isVariablePointerToConstPointer() {
+        reset();
+        givenACodeSampleToTokenize var("char* const * s;");
+        bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isReference());
+    }
+
+    void isVariablePointerToVolatilePointer() {
+        reset();
+        givenACodeSampleToTokenize var("char* volatile * s;");
+        bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isReference());
+    }
+
+    void isVariablePointerToConstVolatilePointer() {
+        reset();
+        givenACodeSampleToTokenize var("char* const volatile * s;");
+        bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isReference());
+    }
+
+    void isVariableMultiplePointersAndQualifiers() {
+        reset();
+        givenACodeSampleToTokenize var("const char* const volatile * const volatile * const volatile * const volatile s;");
+        bool result = nullScope.isVariableDeclaration(var.tokens()->next(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        Variable v(vartok, typetok, vartok->previous(), 0, Public, 0, 0, &settings1);
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isReference());
     }
 
     void arrayMemberVar1() {
