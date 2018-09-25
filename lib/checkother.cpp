@@ -2690,8 +2690,7 @@ void CheckOther::checkEvaluationOrder()
                         continue; // don't care about sizeof usage
                     tokens.push(tok3->astOperand1());
                     tokens.push(tok3->astOperand2());
-                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true) && 
-                        tok->astOperand1()->expressionString() == tok3->expressionString()) {
+                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true)) {
                         foundError = true;
                     }
                 }

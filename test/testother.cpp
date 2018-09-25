@@ -6942,6 +6942,18 @@ private:
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int x = 0;\n"
+              "  return 0 + x++;\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x, int y) {\n"
+              "  int a[10];\n"
+              "  a[x+y] = a[y+x]++;;\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (error) Expression 'a[x+y]=a[y+x]++' depends on order of evaluation of side effects\n", errout.str());
     }
 
     void testEvaluationOrderSelfAssignment() {
