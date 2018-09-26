@@ -368,7 +368,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         return false;
 
     // same expressions
-    if (isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, pure, true))
+    if (isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, pure, false))
         return true;
 
     // bitwise overlap for example 'x&7' and 'x==1'
@@ -391,7 +391,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         if (!num2->isNumber() || MathLib::isNegative(num2->str()))
             return false;
 
-        if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, pure, true))
+        if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, pure, false))
             return false;
 
         const MathLib::bigint value1 = MathLib::toLongNumber(num1->str());
@@ -603,7 +603,7 @@ void CheckCondition::multiCondition2()
                             tokens2.push(secondCondition->astOperand1());
                             tokens2.push(secondCondition->astOperand2());
                         } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) &&
-                                   isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
+                                   isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, false, &errorPath)) {
                             if (!isAliased(vars))
                                 identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                         }
@@ -984,9 +984,9 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!parseable)
                 continue;
 
-            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true, true))
+            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, false, true))
                 continue; // same expressions => only report that there are same expressions
-            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true, true))
+            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, false, true))
                 continue;
 
 
