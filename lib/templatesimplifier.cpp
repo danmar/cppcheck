@@ -421,7 +421,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         else if (indentlevel >= 2 && tok2->str() == ">")
             --indentlevel;
 
-        else if (Token::Match(tok2, "> class|struct %name% [,)]")) {
+        else if (Token::Match(tok2, "> class|struct|union %name% [,)]")) {
             tok2 = tok2->next();
             Token::eraseTokens(tok, tok2);
             deleteToken(tok);
@@ -515,7 +515,7 @@ static void setScopeInfo(const Token *tok, std::list<ScopeInfo2> *scopeInfo)
 {
     while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
         scopeInfo->pop_back();
-    if (!Token::Match(tok, "namespace|class|struct %name% {|:|::"))
+    if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::"))
         return;
     tok = tok->next();
     std::string classname = tok->str();
@@ -537,7 +537,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
     std::list<ScopeInfo2> scopeInfo;
     std::list<TokenAndName> declarations;
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "}|namespace|class|struct")) {
+        if (Token::Match(tok, "}|namespace|class|struct|union")) {
             setScopeInfo(tok, &scopeInfo);
             continue;
         }
@@ -577,7 +577,7 @@ void TemplateSimplifier::getTemplateInstantiations()
     std::list<ScopeInfo2> scopeList;
 
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "}|namespace|class|struct")) {
+        if (Token::Match(tok, "}|namespace|class|struct|union")) {
             setScopeInfo(tok, &scopeList);
             continue;
         }
@@ -679,7 +679,7 @@ void TemplateSimplifier::useDefaultArgumentValues()
 
             // end of template parameters?
             if (tok->str() == ">") {
-                if (Token::Match(tok, "> class|struct %name%"))
+                if (Token::Match(tok, "> class|struct|union %name%"))
                     classname = tok->strAt(2);
                 if (templateParmDepth<2)
                     break;
@@ -955,7 +955,7 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
     // get the position of the template name
     int namepos = 0, starAmpPossiblePosition = 0;
-    if (Token::Match(tok, "> class|struct %type% {|:|<"))
+    if (Token::Match(tok, "> class|struct|union %type% {|:|<"))
         namepos = 2;
     else if (Token::Match(tok, "> %type% *|&| %type% ("))
         namepos = 2;
@@ -993,7 +993,7 @@ void TemplateSimplifier::expandTemplate(
     const Token *endOfTemplateDefinition = nullptr;
     const Token * const templateDeclarationNameToken = templateDeclarationToken->tokAt(getTemplateNamePosition(templateDeclarationToken));
     for (const Token *tok3 = mTokenList.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
-        if (Token::Match(tok3, "}|namespace|class|struct")) {
+        if (Token::Match(tok3, "}|namespace|class|struct|union")) {
             setScopeInfo(tok3, &scopeInfo);
             continue;
         }
@@ -1647,7 +1647,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typeStringsUsedInTemplateInstantiation.push_back(tok3->str());
             }
             // add additional type information
-            if (!constconst && !Token::Match(tok3, "class|struct|enum")) {
+            if (!constconst && !Token::Match(tok3, "class|struct|union|enum")) {
                 if (tok3->isUnsigned())
                     typeForNewName += "unsigned";
                 else if (tok3->isSigned())
@@ -1708,7 +1708,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
     std::list<ScopeInfo2> scopeInfo;
     std::list< std::pair<Token *, Token *> > removeTokens;
     for (Token *nameTok = instantiationToken; nameTok; nameTok = nameTok->next()) {
-        if (Token::Match(nameTok, "}|namespace|class|struct")) {
+        if (Token::Match(nameTok, "}|namespace|class|struct|union")) {
             setScopeInfo(nameTok, &scopeInfo);
             continue;
         }
