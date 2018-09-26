@@ -269,10 +269,11 @@ namespace simplecpp {
 
     /** Tracking how macros are used */
     struct SIMPLECPP_LIB MacroUsage {
-        explicit MacroUsage(const std::vector<std::string> &f) : macroLocation(f), useLocation(f) {}
+        explicit MacroUsage(const std::vector<std::string> &f, bool macroValueKnown_) : macroLocation(f), useLocation(f), macroValueKnown(macroValueKnown_) {}
         std::string macroName;
         Location    macroLocation;
         Location    useLocation;
+        bool        macroValueKnown;
     };
 
     /**
