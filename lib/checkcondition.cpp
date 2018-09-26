@@ -583,10 +583,10 @@ void CheckCondition::multiCondition2()
                             tokens1.push(firstCondition->astOperand1());
                             tokens1.push(firstCondition->astOperand2());
                         } else if (!firstCondition->hasKnownValue()) {
-                            if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                            if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, false, &errorPath)) {
                                 if (!isAliased(vars))
                                     oppositeInnerConditionError(firstCondition, cond2, errorPath);
-                            } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                            } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, false, &errorPath)) {
                                 identicalInnerConditionError(firstCondition, cond2, errorPath);
                             }
                         }
@@ -911,7 +911,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                 ((tok->str() == "||" && tok->astOperand2()->str() == "&&") ||
                  (tok->str() == "&&" && tok->astOperand2()->str() == "||"))) {
                 const Token* tok2 = tok->astOperand2()->astOperand1();
-                if (isOppositeCond(true, mTokenizer->isCPP(), tok->astOperand1(), tok2, mSettings->library, true, true)) {
+                if (isOppositeCond(true, mTokenizer->isCPP(), tok->astOperand1(), tok2, mSettings->library, true, false)) {
                     std::string expr1(tok->astOperand1()->expressionString());
                     std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
                     std::string expr3(tok->astOperand2()->astOperand2()->expressionString());
@@ -974,7 +974,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             // Opposite comparisons around || or && => always true or always false
-            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true)) {
+            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, false)) {
 
                 const bool alwaysTrue(tok->str() == "||");
                 incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive);
@@ -984,9 +984,9 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!parseable)
                 continue;
 
-            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, false, true))
+            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true, false))
                 continue; // same expressions => only report that there are same expressions
-            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, false, true))
+            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true, false))
                 continue;
 
 
