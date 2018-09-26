@@ -196,6 +196,7 @@ private:
         TEST_CASE(constArrayOperator); // #4406
         TEST_CASE(constRangeBasedFor); // #5514
         TEST_CASE(const_shared_ptr);
+        TEST_CASE(constPtrToConstPtr);
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -6213,6 +6214,14 @@ private:
                    "\n"
                    "std::shared_ptr<Data> Fred::getData() { return data; }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void constPtrToConstPtr() {
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    const char *const *data;\n"
+                   "    const char *const *getData() { return data; }\n}");
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::getData' can be const.\n", errout.str());
     }
 
     void checkInitializerListOrder(const char code[]) {

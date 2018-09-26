@@ -421,7 +421,7 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         else if (indentlevel >= 2 && tok2->str() == ">")
             --indentlevel;
 
-        else if (Token::Match(tok2, "> class|struct %name% [,)]")) {
+        else if (Token::Match(tok2, "> class|struct|union %name% [,)]")) {
             tok2 = tok2->next();
             Token::eraseTokens(tok, tok2);
             deleteToken(tok);
@@ -515,7 +515,7 @@ static void setScopeInfo(const Token *tok, std::list<ScopeInfo2> *scopeInfo)
 {
     while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
         scopeInfo->pop_back();
-    if (!Token::Match(tok, "namespace|class|struct %name% {|:|::"))
+    if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::"))
         return;
     tok = tok->next();
     std::string classname = tok->str();
@@ -537,7 +537,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
     std::list<ScopeInfo2> scopeInfo;
     std::list<TokenAndName> declarations;
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "}|namespace|class|struct")) {
+        if (Token::Match(tok, "}|namespace|class|struct|union")) {
             setScopeInfo(tok, &scopeInfo);
             continue;
         }
@@ -550,7 +550,7 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
             !Token::Match(tok->tokAt(3), "%name%|.|,|=|>"))
             syntaxError(tok->next());
         codeWithTemplates = true;
-        Token *parmEnd = tok->next()->findClosingBracket();
+        const Token * const parmEnd = tok->next()->findClosingBracket();
         for (const Token *tok2 = parmEnd; tok2; tok2 = tok2->next()) {
             if (tok2->str() == "(")
                 tok2 = tok2->link();
@@ -577,7 +577,7 @@ void TemplateSimplifier::getTemplateInstantiations()
     std::list<ScopeInfo2> scopeList;
 
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "}|namespace|class|struct")) {
+        if (Token::Match(tok, "}|namespace|class|struct|union")) {
             setScopeInfo(tok, &scopeList);
             continue;
         }
@@ -679,7 +679,7 @@ void TemplateSimplifier::useDefaultArgumentValues()
 
             // end of template parameters?
             if (tok->str() == ">") {
-                if (Token::Match(tok, "> class|struct %name%"))
+                if (Token::Match(tok, "> class|struct|union %name%"))
                     classname = tok->strAt(2);
                 if (templateParmDepth<2)
                     break;
@@ -848,7 +848,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
             }
             tok2 = aliasUsage.token->next(); // the '<'
             const Token * const endToken1 = templateAlias.token->next()->findClosingBracket();
-            Token * const endToken2 = TokenList::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
+            const Token * const endToken2 = TokenList::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
             for (const Token *tok1 = templateAlias.token->next(); tok2 != endToken2; tok1 = tok1->next(), tok2 = tok2->next()) {
                 if (!tok2->isName())
                     continue;
@@ -955,7 +955,7 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
     // get the position of the template name
     int namepos = 0, starAmpPossiblePosition = 0;
-    if (Token::Match(tok, "> class|struct %type% {|:|<"))
+    if (Token::Match(tok, "> class|struct|union %type% {|:|<"))
         namepos = 2;
     else if (Token::Match(tok, "> %type% *|&| %type% ("))
         namepos = 2;
@@ -993,7 +993,7 @@ void TemplateSimplifier::expandTemplate(
     const Token *endOfTemplateDefinition = nullptr;
     const Token * const templateDeclarationNameToken = templateDeclarationToken->tokAt(getTemplateNamePosition(templateDeclarationToken));
     for (const Token *tok3 = mTokenList.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
-        if (Token::Match(tok3, "}|namespace|class|struct")) {
+        if (Token::Match(tok3, "}|namespace|class|struct|union")) {
             setScopeInfo(tok3, &scopeInfo);
             continue;
         }
@@ -1647,7 +1647,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 typeStringsUsedInTemplateInstantiation.push_back(tok3->str());
             }
             // add additional type information
-            if (!constconst && !Token::Match(tok3, "class|struct|enum")) {
+            if (!constconst && !Token::Match(tok3, "class|struct|union|enum")) {
                 if (tok3->isUnsigned())
                     typeForNewName += "unsigned";
                 else if (tok3->isSigned())
@@ -1708,7 +1708,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
     std::list<ScopeInfo2> scopeInfo;
     std::list< std::pair<Token *, Token *> > removeTokens;
     for (Token *nameTok = instantiationToken; nameTok; nameTok = nameTok->next()) {
-        if (Token::Match(nameTok, "}|namespace|class|struct")) {
+        if (Token::Match(nameTok, "}|namespace|class|struct|union")) {
             setScopeInfo(nameTok, &scopeInfo);
             continue;
         }
@@ -1758,7 +1758,7 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
         // matching template usage => replace tokens..
         // Foo < int >  =>  Foo<int>
         if (tok2->str() == ">" && typeCountInInstantiation == typesUsedInTemplateInstantiation.size()) {
-            Token * const nameTok1 = nameTok;
+            const Token * const nameTok1 = nameTok;
             while (Token::Match(nameTok->tokAt(-2), "%name% :: %name%"))
                 nameTok = nameTok->tokAt(-2);
             nameTok->str(newName);

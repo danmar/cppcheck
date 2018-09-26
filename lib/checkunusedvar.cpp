@@ -927,7 +927,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 tok = tok->next();
             }
 
-            Variables::VariableUsage *var = variables.find(varid);
+            const Variables::VariableUsage *const var = variables.find(varid);
             if (var && !var->_allocateMemory) {
                 variables.readAll(varid, tok);
             }
@@ -998,13 +998,13 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 variables.use(varid1, tok);
 
             if (dereference) {
-                Variables::VariableUsage *var = variables.find(varid1);
+                const Variables::VariableUsage *const var = variables.find(varid1);
                 if (var && var->mType == Variables::array)
                     variables.write(varid1, tok);
                 variables.writeAliases(varid1, tok);
                 variables.read(varid1, tok);
             } else {
-                Variables::VariableUsage *var = variables.find(varid1);
+                const Variables::VariableUsage *const var = variables.find(varid1);
                 if (var && (inwhile || start->strAt(-1) == ",")) {
                     variables.use(varid1, tok);
                 } else if (var && var->mType == Variables::reference) {
@@ -1051,7 +1051,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 }
             }
 
-            Variables::VariableUsage *var2 = variables.find(tok->varId());
+            const Variables::VariableUsage * const var2 = variables.find(tok->varId());
             if (var2) {
                 if (var2->mType == Variables::reference) {
                     variables.writeAliases(tok->varId(), tok);
@@ -1069,7 +1069,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             // checked for chained assignments
             if (tok != start && equal && equal->str() == "=") {
                 const unsigned int varId = tok->varId();
-                Variables::VariableUsage *var = variables.find(varId);
+                const Variables::VariableUsage * const var = variables.find(varId);
 
                 if (var && var->mType != Variables::reference) {
                     variables.read(varId,tok);

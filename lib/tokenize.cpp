@@ -4286,13 +4286,13 @@ void Tokenizer::removeRedundantAssignment()
         if (tok->str() == "{")
             tok = tok->link();
 
-        Token * start = const_cast<Token *>(startOfExecutableScope(tok));
+        const Token * const start = const_cast<Token *>(startOfExecutableScope(tok));
         if (start) {
             tok = start->previous();
             // parse in this function..
             std::set<unsigned int> localvars;
             const Token * const end = tok->next()->link();
-            for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
+            for (Token * tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
                 // skip local class or struct
                 if (Token::Match(tok2, "class|struct %type% {|:")) {
                     // skip to '{'
@@ -8666,8 +8666,8 @@ void Tokenizer::simplifyFuncInWhile()
             continue;
 
         Token *func = tok->tokAt(2);
-        Token *var = tok->tokAt(4);
-        Token *end = tok->next()->link()->next()->link();
+        const Token * const var = tok->tokAt(4);
+        Token * const end = tok->next()->link()->next()->link();
 
         const unsigned int varid = ++mVarId; // Create new variable
         const std::string varname("cppcheck:r" + MathLib::toString(++count));
@@ -8745,7 +8745,7 @@ void Tokenizer::simplifyStructDecl()
             Token *start = tok;
             while (Token::Match(start->previous(), "%type%"))
                 start = start->previous();
-            Token *type = tok->next();
+            const Token * const type = tok->next();
             Token *next = tok->tokAt(2);
 
             while (next && next->str() != "{")
@@ -9378,10 +9378,10 @@ void Tokenizer::simplifyBitfields()
         }
 
         if (last && last->str() == ",") {
-            Token *tok1 = last;
+            Token * tok1 = last;
             tok1->str(";");
 
-            Token *tok2 = tok->next();
+            const Token *const tok2 = tok->next();
             tok1->insertToken(tok2->str());
             tok1 = tok1->next();
             tok1->isSigned(tok2->isSigned());
@@ -9950,7 +9950,7 @@ void Tokenizer::simplifyReturnStrncat()
             tok2->insertToken(";");
 
             //the last token of the first argument before ','
-            Token *end = tok->next()->nextArgument()->tokAt(-2);
+            const Token * const end = tok->next()->nextArgument()->tokAt(-2);
 
             //all the first argument is copied
             TokenList::copyTokens(tok2, tok->next(), end);
@@ -10057,7 +10057,7 @@ void Tokenizer::simplifyMathExpressions()
                 const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                const Token * const tok3 = tok2->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
@@ -10075,7 +10075,7 @@ void Tokenizer::simplifyMathExpressions()
                 const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                const Token * const tok3 = tok2->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
@@ -10093,7 +10093,7 @@ void Tokenizer::simplifyMathExpressions()
                 const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                const Token * const tok3 = tok2->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
@@ -10111,7 +10111,7 @@ void Tokenizer::simplifyMathExpressions()
                 const std::string& leftExponent = tok2->strAt(2);
                 if (!isTwoNumber(leftExponent))
                     continue; // left exponent is not 2
-                Token * const tok3 = tok2->tokAt(8);
+                const Token * const tok3 = tok2->tokAt(8);
                 Token * const tok4 = tok3->link();
                 if (!Token::Match(tok4, ") , %num% )"))
                     continue;
@@ -10161,6 +10161,8 @@ void Tokenizer::prepareTernaryOpForAST()
                 } else if (tok2->str() == ";" || (tok2->link() && tok2->str() != "{" && tok2->str() != "}"))
                     break;
                 else if (tok2->str() == ",")
+                    parenthesesNeeded = true;
+                else if (tok2->str() == "<")
                     parenthesesNeeded = true;
                 else if (tok2->str() == "?") {
                     depth++;

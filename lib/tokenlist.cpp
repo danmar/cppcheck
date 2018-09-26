@@ -695,7 +695,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 }
             }
 
-            Token* tok2 = tok;
+            const Token* const tok2 = tok;
             if (tok->strAt(1) != "]")
                 compileBinOp(tok, state, compileExpression);
             else
@@ -1152,7 +1152,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token * const tok1 = tok;
         AST_state state(cpp);
         compileExpression(tok, state);
-        Token * const endToken = tok;
+        const Token * const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 

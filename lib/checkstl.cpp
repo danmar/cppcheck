@@ -1987,7 +1987,7 @@ void CheckStl::useStlAlgorithm()
             const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall);
             if (memberAccessTok) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
-                unsigned int contVarId = memberAccessTok->astOperand1()->varId();
+                const unsigned int contVarId = memberAccessTok->astOperand1()->varId();
                 if (contVarId == loopVar->varId())
                     continue;
                 if (memberCallTok->str() == "push_back" ||
@@ -2022,7 +2022,7 @@ void CheckStl::useStlAlgorithm()
                 // Check for single assign
                 assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
                 if (assignTok) {
-                    unsigned int assignVarId = assignTok->astOperand1()->varId();
+                    const unsigned int assignVarId = assignTok->astOperand1()->varId();
                     std::string algo;
                     if (assignVarId == loopVar->varId()) {
                         if (useLoopVarInAssign)
@@ -2045,7 +2045,7 @@ void CheckStl::useStlAlgorithm()
                 memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall);
                 if (memberAccessTok) {
                     const Token *memberCallTok = memberAccessTok->astOperand2();
-                    unsigned int contVarId = memberAccessTok->astOperand1()->varId();
+                    const unsigned int contVarId = memberAccessTok->astOperand1()->varId();
                     if (contVarId == loopVar->varId())
                         continue;
                     if (memberCallTok->str() == "push_back" ||

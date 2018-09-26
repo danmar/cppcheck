@@ -105,6 +105,7 @@ private:
         TEST_CASE(template65);  // #8321
         TEST_CASE(template66);  // #8725
         TEST_CASE(template67);  // #8122
+        TEST_CASE(template68);  // union
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1138,7 +1139,7 @@ private:
                             "template <class T, unsigned S> class C3 {};\n"
                             "template <class T, unsigned S> C3<T, S>::C3(const C3<T, S> &v) { C1<T *> c1; }\n"
                             "C3<int,6> c3;";
-        const char exp[] = "template < class T > void f ( ) { x = y ? C1 < int > :: allocate ( 1 ) : 0 ; } "
+        const char exp[] = "template < class T > void f ( ) { x = y ? ( C1 < int > :: allocate ( 1 ) ) : 0 ; } "
                            "C3<int,6> c3 ; "
                            "class C3<int,6> { } ; "
                            "C3<int,6> :: C3<int,6> ( const C3<int,6> & v ) { C1<int*> c1 ; } "
@@ -1232,6 +1233,19 @@ private:
                                 "Containter<int> :: ~ Containter<int> ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void template68() {
+        const char code[] = "template <class T> union Fred {\n"
+                            "    char dummy[sizeof(T)];\n"
+                            "    T value;\n"
+                            "};\n"
+                            "Fred<int> fred;";
+        const char exp [] = "Fred<int> fred ; union Fred<int> { "
+                            "char dummy [ 4 ] ; "
+                            "int value ; "
+                            "} ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
