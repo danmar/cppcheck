@@ -650,6 +650,9 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
             && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
         return true;
 
+    if (tok->str() == "*" && tok->previous()->tokType() == Token::eIncDecOp && isPrefixUnary(tok->previous(), cpp))
+        return true;
+
     return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1));
 }
 

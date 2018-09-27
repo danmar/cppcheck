@@ -8466,6 +8466,7 @@ private:
         ASSERT_EQUALS("xreturn", testAst("return x;"));
         ASSERT_EQUALS("x(throw", testAst(";throw x();"));
         ASSERT_EQUALS("a*bc:?return", testAst("return *a ? b : c;"));
+        ASSERT_EQUALS("xy*--=", testAst("x = -- * y;"));
 
         // Unary :: operator
         ASSERT_EQUALS("abcd::12,(e/:?=", testAst("a = b ? c : ::d(1,2) / e;"));
