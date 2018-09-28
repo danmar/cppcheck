@@ -56,7 +56,7 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
-bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, ErrorPath* errors=nullptr);
+bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
@@ -71,9 +71,9 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
  * @param library files data
  * @param pure
  */
-bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, ErrorPath* errors=nullptr);
+bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
-bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, ErrorPath* errors=nullptr);
+bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isConstExpression(const Token *tok, const Library& library, bool pure);
 

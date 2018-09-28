@@ -577,7 +577,7 @@ void CheckOther::checkRedundantAssignment()
                         }
 
                         // Ensure that LHS in assignments are the same
-                        bool error = oldeq && eq->astOperand1() && isSameExpression(mTokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), mSettings->library, true);
+                        bool error = oldeq && eq->astOperand1() && isSameExpression(mTokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), mSettings->library, true, false);
 
                         // Ensure that variable is not used on right side
                         std::stack<const Token *> tokens;
@@ -1963,8 +1963,8 @@ void CheckOther::checkDuplicateExpression()
                         ) &&
                         tok->next()->tokType() != Token::eType &&
                         tok->next()->tokType() != Token::eName &&
-                        isSameExpression(mTokenizer->isCPP(), true, tok->next(), nextAssign->next(), mSettings->library, true) &&
-                        isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), mSettings->library, true) &&
+                        isSameExpression(mTokenizer->isCPP(), true, tok->next(), nextAssign->next(), mSettings->library, true, false) &&
+                        isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), mSettings->library, true, false) &&
                         tok->astOperand2()->expressionString() == nextAssign->astOperand2()->expressionString() &&
                         !isUniqueExpression(tok->astOperand2())) {
                         bool assigned = false;
@@ -1986,7 +1986,7 @@ void CheckOther::checkDuplicateExpression()
             if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=")) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
-                if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, &errorPath)) {
+                if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
                     if (isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                         const bool assignment = tok->str() == "=";
                         if (assignment && warningEnabled)
@@ -2005,21 +2005,21 @@ void CheckOther::checkDuplicateExpression()
                         }
                     }
                 } else if (styleEnabled &&
-                           isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, &errorPath) &&
+                           isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, false, &errorPath) &&
                            !Token::Match(tok, "=|-|-=|/|/=") &&
                            isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
                     oppositeExpressionError(tok, tok, tok->str(), errorPath);
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
-                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
+                    if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, false, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
                     else if (tok->astOperand2()) {
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) {
-                            if (isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand1(), tok->astOperand2(), mSettings->library, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand1()))
+                            if (isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand1(), tok->astOperand2(), mSettings->library, true, false, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand1()))
                                 // TODO: warn if variables are unchanged. See #5683
                                 // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
                                 ;//duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok, errorPath);
-                            else if (styleEnabled && isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand2(), tok->astOperand2(), mSettings->library, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand2()))
+                            else if (styleEnabled && isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand2(), tok->astOperand2(), mSettings->library, true, false, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand2()))
                                 duplicateExpressionError(ast1->astOperand2(), tok->astOperand2(), tok, errorPath);
                             if (!isConstExpression(ast1->astOperand2(), mSettings->library, true))
                                 break;
@@ -2030,7 +2030,7 @@ void CheckOther::checkDuplicateExpression()
             } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
                 if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
                     duplicateValueTernaryError(tok);
-                else if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false))
+                else if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false, false))
                     duplicateExpressionTernaryError(tok);
             }
         }
@@ -2668,9 +2668,9 @@ void CheckOther::checkEvaluationOrder()
                 if (tok2 == tok &&
                     tok->str() == "=" &&
                     parent->str() == "=" &&
-                    isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), parent->astOperand1(), mSettings->library, true)) {
+                    isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), parent->astOperand1(), mSettings->library, true, false)) {
                     if (mSettings->isEnabled(Settings::WARNING) &&
-                        isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), parent->astOperand1(), mSettings->library, true))
+                        isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), parent->astOperand1(), mSettings->library, true, false))
                         selfAssignmentError(parent, tok->astOperand1()->expressionString());
                     break;
                 }
@@ -2690,7 +2690,7 @@ void CheckOther::checkEvaluationOrder()
                         continue; // don't care about sizeof usage
                     tokens.push(tok3->astOperand1());
                     tokens.push(tok3->astOperand2());
-                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true)) {
+                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true, false)) {
                         foundError = true;
                     }
                 }
