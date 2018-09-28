@@ -2,11 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-char *replace(char *str, char before, char after)
+static void revncpy(char *dst, const char *src, size_t len)
 {
-    while (strchr(str,before))
-        *strchr(str,before) = after;
-    return str;
+    int n = 0;
+    while (n++<len && *src && *src!=' ' && *src!='\r' && *src!='\n')
+        *dst++ = *src++;
 }
 
 int main()
@@ -21,13 +21,12 @@ int main()
     float mintime=0.0f, maxtime=0.0f;
     char rev[10] = {0};
     char line[128] = {0};
+
     while (fgets(line,sizeof(line),f) && n < (sizeof(lines)/sizeof(*lines))) {
-        replace(line,'\r','\0');
-        replace(line,'\n','\0');
         if (strncmp(line,"HEAD is now at ", 15) == 0) {
             if (rev[0])
                 sprintf(lines[n++],"%s\t%.1f\t%.1f", rev, mintime, maxtime);
-            strncpy(rev, line+15, 7);
+            revncpy(rev, line+15, sizeof(rev)-1);
             mintime = 0.0f;
             maxtime = 0.0f;
         }
