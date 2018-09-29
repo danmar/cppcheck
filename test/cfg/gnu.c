@@ -8,7 +8,9 @@
 //
 
 #include <string.h>
+#ifndef __CYGWIN__
 #include <sys/epoll.h>
+#endif
 
 void bufferAccessOutOfBounds()
 {
@@ -39,6 +41,7 @@ void leakReturnValNotUsed()
         return;
 }
 
+#ifndef __CYGWIN__
 int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 {
     // no warning is expected
@@ -51,3 +54,4 @@ int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
     //          can be NULL.
     return epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
 }
+#endif
