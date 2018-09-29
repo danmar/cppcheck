@@ -973,20 +973,22 @@ void CheckCondition::checkIncorrectLogicOperator()
 
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
+            ErrorPath errorPath;
+
             // Opposite comparisons around || or && => always true or always false
-            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, false)) {
+            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
 
                 const bool alwaysTrue(tok->str() == "||");
-                incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive);
+                incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, errorPath);
                 continue;
             }
 
             if (!parseable)
                 continue;
 
-            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true, false))
+            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true, true))
                 continue; // same expressions => only report that there are same expressions
-            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true, false))
+            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true, true))
                 continue;
 
 
@@ -1046,7 +1048,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             const std::string cond2str = conditionString(not2, expr2, op2, value2);
             if (printWarning && (alwaysTrue || alwaysFalse)) {
                 const std::string text = cond1str + " " + tok->str() + " " + cond2str;
-                incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive);
+                incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive, errorPath);
             } else if (printStyle && secondTrue) {
                 const std::string text = "If '" + cond1str + "', the comparison '" + cond2str +
                                          "' is always true.";
@@ -1063,15 +1065,16 @@ void CheckCondition::checkIncorrectLogicOperator()
     }
 }
 
-void CheckCondition::incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive)
+void CheckCondition::incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive, ErrorPath errors)
 {
+    errors.emplace_back(tok, "");
     if (always)
-        reportError(tok, Severity::warning, "incorrectLogicOperator",
+        reportError(errors, Severity::warning, "incorrectLogicOperator",
                     "Logical disjunction always evaluates to true: " + condition + ".\n"
                     "Logical disjunction always evaluates to true: " + condition + ". "
                     "Are these conditions necessary? Did you intend to use && instead? Are the numbers correct? Are you comparing the correct variables?", CWE571, inconclusive);
     else
-        reportError(tok, Severity::warning, "incorrectLogicOperator",
+        reportError(errors, Severity::warning, "incorrectLogicOperator",
                     "Logical conjunction always evaluates to false: " + condition + ".\n"
                     "Logical conjunction always evaluates to false: " + condition + ". "
                     "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?", CWE570, inconclusive);
