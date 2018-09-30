@@ -91,11 +91,9 @@ static CppcheckLibraryData::Define loadDefine(const QXmlStreamReader &xmlReader)
     return define;
 }
 
-static CppcheckLibraryData::Undefine loadUndefine(const QXmlStreamReader &xmlReader)
+static QString loadUndefine(const QXmlStreamReader &xmlReader)
 {
-    CppcheckLibraryData::Undefine undefine;
-    undefine.name = xmlReader.attributes().value("name").toString();
-    return undefine;
+    return xmlReader.attributes().value("name").toString();
 }
 
 static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlReader)
@@ -468,9 +466,9 @@ QString CppcheckLibraryData::toString() const
         xmlWriter.writeEndElement();
     }
 
-    foreach (const Undefine &undef, undefines) {
+    foreach (const QString &undef, undefines) {
         xmlWriter.writeStartElement("undefine");
-        xmlWriter.writeAttribute("name", undef.name);
+        xmlWriter.writeAttribute("name", undef);
         xmlWriter.writeEndElement();
     }
 

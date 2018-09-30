@@ -61,10 +61,6 @@ public:
         QString value;
     };
 
-    struct Undefine {
-        QString name;
-    };
-
     struct Function {
         Function() : noreturn(Unknown), gccPure(false), gccConst(false),
             leakignore(false), useretval(false) {
@@ -179,10 +175,10 @@ public:
 
     QList<struct Container> containers;
     QList<struct Define> defines;
-    QList<struct Undefine> undefines;
     QList<struct Function> functions;
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;
+    QStringList undefines;
 };
 
 #endif // LIBRARYDATA_H
