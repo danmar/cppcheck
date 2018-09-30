@@ -37,6 +37,9 @@ static const char DirNameAttrib[] = "name";
 static const char DefinesElementName[] = "defines";
 static const char DefineName[] = "define";
 static const char DefineNameAttrib[] = "name";
+static const char UndefinesElementName[] = "undefines";
+static const char UndefineName[] = "undefine";
+static const char UndefineNameAttrib[] = "name";
 static const char PathsElementName[] = "paths";
 static const char PathName[] = "dir";
 static const char PathNameAttrib[] = "name";
@@ -82,6 +85,7 @@ void ProjectFile::clear()
     mAnalyzeAllVsConfigs = true;
     mIncludeDirs.clear();
     mDefines.clear();
+    mUndefines.clear();
     mPaths.clear();
     mExcludedPaths.clear();
     mLibraries.clear();
@@ -137,6 +141,10 @@ bool ProjectFile::read(const QString &filename)
             // Find preprocessor define from inside project element
             if (insideProject && xmlReader.name() == DefinesElementName)
                 readDefines(xmlReader);
+
+            // Find preprocessor define from inside project element
+            if (insideProject && xmlReader.name() == UndefinesElementName)
+                readUndefines(xmlReader);
 
             // Find exclude list from inside project element
             if (insideProject && xmlReader.name() == ExcludeElementName)
@@ -337,6 +345,43 @@ void ProjectFile::readDefines(QXmlStreamReader &reader)
 
         case QXmlStreamReader::EndElement:
             if (reader.name().toString() == DefinesElementName)
+                allRead = true;
+            break;
+
+        // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (!allRead);
+}
+
+void ProjectFile::readUndefines(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do {
+        type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::StartElement:
+            // Read define-elements
+            if (reader.name().toString() == UndefineName) {
+                QXmlStreamAttributes attribs = reader.attributes();
+                QString name = attribs.value(QString(), UndefineNameAttrib).toString();
+                if (!name.isEmpty())
+                    mUndefines << name;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() == UndefinesElementName)
                 allRead = true;
             break;
 
@@ -557,6 +602,11 @@ void ProjectFile::setDefines(const QStringList &defines)
     mDefines = defines;
 }
 
+void ProjectFile::setUndefines(const QStringList &undefines)
+{
+    mUndefines = undefines;
+}
+
 void ProjectFile::setCheckPaths(const QStringList &paths)
 {
     mPaths = paths;
@@ -645,6 +695,16 @@ bool ProjectFile::write(const QString &filename)
         foreach (QString define, mDefines) {
             xmlWriter.writeStartElement(DefineName);
             xmlWriter.writeAttribute(DefineNameAttrib, define);
+            xmlWriter.writeEndElement();
+        }
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mUndefines.isEmpty()) {
+        xmlWriter.writeStartElement(UndefinesElementName);
+        foreach (QString undefine, mUndefines) {
+            xmlWriter.writeStartElement(UndefineName);
+            xmlWriter.writeAttribute(UndefineNameAttrib, undefine);
             xmlWriter.writeEndElement();
         }
         xmlWriter.writeEndElement();

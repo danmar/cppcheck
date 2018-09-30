@@ -838,6 +838,13 @@ Settings MainWindow::getCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
+        const QStringList undefines = mProjectFile->getUndefines();
+        foreach (QString undefine, undefines) {
+            //if (!result.userUndefs.empty())
+            //    result.userUndefs.a += ";";
+            result.userUndefs.insert(undefine.toStdString());
+        }
+
         const QStringList libraries = mProjectFile->getLibraries();
         foreach (QString library, libraries) {
             const QString filename = library + ".cfg";

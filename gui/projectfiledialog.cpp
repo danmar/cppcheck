@@ -192,6 +192,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setBuildDir(projectFile->getBuildDir());
     setIncludepaths(projectFile->getIncludeDirs());
     setDefines(projectFile->getDefines());
+    setUndefines(projectFile->getUndefines());
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
@@ -268,6 +269,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setAnalyzeAllVsConfigs(mUI.mChkAllVsConfigs->isChecked());
     projectFile->setIncludes(getIncludePaths());
     projectFile->setDefines(getDefines());
+    projectFile->setUndefines(getUndefines());
     projectFile->setCheckPaths(getCheckPaths());
     projectFile->setExcludedPaths(getExcludedPaths());
     projectFile->setLibraries(getLibraries());
@@ -348,6 +350,7 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnEditCheckPath->setEnabled(!importProject);
     mUI.mBtnRemoveCheckPath->setEnabled(!importProject);
     mUI.mEditDefines->setEnabled(!importProject);
+    mUI.mEditUndefines->setEnabled(!importProject);
     mUI.mBtnAddInclude->setEnabled(!importProject);
     mUI.mBtnEditInclude->setEnabled(!importProject);
     mUI.mBtnRemoveInclude->setEnabled(!importProject);
@@ -456,6 +459,20 @@ QStringList ProjectFileDialog::getDefines() const
     return defines;
 }
 
+QStringList ProjectFileDialog::getUndefines() const
+{
+    QString undefine = mUI.mEditUndefines->text();
+    QStringList undefines;
+    if (!undefine.isEmpty()) {
+        undefine = undefine.trimmed();
+        if (undefine.indexOf(';') != -1)
+            undefines = undefine.split(";");
+        else
+            undefines.append(undefine);
+    }
+    return undefines;
+}
+
 QStringList ProjectFileDialog::getCheckPaths() const
 {
     const int count = mUI.mListCheckPaths->count();
@@ -522,6 +539,20 @@ void ProjectFileDialog::setDefines(const QStringList &defines)
     if (definestr.endsWith(';'))
         definestr = definestr.left(definestr.length() - 1);
     mUI.mEditDefines->setText(definestr);
+}
+
+void ProjectFileDialog::setUndefines(const QStringList &undefines)
+{
+    QString undefinestr;
+    QString undefine;
+    foreach (undefine, undefines) {
+        undefinestr += undefine;
+        undefinestr += ";";
+    }
+    // Remove ; from the end of the string
+    if (undefinestr.endsWith(';'))
+        undefinestr = undefinestr.left(undefinestr.length() - 1);
+    mUI.mEditUndefines->setText(undefinestr);
 }
 
 void ProjectFileDialog::setCheckPaths(const QStringList &paths)

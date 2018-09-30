@@ -61,6 +61,10 @@ public:
         QString value;
     };
 
+    struct Undefine {
+        QString name;
+    };
+
     struct Function {
         Function() : noreturn(Unknown), gccPure(false), gccConst(false),
             leakignore(false), useretval(false) {
@@ -154,6 +158,7 @@ public:
     void clear() {
         containers.clear();
         defines.clear();
+        undefines.clear();
         functions.clear();
         memoryresource.clear();
         podtypes.clear();
@@ -163,6 +168,7 @@ public:
     void swap(CppcheckLibraryData &other) {
         containers.swap(other.containers);
         defines.swap(other.defines);
+        undefines.swap(other.undefines);
         functions.swap(other.functions);
         memoryresource.swap(other.memoryresource);
         podtypes.swap(other.podtypes);
@@ -173,6 +179,7 @@ public:
 
     QList<struct Container> containers;
     QList<struct Define> defines;
+    QList<struct Undefine> undefines;
     QList<struct Function> functions;
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;

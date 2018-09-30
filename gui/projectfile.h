@@ -85,6 +85,14 @@ public:
     }
 
     /**
+    * @brief Get list of undefines.
+    * @return list of undefines.
+    */
+    QStringList getUndefines() const {
+        return mUndefines;
+    }
+
+    /**
     * @brief Get list of paths to check.
     * @return list of paths.
     */
@@ -199,6 +207,12 @@ public:
     void setDefines(const QStringList &defines);
 
     /**
+     * @brief Set list of undefines.
+     * @param defines List of undefines.
+     */
+    void setUndefines(const QStringList &undefines);
+
+    /**
      * @brief Set list of paths to check.
      * @param paths List of paths.
      */
@@ -287,6 +301,12 @@ protected:
     void readDefines(QXmlStreamReader &reader);
 
     /**
+     * @brief Read list of defines from XML.
+     * @param reader XML stream reader.
+     */
+    void readUndefines(QXmlStreamReader &reader);
+
+    /**
      * @brief Read list paths to check.
      * @param reader XML stream reader.
      */
@@ -371,6 +391,11 @@ private:
      * @brief List of defines.
      */
     QStringList mDefines;
+
+    /**
+     * @brief List of undefines.
+     */
+    QStringList mUndefines;
 
     /**
      * @brief List of paths to check.
