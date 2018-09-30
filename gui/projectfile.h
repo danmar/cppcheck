@@ -301,12 +301,6 @@ protected:
     void readDefines(QXmlStreamReader &reader);
 
     /**
-     * @brief Read list of defines from XML.
-     * @param reader XML stream reader.
-     */
-    void readUndefines(QXmlStreamReader &reader);
-
-    /**
      * @brief Read list paths to check.
      * @param reader XML stream reader.
      */
