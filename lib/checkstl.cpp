@@ -613,7 +613,7 @@ static const Token * getIteratorExpression(const Token * tok)
     } else if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
         if (Token::Match(tok->previous(), ". %name% ( ) !!."))
             return tok->previous()->astOperand1();
-        if (Token::Match(tok, "%name% ( !!)") && !Token::simpleMatch(tok->linkAt(1), ") ."))
+        if (!Token::simpleMatch(tok->previous(), ".") && Token::Match(tok, "%name% ( !!)") && !Token::simpleMatch(tok->linkAt(1), ") ."))
             return tok->next()->astOperand2();
     }
     return nullptr;
@@ -628,7 +628,7 @@ void CheckStl::mismatchingContainers()
             if (Token::Match(tok, "%comp%|-")) {
                 const Token * iter1 = getIteratorExpression(tok->astOperand1());
                 const Token * iter2 = getIteratorExpression(tok->astOperand2());
-                if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
+                if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false, false)) {
                     mismatchingContainerExpressionError(iter1, iter2);
                     continue;
                 }
@@ -651,7 +651,7 @@ void CheckStl::mismatchingContainers()
                 if (i->first) {
                     firstArg = argTok;
                 }
-                if (i->last && firstArg && argTok && isSameExpression(true, false, firstArg, argTok, mSettings->library, false)) {
+                if (i->last && firstArg && argTok && isSameExpression(true, false, firstArg, argTok, mSettings->library, false, false)) {
                     sameIteratorExpressionError(firstArg);
                 }
                 const Variable *c = getContainer(argTok);
@@ -672,7 +672,7 @@ void CheckStl::mismatchingContainers()
                     if (i->last && firstArg && argTok) {
                         const Token * iter1 = getIteratorExpression(firstArg);
                         const Token * iter2 = getIteratorExpression(argTok);
-                        if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false)) {
+                        if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false, false)) {
                             mismatchingContainerExpressionError(iter1, iter2);
                         }
                     }

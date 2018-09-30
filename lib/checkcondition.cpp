@@ -368,7 +368,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         return false;
 
     // same expressions
-    if (isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, pure))
+    if (isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, pure, false))
         return true;
 
     // bitwise overlap for example 'x&7' and 'x==1'
@@ -391,7 +391,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         if (!num2->isNumber() || MathLib::isNegative(num2->str()))
             return false;
 
-        if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, pure))
+        if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, pure, false))
             return false;
 
         const MathLib::bigint value1 = MathLib::toLongNumber(num1->str());
@@ -583,10 +583,10 @@ void CheckCondition::multiCondition2()
                             tokens1.push(firstCondition->astOperand1());
                             tokens1.push(firstCondition->astOperand2());
                         } else if (!firstCondition->hasKnownValue()) {
-                            if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, &errorPath)) {
+                            if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, false, &errorPath)) {
                                 if (!isAliased(vars))
                                     oppositeInnerConditionError(firstCondition, cond2, errorPath);
-                            } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, &errorPath)) {
+                            } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, false, &errorPath)) {
                                 identicalInnerConditionError(firstCondition, cond2, errorPath);
                             }
                         }
@@ -603,7 +603,7 @@ void CheckCondition::multiCondition2()
                             tokens2.push(secondCondition->astOperand1());
                             tokens2.push(secondCondition->astOperand2());
                         } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) &&
-                                   isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, &errorPath)) {
+                                   isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, false, &errorPath)) {
                             if (!isAliased(vars))
                                 identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                         }
@@ -911,7 +911,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                 ((tok->str() == "||" && tok->astOperand2()->str() == "&&") ||
                  (tok->str() == "&&" && tok->astOperand2()->str() == "||"))) {
                 const Token* tok2 = tok->astOperand2()->astOperand1();
-                if (isOppositeCond(true, mTokenizer->isCPP(), tok->astOperand1(), tok2, mSettings->library, true)) {
+                if (isOppositeCond(true, mTokenizer->isCPP(), tok->astOperand1(), tok2, mSettings->library, true, false)) {
                     std::string expr1(tok->astOperand1()->expressionString());
                     std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
                     std::string expr3(tok->astOperand2()->astOperand2()->expressionString());
@@ -974,7 +974,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             // Opposite comparisons around || or && => always true or always false
-            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true)) {
+            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, false)) {
 
                 const bool alwaysTrue(tok->str() == "||");
                 incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive);
@@ -984,9 +984,9 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!parseable)
                 continue;
 
-            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true))
+            if (isSameExpression(mTokenizer->isCPP(), true, comp1, comp2, mSettings->library, true, false))
                 continue; // same expressions => only report that there are same expressions
-            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true))
+            if (!isSameExpression(mTokenizer->isCPP(), true, expr1, expr2, mSettings->library, true, false))
                 continue;
 
 
@@ -1221,7 +1221,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "%oror%|&&"))
                 continue;
-            if (Token::Match(tok, "%comp%") && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true))
+            if (Token::Match(tok, "%comp%") && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
 
             const bool constIfWhileExpression =
@@ -1347,9 +1347,9 @@ void CheckCondition::checkInvalidTestForOverflow()
                 continue;
 
             const Token *termToken;
-            if (isSameExpression(mTokenizer->isCPP(), true, exprToken, calcToken->astOperand1(), mSettings->library, true))
+            if (isSameExpression(mTokenizer->isCPP(), true, exprToken, calcToken->astOperand1(), mSettings->library, true, false))
                 termToken = calcToken->astOperand2();
-            else if (isSameExpression(mTokenizer->isCPP(), true, exprToken, calcToken->astOperand2(), mSettings->library, true))
+            else if (isSameExpression(mTokenizer->isCPP(), true, exprToken, calcToken->astOperand2(), mSettings->library, true, false))
                 termToken = calcToken->astOperand1();
             else
                 continue;

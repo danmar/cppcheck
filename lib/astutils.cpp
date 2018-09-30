@@ -133,7 +133,6 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
-/*
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())
@@ -259,8 +258,8 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
         return;
     errors->push_back(item);
 }
-*/
-bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, ErrorPath* errors)
+
+bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (tok1 == nullptr && tok2 == nullptr)
         return true;
@@ -274,14 +273,13 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     }
     // Skip double not
     if (Token::simpleMatch(tok1, "!") && Token::simpleMatch(tok1->astOperand1(), "!") && !Token::simpleMatch(tok1->astParent(), "=")) {
-        return isSameExpression(cpp, macro, tok1->astOperand1()->astOperand1(), tok2, library, pure, errors);
+        return isSameExpression(cpp, macro, tok1->astOperand1()->astOperand1(), tok2, library, pure, followVar, errors);
     }
     if (Token::simpleMatch(tok2, "!") && Token::simpleMatch(tok2->astOperand1(), "!") && !Token::simpleMatch(tok2->astParent(), "=")) {
-        return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, errors);
+        return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, followVar, errors);
     }
-    if (tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
-        // TODO this code is temporarily commented out because there are false positives. See #8717, #8744, #8775.
-        /*
+    // Follow variable
+    if (followVar && tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if (varTok1->str() == tok2->str()) {
             followVariableExpressionError(tok1, varTok1, errors);
@@ -297,13 +295,12 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, varTok1, varTok2, library, true, errors);
         }
-        */
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
             (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
-            return isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), library, pure, errors) &&
-                   isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), library, pure, errors);
+            return isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), library, pure, followVar, errors) &&
+                   isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), library, pure, followVar, errors);
         }
         return false;
     }
@@ -341,7 +338,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         (Token::Match(tok2, "%name% <") && tok2->next()->link())) {
 
         // non-const template function that is not a dynamic_cast => return false
-        if (Token::simpleMatch(tok1->next()->link(), "> (") &&
+        if (pure && Token::simpleMatch(tok1->next()->link(), "> (") &&
             !(tok1->function() && tok1->function()->isConst()) &&
             tok1->str() != "dynamic_cast")
             return false;
@@ -365,7 +362,10 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     // bailout when we see ({..})
     if (tok1->str() == "{")
         return false;
-    if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
+    // cast => assert that the casts are equal
+    if (tok1->str() == "(" && tok1->previous() && 
+        !tok1->previous()->isName() && 
+        !(tok1->previous()->str() == ">" && tok1->previous()->link())) {
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
         while (t1 && t2 &&
@@ -381,9 +381,9 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             return false;
     }
     bool noncommutativeEquals =
-        isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand1(), library, pure, errors);
+        isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand1(), library, pure, followVar, errors);
     noncommutativeEquals = noncommutativeEquals &&
-                           isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand2(), library, pure, errors);
+                           isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand2(), library, pure, followVar, errors);
 
     if (noncommutativeEquals)
         return true;
@@ -398,9 +398,9 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
 
     const bool commutative = tok1->isBinaryOp() && Token::Match(tok1, "%or%|%oror%|+|*|&|&&|^|==|!=");
     bool commutativeEquals = commutative &&
-                             isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), library, pure, errors);
+                             isSameExpression(cpp, macro, tok1->astOperand2(), tok2->astOperand1(), library, pure, followVar, errors);
     commutativeEquals = commutativeEquals &&
-                        isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), library, pure, errors);
+                        isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), library, pure, followVar, errors);
 
 
     return commutativeEquals;
@@ -434,7 +434,7 @@ static bool isZeroBoundCond(const Token * const cond)
     return false;
 }
 
-bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, ErrorPath* errors)
+bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (!cond1 || !cond2)
         return false;
@@ -442,21 +442,21 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (cond1->str() == "!") {
         if (cond2->str() == "!=") {
             if (cond2->astOperand1() && cond2->astOperand1()->str() == "0")
-                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, errors);
+                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, followVar, errors);
             if (cond2->astOperand2() && cond2->astOperand2()->str() == "0")
-                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, errors);
+                return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar, errors);
         }
-        return isSameExpression(cpp, true, cond1->astOperand1(), cond2, library, pure, errors);
+        return isSameExpression(cpp, true, cond1->astOperand1(), cond2, library, pure, followVar, errors);
     }
 
     if (cond2->str() == "!")
-        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure);
+        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure, followVar);
 
     if (!isNot) {
         if (cond1->str() == "==" && cond2->str() == "==") {
-            if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, errors))
+            if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar, errors))
                 return isDifferentKnownValues(cond1->astOperand2(), cond2->astOperand2());
-            if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, errors))
+            if (isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, followVar, errors))
                 return isDifferentKnownValues(cond1->astOperand1(), cond2->astOperand1());
         }
         // TODO: Handle reverse conditions
@@ -481,11 +481,11 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 
     // condition found .. get comparator
     std::string comp2;
-    if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure) &&
-        isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure)) {
+    if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar) &&
+        isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, followVar)) {
         comp2 = cond2->str();
-    } else if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure) &&
-               isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand1(), library, pure)) {
+    } else if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, followVar) &&
+               isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand1(), library, pure, followVar)) {
         comp2 = cond2->str();
         if (comp2[0] == '>')
             comp2[0] = '<';
@@ -521,7 +521,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
         if (!expr1 || !value1 || !expr2 || !value2) {
             return false;
         }
-        if (!isSameExpression(cpp, true, expr1, expr2, library, pure, errors))
+        if (!isSameExpression(cpp, true, expr1, expr2, library, pure, followVar, errors))
             return false;
 
         const ValueFlow::Value &rhsValue1 = value1->values().front();
@@ -549,16 +549,16 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                        )));
 }
 
-bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, ErrorPath* errors)
+bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (!tok1 || !tok2)
         return false;
-    if (isOppositeCond(true, cpp, tok1, tok2, library, pure))
+    if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar))
         return true;
     if (tok1->isUnaryOp("-"))
-        return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, errors);
+        return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, followVar, errors);
     if (tok2->isUnaryOp("-"))
-        return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure, errors);
+        return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure, followVar, errors);
     return false;
 }
 

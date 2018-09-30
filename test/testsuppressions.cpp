@@ -447,13 +447,13 @@ private:
 
     void inlinesuppress_comment() {
         Suppressions::Suppression s;
-        std::string errmsg;
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errmsg));
-        ASSERT_EQUALS("", errmsg);
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc // some comment", &errmsg));
-        ASSERT_EQUALS("", errmsg);
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errmsg));
-        ASSERT_EQUALS("", errmsg);
+        std::string errMsg;
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc // some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)

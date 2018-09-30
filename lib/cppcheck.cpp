@@ -849,11 +849,12 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         }
 
         pcre_free(re);
-
+#ifdef PCRE_CONFIG_JIT
         // Free up the EXTRA PCRE value (may be NULL at this point)
         if (pcreExtra) {
             pcre_free_study(pcreExtra);
         }
+#endif
     }
 #endif
 }

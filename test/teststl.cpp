@@ -1009,6 +1009,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("template<int N>\n"
+              "std::vector<int>& f();\n"
+              "void foo() {\n"
+              "    if(f<1>().begin() == f<1>().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "  if (a.begin().x == b.begin().x) {}\n"
               "  if (begin(a).x == begin(b).x) {}\n"
@@ -1019,6 +1026,11 @@ private:
               "  std::list<int*> a;\n"
               "  std::list<int*> b;\n"
               "  if (*a.begin() == *b.begin()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    if(f().begin(1) == f().end()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
