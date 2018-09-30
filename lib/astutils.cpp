@@ -338,7 +338,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         (Token::Match(tok2, "%name% <") && tok2->next()->link())) {
 
         // non-const template function that is not a dynamic_cast => return false
-        if (Token::simpleMatch(tok1->next()->link(), "> (") &&
+        if (pure && Token::simpleMatch(tok1->next()->link(), "> (") &&
             !(tok1->function() && tok1->function()->isConst()) &&
             tok1->str() != "dynamic_cast")
             return false;
@@ -362,7 +362,10 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     // bailout when we see ({..})
     if (tok1->str() == "{")
         return false;
-    if (tok1->str() == "(" && tok1->previous() && !tok1->previous()->isName()) { // cast => assert that the casts are equal
+    // cast => assert that the casts are equal
+    if (tok1->str() == "(" && tok1->previous() && 
+        !tok1->previous()->isName() && 
+        !(tok1->previous()->str() == ">" && tok1->previous()->link())) {
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
         while (t1 && t2 &&
