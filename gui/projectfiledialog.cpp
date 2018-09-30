@@ -461,15 +461,11 @@ QStringList ProjectFileDialog::getDefines() const
 
 QStringList ProjectFileDialog::getUndefines() const
 {
-    QString undefine = mUI.mEditUndefines->text();
+    QString undefine = mUI.mEditUndefines->text().trimmed();
     QStringList undefines;
-    if (!undefine.isEmpty()) {
-        undefine = undefine.trimmed();
-        if (undefine.indexOf(';') != -1)
-            undefines = undefine.split(";");
-        else
-            undefines.append(undefine);
-    }
+    if (!undefine.isEmpty())
+        undefines = undefine.split(";", QString::SkipEmptyParts);
+
     return undefines;
 }
 
@@ -543,16 +539,7 @@ void ProjectFileDialog::setDefines(const QStringList &defines)
 
 void ProjectFileDialog::setUndefines(const QStringList &undefines)
 {
-    QString undefinestr;
-    QString undefine;
-    foreach (undefine, undefines) {
-        undefinestr += undefine;
-        undefinestr += ";";
-    }
-    // Remove ; from the end of the string
-    if (undefinestr.endsWith(';'))
-        undefinestr = undefinestr.left(undefinestr.length() - 1);
-    mUI.mEditUndefines->setText(undefinestr);
+    mUI.mEditUndefines->setText(undefines.join(";"));
 }
 
 void ProjectFileDialog::setCheckPaths(const QStringList &paths)
