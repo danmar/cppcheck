@@ -3544,11 +3544,17 @@ private:
         check("void foo() {\n"
               "    if (x!=2 || y!=3 || x!=2) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void foo() {\n"
               "    if (x!=2 && (x=y) && x!=2) {}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5683
+        check("void f(bool b, unsigned int *i) {\n"
+              "    *i = 0 << 7 | 1 << (b ? 6 : 0) | 0 << 0;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
@@ -4014,6 +4020,12 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool a, bool b) {\n"
+              "    const bool c = a;\n"
+              "    return a && b && c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '&&' because 'a' and 'c' represent the same value.\n", errout.str());
     }
 
     void duplicateExpression8() {

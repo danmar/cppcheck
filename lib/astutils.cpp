@@ -574,6 +574,10 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure)
     }
     if (tok->tokType() == Token::eIncDecOp)
         return false;
+    if(tok->isAssignmentOp())
+        return false;
+    if(Token::Match(tok, "<<|>>"))
+        return false;
     // bailout when we see ({..})
     if (tok->str() == "{")
         return false;
