@@ -2937,3 +2937,47 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
     reportError(tokens, Severity::warning, "funcArgOrderDifferent", msg, CWE683, false);
 }
 
+static const Token *findShadowed(const Scope *scope, const std::string &varname, int linenr)
+{
+    if (!scope)
+        return nullptr;
+    for (const Variable &var : scope->varlist) {
+        if (scope->isExecutable() && var.nameToken()->linenr() > linenr)
+            continue;
+        if (var.name() == varname)
+            return var.nameToken();
+    }
+    for (const Function &f : scope->functionList) {
+        if (f.name() == varname)
+            return f.tokenDef;
+    }
+    return findShadowed(scope->nestedIn, varname, linenr);
+}
+
+void CheckOther::checkShadowVariables()
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope & scope : symbolDatabase->scopeList) {
+        if (!scope.isExecutable())
+            continue;
+        for (const Variable &var : scope.varlist) {
+            const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());
+            if (!shadowed)
+                continue;
+            if (scope.type == Scope::eFunction && scope.className == var.name())
+                continue;
+            shadowVariablesError(var.nameToken(), shadowed);
+        }
+    }
+}
+
+void CheckOther::shadowVariablesError(const Token *var, const Token *shadowed)
+{
+    ErrorPath errorPath;
+    errorPath.push_back(ErrorPathItem(shadowed, "Shadowed declaration"));
+    errorPath.push_back(ErrorPathItem(var, "Shadow variable"));
+    const std::string &varname = var ? var->str() : "var";
+    reportError(errorPath, Severity::style, "shadow", "$symbol:"+varname+"\nShadow variable: $symbol", CWE(0), false); // TODO : configure the proper CWE number
+}

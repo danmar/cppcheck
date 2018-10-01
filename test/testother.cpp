@@ -214,6 +214,8 @@ private:
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
+
+        TEST_CASE(shadow);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -2990,11 +2992,11 @@ private:
 
         // #6406 - designated initializer doing bogus self assignment
         check("struct callbacks {\n"
-              "    void (*something)(void);\n"
+              "    void (*s)(void);\n"
               "};\n"
               "void something(void) {}\n"
               "void f() {\n"
-              "    struct callbacks ops = { .something = ops.something };\n"
+              "    struct callbacks ops = { .s = ops.s };\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'something' to itself.\n", "", errout.str());
 
@@ -4621,7 +4623,7 @@ private:
 
         check("template <typename T>\n"
               "T f() {\n"
-              "  T a = T();\n"
+              "  T x = T();\n"
               "}\n"
               "int &a = f<int&>();\n");
         ASSERT_EQUALS("", errout.str());
@@ -5340,7 +5342,7 @@ private:
               "    const int a = getA + 3;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Shadow variable: getA\n", errout.str());
 
         check("class A{public:A(){}};\n"
               "const A& getA(){static A a;return a;}\n"
@@ -7382,6 +7384,27 @@ private:
                             "\n }"
                             "\n  "
                         ));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void shadow() {
+        check("int x;\n"
+              "void f() { int x; }\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Shadow variable: x\n", errout.str());
+
+        check("int x();\n"
+              "void f() { int x; }\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Shadow variable: x\n", errout.str());
+
+        check("void f() {\n"
+              "  if (cond) {int x;}\n" // <- not a shadow variable
+              "  int x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int size() {\n"
+              "  int size;\n" // <- not a shadow variable
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

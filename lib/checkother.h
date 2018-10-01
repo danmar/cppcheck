@@ -81,6 +81,7 @@ public:
         checkOther.checkUnusedLabel();
         checkOther.checkEvaluationOrder();
         checkOther.checkFuncArgNamesDifferent();
+        checkOther.checkShadowVariables();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -211,6 +212,9 @@ public:
     /** @brief %Check if function declaration and definition argument names different */
     void checkFuncArgNamesDifferent();
 
+    /** @brief %Check for shadow variables. Less noisy than gcc/clang -Wshadow. */
+    void checkShadowVariables();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
@@ -263,6 +267,7 @@ private:
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, size_t index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
+    void shadowVariablesError(const Token *var, const Token *shadowed);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
@@ -324,6 +329,7 @@ private:
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
         c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
+        c.shadowVariablesError(nullptr, nullptr);
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
@@ -385,7 +391,8 @@ private:
                "- redundant pointer operation on pointer like &\\*some_ptr.\n"
                "- find unused 'goto' labels.\n"
                "- function declaration and definition argument names different.\n"
-               "- function declaration and definition argument order different.\n";
+               "- function declaration and definition argument order different.\n"
+               "- shadow variable.\n";
     }
 };
 /// @}
