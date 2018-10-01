@@ -363,8 +363,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (tok1->str() == "{")
         return false;
     // cast => assert that the casts are equal
-    if (tok1->str() == "(" && tok1->previous() && 
-        !tok1->previous()->isName() && 
+    if (tok1->str() == "(" && tok1->previous() &&
+        !tok1->previous()->isName() &&
         !(tok1->previous()->str() == ">" && tok1->previous()->link())) {
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
