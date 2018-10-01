@@ -347,6 +347,7 @@ private:
         TEST_CASE(creat_function);
         TEST_CASE(close_function);
         TEST_CASE(fd_functions);
+        TEST_CASE(fclose_comma); // #7525
 
         TEST_CASE(pointer_to_pointer);
         TEST_CASE(dealloc_and_alloc_in_func);
@@ -3814,6 +3815,16 @@ private:
                   "}");
             ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: fin1b\n", errout.str());
         }
+    }
+
+    void fclose_comma() {
+        check("int main(void) {\n"
+              "    const char *const outfile = \"out.txt\";\n"
+              "    FILE *f;\n"
+              "    f = fopen(outfile, \"w\");\n"
+              "    fprintf(f, \"foo\\n\"), fclose(f);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointer_to_pointer() {
