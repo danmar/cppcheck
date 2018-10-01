@@ -2030,8 +2030,8 @@ void CheckOther::checkDuplicateExpression()
             } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
                 if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
                     duplicateValueTernaryError(tok);
-                else if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false, false))
-                    duplicateExpressionTernaryError(tok);
+                else if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath))
+                    duplicateExpressionTernaryError(tok, errorPath);
             }
         }
     }
@@ -2086,9 +2086,10 @@ void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *
                 "determine if it is correct.", CWE398, false);
 }
 
-void CheckOther::duplicateExpressionTernaryError(const Token *tok)
+void CheckOther::duplicateExpressionTernaryError(const Token *tok, ErrorPath errors)
 {
-    reportError(tok, Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
+    errors.emplace_back(tok, "");
+    reportError(errors, Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
                 "Finding the same expression in both branches of ternary operator is suspicious as "
                 "the same code is executed regardless of the condition.", CWE398, false);
 }
