@@ -3691,6 +3691,13 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, c
     return expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
 }
 
+static std::size_t getTotalValues(TokenList *tokenlist)
+{
+    std::size_t n = 1;
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next())
+        n += tok->values().size();
+    return n;
+}
 
 void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -3703,19 +3710,26 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowFunctionReturn(tokenlist, errorLogger);
-    valueFlowBitAnd(tokenlist);
-    valueFlowOppositeCondition(symboldatabase, settings);
-    valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowSubFunction(tokenlist, errorLogger, settings);
-    valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
-    if (tokenlist->isCPP())
-        valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
+
+    std::size_t limit = 10;
+    std::size_t n = 0;
+    while(n < getTotalValues(tokenlist) && limit > 0) {
+        limit--;
+        n = getTotalValues(tokenlist);
+        valueFlowBitAnd(tokenlist);
+        valueFlowOppositeCondition(symboldatabase, settings);
+        valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowSubFunction(tokenlist, errorLogger, settings);
+        valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
+        if (tokenlist->isCPP())
+            valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
+    }
 }
 
 
