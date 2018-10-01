@@ -134,6 +134,9 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
 
     mUI.mEditTags->setValidator(new QRegExpValidator(QRegExp("[a-zA-Z0-9 ;]*"),this));
 
+    const QRegExp undefRegExp("\\s*([a-zA-Z_][a-zA-Z0-9_]*[; ]*)*");
+    mUI.mEditUndefines->setValidator(new QRegExpValidator(undefRegExp, this));
+
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::ok);
     connect(mUI.mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
     connect(mUI.mBtnClearImportProject, &QPushButton::clicked, this, &ProjectFileDialog::clearImportProject);
@@ -461,11 +464,9 @@ QStringList ProjectFileDialog::getDefines() const
 
 QStringList ProjectFileDialog::getUndefines() const
 {
-    QString undefine = mUI.mEditUndefines->text().trimmed();
-    QStringList undefines;
-    if (!undefine.isEmpty())
-        undefines = undefine.split(";", QString::SkipEmptyParts);
-
+    const QString undefine = mUI.mEditUndefines->text().trimmed();
+    QStringList undefines = undefine.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts);
+    undefines.removeDuplicates();
     return undefines;
 }
 
