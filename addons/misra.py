@@ -521,6 +521,30 @@ def generateTable():
     sys.exit(1)
 
 
+def remove_file_prefix(file_path, prefix):
+    """
+    Remove a file path prefix from a give path.  leftover
+    directory seperators at the beginning of a file
+    after the removal are also stripped.
+
+    Example:
+        '/remove/this/path/file.c'
+    with a prefix of:
+        '/remove/this/path'
+    becomes:
+        file.c
+    """
+    result = None
+    if file_path.startswith(prefix):
+        result = file_path[len(prefix):]
+        # Remove any leftover directory seperators at the
+        # beginning
+        result = result.lstrip('\\/')
+    else:
+        result = file_path
+    return result
+
+
 class MisraChecker:
 
     def __init__(self):
@@ -551,6 +575,8 @@ class MisraChecker:
         # List of suppression extracted from the dumpfile
         self.dumpfileSuppressions = None
 
+        # Prefix to ignore when matching suppression files.
+        self.filePrefix = None
 
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
@@ -1682,6 +1708,10 @@ class MisraChecker:
         For each tuple either line number or symbol name can can be none.
 
         """
+        normalized_filename = None
+
+        if fileName is not None:
+            normalized_filename = os.path.normpath(fileName)
 
         if lineNumber is not None or symbolName is not None:
             line_symbol = (lineNumber, symbolName)
@@ -1694,7 +1724,7 @@ class MisraChecker:
             ruleItemList.append(line_symbol)
 
             fileDict = dict()
-            fileDict[fileName] = ruleItemList
+            fileDict[normalized_filename] = ruleItemList
 
             self.suppressedRules[ruleNum] = fileDict
 
@@ -1708,11 +1738,11 @@ class MisraChecker:
         fileDict = self.suppressedRules[ruleNum]
 
         # If the filename is not in the dict already add it
-        if not fileName in fileDict:
+        if not normalized_filename in fileDict:
             ruleItemList = list()
             ruleItemList.append(line_symbol)
 
-            fileDict[fileName] = ruleItemList
+            fileDict[normalized_filename] = ruleItemList
 
             # Rule is added with a file scope. Done
             return
@@ -1722,7 +1752,7 @@ class MisraChecker:
         # Check the lists of rule items
         # to see if this (lineNumber, symbonName) combination
         # or None already exists.
-        ruleItemList = fileDict[fileName]
+        ruleItemList = fileDict[normalized_filename]
 
         if line_symbol is None:
             # is it already in the list?
@@ -1759,8 +1789,15 @@ class MisraChecker:
 
         """
         ruleIsSuppressed = False
-        filename = location.file
-        linenr    = location.linenr
+        linenr = location.linenr
+
+        # Remove any prefix listed in command arguments from the filename.
+        filename = None
+        if location.file is not None:
+            if self.filePrefix is not None:
+                filename = remove_file_prefix(location.file, self.filePrefix)
+            else:
+                filename = location.file
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
@@ -1837,6 +1874,14 @@ class MisraChecker:
 
             for line in sorted(outlist, reverse=True):
                 print("  %s" % line)
+
+
+    def setFilePrefix(self, prefix):
+        """
+        Set the file prefix to ignnore from files when matching
+        supression files
+        """
+        self.filePrefix = prefix
 
 
     def setSuppressionList(self, suppressionlist):
@@ -2086,6 +2131,7 @@ parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
 parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
+parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
 args = parser.parse_args()
 
 checker = MisraChecker()
@@ -2104,6 +2150,9 @@ else:
 
     if args.suppress_rules:
         checker.setSuppressionList(args.suppress_rules)
+
+    if args.file_prefix:
+        checker.setFilePrefix(args.file_prefix)
 
     if args.quiet:
         QUIET = True
