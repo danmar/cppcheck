@@ -543,7 +543,7 @@ class MisraChecker:
         # Major *  100 + minor. ie Rule 5.2 = (5*100) + 2
         # Dict 2 is keyed by filename.  An entry of None means suppress globaly.
         # Each file name entry contails a list of tuples of (lineNumber, symbolName)
-        # or None which indicates suppress rule for the entire file.
+        # or an item of None which indicates suppress rule for the entire file.
         # The line and symbol name tuple may have None as either of its elements but
         # should not be None for both.
         self.suppressedRules    = dict()
@@ -1675,10 +1675,10 @@ class MisraChecker:
         format. The value of that dictionary is a dictionary of filenames.
         If the value is None then the rule is assumed to be suppressed for
         all files.
-        If the filename exists then the value of that dictionary contains the
-        scope of the suppression.  If the value is None then the rule is assumed
-        to be suppresed for the entire file. Otherwise the value of the dictionary
-        is a list of line number, symbol name tuples.
+        If the filename exists then the value of that dictionary contains a list
+        with the scope of the suppression.  If the list contains an item of None
+        then the rule is assumed to be suppresed for the entire file. Otherwise
+        the list contains line number, symbol name tuples.
         For each tuple either line number or symbol name can can be none.
 
         """
@@ -1717,12 +1717,11 @@ class MisraChecker:
             # Rule is added with a file scope. Done
             return
 
-        # Rule has a matching filename. Check for
-        # rule a rule item list.
+        # Rule has a matching filename. Get the rule item list.
 
-        # If it exists then check the lists of rule items
-        # to see if the lineNumber, symbonName combination
-        # exists
+        # Check the lists of rule items
+        # to see if this (lineNumber, symbonName) combination
+        # or None already exists.
         ruleItemList = fileDict[fileName]
 
         if line_symbol is None:
@@ -1777,9 +1776,9 @@ class MisraChecker:
                     # Get the list of ruleItems
                     ruleItemList = fileDict[filename]
 
-                    if ruleItemList is None:
-                        # None for itemRuleList means the rule is suppressed
-                        # for all lines in the filename
+                    if None in ruleItemList:
+                        # Entry of None in the ruleItemList means the rule is
+                        # suppressed for all lines in the filename
                         ruleIsSuppressed = True
                     else:
                         # Iterate though the the list of line numbers
