@@ -2012,7 +2012,7 @@ void CheckOther::checkDuplicateExpression()
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, true, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
-                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true)) {
+                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP())) {
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) {
                             if (isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath) && 

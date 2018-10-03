@@ -3551,12 +3551,6 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // #5683
-        check("void f(bool b, unsigned int *i) {\n"
-              "    *i = 0 << 7 | 1 << (b ? 6 : 0) | 0 << 0;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         check("void foo() {\n"
               "    if (a && b || a && b) {}\n"
               "}");

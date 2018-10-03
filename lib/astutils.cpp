@@ -562,7 +562,7 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
     return false;
 }
 
-bool isConstExpression(const Token *tok, const Library& library, bool pure)
+bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp)
 {
     if (!tok)
         return true;
@@ -576,12 +576,12 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure)
         return false;
     if(tok->isAssignmentOp())
         return false;
-    if(Token::Match(tok, "<<|>>"))
+    if(isLikelyStreamRead(cpp, tok))
         return false;
     // bailout when we see ({..})
     if (tok->str() == "{")
         return false;
-    return isConstExpression(tok->astOperand1(), library, pure) && isConstExpression(tok->astOperand2(), library, pure);
+    return isConstExpression(tok->astOperand1(), library, pure, cpp) && isConstExpression(tok->astOperand2(), library, pure, cpp);
 }
 
 bool isWithoutSideEffects(bool cpp, const Token* tok)
