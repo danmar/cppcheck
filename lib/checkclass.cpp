@@ -2071,6 +2071,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
         }
 
+        // streaming: >> *this
+        else if (Token::simpleMatch(tok1, ">> * this") && isLikelyStreamRead(true, tok1)) {
+            return false;
+        }
 
         // function call..
         else if (Token::Match(tok1, "%name% (") && !tok1->isStandardType() &&

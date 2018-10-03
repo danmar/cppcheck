@@ -180,6 +180,7 @@ private:
         TEST_CASE(constoperator3);
         TEST_CASE(constoperator4);
         TEST_CASE(constoperator5); // ticket #3252
+        TEST_CASE(constoperator6); // ticket #8669
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constassign1);
         TEST_CASE(constassign2);
@@ -3684,6 +3685,13 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorint' can be const.\n", errout.str());
     }
 
+    void constoperator6() { // ticket #8669
+        checkConst("class A {\n"
+                   "    int c;\n"
+                   "    void f() { os >> *this; }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void const5() {
         // ticket #1482
