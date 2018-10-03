@@ -573,6 +573,79 @@ void CheckAutoVariables::returnReference()
     }
 }
 
+static bool isInScope(const Token * tok, const Scope * scope)
+{
+    if(!tok)
+        return false;
+    if(!scope)
+        return false;
+    if(tok->scope() && tok->scope()->isNestedIn(scope))
+        return true;
+    const Variable * var = tok->variable();
+    if(!var)
+        return false;
+    if(var->isArgument() && !var->isReference()) {
+        const Token * parent = var->nameToken()->astParent();
+        if(Token::simpleMatch(parent, "(") && Token::simpleMatch(parent->link(), ") { %any%")) {
+            const Scope * argScope = parent->link()->tokAt(2)->scope();
+            if(argScope && argScope->isNestedIn(scope))
+                return true;
+        }
+    }
+    return false;
+}
+
+void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
+{
+    if(!start)
+        return;
+    const Scope * scope = start->scope();
+    if(!scope)
+        return;
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+            const Token *lambdaEndToken = findLambdaEndToken(tok);
+            if(lambdaEndToken) {
+                tok = lambdaEndToken;
+                checkVarLifetimeScope(tok, lambdaEndToken);
+            }
+            for(const ValueFlow::Value& val:tok->values()) {
+                if(!val.isLifetimeValue())
+                    continue;
+                if(Token::Match(tok->astParent(), "return|throw")) {
+                    if (isInScope(val.tokvalue, scope)) {
+                        errorReturnDanglingLifetime(tok, val.tokvalue);
+                        break;
+                    }
+                }
+            }
+        }
+}
+
+void CheckAutoVariables::checkVarLifetime()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        if (!scope->function)
+            continue;
+        checkVarLifetimeScope(scope->bodyStart, scope->bodyEnd);
+    }
+}
+
+void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Token *vartok)
+{
+    ErrorPath errorPath;
+    std::string msg = "";
+    if(vartok) {
+        errorPath.emplace_back(vartok, "Variable created here.");
+        const Variable * var = vartok->variable();
+        if(var) {
+            msg = " from local variable '" + var->name() + "'";
+        }
+    }
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "returnDanglingLifetime", "Returning object with dangling lifetime" + msg + ".", CWE562, false);
+}
+
 void CheckAutoVariables::errorReturnReference(const Token *tok)
 {
     reportError(tok, Severity::error, "returnReference", "Reference to auto variable returned.", CWE562, false);

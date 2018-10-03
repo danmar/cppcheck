@@ -53,6 +53,7 @@ public:
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.assignFunctionArg();
         checkAutoVariables.returnReference();
+        checkAutoVariables.checkVarLifetime();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -73,6 +74,10 @@ public:
     /** Returning reference to local/temporary variable */
     void returnReference();
 
+    void checkVarLifetime();
+
+    void checkVarLifetimeScope(const Token * start, const Token * end);
+
 private:
     /**
      * Returning a temporary object?
@@ -87,6 +92,7 @@ private:
     void errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable);
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
+    void errorReturnDanglingLifetime(const Token *tok, const Token *vartok);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok);

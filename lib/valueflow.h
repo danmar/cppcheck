@@ -68,6 +68,10 @@ namespace ValueFlow {
             case CONTAINER_SIZE:
                 if (intvalue != rhs.intvalue)
                     return false;
+                break;
+            case LIFETIME:
+                if (tokvalue != rhs.tokvalue)
+                    return false;
             };
 
             return varvalue == rhs.varvalue &&
@@ -80,7 +84,7 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
-        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE } valueType;
+        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME } valueType;
         bool isIntValue() const {
             return valueType == INT;
         }
@@ -98,6 +102,9 @@ namespace ValueFlow {
         }
         bool isContainerSizeValue() const {
             return valueType == CONTAINER_SIZE;
+        }
+        bool isLifetimeValue() const {
+            return valueType == LIFETIME;
         }
 
         /** int value */
