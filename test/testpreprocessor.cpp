@@ -2386,7 +2386,7 @@ private:
                             "\n"
                             "\n"
                             "\n"
-                            "); \n";
+                            "; \n";
         const char curr[] = "";
 
         const char curr_error[] = "[cpp-bug.cpp:3]: (error) failed to expand 'MACRO', "
