@@ -1246,7 +1246,7 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}\n");
-        // ASSERT_EQUALS("[test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
 
         check("struct A {\n"
               "    void f();\n"
@@ -1276,7 +1276,7 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}\n");
-        // ASSERT_EQUALS("[test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
@@ -1601,7 +1601,7 @@ private:
               "       if(!b) {}\n"
               "    }\n"
               "}");
-        // ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(unsigned u) {\n"
               "  if (u != 0) {\n"

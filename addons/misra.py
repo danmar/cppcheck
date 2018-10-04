@@ -1326,15 +1326,17 @@ class MisraChecker:
 
 
     def misra_15_7(self, data):
-        for token in data.tokenlist:
-            if not simpleMatch(token, '}'):
+        for scope in data.scopes:
+            if scope.type != 'Else':
                 continue
-            if not token.scope.type == 'If':
+            if not simpleMatch(scope.bodyStart, '{ if ('):
                 continue
-            if not token.scope.nestedIn.type == 'Else':
+            tok = scope.bodyStart.next.next.link
+            if not simpleMatch(tok, ') {'):
                 continue
-            if not token.next.str == 'else':
-                self.reportError(token, 15, 7)
+            tok = tok.next.link
+            if not simpleMatch(tok, '} else'):
+                self.reportError(tok, 15, 7)
 
     # TODO add 16.1 rule
 

@@ -363,8 +363,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (tok1->str() == "{")
         return false;
     // cast => assert that the casts are equal
-    if (tok1->str() == "(" && tok1->previous() && 
-        !tok1->previous()->isName() && 
+    if (tok1->str() == "(" && tok1->previous() &&
+        !tok1->previous()->isName() &&
         !(tok1->previous()->str() == ">" && tok1->previous()->link())) {
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
@@ -450,7 +450,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     }
 
     if (cond2->str() == "!")
-        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure, followVar);
+        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure, followVar, errors);
 
     if (!isNot) {
         if (cond1->str() == "==" && cond2->str() == "==") {
@@ -481,11 +481,11 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 
     // condition found .. get comparator
     std::string comp2;
-    if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar) &&
-        isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, followVar)) {
+    if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar, errors) &&
+        isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, followVar, errors)) {
         comp2 = cond2->str();
-    } else if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, followVar) &&
-               isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand1(), library, pure, followVar)) {
+    } else if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, followVar, errors) &&
+               isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand1(), library, pure, followVar, errors)) {
         comp2 = cond2->str();
         if (comp2[0] == '>')
             comp2[0] = '<';
@@ -553,7 +553,7 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
 {
     if (!tok1 || !tok2)
         return false;
-    if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar))
+    if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar, errors))
         return true;
     if (tok1->isUnaryOp("-"))
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, followVar, errors);
