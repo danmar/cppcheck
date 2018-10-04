@@ -4226,50 +4226,50 @@ private:
 
     void oppositeExpression() {
         check("void f(bool a) { if(a && !a) {} }");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '&&'.\n", errout.str());
 
         check("void f(bool a) { if(a != !a) {} }");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
 
         check("void f(bool a) { if( a == !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { if( a != !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
 
         check("void f(bool a) { if( !(a) == a ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { if( !(a) != a ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
 
         check("void f(bool a) { if( !(!a) == !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { if( !(!a) != !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
 
         check("void f1(bool a) {\n"
               "    const bool b = a;\n"
               "    if( a == !(b) ) {}\n"
               "    if( b == !(a) ) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
-                      "[test.cpp:4] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f2(bool *a) {\n"
               "    const bool b = *a;\n"
               "    if( *a == !(b) ) {}\n"
               "    if( b == !(*a) ) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
-                      "[test.cpp:4] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { a = !a; }");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a) { if( a < -a ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '<'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '<'.\n", errout.str());
 
         check("void f(int a) { a -= -a; }");
         ASSERT_EQUALS("", errout.str());
