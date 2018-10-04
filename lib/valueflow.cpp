@@ -1006,108 +1006,6 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
     }
 }
 
-static void valueFlowLifetime(TokenList *tokenlist, const Settings *settings)
-{
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        // address of
-        if (tok->isUnaryOp("&")) {
-            // child should be some buffer or variable
-            const Token *vartok = tok->astOperand1();
-            while (vartok) {
-                if (vartok->str() == "[")
-                    vartok = vartok->astOperand1();
-                else if (vartok->str() == "." || vartok->str() == "::")
-                    vartok = vartok->astOperand2();
-                else
-                    break;
-            }
-
-            if(!vartok)
-                continue;
-            const Variable * var = vartok->variable();
-            if (!(var && !var->isPointer()))
-                continue;
-
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::LIFETIME;
-            value.tokvalue = var->nameToken();
-            setTokenValue(tok, value, tokenlist->getSettings());
-        }
-        // lambda capture by reference
-        else if (Token::simpleMatch(tok, "[ & ] (")) {
-            if (!Token::simpleMatch(tok->tokAt(3)->link(), ") {"))
-                continue;
-
-            const Token * bodyTok = tok->tokAt(3)->link()->next();
-            const Scope * bodyScope = bodyTok->scope();
-
-            std::set<const Scope *> scopes;
-
-            for(const Token * tok2 = bodyTok;tok2 != bodyTok->link();tok2 = tok2->next()) {
-                const Variable * var = tok2->variable();
-                if(!var)
-                    continue;
-                const Scope * scope = var->scope();
-                if(scopes.count(scope) > 0)
-                    continue;
-                if(scope->isNestedIn(bodyScope))
-                    continue;
-                scopes.insert(scope);
-
-                ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::LIFETIME;
-                value.tokvalue = var->nameToken();
-                setTokenValue(tok, value, tokenlist->getSettings());
-            }
-        }
-        // lambda capture by value
-        else if (Token::simpleMatch(tok, "[ = ] (")) {
-            if (!Token::simpleMatch(tok->tokAt(3)->link(), ") {"))
-                continue;
-
-            const Token * bodyTok = tok->tokAt(3)->link()->next();
-            const Scope * bodyScope = bodyTok->scope();
-
-            std::set<const Scope *> scopes;
-
-            for(const Token * tok2 = bodyTok;tok2 != bodyTok->link();tok2 = tok2->next()) {
-                for(const ValueFlow::Value& v:tok2->values()) {
-                    if(!v.isLifetimeValue() && !v.tokvalue)
-                        continue;
-                    const Token * tok3 = v.tokvalue;
-                    const Variable * var = tok3->variable();
-                    if(!var)
-                        continue;
-                    const Scope * scope = var->scope();
-                    if(scopes.count(scope) > 0)
-                        continue;
-                    if(scope->isNestedIn(bodyScope))
-                        continue;
-                    scopes.insert(scope);
-
-                    ValueFlow::Value value;
-                    value.valueType = ValueFlow::Value::LIFETIME;
-                    value.tokvalue = var->nameToken();
-                    setTokenValue(tok, value, tokenlist->getSettings());
-                }
-            }
-        }
-        // container lifetimes
-        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str (")) {
-            const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
-            if(!container)
-                continue;
-            const Variable * var = tok->variable();
-
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::LIFETIME;
-            value.tokvalue = var->nameToken();
-            setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
-
-        }
-    }
-}
-
 static void valueFlowBitAnd(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -2772,6 +2670,148 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
     }
 }
 
+static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+{
+    const Token * assignTok = tok->astParent();
+    // Assignment
+    if (!assignTok || (assignTok->str() != "=") || assignTok->astParent())
+        return;
+
+    // Lhs should be a variable
+    if (!assignTok->astOperand1() || !assignTok->astOperand1()->varId())
+        return;
+    const Variable *var = assignTok->astOperand1()->variable();
+    if (!var || (!var->isLocal() && !var->isGlobal() && !var->isArgument()))
+        return;
+
+    const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+
+    // Rhs values..
+    if (!assignTok->astOperand2() || assignTok->astOperand2()->values().empty())
+        return;
+
+    std::list<ValueFlow::Value> values = assignTok->astOperand2()->values();
+
+    // Static variable initialisation?
+    if (var->isStatic() && var->nameToken() == assignTok->astOperand1())
+        changeKnownToPossible(values);
+
+    // Skip RHS
+    const Token * nextExpression = nextAfterAstRightmostLeaf(assignTok);
+
+    valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
+}
+
+static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        // address of
+        if (tok->isUnaryOp("&")) {
+            // child should be some buffer or variable
+            const Token *vartok = tok->astOperand1();
+            while (vartok) {
+                if (vartok->str() == "[")
+                    vartok = vartok->astOperand1();
+                else if (vartok->str() == "." || vartok->str() == "::")
+                    vartok = vartok->astOperand2();
+                else
+                    break;
+            }
+
+            if(!vartok)
+                continue;
+            const Variable * var = vartok->variable();
+            if (!(var && !var->isPointer()))
+                continue;
+
+            ValueFlow::Value value;
+            value.valueType = ValueFlow::Value::LIFETIME;
+            value.tokvalue = var->nameToken();
+            setTokenValue(tok, value, tokenlist->getSettings());
+
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+        }
+        // lambda capture by reference
+        else if (Token::simpleMatch(tok, "[ & ] (")) {
+            if (!Token::simpleMatch(tok->tokAt(3)->link(), ") {"))
+                continue;
+
+            const Token * bodyTok = tok->tokAt(3)->link()->next();
+            const Scope * bodyScope = bodyTok->scope();
+
+            std::set<const Scope *> scopes;
+
+            for(const Token * tok2 = bodyTok;tok2 != bodyTok->link();tok2 = tok2->next()) {
+                const Variable * var = tok2->variable();
+                if(!var)
+                    continue;
+                const Scope * scope = var->scope();
+                if(scopes.count(scope) > 0)
+                    continue;
+                if(scope->isNestedIn(bodyScope))
+                    continue;
+                scopes.insert(scope);
+
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::LIFETIME;
+                value.tokvalue = var->nameToken();
+                setTokenValue(tok, value, tokenlist->getSettings());
+
+                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+            }
+        }
+        // lambda capture by value
+        else if (Token::simpleMatch(tok, "[ = ] (")) {
+            if (!Token::simpleMatch(tok->tokAt(3)->link(), ") {"))
+                continue;
+
+            const Token * bodyTok = tok->tokAt(3)->link()->next();
+            const Scope * bodyScope = bodyTok->scope();
+
+            std::set<const Scope *> scopes;
+
+            for(const Token * tok2 = bodyTok;tok2 != bodyTok->link();tok2 = tok2->next()) {
+                for(const ValueFlow::Value& v:tok2->values()) {
+                    if(!v.isLifetimeValue() && !v.tokvalue)
+                        continue;
+                    const Token * tok3 = v.tokvalue;
+                    const Variable * var = tok3->variable();
+                    if(!var)
+                        continue;
+                    const Scope * scope = var->scope();
+                    if(scopes.count(scope) > 0)
+                        continue;
+                    if(scope->isNestedIn(bodyScope))
+                        continue;
+                    scopes.insert(scope);
+
+                    ValueFlow::Value value;
+                    value.valueType = ValueFlow::Value::LIFETIME;
+                    value.tokvalue = var->nameToken();
+                    setTokenValue(tok, value, tokenlist->getSettings());
+
+                    valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+                }
+            }
+        }
+        // container lifetimes
+        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str (")) {
+            const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
+            if(!container)
+                continue;
+            const Variable * var = tok->variable();
+
+            ValueFlow::Value value;
+            value.valueType = ValueFlow::Value::LIFETIME;
+            value.tokvalue = var->nameToken();
+            setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
+
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+
+        }
+    }
+}
+
 static void execute(const Token *expr,
                     ProgramMemory * const programMemory,
                     MathLib::bigint *result,
@@ -3808,7 +3848,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowArray(tokenlist);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
-    valueFlowLifetime(tokenlist, settings);
+    valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
     valueFlowOppositeCondition(symboldatabase, settings);

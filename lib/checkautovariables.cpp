@@ -603,11 +603,6 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     if(!scope)
         return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-            const Token *lambdaEndToken = findLambdaEndToken(tok);
-            if(lambdaEndToken) {
-                tok = lambdaEndToken;
-                checkVarLifetimeScope(tok, lambdaEndToken);
-            }
             for(const ValueFlow::Value& val:tok->values()) {
                 if(!val.isLifetimeValue())
                     continue;
@@ -617,6 +612,11 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         break;
                     }
                 }
+            }
+            const Token *lambdaEndToken = findLambdaEndToken(tok);
+            if(lambdaEndToken) {
+                tok = lambdaEndToken;
+                checkVarLifetimeScope(tok, lambdaEndToken);
             }
         }
 }
