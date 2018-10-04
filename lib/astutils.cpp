@@ -450,7 +450,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     }
 
     if (cond2->str() == "!")
-        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure, followVar);
+        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure, followVar, errors);
 
     if (!isNot) {
         if (cond1->str() == "==" && cond2->str() == "==") {
@@ -553,7 +553,7 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
 {
     if (!tok1 || !tok2)
         return false;
-    if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar))
+    if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar, errors))
         return true;
     if (tok1->isUnaryOp("-"))
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, followVar, errors);
