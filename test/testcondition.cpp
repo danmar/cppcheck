@@ -2033,6 +2033,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
 
+        check("bool f(bool a) {\n"
+              "    if(a) { return a; }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+
         check("void f() {\n"
               "    uint32_t value;\n"
               "    get_value(&value);\n"
