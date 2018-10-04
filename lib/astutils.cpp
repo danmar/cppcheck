@@ -363,8 +363,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (tok1->str() == "{")
         return false;
     // cast => assert that the casts are equal
-    if (tok1->str() == "(" && tok1->previous() && 
-        !tok1->previous()->isName() && 
+    if (tok1->str() == "(" && tok1->previous() &&
+        !tok1->previous()->isName() &&
         !(tok1->previous()->str() == ">" && tok1->previous()->link())) {
         const Token *t1 = tok1->next();
         const Token *t2 = tok2->next();
@@ -481,11 +481,11 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 
     // condition found .. get comparator
     std::string comp2;
-    if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar) &&
-        isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, followVar)) {
+    if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar, errors) &&
+        isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand2(), library, pure, followVar, errors)) {
         comp2 = cond2->str();
-    } else if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, followVar) &&
-               isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand1(), library, pure, followVar)) {
+    } else if (isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand2(), library, pure, followVar, errors) &&
+               isSameExpression(cpp, true, cond1->astOperand2(), cond2->astOperand1(), library, pure, followVar, errors)) {
         comp2 = cond2->str();
         if (comp2[0] == '>')
             comp2[0] = '<';

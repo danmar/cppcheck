@@ -242,7 +242,7 @@ private:
     void oppositeExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
     void duplicateValueTernaryError(const Token *tok);
-    void duplicateExpressionTernaryError(const Token *tok);
+    void duplicateExpressionTernaryError(const Token *tok, ErrorPath errors);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
     void unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive);
@@ -305,7 +305,7 @@ private:
         c.oppositeExpressionError(nullptr, nullptr, nullptr, errorPath);
         c.duplicateExpressionError(nullptr, nullptr, nullptr, errorPath);
         c.duplicateValueTernaryError(nullptr);
-        c.duplicateExpressionTernaryError(nullptr);
+        c.duplicateExpressionTernaryError(nullptr, errorPath);
         c.duplicateBreakError(nullptr,  false);
         c.unreachableCodeError(nullptr,  false);
         c.unsignedLessThanZeroError(nullptr,  "varname", false);

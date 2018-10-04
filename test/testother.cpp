@@ -4162,6 +4162,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression in both branches of ternary operator.\n", errout.str());
 
+        check("int f(bool b, int a) {\n"
+              "    const int c = a;\n"
+              "    return b ? a : c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression in both branches of ternary operator.\n", errout.str());
+
         check("void f() {\n"
               "    return A ? x : z;\n"
               "}");

@@ -353,9 +353,25 @@ void misra_15_6() {
 }
 
 void misra_15_7() {
+  uint32_t var = 0;
+  uint32_t var2 = 0;
+
   if (x!=0){} // no-warning
   if (x!=0){} else if(x==1){} // 15.7
   if (x!=0){} else if(x==1){}else{;} // no-warning
+
+  if (x!=0)
+  {
+  }
+  else
+  {
+    var = 5u;
+
+    if (var != 5u)
+    {
+        var2 = 10u;
+    }   // no-warning
+  }
 }
 
 void misra_16_2() {
