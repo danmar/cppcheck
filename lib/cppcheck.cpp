@@ -128,8 +128,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             for (const std::string& U : mSettings.userUndefs)
             {
                 if (!undefs.empty())
-                    undefs += ";";
-                undefs += " " + U;
+                    undefs += ';';
+                undefs += ' ' + U;
             }
             mErrorLogger.reportOut("Undefines:" + undefs);
             std::string includePaths;
