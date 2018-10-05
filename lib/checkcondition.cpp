@@ -690,15 +690,28 @@ void CheckCondition::multiCondition2()
     }
 }
 
+static std::string innerSmtString(const Token * tok)
+{
+    if(!tok)
+        return "if";
+    if(!tok->astTop())
+        return "if";
+    const Token * top = tok->astTop();
+    if(top->str() == "(" && top->astOperand1())
+        return top->astOperand1()->str();
+    return top->str();
+}
+
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
+    const std::string innerSmt = innerSmtString(tok2);
     errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
     errorPath.emplace_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
 
-    const std::string msg("Opposite inner 'if' condition leads to a dead code block.\n"
-                          "Opposite inner 'if' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
+    const std::string msg("Opposite inner '" + innerSmt + "' condition leads to a dead code block.\n"
+                          "Opposite inner '" + innerSmt + "' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
 }
 
@@ -706,11 +719,12 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
+    const std::string innerSmt = innerSmtString(tok2);
     errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
     errorPath.emplace_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
 
-    const std::string msg("Identical inner 'if' condition is always true.\n"
-                          "Identical inner 'if' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
+    const std::string msg("Identical inner '" + innerSmt + "' condition is always true.\n"
+                          "Identical inner '" + innerSmt + "' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, false);
 }
 

@@ -1440,6 +1440,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
+        check("bool foo(int a, int b) {\n"
+              "    if(a==b)\n"
+              "        return a!=b;\n"
+              "    return false;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'return' condition leads to a dead code block.\n", errout.str());
+
         check("void foo(int a, int b) {\n"
               "    if(a==b)\n"
               "        if(b!=a)\n"
@@ -2037,7 +2044,7 @@ private:
               "    if(a) { return a; }\n"
               "    return false;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'return' condition is always true.\n", errout.str());
 
         check("void f() {\n"
               "    uint32_t value;\n"
@@ -2056,6 +2063,12 @@ private:
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (x > 100) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+
+        check("bool f(int x) {\n"
+              "  if (x > 100) { return false; }\n"
+              "  return x > 100;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
