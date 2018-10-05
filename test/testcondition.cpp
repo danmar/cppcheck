@@ -2447,6 +2447,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!x' is always true\n", errout.str());
 
+        check("bool f(bool a) {\n"
+              "  int x = 0;\n"
+              "  if (a) { return false; }\n" // <- this is just here to fool simplifyKnownVariabels
+              "  return !x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!x' is always true\n", errout.str());
+
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"
               "  A(x++ == 1);\n"

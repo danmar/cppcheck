@@ -1243,7 +1243,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "! %num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "%oror%|&&"))
+            if (Token::Match(tok, "%oror%|&&|:"))
                 continue;
             if (Token::Match(tok, "%comp%") && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
@@ -1253,8 +1253,9 @@ void CheckCondition::alwaysTrueFalse()
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
+            const bool returnStatement = Token::Match(tok->astParent(), "return");
 
-            if (!(constIfWhileExpression || constValExpr || compExpr))
+            if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
