@@ -2008,7 +2008,7 @@ void CheckOther::checkDuplicateExpression()
                            isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath) &&
                            !Token::Match(tok, "=|-|-=|/|/=") &&
                            isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
-                    oppositeExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
+                    oppositeExpressionError(tok, errorPath);
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, false, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
@@ -2037,7 +2037,7 @@ void CheckOther::checkDuplicateExpression()
     }
 }
 
-void CheckOther::oppositeExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors)
+void CheckOther::oppositeExpressionError(const Token *opTok, ErrorPath errors)
 {
     errors.emplace_back(opTok, "");
 
