@@ -2644,12 +2644,14 @@ void Tokenizer::setVarIdPass1()
                     scopeStack.push(VarIdScopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), *variableMap.getVarId()));
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
-                    for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
-                        if (tok1->str() == "namespace") {
-                            isNamespace = true;
-                            break;
-                        }
-                    }
+					if (tok->link()) {
+						for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
+							if (tok1->str() == "namespace") {
+								isNamespace = true;
+								break;
+							}
+						}
+					}
                     // Set variable ids in class declaration..
                     if (!initlist && !isC() && !scopeStack.top().isExecutable && tok->link() && !isNamespace) {
                         setVarIdClassDeclaration(tok->link(),
@@ -9348,7 +9350,7 @@ void Tokenizer::simplifyBitfields()
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = (tok->next()->str() == "const") ? tok->tokAt(3) : tok->tokAt(2);
-            if (Token::Match(tok1, "%name% : %num% ;"))
+            if (tok1 && Token::Match(tok1, "%name% : %num% ;"))
                 tok1->setBits(MathLib::toLongNumber(tok1->strAt(2)));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||

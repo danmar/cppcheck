@@ -1472,7 +1472,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             // skip over modifiers and other stuff
             while (Token::Match(tok1, "const|static|extern|template|virtual|struct|class|enum|%name%")) {
                 // friend type func(); is not a function
-                if (isCPP() && tok1->str() == "friend" && tok2->str() == ";")
+                if (isCPP() && tok1->str() == "friend" && tok2 && tok2->str() == ";")
                     return false;
                 tok1 = tok1->previous();
             }
