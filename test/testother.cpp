@@ -215,7 +215,9 @@ private:
         TEST_CASE(funcArgOrderDifferent);
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
 
-        TEST_CASE(shadow);
+        TEST_CASE(shadowLocal);
+        TEST_CASE(shadowArgument);
+        TEST_CASE(shadowMember);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -7387,7 +7389,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void shadow() {
+    void shadowLocal() {
         check("int x;\n"
               "void f() { int x; }\n");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Shadow variable: x\n", errout.str());
@@ -7406,6 +7408,15 @@ private:
               "  int size;\n" // <- not a shadow variable
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void shadowArgument() {
+        check("int x; void f(int x) {}");
+        //ASSERT_EQUALS("err", errout.str());
+    }
+    void shadowMember() {
+        check("int x; struct ABC { int x; }");
+        //ASSERT_EQUALS("err", errout.str());
     }
 };
 

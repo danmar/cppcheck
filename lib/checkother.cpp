@@ -2979,5 +2979,5 @@ void CheckOther::shadowVariablesError(const Token *var, const Token *shadowed)
     errorPath.push_back(ErrorPathItem(shadowed, "Shadowed declaration"));
     errorPath.push_back(ErrorPathItem(var, "Shadow variable"));
     const std::string &varname = var ? var->str() : "var";
-    reportError(errorPath, Severity::style, "shadow", "$symbol:"+varname+"\nShadow variable: $symbol", CWE(0), false); // TODO : configure the proper CWE number
+    reportError(errorPath, Severity::style, "shadow", "$symbol:"+varname+"\nShadow variable: $symbol", CWE398, false);
 }
