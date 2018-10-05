@@ -839,11 +839,8 @@ Settings MainWindow::getCppcheckSettings()
         }
 
         const QStringList undefines = mProjectFile->getUndefines();
-        foreach (QString undefine, undefines) {
-            //if (!result.userUndefs.empty())
-            //    result.userUndefs.a += ";";
+        foreach (QString undefine, undefines)
             result.userUndefs.insert(undefine.toStdString());
-        }
 
         const QStringList libraries = mProjectFile->getLibraries();
         foreach (QString library, libraries) {
