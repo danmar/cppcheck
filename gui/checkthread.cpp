@@ -127,7 +127,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
                 args << ("-D" + D);
             }
-            foreach (std::string U, fileSettings->undefs) {
+            foreach (const std::string& U, fileSettings->undefs) {
                 args << QString::fromStdString("-U" + U);
             }
 
