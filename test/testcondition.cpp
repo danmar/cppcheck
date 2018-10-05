@@ -2046,6 +2046,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'return' condition is always true.\n", errout.str());
 
+        check("int* f(int* a, int * b) {\n"
+              "    if(a) { return a; }\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    uint32_t value;\n"
               "    get_value(&value);\n"
@@ -2447,12 +2453,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!x' is always true\n", errout.str());
 
-        check("bool f(bool a) {\n"
-              "  int x = 0;\n"
-              "  if (a) { return false; }\n" // <- this is just here to fool simplifyKnownVariabels
-              "  return !x;\n"
+        check("bool f(int x) {\n"
+              "  if(x == 0) { x++; return x == 0; } \n"
+              "  return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!x' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", errout.str());
 
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"
@@ -2556,6 +2561,25 @@ private:
               "    {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!b' is always true\n", errout.str());
+
+        check("bool f() { return nullptr; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("enum E { A };\n"
+              "bool f() { return A; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() { \n"
+              "    const int x = 0;\n"
+              "    return x; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() { \n"
+              "    int x = 0;\n"
+              "    return x; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
