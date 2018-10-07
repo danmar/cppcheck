@@ -166,6 +166,21 @@ static bool isAliased(const Token * startTok, const Token * endTok, unsigned int
     return false;
 }
 
+static bool exprDependsOnThis(const Token *expr)
+{
+    if (!expr)
+        return false;
+    // calling nonstatic method?
+    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
+        // is it a method of this?
+        const Scope *nestedIn = expr->scope();
+        while (nestedIn && nestedIn != expr->function()->nestedIn)
+            nestedIn = nestedIn->nestedIn;
+        return nestedIn == expr->function()->nestedIn;
+    }
+    return exprDependsOnThis(expr->astOperand1()) || exprDependsOnThis(expr->astOperand2());
+}
+
 /// This takes a token that refers to a variable and it will return the token
 /// to the expression that the variable is assigned to. If its not valid to
 /// make such substitution then it will return the original token.
@@ -188,6 +203,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Variable * var = tok->variable();
     const Token * varTok = getVariableInitExpression(var);
     if (!varTok)
+        return tok;
+    // Bailout. If variable value depends on value of "this".
+    if (exprDependsOnThis(varTok))
         return tok;
     // Skip array access
     if (Token::simpleMatch(varTok, "["))

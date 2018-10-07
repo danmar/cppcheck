@@ -88,6 +88,7 @@ private:
         TEST_CASE(oppositeInnerCondition3);
         TEST_CASE(oppositeInnerConditionAnd);
         TEST_CASE(oppositeInnerConditionEmpty);
+        TEST_CASE(oppositeInnerConditionFollowVar);
 
         TEST_CASE(identicalInnerCondition);
 
@@ -2014,6 +2015,21 @@ private:
 
         // TODO: These are identical condition since size cannot be negative
         check("void f1(const std::string &s) { if(s.size() < 1) if(s.empty()) {}} ");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void oppositeInnerConditionFollowVar() {
+        check("struct X {\n"
+              "    void f() {\n"
+              "        const int flag = get();\n"
+              "        if (flag) {\n"
+              "            bar();\n"
+              "            if (!get()) {}\n"
+              "        }\n"
+              "    }\n"
+              "    void bar();\n"
+              "    int get() const;\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
