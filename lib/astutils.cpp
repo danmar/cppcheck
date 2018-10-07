@@ -859,9 +859,12 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
         return false;
     if(!var->scope())
         return false;
-    if(!var->declEndToken())
+    const Token * start = var->declEndToken();
+    if(!start)
         return false;
-    return isVariableChanged(var->declEndToken()->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp);
+    if(Token::Match(start, "; %varid% =", var->declarationId()))
+        start = start->tokAt(2);
+    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp);
 }
 
 int numberOfArguments(const Token *start)

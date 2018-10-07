@@ -1256,7 +1256,7 @@ void CheckCondition::alwaysTrueFalse()
             const bool constVarExpr = tok->isEnumerator() || Token::simpleMatch(tok, "nullptr") ||
                 (tok->variable() && (tok->variable()->isConst() || !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())));
             const bool returnStatement = Token::Match(tok->astTop(), "return") && !constVarExpr &&
-                (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent(), "return"));
+                Token::Match(tok->astParent(), "%oror%|&&|return");
 
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
                 continue;
