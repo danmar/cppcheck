@@ -2366,11 +2366,25 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     }
 
     if (tok2) {
+        bool isLambdaArg = false;
+        if (cpp) {
+            const Token *tok3 = (*tok)->previous();
+            if (tok3 && tok3->str() == ",") {
+                while (tok3 && !Token::Match(tok3,";|(|[|{")) {
+                    if (Token::Match(tok3, ")|]"))
+                        tok3 = tok3->link();
+                    tok3 = tok3->previous();
+                }
+            }
+            if (tok3 && Token::simpleMatch(tok3->previous(), "] (") && Token::simpleMatch(tok3->link(), ") {"))
+                isLambdaArg = true;
+        }
+
         *tok = tok2;
 
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
-        if (executableScope && ref) {
+        if (executableScope && ref && !isLambdaArg) {
             if (Token::Match(tok2, "(|=|{|:"))
                 ;   // reference is assigned => ok
             else if (tok2->str() != ")" || tok2->link()->strAt(-1) != "catch")
