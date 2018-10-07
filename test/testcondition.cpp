@@ -2052,6 +2052,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct A { int * x; };\n"
+              "int* f(A a, int * b) {\n"
+              "    if(a.x) { return a.x; }\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "    uint32_t value;\n"
               "    get_value(&value);\n"

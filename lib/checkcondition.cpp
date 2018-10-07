@@ -575,9 +575,13 @@ void CheckCondition::multiCondition2()
                     // Condition..
                     const Token *cond2 = tok->str() == "if" ? condStartToken->astOperand2() : condStartToken->astOperand1();
                     // Check if returning boolean values
-                    if (tok->str() == "return" && Token::Match(cond2, "%var% ;") && cond2->variable()) {
-                        const Variable * condVar = cond2->variable();
-                        if (condVar->isClass() || condVar->isPointer())
+                    if (tok->str() == "return") {
+                        const Variable * condVar = nullptr;
+                        if (Token::Match(cond2, "%var% ;"))
+                            condVar = cond2->variable();
+                        else if(Token::Match(cond2, ". %var% ;"))
+                            condVar = cond2->next()->variable();
+                        if (condVar && (condVar->isClass() || condVar->isPointer()))
                             break;
                     }
 
