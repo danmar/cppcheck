@@ -3711,7 +3711,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowPointerAlias(tokenlist);
     valueFlowFunctionReturn(tokenlist, errorLogger);
 
-    std::size_t limit = 10;
+    std::size_t limit = 4;
     std::size_t n = 0;
     while(n < getTotalValues(tokenlist) && limit > 0) {
         limit--;
