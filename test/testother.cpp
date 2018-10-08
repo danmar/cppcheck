@@ -160,6 +160,7 @@ private:
         TEST_CASE(redundantVarAssignment);
         TEST_CASE(redundantVarAssignment_7133);
         TEST_CASE(redundantVarAssignment_stackoverflow);
+        TEST_CASE(redundantVarAssignment_lambda);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -5972,6 +5973,20 @@ private:
               "    m->prev->next = m->next;\n"
               "    m->next->prev = m->prev;\n"
               "    return m->next;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantVarAssignment_lambda() {
+        // #7152
+        check("int foo() {\n"
+              "    int x = 0, y = 0;\n"
+              "    auto f = [&]() { if (x < 5) ++y; };\n"
+              "    x = 2;\n"
+              "    f();\n"
+              "    x = 6;\n"
+              "    f();\n"
+              "    return y;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

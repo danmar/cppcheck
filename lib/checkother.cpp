@@ -485,6 +485,7 @@ void CheckOther::checkRedundantAssignment()
         if (!scope.isExecutable())
             continue;
 
+        std::map<unsigned int, std::set<unsigned int>> usedByLambda; // map key: lambda function varId. set of varIds used by lambda.
         std::map<unsigned int, const Token*> varAssignments;
         std::map<unsigned int, const Token*> memAssignments;
         std::map<unsigned int, std::set<unsigned int> > membervars;
@@ -510,6 +511,17 @@ void CheckOther::checkRedundantAssignment()
             } else if (Token::Match(tok, "break|return|continue|throw|goto|asm")) {
                 varAssignments.clear();
                 memAssignments.clear();
+            } else if (Token::Match(tok, "%var% = [ & ] (")) {
+                const unsigned int lambdaId = tok->varId();
+                const Token *lambdaParams = tok->tokAt(5);
+                if (Token::simpleMatch(lambdaParams->link(), ") {")) {
+                    const Token *lambdaBodyStart = lambdaParams->link()->next();
+                    const Token * const lambdaBodyEnd = lambdaBodyStart->link();
+                    for (const Token *tok2 = lambdaBodyStart; tok2 != lambdaBodyEnd; tok2 = tok2->next()) {
+                        if (tok2->varId())
+                            usedByLambda[lambdaId].insert(tok2->varId());
+                    }
+                }
             } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%name% (")) {
                 const Token *eq = nullptr;
                 for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
@@ -640,8 +652,18 @@ void CheckOther::checkRedundantAssignment()
                 }
             } else if (Token::Match(tok, "%name% (") && !mSettings->library.isFunctionConst(tok->str(), true)) { // Function call. Global variables might be used. Reset their status
                 const bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
-                if (tok->varId()) // operator() or function pointer
+                if (tok->varId()) {
+                    // operator(), function pointer
                     varAssignments.erase(tok->varId());
+
+                    // lambda..
+                    std::map<unsigned int, std::set<unsigned int>>::const_iterator lambda = usedByLambda.find(tok->varId());
+                    if (lambda != usedByLambda.end()) {
+                        for (unsigned int varId : lambda->second) {
+                            varAssignments.erase(varId);
+                        }
+                    }
+                }
 
                 if (memfunc && tok->strAt(-1) != "(" && tok->strAt(-1) != "=") {
                     const Token* param1 = tok->tokAt(2);
