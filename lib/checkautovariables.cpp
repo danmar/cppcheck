@@ -611,7 +611,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             continue;
         if(std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue)))
             continue;
-        
+
         for(const ValueFlow::Value& val:tok->values()) {
             if(!val.isLifetimeValue())
                 continue;
@@ -624,8 +624,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         }
         const Token *lambdaEndToken = findLambdaEndToken(tok);
         if(lambdaEndToken) {
+            checkVarLifetimeScope(lambdaEndToken->link(), lambdaEndToken);
             tok = lambdaEndToken;
-            checkVarLifetimeScope(tok, lambdaEndToken);
         }
     }
 }
