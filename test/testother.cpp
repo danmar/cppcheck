@@ -7051,6 +7051,28 @@ private:
               "  dostuff((t=1,t),2);\n"
               "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        // #8230
+        check("void hprf(const char* fp) {\n"
+              "    do\n"
+              "        ;\n"
+              "    while (++fp, (*fp) <= 0177);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void hprf(const char* fp) {\n"
+              "    do\n"
+              "        ;\n"
+              "    while (i++, ++fp, (*fp) <= 0177);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char* fp) {\n"
+              "    do\n"
+              "        ;\n"
+              "    while (f(++fp, (*fp) <= 7));\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Expression '++fp,(*fp)<=7' depends on order of evaluation of side effects\n", errout.str());
     }
 
     void testEvaluationOrderSizeof() {
