@@ -191,7 +191,7 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // it will cause the mVerboseMessage to be empty which will show
     // as an empty message to the user if --verbose is used.
     // Even this doesn't cause problems with messages that have multiple
-    // lines, none of the the error messages should end into it.
+    // lines, none of the error messages should end into it.
     assert(!endsWith(msg,'\n'));
 
     // The summary and verbose message are separated by a newline
