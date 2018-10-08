@@ -45,6 +45,7 @@ private:
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.returnReference();
         checkAutoVariables.assignFunctionArg();
+        checkAutoVariables.checkVarLifetime();
 
         if (runSimpleChecks) {
             tokenizer.simplifyTokenList2();
@@ -118,6 +119,9 @@ private:
         TEST_CASE(testconstructor); // ticket #5478 - crash
 
         TEST_CASE(variableIsUsedInScope); // ticket #5599 crash in variableIsUsedInScope()
+
+        TEST_CASE(danglingLifetimeLambda);
+        TEST_CASE(danglingLifetimeContainer);
     }
 
 
@@ -1181,6 +1185,77 @@ private:
               "void opened_cb () {\n"
               "	g_signal_connect (G_CALLBACK (removed_cb));\n"
               "}");
+    }
+
+    void danglingLifetimeLambda() {
+        check("auto f() {\n"
+              "    int a = 1;\n"
+              "    auto l = [&](){ return a; };\n"
+              "    return l;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
+
+        check("auto f() {\n"
+              "    int a = 1;\n"
+              "    return [&](){ return a; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
+
+        check("auto f(int a) {\n"
+              "    return [&](){ return a; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
+
+        check("auto f(int a) {\n"
+              "    auto p = &a;\n"
+              "    return [=](){ return p; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
+
+        check("auto g(int& a) {\n"
+              "    return [&](){ return a; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto g(int a) {\n"
+              "    auto p = a;\n"
+              "    return [=](){ return p; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetimeContainer() {
+        check("auto f(const std::vector<int>& x) {\n"
+              "    auto it = x.begin();\n"
+              "    return it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    std::vector<int> x;\n"
+              "    auto it = x.begin();\n"
+              "    return it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Returning object with dangling lifetime from local variable 'x'.\n", errout.str());
+
+        check("auto f() {\n"
+              "    std::vector<int> x;\n"
+              "    auto p = x.data();\n"
+              "    return p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Returning object with dangling lifetime from local variable 'x'.\n", errout.str());
+
+        check("auto f(std::vector<int> x) {\n"
+              "    auto it = x.begin();\n"
+              "    return it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'x'.\n", errout.str());
+
+        check("std::string g() {\n"
+              "    std::vector<char> v;\n"
+              "    return v.data();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

@@ -603,22 +603,26 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     if(!scope)
         return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-            for(const ValueFlow::Value& val:tok->values()) {
-                if(!val.isLifetimeValue())
-                    continue;
-                if(Token::Match(tok->astParent(), "return|throw")) {
-                    if (isInScope(val.tokvalue, scope)) {
-                        errorReturnDanglingLifetime(tok, val.tokvalue);
-                        break;
-                    }
+        if(tok->variable() && tok->variable()->isPointer())
+            continue;
+        if(Token::Match(tok, "& %var%"))
+            continue;
+        for(const ValueFlow::Value& val:tok->values()) {
+            if(!val.isLifetimeValue())
+                continue;
+            if(Token::Match(tok->astParent(), "return|throw")) {
+                if (isInScope(val.tokvalue, scope)) {
+                    errorReturnDanglingLifetime(tok, val.tokvalue);
+                    break;
                 }
             }
-            const Token *lambdaEndToken = findLambdaEndToken(tok);
-            if(lambdaEndToken) {
-                tok = lambdaEndToken;
-                checkVarLifetimeScope(tok, lambdaEndToken);
-            }
         }
+        const Token *lambdaEndToken = findLambdaEndToken(tok);
+        if(lambdaEndToken) {
+            tok = lambdaEndToken;
+            checkVarLifetimeScope(tok, lambdaEndToken);
+        }
+    }
 }
 
 void CheckAutoVariables::checkVarLifetime()
