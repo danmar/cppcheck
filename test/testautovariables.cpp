@@ -1212,6 +1212,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
 
+        check("auto f(int b) {\n"
+              "    return [=](int a){\n"
+              "        a += b;\n"
+              "        return [&](){ return a; };\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
+
         check("auto g(int& a) {\n"
               "    return [&](){ return a; };\n"
               "}\n");

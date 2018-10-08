@@ -585,9 +585,10 @@ static bool isInScope(const Token * tok, const Scope * scope)
     if(!var)
         return false;
     if(var->isArgument() && !var->isReference()) {
-        const Token * parent = var->nameToken()->astParent();
-        if(Token::simpleMatch(parent, "(") && Token::simpleMatch(parent->link(), ") { %any%")) {
-            const Scope * argScope = parent->link()->tokAt(2)->scope();
+        const Scope * tokScope = tok->scope();
+        if(!tokScope)
+            return false;
+        for(const Scope * argScope:tokScope->nestedList) {
             if(argScope && argScope->isNestedIn(scope))
                 return true;
         }
@@ -603,10 +604,14 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     if(!scope)
         return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        if(tok->variable() && tok->variable()->isPointer())
-            continue;
+        // Skip duplicate warning from dangling references
         if(Token::Match(tok, "& %var%"))
             continue;
+        if(tok->variable() && tok->variable()->isPointer())
+            continue;
+        if(std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue)))
+            continue;
+        
         for(const ValueFlow::Value& val:tok->values()) {
             if(!val.isLifetimeValue())
                 continue;
