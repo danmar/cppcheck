@@ -2658,10 +2658,12 @@ void Tokenizer::setVarIdPass1()
                     scopeStack.push(VarIdScopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), *variableMap.getVarId()));
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
-                    for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
-                        if (tok1->str() == "namespace") {
-                            isNamespace = true;
-                            break;
+                    if (tok->link()) {
+                        for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
+                            if (tok1->str() == "namespace") {
+                                isNamespace = true;
+                                break;
+                            }
                         }
                     }
                     // Set variable ids in class declaration..
