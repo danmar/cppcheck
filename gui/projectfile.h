@@ -85,6 +85,14 @@ public:
     }
 
     /**
+    * @brief Get list of undefines.
+    * @return list of undefines.
+    */
+    QStringList getUndefines() const {
+        return mUndefines;
+    }
+
+    /**
     * @brief Get list of paths to check.
     * @return list of paths.
     */
@@ -197,6 +205,12 @@ public:
      * @param defines List of defines.
      */
     void setDefines(const QStringList &defines);
+
+    /**
+     * @brief Set list of undefines.
+     * @param defines List of undefines.
+     */
+    void setUndefines(const QStringList &undefines);
 
     /**
      * @brief Set list of paths to check.
@@ -371,6 +385,11 @@ private:
      * @brief List of defines.
      */
     QStringList mDefines;
+
+    /**
+     * @brief List of undefines.
+     */
+    QStringList mUndefines;
 
     /**
      * @brief List of paths to check.

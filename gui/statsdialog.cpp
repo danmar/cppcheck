@@ -50,6 +50,7 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         mUI.mPaths->setText(projectFile->getCheckPaths().join(";"));
         mUI.mIncludePaths->setText(projectFile->getIncludeDirs().join(";"));
         mUI.mDefines->setText(projectFile->getDefines().join(";"));
+        mUI.mUndefines->setText(projectFile->getUndefines().join(";"));
 #ifndef HAVE_QCHART
         mUI.mTabHistory->setVisible(false);
 #else
@@ -81,6 +82,7 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         mUI.mPaths->setText(QString());
         mUI.mIncludePaths->setText(QString());
         mUI.mDefines->setText(QString());
+        mUI.mUndefines->setText(QString());
     }
 }
 
@@ -174,6 +176,7 @@ void StatsDialog::copyToClipboard()
     const QString paths(tr("Paths"));
     const QString incPaths(tr("Include paths"));
     const QString defines(tr("Defines"));
+    const QString undefines(tr("Undefines"));
     const QString prevScan(tr("Previous Scan"));
     const QString selPath(tr("Path selected"));
     const QString numFiles(tr("Number of files scanned"));
@@ -193,6 +196,7 @@ void StatsDialog::copyToClipboard()
                                  "\t%4:\t%5\n"
                                  "\t%6:\t%7\n"
                                  "\t%8:\t%9\n"
+                                 "\t%10:\t%11\n"
                              )
                              .arg(projSettings)
                              .arg(project)
@@ -202,7 +206,9 @@ void StatsDialog::copyToClipboard()
                              .arg(incPaths)
                              .arg(mUI.mIncludePaths->text())
                              .arg(defines)
-                             .arg(mUI.mDefines->text());
+                             .arg(mUI.mDefines->text())
+                             .arg(undefines)
+                             .arg(mUI.mUndefines->text());
 
     const QString previous = QString(
                                  "%1\n"
@@ -251,6 +257,7 @@ void StatsDialog::copyToClipboard()
                                      " <tr><th>%4:</th><td>%5</td></tr>\n"
                                      " <tr><th>%6:</th><td>%7</td></tr>\n"
                                      " <tr><th>%8:</th><td>%9</td></tr>\n"
+                                     " <tr><th>%10:</th><td>%11</td></tr>\n"
                                      "</table>\n"
                                  )
                                  .arg(projSettings)
@@ -261,7 +268,9 @@ void StatsDialog::copyToClipboard()
                                  .arg(incPaths)
                                  .arg(mUI.mIncludePaths->text())
                                  .arg(defines)
-                                 .arg(mUI.mDefines->text());
+                                 .arg(mUI.mDefines->text())
+                                 .arg(undefines)
+                                 .arg(mUI.mUndefines->text());
 
     const QString htmlPrevious = QString(
                                      "<h3>%1</h3>\n"
