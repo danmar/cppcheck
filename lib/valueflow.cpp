@@ -2702,6 +2702,24 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
 }
 
+static const Variable * getLifetimeVariable(const Token * tok)
+{
+    const Variable * var = tok->variable();
+    if(!var)
+        return nullptr;
+    if(var->isReference() || var->isRValueReference()) {
+        for(const ValueFlow::Value& v:tok->values()) {
+            if(!v.isLifetimeValue() && !v.tokvalue)
+                continue;
+            const Variable * var2 = getLifetimeVariable(v.tokvalue);
+            if(var2)
+                return var2;
+        }
+        return nullptr;
+    }
+    return var;
+}
+
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -2720,7 +2738,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
 
             if(!vartok)
                 continue;
-            const Variable * var = vartok->variable();
+            const Variable * var = getLifetimeVariable(vartok);
             if (!(var && !var->isPointer()))
                 continue;
 
@@ -2742,7 +2760,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
             std::set<const Scope *> scopes;
 
             for(const Token * tok2 = bodyTok;tok2 != bodyTok->link();tok2 = tok2->next()) {
-                const Variable * var = tok2->variable();
+                const Variable * var = getLifetimeVariable(tok2);
                 if(!var)
                     continue;
                 const Scope * scope = var->scope();
@@ -2775,7 +2793,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
                     if(!v.isLifetimeValue() && !v.tokvalue)
                         continue;
                     const Token * tok3 = v.tokvalue;
-                    const Variable * var = tok3->variable();
+                    const Variable * var = getLifetimeVariable(tok3);
                     if(!var)
                         continue;
                     const Scope * scope = var->scope();

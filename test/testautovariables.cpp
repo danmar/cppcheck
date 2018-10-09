@@ -1212,6 +1212,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
 
+        check("auto g(int& a) {\n"
+              "    int p = a;\n"
+              "    return [&](){ return p; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'p'.\n", errout.str());
+
         check("auto f() {\n"
               "    return [=](){\n"
               "        int a = 1;\n"
@@ -1237,6 +1243,18 @@ private:
         check("auto g(int a) {\n"
               "    auto p = a;\n"
               "    return [=](){ return p; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto g(int& a) {\n"
+              "    auto p = a;\n"
+              "    return [=](){ return p; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto g(int& a) {\n"
+              "    int& p = a;\n"
+              "    return [&](){ return p; };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
