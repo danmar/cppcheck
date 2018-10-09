@@ -1089,7 +1089,7 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const
         if (!ret.empty())
             ret = ' ' + ret;
         ret = (tok->str()[0] == '\"' ? std::string("%str%")
-               : std::isdigit(static_cast<unsigned char>(tok->str()[0])) ? std::string("%num%") : tok->str()) + ret;
+               : tok->number ? std::string("%num%") : tok->str()) + ret;
         if (++count > maxsize)
             return "";
     }
