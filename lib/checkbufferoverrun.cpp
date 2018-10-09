@@ -1803,12 +1803,23 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
             const Token* tok = function->token;
 
             // Get the name of the argv variable
-            unsigned int varid = 0;
-            if (Token::Match(tok, "main ( int %var% , char * %var% [ ] ,|)")) {
-                varid = tok->tokAt(7)->varId();
-
-            } else if (Token::Match(tok, "main ( int %var% , char * * %var% ,|)")) {
-                varid = tok->tokAt(8)->varId();
+            unsigned int argvVarid = 0;
+			if (Token::simpleMatch(tok, "main ("))
+				tok = tok->tokAt(2);
+			else
+				continue;
+            if (Token::Match(tok, "int %var% , char * %var% [ ] ,|)")) {
+                argvVarid = tok->tokAt(5)->varId();
+            } else if (Token::Match(tok, "int %var% , char * * %var% ,|)") ||
+				       Token::Match(tok, "const int %var% , char * %var% [ ] ,|)") || 
+				       Token::Match(tok, "int %var% , const char * %var% [ ] ,|)")) {
+                argvVarid = tok->tokAt(6)->varId();
+            } else if (Token::Match(tok, "const int %var% , const char * %var% [ ] ,|)") || 
+				       Token::Match(tok, "const int %var% , char * * %var% ,|)") ||
+				       Token::Match(tok, "int %var% , const char * * %var% ,|)")) {
+                argvVarid = tok->tokAt(7)->varId();
+            } else if (Token::Match(tok, "const int %var% , const char * * %var% ,|)")) {
+                argvVarid = tok->tokAt(8)->varId();
             } else
                 continue;
 
@@ -1818,7 +1829,7 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
             // Search within main() for possible buffer overruns involving argv
             for (const Token* end = tok->link(); tok != end; tok = tok->next()) {
                 // If argv is modified or tested, its size may be being limited properly
-                if (tok->varId() == varid)
+                if (tok->varId() == argvVarid)
                     break;
 
                 // Match common patterns that can result in a buffer overrun
@@ -1829,7 +1840,7 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                         tok = nextArgument;
                     else
                         continue; // Ticket #7964
-                    if (Token::Match(tok, "* %varid%", varid) || Token::Match(tok, "%varid% [", varid))
+                    if (Token::Match(tok, "* %varid%", argvVarid) || Token::Match(tok, "%varid% [", argvVarid))
                         cmdLineArgsError(tok);
                 }
             }
