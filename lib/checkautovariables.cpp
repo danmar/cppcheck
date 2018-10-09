@@ -636,6 +636,11 @@ void CheckAutoVariables::checkVarLifetime()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
             continue;
+        const Token *retTok = scope->function->retDef;
+        // Skip if returning a container
+        const Library::Container * container = mSettings->library.detectContainer(scope->function->retDef);
+        if (container)
+            continue;
         checkVarLifetimeScope(scope->bodyStart, scope->bodyEnd);
     }
 }
