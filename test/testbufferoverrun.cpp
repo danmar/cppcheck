@@ -3751,7 +3751,22 @@ private:
     }
 
     void cmdLineArgs1() {
-        check("int main(int argc, char* argv[])\n"
+
+        check("int main(const int argc, char* argv[])\n"
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str()); 
+
+		check("int main(int argc, const char* argv[])\n"
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+		check("int main(const int argc, const char* argv[])\n"
               "{\n"
               "    char prog[10];\n"
               "    strcpy(prog, argv[0]);\n"
@@ -3773,6 +3788,27 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(const int argc, const char **argv, char **envp)\n"
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(int argc, const char **argv, char **envp)\n"
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(const int argc, char **argv, char **envp)\n"
               "{\n"
               "    char prog[10] = {'\\0'};\n"
               "    strcat(prog, argv[0]);\n"
