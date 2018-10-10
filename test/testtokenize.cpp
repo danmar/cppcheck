@@ -5634,6 +5634,11 @@ private:
         ASSERT_EQUALS("void search ( ) { }", tokenizeAndStringify(code, false));
 
         code = "using namespace std;\n"
+               "void search();\n"
+               "void dostuff() { search(); }";
+        ASSERT_EQUALS("void search ( ) ;\nvoid dostuff ( ) { search ( ) ; }", tokenizeAndStringify(code, false));
+
+        code = "using namespace std;\n"
                "void foo() {map(a, b); }"; // That's obviously not std::map<>
         ASSERT_EQUALS("void foo ( ) { map ( a , b ) ; }", tokenizeAndStringify(code, false));
 
