@@ -135,7 +135,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--std=&lt;id&gt;</option></arg>
       <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
       <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
-	  <arg choice="opt"><option>--suppressions-xml=&lt;.xml file&gt;</option></arg>
+	  <arg choice="opt"><option>--suppress-xml=&lt;.xml file&gt;</option></arg>
       <arg choice="opt"><option>--template='&lt;text&gt;'</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
@@ -518,7 +518,7 @@ There are false positives with this option. Each result must be carefully invest
         </listitem>
       </varlistentry>
 	  <varlistentry>
-        <term><option>--suppressions-xml=&lt;.xml file&gt;</option></term>
+        <term><option>--suppress-xml=&lt;.xml file&gt;</option></term>
         <listitem>
           <para>Use suppressions defined in xml as described in the manual</para>
         </listitem>
