@@ -1257,6 +1257,14 @@ private:
               "    return [&](){ return p; };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("template<class F>\n"
+              "void g(F);\n"
+              "auto f() {\n"
+              "    int x;\n"
+              "    return g([&]() { return x; });\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainer() {
@@ -1301,6 +1309,14 @@ private:
         check("auto g() {\n"
               "    std::vector<char> v;\n"
               "    return {v, [v]() { return v.data(); }};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class F>\n"
+              "void g(F);\n"
+              "auto f() {\n"
+              "    std::vector<char> v;\n"
+              "    return g([&]() { return v.data(); });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
