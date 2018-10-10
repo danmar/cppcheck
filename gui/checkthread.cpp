@@ -127,6 +127,9 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             foreach (QString D, QString::fromStdString(fileSettings->defines).split(";")) {
                 args << ("-D" + D);
             }
+            foreach (const std::string& U, fileSettings->undefs) {
+                args << QString::fromStdString("-U" + U);
+            }
 
             const QString clangPath = CheckThread::clangTidyCmd();
             if (!clangPath.isEmpty()) {

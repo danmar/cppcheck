@@ -314,6 +314,8 @@ void CheckStl::iterators()
         bool inconclusiveType=false;
         if (!isIterator(var, inconclusiveType))
             continue;
+        if (inconclusiveType && !mSettings->inconclusive)
+            continue;
 
         const unsigned int iteratorId = var->declarationId();
 

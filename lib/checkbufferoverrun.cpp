@@ -1561,6 +1561,9 @@ void CheckBufferOverrun::bufferOverrun()
             //  char arr[10] = "123";
             //  arr[7] = 'x'; // warning: arr[7] is inside the array bounds, but past the string's end
 
+            if (tok->valueType() && tok->valueType()->type == ValueType::Type::CONTAINER)
+                continue;
+
             const ArrayInfo arrayInfo(tok->varId(), varname, 1U, Token::getStrSize(strtoken));
             valueFlowCheckArrayIndex(tok->next(), arrayInfo);
         } else {

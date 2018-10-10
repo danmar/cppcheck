@@ -2135,7 +2135,7 @@ private:
               "int foo() {\n"
               "    iterator i;\n"
               "    return i.foo();;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("class iterator {\n"
@@ -2146,7 +2146,7 @@ private:
               "int foo() {\n"
               "    iterator i;\n"
               "    return i.foo();;\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("[test.cpp:8]: (error, inconclusive) Invalid iterator 'i' used.\n", errout.str());
     }
 
@@ -2157,7 +2157,7 @@ private:
               "        {\n"
               "        }\n"
               "    }\n"
-              "}");
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3470,7 +3470,7 @@ private:
               "    iterator it; \n"
               "    it->m_place = 0;\n"
               "    return it; \n"
-              "}\n");
+              "}\n", true);
         ASSERT_EQUALS("[test.cpp:18]: (error, inconclusive) Invalid iterator 'it' used.\n", errout.str());
     }
 

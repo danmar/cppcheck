@@ -74,6 +74,8 @@ private:
     }
 
     void run() override {
+        LOAD_LIB_2(settings0.library, "std.cfg");
+
         settings0.addEnabled("warning");
         settings0.addEnabled("style");
         settings0.addEnabled("portability");
@@ -3121,6 +3123,14 @@ private:
         check("void foo() {\n"
               "    const char *s = \"\";\n"
               "    s = y();\n"
+              "    s[10] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n" // #7718
+              "{\n"
+              "    std::string s = \"123\";\n"
+              "    s.resize(100);\n"
               "    s[10] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
