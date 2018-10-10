@@ -604,6 +604,9 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     const Scope * scope = start->scope();
     if(!scope)
         return;
+    // If the scope is not set correctly then skip checking it
+    if(scope->bodyStart != start)
+        return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Skip duplicate warning from dangling references
         if(Token::Match(tok, "& %var%"))

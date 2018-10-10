@@ -1291,6 +1291,12 @@ private:
               "    return v.data();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("auto g() {\n"
+              "    std::vector<char> v;\n"
+              "    return {v, [v]() { return v.data(); }};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
