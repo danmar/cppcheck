@@ -580,9 +580,11 @@ static bool isInScope(const Token * tok, const Scope * scope)
         return false;
     if(!scope)
         return false;
+    const Variable * var = tok->variable();
+    if(var && (var->isGlobal() || var->isStatic() || var->isExtern()))
+        return false;
     if(tok->scope() && tok->scope()->isNestedIn(scope))
         return true;
-    const Variable * var = tok->variable();
     if(!var)
         return false;
     if(var->isArgument() && !var->isReference()) {
@@ -640,7 +642,6 @@ void CheckAutoVariables::checkVarLifetime()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
             continue;
-        const Token *retTok = scope->function->retDef;
         // Skip if returning a container
         const Library::Container * container = mSettings->library.detectContainer(scope->function->retDef);
         if (container)

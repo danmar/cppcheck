@@ -1286,6 +1286,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'x'.\n", errout.str());
 
+        check("auto f() {\n"
+              "  static std::vector<int> x;\n"
+              "  return x.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("std::string g() {\n"
               "    std::vector<char> v;\n"
               "    return v.data();\n"
