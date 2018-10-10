@@ -5612,6 +5612,8 @@ private:
     }
 
     void simplifyNamespaceStd() {
+        const char *code;
+
         static const char code1[] = "map<foo, bar> m;"; // namespace std is not used
         ASSERT_EQUALS("map < foo , bar > m ;", tokenizeAndStringify(code1, false));
 
@@ -5626,6 +5628,10 @@ private:
         static const char code4[] = "using namespace std;\n"
                                     "void foo() {swap(a, b); }";
         ASSERT_EQUALS("void foo ( ) { std :: swap ( a , b ) ; }", tokenizeAndStringify(code4, false));
+
+        code = "using namespace std;\n"
+               "void search() {}";
+        ASSERT_EQUALS("void search ( ) { }", tokenizeAndStringify(code, false));
 
         static const char code5[] = "using namespace std;\n"
                                     "void foo() {map(a, b); }"; // That's obviously not std::map<>

@@ -9469,7 +9469,7 @@ void Tokenizer::simplifyNamespaceStd()
             skipEnumBody(&tok);
         }
         if (!Token::Match(tok->previous(), ".|::")) {
-            if (Token::Match(tok, "%name% (") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
+            if (Token::Match(tok, "%name% (") && !isFunctionHead(tok->next(),"{") && stdFunctions.find(tok->str()) != stdFunctions.end())
                 insert = true;
             else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
                 insert = true;
