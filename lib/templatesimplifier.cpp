@@ -923,8 +923,8 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
         namepos = 2;
     else if (Token::Match(tok, "> %type% *|&| %type% ("))
         namepos = 2;
-    else if (Token::Match(tok, "> %type %type% <") &&
-             Token::Match(tok->tokAt(3)->findClosingBracket(), "> ("))
+    else if (Token::Match(tok, "> %type% %type% <") &&
+             Token::simpleMatch(tok->tokAt(3)->findClosingBracket(), "> ("))
         namepos = 2;
     else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
         namepos = 3;
@@ -1608,7 +1608,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         return false;
     }
 
-    const bool specialized = Token::Match(templateDeclaration.token, "template < >");
+    const bool specialized = Token::simpleMatch(templateDeclaration.token, "template < >");
     bool isfunc = false;
 
     if (tok->strAt(namepos + 1) == "(")
@@ -1961,7 +1961,7 @@ void TemplateSimplifier::simplifyTemplates(
                     break;
             }
             if (decl != mTemplateDeclarations.end()) {
-                if (Token::Match(it->token, "template < >")) {
+                if (Token::simpleMatch(it->token, "template < >")) {
                     // delete the "template < >"
                     Token * tok = it->token;
                     tok->deleteNext(2);
