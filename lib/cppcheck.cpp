@@ -97,7 +97,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.userDefines += ';';
     temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
-    // TODO: temp.mSettings.userUndefs = fs.undefs;
+    temp.mSettings.userUndefs = fs.undefs;
     if (fs.platformType != Settings::Unspecified) {
         temp.mSettings.platform(fs.platformType);
     }
@@ -123,7 +123,14 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         mErrorLogger.reportOut(std::string("Checking ") + fixedpath + ' ' + cfgname + std::string("..."));
 
         if (mSettings.verbose) {
-            mErrorLogger.reportOut("Defines: " + mSettings.userDefines);
+            mErrorLogger.reportOut("Defines:" + mSettings.userDefines);
+            std::string undefs;
+            for (const std::string& U : mSettings.userUndefs) {
+                if (!undefs.empty())
+                    undefs += ';';
+                undefs += ' ' + U;
+            }
+            mErrorLogger.reportOut("Undefines:" + undefs);
             std::string includePaths;
             for (const std::string &I : mSettings.includePaths)
                 includePaths += " -I" + I;

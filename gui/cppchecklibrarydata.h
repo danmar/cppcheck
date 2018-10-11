@@ -154,6 +154,7 @@ public:
     void clear() {
         containers.clear();
         defines.clear();
+        undefines.clear();
         functions.clear();
         memoryresource.clear();
         podtypes.clear();
@@ -163,6 +164,7 @@ public:
     void swap(CppcheckLibraryData &other) {
         containers.swap(other.containers);
         defines.swap(other.defines);
+        undefines.swap(other.undefines);
         functions.swap(other.functions);
         memoryresource.swap(other.memoryresource);
         podtypes.swap(other.podtypes);
@@ -176,6 +178,7 @@ public:
     QList<struct Function> functions;
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;
+    QStringList undefines;
 };
 
 #endif // LIBRARYDATA_H
