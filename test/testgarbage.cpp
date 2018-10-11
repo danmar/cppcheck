@@ -578,7 +578,7 @@ private:
 
     void garbageCode35() {
         // ticket #2604 segmentation fault
-        checkCode("sizeof <= A");
+        ASSERT_THROW(checkCode("sizeof <= A"), InternalError);
     }
 
     void garbageCode36() { // #6334
@@ -1028,8 +1028,8 @@ private:
         // Ticket #5605, #5759, #5762, #5774, #5823, #6059
         ASSERT_THROW(checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }"), InternalError);
         ASSERT_THROW(checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }"), InternalError);
-        checkCode("() template < T = typename = x > struct a {} { f <int> () }");
-        checkCode("template < T = typename = > struct a { f <int> }");
+        ASSERT_THROW(checkCode("() template < T = typename = x > struct a {} { f <int> () }"), InternalError);
+        ASSERT_THROW(checkCode("template < T = typename = > struct a { f <int> }"), InternalError);
         checkCode("struct S { int i, j; }; "
                   "template<int S::*p, typename U> struct X {}; "
                   "X<&S::i, int> x = X<&S::i, int>(); "
@@ -1438,11 +1438,10 @@ private:
     }
 
     void garbageCode184() { // #7699
-        ASSERT_THROW(checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
+        checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
                                "    NSArray* pScreens = [NSScreen screens];\n"
                                "    return pScreens ? [pScreens count] : 1;\n"
-                               "}"),
-                     InternalError);
+                               "}");
     }
 
     void garbageCode185() { // #6011 crash in libreoffice failure to create proper AST
@@ -1617,6 +1616,17 @@ private:
                   "template< class Predicate > int\n"
                   "List<T>::DeleteIf( const Predicate &pred )\n"
                   "{}\n");
+
+        checkCode(
+                "typedef char A[1];\n"
+                "void f(void) {\n"
+                "   char (*p)[1] = new A[1];\n"
+                "}\n");
+
+        checkCode(
+                "void f() {\n"
+                "    char * pBuf = (char*)(new int[32]);\n"
+                "}\n");
     }
 };
 
