@@ -517,7 +517,7 @@ There are false positives with this option. Each result must be carefully invest
           Each suppression is in the format of &lt;spec&gt; above.</para>
         </listitem>
       </varlistentry>
-	  <varlistentry>
+      <varlistentry>
         <term><option>--suppress-xml=&lt;.xml file&gt;</option></term>
         <listitem>
           <para>Use suppressions defined in xml as described in the manual</para>
