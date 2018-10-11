@@ -372,7 +372,7 @@ private:
                "- assignment of a variable to itself\n"
                "- Comparison of values leading always to true or false\n"
                "- Clarify calculation with parentheses\n"
-               "- suspicious comparison of '\\0' with a char* variable\n"
+               "- suspicious comparison of '\\0' with a char\\* variable\n"
                "- duplicate break statement\n"
                "- unreachable code\n"
                "- testing if unsigned variable is negative/positive\n"
@@ -382,7 +382,7 @@ private:
                "- comma in return statement (the comma can easily be misread as a semicolon).\n"
                "- prefer erfc, expm1 or log1p to avoid loss of precision.\n"
                "- identical code in both branches of if/else or ternary operator.\n"
-               "- redundant pointer operation on pointer like &*some_ptr.\n"
+               "- redundant pointer operation on pointer like &\\*some_ptr.\n"
                "- find unused 'goto' labels.\n"
                "- function declaration and definition argument names different.\n"
                "- function declaration and definition argument order different.\n";
