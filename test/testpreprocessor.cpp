@@ -246,8 +246,6 @@ private:
         TEST_CASE(testDirectiveIncludeComments);
 
         TEST_CASE(testSameLine);  // #7912
-
-        TEST_CASE(macro_argif);
     }
 
     void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
@@ -2373,30 +2371,6 @@ private:
         ASSERT_EQUALS(exp, preprocessor.getcode(code, "", "test.cpp"));
     }
 
-    void macro_argif() {
-        const char code[] = "#define MACRO(x) x\n" 
-                            "const int c = MACRO(1 \n"
-                            "#if defined(X) \n"
-                            "| 2 \n"
-                            "#endif\n"
-                            "); \n";
-        // taken from GCC output
-        const char exp[] =  "\n"
-                            "const int c = 1 \n"
-                            "\n"
-                            "\n"
-                            "\n"
-                            "; \n";
-        const char curr[] = "";
-
-        const char curr_error[] = "[cpp-bug.cpp:3]: (error) failed to expand 'MACRO', "
-                                  "it is invalid to use a preprocessor directive as macro parameter\n";
-
-        errout.str("");
-        Preprocessor preprocessor(settings0, this);
-        TODO_ASSERT_EQUALS(exp, curr, preprocessor.getcode(code, "", "cpp-bug.cpp"));
-        TODO_ASSERT_EQUALS("", curr_error, errout.str());
-    }
 };
 
 REGISTER_TEST(TestPreprocessor)
