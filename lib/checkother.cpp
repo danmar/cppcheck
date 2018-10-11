@@ -485,6 +485,7 @@ void CheckOther::checkRedundantAssignment()
         if (!scope.isExecutable())
             continue;
 
+        std::map<unsigned int, std::set<unsigned int>> usedByLambda; // map key: lambda function varId. set of varIds used by lambda.
         std::map<unsigned int, const Token*> varAssignments;
         std::map<unsigned int, const Token*> memAssignments;
         std::map<unsigned int, std::set<unsigned int> > membervars;
@@ -510,6 +511,17 @@ void CheckOther::checkRedundantAssignment()
             } else if (Token::Match(tok, "break|return|continue|throw|goto|asm")) {
                 varAssignments.clear();
                 memAssignments.clear();
+            } else if (Token::Match(tok, "%var% = [ & ] (")) {
+                const unsigned int lambdaId = tok->varId();
+                const Token *lambdaParams = tok->tokAt(5);
+                if (Token::simpleMatch(lambdaParams->link(), ") {")) {
+                    const Token *lambdaBodyStart = lambdaParams->link()->next();
+                    const Token * const lambdaBodyEnd = lambdaBodyStart->link();
+                    for (const Token *tok2 = lambdaBodyStart; tok2 != lambdaBodyEnd; tok2 = tok2->next()) {
+                        if (tok2->varId())
+                            usedByLambda[lambdaId].insert(tok2->varId());
+                    }
+                }
             } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%name% (")) {
                 const Token *eq = nullptr;
                 for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
@@ -640,8 +652,18 @@ void CheckOther::checkRedundantAssignment()
                 }
             } else if (Token::Match(tok, "%name% (") && !mSettings->library.isFunctionConst(tok->str(), true)) { // Function call. Global variables might be used. Reset their status
                 const bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
-                if (tok->varId()) // operator() or function pointer
+                if (tok->varId()) {
+                    // operator(), function pointer
                     varAssignments.erase(tok->varId());
+
+                    // lambda..
+                    std::map<unsigned int, std::set<unsigned int>>::const_iterator lambda = usedByLambda.find(tok->varId());
+                    if (lambda != usedByLambda.end()) {
+                        for (unsigned int varId : lambda->second) {
+                            varAssignments.erase(varId);
+                        }
+                    }
+                }
 
                 if (memfunc && tok->strAt(-1) != "(" && tok->strAt(-1) != "=") {
                     const Token* param1 = tok->tokAt(2);
@@ -2005,10 +2027,10 @@ void CheckOther::checkDuplicateExpression()
                         }
                     }
                 } else if (styleEnabled &&
-                           isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, false, &errorPath) &&
+                           isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath) &&
                            !Token::Match(tok, "=|-|-=|/|/=") &&
                            isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
-                    oppositeExpressionError(tok, tok, tok->str(), errorPath);
+                    oppositeExpressionError(tok, errorPath);
                 } else if (!Token::Match(tok, "[-/%]")) { // These operators are not associative
                     if (styleEnabled && tok->astOperand2() && tok->str() == tok->astOperand1()->str() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), tok->astOperand1()->astOperand2(), mSettings->library, true, false, &errorPath) && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
@@ -2037,12 +2059,11 @@ void CheckOther::checkDuplicateExpression()
     }
 }
 
-void CheckOther::oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op, ErrorPath errors)
+void CheckOther::oppositeExpressionError(const Token *opTok, ErrorPath errors)
 {
-    if (tok1)
-        errors.emplace_back(tok1, "");
-    if (tok2)
-        errors.emplace_back(tok2, "");
+    errors.emplace_back(opTok, "");
+
+    const std::string& op = opTok ? opTok->str() : "&&";
 
     reportError(errors, Severity::style, "oppositeExpression", "Opposite expression on both sides of \'" + op + "\'.\n"
                 "Finding the opposite expression on both sides of an operator is suspicious and might "
@@ -2059,7 +2080,9 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
 
     const std::string& op = opTok ? opTok->str() : "&&";
     std::string msg = "Same expression on both sides of \'" + op + "\'";
+    std::string id = "duplicateExpression";
     if (expr1 != expr2) {
+        id = "knownConditionTrueFalse";
         std::string exprMsg = "The expression \'" + expr1 + " " + op +  " " + expr2 + "\' is always ";
         if (Token::Match(opTok, "==|>=|<="))
             msg = exprMsg + "true";
@@ -2069,7 +2092,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
             msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
     }
 
-    reportError(errors, Severity::style, "duplicateExpression", msg + ".\n"
+    reportError(errors, Severity::style, id.c_str(), msg + ".\n"
                 "Finding the same expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, false);
@@ -2649,8 +2672,8 @@ void CheckOther::checkEvaluationOrder()
                     const Token *par = parent;
                     while (Token::simpleMatch(par,","))
                         par = par->astParent();
-                    // not function => break
-                    if (!(par && par->str() == "(" && par->astOperand2()))
+                    // not function or in a while clause => break
+                    if (!(par && par->str() == "(" && par->astOperand2() && par->strAt(-1) != "while"))
                         break;
                     // control flow (if|while|etc) => break
                     if (Token::simpleMatch(par->link(),") {"))

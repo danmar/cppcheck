@@ -125,8 +125,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (mSettings.verbose) {
             mErrorLogger.reportOut("Defines:" + mSettings.userDefines);
             std::string undefs;
-            for (const std::string& U : mSettings.userUndefs)
-            {
+            for (const std::string& U : mSettings.userUndefs) {
                 if (!undefs.empty())
                     undefs += ';';
                 undefs += ' ' + U;

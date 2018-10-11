@@ -25,7 +25,9 @@ typedef unsigned long long u64;
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
 
-extern int misra_5_2_var_hides_var______31x;
+extern const uint8_t misra_5_2_var1;
+const uint8_t        misra_5_2_var1 = 3; // no warning
+static int misra_5_2_var_hides_var______31x;
 static int misra_5_2_var_hides_var______31y;//5.2
 static int misra_5_2_function_hides_var_31x;
 void misra_5_2_function_hides_var_31y(void) {}//5.2
@@ -353,9 +355,25 @@ void misra_15_6() {
 }
 
 void misra_15_7() {
+  uint32_t var = 0;
+  uint32_t var2 = 0;
+
   if (x!=0){} // no-warning
   if (x!=0){} else if(x==1){} // 15.7
   if (x!=0){} else if(x==1){}else{;} // no-warning
+
+  if (x!=0)
+  {
+  }
+  else
+  {
+    var = 5u;
+
+    if (var != 5u)
+    {
+        var2 = 10u;
+    }   // no-warning
+  }
 }
 
 void misra_16_2() {

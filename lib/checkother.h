@@ -239,7 +239,7 @@ private:
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void duplicateBranchError(const Token *tok1, const Token *tok2);
     void duplicateAssignExpressionError(const Token *tok1, const Token *tok2);
-    void oppositeExpressionError(const Token *tok1, const Token *tok2, const std::string &op, ErrorPath errors);
+    void oppositeExpressionError(const Token *opTok, ErrorPath errors);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
     void duplicateValueTernaryError(const Token *tok);
     void duplicateExpressionTernaryError(const Token *tok, ErrorPath errors);
@@ -302,7 +302,7 @@ private:
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
         c.duplicateBranchError(nullptr, nullptr);
-        c.oppositeExpressionError(nullptr, nullptr, "&&", errorPath);
+        c.oppositeExpressionError(nullptr, errorPath);
         c.duplicateExpressionError(nullptr, nullptr, nullptr, errorPath);
         c.duplicateValueTernaryError(nullptr);
         c.duplicateExpressionTernaryError(nullptr, errorPath);
@@ -372,7 +372,7 @@ private:
                "- assignment of a variable to itself\n"
                "- Comparison of values leading always to true or false\n"
                "- Clarify calculation with parentheses\n"
-               "- suspicious comparison of '\\0' with a char* variable\n"
+               "- suspicious comparison of '\\0' with a char\\* variable\n"
                "- duplicate break statement\n"
                "- unreachable code\n"
                "- testing if unsigned variable is negative/positive\n"
@@ -382,7 +382,7 @@ private:
                "- comma in return statement (the comma can easily be misread as a semicolon).\n"
                "- prefer erfc, expm1 or log1p to avoid loss of precision.\n"
                "- identical code in both branches of if/else or ternary operator.\n"
-               "- redundant pointer operation on pointer like &*some_ptr.\n"
+               "- redundant pointer operation on pointer like &\\*some_ptr.\n"
                "- find unused 'goto' labels.\n"
                "- function declaration and definition argument names different.\n"
                "- function declaration and definition argument order different.\n";

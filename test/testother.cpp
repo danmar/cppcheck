@@ -160,6 +160,7 @@ private:
         TEST_CASE(redundantVarAssignment);
         TEST_CASE(redundantVarAssignment_7133);
         TEST_CASE(redundantVarAssignment_stackoverflow);
+        TEST_CASE(redundantVarAssignment_lambda);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -4232,34 +4233,50 @@ private:
 
     void oppositeExpression() {
         check("void f(bool a) { if(a && !a) {} }");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '&&'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '&&'.\n", errout.str());
 
         check("void f(bool a) { if(a != !a) {} }");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
 
         check("void f(bool a) { if( a == !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { if( a != !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
 
         check("void f(bool a) { if( !(a) == a ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { if( !(a) != a ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
 
         check("void f(bool a) { if( !(!a) == !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { if( !(!a) != !(a) ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '!='.\n", errout.str());
+
+        check("void f1(bool a) {\n"
+              "    const bool b = a;\n"
+              "    if( a == !(b) ) {}\n"
+              "    if( b == !(a) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+
+        check("void f2(bool *a) {\n"
+              "    const bool b = *a;\n"
+              "    if( *a == !(b) ) {}\n"
+              "    if( b == !(*a) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
+                      "[test.cpp:2] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
         check("void f(bool a) { a = !a; }");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int a) { if( a < -a ) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Opposite expression on both sides of '<'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Opposite expression on both sides of '<'.\n", errout.str());
 
         check("void f(int a) { a -= -a; }");
         ASSERT_EQUALS("", errout.str());
@@ -5960,6 +5977,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void redundantVarAssignment_lambda() {
+        // #7152
+        check("int foo() {\n"
+              "    int x = 0, y = 0;\n"
+              "    auto f = [&]() { if (x < 5) ++y; };\n"
+              "    x = 2;\n"
+              "    f();\n"
+              "    x = 6;\n"
+              "    f();\n"
+              "    return y;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void redundantMemWrite() {
         // Simple tests
         check("void f() {\n"
@@ -7020,6 +7051,28 @@ private:
               "  dostuff((t=1,t),2);\n"
               "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        // #8230
+        check("void hprf(const char* fp) {\n"
+              "    do\n"
+              "        ;\n"
+              "    while (++fp, (*fp) <= 0177);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void hprf(const char* fp) {\n"
+              "    do\n"
+              "        ;\n"
+              "    while (i++, ++fp, (*fp) <= 0177);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char* fp) {\n"
+              "    do\n"
+              "        ;\n"
+              "    while (f(++fp, (*fp) <= 7));\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Expression '++fp,(*fp)<=7' depends on order of evaluation of side effects\n", errout.str());
     }
 
     void testEvaluationOrderSizeof() {

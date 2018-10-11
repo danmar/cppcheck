@@ -166,6 +166,21 @@ static bool isAliased(const Token * startTok, const Token * endTok, unsigned int
     return false;
 }
 
+static bool exprDependsOnThis(const Token *expr)
+{
+    if (!expr)
+        return false;
+    // calling nonstatic method?
+    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
+        // is it a method of this?
+        const Scope *nestedIn = expr->scope();
+        while (nestedIn && nestedIn != expr->function()->nestedIn)
+            nestedIn = nestedIn->nestedIn;
+        return nestedIn == expr->function()->nestedIn;
+    }
+    return exprDependsOnThis(expr->astOperand1()) || exprDependsOnThis(expr->astOperand2());
+}
+
 /// This takes a token that refers to a variable and it will return the token
 /// to the expression that the variable is assigned to. If its not valid to
 /// make such substitution then it will return the original token.
@@ -188,6 +203,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Variable * var = tok->variable();
     const Token * varTok = getVariableInitExpression(var);
     if (!varTok)
+        return tok;
+    // Bailout. If variable value depends on value of "this".
+    if (exprDependsOnThis(varTok))
         return tok;
     // Skip array access
     if (Token::simpleMatch(varTok, "["))
@@ -450,7 +468,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     }
 
     if (cond2->str() == "!")
-        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure, followVar);
+        return isOppositeCond(isNot, cpp, cond2, cond1, library, pure, followVar, errors);
 
     if (!isNot) {
         if (cond1->str() == "==" && cond2->str() == "==") {
@@ -553,7 +571,7 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
 {
     if (!tok1 || !tok2)
         return false;
-    if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar))
+    if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar, errors))
         return true;
     if (tok1->isUnaryOp("-"))
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, followVar, errors);

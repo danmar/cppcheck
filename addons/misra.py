@@ -635,7 +635,7 @@ class MisraChecker:
                 for variable2 in scopeVars[scope]["varlist"][i + 1:]:
                     if variable1.isArgument and variable2.isArgument:
                         continue
-                    if variable1.isExtern and variable2.isExtern:
+                    if variable1.isExtern or variable2.isExtern:
                         continue
                     if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
                             variable1.Id != variable2.Id):
@@ -1326,15 +1326,17 @@ class MisraChecker:
 
 
     def misra_15_7(self, data):
-        for token in data.tokenlist:
-            if not simpleMatch(token, '}'):
+        for scope in data.scopes:
+            if scope.type != 'Else':
                 continue
-            if not token.scope.type == 'If':
+            if not simpleMatch(scope.bodyStart, '{ if ('):
                 continue
-            if not token.scope.nestedIn.type == 'Else':
+            tok = scope.bodyStart.next.next.link
+            if not simpleMatch(tok, ') {'):
                 continue
-            if not token.next.str == 'else':
-                self.reportError(token, 15, 7)
+            tok = tok.next.link
+            if not simpleMatch(tok, '} else'):
+                self.reportError(tok, 15, 7)
 
     # TODO add 16.1 rule
 
