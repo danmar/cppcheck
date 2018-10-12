@@ -1617,21 +1617,31 @@ private:
                   "List<T>::DeleteIf( const Predicate &pred )\n"
                   "{}\n");
 
+        // #8749
         checkCode(
                 "typedef char A[1];\n"
                 "void f(void) {\n"
                 "   char (*p)[1] = new A[1];\n"
                 "}\n");
 
+        // #8786
         checkCode(
                 "void f() {\n"
                 "    char * pBuf = (char*)(new int[32]);\n"
                 "}\n");
 
+        // #8749
         checkCode(
                 "struct A {\n"
                 "    void operator+=(A&) && = delete;\n"
                 "};\n");
+
+        // #8788
+        checkCode(
+                "struct foo;\n"
+                "void f() {\n"
+                "    auto fn = []() -> foo* { return new foo(); };\n"
+                "}\n");
     }
 };
 
