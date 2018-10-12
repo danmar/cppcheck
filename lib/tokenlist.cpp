@@ -1227,7 +1227,7 @@ void TokenList::validateAst() const
             if (Token::Match(tok->previous(), "%name% = %name%"))
                 continue;
             // FIXME: Workaround when assigning from a new expression: #8749
-            if (Token::Match(tok, "= new"))
+            if (Token::simpleMatch(tok, "= new"))
                 continue;
             // FIXME: Workaround assigning when using c style cast: #8786
             if (Token::Match(tok, "= ( %name%"))
