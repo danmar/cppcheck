@@ -1217,6 +1217,9 @@ void TokenList::validateAst() const
             // Skip pure virtual functions
             if (Token::simpleMatch(tok->previous(), ") = 0"))
                 continue;
+            // Skip operator definitions
+            if (Token::simpleMatch(tok->previous(), "operator"))
+                continue;
             // Skip incomplete code
             if (!tok->astOperand1() && !tok->astOperand2() && !tok->astParent())
                 continue;

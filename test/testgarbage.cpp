@@ -1627,6 +1627,11 @@ private:
                 "void f() {\n"
                 "    char * pBuf = (char*)(new int[32]);\n"
                 "}\n");
+
+        checkCode(
+                "struct A {\n"
+                "    void operator+=(A&) && = delete;\n"
+                "};\n");
     }
 };
 
