@@ -3500,6 +3500,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+
+        check("void f(bool b, int i) {\n"
+              "    int j = i;\n"
+              "    i++;\n"
+              "    if (b) {\n"
+              "        x = i;\n"
+              "    } else {\n"
+              "        x = j;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression1() {
