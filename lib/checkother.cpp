@@ -1769,6 +1769,19 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
                 "Instance of '$symbol' object is destroyed immediately.", CWE563, false);
 }
 
+static const Token * getSingleExpressionInBlock(const Token * tok)
+{
+    if(!tok)
+        return nullptr;
+    const Token * top = tok->astTop();
+    if(!top)
+        return nullptr;
+    const Token * nextExpression = nextAfterAstRightmostLeaf(top);
+    if (!Token::simpleMatch(nextExpression, "; }"))
+        return nullptr;
+    return top;
+}
+
 //-----------------------------------------------------------------------------
 // check for duplicate code in if and else branches
 // if (a) { b = true; } else { b = true; }
@@ -1816,7 +1829,20 @@ void CheckOther::checkDuplicateBranch()
             const std::string branch2 = scope.bodyEnd->tokAt(3)->stringifyList(scope.bodyEnd->linkAt(2));
 
             // check for duplicates
-            if (branch1 == branch2)
+            if (branch1 == branch2) {
+                duplicateBranchError(scope.classDef, scope.bodyEnd->next());
+                continue;
+            }
+
+            // check for duplicates using isSameExpression
+            const Token * branchTop1 = getSingleExpressionInBlock(scope.bodyStart->next());
+            const Token * branchTop2 = getSingleExpressionInBlock(scope.bodyEnd->tokAt(3));
+            if (!branchTop1 || !branchTop2)
+                continue;
+            if(branchTop1->str() != branchTop2->str())
+                continue;
+            if(isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true) && 
+                isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand2(), branchTop2->astOperand2(), mSettings->library, true, true))
                 duplicateBranchError(scope.classDef, scope.bodyEnd->next());
         }
     }
