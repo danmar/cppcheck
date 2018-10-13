@@ -1439,9 +1439,9 @@ private:
 
     void garbageCode184() { // #7699
         checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
-                               "    NSArray* pScreens = [NSScreen screens];\n"
-                               "    return pScreens ? [pScreens count] : 1;\n"
-                               "}");
+                  "    NSArray* pScreens = [NSScreen screens];\n"
+                  "    return pScreens ? [pScreens count] : 1;\n"
+                  "}");
     }
 
     void garbageCode185() { // #6011 crash in libreoffice failure to create proper AST
@@ -1619,29 +1619,29 @@ private:
 
         // #8749
         checkCode(
-                "typedef char A[1];\n"
-                "void f(void) {\n"
-                "   char (*p)[1] = new A[1];\n"
-                "}\n");
+            "typedef char A[1];\n"
+            "void f(void) {\n"
+            "   char (*p)[1] = new A[1];\n"
+            "}\n");
 
         // #8786
         checkCode(
-                "void f() {\n"
-                "    char * pBuf = (char*)(new int[32]);\n"
-                "}\n");
+            "void f() {\n"
+            "    char * pBuf = (char*)(new int[32]);\n"
+            "}\n");
 
         // #8749
         checkCode(
-                "struct A {\n"
-                "    void operator+=(A&) && = delete;\n"
-                "};\n");
+            "struct A {\n"
+            "    void operator+=(A&) && = delete;\n"
+            "};\n");
 
         // #8788
         checkCode(
-                "struct foo;\n"
-                "void f() {\n"
-                "    auto fn = []() -> foo* { return new foo(); };\n"
-                "}\n");
+            "struct foo;\n"
+            "void f() {\n"
+            "    auto fn = []() -> foo* { return new foo(); };\n"
+            "}\n");
     }
 };
 
