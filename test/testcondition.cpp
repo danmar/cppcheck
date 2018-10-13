@@ -2587,6 +2587,23 @@ private:
               "    return x; \n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool& g();\n"
+              "bool f() {\n"
+              "    bool & b = g();\n"
+              "    b = false;\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    bool b;\n"
+              "    bool f() {\n"
+              "        b = false;\n"
+              "        return b;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {

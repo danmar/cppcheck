@@ -1263,12 +1263,20 @@ void CheckCondition::alwaysTrueFalse()
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
-            const bool constVarExpr = tok->isEnumerator() || Token::simpleMatch(tok, "nullptr") ||
-                (tok->variable() && (tok->variable()->isConst() || !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())));
-            const bool returnStatement = Token::Match(tok->astTop(), "return") && !constVarExpr &&
+            const bool returnStatement = Token::Match(tok->astTop(), "return") &&
                 Token::Match(tok->astParent(), "%oror%|&&|return");
 
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
+                continue;
+
+            if(returnStatement && (tok->isEnumerator() || Token::simpleMatch(tok, "nullptr")))
+                continue;
+
+            if(returnStatement && tok->variable() && (
+                !tok->variable()->isLocal() ||
+                tok->variable()->isReference() ||
+                tok->variable()->isConst() || 
+                !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
