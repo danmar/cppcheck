@@ -129,8 +129,8 @@ private:
                "- incorrect length arguments for 'substr' and 'strncmp'\n"
                "- suspicious condition (runtime comparison of string literals)\n"
                "- suspicious condition (string/char literals as boolean)\n"
-               "- suspicious comparison of a string literal with a char* variable\n"
-               "- suspicious comparison of '\\0' with a char* variable\n"
+               "- suspicious comparison of a string literal with a char\\* variable\n"
+               "- suspicious comparison of '\\0' with a char\\* variable\n"
                "- overlapping strcmp() expression\n";
     }
 };

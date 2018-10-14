@@ -878,6 +878,38 @@ Token * Token::findClosingBracket()
     return const_cast<Token*>(const_cast<const Token*>(this)->findClosingBracket());
 }
 
+const Token * Token::findOpeningBracket() const
+{
+    if (mStr != ">")
+        return nullptr;
+
+    const Token *opening = nullptr;
+
+    unsigned int depth = 0;
+    for (opening = this; opening != nullptr; opening = opening->previous()) {
+        if (Token::Match(opening, "}|]|)")) {
+            opening = opening->link();
+            if (!opening)
+                return nullptr;
+        } else if (Token::Match(opening, "{|{|(|;"))
+            return nullptr;
+        else if (opening->str() == ">")
+            ++depth;
+        else if (opening->str() == "<") {
+            if (--depth == 0)
+                return opening;
+        }
+    }
+
+    return opening;
+}
+
+Token * Token::findOpeningBracket()
+{
+    // return value of const function
+    return const_cast<Token*>(const_cast<const Token*>(this)->findOpeningBracket());
+}
+
 //---------------------------------------------------------------------------
 
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[])

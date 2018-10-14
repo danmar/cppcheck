@@ -8486,6 +8486,8 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok, "> %cop%"))
                 continue;
         }
+        if (Token::Match(tok, "%assign% typename|class %assign%"))
+            syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))
@@ -9463,15 +9465,27 @@ void Tokenizer::simplifyNamespaceStd()
 
     const bool isCPP11  = mSettings->standards.cpp == Standards::CPP11;
 
+    std::set<std::string> userFunctions;
+
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
             skipEnumBody(&tok);
         }
         if (!Token::Match(tok->previous(), ".|::")) {
-            if (Token::Match(tok, "%name% (") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
-                insert = true;
-            else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
+            if (Token::Match(tok, "%name% (")) {
+                if (isFunctionHead(tok->next(), "{"))
+                    userFunctions.insert(tok->str());
+                else if (isFunctionHead(tok->next(), ";")) {
+                    const Token *start = tok;
+                    while (Token::Match(start->previous(), "%type%|*|&"))
+                        start = start->previous();
+                    if (start != tok && start->isName() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
+                        userFunctions.insert(tok->str());
+                }
+                if (userFunctions.find(tok->str()) == userFunctions.end() && stdFunctions.find(tok->str()) != stdFunctions.end())
+                    insert = true;
+            } else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
                 insert = true;
             else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && stdTypes.find(tok->str()) != stdTypes.end())
                 insert = true;

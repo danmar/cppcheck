@@ -1,3 +1,4 @@
+
 #!/bin/bash
 # The version check in this script is used to avoid commit battles
 # between different developers that use different astyle versions as
@@ -54,3 +55,6 @@ do
    xmllint --format -o ${PLATFORMFILE}_ ${PLATFORMFILE}
    mv -f ${PLATFORMFILE}_ ${PLATFORMFILE}
 done
+
+xmllint --format -o man/cppcheck.1.xml_ man/cppcheck.1.xml 
+mv -f man/cppcheck.1.xml_ man/cppcheck.1.xml

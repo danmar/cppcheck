@@ -812,6 +812,9 @@ public:
     const Token* findClosingBracket() const;
     Token* findClosingBracket();
 
+    const Token* findOpeningBracket() const;
+    Token* findOpeningBracket();
+
     /**
      * @return the original name.
      */

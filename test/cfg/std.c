@@ -3797,6 +3797,24 @@ void invalidFunctionArg(char c)
     (void)toupper(255);
 }
 
+void invalidFunctionArgString(char c)
+{
+    /* cppcheck-suppress invalidFunctionArgStr */
+    (void)atoi(&c);
+    char x = 'x';
+    /* cppcheck-suppress invalidFunctionArgStr */
+    (void)strlen(&x);
+
+    char y = '\0';
+    (void)strlen(&y);
+
+    // #5225
+    char str[80] = "hello worl";
+    char d='d';
+    /* cppcheck-suppress invalidFunctionArgStr */
+    (void)strcat(str,&d);
+}
+
 void ignoredReturnValue_abs(int i)
 {
     // cppcheck-suppress ignoredReturnValue
