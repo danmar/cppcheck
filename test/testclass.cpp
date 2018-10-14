@@ -171,6 +171,7 @@ private:
         TEST_CASE(const62); // ticket #5701
         TEST_CASE(const63); // ticket #5983
         TEST_CASE(const64); // ticket #6268
+        TEST_CASE(const65); // ticket #8693
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -5441,6 +5442,25 @@ private:
                    "        ::B::D::DKIPtr membervariable;\n"
                    "    };\n"
                    "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const65() {
+        checkConst("template <typename T>\n"
+                   "class TemplateClass {\n"
+                   "public:\n"
+                   "   TemplateClass() { }\n"
+                   "};\n"
+                   "template <>\n"
+                   "class TemplateClass<float> {\n"
+                   "public:\n"
+                   "   TemplateClass() { }\n"
+                   "};\n"
+                   "int main() {\n"
+                   "    TemplateClass<int> a;\n"
+                   "    TemplateClass<float> b;\n"
+                   "    return 0;\n"
+                   "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
