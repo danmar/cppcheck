@@ -2368,7 +2368,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             // Lhs should be a variable
-            if (!tok->astOperand1() || !tok->astOperand1()->varId())
+            if (!tok->astOperand1() || !tok->astOperand1()->varId() || tok->astOperand1()->hasKnownValue())
                 continue;
             const unsigned int varid = tok->astOperand1()->varId();
             if (aliased.find(varid) != aliased.end())
@@ -3331,6 +3331,9 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand1()->function())
             continue;
 
+        if (tok->hasKnownValue())
+            continue;
+
         // Arguments..
         std::vector<MathLib::bigint> parvalues;
         if (tok->astOperand2()) {
@@ -3558,6 +3561,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!var->valueType() || !var->valueType()->container)
             continue;
         if (!Token::Match(var->nameToken(), "%name% ;"))
+            continue;
+        if (var->nameToken()->hasKnownValue())
             continue;
         ValueFlow::Value value(0);
         if (var->valueType()->container->size_templateArgNo >= 0) {
