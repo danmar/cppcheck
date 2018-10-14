@@ -1263,7 +1263,7 @@ void CheckCondition::alwaysTrueFalse()
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
-            const bool returnStatement = Token::Match(tok->astTop(), "return") &&
+            const bool returnStatement = Token::simpleMatch(tok->astTop(), "return") &&
                 Token::Match(tok->astParent(), "%oror%|&&|return");
 
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
@@ -1272,7 +1272,7 @@ void CheckCondition::alwaysTrueFalse()
             if(returnStatement && (tok->isEnumerator() || Token::simpleMatch(tok, "nullptr")))
                 continue;
 
-            if(returnStatement && tok->variable() && (
+            if(returnStatement && Token::simpleMatch(tok->astParent(), "return") && tok->variable() && (
                 !tok->variable()->isLocal() ||
                 tok->variable()->isReference() ||
                 tok->variable()->isConst() || 
