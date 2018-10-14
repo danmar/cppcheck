@@ -1269,7 +1269,7 @@ void CheckCondition::alwaysTrueFalse()
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
                 continue;
 
-            if(returnStatement && (tok->isEnumerator() || Token::simpleMatch(tok, "nullptr")))
+            if(returnStatement && (tok->isEnumerator() || Token::Match(tok, "nullptr|NULL")))
                 continue;
 
             if(returnStatement && Token::simpleMatch(tok->astParent(), "return") && tok->variable() && (
