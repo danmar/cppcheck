@@ -1586,8 +1586,7 @@ Checking minsize.c...
         <section>
           <title>strz</title>
 
-          <para>This setting is not used by Cppcheck currently. But with this
-          you can say that an argument must be a zero-terminated
+          <para>With this you can say that an argument must be a zero-terminated
           string.</para>
 
           <para><programlisting>&lt;?xml version="1.0"?&gt;
