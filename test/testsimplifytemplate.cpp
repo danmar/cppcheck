@@ -1828,6 +1828,15 @@ private:
             ASSERT_EQUALS(expected, tok(code));
         }
         {
+            const char code[] = "template<> class C<char> { };\n"
+                                "map<int> m;\n"
+                                "C<char> c;";
+            const char expected[] = "class C<char> { } ; "
+                                    "map < int > m ; "
+                                    "C<char> c ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+        {
             const char code[] = "template<typename T> class C { };\n"
                                 "template<> class C<char> { };\n"
                                 "map<int> m;\n";
@@ -1844,6 +1853,19 @@ private:
             const char expected[] = "class C<char> { } ; "
                                     "map < int > m ; "
                                     "C<int> i ; "
+                                    "class C<int> { } ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+        {
+            const char code[] = "template<typename T> class C { };\n"
+                                "template<> class C<char> { };\n"
+                                "map<int> m;\n"
+                                "C<int> i;\n"
+                                "C<char> c;";
+            const char expected[] = "class C<char> { } ; "
+                                    "map < int > m ; "
+                                    "C<int> i ; "
+                                    "C<char> c ; "
                                     "class C<int> { } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
