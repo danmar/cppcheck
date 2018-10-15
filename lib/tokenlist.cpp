@@ -1211,7 +1211,7 @@ void TokenList::validateAst() const
             // Skip lambda captures
             if (Token::Match(tok, "= ,|]"))
                 continue;
-            // Dont check templates
+            // Don't check templates
             if (tok->link())
                 continue;
             // Skip pure virtual functions
