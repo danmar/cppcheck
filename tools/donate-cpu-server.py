@@ -55,6 +55,8 @@ def latestReport(latestResults):
 
     # Write report for latest results
     for filename in latestResults:
+        if not os.path.isfile(filename):
+            continue
         package = filename[filename.rfind('/')+1:]
 
         datestr = ''
@@ -354,8 +356,9 @@ def server(server_address_port, packages, packageIndex, resultPath):
     sock.listen(1)
 
     latestResults = []
-    with open('latest.txt', 'rt') as f:
-        latestResults = f.read().strip().split(' ')
+    if os.path.isfile('latest.txt'):
+        with open('latest.txt', 'rt') as f:
+            latestResults = f.read().strip().split(' ')
 
     while True:
         # wait for a connection
