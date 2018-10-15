@@ -130,6 +130,7 @@ private:
         TEST_CASE(expandSpecialized1);
         TEST_CASE(expandSpecialized2);
         TEST_CASE(expandSpecialized3); // #8671
+        TEST_CASE(expandSpecialized4);
 
         TEST_CASE(templateAlias1);
         TEST_CASE(templateAlias2);
@@ -1816,6 +1817,58 @@ private:
                                 "std :: basic_ostream < char > & outputStream_ ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void expandSpecialized4() {
+        {
+            const char code[] = "template<> class C<char> { };\n"
+                                "map<int> m;";
+            const char expected[] = "class C<char> { } ; "
+                                    "map < int > m ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+        {
+            const char code[] = "template<> class C<char> { };\n"
+                                "map<int> m;\n"
+                                "C<char> c;";
+            const char expected[] = "class C<char> { } ; "
+                                    "map < int > m ; "
+                                    "C<char> c ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+        {
+            const char code[] = "template<typename T> class C { };\n"
+                                "template<> class C<char> { };\n"
+                                "map<int> m;\n";
+            const char expected[] = "template < typename T > class C { } ; "
+                                    "class C<char> { } ; "
+                                    "map < int > m ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+        {
+            const char code[] = "template<typename T> class C { };\n"
+                                "template<> class C<char> { };\n"
+                                "map<int> m;\n"
+                                "C<int> i;";
+            const char expected[] = "class C<char> { } ; "
+                                    "map < int > m ; "
+                                    "C<int> i ; "
+                                    "class C<int> { } ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+        {
+            const char code[] = "template<typename T> class C { };\n"
+                                "template<> class C<char> { };\n"
+                                "map<int> m;\n"
+                                "C<int> i;\n"
+                                "C<char> c;";
+            const char expected[] = "class C<char> { } ; "
+                                    "map < int > m ; "
+                                    "C<int> i ; "
+                                    "C<char> c ; "
+                                    "class C<int> { } ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void templateAlias1() {
