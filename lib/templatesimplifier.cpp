@@ -1704,8 +1704,12 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     }
 
     // process uninstantiated templates
+    const std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
+            mTemplateInstantiations.end(),
+            FindName(templateDeclaration.name));
+
     // TODO: remove the specialized check and handle all uninstantiated templates someday.
-    if (mTemplateInstantiations.empty() && specialized) {
+    if (it == mTemplateInstantiations.end() && specialized) {
         simplifyCalculations();
 
         Token * tok2 = const_cast<Token *>(tok->tokAt(namepos));
