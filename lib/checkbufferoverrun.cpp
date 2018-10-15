@@ -1808,18 +1808,19 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 tok = tok->tokAt(2);
             else
                 continue;
-            if (Token::Match(tok, "int %var% , char * %var% [ ] ,|)")) {
-                argvVarid = tok->tokAt(5)->varId();
-            } else if (Token::Match(tok, "int %var% , char * * %var% ,|)") ||
-                       Token::Match(tok, "const int %var% , char * %var% [ ] ,|)") ||
-                       Token::Match(tok, "int %var% , const char * %var% [ ] ,|)")) {
-                argvVarid = tok->tokAt(6)->varId();
-            } else if (Token::Match(tok, "const int %var% , const char * %var% [ ] ,|)") ||
-                       Token::Match(tok, "const int %var% , char * * %var% ,|)") ||
-                       Token::Match(tok, "int %var% , const char * * %var% ,|)")) {
-                argvVarid = tok->tokAt(7)->varId();
-            } else if (Token::Match(tok, "const int %var% , const char * * %var% ,|)")) {
-                argvVarid = tok->tokAt(8)->varId();
+
+            if (Token::Match(tok, "const| int %var% ,"))
+                tok = tok->nextArgument();
+            else
+                continue;
+
+            if (Token::Match(tok, "char * %var% [ ] ,|)")) {
+                argvVarid = tok->tokAt(2)->varId();
+            } else if (Token::Match(tok, "char * * %var% ,|)") ||
+                       Token::Match(tok, "const char * %var% [ ] ,|)")) {
+                argvVarid = tok->tokAt(3)->varId();
+            } else if (Token::Match(tok, "const char * * %var% ,|)")) {
+                argvVarid = tok->tokAt(4)->varId();
             } else
                 continue;
 
