@@ -1131,12 +1131,13 @@ void ResultsTree::saveErrors(Report *report, QStandardItem *fileItem) const
 static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
 {
     for (int i = 0; i < list.size(); i++) {
-        if (list[i].errorId == item.errorId &&
-            list[i].errorPath == item.errorPath &&
-            list[i].file0 == item.file0 &&
-            list[i].message == item.message &&
-            list[i].inconclusive == item.inconclusive &&
-            list[i].severity == item.severity) {
+        const ErrorItem &ei(list[i]);
+        if (ei.errorId == item.errorId &&
+            ei.errorPath == item.errorPath &&
+            ei.file0 == item.file0 &&
+            ei.message == item.message &&
+            ei.inconclusive == item.inconclusive &&
+            ei.severity == item.severity) {
             return i;
         }
     }
