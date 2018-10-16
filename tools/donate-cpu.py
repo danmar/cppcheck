@@ -46,7 +46,7 @@ def getCppcheck(cppcheckPath):
             subprocess.call(['git', 'checkout', '-f'])
             subprocess.call(['git', 'pull'])
         else:
-            subprocess.call(['git', 'clone', 'http://github.com/danmar/cppcheck.git', cppcheckPath])
+            subprocess.call(['git', 'clone', 'https://github.com/danmar/cppcheck.git', cppcheckPath])
             if not os.path.exists(cppcheckPath):
                 print('Failed to clone, will try again in 10 minutes..')
                 time.sleep(600)
