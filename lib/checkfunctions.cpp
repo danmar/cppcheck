@@ -127,7 +127,7 @@ void CheckFunctions::invalidFunctionUsage()
                 }
 
                 if (mSettings->library.isargstrz(functionToken, argnr)) {
-                    if (Token::Match(argtok, "& %var%") && argtok->next() && argtok->next()->valueType()) {
+                    if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
                         const Variable * variable = argtok->next()->variable();
                         if (valueType->type == ValueType::Type::CHAR && !variable->isGlobal() &&

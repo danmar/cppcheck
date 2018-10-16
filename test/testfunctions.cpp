@@ -502,6 +502,9 @@ private:
         check("size_t f() { char x[] = \"Hello world\"; return strlen(&x[0]) }");
         ASSERT_EQUALS("", errout.str());
 
+        check("size_t f() { char* x = \"Hello world\"; return strlen(&x[0]) }");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S {\n"
               "  char x;\n"
               "};\n"
@@ -525,6 +528,13 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("const char x = '\\0'; size_t f() { char y = x; return strlen(&y); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f() {\n"
+              "  char * a = \"Hello world\";\n"
+              "  char ** b = &a;\n"
+              "  return strlen(&b[0][0]);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // #5225
