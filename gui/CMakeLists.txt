@@ -9,7 +9,11 @@ if (BUILD_GUI)
         add_definitions(-DQT_DEBUG)
     endif()
 
-    include_directories(${PROJECT_SOURCE_DIR}/lib/)
+    find_package(Qt5 COMPONENTS Core Widgets PrintSupport REQUIRED)
+    include_directories("${PROJECT_SOURCE_DIR}/lib/"
+                        ${Qt5Widgets_INCLUDE_DIRS}
+                        ${Qt5Core_INCLUDE_DIRS}
+                        ${Qt5PrintSupport_INCLUDE_DIRS})
     include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
 
     file(GLOB hdrs "*.h")
