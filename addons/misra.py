@@ -618,10 +618,11 @@ class MisraChecker:
     def misra_5_2(self, data):
         scopeVars = {}
         for var in data.variables:
-            if var.nameToken.scope not in scopeVars:
-                scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
-                scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
-            scopeVars[var.nameToken.scope]["varlist"].append(var)
+            if var.nameToken is not None:
+                if var.nameToken.scope not in scopeVars:
+                    scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
+                    scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
+                scopeVars[var.nameToken.scope]["varlist"].append(var)
         for scope in data.scopes:
             if scope.nestedIn and scope.className:
                 if scope.nestedIn not in scopeVars:
@@ -664,9 +665,10 @@ class MisraChecker:
         enum = []
         scopeVars = {}
         for var in data.variables:
-            if var.nameToken.scope not in scopeVars:
-                scopeVars[var.nameToken.scope] = []
-            scopeVars[var.nameToken.scope].append(var)
+            if var.nameToken is not None:
+                if var.nameToken.scope not in scopeVars:
+                    scopeVars[var.nameToken.scope] = []
+                scopeVars[var.nameToken.scope].append(var)
         for innerScope in data.scopes:
             if innerScope.type == "Enum":
                 enum_token = innerScope.bodyStart.next
@@ -760,8 +762,9 @@ class MisraChecker:
                 macroNames.append(res.group(1))
         for var in data.variables:
             for macro in macroNames:
-                if var.nameToken.str[:31] == macro[:31]:
-                    self.reportError(var.nameToken, 5, 5)
+                if var.nameToken is not None:
+                    if var.nameToken.str[:31] == macro[:31]:
+                        self.reportError(var.nameToken, 5, 5)
         for scope in data.scopes:
             for macro in macroNames:
                 if scope.className and scope.className[:31] == macro[:31]:
