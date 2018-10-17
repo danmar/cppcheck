@@ -1984,11 +1984,9 @@ void CheckOther::checkDuplicateExpression()
                             Token::Match(tok->astOperand2()->previous(), "%name% (")
                         ) &&
                         tok->next()->tokType() != Token::eType &&
-                        tok->next()->tokType() != Token::eName &&
                         isSameExpression(mTokenizer->isCPP(), true, tok->next(), nextAssign->next(), mSettings->library, true, false) &&
                         isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), mSettings->library, true, false) &&
-                        tok->astOperand2()->expressionString() == nextAssign->astOperand2()->expressionString() &&
-                        !isUniqueExpression(tok->astOperand2())) {
+                        tok->astOperand2()->expressionString() == nextAssign->astOperand2()->expressionString()) {
                         bool assigned = false;
                         const Scope * varScope = var1->scope() ? var1->scope() : &scope;
                         for (const Token *assignTok = Token::findsimplematch(var2, ";"); assignTok && assignTok != varScope->bodyEnd; assignTok = assignTok->next()) {
@@ -1999,8 +1997,10 @@ void CheckOther::checkDuplicateExpression()
                                 assigned = true;
                             }
                         }
-                        if (!assigned)
-                            duplicateAssignExpressionError(var1, var2);
+                        if (!assigned && !isUniqueExpression(tok->astOperand2()))
+                            duplicateAssignExpressionError(var1, var2, false);
+                        else if(mSettings->inconclusive)
+                            duplicateAssignExpressionError(var1, var2, true);
                     }
                 }
             }
@@ -2098,15 +2098,18 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
                 "determine if it is correct.", CWE398, false);
 }
 
-void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *tok2)
+void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *tok2, bool inconclusive)
 {
     const std::list<const Token *> toks = { tok2, tok1 };
 
+    const std::string& var1 = tok1 ? tok1->str() : "x";
+    const std::string& var2 = tok2 ? tok2->str() : "x";
+
     reportError(toks, Severity::style, "duplicateAssignExpression",
-                "Same expression used in consecutive assignments of '" + tok1->str() + "' and '" + tok2->str() + "'.\n"
-                "Finding variables '" + tok1->str() + "' and '" + tok2->str() + "' that are assigned the same expression "
+                "Same expression used in consecutive assignments of '" + var1 + "' and '" + var2 + "'.\n"
+                "Finding variables '" + var1 + "' and '" + var2 + "' that are assigned the same expression "
                 "is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
-                "determine if it is correct.", CWE398, false);
+                "determine if it is correct.", CWE398, inconclusive);
 }
 
 void CheckOther::duplicateExpressionTernaryError(const Token *tok, ErrorPath errors)
