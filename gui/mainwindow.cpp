@@ -870,8 +870,7 @@ Settings MainWindow::getCppcheckSettings()
         const QString platform = mProjectFile->getPlatform();
         if (platform.endsWith(".xml")) {
             const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
-            result.loadPlatformFile(appPath.toStdString().c_str(), platform.toStdString());
+            result.loadPlatformFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
         } else {
             for (int i = cppcheck::Platform::Native; i <= cppcheck::Platform::Unix64; i++) {
                 const cppcheck::Platform::PlatformType p = (cppcheck::Platform::PlatformType)i;
