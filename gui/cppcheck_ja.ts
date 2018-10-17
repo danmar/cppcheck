@@ -1405,7 +1405,7 @@ Options:
     <message>
         <location filename="newsuppressiondialog.cpp" line="51"/>
         <source>Edit suppression</source>
-        <translation type="unfinished"></translation>
+        <translation>抑制の編集</translation>
     </message>
 </context>
 <context>
@@ -1573,12 +1573,12 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="174"/>
         <source>Undefines:</source>
-        <translation type="unfinished"></translation>
+        <translation>定義取り消し(Undefines)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="184"/>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
-        <translation type="unfinished"></translation>
+        <translation>定義の取り消しはセミコロンで区切ります。例: UNDEF1;UNDEF2;UNDEF3</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="197"/>
@@ -2485,7 +2485,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="131"/>
         <source>Undefines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Undefines:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="165"/>
@@ -2636,7 +2636,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="179"/>
         <source>Undefines</source>
-        <translation type="unfinished"></translation>
+        <translation>定義取り消し(Undef)</translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="181"/>
