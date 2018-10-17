@@ -2796,6 +2796,8 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
         reportError(tok, Severity::warning, "accessForwarded", "Access of forwarded variable 'v'.", CWE672, false);
         return;
     }
+    if (!value)
+        return;
 
     const char * errorId = nullptr;
     std::string kindString;
@@ -2815,8 +2817,6 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath, Severity::warning, errorId, errmsg, CWE672, inconclusive);
 }
-
-
 
 void CheckOther::checkFuncArgNamesDifferent()
 {
