@@ -1815,6 +1815,31 @@ class MisraChecker:
                                        each.lineNumber, each.symbolName)
 
 
+    def showSuppressedRules(self):
+            """
+            Print out rules in suppression list sorted by Rule Number
+            """
+            print("Suppressed Rules List:")
+            outlist = list()
+
+            for ruleNum in self.suppressedRules:
+                fileDict = self.suppressedRules[ruleNum]
+
+                for fname in fileDict:
+                    ruleItemList = fileDict[fname]
+
+                    for item in ruleItemList:
+                        if item is None:
+                            item_str = "None"
+                        else:
+                            item_str = str(item[0])
+
+                        outlist.append("%s: %s: %s" % (float(ruleNum)/100,fname,item_str))
+
+            for line in sorted(outlist, reverse=True):
+                print("  %s" % line)
+
+
     def setSuppressionList(self, suppressionlist):
         num1 = 0
         num2 = 0
@@ -2061,6 +2086,7 @@ parser.add_argument("--no-summary", help="Hide summary of violations", action="s
 parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
+parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
 args = parser.parse_args()
 
 checker = MisraChecker()
@@ -2118,5 +2144,8 @@ else:
 
                 if SHOW_SUMMARY:
                     print("\nMISRA rule violations found: %d\n" % (number_of_violations))
+
+        if args.show_suppressed_rules:
+            checker.showSuppressedRules()
 
         sys.exit(exitCode)
