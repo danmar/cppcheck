@@ -537,6 +537,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("size_t f() {\n"
+              "  char ca[] = \"asdf\";\n"
+              "  return strlen((char*) &ca);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #5225
         check("int main(void)\n"
               "{\n"
