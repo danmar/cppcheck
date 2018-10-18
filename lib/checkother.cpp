@@ -1771,10 +1771,10 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
 
 static const Token * getSingleExpressionInBlock(const Token * tok)
 {
-    if(!tok)
+    if (!tok)
         return nullptr;
     const Token * top = tok->astTop();
-    if(!top)
+    if (!top)
         return nullptr;
     const Token * nextExpression = nextAfterAstRightmostLeaf(top);
     if (!Token::simpleMatch(nextExpression, "; }"))
@@ -1840,9 +1840,9 @@ void CheckOther::checkDuplicateBranch()
             const Token * branchTop2 = getSingleExpressionInBlock(scope.bodyEnd->tokAt(3));
             if (!branchTop1 || !branchTop2)
                 continue;
-            if(branchTop1->str() != branchTop2->str())
+            if (branchTop1->str() != branchTop2->str())
                 continue;
-            if(isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true, &errorPath) && 
+            if (isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true, &errorPath) &&
                 isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand2(), branchTop2->astOperand2(), mSettings->library, true, true, &errorPath))
                 duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
         }
@@ -2027,7 +2027,7 @@ void CheckOther::checkDuplicateExpression()
                         }
                         if (!assigned && !isUniqueExpression(tok->astOperand2()))
                             duplicateAssignExpressionError(var1, var2, false);
-                        else if(mSettings->inconclusive)
+                        else if (mSettings->inconclusive)
                             duplicateAssignExpressionError(var1, var2, true);
                     }
                 }

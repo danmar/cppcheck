@@ -264,8 +264,7 @@ static std::string getContainerName(const Token *containerToken)
     return ret;
 }
 
-enum OperandPosition
-{
+enum OperandPosition {
     Left,
     Right
 };
@@ -273,18 +272,13 @@ enum OperandPosition
 static const Token* findIteratorContainer(const Token* start, const Token* end, unsigned int id)
 {
     const Token* containerToken = nullptr;
-    for(const Token* tok = start; tok != end; tok = tok->next())
-    {
-        if (Token::Match(tok, "%varid% = %name% . %name% (", id))
-        {
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (Token::Match(tok, "%varid% = %name% . %name% (", id)) {
             // Iterator is assigned to value
-            if (tok->tokAt(5)->valueType() && tok->tokAt(5)->valueType()->type == ValueType::Type::ITERATOR)
-            {
+            if (tok->tokAt(5)->valueType() && tok->tokAt(5)->valueType()->type == ValueType::Type::ITERATOR) {
                 containerToken = tok->tokAt(2);
             }
-        }
-        else if (Token::Match(tok, "%varid% = %name% (", id))
-        {
+        } else if (Token::Match(tok, "%varid% = %name% (", id)) {
             // Prevent FP: iterator is assigned to something
             // TODO: Fix it in future
             containerToken = nullptr;
@@ -478,13 +472,10 @@ bool CheckStl::compareIteratorAgainstDifferentContainer(const Token* operatorTok
 
     const Token *otherOperand = nullptr;
     OperandPosition operandPosition;
-    if (operatorTok->astOperand1()->varId() == iteratorId)
-    {
+    if (operatorTok->astOperand1()->varId() == iteratorId) {
         otherOperand = operatorTok->astOperand2();
         operandPosition = OperandPosition::Right;
-    }
-    else if (operatorTok->astOperand2()->varId() == iteratorId)
-    {
+    } else if (operatorTok->astOperand2()->varId() == iteratorId) {
         otherOperand = operatorTok->astOperand1();
         operandPosition = OperandPosition::Left;
     }
@@ -493,43 +484,32 @@ bool CheckStl::compareIteratorAgainstDifferentContainer(const Token* operatorTok
         return false;
 
     const Token * const otherExprPart = otherOperand->tokAt(-3);
-    if (Token::Match(otherExprPart, "%name% . end|rend|cend|crend ( )") && otherExprPart->varId() != containerTok->varId())
-    {
+    if (Token::Match(otherExprPart, "%name% . end|rend|cend|crend ( )") && otherExprPart->varId() != containerTok->varId()) {
         const std::string& firstContainerName = getContainerName(containerTok);
         const std::string& secondContainerName = getContainerName(otherExprPart);
-        if (firstContainerName != secondContainerName)
-        {
+        if (firstContainerName != secondContainerName) {
             if (operandPosition == OperandPosition::Right)
                 iteratorsError(operatorTok, containerTok, firstContainerName, secondContainerName);
             else
                 iteratorsError(operatorTok, containerTok, secondContainerName, firstContainerName);
-        }
-        else
-        {
+        } else {
             iteratorsError(operatorTok, containerTok, firstContainerName);
         }
         return true;
-    }
-    else
-    {
+    } else {
         const unsigned int otherId = otherOperand->varId();
         auto it = iteratorScopeBeginInfo.find(otherId);
-        if (it != iteratorScopeBeginInfo.end())
-        {
+        if (it != iteratorScopeBeginInfo.end()) {
             const Token* otherContainerToken = findIteratorContainer(it->second, operatorTok->astOperand1(), otherId);
-            if (otherContainerToken && otherContainerToken->varId() != containerTok->varId())
-            {
+            if (otherContainerToken && otherContainerToken->varId() != containerTok->varId()) {
                 const std::string& firstContainerName = getContainerName(containerTok);
                 const std::string& secondContainerName = getContainerName(otherContainerToken);
-                if (firstContainerName != secondContainerName)
-                {
+                if (firstContainerName != secondContainerName) {
                     if (operandPosition == OperandPosition::Right)
                         iteratorsCmpError(operatorTok, containerTok, otherContainerToken, firstContainerName, secondContainerName);
                     else
                         iteratorsCmpError(operatorTok, containerTok, otherContainerToken, secondContainerName, firstContainerName);
-                }
-                else
-                {
+                } else {
                     iteratorsCmpError(operatorTok, containerTok, otherContainerToken, firstContainerName);
                 }
                 return true;

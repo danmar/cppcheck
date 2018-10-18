@@ -748,99 +748,99 @@ private:
     }
 
     void iterator18() {
-      check("void foo()\n"
-            "{\n"
-            "    std::list<int> l1;\n"
-            "    std::list<int> l2;\n"
-            "    std::list<int>::iterator it1 = l1.begin();\n"
-            "    std::list<int>::iterator it2 = l1.end();\n"
-            "    while (++it1 != --it2)\n"
-            "    {\n"
-            "    }\n"
-            "}");
-      ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    while (++it1 != --it2)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
-      check("void foo()\n"
-            "{\n"
-            "    std::list<int> l1;\n"
-            "    std::list<int> l2;\n"
-            "    std::list<int>::iterator it1 = l1.begin();\n"
-            "    std::list<int>::iterator it2 = l1.end();\n"
-            "    while (it1++ != --it2)\n"
-            "    {\n"
-            "    }\n"
-            "}");
-      ASSERT_EQUALS("", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    while (it1++ != --it2)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
-      check("void foo()\n"
-            "{\n"
-            "    std::list<int> l1;\n"
-            "    std::list<int> l2;\n"
-            "    std::list<int>::iterator it1 = l1.begin();\n"
-            "    std::list<int>::iterator it2 = l1.end();\n"
-            "    if (--it2 > it1++)\n"
-            "    {\n"
-            "    }\n"
-            "}");
-      TODO_ASSERT_EQUALS("", "[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    if (--it2 > it1++)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
     }
 
     void iterator19() {
-      check("void foo()\n"
-            "{\n"
-            "    std::list<int> l1;\n"
-            "    std::list<int>::iterator it1 = l1.begin();\n"
-            "    {\n"
-            "        std::list<int> l1;\n"
-            "        if (it1 != l1.end())\n"
-            "        {\n"
-            "        }\n"
-            "    }\n"
-            "}");
-      ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        if (it1 != l1.end())\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n", errout.str());
 
-      check("void foo()\n"
-            "{\n"
-            "    std::list<int> l1;\n"
-            "    std::list<int>::iterator it1 = l1.begin();\n"
-            "    {\n"
-            "        std::list<int> l1;\n"
-            "        if (l1.end() > it1)\n"
-            "        {\n"
-            "        }\n"
-            "    }\n"
-            "}");
-      TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
-                         "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
-                         errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        if (l1.end() > it1)\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
+                           "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
+                           errout.str());
 
-      check("void foo()\n"
-            "{\n"
-            "    std::list<int> l1;\n"
-            "    std::list<int>::iterator it1 = l1.begin();\n"
-            "    {\n"
-            "        std::list<int> l1;\n"
-            "        std::list<int>::iterator it2 = l1.begin();\n"
-            "        if (it1 != it2)\n"
-            "        {\n"
-            "        }\n"
-            "    }\n"
-            "}");
-      ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        std::list<int>::iterator it2 = l1.begin();\n"
+              "        if (it1 != it2)\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
 
-      check("void foo()\n"
-            "{\n"
-            "    std::list<int> l1;\n"
-            "    std::list<int>::iterator it1 = l1.begin();\n"
-            "    {\n"
-            "        std::list<int> l1;\n"
-            "        std::list<int>::iterator it2 = l1.begin();\n"
-            "        if (it2 != it1)\n"
-            "        {\n"
-            "        }\n"
-            "    }\n"
-            "}");
-      ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        std::list<int>::iterator it2 = l1.begin();\n"
+              "        if (it2 != it1)\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
 
     }
 
