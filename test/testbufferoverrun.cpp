@@ -235,7 +235,7 @@ private:
         TEST_CASE(executionPaths5);   // Ticket #2920 - False positive when size is unknown
         TEST_CASE(executionPaths6);   // unknown types
 
-        TEST_CASE(cmdLineArgs1);
+        TEST_CASE(insecureCmdLineArgs);
         TEST_CASE(checkBufferAllocatedWithStrlen);
 
         TEST_CASE(scope);   // handling different scopes
@@ -3750,7 +3750,32 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 1000, which is out of bounds.\n", errout.str());
     }
 
-    void cmdLineArgs1() {
+    void insecureCmdLineArgs() {
+        check("int main(int argc, char *argv[])\n"
+              "{\n"
+              "    if(argc>1)\n"
+              "    {\n"
+              "        char buf[2];\n"
+              "        char *p = strdup(argv[1]);\n"
+              "        strcpy(buf,p);\n"
+              "        free(p);\n"
+              "    }\n"
+              "    return 0;\n"
+			"}");
+		ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());    
+		
+		check("int main(int argc, char *argv[])\n"
+              "{\n"
+              "    if(argc>1)\n"
+              "    {\n"
+              "        char buf[2] = {'\\0','\\0'};\n"
+              "        char *p = strdup(argv[1]);\n"
+              "        strcat(buf,p);\n"
+              "        free(p);\n"
+              "    }\n"
+              "    return 0;\n"
+			"}");
+		ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(const int argc, char* argv[])\n"
               "{\n"
