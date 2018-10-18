@@ -988,6 +988,26 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
         <translation>Sie müssen die Projektdatei schließen, bevor Sie neue Dateien oder Verzeichnisse auswählen!</translation>
     </message>
     <message>
+        <location filename="mainwindow.cpp" line="578"/>
+        <source>C/C++ Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="579"/>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="580"/>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="581"/>
+        <source>Borland C++ Builder 6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainwindow.cpp" line="779"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
@@ -1500,6 +1520,21 @@ Options:
         <location filename="projectfiledialog.cpp" line="253"/>
         <source>Clang-tidy (not found)</source>
         <translation>Clang-tidy (nicht gefunden)</translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.cpp" line="376"/>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.cpp" line="377"/>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.cpp" line="378"/>
+        <source>Borland C++ Builder 6</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="379"/>

@@ -215,6 +215,8 @@ private:
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
+
+        TEST_CASE(shadowLocal);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -2991,11 +2993,11 @@ private:
 
         // #6406 - designated initializer doing bogus self assignment
         check("struct callbacks {\n"
-              "    void (*something)(void);\n"
+              "    void (*s)(void);\n"
               "};\n"
               "void something(void) {}\n"
               "void f() {\n"
-              "    struct callbacks ops = { .something = ops.something };\n"
+              "    struct callbacks ops = { .s = ops.s };\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant assignment of 'something' to itself.\n", "", errout.str());
 
@@ -4479,7 +4481,7 @@ private:
               "    int i = f.f();\n"
               "    int j = f.f();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("struct Foo { int f(); int g(); };\n"
               "void test() {\n"
@@ -4532,26 +4534,26 @@ private:
               "    int start = x->first;\n"
               "    int end   = x->first;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n", errout.str());
         check("struct SW { int first; };\n"
               "void foo(SW* x, int i, int j) {\n"
               "    int start = x->first;\n"
               "    int end   = x->first;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n", errout.str());
         check("struct Foo { int f() const; };\n"
               "void test() {\n"
               "    Foo f = Foo{};\n"
               "    int i = f.f();\n"
               "    int j = f.f();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("void test(int * p) {\n"
               "    int i = *p;\n"
               "    int j = *p;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("struct Foo { int f() const; int g(int) const; };\n"
               "void test() {\n"
@@ -4559,7 +4561,7 @@ private:
               "    int i = f.f();\n"
               "    int j = f.f();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("struct Foo { int f() const; };\n"
               "void test() {\n"
@@ -4567,7 +4569,7 @@ private:
               "    int i = f.f();\n"
               "    int j = f.f();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
     }
 
     void duplicateVarExpressionAssign() {
@@ -4579,7 +4581,7 @@ private:
               "    use(i);\n"
               "    i = j;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         check("struct A { int x; int y; };"
               "void use(int);\n"
@@ -4589,7 +4591,7 @@ private:
               "    use(j);\n"
               "    j = i;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
         // Issue #8612
         check("struct P\n"
@@ -4618,7 +4620,7 @@ private:
               "        previous = current;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:16] -> [test.cpp:15]: (style, inconclusive) Same expression used in consecutive assignments of 'current' and 'previous'.\n", errout.str());
     }
 
     void duplicateVarExpressionCrash() {
@@ -4634,7 +4636,7 @@ private:
               "        (void)a;\n"
               "        (void)b;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7]: (style, inconclusive) Same expression used in consecutive assignments of 'a' and 'b'.\n", errout.str());
 
         // Issue #8712
         check("void f() {\n"
@@ -4645,7 +4647,7 @@ private:
 
         check("template <typename T>\n"
               "T f() {\n"
-              "  T a = T();\n"
+              "  T x = T();\n"
               "}\n"
               "int &a = f<int&>();\n");
         ASSERT_EQUALS("", errout.str());
@@ -5364,7 +5366,7 @@ private:
               "    const int a = getA + 3;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Local variable getA shadows outer symbol\n", errout.str());
 
         check("class A{public:A(){}};\n"
               "const A& getA(){static A a;return a;}\n"
@@ -7406,6 +7408,27 @@ private:
                             "\n }"
                             "\n  "
                         ));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void shadowLocal() {
+        check("int x;\n"
+              "void f() { int x; }\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer symbol\n", errout.str());
+
+        check("int x();\n"
+              "void f() { int x; }\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer symbol\n", errout.str());
+
+        check("void f() {\n"
+              "  if (cond) {int x;}\n" // <- not a shadow variable
+              "  int x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int size() {\n"
+              "  int size;\n" // <- not a shadow variable
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
