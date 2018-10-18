@@ -1049,6 +1049,8 @@ public:
         return ret;
     }
 
+    std::pair<const Token *, const Token *> findExpressionStartEndTokens() const;
+
     /**
      * Is current token a calculation? Only true for operands.
      * For '*' and '&' tokens it is looked up if this is a
