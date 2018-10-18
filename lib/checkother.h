@@ -241,7 +241,7 @@ private:
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void duplicateBranchError(const Token *tok1, const Token *tok2);
+    void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
     void duplicateAssignExpressionError(const Token *tok1, const Token *tok2, bool inconclusive);
     void oppositeExpressionError(const Token *opTok, ErrorPath errors);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
@@ -306,7 +306,7 @@ private:
         c.selfAssignmentError(nullptr,  "varname");
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
-        c.duplicateBranchError(nullptr, nullptr);
+        c.duplicateBranchError(nullptr, nullptr, errorPath);
         c.duplicateAssignExpressionError(nullptr, nullptr, true);
         c.oppositeExpressionError(nullptr, errorPath);
         c.duplicateExpressionError(nullptr, nullptr, nullptr, errorPath);

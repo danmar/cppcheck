@@ -1769,6 +1769,19 @@ void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& va
                 "Instance of '$symbol' object is destroyed immediately.", CWE563, false);
 }
 
+static const Token * getSingleExpressionInBlock(const Token * tok)
+{
+    if(!tok)
+        return nullptr;
+    const Token * top = tok->astTop();
+    if(!top)
+        return nullptr;
+    const Token * nextExpression = nextAfterAstRightmostLeaf(top);
+    if (!Token::simpleMatch(nextExpression, "; }"))
+        return nullptr;
+    return top;
+}
+
 //-----------------------------------------------------------------------------
 // check for duplicate code in if and else branches
 // if (a) { b = true; } else { b = true; }
@@ -1815,18 +1828,33 @@ void CheckOther::checkDuplicateBranch()
             // save else branch code
             const std::string branch2 = scope.bodyEnd->tokAt(3)->stringifyList(scope.bodyEnd->linkAt(2));
 
+            ErrorPath errorPath;
             // check for duplicates
-            if (branch1 == branch2)
-                duplicateBranchError(scope.classDef, scope.bodyEnd->next());
+            if (branch1 == branch2) {
+                duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
+                continue;
+            }
+
+            // check for duplicates using isSameExpression
+            const Token * branchTop1 = getSingleExpressionInBlock(scope.bodyStart->next());
+            const Token * branchTop2 = getSingleExpressionInBlock(scope.bodyEnd->tokAt(3));
+            if (!branchTop1 || !branchTop2)
+                continue;
+            if(branchTop1->str() != branchTop2->str())
+                continue;
+            if(isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true, &errorPath) && 
+                isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand2(), branchTop2->astOperand2(), mSettings->library, true, true, &errorPath))
+                duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
         }
     }
 }
 
-void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2)
+void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors)
 {
-    const std::list<const Token *> toks = { tok2, tok1 };
+    errors.emplace_back(tok2, "");
+    errors.emplace_back(tok1, "");
 
-    reportError(toks, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
+    reportError(errors, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
                 "might indicate a cut and paste or logic error. Please examine this code "
                 "carefully to determine if it is correct.", CWE398, true);
