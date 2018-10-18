@@ -878,6 +878,20 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
     return false;
 }
 
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
+{
+    if(!var)
+        return false;
+    if(!var->scope())
+        return false;
+    const Token * start = var->declEndToken();
+    if(!start)
+        return false;
+    if(Token::Match(start, "; %varid% =", var->declarationId()))
+        start = start->tokAt(2);
+    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp);
+}
+
 int numberOfArguments(const Token *start)
 {
     int arguments=0;
