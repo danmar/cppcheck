@@ -753,7 +753,14 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
         } else if (tok->str() == "(" && iscast(tok)) {
             Token* tok2 = tok;
             tok = tok->link()->next();
-            compilePrecedence3(tok, state);
+            if (tok && tok->str() == "(" && !iscast(tok)) {
+                Token *tok3 = tok->next();
+                compileExpression(tok3, state);
+                if (tok->link() == tok3)
+                    tok = tok3->next();
+            } else {
+                compilePrecedence3(tok, state);
+            }
             compileUnaryOp(tok2, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "new %name%|::|(")) {
             Token* newtok = tok;
@@ -1231,9 +1238,6 @@ void TokenList::validateAst() const
                 continue;
             // FIXME: Workaround when assigning from a new expression: #8749
             if (Token::simpleMatch(tok, "= new"))
-                continue;
-            // FIXME: Workaround assigning when using c style cast: #8786
-            if (Token::Match(tok, "= ( %name%"))
                 continue;
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);

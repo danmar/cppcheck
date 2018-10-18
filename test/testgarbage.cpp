@@ -1624,12 +1624,6 @@ private:
             "   char (*p)[1] = new A[1];\n"
             "}\n");
 
-        // #8786
-        checkCode(
-            "void f() {\n"
-            "    char * pBuf = (char*)(new int[32]);\n"
-            "}\n");
-
         // #8749
         checkCode(
             "struct A {\n"

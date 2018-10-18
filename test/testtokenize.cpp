@@ -8403,6 +8403,8 @@ private:
         ASSERT_EQUALS("a1(2+=",testAst("a=(t&)1+2;"));
         ASSERT_EQUALS("ab::r&c(=", testAst("a::b& r = (a::b&)c;")); // #5261
         ASSERT_EQUALS("ab10:?=", testAst("a=(b)?1:0;"));
+        ASSERT_EQUALS("ac5[new(=", testAst("a = (b*)(new c[5]);")); // #8786
+        ASSERT_EQUALS("a(4+", testAst("(int)(a) + 4;"));
 
         // TODO: This AST is incomplete however it's very weird syntax (taken from clang test suite)
         ASSERT_EQUALS("a&(", testAst("(int (**)[i]){&a}[0][1][5] = 0;"));
