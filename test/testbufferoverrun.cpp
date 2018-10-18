@@ -3761,10 +3761,10 @@ private:
               "        free(p);\n"
               "    }\n"
               "    return 0;\n"
-			"}");
-		ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());    
-		
-		check("int main(int argc, char *argv[])\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(int argc, char *argv[])\n"
               "{\n"
               "    if(argc>1)\n"
               "    {\n"
@@ -3774,8 +3774,8 @@ private:
               "        free(p);\n"
               "    }\n"
               "    return 0;\n"
-			"}");
-		ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(const int argc, char* argv[])\n"
               "{\n"
