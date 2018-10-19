@@ -1834,7 +1834,7 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                     break;
 
                 // Update varid in case the input is copied by strdup()
-                if (Token::Match(tok, "strdup ( %varid%", argvVarid) && tok->tokAt(-2))
+                if (Token::Match(tok->tokAt(-2), "%var% = strdup ( %varid%", argvVarid))
                     argvVarid = tok->tokAt(-2)->varId();
 
                 // Match common patterns that can result in a buffer overrun
