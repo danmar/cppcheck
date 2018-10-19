@@ -300,6 +300,23 @@ ifdef CFGDIR
 	install -m 644 cfg/* ${DESTDIR}${CFGDIR}
 endif
 
+uninstall:
+	@if test -d ${BIN}; then \
+	  files="cppcheck cppcheck-htmlreport \
+	    `ls -d addons/*.py addons/*/*.py 2>/dev/null | sed 's,^.*/,,'`"; \
+	  echo '(' cd ${BIN} '&&' rm -f $$files ')'; \
+	  ( cd ${BIN} && rm -f $$files ); \
+	fi
+ifdef CFGDIR 
+	@if test -d ${DESTDIR}${CFGDIR}; then \
+	  files="`cd cfg 2>/dev/null && ls`"; \
+	  if test -n "$$files"; then \
+	    echo '(' cd ${DESTDIR}${CFGDIR} '&&' rm -f $$files ')'; \
+	    ( cd ${DESTDIR}${CFGDIR} && rm -f $$files ); \
+	  fi; \
+	fi
+endif
+
 # Validation of library files:
 ConfigFiles := $(wildcard cfg/*.cfg)
 ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))
