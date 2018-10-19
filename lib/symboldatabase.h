@@ -233,8 +233,9 @@ public:
           mValueType(nullptr) {
         evaluate(settings);
     }
-
+    Variable(const Variable &) = delete;
     ~Variable();
+    Variable &operator=(const Variable &) = delete;
 
     /**
      * Get name token.
