@@ -1833,6 +1833,10 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 if (tok->varId() == argvVarid)
                     break;
 
+                // Update varid in case the input is copied by strdup()
+                if (Token::Match(tok->tokAt(-2), "%var% = strdup ( %varid%", argvVarid))
+                    argvVarid = tok->tokAt(-2)->varId();
+
                 // Match common patterns that can result in a buffer overrun
                 // e.g. strcpy(buffer, argv[0])
                 if (Token::Match(tok, "strcpy|strcat (")) {
@@ -1841,7 +1845,9 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                         tok = nextArgument;
                     else
                         continue; // Ticket #7964
-                    if (Token::Match(tok, "* %varid%", argvVarid) || Token::Match(tok, "%varid% [", argvVarid))
+                    if (Token::Match(tok, "* %varid%", argvVarid) ||     // e.g. strcpy(buf, * ptr)
+                        Token::Match(tok, "%varid% [", argvVarid) ||     // e.g. strcpy(buf, argv[1])
+                        Token::Match(tok, "%varid%", argvVarid))         // e.g. strcpy(buf, pointer)
                         cmdLineArgsError(tok);
                 }
             }
