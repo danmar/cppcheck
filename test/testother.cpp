@@ -641,7 +641,7 @@ private:
     void nanInArithmeticExpression() {
         check("void f()\n"
               "{\n"
-              "   double x = 3.0 / 0.0 + 1.0\n"
+              "   double x = 3.0 / 0.0 + 1.0;\n"
               "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
@@ -649,7 +649,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "   double x = 3.0 / 0.0 - 1.0\n"
+              "   double x = 3.0 / 0.0 - 1.0;\n"
               "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
@@ -657,7 +657,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "   double x = 1.0 + 3.0 / 0.0\n"
+              "   double x = 1.0 + 3.0 / 0.0;\n"
               "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
@@ -665,7 +665,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "   double x = 1.0 - 3.0 / 0.0\n"
+              "   double x = 1.0 - 3.0 / 0.0;\n"
               "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS(
@@ -673,7 +673,7 @@ private:
 
         check("void f()\n"
               "{\n"
-              "   double x = 3.0 / 0.0\n"
+              "   double x = 3.0 / 0.0;\n"
               "   printf(\"%f\", x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());

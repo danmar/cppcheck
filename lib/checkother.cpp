@@ -1716,12 +1716,15 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
 
 void CheckOther::checkNanInArithmeticExpression()
 {
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "inf.0 +|-") ||
-            Token::Match(tok, "+|- inf.0") ||
-            Token::Match(tok, "+|- %num% / 0.0")) {
+        if (tok->str() != "/")
+            continue;
+        if (!Token::Match(tok->astParent(), "[+-]"))
+            continue;
+        if (Token::simpleMatch(tok->astOperand2(), "0.0"))
             nanInArithmeticExpressionError(tok);
-        }
     }
 }
 

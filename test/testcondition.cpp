@@ -1193,8 +1193,7 @@ private:
               "    else\n"
               "        return;\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (warning) Logical conjunction always evaluates to false: neg < -1.0 && neg > -1.0.\n", errout.str());
-
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator8() { // opposite expressions

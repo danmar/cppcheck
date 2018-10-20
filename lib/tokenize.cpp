@@ -3831,11 +3831,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyRedundantParentheses();
 
     if (!isC()) {
-        // TODO: Only simplify template parameters
-        for (Token *tok = list.front(); tok; tok = tok->next())
-            while (mTemplateSimplifier->simplifyNumericCalculations(tok))
-                ;
-
         // Handle templates..
         simplifyTemplates();
 
