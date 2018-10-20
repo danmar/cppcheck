@@ -4808,6 +4808,8 @@ void Tokenizer::simplifyCompoundAssignment()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "[;{}] (| *| (| %name%"))
             continue;
+        if (tok->next()->str() == "return")
+            continue;
         // backup current token..
         Token * const tok1 = tok;
 
