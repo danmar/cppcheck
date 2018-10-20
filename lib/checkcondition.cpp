@@ -542,8 +542,8 @@ void CheckCondition::multiCondition2()
         std::vector<MULTICONDITIONTYPE> types = {MULTICONDITIONTYPE::INNER};
         if (Token::Match(scope.bodyStart, "{ return|throw|continue|break"))
             types.push_back(MULTICONDITIONTYPE::AFTER);
-        for(MULTICONDITIONTYPE type:types) {
-            if(type == MULTICONDITIONTYPE::AFTER) {
+        for (MULTICONDITIONTYPE type:types) {
+            if (type == MULTICONDITIONTYPE::AFTER) {
                 tok = scope.bodyEnd->next();
             } else {
                 tok = scope.bodyStart;
@@ -579,7 +579,7 @@ void CheckCondition::multiCondition2()
                         const Variable * condVar = nullptr;
                         if (Token::Match(cond2, "%var% ;"))
                             condVar = cond2->variable();
-                        else if(Token::Match(cond2, ". %var% ;"))
+                        else if (Token::Match(cond2, ". %var% ;"))
                             condVar = cond2->next()->variable();
                         if (condVar && (condVar->isClass() || condVar->isPointer()))
                             break;
@@ -702,12 +702,12 @@ void CheckCondition::multiCondition2()
 
 static std::string innerSmtString(const Token * tok)
 {
-    if(!tok)
+    if (!tok)
         return "if";
-    if(!tok->astTop())
+    if (!tok->astTop())
         return "if";
     const Token * top = tok->astTop();
-    if(top->str() == "(" && top->astOperand1())
+    if (top->str() == "(" && top->astOperand1())
         return top->astOperand1()->str();
     return top->str();
 }
@@ -1264,19 +1264,19 @@ void CheckCondition::alwaysTrueFalse()
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
             const bool returnStatement = Token::simpleMatch(tok->astTop(), "return") &&
-                Token::Match(tok->astParent(), "%oror%|&&|return");
+                                         Token::Match(tok->astParent(), "%oror%|&&|return");
 
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
                 continue;
 
-            if(returnStatement && (tok->isEnumerator() || Token::Match(tok, "nullptr|NULL")))
+            if (returnStatement && (tok->isEnumerator() || Token::Match(tok, "nullptr|NULL")))
                 continue;
 
-            if(returnStatement && Token::simpleMatch(tok->astParent(), "return") && tok->variable() && (
-                !tok->variable()->isLocal() ||
-                tok->variable()->isReference() ||
-                tok->variable()->isConst() || 
-                !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
+            if (returnStatement && Token::simpleMatch(tok->astParent(), "return") && tok->variable() && (
+                    !tok->variable()->isLocal() ||
+                    tok->variable()->isReference() ||
+                    tok->variable()->isConst() ||
+                    !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.
