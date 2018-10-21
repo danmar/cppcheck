@@ -1501,13 +1501,11 @@ void Tokenizer::simplifyTypedef()
                         }
                     } else if (typeOf) {
                         tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
-                    } else if (tok2->strAt(2) == "[") {
-                        do {
-                            if (!tok2->linkAt(2))
-                                syntaxError(tok2);
-
-                            tok2 = tok2->linkAt(2)->previous();
-                        } while (tok2->strAt(2) == "[");
+                    } else if (Token::Match(tok2, "%name% [")) {
+                        while (Token::Match(tok2, "%name%|] [")) {
+                            tok2 = tok2->linkAt(1);
+                        }
+                        tok2 = tok2->previous();
                     }
 
                     if (arrayStart && arrayEnd) {
