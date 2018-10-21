@@ -2603,6 +2603,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f() {\n"
+              "    const int a = 50;\n"
+              "    const int b = 52;\n"
+              "    return a+b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("bool& g();\n"
               "bool f() {\n"
               "    bool & b = g();\n"
