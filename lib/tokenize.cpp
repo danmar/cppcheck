@@ -8401,6 +8401,18 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
 
 void Tokenizer::findGarbageCode() const
 {
+    // Inside [] there can't be ; or various keywords
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (tok->str() != "[")
+            continue;
+        for (const Token *inner = tok->next(); inner != tok->link(); inner = inner->next()) {
+            if (Token::Match(inner, "(|["))
+                inner = inner->link();
+            else if (Token::Match(inner, ";|goto|return|typedef"))
+                syntaxError(inner);
+        }
+    }
+
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,"))

@@ -782,7 +782,7 @@ private:
     }
 
     void garbageCode91() { // #6791
-        checkCode("typedef __attribute__((vector_size (16))) { return[ (v2df){ } ;] }"); // do not crash
+        ASSERT_THROW(checkCode("typedef __attribute__((vector_size (16))) { return[ (v2df){ } ;] }"), InternalError); // throw syntax error
     }
 
     void garbageCode92() { // #6792
@@ -799,7 +799,7 @@ private:
     }
 
     void garbageCode96() { // #6807
-        ASSERT_THROW(checkCode("typedef J J[ ; typedef ( ) ( ) { ; } typedef J J ;] ( ) ( J cx ) { n } ;"), InternalError);
+        ASSERT_THROW(checkCode("typedef J J[ ; typedef ( ) ( ) { ; } typedef J J ;] ( ) ( J cx ) { n } ;"), InternalError); // throw syntax error
     }
 
     void garbageCode97() { // #6808
