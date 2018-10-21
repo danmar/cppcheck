@@ -599,9 +599,9 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure, bool
     }
     if (tok->tokType() == Token::eIncDecOp)
         return false;
-    if(tok->isAssignmentOp())
+    if (tok->isAssignmentOp())
         return false;
-    if(isLikelyStreamRead(cpp, tok))
+    if (isLikelyStreamRead(cpp, tok))
         return false;
     // bailout when we see ({..})
     if (tok->str() == "{")

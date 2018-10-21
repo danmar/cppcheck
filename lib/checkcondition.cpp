@@ -1237,20 +1237,20 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
 
 static bool isConstVarExpression(const Token * tok)
 {
-    if(!tok)
+    if (!tok)
         return false;
-    if(Token::Match(tok, "%cop%")) {
-        if(tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
+    if (Token::Match(tok, "%cop%")) {
+        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
             return false;
-        if(tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
+        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
             return false;
         return true;
     }
-    if(Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
         return true;
-    if(tok->isEnumerator())
+    if (tok->isEnumerator())
         return true;
-    if(tok->variable())
+    if (tok->variable())
         return tok->variable()->isConst();
     return false;
 }
