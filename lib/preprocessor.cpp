@@ -786,6 +786,8 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
             continue;
         const std::string macroName(define.substr(0, define.find('(')));
         for (const simplecpp::MacroUsage &mu : macroUsageList) {
+            if (mu.macroValueKnown)
+                continue;
             if (mu.macroName != macroName)
                 continue;
             bool directiveLocation = false;

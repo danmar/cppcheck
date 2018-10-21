@@ -74,6 +74,8 @@ private:
     }
 
     void run() override {
+        LOAD_LIB_2(settings0.library, "std.cfg");
+
         settings0.addEnabled("warning");
         settings0.addEnabled("style");
         settings0.addEnabled("portability");
@@ -233,7 +235,7 @@ private:
         TEST_CASE(executionPaths5);   // Ticket #2920 - False positive when size is unknown
         TEST_CASE(executionPaths6);   // unknown types
 
-        TEST_CASE(cmdLineArgs1);
+        TEST_CASE(insecureCmdLineArgs);
         TEST_CASE(checkBufferAllocatedWithStrlen);
 
         TEST_CASE(scope);   // handling different scopes
@@ -3124,6 +3126,14 @@ private:
               "    s[10] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n" // #7718
+              "{\n"
+              "    std::string s = \"123\";\n"
+              "    s.resize(100);\n"
+              "    s[10] = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // data is allocated with alloca
@@ -3740,8 +3750,48 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 1000, which is out of bounds.\n", errout.str());
     }
 
-    void cmdLineArgs1() {
-        check("int main(int argc, char* argv[])\n"
+    void insecureCmdLineArgs() {
+        check("int main(int argc, char *argv[])\n"
+              "{\n"
+              "    if(argc>1)\n"
+              "    {\n"
+              "        char buf[2];\n"
+              "        char *p = strdup(argv[1]);\n"
+              "        strcpy(buf,p);\n"
+              "        free(p);\n"
+              "    }\n"
+              "    return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(int argc, char *argv[])\n"
+              "{\n"
+              "    if(argc>1)\n"
+              "    {\n"
+              "        char buf[2] = {'\\0','\\0'};\n"
+              "        char *p = strdup(argv[1]);\n"
+              "        strcat(buf,p);\n"
+              "        free(p);\n"
+              "    }\n"
+              "    return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(const int argc, char* argv[])\n"
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(int argc, const char* argv[])\n"
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(const int argc, const char* argv[])\n"
               "{\n"
               "    char prog[10];\n"
               "    strcpy(prog, argv[0]);\n"
@@ -3763,6 +3813,27 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
 
         check("int main(int argc, char **argv, char **envp)\n"
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(const int argc, const char **argv, char **envp)\n"
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(int argc, const char **argv, char **envp)\n"
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long command line arguments.\n", errout.str());
+
+        check("int main(const int argc, char **argv, char **envp)\n"
               "{\n"
               "    char prog[10] = {'\\0'};\n"
               "    strcat(prog, argv[0]);\n"

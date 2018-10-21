@@ -521,6 +521,30 @@ def generateTable():
     sys.exit(1)
 
 
+def remove_file_prefix(file_path, prefix):
+    """
+    Remove a file path prefix from a give path.  leftover
+    directory seperators at the beginning of a file
+    after the removal are also stripped.
+
+    Example:
+        '/remove/this/path/file.c'
+    with a prefix of:
+        '/remove/this/path'
+    becomes:
+        file.c
+    """
+    result = None
+    if file_path.startswith(prefix):
+        result = file_path[len(prefix):]
+        # Remove any leftover directory seperators at the
+        # beginning
+        result = result.lstrip('\\/')
+    else:
+        result = file_path
+    return result
+
+
 class MisraChecker:
 
     def __init__(self):
@@ -543,7 +567,7 @@ class MisraChecker:
         # Major *  100 + minor. ie Rule 5.2 = (5*100) + 2
         # Dict 2 is keyed by filename.  An entry of None means suppress globaly.
         # Each file name entry contails a list of tuples of (lineNumber, symbolName)
-        # or None which indicates suppress rule for the entire file.
+        # or an item of None which indicates suppress rule for the entire file.
         # The line and symbol name tuple may have None as either of its elements but
         # should not be None for both.
         self.suppressedRules    = dict()
@@ -551,6 +575,8 @@ class MisraChecker:
         # List of suppression extracted from the dumpfile
         self.dumpfileSuppressions = None
 
+        # Prefix to ignore when matching suppression files.
+        self.filePrefix = None
 
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
@@ -618,10 +644,11 @@ class MisraChecker:
     def misra_5_2(self, data):
         scopeVars = {}
         for var in data.variables:
-            if var.nameToken.scope not in scopeVars:
-                scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
-                scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
-            scopeVars[var.nameToken.scope]["varlist"].append(var)
+            if var.nameToken is not None:
+                if var.nameToken.scope not in scopeVars:
+                    scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
+                    scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
+                scopeVars[var.nameToken.scope]["varlist"].append(var)
         for scope in data.scopes:
             if scope.nestedIn and scope.className:
                 if scope.nestedIn not in scopeVars:
@@ -635,7 +662,7 @@ class MisraChecker:
                 for variable2 in scopeVars[scope]["varlist"][i + 1:]:
                     if variable1.isArgument and variable2.isArgument:
                         continue
-                    if variable1.isExtern and variable2.isExtern:
+                    if variable1.isExtern or variable2.isExtern:
                         continue
                     if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
                             variable1.Id != variable2.Id):
@@ -664,9 +691,10 @@ class MisraChecker:
         enum = []
         scopeVars = {}
         for var in data.variables:
-            if var.nameToken.scope not in scopeVars:
-                scopeVars[var.nameToken.scope] = []
-            scopeVars[var.nameToken.scope].append(var)
+            if var.nameToken is not None:
+                if var.nameToken.scope not in scopeVars:
+                    scopeVars[var.nameToken.scope] = []
+                scopeVars[var.nameToken.scope].append(var)
         for innerScope in data.scopes:
             if innerScope.type == "Enum":
                 enum_token = innerScope.bodyStart.next
@@ -760,8 +788,9 @@ class MisraChecker:
                 macroNames.append(res.group(1))
         for var in data.variables:
             for macro in macroNames:
-                if var.nameToken.str[:31] == macro[:31]:
-                    self.reportError(var.nameToken, 5, 5)
+                if var.nameToken is not None:
+                    if var.nameToken.str[:31] == macro[:31]:
+                        self.reportError(var.nameToken, 5, 5)
         for scope in data.scopes:
             for macro in macroNames:
                 if scope.className and scope.className[:31] == macro[:31]:
@@ -1326,15 +1355,17 @@ class MisraChecker:
 
 
     def misra_15_7(self, data):
-        for token in data.tokenlist:
-            if not simpleMatch(token, '}'):
+        for scope in data.scopes:
+            if scope.type != 'Else':
                 continue
-            if not token.scope.type == 'If':
+            if not simpleMatch(scope.bodyStart, '{ if ('):
                 continue
-            if not token.scope.nestedIn.type == 'Else':
+            tok = scope.bodyStart.next.next.link
+            if not simpleMatch(tok, ') {'):
                 continue
-            if not token.next.str == 'else':
-                self.reportError(token, 15, 7)
+            tok = tok.next.link
+            if not simpleMatch(tok, '} else'):
+                self.reportError(tok, 15, 7)
 
     # TODO add 16.1 rule
 
@@ -1673,13 +1704,17 @@ class MisraChecker:
         format. The value of that dictionary is a dictionary of filenames.
         If the value is None then the rule is assumed to be suppressed for
         all files.
-        If the filename exists then the value of that dictionary contains the
-        scope of the suppression.  If the value is None then the rule is assumed
-        to be suppresed for the entire file. Otherwise the value of the dictionary
-        is a list of line number, symbol name tuples.
+        If the filename exists then the value of that dictionary contains a list
+        with the scope of the suppression.  If the list contains an item of None
+        then the rule is assumed to be suppresed for the entire file. Otherwise
+        the list contains line number, symbol name tuples.
         For each tuple either line number or symbol name can can be none.
 
         """
+        normalized_filename = None
+
+        if fileName is not None:
+            normalized_filename = os.path.normpath(fileName)
 
         if lineNumber is not None or symbolName is not None:
             line_symbol = (lineNumber, symbolName)
@@ -1692,7 +1727,7 @@ class MisraChecker:
             ruleItemList.append(line_symbol)
 
             fileDict = dict()
-            fileDict[fileName] = ruleItemList
+            fileDict[normalized_filename] = ruleItemList
 
             self.suppressedRules[ruleNum] = fileDict
 
@@ -1706,22 +1741,21 @@ class MisraChecker:
         fileDict = self.suppressedRules[ruleNum]
 
         # If the filename is not in the dict already add it
-        if not fileName in fileDict:
+        if not normalized_filename in fileDict:
             ruleItemList = list()
             ruleItemList.append(line_symbol)
 
-            fileDict[fileName] = ruleItemList
+            fileDict[normalized_filename] = ruleItemList
 
             # Rule is added with a file scope. Done
             return
 
-        # Rule has a matching filename. Check for
-        # rule a rule item list.
+        # Rule has a matching filename. Get the rule item list.
 
-        # If it exists then check the lists of rule items
-        # to see if the lineNumber, symbonName combination
-        # exists
-        ruleItemList = fileDict[fileName]
+        # Check the lists of rule items
+        # to see if this (lineNumber, symbonName) combination
+        # or None already exists.
+        ruleItemList = fileDict[normalized_filename]
 
         if line_symbol is None:
             # is it already in the list?
@@ -1758,8 +1792,15 @@ class MisraChecker:
 
         """
         ruleIsSuppressed = False
-        filename = location.file
-        linenr    = location.linenr
+        linenr = location.linenr
+
+        # Remove any prefix listed in command arguments from the filename.
+        filename = None
+        if location.file is not None:
+            if self.filePrefix is not None:
+                filename = remove_file_prefix(location.file, self.filePrefix)
+            else:
+                filename = location.file
 
         if ruleNum in self.suppressedRules:
             fileDict = self.suppressedRules[ruleNum]
@@ -1775,9 +1816,9 @@ class MisraChecker:
                     # Get the list of ruleItems
                     ruleItemList = fileDict[filename]
 
-                    if ruleItemList is None:
-                        # None for itemRuleList means the rule is suppressed
-                        # for all lines in the filename
+                    if None in ruleItemList:
+                        # Entry of None in the ruleItemList means the rule is
+                        # suppressed for all lines in the filename
                         ruleIsSuppressed = True
                     else:
                         # Iterate though the the list of line numbers
@@ -1811,6 +1852,39 @@ class MisraChecker:
                 ruleNum = num1 + int(res.group(3))
                 self.addSuppressedRule(ruleNum, each.fileName,
                                        each.lineNumber, each.symbolName)
+
+
+    def showSuppressedRules(self):
+            """
+            Print out rules in suppression list sorted by Rule Number
+            """
+            print("Suppressed Rules List:")
+            outlist = list()
+
+            for ruleNum in self.suppressedRules:
+                fileDict = self.suppressedRules[ruleNum]
+
+                for fname in fileDict:
+                    ruleItemList = fileDict[fname]
+
+                    for item in ruleItemList:
+                        if item is None:
+                            item_str = "None"
+                        else:
+                            item_str = str(item[0])
+
+                        outlist.append("%s: %s: %s" % (float(ruleNum)/100,fname,item_str))
+
+            for line in sorted(outlist, reverse=True):
+                print("  %s" % line)
+
+
+    def setFilePrefix(self, prefix):
+        """
+        Set the file prefix to ignnore from files when matching
+        supression files
+        """
+        self.filePrefix = prefix
 
 
     def setSuppressionList(self, suppressionlist):
@@ -2059,6 +2133,8 @@ parser.add_argument("--no-summary", help="Hide summary of violations", action="s
 parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
+parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
+parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
 args = parser.parse_args()
 
 checker = MisraChecker()
@@ -2077,6 +2153,9 @@ else:
 
     if args.suppress_rules:
         checker.setSuppressionList(args.suppress_rules)
+
+    if args.file_prefix:
+        checker.setFilePrefix(args.file_prefix)
 
     if args.quiet:
         QUIET = True
@@ -2116,5 +2195,8 @@ else:
 
                 if SHOW_SUMMARY:
                     print("\nMISRA rule violations found: %d\n" % (number_of_violations))
+
+        if args.show_suppressed_rules:
+            checker.showSuppressedRules()
 
         sys.exit(exitCode)

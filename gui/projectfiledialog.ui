@@ -167,6 +167,27 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="mLayoutUndefines">
+         <item>
+          <widget class="QLabel" name="mLabelUndefines">
+           <property name="text">
+            <string>Undefines:</string>
+           </property>
+           <property name="buddy">
+            <cstring>mEditUndefines</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mEditUndefines">
+           <property name="toolTip">
+            <string>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="mLayoutIncludePaths">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">

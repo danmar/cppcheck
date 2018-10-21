@@ -2366,11 +2366,25 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
     }
 
     if (tok2) {
+        bool isLambdaArg = false;
+        if (cpp) {
+            const Token *tok3 = (*tok)->previous();
+            if (tok3 && tok3->str() == ",") {
+                while (tok3 && !Token::Match(tok3,";|(|[|{")) {
+                    if (Token::Match(tok3, ")|]"))
+                        tok3 = tok3->link();
+                    tok3 = tok3->previous();
+                }
+            }
+            if (tok3 && Token::simpleMatch(tok3->previous(), "] (") && Token::simpleMatch(tok3->link(), ") {"))
+                isLambdaArg = true;
+        }
+
         *tok = tok2;
 
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
-        if (executableScope && ref) {
+        if (executableScope && ref && !isLambdaArg) {
             if (Token::Match(tok2, "(|=|{|:"))
                 ;   // reference is assigned => ok
             else if (tok2->str() != ")" || tok2->link()->strAt(-1) != "catch")
@@ -3817,11 +3831,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyRedundantParentheses();
 
     if (!isC()) {
-        // TODO: Only simplify template parameters
-        for (Token *tok = list.front(); tok; tok = tok->next())
-            while (mTemplateSimplifier->simplifyNumericCalculations(tok))
-                ;
-
         // Handle templates..
         simplifyTemplates();
 
@@ -4798,6 +4807,8 @@ void Tokenizer::simplifyCompoundAssignment()
     // "a+=b" => "a = a + b"
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "[;{}] (| *| (| %name%"))
+            continue;
+        if (tok->next()->str() == "return")
             continue;
         // backup current token..
         Token * const tok1 = tok;
@@ -8472,6 +8483,8 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok, "> %cop%"))
                 continue;
         }
+        if (Token::Match(tok, "%assign% typename|class %assign%"))
+            syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))
@@ -9449,15 +9462,27 @@ void Tokenizer::simplifyNamespaceStd()
 
     const bool isCPP11  = mSettings->standards.cpp == Standards::CPP11;
 
+    std::set<std::string> userFunctions;
+
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
             skipEnumBody(&tok);
         }
         if (!Token::Match(tok->previous(), ".|::")) {
-            if (Token::Match(tok, "%name% (") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
-                insert = true;
-            else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
+            if (Token::Match(tok, "%name% (")) {
+                if (isFunctionHead(tok->next(), "{"))
+                    userFunctions.insert(tok->str());
+                else if (isFunctionHead(tok->next(), ";")) {
+                    const Token *start = tok;
+                    while (Token::Match(start->previous(), "%type%|*|&"))
+                        start = start->previous();
+                    if (start != tok && start->isName() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
+                        userFunctions.insert(tok->str());
+                }
+                if (userFunctions.find(tok->str()) == userFunctions.end() && stdFunctions.find(tok->str()) != stdFunctions.end())
+                    insert = true;
+            } else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
                 insert = true;
             else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && stdTypes.find(tok->str()) != stdTypes.end())
                 insert = true;

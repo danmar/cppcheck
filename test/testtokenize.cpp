@@ -3305,7 +3305,7 @@ private:
 
     void removeParentheses15() {
         ASSERT_EQUALS("a = b ? c : 123 ;", tokenizeAndStringify("a = b ? c : (123);", false));
-        ASSERT_EQUALS("a = b ? c : ( 579 ) ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
+        ASSERT_EQUALS("a = b ? c : ( 123 + 456 ) ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
         ASSERT_EQUALS("a = b ? 123 : c ;", tokenizeAndStringify("a = b ? (123) : c;", false));
 
         // #4316
@@ -3402,7 +3402,7 @@ private:
                       "float b ; b = 4.2f ;\n"
                       "double c ; c = 4.2e+10 ;\n"
                       "double d ; d = 4.2e-10 ;\n"
-                      "int e ; e = 6 ;\n"
+                      "int e ; e = 4 + 2 ;\n"
                       "}", tokenizeAndStringify(code));
     }
 
@@ -3722,7 +3722,7 @@ private:
             // Ticket #4450
             const char code[] = "static int large_eeprom_type = (13 | (5)), "
                                 "default_flash_type = 42;";
-            ASSERT_EQUALS("static int large_eeprom_type = 13 ; static int default_flash_type = 42 ;",
+            ASSERT_EQUALS("static int large_eeprom_type = 13 | 5 ; static int default_flash_type = 42 ;",
                           tokenizeAndStringify(code));
         }
 
@@ -5612,82 +5612,93 @@ private:
     }
 
     void simplifyNamespaceStd() {
-        static const char code1[] = "map<foo, bar> m;"; // namespace std is not used
-        ASSERT_EQUALS("map < foo , bar > m ;", tokenizeAndStringify(code1, false));
+        const char *code, *expected;
 
-        static const char code2[] = "using namespace std;\n"
-                                    "map<foo, bar> m;";
-        ASSERT_EQUALS("std :: map < foo , bar > m ;", tokenizeAndStringify(code2, false));
+        code = "map<foo, bar> m;"; // namespace std is not used
+        ASSERT_EQUALS("map < foo , bar > m ;", tokenizeAndStringify(code, false));
 
-        static const char code3[] = "using namespace std;\n"
-                                    "string s;";
-        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code3, false));
+        code = "using namespace std;\n"
+               "map<foo, bar> m;";
+        ASSERT_EQUALS("std :: map < foo , bar > m ;", tokenizeAndStringify(code, false));
 
-        static const char code4[] = "using namespace std;\n"
-                                    "void foo() {swap(a, b); }";
-        ASSERT_EQUALS("void foo ( ) { std :: swap ( a , b ) ; }", tokenizeAndStringify(code4, false));
+        code = "using namespace std;\n"
+               "string s;";
+        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code, false));
 
-        static const char code5[] = "using namespace std;\n"
-                                    "void foo() {map(a, b); }"; // That's obviously not std::map<>
-        ASSERT_EQUALS("void foo ( ) { map ( a , b ) ; }", tokenizeAndStringify(code5, false));
+        code = "using namespace std;\n"
+               "void foo() {swap(a, b); }";
+        ASSERT_EQUALS("void foo ( ) { std :: swap ( a , b ) ; }", tokenizeAndStringify(code, false));
 
-        static const char code6[] = "using namespace std;\n"
-                                    "string<wchar_t> s;"; // That's obviously not std::string
-        ASSERT_EQUALS("string < wchar_t > s ;", tokenizeAndStringify(code6, false));
+        code = "using namespace std;\n"
+               "void search() {}";
+        ASSERT_EQUALS("void search ( ) { }", tokenizeAndStringify(code, false));
 
-        static const char code7[] = "using namespace std;\n"
-                                    "swap s;"; // That's obviously not std::swap
-        ASSERT_EQUALS("swap s ;", tokenizeAndStringify(code7, false));
+        code = "using namespace std;\n"
+               "void search();\n"
+               "void dostuff() { search(); }";
+        ASSERT_EQUALS("void search ( ) ;\nvoid dostuff ( ) { search ( ) ; }", tokenizeAndStringify(code, false));
 
-        static const char code8[] = "using namespace std;\n"
-                                    "std::string s;";
-        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code8, false));
+        code = "using namespace std;\n"
+               "void foo() {map(a, b); }"; // That's obviously not std::map<>
+        ASSERT_EQUALS("void foo ( ) { map ( a , b ) ; }", tokenizeAndStringify(code, false));
 
-        static const char code9[] = "using namespace std;\n"
-                                    "tr1::function <void(int)> f;";
-        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Native, "test.cpp", false));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code9, false, true, Settings::Native, "test.cpp", true));
+        code = "using namespace std;\n"
+               "string<wchar_t> s;"; // That's obviously not std::string
+        ASSERT_EQUALS("string < wchar_t > s ;", tokenizeAndStringify(code, false));
 
-        static const char code10[] = "std::tr1::function <void(int)> f;";
-        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Native, "test.cpp", false));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code10, false, true, Settings::Native, "test.cpp", true));
+        code = "using namespace std;\n"
+               "swap s;"; // That's obviously not std::swap
+        ASSERT_EQUALS("swap s ;", tokenizeAndStringify(code, false));
+
+        code = "using namespace std;\n"
+               "std::string s;";
+        ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code, false));
+
+        code = "using namespace std;\n"
+               "tr1::function <void(int)> f;";
+        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, false, true, Settings::Native, "test.cpp", false));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code, false, true, Settings::Native, "test.cpp", true));
+
+        code = "std::tr1::function <void(int)> f;";
+        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, false, true, Settings::Native, "test.cpp", false));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code, false, true, Settings::Native, "test.cpp", true));
 
         // #4042 (Do not add 'std ::' to variables)
-        static const char code11[] = "using namespace std;\n"
-                                     "const char * string = \"Hi\";";
-        ASSERT_EQUALS("const char * string ; string = \"Hi\" ;", tokenizeAndStringify(code11, false));
+        code = "using namespace std;\n"
+               "const char * string = \"Hi\";";
+        ASSERT_EQUALS("const char * string ; string = \"Hi\" ;", tokenizeAndStringify(code, false));
 
-        static const char code12[] = "using namespace std;\n"
-                                     "string f(const char * string) {\n"
-                                     "    cout << string << endl;\n"
-                                     "    return string;\n"
-                                     "}";
-        static const char expected12[] = "std :: string f ( const char * string ) {\n"
-                                         "std :: cout << string << std :: endl ;\n"
-                                         "return string ;\n"
-                                         "}";
-        ASSERT_EQUALS(expected12, tokenizeAndStringify(code12, false));
+        code = "using namespace std;\n"
+               "string f(const char * string) {\n"
+               "    cout << string << endl;\n"
+               "    return string;\n"
+               "}";
+        expected = "std :: string f ( const char * string ) {\n"
+                   "std :: cout << string << std :: endl ;\n"
+                   "return string ;\n"
+                   "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false));
 
-        static const char code13[] = "using namespace std;\n"
-                                     "try { }\n"
-                                     "catch(std::exception &exception) { }";
-        static const char expected13[] = "try { }\n"
-                                         "catch ( std :: exception & exception ) { }";
-        ASSERT_EQUALS(expected13, tokenizeAndStringify(code13, false));
+        code = "using namespace std;\n"
+               "try { }\n"
+               "catch(std::exception &exception) { }";
+        expected = "try { }\n"
+                   "catch ( std :: exception & exception ) { }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false));
 
         // #5773 (Don't prepend 'std ::' to function definitions)
-        static const char code14[] = "using namespace std;\n"
-                                     "class C {\n"
-                                     "    void search() {}\n"
-                                     "    void search() const {}\n"
-                                     "    void search() THROW_MACRO {}\n"
-                                     "};";
-        static const char expected14[] = "class C {\n"
-                                         "void search ( ) { }\n"
-                                         "void search ( ) const { }\n"
-                                         "void search ( ) { }\n"
-                                         "} ;";
-        ASSERT_EQUALS(expected14, tokenizeAndStringify(code14, false));
+        code = "using namespace std;\n"
+               "class C {\n"
+               "    void search() {}\n"
+               "    void search() const {}\n"
+               "    void search() THROW_MACRO {}\n"
+               "};";
+        expected = "class C {\n"
+                   "void search ( ) { }\n"
+                   "void search ( ) const { }\n"
+                   "void search ( ) { }\n"
+                   "} ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, false));
 
         // Ticket #8091
         ASSERT_EQUALS("enum Anonymous0 { string } ;",
@@ -6000,9 +6011,6 @@ private:
                       tokenizeAndStringify("( 0 && a < 123 );", true));
         ASSERT_EQUALS("( 0 ) ;",
                       tokenizeAndStringify("( 0 && a[123] );", true));
-
-        // ticket #3964 - simplify numeric calculations in tokenization
-        ASSERT_EQUALS("char a [ 10 ] ;", tokenizeAndStringify("char a[9+1];"));
 
         // ticket #4931
         ASSERT_EQUALS("dostuff ( 1 ) ;", tokenizeAndStringify("dostuff(9&&8);", true));
@@ -8392,6 +8400,8 @@ private:
         ASSERT_EQUALS("a1(2+=",testAst("a=(t&)1+2;"));
         ASSERT_EQUALS("ab::r&c(=", testAst("a::b& r = (a::b&)c;")); // #5261
         ASSERT_EQUALS("ab10:?=", testAst("a=(b)?1:0;"));
+        ASSERT_EQUALS("ac5[new(=", testAst("a = (b*)(new c[5]);")); // #8786
+        ASSERT_EQUALS("a(4+", testAst("(int)(a) + 4;"));
 
         // TODO: This AST is incomplete however it's very weird syntax (taken from clang test suite)
         ASSERT_EQUALS("a&(", testAst("(int (**)[i]){&a}[0][1][5] = 0;"));

@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.85 dev</title>
+    <title>Cppcheck 1.85</title>
 
     <date>2018-04-23</date>
   </bookinfo>
@@ -853,7 +853,7 @@ multiline.c:3: note: Null pointer dereference
         </varlistentry>
 
         <varlistentry>
-          <term>\t</term>
+          <term>\n</term>
 
           <listitem>
             <para>Newline</para>
@@ -1586,8 +1586,7 @@ Checking minsize.c...
         <section>
           <title>strz</title>
 
-          <para>This setting is not used by Cppcheck currently. But with this
-          you can say that an argument must be a zero-terminated
+          <para>With this you can say that an argument must be a zero-terminated
           string.</para>
 
           <para><programlisting>&lt;?xml version="1.0"?&gt;

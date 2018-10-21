@@ -157,6 +157,7 @@ private:
         TEST_CASE(varid_rangeBasedFor);
         TEST_CASE(varid_structinit); // #6406
         TEST_CASE(varid_arrayinit); // #7579
+        TEST_CASE(varid_lambda_arg);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2398,6 +2399,25 @@ private:
 
     void varid_arrayinit() { // #7579 - no variable declaration in rhs
         ASSERT_EQUALS("1: void foo ( int * a@1 ) { int b@2 [ 1 ] = { x * a@1 [ 0 ] } ; }\n", tokenize("void foo(int*a) { int b[] = { x*a[0] }; }"));
+    }
+
+    void varid_lambda_arg() {
+        // #8664
+        const char code1[] = "static void func(int ec) {\n"
+                             "    func2([](const std::error_code& ec) { return ec; });\n"
+                             "}";
+        const char exp1[] = "1: static void func ( int ec@1 ) {\n"
+                            "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
+                            "3: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+
+        const char code2[] = "static void func(int ec) {\n"
+                             "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
+                             "}";
+        const char exp2[] = "1: static void func ( int ec@1 ) {\n"
+                            "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
+                            "3: }\n";
+        ASSERT_EQUALS(exp2, tokenize(code2));
     }
 
     void varidclass1() {

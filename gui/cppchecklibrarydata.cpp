@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,11 @@ static CppcheckLibraryData::Define loadDefine(const QXmlStreamReader &xmlReader)
     define.name = xmlReader.attributes().value("name").toString();
     define.value = xmlReader.attributes().value("value").toString();
     return define;
+}
+
+static QString loadUndefine(const QXmlStreamReader &xmlReader)
+{
+    return xmlReader.attributes().value("name").toString();
 }
 
 static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlReader)
@@ -237,6 +242,8 @@ QString CppcheckLibraryData::open(QIODevice &file)
                     containers.append(loadContainer(xmlReader));
                 else if (elementName == "define")
                     defines.append(loadDefine(xmlReader));
+                else if (elementName == "undefine")
+                    undefines.append(loadUndefine(xmlReader));
                 else if (elementName == "function")
                     functions.append(loadFunction(xmlReader, comments));
                 else if (elementName == "memory" || elementName == "resource")
@@ -456,6 +463,12 @@ QString CppcheckLibraryData::toString() const
         xmlWriter.writeStartElement("define");
         xmlWriter.writeAttribute("name", define.name);
         xmlWriter.writeAttribute("value", define.value);
+        xmlWriter.writeEndElement();
+    }
+
+    foreach (const QString &undef, undefines) {
+        xmlWriter.writeStartElement("undefine");
+        xmlWriter.writeAttribute("name", undef);
         xmlWriter.writeEndElement();
     }
 

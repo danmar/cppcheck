@@ -1,6 +1,5 @@
 exclude_paths:
-  - addons/test/*.c
-  - addons/test/*.cpp
+  - addons/test/**
   - addons/y2038/test/*.c
   - htmlreport/example.cc
   - samples/**/bad.c
