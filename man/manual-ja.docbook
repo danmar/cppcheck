@@ -709,7 +709,7 @@ multiline.c:3: note: Null pointer dereference
         </varlistentry>
 
         <varlistentry>
-          <term>\t</term>
+          <term>\n</term>
 
           <listitem>
             <para>改行</para>
