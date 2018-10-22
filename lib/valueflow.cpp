@@ -2245,22 +2245,6 @@ static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenth
            varTok->next()->originalName() == emptyString;
 }
 
-static const Token * nextAfterAstRightmostLeaf(Token const * tok)
-{
-    const Token * rightmostLeaf = tok;
-    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
-        return nullptr;
-    do {
-        if (rightmostLeaf->astOperand2())
-            rightmostLeaf = rightmostLeaf->astOperand2();
-        else
-            rightmostLeaf = rightmostLeaf->astOperand1();
-    } while (rightmostLeaf->astOperand1());
-    if(rightmostLeaf->str() == "{" && rightmostLeaf->link())
-        rightmostLeaf = rightmostLeaf->link();
-    return rightmostLeaf->next();
-}
-
 static const Token * findOpenParentesisOfMove(const Token * moveVarTok)
 {
     const Token * tok = moveVarTok;

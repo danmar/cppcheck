@@ -535,163 +535,193 @@ void CheckCondition::multiCondition2()
             continue;
 
         // parse until second condition is reached..
-        enum MULTICONDITIONTYPE { INNER, AFTER } type;
+        enum MULTICONDITIONTYPE { INNER, AFTER };
         const Token *tok;
-        if (Token::Match(scope.bodyStart, "{ return|throw|continue|break")) {
-            tok = scope.bodyEnd->next();
-            type = MULTICONDITIONTYPE::AFTER;
-        } else {
-            tok = scope.bodyStart;
-            type = MULTICONDITIONTYPE::INNER;
-        }
-        const Token * const endToken = tok->scope()->bodyEnd;
 
-        for (; tok && tok != endToken; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "if (")) {
-                // Does condition modify tracked variables?
-                if (const Token *op = Token::findmatch(tok, "++|--", tok->linkAt(1))) {
-                    bool bailout = false;
-                    while (op) {
-                        if (vars.find(op->astOperand1()->varId()) != vars.end()) {
-                            bailout = true;
-                            break;
+        // Parse inner condition first and then early return condition
+        std::vector<MULTICONDITIONTYPE> types = {MULTICONDITIONTYPE::INNER};
+        if (Token::Match(scope.bodyStart, "{ return|throw|continue|break"))
+            types.push_back(MULTICONDITIONTYPE::AFTER);
+        for (MULTICONDITIONTYPE type:types) {
+            if (type == MULTICONDITIONTYPE::AFTER) {
+                tok = scope.bodyEnd->next();
+            } else {
+                tok = scope.bodyStart;
+            }
+            const Token * const endToken = tok->scope()->bodyEnd;
+
+            for (; tok && tok != endToken; tok = tok->next()) {
+                if (Token::Match(tok, "if|return")) {
+                    const Token * condStartToken = tok->str() == "if" ? tok->next() : tok;
+                    const Token * condEndToken = tok->str() == "if" ? condStartToken->link() : Token::findsimplematch(condStartToken, ";");
+                    // Does condition modify tracked variables?
+                    if (const Token *op = Token::findmatch(tok, "++|--", condEndToken)) {
+                        bool bailout = false;
+                        while (op) {
+                            if (vars.find(op->astOperand1()->varId()) != vars.end()) {
+                                bailout = true;
+                                break;
+                            }
+                            if (nonlocal && op->astOperand1()->varId() == 0) {
+                                bailout = true;
+                                break;
+                            }
+                            op = Token::findmatch(op->next(), "++|--", condEndToken);
                         }
-                        if (nonlocal && op->astOperand1()->varId() == 0) {
-                            bailout = true;
+                        if (bailout)
                             break;
-                        }
-                        op = Token::findmatch(op->next(), "++|--", tok->linkAt(1));
                     }
-                    if (bailout)
-                        break;
-                }
 
-                // Condition..
-                const Token *cond2 = tok->next()->astOperand2();
+                    // Condition..
+                    const Token *cond2 = tok->str() == "if" ? condStartToken->astOperand2() : condStartToken->astOperand1();
+                    // Check if returning boolean values
+                    if (tok->str() == "return") {
+                        const Variable * condVar = nullptr;
+                        if (Token::Match(cond2, "%var% ;"))
+                            condVar = cond2->variable();
+                        else if (Token::Match(cond2, ". %var% ;"))
+                            condVar = cond2->next()->variable();
+                        if (condVar && (condVar->isClass() || condVar->isPointer()))
+                            break;
+                    }
 
-                ErrorPath errorPath;
+                    ErrorPath errorPath;
 
-                if (type == MULTICONDITIONTYPE::INNER) {
-                    std::stack<const Token *> tokens1;
-                    tokens1.push(cond1);
-                    while (!tokens1.empty()) {
-                        const Token *firstCondition = tokens1.top();
-                        tokens1.pop();
-                        if (!firstCondition)
-                            continue;
-                        if (firstCondition->str() == "&&") {
-                            tokens1.push(firstCondition->astOperand1());
-                            tokens1.push(firstCondition->astOperand2());
-                        } else if (!firstCondition->hasKnownValue()) {
-                            if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                    if (type == MULTICONDITIONTYPE::INNER) {
+                        std::stack<const Token *> tokens1;
+                        tokens1.push(cond1);
+                        while (!tokens1.empty()) {
+                            const Token *firstCondition = tokens1.top();
+                            tokens1.pop();
+                            if (!firstCondition)
+                                continue;
+                            if (firstCondition->str() == "&&") {
+                                tokens1.push(firstCondition->astOperand1());
+                                tokens1.push(firstCondition->astOperand2());
+                            } else if (!firstCondition->hasKnownValue()) {
+                                if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                                    if (!isAliased(vars))
+                                        oppositeInnerConditionError(firstCondition, cond2, errorPath);
+                                } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                                    identicalInnerConditionError(firstCondition, cond2, errorPath);
+                                }
+                            }
+                        }
+                    } else {
+                        std::stack<const Token *> tokens2;
+                        tokens2.push(cond2);
+                        while (!tokens2.empty()) {
+                            const Token *secondCondition = tokens2.top();
+                            tokens2.pop();
+                            if (!secondCondition)
+                                continue;
+                            if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
+                                tokens2.push(secondCondition->astOperand1());
+                                tokens2.push(secondCondition->astOperand2());
+                            } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) &&
+                                       isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
                                 if (!isAliased(vars))
-                                    oppositeInnerConditionError(firstCondition, cond2, errorPath);
-                            } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
-                                identicalInnerConditionError(firstCondition, cond2, errorPath);
+                                    identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                             }
                         }
                     }
-                } else {
-                    std::stack<const Token *> tokens2;
-                    tokens2.push(cond2);
-                    while (!tokens2.empty()) {
-                        const Token *secondCondition = tokens2.top();
-                        tokens2.pop();
-                        if (!secondCondition)
-                            continue;
-                        if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
-                            tokens2.push(secondCondition->astOperand1());
-                            tokens2.push(secondCondition->astOperand2());
-                        } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) &&
-                                   isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
-                            if (!isAliased(vars))
-                                identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
+                }
+                if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, mSettings->library)) // non const function call -> bailout if there are nonlocal variables
+                    break;
+                if (Token::Match(tok, "case|break|continue|return|throw") && tok->scope() == endToken->scope())
+                    break;
+                if (Token::Match(tok, "[;{}] %name% :"))
+                    break;
+                // bailout if loop is seen.
+                // TODO: handle loops better.
+                if (Token::Match(tok, "for|while|do")) {
+                    const Token *tok1 = tok->next();
+                    const Token *tok2;
+                    if (Token::simpleMatch(tok, "do {")) {
+                        if (!Token::simpleMatch(tok->linkAt(1), "} while ("))
+                            break;
+                        tok2 = tok->linkAt(1)->linkAt(2);
+                    } else if (Token::Match(tok, "if|while (")) {
+                        tok2 = tok->linkAt(1);
+                        if (Token::simpleMatch(tok2, ") {"))
+                            tok2 = tok2->linkAt(1);
+                        if (!tok2)
+                            break;
+                    } else {
+                        // Incomplete code
+                        break;
+                    }
+                    bool changed = false;
+                    for (unsigned int varid : vars) {
+                        if (isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP())) {
+                            changed = true;
+                            break;
                         }
                     }
+                    if (changed)
+                        break;
                 }
-            }
-            if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, mSettings->library)) // non const function call -> bailout if there are nonlocal variables
-                break;
-            if (Token::Match(tok, "case|break|continue|return|throw") && tok->scope() == endToken->scope())
-                break;
-            if (Token::Match(tok, "[;{}] %name% :"))
-                break;
-            // bailout if loop is seen.
-            // TODO: handle loops better.
-            if (Token::Match(tok, "for|while|do")) {
-                const Token *tok1 = tok->next();
-                const Token *tok2;
-                if (Token::simpleMatch(tok, "do {")) {
-                    if (!Token::simpleMatch(tok->linkAt(1), "} while ("))
+                if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
+                    (!tok->varId() && nonlocal)) {
+                    if (Token::Match(tok, "%name% %assign%|++|--"))
                         break;
-                    tok2 = tok->linkAt(1)->linkAt(2);
-                } else if (Token::Match(tok, "if|while (")) {
-                    tok2 = tok->linkAt(1);
-                    if (Token::simpleMatch(tok2, ") {"))
-                        tok2 = tok2->linkAt(1);
-                    if (!tok2)
-                        break;
-                } else {
-                    // Incomplete code
-                    break;
-                }
-                bool changed = false;
-                for (unsigned int varid : vars) {
-                    if (isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP())) {
-                        changed = true;
-                        break;
+                    if (Token::Match(tok->astParent(), "*|.|[")) {
+                        const Token *parent = tok;
+                        while (Token::Match(parent->astParent(), ".|[") || (parent->astParent() && parent->astParent()->isUnaryOp("*")))
+                            parent = parent->astParent();
+                        if (Token::Match(parent->astParent(), "%assign%|++|--"))
+                            break;
                     }
-                }
-                if (changed)
-                    break;
-            }
-            if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
-                (!tok->varId() && nonlocal)) {
-                if (Token::Match(tok, "%name% %assign%|++|--"))
-                    break;
-                if (Token::Match(tok->astParent(), "*|.|[")) {
-                    const Token *parent = tok;
-                    while (Token::Match(parent->astParent(), ".|[") || (parent->astParent() && parent->astParent()->isUnaryOp("*")))
-                        parent = parent->astParent();
-                    if (Token::Match(parent->astParent(), "%assign%|++|--"))
+                    if (mTokenizer->isCPP() && Token::Match(tok, "%name% <<") && (!tok->valueType() || !tok->valueType()->isIntegral()))
+                        break;
+                    if (isLikelyStreamRead(mTokenizer->isCPP(), tok->next()) || isLikelyStreamRead(mTokenizer->isCPP(), tok->previous()))
+                        break;
+                    if (Token::Match(tok, "%name% [")) {
+                        const Token *tok2 = tok->linkAt(1);
+                        while (Token::simpleMatch(tok2, "] ["))
+                            tok2 = tok2->linkAt(1);
+                        if (Token::Match(tok2, "] %assign%|++|--"))
+                            break;
+                    }
+                    if (Token::Match(tok->previous(), "++|--|& %name%"))
+                        break;
+                    if (tok->variable() &&
+                        !tok->variable()->isConst() &&
+                        Token::Match(tok, "%name% . %name% (")) {
+                        const Function* function = tok->tokAt(2)->function();
+                        if (!function || !function->isConst())
+                            break;
+                    }
+                    if (Token::Match(tok->previous(), "[(,] %name% [,)]") && isParameterChanged(tok))
                         break;
                 }
-                if (mTokenizer->isCPP() && Token::Match(tok, "%name% <<") && (!tok->valueType() || !tok->valueType()->isIntegral()))
-                    break;
-                if (isLikelyStreamRead(mTokenizer->isCPP(), tok->next()) || isLikelyStreamRead(mTokenizer->isCPP(), tok->previous()))
-                    break;
-                if (Token::Match(tok, "%name% [")) {
-                    const Token *tok2 = tok->linkAt(1);
-                    while (Token::simpleMatch(tok2, "] ["))
-                        tok2 = tok2->linkAt(1);
-                    if (Token::Match(tok2, "] %assign%|++|--"))
-                        break;
-                }
-                if (Token::Match(tok->previous(), "++|--|& %name%"))
-                    break;
-                if (tok->variable() &&
-                    !tok->variable()->isConst() &&
-                    Token::Match(tok, "%name% . %name% (")) {
-                    const Function* function = tok->tokAt(2)->function();
-                    if (!function || !function->isConst())
-                        break;
-                }
-                if (Token::Match(tok->previous(), "[(,] %name% [,)]") && isParameterChanged(tok))
-                    break;
             }
         }
     }
+}
+
+static std::string innerSmtString(const Token * tok)
+{
+    if (!tok)
+        return "if";
+    if (!tok->astTop())
+        return "if";
+    const Token * top = tok->astTop();
+    if (top->str() == "(" && top->astOperand1())
+        return top->astOperand1()->str();
+    return top->str();
 }
 
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
+    const std::string innerSmt = innerSmtString(tok2);
     errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
     errorPath.emplace_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
 
-    const std::string msg("Opposite inner 'if' condition leads to a dead code block.\n"
-                          "Opposite inner 'if' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
+    const std::string msg("Opposite inner '" + innerSmt + "' condition leads to a dead code block.\n"
+                          "Opposite inner '" + innerSmt + "' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
 }
 
@@ -699,11 +729,12 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 {
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
+    const std::string innerSmt = innerSmtString(tok2);
     errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
     errorPath.emplace_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
 
-    const std::string msg("Identical inner 'if' condition is always true.\n"
-                          "Identical inner 'if' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
+    const std::string msg("Identical inner '" + innerSmt + "' condition is always true.\n"
+                          "Identical inner '" + innerSmt + "' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
     reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, false);
 }
 
@@ -1204,6 +1235,25 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
                 errmsg, CWE398, false);
 }
 
+static bool isConstVarExpression(const Token * tok)
+{
+    if (!tok)
+        return false;
+    if (Token::Match(tok, "%cop%")) {
+        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
+            return false;
+        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
+            return false;
+        return true;
+    }
+    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+        return true;
+    if (tok->isEnumerator())
+        return true;
+    if (tok->variable())
+        return tok->variable()->isConst();
+    return false;
+}
 
 void CheckCondition::alwaysTrueFalse()
 {
@@ -1222,7 +1272,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "! %num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "%oror%|&&"))
+            if (Token::Match(tok, "%oror%|&&|:"))
                 continue;
             if (Token::Match(tok, "%comp%") && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
@@ -1232,8 +1282,20 @@ void CheckCondition::alwaysTrueFalse()
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
+            const bool returnStatement = Token::simpleMatch(tok->astTop(), "return") &&
+                                         Token::Match(tok->astParent(), "%oror%|&&|return");
 
-            if (!(constIfWhileExpression || constValExpr || compExpr))
+            if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
+                continue;
+
+            if (returnStatement && isConstVarExpression(tok))
+                continue;
+
+            if (returnStatement && Token::simpleMatch(tok->astParent(), "return") && tok->variable() && (
+                    !tok->variable()->isLocal() ||
+                    tok->variable()->isReference() ||
+                    tok->variable()->isConst() ||
+                    !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.

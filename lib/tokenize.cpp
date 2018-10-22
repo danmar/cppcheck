@@ -1501,13 +1501,11 @@ void Tokenizer::simplifyTypedef()
                         }
                     } else if (typeOf) {
                         tok2 = TokenList::copyTokens(tok2, argStart, argEnd);
-                    } else if (tok2->strAt(2) == "[") {
-                        do {
-                            if (!tok2->linkAt(2))
-                                syntaxError(tok2);
-
-                            tok2 = tok2->linkAt(2)->previous();
-                        } while (tok2->strAt(2) == "[");
+                    } else if (Token::Match(tok2, "%name% [")) {
+                        while (Token::Match(tok2, "%name%|] [")) {
+                            tok2 = tok2->linkAt(1);
+                        }
+                        tok2 = tok2->previous();
                     }
 
                     if (arrayStart && arrayEnd) {
@@ -3831,11 +3829,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyRedundantParentheses();
 
     if (!isC()) {
-        // TODO: Only simplify template parameters
-        for (Token *tok = list.front(); tok; tok = tok->next())
-            while (mTemplateSimplifier->simplifyNumericCalculations(tok))
-                ;
-
         // Handle templates..
         simplifyTemplates();
 
@@ -4812,6 +4805,8 @@ void Tokenizer::simplifyCompoundAssignment()
     // "a+=b" => "a = a + b"
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "[;{}] (| *| (| %name%"))
+            continue;
+        if (tok->next()->str() == "return")
             continue;
         // backup current token..
         Token * const tok1 = tok;
@@ -8406,6 +8401,18 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
 
 void Tokenizer::findGarbageCode() const
 {
+    // Inside [] there can't be ; or various keywords
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (tok->str() != "[")
+            continue;
+        for (const Token *inner = tok->next(); inner != tok->link(); inner = inner->next()) {
+            if (Token::Match(inner, "(|["))
+                inner = inner->link();
+            else if (Token::Match(inner, ";|goto|return|typedef"))
+                syntaxError(inner);
+        }
+    }
+
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,"))
@@ -8486,6 +8493,8 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok, "> %cop%"))
                 continue;
         }
+        if (Token::Match(tok, "%assign% typename|class %assign%"))
+            syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))
@@ -9463,15 +9472,27 @@ void Tokenizer::simplifyNamespaceStd()
 
     const bool isCPP11  = mSettings->standards.cpp == Standards::CPP11;
 
+    std::set<std::string> userFunctions;
+
     for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
             skipEnumBody(&tok);
         }
         if (!Token::Match(tok->previous(), ".|::")) {
-            if (Token::Match(tok, "%name% (") && !Token::Match(tok->linkAt(1)->next(), "%name%|{") && stdFunctions.find(tok->str()) != stdFunctions.end())
-                insert = true;
-            else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
+            if (Token::Match(tok, "%name% (")) {
+                if (isFunctionHead(tok->next(), "{"))
+                    userFunctions.insert(tok->str());
+                else if (isFunctionHead(tok->next(), ";")) {
+                    const Token *start = tok;
+                    while (Token::Match(start->previous(), "%type%|*|&"))
+                        start = start->previous();
+                    if (start != tok && start->isName() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
+                        userFunctions.insert(tok->str());
+                }
+                if (userFunctions.find(tok->str()) == userFunctions.end() && stdFunctions.find(tok->str()) != stdFunctions.end())
+                    insert = true;
+            } else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
                 insert = true;
             else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && stdTypes.find(tok->str()) != stdTypes.end())
                 insert = true;

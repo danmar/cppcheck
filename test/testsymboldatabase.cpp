@@ -295,6 +295,8 @@ private:
         TEST_CASE(symboldatabase72); // #8600
         TEST_CASE(symboldatabase73); // #8603
 
+        TEST_CASE(createSymbolDatabaseFindAllScopes1);
+
         TEST_CASE(enum1);
         TEST_CASE(enum2);
         TEST_CASE(enum3);
@@ -4043,6 +4045,12 @@ private:
         ASSERT_EQUALS(3, f2->bodyStart->linenr());
         ASSERT_EQUALS(3, f2->bodyEnd->linenr());
         ASSERT_EQUALS(3, f2->function->token->linenr());
+    }
+
+    void createSymbolDatabaseFindAllScopes1() {
+        GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
+        ASSERT(db->scopeList.size() == 3);
+        ASSERT_EQUALS(Scope::eUnion, db->scopeList.back().type);
     }
 
     void enum1() {

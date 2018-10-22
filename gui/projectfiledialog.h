@@ -76,6 +76,12 @@ private:
     QStringList getDefines() const;
 
     /**
+    * @brief Return undefine names from the dialog control.
+    * @return List of undefine names.
+    */
+    QStringList getUndefines() const;
+
+    /**
     * @brief Return check paths from the dialog control.
     * @return List of check paths.
     */
@@ -123,6 +129,12 @@ private:
     * @param defines List of define names to set to dialog control.
     */
     void setDefines(const QStringList &defines);
+
+    /**
+    * @brief Set undefine names to dialog control.
+    * @param defines List of undefine names to set to dialog control.
+    */
+    void setUndefines(const QStringList &defines);
 
     /**
     * @brief Set check paths to dialog control.
