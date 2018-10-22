@@ -8259,6 +8259,9 @@ private:
         ASSERT_EQUALS("DerivedDerived::(", testAst("Derived::~Derived() {}"));
 
         ASSERT_EQUALS("ifCA_FarReadfilenew(,sizeofobjtype(,(!(", testAst("if (!CA_FarRead(file, (void far *)new, sizeof(objtype)))")); // #5910 - don't hang if C code is parsed as C++
+
+        // Variable declaration
+        ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
     }
 
     void astexpr2() { // limit for large expressions
