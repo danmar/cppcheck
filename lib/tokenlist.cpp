@@ -680,8 +680,10 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
-                    while (Token::Match(curlyBracket, "%name%|.|::|&"))
-                        curlyBracket = curlyBracket->next();
+                    if (curlyBracket && curlyBracket->originalName() == "->") {
+                        while (Token::Match(curlyBracket, "%name%|.|::|&|*"))
+                            curlyBracket = curlyBracket->next();
+                    }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);
