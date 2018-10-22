@@ -2748,6 +2748,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
 
             // TODO: Handle explicit capture
             bool captureByRef = Token::Match(lam.capture, "[ &");
+            bool captureByValue = Token::Match(lam.capture, "[ =");
 
             for(const Token * tok2 = lam.bodyTok;tok2 != lam.bodyTok->link();tok2 = tok2->next()) {
                 if(captureByRef) {
@@ -2767,7 +2768,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
                     setTokenValue(tok, value, tokenlist->getSettings());
 
                     valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
-                } else {
+                } else if(captureByValue) {
                     for(const ValueFlow::Value& v:tok2->values()) {
                         if(!v.isLifetimeValue() && !v.tokvalue)
                             continue;
