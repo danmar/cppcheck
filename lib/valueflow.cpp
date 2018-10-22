@@ -2704,11 +2704,96 @@ static const Variable * getLifetimeVariable(const Token * tok)
     return var;
 }
 
+struct Lambda
+{
+    Lambda(const Token * tok)
+    : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr)
+    {
+        if(!Token::simpleMatch(tok, "[") && !tok->link())
+            return;
+        capture = tok;
+
+        if(Token::simpleMatch(capture->link(), "] (")) {
+            arguments = capture->link()->next();
+        }
+        const Token * afterArguments = arguments ? arguments->link()->next() : capture->link()->next();
+        if(Token::Match(afterArguments, "->")) {
+            returnTok = afterArguments->next();
+            bodyTok = Token::findsimplematch(returnTok, "{");
+        } else if(Token::Match(afterArguments, "{")) {
+            bodyTok = afterArguments;
+        }
+    }
+
+    const Token * capture;
+    const Token * arguments;
+    const Token * returnTok;
+    const Token * bodyTok;
+
+    bool isLambda() const
+    {
+        return capture && bodyTok;
+    }
+};
+
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        Lambda lam(tok);
+        // Lamdas
+        if(lam.isLambda()) {
+            const Scope * bodyScope = lam.bodyTok->scope();
+
+            std::set<const Scope *> scopes;
+
+            // TODO: Handle explicit capture
+            bool captureByRef = Token::Match(lam.capture, "[ &");
+
+            for(const Token * tok2 = lam.bodyTok;tok2 != lam.bodyTok->link();tok2 = tok2->next()) {
+                if(captureByRef) {
+                    const Variable * var = getLifetimeVariable(tok2);
+                    if(!var)
+                        continue;
+                    const Scope * scope = var->scope();
+                    if(scopes.count(scope) > 0)
+                        continue;
+                    if(scope->isNestedIn(bodyScope))
+                        continue;
+                    scopes.insert(scope);
+
+                    ValueFlow::Value value;
+                    value.valueType = ValueFlow::Value::LIFETIME;
+                    value.tokvalue = var->nameToken();
+                    setTokenValue(tok, value, tokenlist->getSettings());
+
+                    valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+                } else {
+                    for(const ValueFlow::Value& v:tok2->values()) {
+                        if(!v.isLifetimeValue() && !v.tokvalue)
+                            continue;
+                        const Token * tok3 = v.tokvalue;
+                        const Variable * var = getLifetimeVariable(tok3);
+                        if(!var)
+                            continue;
+                        const Scope * scope = var->scope();
+                        if(scopes.count(scope) > 0)
+                            continue;
+                        if(scope->isNestedIn(bodyScope))
+                            continue;
+                        scopes.insert(scope);
+
+                        ValueFlow::Value value;
+                        value.valueType = ValueFlow::Value::LIFETIME;
+                        value.tokvalue = var->nameToken();
+                        setTokenValue(tok, value, tokenlist->getSettings());
+
+                        valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+                    }
+                }
+            }
+        }
         // address of
-        if (tok->isUnaryOp("&")) {
+        else if (tok->isUnaryOp("&")) {
             // child should be some buffer or variable
             const Token *vartok = tok->astOperand1();
             while (vartok) {
@@ -2732,69 +2817,6 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
             setTokenValue(tok, value, tokenlist->getSettings());
 
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
-        }
-        // lambda capture by reference
-        else if (Token::simpleMatch(tok, "[ & ] (")) {
-            if (!Token::simpleMatch(tok->tokAt(3)->link(), ") {"))
-                continue;
-
-            const Token * bodyTok = tok->tokAt(3)->link()->next();
-            const Scope * bodyScope = bodyTok->scope();
-
-            std::set<const Scope *> scopes;
-
-            for(const Token * tok2 = bodyTok;tok2 != bodyTok->link();tok2 = tok2->next()) {
-                const Variable * var = getLifetimeVariable(tok2);
-                if(!var)
-                    continue;
-                const Scope * scope = var->scope();
-                if(scopes.count(scope) > 0)
-                    continue;
-                if(scope->isNestedIn(bodyScope))
-                    continue;
-                scopes.insert(scope);
-
-                ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::LIFETIME;
-                value.tokvalue = var->nameToken();
-                setTokenValue(tok, value, tokenlist->getSettings());
-
-                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
-            }
-        }
-        // lambda capture by value
-        else if (Token::simpleMatch(tok, "[ = ] (")) {
-            if (!Token::simpleMatch(tok->tokAt(3)->link(), ") {"))
-                continue;
-
-            const Token * bodyTok = tok->tokAt(3)->link()->next();
-            const Scope * bodyScope = bodyTok->scope();
-
-            std::set<const Scope *> scopes;
-
-            for(const Token * tok2 = bodyTok;tok2 != bodyTok->link();tok2 = tok2->next()) {
-                for(const ValueFlow::Value& v:tok2->values()) {
-                    if(!v.isLifetimeValue() && !v.tokvalue)
-                        continue;
-                    const Token * tok3 = v.tokvalue;
-                    const Variable * var = getLifetimeVariable(tok3);
-                    if(!var)
-                        continue;
-                    const Scope * scope = var->scope();
-                    if(scopes.count(scope) > 0)
-                        continue;
-                    if(scope->isNestedIn(bodyScope))
-                        continue;
-                    scopes.insert(scope);
-
-                    ValueFlow::Value value;
-                    value.valueType = ValueFlow::Value::LIFETIME;
-                    value.tokvalue = var->nameToken();
-                    setTokenValue(tok, value, tokenlist->getSettings());
-
-                    valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
-                }
-            }
         }
         // container lifetimes
         else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str (")) {
