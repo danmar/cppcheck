@@ -1235,6 +1235,9 @@ void TokenList::validateAst() const
             // Skip lambda assignment and/or initializer
             if (Token::Match(tok, "= {|^|["))
                 continue;
+            // FIXME: Workaround broken AST assignment in type aliases
+            if (Token::Match(tok->previous(), "%name% = %name%"))
+                continue;
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);
         }
