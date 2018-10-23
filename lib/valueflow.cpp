@@ -2709,7 +2709,7 @@ struct Lambda
     Lambda(const Token * tok)
     : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr)
     {
-        if(!Token::simpleMatch(tok, "[") && !tok->link())
+        if(!Token::simpleMatch(tok, "[") || !tok->link())
             return;
         capture = tok;
 
@@ -2831,7 +2831,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
             value.tokvalue = var->nameToken();
             setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
 
-            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+            valueFlowForwardLifetime(tok->tokAt(3), tokenlist, errorLogger, settings);
 
         }
     }
