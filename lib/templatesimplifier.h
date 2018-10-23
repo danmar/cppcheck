@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,6 +69,9 @@ public:
      */
     struct TokenAndName {
         TokenAndName(Token *tok, const std::string &s, const std::string &n);
+        bool operator == (const TokenAndName & rhs) const {
+            return token == rhs.token && scope == rhs.scope && name == rhs.name;
+        }
         Token *token;
         std::string scope;
         std::string name;
@@ -106,7 +109,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyNumericCalculations(Token *tok);
+    static bool simplifyNumericCalculations(Token *tok);
 
     /**
      * Simplify constant calculations such as "1+2" => "3".
@@ -158,14 +161,14 @@ private:
      * @param fullName                          Full name of template
      * @param typeParametersInDeclaration       The type parameters of the template
      * @param newName                           New name of class/function.
-     * @param typesUsedInTemplateInstantiation  Type parameters in instantiation
+     * @param copy                              copy or expand in place
      */
     void expandTemplate(
         const Token *templateDeclarationToken,
         const std::string &fullName,
         const std::vector<const Token *> &typeParametersInDeclaration,
         const std::string &newName,
-        const std::vector<const Token *> &typesUsedInTemplateInstantiation);
+        bool copy);
 
     /**
      * Replace all matching template usages  'Foo < int >' => 'Foo<int>'
@@ -173,19 +176,11 @@ private:
      * @param templateName full template name with scope info
      * @param typeStringsUsedInTemplateInstantiation template parameters. list of token strings.
      * @param newName The new type name
-     * @param typesUsedInTemplateInstantiation template instantiation parameters
      */
     void replaceTemplateUsage(Token *const instantiationToken,
                               const std::string &templateName,
                               const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
-                              const std::string &newName,
-                              const std::vector<const Token *> &typesUsedInTemplateInstantiation);
-
-    /**
-     * Expand specialized templates : "template<>.."
-     * @return names of expanded templates
-     */
-    std::set<std::string> expandSpecialized();
+                              const std::string &newName);
 
     /**
      * @brief TemplateParametersInDeclaration
@@ -196,7 +191,7 @@ private:
      * @return  template < typename T, typename S >
      *                                              ^ return
      */
-    const Token * getTemplateParametersInDeclaration(
+    static const Token * getTemplateParametersInDeclaration(
         const Token * tok,
         std::vector<const Token *> & typeParametersInDeclaration);
 
@@ -208,7 +203,7 @@ private:
     /** Syntax error */
     static void syntaxError(const Token *tok);
 
-    bool matchSpecialization(
+    static bool matchSpecialization(
         const Token *templateDeclarationNameToken,
         const Token *templateInstantiationNameToken,
         const std::list<const Token *> & specializations);
@@ -225,7 +220,17 @@ private:
      * tok will be invalidated.
      * @param tok token to delete
      */
-    void deleteToken(Token *tok);
+    static void deleteToken(Token *tok);
+
+    /**
+     * Get the new token name.
+     * @param tok name token
+     * @param &typeStringsUsedInTemplateInstantiation type strings use in template instantiation
+     * @return new token name
+     */
+    std::string getNewName(
+        Token *tok2,
+        std::list<std::string> &typeStringsUsedInTemplateInstantiation);
 
     TokenList &mTokenList;
     const Settings *mSettings;
@@ -234,6 +239,8 @@ private:
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
+    std::list<TokenAndName> mMemberFunctionsToDelete;
+    std::vector<Token *> mTypesUsedInTemplateInstantiation;
 };
 
 /// @}

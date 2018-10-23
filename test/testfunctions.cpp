@@ -62,6 +62,7 @@ private:
 
         // Invalid function usage
         TEST_CASE(invalidFunctionUsage1);
+        TEST_CASE(invalidFunctionUsageStrings);
 
         // Math function usage
         TEST_CASE(mathfunctionCall_fmod);
@@ -445,6 +446,113 @@ private:
 
         check("int f() { strtol(a,b,10); }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void invalidFunctionUsageStrings() {
+        check("size_t f() { char x = 'x'; return strlen(&x); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("size_t f() { return strlen(&x); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f(char x) { return strlen(&x); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("size_t f() { char x = '\\0'; return strlen(&x); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f() {\n"
+              "  char x;\n"
+              "  if (y)\n"
+              "    x = '\\0';\n"
+              "  else\n"
+              "    x = 'a';\n"
+              "  return strlen(&x);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("int f() { char x = '\\0'; return strcmp(\"Hello world\", &x); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() { char x = 'x'; return strcmp(\"Hello world\", &x); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strcmp() argument nr 2. A nul-terminated string is required.\n", errout.str());
+
+        check("size_t f(char x) { char * y = &x; return strlen(y) }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("size_t f(char x) { char * y = &x; char *z = y; return strlen(z) }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("size_t f() { char x = 'x'; char * y = &x; char *z = y; return strlen(z) }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("size_t f() { char x = '\\0'; char * y = &x; char *z = y; return strlen(z) }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f() { char x[] = \"Hello world\"; return strlen(x) }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f(char x[]) { return strlen(x) }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(char x, char y) { return strcmp(&x, &y); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strcmp() argument nr 1. A nul-terminated string is required.\n"
+                      "[test.cpp:1]: (error) Invalid strcmp() argument nr 2. A nul-terminated string is required.\n", errout.str());
+
+        check("size_t f() { char x[] = \"Hello world\"; return strlen(&x[0]) }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f() { char* x = \"Hello world\"; return strlen(&x[0]) }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "  char x;\n"
+              "};\n"
+              "size_t f() {\n"
+              "  S s1 = {0};\n"
+              "  S s2;\n;"
+              "  s2.x = 'x';\n"
+              "  size_t l1 = strlen(&s1.x);\n"
+              "  size_t l2 = strlen(&s2.x);\n"
+              "  return l1 + l2;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", "", errout.str());
+
+        check("const char x = 'x'; size_t f() { return strlen(&x); }");
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", "", errout.str());
+
+        check("const char x = 'x'; size_t f() { char y = x; return strlen(&y); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("const char x = '\\0'; size_t f() { return strlen(&x); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const char x = '\\0'; size_t f() { char y = x; return strlen(&y); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f() {\n"
+              "  char * a = \"Hello world\";\n"
+              "  char ** b = &a;\n"
+              "  return strlen(&b[0][0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f() {\n"
+              "  char ca[] = \"asdf\";\n"
+              "  return strlen((char*) &ca);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #5225
+        check("int main(void)\n"
+              "{\n"
+              "  char str[80] = \"hello worl\";\n"
+              "  char d = 'd';\n"
+              "  strcat(str, &d);\n"
+              "  puts(str);\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Invalid strcat() argument nr 2. A nul-terminated string is required.\n", errout.str());
     }
 
     void mathfunctionCall_sqrt() {

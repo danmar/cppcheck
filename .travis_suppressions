@@ -5,6 +5,8 @@ nullPointer:lib/checkother.cpp
 nullPointer:build/checkother.cpp
 missingOverride
 noValidConfiguration
+useStlAlgorithm
+shadowLocal
 
 *:gui/test/*
 *:test/test.cxx

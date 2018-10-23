@@ -170,7 +170,8 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
             for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
                 const Variable &var = *it;
 
-                if (var.hasDefault() || var.isArray() || (!mTokenizer->isC() && var.isClass() && (!var.type() || var.type()->needInitialization != Type::True)))
+                if (var.isStatic() || var.hasDefault() || var.isArray() ||
+                    (!mTokenizer->isC() && var.isClass() && (!var.type() || var.type()->needInitialization != Type::True)))
                     continue;
 
                 // is the variable declared in a inner union?

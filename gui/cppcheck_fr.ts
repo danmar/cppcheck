@@ -1019,6 +1019,10 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Symbol name</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Edit suppression</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platforms</name>
@@ -1242,6 +1246,14 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Undefines:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1566,11 +1578,11 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Summary</source>
-        <translation>Résumé</translation>
+        <translation type="vanished">Résumé</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation>Message</translation>
+        <translation type="vanished">Message</translation>
     </message>
     <message>
         <source>%p% (%1 of %2 files checked)</source>
@@ -2002,6 +2014,14 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>No cppcheck build dir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Undefines:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Undefines</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

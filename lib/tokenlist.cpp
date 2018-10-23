@@ -650,6 +650,9 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
             && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
         return true;
 
+    if (tok->str() == "*" && tok->previous()->tokType() == Token::eIncDecOp && isPrefixUnary(tok->previous(), cpp))
+        return true;
+
     return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1));
 }
 
@@ -695,7 +698,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 }
             }
 
-            Token* tok2 = tok;
+            const Token* const tok2 = tok;
             if (tok->strAt(1) != "]")
                 compileBinOp(tok, state, compileExpression);
             else
@@ -750,7 +753,14 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
         } else if (tok->str() == "(" && iscast(tok)) {
             Token* tok2 = tok;
             tok = tok->link()->next();
-            compilePrecedence3(tok, state);
+            if (tok && tok->str() == "(" && !iscast(tok)) {
+                Token *tok3 = tok->next();
+                compileExpression(tok3, state);
+                if (tok->link() == tok3)
+                    tok = tok3->next();
+            } else {
+                compilePrecedence3(tok, state);
+            }
             compileUnaryOp(tok2, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "new %name%|::|(")) {
             Token* newtok = tok;
@@ -1152,7 +1162,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token * const tok1 = tok;
         AST_state state(cpp);
         compileExpression(tok, state);
-        Token * const endToken = tok;
+        const Token * const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 
@@ -1214,14 +1224,20 @@ void TokenList::validateAst() const
             // Skip pure virtual functions
             if (Token::simpleMatch(tok->previous(), ") = 0"))
                 continue;
+            // Skip operator definitions
+            if (Token::simpleMatch(tok->previous(), "operator"))
+                continue;
             // Skip incomplete code
             if (!tok->astOperand1() && !tok->astOperand2() && !tok->astParent())
                 continue;
-            // FIXME
-            if (Token::Match(tok->previous(), "%name%") && Token::Match(tok->next(), "%name%"))
-                continue;
             // Skip lambda assignment and/or initializer
-            if (Token::Match(tok, "= {|^"))
+            if (Token::Match(tok, "= {|^|["))
+                continue;
+            // FIXME: Workaround broken AST assignment in type aliases
+            if (Token::Match(tok->previous(), "%name% = %name%"))
+                continue;
+            // FIXME: Workaround when assigning from a new expression: #8749
+            if (Token::simpleMatch(tok, "= new"))
                 continue;
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);

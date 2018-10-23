@@ -300,6 +300,23 @@ ifdef CFGDIR
 	install -m 644 cfg/* ${DESTDIR}${CFGDIR}
 endif
 
+uninstall:
+	@if test -d ${BIN}; then \
+	  files="cppcheck cppcheck-htmlreport \
+	    `ls -d addons/*.py addons/*/*.py 2>/dev/null | sed 's,^.*/,,'`"; \
+	  echo '(' cd ${BIN} '&&' rm -f $$files ')'; \
+	  ( cd ${BIN} && rm -f $$files ); \
+	fi
+ifdef CFGDIR 
+	@if test -d ${DESTDIR}${CFGDIR}; then \
+	  files="`cd cfg 2>/dev/null && ls`"; \
+	  if test -n "$$files"; then \
+	    echo '(' cd ${DESTDIR}${CFGDIR} '&&' rm -f $$files ')'; \
+	    ( cd ${DESTDIR}${CFGDIR} && rm -f $$files ); \
+	  fi; \
+	fi
+endif
+
 # Validation of library files:
 ConfigFiles := $(wildcard cfg/*.cfg)
 ConfigFilesCHECKED := $(patsubst %.cfg,%.checked,$(ConfigFiles))
@@ -318,9 +335,9 @@ validatePlatforms: ${PlatformFilesCHECKED}
 
 # Validate XML output (to detect regressions)
 /tmp/errorlist.xml: cppcheck
-	cppcheck --errorlist >$@
+	./cppcheck --errorlist >$@
 /tmp/example.xml: cppcheck
-	cppcheck --xml --inconclusive -j 4 cli externals gui lib test 2>/tmp/example.xml
+	./cppcheck --xml --enable=all --inconclusive --suppress=operatorEqVarError:*check.h -j 4 cli externals gui lib test 2>/tmp/example.xml
 createXMLExamples:/tmp/errorlist.xml /tmp/example.xml
 .PHONY: validateXML
 validateXML: createXMLExamples
@@ -614,7 +631,7 @@ test/teststring.o: test/teststring.cpp lib/checkstring.h lib/check.h lib/config.
 test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/config.h lib/errorlogger.h lib/suppressions.h test/options.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsuite.o test/testsuite.cpp
 
-test/testsuppressions.o: test/testsuppressions.cpp lib/config.h lib/cppcheck.h lib/analyzerinfo.h lib/errorlogger.h lib/suppressions.h lib/importproject.h lib/platform.h lib/utils.h lib/check.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h test/testsuite.h
+test/testsuppressions.o: test/testsuppressions.cpp lib/config.h lib/cppcheck.h lib/analyzerinfo.h lib/errorlogger.h lib/suppressions.h lib/importproject.h lib/platform.h lib/utils.h lib/check.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h test/testsuite.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsuppressions.o test/testsuppressions.cpp
 
 test/testsymboldatabase.o: test/testsymboldatabase.cpp lib/platform.h lib/config.h lib/settings.h lib/errorlogger.h lib/suppressions.h lib/importproject.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/symboldatabase.h lib/token.h lib/valueflow.h test/testsuite.h test/testutils.h lib/tokenize.h lib/tokenlist.h

@@ -1089,7 +1089,7 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const
         if (!ret.empty())
             ret = ' ' + ret;
         ret = (tok->str()[0] == '\"' ? std::string("%str%")
-               : std::isdigit(static_cast<unsigned char>(tok->str()[0])) ? std::string("%num%") : tok->str()) + ret;
+               : tok->number ? std::string("%num%") : tok->str()) + ret;
         if (++count > maxsize)
             return "";
     }
@@ -1110,9 +1110,9 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
 namespace simplecpp {
     class Macro {
     public:
-        explicit Macro(std::vector<std::string> &f) : nameTokDef(NULL), variadic(false), valueToken(NULL), endToken(NULL), files(f), tokenListDefine(f) {}
+        explicit Macro(std::vector<std::string> &f) : nameTokDef(NULL), variadic(false), valueToken(NULL), endToken(NULL), files(f), tokenListDefine(f), valueDefinedInCode_(false) {}
 
-        Macro(const Token *tok, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f) {
+        Macro(const Token *tok, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f), valueDefinedInCode_(true) {
             if (sameline(tok->previous, tok))
                 throw std::runtime_error("bad macro syntax");
             if (tok->op != '#')
@@ -1128,7 +1128,7 @@ namespace simplecpp {
                 throw std::runtime_error("bad macro syntax");
         }
 
-        Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f) {
+        Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameTokDef(NULL), files(f), tokenListDefine(f), valueDefinedInCode_(false) {
             const std::string def(name + ' ' + value);
             std::istringstream istr(def);
             tokenListDefine.readfile(istr);
@@ -1136,12 +1136,13 @@ namespace simplecpp {
                 throw std::runtime_error("bad macro syntax");
         }
 
-        Macro(const Macro &macro) : nameTokDef(NULL), files(macro.files), tokenListDefine(macro.files) {
+        Macro(const Macro &macro) : nameTokDef(NULL), files(macro.files), tokenListDefine(macro.files), valueDefinedInCode_(macro.valueDefinedInCode_) {
             *this = macro;
         }
 
         void operator=(const Macro &macro) {
             if (this != &macro) {
+                valueDefinedInCode_ = macro.valueDefinedInCode_;
                 if (macro.tokenListDefine.empty())
                     parseDefine(macro.nameTokDef);
                 else {
@@ -1149,6 +1150,10 @@ namespace simplecpp {
                     parseDefine(tokenListDefine.cfront());
                 }
             }
+        }
+
+        bool valueDefinedInCode() const {
+            return valueDefinedInCode_;
         }
 
         /**
@@ -1821,6 +1826,9 @@ namespace simplecpp {
 
         /** usage of this macro */
         mutable std::list<Location> usageList;
+
+        /** was the value of this macro actually defined in the code? */
+        bool valueDefinedInCode_;
     };
 }
 
@@ -2612,7 +2620,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             const Macro &macro = macroIt->second;
             const std::list<Location> &usage = macro.usage();
             for (std::list<Location>::const_iterator usageIt = usage.begin(); usageIt != usage.end(); ++usageIt) {
-                MacroUsage mu(usageIt->files);
+                MacroUsage mu(usageIt->files, macro.valueDefinedInCode());
                 mu.macroName = macro.name();
                 mu.macroLocation = macro.defineLocation();
                 mu.useLocation = *usageIt;

@@ -1058,7 +1058,7 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
             const Token *cond2 = ifOpenBraceTok->astOperand2();
             if (!cond2 || !cond2->isComparisonOp())
                 continue;
-            if (isOppositeCond(true, cpp, cond1, cond2, settings->library, true)) {
+            if (isOppositeCond(true, cpp, cond1, cond2, settings->library, true, true)) {
                 ValueFlow::Value value(1);
                 value.setKnown();
                 setTokenValue(const_cast<Token*>(cond2), value, settings);
@@ -1735,7 +1735,7 @@ static bool valueFlowForward(Token * const               startToken,
             }
             if (truevalues.size() != values.size() || condAlwaysTrue) {
                 // '{'
-                Token * const startToken1 = tok2->linkAt(1)->next();
+                const Token * const startToken1 = tok2->linkAt(1)->next();
 
                 bool vfresult = valueFlowForward(startToken1->next(),
                                                  startToken1->link(),
@@ -1763,7 +1763,7 @@ static bool valueFlowForward(Token * const               startToken,
                 }
 
                 if (Token::simpleMatch(tok2, "} else {")) {
-                    Token * const startTokenElse = tok2->tokAt(2);
+                    const Token * const startTokenElse = tok2->tokAt(2);
 
                     vfresult = valueFlowForward(startTokenElse->next(),
                                                 startTokenElse->link(),
@@ -2219,7 +2219,7 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
         variableToken = tok->tokAt(4);
         kind = ValueFlow::Value::MovedVariable;
     } else if (Token::simpleMatch(tok, "std :: forward <")) {
-        Token * leftAngle = tok->tokAt(3);
+        const Token * const leftAngle = tok->tokAt(3);
         Token * rightAngle = leftAngle->link();
         if (Token::Match(rightAngle, "> ( %var% )")) {
             variableToken = rightAngle->tokAt(2);
@@ -2243,20 +2243,6 @@ static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenth
     const Token * varTok = openParenthesisToken->tokAt(-3);
     return Token::Match(varTok, "%varid% . %name% (", varId) &&
            varTok->next()->originalName() == emptyString;
-}
-
-static const Token * nextAfterAstRightmostLeaf(Token const * tok)
-{
-    const Token * rightmostLeaf = tok;
-    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
-        return nullptr;
-    do {
-        if (rightmostLeaf->astOperand2())
-            rightmostLeaf = rightmostLeaf->astOperand2();
-        else
-            rightmostLeaf = rightmostLeaf->astOperand1();
-    } while (rightmostLeaf->astOperand1());
-    return rightmostLeaf->next();
 }
 
 static const Token * findOpenParentesisOfMove(const Token * moveVarTok)
@@ -2602,7 +2588,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                 bool bail = false;
 
                 for (int i=0; i<2; i++) {
-                    Token * startToken = startTokens[i];
+                    const Token * const startToken = startTokens[i];
                     if (!startToken)
                         continue;
                     std::list<ValueFlow::Value> & values = (i==0 ? true_values : false_values);

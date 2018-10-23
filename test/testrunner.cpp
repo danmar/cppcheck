@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
         options args(argc, const_cast<const char**>(argv));
 
-        std::size_t failedTestsCount = TestFixture::runTests(args);
+        const std::size_t failedTestsCount = TestFixture::runTests(args);
         return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 #ifdef NDEBUG
     } catch (const InternalError& e) {
