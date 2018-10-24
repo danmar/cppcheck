@@ -1285,6 +1285,10 @@ void CheckCondition::alwaysTrueFalse()
             const bool returnStatement = Token::simpleMatch(tok->astTop(), "return") &&
                                          Token::Match(tok->astParent(), "%oror%|&&|return");
 
+            // FIXME checking of return statements does not work well. See #8801
+            if (returnStatement)
+                continue;
+
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
                 continue;
 
