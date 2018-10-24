@@ -111,6 +111,7 @@ private:
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
+        TEST_CASE(template_forward_declared_default_parameter);
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
         TEST_CASE(template_constructor);    // #3152 - template constructor is removed
@@ -1409,6 +1410,75 @@ private:
                                 "thv_table_c<void*,void*,DefaultMemory<Key,Val>> id_table_m ; "
                                 "class thv_table_c<void*,void*,DefaultMemory<Key,Val>> { } ;";
             TODO_ASSERT_EQUALS(exp, curr, tok(code));
+        }
+    }
+
+    void template_forward_declared_default_parameter() {
+        {
+            const char code[] = "template <class T, int n=3> class A;\n"
+                                "template <class T, int n>\n"
+                                "class A\n"
+                                "{ T ar[n]; };\n"
+                                "\n"
+                                "void f()\n"
+                                "{\n"
+                                "    A<int,2> a1;\n"
+                                "    A<int> a2;\n"
+                                "}\n";
+
+            const char wanted[] = "void f ( ) "
+                                  "{"
+                                  " A<int,2> a1 ;"
+                                  " A<int,3> a2 ; "
+                                  "} "
+                                  "class A<int,2> "
+                                  "{ int ar [ 2 ] ; } ; "
+                                  "class A<int,3> "
+                                  "{ int ar [ 3 ] ; } ;";
+            const char current[] = "template < class T , int n = 3 > class A ; "
+                                   "void f ( ) "
+                                   "{"
+                                   " A<int,2> a1 ;"
+                                   " A<int,3> a2 ; "
+                                   "} "
+                                   "class A<int,2> "
+                                   "{ int ar [ 2 ] ; } ; "
+                                   "class A<int,3> "
+                                   "{ int ar [ 3 ] ; } ;";
+            TODO_ASSERT_EQUALS(wanted, current, tok(code));
+        }
+        {
+            const char code[] = "template <class, int = 3> class A;\n"
+                                "template <class T, int n>\n"
+                                "class A\n"
+                                "{ T ar[n]; };\n"
+                                "\n"
+                                "void f()\n"
+                                "{\n"
+                                "    A<int,2> a1;\n"
+                                "    A<int> a2;\n"
+                                "}\n";
+
+            const char wanted[] = "void f ( ) "
+                                  "{"
+                                  " A<int,2> a1 ;"
+                                  " A<int,3> a2 ; "
+                                  "} "
+                                  "class A<int,2> "
+                                  "{ int ar [ 2 ] ; } ; "
+                                  "class A<int,3> "
+                                  "{ int ar [ 3 ] ; } ;";
+            const char current[] = "template < class , int = 3 > class A ; "
+                                   "void f ( ) "
+                                   "{"
+                                   " A<int,2> a1 ;"
+                                   " A<int,3> a2 ; "
+                                   "} "
+                                   "class A<int,2> "
+                                   "{ int ar [ 2 ] ; } ; "
+                                   "class A<int,3> "
+                                   "{ int ar [ 3 ] ; } ;";
+            TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
     }
 

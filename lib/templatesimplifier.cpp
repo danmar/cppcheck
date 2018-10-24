@@ -488,7 +488,7 @@ static void setScopeInfo(const Token *tok, std::list<ScopeInfo2> *scopeInfo)
     }
 }
 
-std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDeclarations(bool &codeWithTemplates)
+std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDeclarations(bool &codeWithTemplates, bool forward)
 {
     std::list<ScopeInfo2> scopeInfo;
     std::list<TokenAndName> declarations;
@@ -513,13 +513,21 @@ std::list<TemplateSimplifier::TokenAndName> TemplateSimplifier::getTemplateDecla
             else if (tok2->str() == ")")
                 break;
             // Just a declaration => ignore this
-            else if (tok2->str() == ";")
+            else if (tok2->str() == ";") {
+                if (forward) {
+                    const int namepos = getTemplateNamePosition(parmEnd, forward);
+                    if (namepos > 0)
+                        declarations.emplace_back(tok, getScopeName(scopeInfo), getFullName(scopeInfo, parmEnd->strAt(namepos)));
+                }
                 break;
+            }
             // Implementation => add to "templates"
             else if (tok2->str() == "{") {
-                const int namepos = getTemplateNamePosition(parmEnd);
-                if (namepos > 0)
-                    declarations.emplace_back(tok, getScopeName(scopeInfo), getFullName(scopeInfo, parmEnd->strAt(namepos)));
+                if (!forward) {
+                    const int namepos = getTemplateNamePosition(parmEnd, forward);
+                    if (namepos > 0)
+                        declarations.emplace_back(tok, getScopeName(scopeInfo), getFullName(scopeInfo, parmEnd->strAt(namepos)));
+                }
                 break;
             }
         }
@@ -915,11 +923,12 @@ static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos
     return false;
 }
 
-int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
+int TemplateSimplifier::getTemplateNamePosition(const Token *tok, bool forward)
 {
     // get the position of the template name
     int namepos = 0, starAmpPossiblePosition = 0;
-    if (Token::Match(tok, "> class|struct|union %type% {|:|<"))
+    if ((forward && Token::Match(tok, "> class|struct|union %type% :|<|;")) ||
+        (!forward && Token::Match(tok, "> class|struct|union %type% {|:|<")))
         namepos = 2;
     else if (Token::Match(tok, "> %type% *|&| %type% ("))
         namepos = 2;
@@ -1482,7 +1491,7 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
 {
     typeParametersInDeclaration.clear();
     for (; tok && tok->str() != ">"; tok = tok->next()) {
-        if (Token::Match(tok, "%name% ,|>"))
+        if (Token::Match(tok, "%name% ,|>|="))
             typeParametersInDeclaration.push_back(tok);
     }
     return tok;
@@ -1887,6 +1896,39 @@ void TemplateSimplifier::replaceTemplateUsage(Token * const instantiationToken,
     }
 }
 
+void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
+{
+    // get all forward declarations
+    bool dummy;
+    std::list<TokenAndName> forwardTemplateDeclarations = getTemplateDeclarations(dummy, true);
+
+    // try to locate a matching declaration for each forward declaration
+    for (const auto & forwardDecl : forwardTemplateDeclarations) {
+        std::vector<const Token *> params1;
+
+        getTemplateParametersInDeclaration(forwardDecl.token, params1);
+
+        for (auto & decl : mTemplateDeclarations) {
+            std::vector<const Token *> params2;
+
+            getTemplateParametersInDeclaration(decl.token, params2);
+
+            // make sure the number of arguments match
+            if (params1.size() == params2.size()) {
+                // make sure the scopes and names match
+                if (forwardDecl.scope == decl.scope && forwardDecl.name == decl.name) {
+                    for (size_t k = 0; k < params1.size(); k++) {
+                        // copy default value to declaration if not present
+                        if (params1[k]->strAt(1) == "=" && params2[k]->strAt(1) != "=") {
+                            const_cast<Token *>(params2[k])->insertToken(params1[k]->strAt(2));
+                            const_cast<Token *>(params2[k])->insertToken(params1[k]->strAt(1));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 void TemplateSimplifier::simplifyTemplates(
     const std::time_t maxtime,
@@ -1928,6 +1970,9 @@ void TemplateSimplifier::simplifyTemplates(
         }
 
         mTemplateDeclarations = getTemplateDeclarations(codeWithTemplates);
+
+        // Copy default argument values from forward declaration to declaration
+        fixForwardDeclaredDefaultArgumentValues();
 
         // Locate possible instantiations of templates..
         getTemplateInstantiations();

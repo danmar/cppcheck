@@ -89,10 +89,11 @@ public:
     /**
      * Match template declaration/instantiation
      * @param tok The ">" token e.g. before "class"
+     * @param forward declaration or forward declaration
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    static int getTemplateNamePosition(const Token *tok);
+    static int getTemplateNamePosition(const Token *tok, bool forward = false);
 
     /**
      * Simplify templates
@@ -122,14 +123,22 @@ public:
 private:
     /**
      * Get template declarations
+     * @param codeWithTemplates set to true if code has templates
+     * @param forward declaration or forward declaration
      * @return list of template declarations
      */
-    std::list<TokenAndName> getTemplateDeclarations(bool &codeWithTemplates);
+    std::list<TokenAndName> getTemplateDeclarations(bool &codeWithTemplates, bool forward = false);
 
     /**
      * Get template instantiations
      */
     void getTemplateInstantiations();
+
+    /**
+     * Fix forward declared default argument values by copying them
+     * when they are not present in the declaration.
+     */
+    void fixForwardDeclaredDefaultArgumentValues();
 
     /**
      * simplify template instantiations (use default argument values)
