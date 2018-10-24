@@ -398,9 +398,9 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
 
         else if (tok2->str() == "{") {
             tok2 = tok2->link()->next();
-            eraseTokens(tok, tok2);
             if (tok2 && tok2->str() == ";" && tok2->next())
-                deleteToken(tok->next());
+                tok2 = tok2->next();
+            eraseTokens(tok, tok2);
             deleteToken(tok);
             return true;
         } else if (tok2->str() == "}") {  // garbage code! (#3449)
@@ -2023,8 +2023,14 @@ void TemplateSimplifier::simplifyTemplates(
 
         // remove out of line member functions
         while (!mMemberFunctionsToDelete.empty()) {
-            removeTemplate(mMemberFunctionsToDelete.begin()->token);
-            mTemplateDeclarations.remove(mMemberFunctionsToDelete.front());
+            const std::list<TokenAndName>::iterator it = std::find_if(mTemplateDeclarations.begin(),
+                    mTemplateDeclarations.end(),
+                    FindToken(mMemberFunctionsToDelete.begin()->token));
+            // multiple functions can share the same declaration so make sure it hasn't already been deleted
+            if (it != mTemplateDeclarations.end()) {
+                removeTemplate(it->token);
+                mTemplateDeclarations.erase(it);
+            }
             mMemberFunctionsToDelete.erase(mMemberFunctionsToDelete.begin());
         }
     }
