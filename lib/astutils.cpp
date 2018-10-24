@@ -180,9 +180,12 @@ static bool exprDependsOnThis(const Token *expr)
     // calling nonstatic method?
     if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
         // is it a method of this?
-        const Scope *nestedIn = expr->scope();
-        while (nestedIn && nestedIn != expr->function()->nestedIn)
+        const Scope *nestedIn = expr->scope()->functionOf;
+        if (nestedIn && nestedIn->function)
+            nestedIn = nestedIn->function->token->scope();
+        while (nestedIn && nestedIn != expr->function()->nestedIn) {
             nestedIn = nestedIn->nestedIn;
+        }
         return nestedIn == expr->function()->nestedIn;
     }
     return exprDependsOnThis(expr->astOperand1()) || exprDependsOnThis(expr->astOperand2());

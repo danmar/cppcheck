@@ -2037,6 +2037,20 @@ private:
               "    int get() const;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "public:\n"
+              "  bool f() const { return x > 0; }\n"
+              "  void g();\n"
+              "  int x = 0;\n"
+              "};\n"
+              "\n"
+              "void C::g() {\n"
+              "  bool b = f();\n"
+              "  x += 1;\n"
+              "  if (!b && f()) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalInnerCondition() {
