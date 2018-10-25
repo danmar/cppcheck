@@ -2706,7 +2706,7 @@ static const Variable * getLifetimeVariable(const Token * tok)
 
 struct Lambda
 {
-    Lambda(const Token * tok)
+    explicit Lambda(const Token * tok)
     : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr)
     {
         if(!Token::simpleMatch(tok, "[") || !tok->link())
@@ -2717,10 +2717,10 @@ struct Lambda
             arguments = capture->link()->next();
         }
         const Token * afterArguments = arguments ? arguments->link()->next() : capture->link()->next();
-        if(Token::Match(afterArguments, "->")) {
+        if(Token::simpleMatch(afterArguments, "->")) {
             returnTok = afterArguments->next();
             bodyTok = Token::findsimplematch(returnTok, "{");
-        } else if(Token::Match(afterArguments, "{")) {
+        } else if(Token::simpleMatch(afterArguments, "{")) {
             bodyTok = afterArguments;
         }
     }
