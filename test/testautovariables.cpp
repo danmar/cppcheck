@@ -122,6 +122,7 @@ private:
 
         TEST_CASE(danglingLifetimeLambda);
         TEST_CASE(danglingLifetimeContainer);
+        TEST_CASE(danglingLifetime);
     }
 
 
@@ -1317,6 +1318,27 @@ private:
               "auto f() {\n"
               "    std::vector<char> v;\n"
               "    return g([&]() { return v.data(); });\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetime() {
+        check("auto f() {\n"
+              "    std::vector<int> a;\n"
+              "    auto it = a.begin();\n"
+              "    return [=](){ return it; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
+
+        check("auto f(std::vector<int> a) {\n"
+              "    auto it = a.begin();\n"
+              "    return [=](){ return it; };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (error) Returning object with dangling lifetime from local variable 'a'.\n", errout.str());
+
+        check("auto f(std::vector<int>& a) {\n"
+              "    auto it = a.begin();\n"
+              "    return [=](){ return it; };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -125,6 +125,17 @@ void CheckFunctions::invalidFunctionUsage()
                     else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
+
+                if (mSettings->library.isargstrz(functionToken, argnr)) {
+                    if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
+                        const ValueType * valueType = argtok->next()->valueType();
+                        const Variable * variable = argtok->next()->variable();
+                        if (valueType->type == ValueType::Type::CHAR && !variable->isArray() && !variable->isGlobal() &&
+                            (!argtok->next()->hasKnownValue() || argtok->next()->getValue(0) == nullptr)) {
+                            invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                        }
+                    }
+                }
             }
         }
     }
@@ -165,6 +176,14 @@ void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::st
     errmsg << "$symbol:" << functionName << '\n';
     errmsg << "Invalid $symbol() argument nr " << argnr << ". A non-boolean value is required.";
     reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), CWE628, false);
+}
+
+void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::string &functionName, unsigned int argnr)
+{
+    std::ostringstream errmsg;
+    errmsg << "$symbol:" << functionName << '\n';
+    errmsg << "Invalid $symbol() argument nr " << argnr << ". A nul-terminated string is required.";
+    reportError(tok, Severity::error, "invalidFunctionArgStr", errmsg.str(), CWE628, false);
 }
 
 //---------------------------------------------------------------------------

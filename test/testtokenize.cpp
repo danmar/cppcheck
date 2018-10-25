@@ -3305,7 +3305,7 @@ private:
 
     void removeParentheses15() {
         ASSERT_EQUALS("a = b ? c : 123 ;", tokenizeAndStringify("a = b ? c : (123);", false));
-        ASSERT_EQUALS("a = b ? c : ( 579 ) ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
+        ASSERT_EQUALS("a = b ? c : ( 123 + 456 ) ;", tokenizeAndStringify("a = b ? c : ((123)+(456));", false));
         ASSERT_EQUALS("a = b ? 123 : c ;", tokenizeAndStringify("a = b ? (123) : c;", false));
 
         // #4316
@@ -3402,7 +3402,7 @@ private:
                       "float b ; b = 4.2f ;\n"
                       "double c ; c = 4.2e+10 ;\n"
                       "double d ; d = 4.2e-10 ;\n"
-                      "int e ; e = 6 ;\n"
+                      "int e ; e = 4 + 2 ;\n"
                       "}", tokenizeAndStringify(code));
     }
 
@@ -3722,7 +3722,7 @@ private:
             // Ticket #4450
             const char code[] = "static int large_eeprom_type = (13 | (5)), "
                                 "default_flash_type = 42;";
-            ASSERT_EQUALS("static int large_eeprom_type = 13 ; static int default_flash_type = 42 ;",
+            ASSERT_EQUALS("static int large_eeprom_type = 13 | 5 ; static int default_flash_type = 42 ;",
                           tokenizeAndStringify(code));
         }
 
@@ -6011,9 +6011,6 @@ private:
                       tokenizeAndStringify("( 0 && a < 123 );", true));
         ASSERT_EQUALS("( 0 ) ;",
                       tokenizeAndStringify("( 0 && a[123] );", true));
-
-        // ticket #3964 - simplify numeric calculations in tokenization
-        ASSERT_EQUALS("char a [ 10 ] ;", tokenizeAndStringify("char a[9+1];"));
 
         // ticket #4931
         ASSERT_EQUALS("dostuff ( 1 ) ;", tokenizeAndStringify("dostuff(9&&8);", true));
@@ -8403,6 +8400,8 @@ private:
         ASSERT_EQUALS("a1(2+=",testAst("a=(t&)1+2;"));
         ASSERT_EQUALS("ab::r&c(=", testAst("a::b& r = (a::b&)c;")); // #5261
         ASSERT_EQUALS("ab10:?=", testAst("a=(b)?1:0;"));
+        ASSERT_EQUALS("ac5[new(=", testAst("a = (b*)(new c[5]);")); // #8786
+        ASSERT_EQUALS("a(4+", testAst("(int)(a) + 4;"));
 
         // TODO: This AST is incomplete however it's very weird syntax (taken from clang test suite)
         ASSERT_EQUALS("a&(", testAst("(int (**)[i]){&a}[0][1][5] = 0;"));

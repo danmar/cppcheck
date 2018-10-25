@@ -373,6 +373,9 @@ private:
 
         // #7571
         ASSERT_EQUALS("; foo = foo + [ & ] ( ) { } ;", tok("; foo += [&]() {int i;};"));
+
+        // #8796
+        ASSERT_EQUALS("{ return ( a = b ) += c ; }", tok("{ return (a = b) += c; }"));
     }
 
 

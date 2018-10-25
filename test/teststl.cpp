@@ -57,6 +57,12 @@ private:
         TEST_CASE(iterator13);
         TEST_CASE(iterator14); // #8191
         TEST_CASE(iterator15); // #8341
+        TEST_CASE(iterator16);
+        TEST_CASE(iterator17);
+        TEST_CASE(iterator18);
+        TEST_CASE(iterator19);
+        TEST_CASE(iterator20);
+        TEST_CASE(iterator21);
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
 
@@ -246,7 +252,7 @@ private:
               "    for (list<int>::iterator it = l1.begin(); it != l2.end(); ++it)\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -255,7 +261,7 @@ private:
               "    for (list<int>::iterator it = l1.begin(); l2.end() != it; ++it)\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", errout.str());
 
         check("struct C { std::list<int> l1; void func(); };\n"
               "void C::func() {\n"
@@ -274,7 +280,7 @@ private:
               "    for (list<int>::const_reverse_iterator it = l1.rbegin(); it != l2.rend(); ++it)\n"
               "    { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
     }
 
     void iterator2() {
@@ -288,7 +294,19 @@ private:
               "        ++it;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    list<int> l1;\n"
+              "    list<int> l2;\n"
+              "    list<int>::iterator it = l1.begin();\n"
+              "    while (l2.end() != it)\n"
+              "    {\n"
+              "        ++it;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", errout.str());
     }
 
     void iterator3() {
@@ -512,7 +530,7 @@ private:
               "        if (it != s2.end()) continue;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Same iterator is used with different containers 's1' and 's2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:5]: (error) Same iterator is used with different containers 's1' and 's2'.\n", errout.str());
     }
 
     void iterator11() {
@@ -534,7 +552,7 @@ private:
               "    std::map<int, int>::const_iterator it = map1.find(123);\n"
               "    if (it == map2.end()) { }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'map1' and 'map2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (error) Same iterator is used with different containers 'map1' and 'map2'.\n", errout.str());
 
         check("void f() {\n"
               "    std::map<int, int> map1;\n"
@@ -542,7 +560,7 @@ private:
               "    std::map<int, int>::const_iterator it = map1.find(123);\n"
               "    if (map2.end() == it) { }"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with different containers 'map1' and 'map2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (error) Same iterator is used with different containers 'map2' and 'map1'.\n", errout.str());
 
         check("void f(std::string &s) {\n"
               "    int pos = s.find(x);\n"
@@ -564,7 +582,7 @@ private:
               "    while (it!=a.end())\n"
               "        ++it;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Same iterator is used with different containers 't' and 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:8]: (error) Same iterator is used with different containers 't' and 'a'.\n", errout.str());
 
         // #4062
         check("void f() {\n"
@@ -611,6 +629,286 @@ private:
               "  for(pos = x[0]->plist.begin(); pos != x[0]->plist.end(); ++pos) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator16() {
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l2.end();\n"
+              "    while (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.end();\n"
+              "    std::list<int>::iterator it2 = l2.begin();\n"
+              "    while (it2 != it1)\n"
+              "    {\n"
+              "        ++it2;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l2' and 'l1'.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it2 = l2.end();\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    while (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2(10, 4);\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l2.find(4);\n"
+              "    while (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+
+    }
+
+    void iterator17() {
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    { it2 = l2.end(); }\n"
+              "    while (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:5] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    while (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "    it2 = l2.end();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    it1 = l2.end();\n"
+              "    it1 = l1.end();\n"
+              "    if (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    { it2 = l2.end(); }\n"
+              "    it2 = l1.end();\n"
+              "    { it2 = l2.end(); }\n"
+              "    while (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:5] -> [test.cpp:9]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+    }
+
+    void iterator18() {
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    while (++it1 != --it2)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    while (it1++ != --it2)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l1.end();\n"
+              "    if (--it2 > it1++)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
+    }
+
+    void iterator19() {
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        if (it1 != l1.end())\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        if (l1.end() > it1)\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
+                           "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
+                           errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        std::list<int>::iterator it2 = l1.begin();\n"
+              "        if (it1 != it2)\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    {\n"
+              "        std::list<int> l1;\n"
+              "        std::list<int>::iterator it2 = l1.begin();\n"
+              "        if (it2 != it1)\n"
+              "        {\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4] -> [test.cpp:7]: (error) Comparison of iterators from containers 'l1' that are defined in different scopes.\n", errout.str());
+
+    }
+
+    void iterator20() {
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l2.begin();\n"
+              "    it1 = it2;\n"
+              "    while (it1 != l1.end())\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with different containers 'l2' and 'l1'.\n", "", errout.str());
+
+        check("std::list<int> l3;\n"
+              "std::list<int>::iterator bar()\n"
+              "{\n"
+              "    return l3.end();\n"
+              "}\n"
+              "void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.begin();\n"
+              "    std::list<int>::iterator it2 = l2.begin();\n"
+              "    it1 = bar();\n"
+              "    while (it1 != it2)\n"
+              "    {\n"
+              "        ++it1;\n"
+              "    }\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:10] -> [test.cpp:11]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", "", errout.str());
+
+    }
+
+    void iterator21() {
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.end();\n"
+              "    std::list<int>::iterator it2 = l2.begin();\n"
+              "    if (it1 != it2)\n"
+              "    {\n"
+              "    }\n"
+              "    if (it2 != it1)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n"
+                      "[test.cpp:10] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l2' and 'l1'.\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>::iterator it1 = l1.end();\n"
+              "    std::list<int>::iterator it2 = l2.begin();\n"
+              "    if (it1 != it2 && it1 != it2)\n"
+              "    {\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:5]: (error) Comparison of iterators from containers 'l1' and 'l2'.\n", errout.str());
+
     }
 
     void iteratorExpression() {

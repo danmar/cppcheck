@@ -1,7 +1,5 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!--
 
 `xsltproc -''-nonet \
@@ -42,32 +40,25 @@ Validation can be done using: `xmllint -''-noout -''-valid manpage.xml`
 General documentation about man-pages and man-page-formatting:
 man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
 
--->
-
-  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
-  <!ENTITY dhfirstname "Reijo">
-  <!ENTITY dhsurname   "Tomperi">
-  <!-- dhusername could also be set to "&firstname; &surname;". -->
-  <!ENTITY dhusername  "&dhfirstname; &dhsurname;">
-  <!ENTITY dhemail     "aggro80@users.sourceforge.net">
-  <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+--><!-- Fill in your name for FIRSTNAME and SURNAME. --><!ENTITY dhfirstname "Reijo">
+<!ENTITY dhsurname "Tomperi">
+<!-- dhusername could also be set to "&firstname; &surname;". --><!ENTITY dhusername "&dhfirstname; &dhsurname;">
+<!ENTITY dhemail "aggro80@users.sourceforge.net">
+<!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1) and
-       http://www.tldp.org/HOWTO/Man-Page/q2.html. -->
-  <!ENTITY dhsection   "1">
-  <!-- TITLE should be something like "User commands" or similar (see
-       http://www.tldp.org/HOWTO/Man-Page/q2.html). -->
-  <!ENTITY dhtitle     "cppcheck User Manual">
-  <!ENTITY dhucpackage "CPPCHECK">
-  <!ENTITY dhpackage   "cppcheck">
+       http://www.tldp.org/HOWTO/Man-Page/q2.html. --><!ENTITY dhsection "1">
+<!-- TITLE should be something like "User commands" or similar (see
+       http://www.tldp.org/HOWTO/Man-Page/q2.html). --><!ENTITY dhtitle "cppcheck User Manual">
+<!ENTITY dhucpackage "CPPCHECK">
+<!ENTITY dhpackage "cppcheck">
 ]>
-
 <refentry>
   <refentryinfo>
     <title>&dhtitle;</title>
     <productname>&dhpackage;</productname>
     <authorgroup>
       <author>
-       <firstname>&dhfirstname;</firstname>
+        <firstname>&dhfirstname;</firstname>
         <surname>&dhsurname;</surname>
         <contrib>Wrote this manpage for the Debian system.</contrib>
         <address>
@@ -102,46 +93,129 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg choice="opt"><option>--check-config</option></arg>
-      <arg choice="opt"><option>--check-library</option></arg>
-      <arg choice="opt"><option>-D&lt;id&gt;</option></arg>
-      <arg choice="opt"><option>-U&lt;id&gt;</option></arg>
-      <arg choice="opt"><option>--enable=&lt;id&gt;</option></arg>
-      <arg choice="opt"><option>--error-exitcode=&lt;n&gt;</option></arg>
-      <arg choice="opt"><option>--errorlist</option></arg>
-      <arg choice="opt"><option>--exitcode-suppressions=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--file-list=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--force</option></arg>
-      <arg choice="opt"><option>--help</option></arg>
-      <arg choice="opt"><option>-I&lt;dir&gt;</option></arg>
-      <arg choice="opt"><option>--includes-file=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--config-exclude=&lt;dir&gt;</option></arg>
-      <arg choice="opt"><option>--config-excludes-file=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--include=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>-i&lt;dir&gt;</option></arg>
-      <arg choice="opt"><option>--inconclusive</option></arg>
-      <arg choice="opt"><option>--inline-suppr</option></arg>
-      <arg choice="opt"><option>-j&lt;jobs&gt;</option></arg>
-      <arg choice="opt"><option>-l&lt;load&gt;</option></arg>
-      <arg choice="opt"><option>--language=&lt;language&gt;</option></arg>
-      <arg choice="opt"><option>--library=&lt;cfg&gt;</option></arg>
-      <arg choice="opt"><option>--max-configs=&lt;limit&gt;</option></arg>
-      <arg choice="opt"><option>--platform=&lt;type&gt;</option></arg>
-      <arg choice="opt"><option>--quiet</option></arg>
-      <arg choice="opt"><option>--relative-paths=&lt;paths&gt;</option></arg>
-      <arg choice="opt"><option>--report-progress</option></arg>
-      <arg choice="opt"><option>--rule=&lt;rule&gt;</option></arg>
-      <arg choice="opt"><option>--rule-file=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--std=&lt;id&gt;</option></arg>
-      <arg choice="opt"><option>--suppress=&lt;spec&gt;</option></arg>
-      <arg choice="opt"><option>--suppressions-list=&lt;file&gt;</option></arg>
-      <arg choice="opt"><option>--template='&lt;text&gt;'</option></arg>
-      <arg choice="opt"><option>--verbose</option></arg>
-      <arg choice="opt"><option>--version</option></arg>
-      <arg choice="opt"><option>--xml</option></arg>
-      <arg choice="opt"><option>--xml-version=&lt;version&gt;]</option></arg>
-      <arg choice="opt"><option>file or path</option></arg>
-      <arg choice="plain"><option>...</option></arg>
+      <arg choice="opt">
+        <option>--check-config</option>
+      </arg>
+      <arg choice="opt">
+        <option>--check-library</option>
+      </arg>
+      <arg choice="opt">
+        <option>-D&lt;id&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>-U&lt;id&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--enable=&lt;id&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--error-exitcode=&lt;n&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--errorlist</option>
+      </arg>
+      <arg choice="opt">
+        <option>--exitcode-suppressions=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--file-list=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--force</option>
+      </arg>
+      <arg choice="opt">
+        <option>--help</option>
+      </arg>
+      <arg choice="opt">
+        <option>-I&lt;dir&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--includes-file=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--config-exclude=&lt;dir&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--config-excludes-file=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--include=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>-i&lt;dir&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--inconclusive</option>
+      </arg>
+      <arg choice="opt">
+        <option>--inline-suppr</option>
+      </arg>
+      <arg choice="opt">
+        <option>-j&lt;jobs&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>-l&lt;load&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--language=&lt;language&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--library=&lt;cfg&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--max-configs=&lt;limit&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--platform=&lt;type&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--quiet</option>
+      </arg>
+      <arg choice="opt">
+        <option>--relative-paths=&lt;paths&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--report-progress</option>
+      </arg>
+      <arg choice="opt">
+        <option>--rule=&lt;rule&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--rule-file=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--std=&lt;id&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--suppress=&lt;spec&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--suppressions-list=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--suppress-xml=&lt;.xml file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--template='&lt;text&gt;'</option>
+      </arg>
+      <arg choice="opt">
+        <option>--verbose</option>
+      </arg>
+      <arg choice="opt">
+        <option>--version</option>
+      </arg>
+      <arg choice="opt">
+        <option>--xml</option>
+      </arg>
+      <arg choice="opt">
+        <option>--xml-version=&lt;version&gt;]</option>
+      </arg>
+      <arg choice="opt">
+        <option>file or path</option>
+      </arg>
+      <arg choice="plain">
+        <option>...</option>
+      </arg>
     </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1 id="description">
@@ -162,96 +236,59 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
            variablelist.term.break.after parameters to
            control the term elements. -->
       <varlistentry>
-        <term><option>--check-config</option></term>
+        <term>
+          <option>--check-config</option>
+        </term>
         <listitem>
           <para>Check Cppcheck configuration. The normal code analysis is disabled by this flag.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--check-library</option></term>
+        <term>
+          <option>--check-library</option>
+        </term>
         <listitem>
           <para>Show information messages when library files have incomplete info.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-D&lt;id&gt;</option></term>
+        <term>
+          <option>-D&lt;id&gt;</option>
+        </term>
         <listitem>
           <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration.
 Example: -DDEBUG=1 -D__cplusplus</para>
         </listitem>
       </varlistentry>
-        <varlistentry>
-            <term><option>-U&lt;id&gt;</option></term>
-            <listitem>
-                <para>By default Cppcheck checks all configurations. Use '-U' to explicitly hide certain #ifdef &lt;id&gt; code paths from checking.
+      <varlistentry>
+        <term>
+          <option>-U&lt;id&gt;</option>
+        </term>
+        <listitem>
+          <para>By default Cppcheck checks all configurations. Use '-U' to explicitly hide certain #ifdef &lt;id&gt; code paths from checking.
 Example: '-UDEBUG'</para>
-            </listitem>
-        </varlistentry>
-        <varlistentry>
-        <term><option>--enable=&lt;id&gt;</option></term>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--enable=&lt;id&gt;</option>
+        </term>
         <listitem>
           <para>Enable additional checks. The available ids are:
-            <glosslist>
-              <glossentry>
-                <glossterm>all</glossterm>
-                <glossdef>
-                  <para>Enable all checks. It is recommended to only use
+            <glosslist><glossentry><glossterm>all</glossterm><glossdef><para>Enable all checks. It is recommended to only use
                   --enable=all when the whole program is scanned, because this
-                  enables unusedFunction.</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>warning</glossterm>
-                <glossdef>
-                  <para>Enable warning messages</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>style</glossterm>
-                <glossdef>
-                  <para>Enable all coding style checks. All messages with the
+                  enables unusedFunction.</para></glossdef></glossentry><glossentry><glossterm>warning</glossterm><glossdef><para>Enable warning messages</para></glossdef></glossentry><glossentry><glossterm>style</glossterm><glossdef><para>Enable all coding style checks. All messages with the
                   severities 'style', 'performance' and 'portability' are
-                  enabled.</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>performance</glossterm>
-                <glossdef>
-                  <para>Enable performance messages</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>portability</glossterm>
-                <glossdef>
-                  <para>Enable portability messages</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>information</glossterm>
-                <glossdef>
-                  <para>Enable information messages</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>unusedFunction</glossterm>
-                <glossdef>
-                  <para>Check for unused functions. It is recommend to only
-                  enable this when the whole program is scanned</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>missingInclude</glossterm>
-                <glossdef>
-                  <para>Warn if there are missing includes. For detailed information use --check-config</para>
-                </glossdef>
-              </glossentry>
-            </glosslist>
+                  enabled.</para></glossdef></glossentry><glossentry><glossterm>performance</glossterm><glossdef><para>Enable performance messages</para></glossdef></glossentry><glossentry><glossterm>portability</glossterm><glossdef><para>Enable portability messages</para></glossdef></glossentry><glossentry><glossterm>information</glossterm><glossdef><para>Enable information messages</para></glossdef></glossentry><glossentry><glossterm>unusedFunction</glossterm><glossdef><para>Check for unused functions. It is recommend to only
+                  enable this when the whole program is scanned</para></glossdef></glossentry><glossentry><glossterm>missingInclude</glossterm><glossdef><para>Warn if there are missing includes. For detailed information use --check-config</para></glossdef></glossentry></glosslist>
             By default none of the additional checks are enabled. Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunction. See also --std
           </para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--error-exitcode=&lt;n&gt;</option></term>
+        <term>
+          <option>--error-exitcode=&lt;n&gt;</option>
+        </term>
         <listitem>
           <para>If errors are found, integer &lt;n&gt; is returned instead of default 0.
           EXIT_FAILURE is returned if arguments are not valid or if no input files are
@@ -260,248 +297,244 @@ Example: '-UDEBUG'</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--errorlist</option></term>
+        <term>
+          <option>--errorlist</option>
+        </term>
         <listitem>
           <para>Print a list of all possible error messages in XML format.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--exitcode-suppressions=&lt;file&gt;</option></term>
+        <term>
+          <option>--exitcode-suppressions=&lt;file&gt;</option>
+        </term>
         <listitem>
           <para>Used when certain messages should be displayed but should not cause a non-zero exitcode.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--file-list=&lt;file&gt;</option></term>
+        <term>
+          <option>--file-list=&lt;file&gt;</option>
+        </term>
         <listitem>
           <para>Specify the files to check in a text file. One filename per line. When file is -, the file list will be read from standard input.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-f</option></term>
-        <term><option>--force</option></term>
+        <term>
+          <option>-f</option>
+        </term>
+        <term>
+          <option>--force</option>
+        </term>
         <listitem>
           <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by
 default. If used together with --max-configs=, the last option is the one that is effective.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-h</option></term>
-        <term><option>--help</option></term>
+        <term>
+          <option>-h</option>
+        </term>
+        <term>
+          <option>--help</option>
+        </term>
         <listitem>
           <para>Print help text.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-I &lt;dir&gt;</option></term>
+        <term>
+          <option>-I &lt;dir&gt;</option>
+        </term>
         <listitem>
           <para>Give path to search for include files. Give several -I parameters to give several paths. First given path is
 searched for contained header files first. If paths are relative to source files, this is not needed.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--includes-file=&lt;file&gt;</option></term>
+        <term>
+          <option>--includes-file=&lt;file&gt;</option>
+        </term>
         <listitem>
           <para>Specify directory paths to search for included header files in a text file. Add one include path per line.
 First given path is searched for contained header files first. If paths are relative to source files, this is not needed.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--config-exclude=&lt;dir&gt;</option></term>
+        <term>
+          <option>--config-exclude=&lt;dir&gt;</option>
+        </term>
         <listitem>
           <para>Path (prefix) to be excluded from configuration checking. Preprocessor configurations defined in headers
 (but not sources) matching the prefix will not be considered for evaluation of configuration alternatives.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--config-exclude-file=&lt;file&gt;</option></term>
+        <term>
+          <option>--config-exclude-file=&lt;file&gt;</option>
+        </term>
         <listitem>
           <para>A file that contains a list of config-excludes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--include=&lt;file&gt;</option></term>
+        <term>
+          <option>--include=&lt;file&gt;</option>
+        </term>
         <listitem>
           <para>Force inclusion of a file before the checked file. Can be used for example when checking the Linux kernel,
 where autoconf.h needs to be included for every file compiled. Works the same way as the GCC -include option.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-i &lt;dir&gt;</option></term>
+        <term>
+          <option>-i &lt;dir&gt;</option>
+        </term>
         <listitem>
           <para>Give path to ignore. Give several -i parameters to ignore several paths. Give directory name or filename with path as parameter.
 Directory name is matched to all parts of the path.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--inconclusive</option></term>
+        <term>
+          <option>--inconclusive</option>
+        </term>
         <listitem>
           <para>Allow that Cppcheck reports even though the analysis is inconclusive.
 There are false positives with this option. Each result must be carefully investigated before you know if it is good or bad.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--inline-suppr</option></term>
+        <term>
+          <option>--inline-suppr</option>
+        </term>
         <listitem>
           <para>Enable inline suppressions. Use them by placing comments in the form: // cppcheck-suppress memleak
           before the line to suppress.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-j &lt;jobs&gt;</option></term>
+        <term>
+          <option>-j &lt;jobs&gt;</option>
+        </term>
         <listitem>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-l &lt;load&gt;</option></term>
+        <term>
+          <option>-l &lt;load&gt;</option>
+        </term>
         <listitem>
           <para>Specifies that no new threads should be started if there are other threads running and the load average is at least
 &lt;load&gt; (ignored on non UNIX-like systems)</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--language=&lt;language&gt;</option></term>
+        <term>
+          <option>--language=&lt;language&gt;</option>
+        </term>
         <listitem>
           <para>Forces cppcheck to check all files as the given language. Valid
           values are: c, c++</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--library=&lt;cfg&gt;</option></term>
+        <term>
+          <option>--library=&lt;cfg&gt;</option>
+        </term>
         <listitem>
           <para>Use library configuration.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--max-configs=&lt;limit&gt;</option></term>
+        <term>
+          <option>--max-configs=&lt;limit&gt;</option>
+        </term>
         <listitem>
           <para>Maximum number of configurations to check in a file before skipping it. Default is 12. If used together with --force, the last option is
           the one that is effective.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--platform=&lt;type&gt;</option></term>
+        <term>
+          <option>--platform=&lt;type&gt;</option>
+        </term>
         <listitem>
           <para>Specifies platform specific types and sizes.The available platforms are:
-            <glosslist>
-              <glossentry>
-                <glossterm>unix32</glossterm>
-                <glossdef>
-                  <para>32 bit unix variant</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>unix64</glossterm>
-                <glossdef>
-                  <para>64 bit unix variant</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>win32A</glossterm>
-                <glossdef>
-                  <para>32 bit Windows ASCII character encoding</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>win32W</glossterm>
-                <glossdef>
-                  <para>32 bit Windows UNICODE character encoding</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>win64</glossterm>
-                <glossdef>
-                  <para>64 bit Windows</para>
-                </glossdef>
-              </glossentry>
-            </glosslist>
+            <glosslist><glossentry><glossterm>unix32</glossterm><glossdef><para>32 bit unix variant</para></glossdef></glossentry><glossentry><glossterm>unix64</glossterm><glossdef><para>64 bit unix variant</para></glossdef></glossentry><glossentry><glossterm>win32A</glossterm><glossdef><para>32 bit Windows ASCII character encoding</para></glossdef></glossentry><glossentry><glossterm>win32W</glossterm><glossdef><para>32 bit Windows UNICODE character encoding</para></glossdef></glossentry><glossentry><glossterm>win64</glossterm><glossdef><para>64 bit Windows</para></glossdef></glossentry></glosslist>
             By default the platform which was used to compile Cppcheck is used.
           </para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-q</option></term>
-        <term><option>--quiet</option></term>
+        <term>
+          <option>-q</option>
+        </term>
+        <term>
+          <option>--quiet</option>
+        </term>
         <listitem>
           <para>Only print something when there is an error.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-rp</option></term>
-        <term><option>-rp=&lt;paths&gt;</option></term>
-        <term><option>--relative-paths;</option></term>
-        <term><option>--relative-paths=&lt;paths&gt;</option></term>
+        <term>
+          <option>-rp</option>
+        </term>
+        <term>
+          <option>-rp=&lt;paths&gt;</option>
+        </term>
+        <term>
+          <option>--relative-paths;</option>
+        </term>
+        <term>
+          <option>--relative-paths=&lt;paths&gt;</option>
+        </term>
         <listitem>
           <para>Use relative paths in output. When given, &lt;paths&gt; are used as base. You can separate multiple paths by ';'. Otherwise path where source files are searched is used. E.g. if given value is test, when checking test/test.cpp, the path in output will be test.cpp instead of test/test.cpp. The feature uses string comparison to create relative paths, so using e.g. ~ for home folder does not work. It is currently only possible to apply the base paths to files that are on a lower level in the directory tree.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--report-progress</option></term>
+        <term>
+          <option>--report-progress</option>
+        </term>
         <listitem>
           <para>Report progress when checking a file.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--rule=&lt;rule&gt;</option></term>
+        <term>
+          <option>--rule=&lt;rule&gt;</option>
+        </term>
         <listitem>
-          <para>Match regular expression to create your own checks. E.g. rule &quot;/ 0&quot; can be used to check division by zero. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
+          <para>Match regular expression to create your own checks. E.g. rule "/ 0" can be used to check division by zero. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--rule-file=&lt;file&gt;</option></term>
+        <term>
+          <option>--rule-file=&lt;file&gt;</option>
+        </term>
         <listitem>
           <para>Use given rule XML file. See https://sourceforge.net/projects/cppcheck/files/Articles/ for more info about the syntax. This command is only available if cppcheck was compiled with HAVE_RULES=yes.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--std=&lt;id&gt;</option></term>
+        <term>
+          <option>--std=&lt;id&gt;</option>
+        </term>
         <listitem>
           <para>Set standard. The available options are:
-            <glosslist>
-              <glossentry>
-                <glossterm>posix</glossterm>
-                <glossdef>
-                  <para>POSIX compatible code</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>c89</glossterm>
-                <glossdef>
-                  <para>C code is C89 compatible</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>c99</glossterm>
-                <glossdef>
-                  <para>C code is C99 compatible</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>c11</glossterm>
-                <glossdef>
-                  <para>C code is C11 compatible (default)</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>c++03</glossterm>
-                <glossdef>
-                  <para>C++ code is C++03 compatible</para>
-                </glossdef>
-              </glossentry>
-              <glossentry>
-                <glossterm>c++11</glossterm>
-                <glossdef>
-                  <para>C++ code is C++11 compatible (default)</para>
-                </glossdef>
-              </glossentry>
-            </glosslist>
+            <glosslist><glossentry><glossterm>posix</glossterm><glossdef><para>POSIX compatible code</para></glossdef></glossentry><glossentry><glossterm>c89</glossterm><glossdef><para>C code is C89 compatible</para></glossdef></glossentry><glossentry><glossterm>c99</glossterm><glossdef><para>C code is C99 compatible</para></glossdef></glossentry><glossentry><glossterm>c11</glossterm><glossdef><para>C code is C11 compatible (default)</para></glossdef></glossentry><glossentry><glossterm>c++03</glossterm><glossdef><para>C++ code is C++03 compatible</para></glossdef></glossentry><glossentry><glossterm>c++11</glossterm><glossdef><para>C++ code is C++11 compatible (default)</para></glossdef></glossentry></glosslist>
             Example to set more than one standards: 'cppcheck --std=c99 --std=posix file.cpp'
           </para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--suppress=&lt;spec&gt;</option></term>
+        <term>
+          <option>--suppress=&lt;spec&gt;</option>
+        </term>
         <listitem>
           <para>Suppress a specific warning. The format of &lt;spec&gt; is: [error id]:[filename]:[line].
           The [filename] and [line] are optional.
@@ -510,39 +543,61 @@ There are false positives with this option. Each result must be carefully invest
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--suppressions-list=&lt;file&gt;</option></term>
+        <term>
+          <option>--suppressions-list=&lt;file&gt;</option>
+        </term>
         <listitem>
           <para>Suppress warnings listed in the file.
           Each suppression is in the format of &lt;spec&gt; above.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--template='&lt;text&gt;'</option></term>
+        <term>
+          <option>--suppress-xml=&lt;.xml file&gt;</option>
+        </term>
+        <listitem>
+          <para>Use suppressions defined in xml as described in the manual</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--template='&lt;text&gt;'</option>
+        </term>
         <listitem>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-v</option></term>
-        <term><option>--verbose</option></term>
+        <term>
+          <option>-v</option>
+        </term>
+        <term>
+          <option>--verbose</option>
+        </term>
         <listitem>
           <para>More detailed error reports</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--version</option></term>
+        <term>
+          <option>--version</option>
+        </term>
         <listitem>
           <para>Print out version information</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--xml</option></term>
+        <term>
+          <option>--xml</option>
+        </term>
         <listitem>
           <para>Write results in XML to error stream</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--xml-version=&lt;version&gt;</option></term>
+        <term>
+          <option>--xml-version=&lt;version&gt;</option>
+        </term>
         <listitem>
           <para>Select the XML file version. Currently versions 1 and 2 are available. The default version is 1.</para>
         </listitem>

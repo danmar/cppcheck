@@ -812,6 +812,9 @@ public:
     const Token* findClosingBracket() const;
     Token* findClosingBracket();
 
+    const Token* findOpeningBracket() const;
+    Token* findOpeningBracket();
+
     /**
      * @return the original name.
      */
@@ -1045,6 +1048,8 @@ public:
             ret = ret->mAstParent;
         return ret;
     }
+
+    std::pair<const Token *, const Token *> findExpressionStartEndTokens() const;
 
     /**
      * Is current token a calculation? Only true for operands.

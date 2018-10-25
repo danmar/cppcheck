@@ -46,7 +46,7 @@ def getCppcheck(cppcheckPath):
             subprocess.call(['git', 'checkout', '-f'])
             subprocess.call(['git', 'pull'])
         else:
-            subprocess.call(['git', 'clone', 'http://github.com/danmar/cppcheck.git', cppcheckPath])
+            subprocess.call(['git', 'clone', 'https://github.com/danmar/cppcheck.git', cppcheckPath])
             if not os.path.exists(cppcheckPath):
                 print('Failed to clone, will try again in 10 minutes..')
                 time.sleep(600)
@@ -288,8 +288,8 @@ while True:
     if not getCppcheck(cppcheckPath):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
-    if compile_version(workpath, jobs, '1.84') == False:
-        print('Failed to compile Cppcheck-1.84, retry later')
+    if compile_version(workpath, jobs, '1.85') == False:
+        print('Failed to compile Cppcheck-1.85, retry later')
         sys.exit(1)
     if compile(cppcheckPath, jobs) == False:
         print('Failed to compile Cppcheck, retry later')
@@ -301,7 +301,7 @@ while True:
     count = ''
     elapsedTime = ''
     resultsToDiff = []
-    for cppcheck in ['cppcheck/cppcheck', '1.84/cppcheck']:
+    for cppcheck in ['cppcheck/cppcheck', '1.85/cppcheck']:
         c,errout,t = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
@@ -313,11 +313,11 @@ while True:
     if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         print('No results')
         continue
-    output = 'cppcheck: head 1.84\n'
+    output = 'cppcheck: head 1.85\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
     if not crash:
-        output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.84', resultsToDiff[1]) + '\n'
+        output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.85', resultsToDiff[1]) + '\n'
     uploadResults(package, output)
     print('Results have been uploaded')
     print('Sleep 5 seconds..')

@@ -29,6 +29,7 @@
 
 #include <cstddef>
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -158,12 +159,46 @@ void CheckStl::invalidIteratorError(const Token *tok, const std::string &iterato
     reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, false);
 }
 
-void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
+void CheckStl::iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2)
 {
-    reportError(tok, Severity::error, "iterators",
-                "$symbol:" + container1 + "\n"
-                "$symbol:" + container2 + "\n"
-                "Same iterator is used with different containers '" + container1 + "' and '" + container2 + "'.", CWE664, false);
+    reportError(tok, Severity::error, "iterators1",
+                "$symbol:" + containerName1 + "\n"
+                "$symbol:" + containerName2 + "\n"
+                "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
+}
+
+void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2)
+{
+    std::list<const Token*> callstack = { tok, containerTok };
+    reportError(callstack, Severity::error, "iterators2",
+                "$symbol:" + containerName1 + "\n"
+                "$symbol:" + containerName2 + "\n"
+                "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
+}
+
+void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName)
+{
+    std::list<const Token*> callstack = { tok, containerTok };
+    reportError(callstack, Severity::error, "iterators3",
+                "$symbol:" + containerName + "\n"
+                "Same iterator is used with containers '" + containerName + "' that are defined in different scopes.", CWE664, false);
+}
+
+void CheckStl::iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName1, const std::string& containerName2)
+{
+    std::list<const Token*> callstack = { cmpOperatorTok, containerTok1, containerTok2 };
+    reportError(callstack, Severity::error, "iteratorsCmp1",
+                "$symbol:" + containerName1 + "\n"
+                "$symbol:" + containerName2 + "\n"
+                "Comparison of iterators from containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
+}
+
+void CheckStl::iteratorsCmpError(const Token* cmpOperatorTok, const Token* containerTok1, const Token* containerTok2, const std::string& containerName)
+{
+    std::list<const Token*> callstack = { cmpOperatorTok, containerTok1, containerTok2 };
+    reportError(callstack, Severity::error, "iteratorsCmp2",
+                "$symbol:" + containerName + "\n"
+                "Comparison of iterators from containers '" + containerName + "' that are defined in different scopes.", CWE664, false);
 }
 
 // Error message used when dereferencing an iterator that has been erased..
@@ -229,9 +264,45 @@ static std::string getContainerName(const Token *containerToken)
     return ret;
 }
 
+enum OperandPosition {
+    Left,
+    Right
+};
+
+static const Token* findIteratorContainer(const Token* start, const Token* end, unsigned int id)
+{
+    const Token* containerToken = nullptr;
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (Token::Match(tok, "%varid% = %name% . %name% (", id)) {
+            // Iterator is assigned to value
+            if (tok->tokAt(5)->valueType() && tok->tokAt(5)->valueType()->type == ValueType::Type::ITERATOR) {
+                containerToken = tok->tokAt(2);
+            }
+        } else if (Token::Match(tok, "%varid% = %name% (", id)) {
+            // Prevent FP: iterator is assigned to something
+            // TODO: Fix it in future
+            containerToken = nullptr;
+        }
+    }
+    return containerToken;
+}
+
 void CheckStl::iterators()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    // Filling map of iterators id and their scope begin
+    std::map<unsigned int, const Token*> iteratorScopeBeginInfo;
+    for (const Variable* var : symbolDatabase->variableList()) {
+        bool inconclusiveType=false;
+        if (!isIterator(var, inconclusiveType))
+            continue;
+        const unsigned int iteratorId = var->declarationId();
+        if (iteratorId != 0)
+            iteratorScopeBeginInfo[iteratorId] = var->nameToken();
+    }
+    // Storage to save found comparison problems to avoid duplicate error messages
+    std::set<const Token*> foundOperatorErrors;
 
     for (const Variable* var : symbolDatabase->variableList()) {
         bool inconclusiveType=false;
@@ -269,15 +340,12 @@ void CheckStl::iterators()
                 invalidationScope = nullptr;
             }
 
-            // Is iterator compared against different container?
-            if (tok2->isComparisonOp() && containerToken && tok2->astOperand1() && tok2->astOperand2()) {
-                const Token *other = nullptr;
-                if (tok2->astOperand1()->varId() == iteratorId)
-                    other = tok2->astOperand2()->tokAt(-3);
-                else if (tok2->astOperand2()->varId() == iteratorId)
-                    other = tok2->astOperand1()->tokAt(-3);
-                if (Token::Match(other, "%name% . end|rend|cend|crend ( )") && other->varId() != containerToken->varId())
-                    iteratorsError(tok2, getContainerName(containerToken), getContainerName(other));
+            // Is comparison expression?
+            // Check whether iterator compared against different container or iterator of different container?
+            if (tok2->isComparisonOp() && tok2->astOperand1() && tok2->astOperand2() &&
+                (foundOperatorErrors.find(tok2) == foundOperatorErrors.end()) &&
+                compareIteratorAgainstDifferentContainer(tok2, containerToken, iteratorId, iteratorScopeBeginInfo)) {
+                foundOperatorErrors.insert(tok2);
             }
 
             // Is the iterator used in a insert/erase operation?
@@ -397,6 +465,60 @@ void CheckStl::iterators()
     }
 }
 
+bool CheckStl::compareIteratorAgainstDifferentContainer(const Token* operatorTok, const Token* containerTok, const unsigned int iteratorId, const std::map<unsigned int, const Token*>& iteratorScopeBeginInfo)
+{
+    if (!containerTok)
+        return false;
+
+    const Token *otherOperand = nullptr;
+    OperandPosition operandPosition;
+    if (operatorTok->astOperand1()->varId() == iteratorId) {
+        otherOperand = operatorTok->astOperand2();
+        operandPosition = OperandPosition::Right;
+    } else if (operatorTok->astOperand2()->varId() == iteratorId) {
+        otherOperand = operatorTok->astOperand1();
+        operandPosition = OperandPosition::Left;
+    }
+
+    if (!otherOperand)
+        return false;
+
+    const Token * const otherExprPart = otherOperand->tokAt(-3);
+    if (Token::Match(otherExprPart, "%name% . end|rend|cend|crend ( )") && otherExprPart->varId() != containerTok->varId()) {
+        const std::string& firstContainerName = getContainerName(containerTok);
+        const std::string& secondContainerName = getContainerName(otherExprPart);
+        if (firstContainerName != secondContainerName) {
+            if (operandPosition == OperandPosition::Right)
+                iteratorsError(operatorTok, containerTok, firstContainerName, secondContainerName);
+            else
+                iteratorsError(operatorTok, containerTok, secondContainerName, firstContainerName);
+        } else {
+            iteratorsError(operatorTok, containerTok, firstContainerName);
+        }
+        return true;
+    } else {
+        const unsigned int otherId = otherOperand->varId();
+        auto it = iteratorScopeBeginInfo.find(otherId);
+        if (it != iteratorScopeBeginInfo.end()) {
+            const Token* otherContainerToken = findIteratorContainer(it->second, operatorTok->astOperand1(), otherId);
+            if (otherContainerToken && otherContainerToken->varId() != containerTok->varId()) {
+                const std::string& firstContainerName = getContainerName(containerTok);
+                const std::string& secondContainerName = getContainerName(otherContainerToken);
+                if (firstContainerName != secondContainerName) {
+                    if (operandPosition == OperandPosition::Right)
+                        iteratorsCmpError(operatorTok, containerTok, otherContainerToken, firstContainerName, secondContainerName);
+                    else
+                        iteratorsCmpError(operatorTok, containerTok, otherContainerToken, secondContainerName, firstContainerName);
+                } else {
+                    iteratorsCmpError(operatorTok, containerTok, otherContainerToken, firstContainerName);
+                }
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 // Error message for bad iterator usage..
 void CheckStl::mismatchingContainersError(const Token *tok)

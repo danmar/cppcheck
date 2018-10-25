@@ -30,6 +30,7 @@
 class Library;
 class Settings;
 class Token;
+class Variable;
 
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
@@ -56,6 +57,8 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
+const Token * nextAfterAstRightmostLeaf(const Token * tok);
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
@@ -75,7 +78,7 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 
 bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
-bool isConstExpression(const Token *tok, const Library& library, bool pure);
+bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
 
 bool isWithoutSideEffects(bool cpp, const Token* tok);
 
@@ -107,6 +110,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 
 /** Is variable changed in block of code? */
 bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp);
+
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
 
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.

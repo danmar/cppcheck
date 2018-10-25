@@ -51,10 +51,12 @@ def fmt(a,b,c,d,e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Date       Time ','1.84','Head','Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package','Date       Time ','1.85','Head','Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
+        if not os.path.isfile(filename):
+            continue
         package = filename[filename.rfind('/')+1:]
 
         datestr = ''
@@ -71,7 +73,7 @@ def latestReport(latestResults):
                 count = line.split(' ')[1:]
             elif line.startswith('head '):
                 added += 1
-            elif line.startswith('1.84 '):
+            elif line.startswith('1.85 '):
                 lost += 1
         diff = ''
         if lost > 0:
@@ -88,7 +90,7 @@ def crashReport():
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>Package                                 1.84  Head</b>\n'
+    html += '<b>Package                                 1.85  Head</b>\n'
     for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
         if not os.path.isfile(filename):
             continue
@@ -118,7 +120,7 @@ def crashReport():
 
 def diffReportFromDict(out, today):
     html = '<pre>\n'
-    html += '<b>MessageID                           1.84    Head</b>\n'
+    html += '<b>MessageID                           1.85    Head</b>\n'
     sum0 = 0
     sum1 = 0
     for messageId in sorted(out.keys()):
@@ -174,7 +176,7 @@ def diffReport(resultsPath):
             if not line.endswith(']'):
                 continue
             index = None
-            if line.startswith('1.84 '):
+            if line.startswith('1.85 '):
                 index = 0
             elif line.startswith('head '):
                 index = 1
@@ -250,7 +252,7 @@ def diffMessageIdTodayReport(resultPath, messageId):
 
 def timeReport(resultPath):
     text = 'Time report\n\n'
-    text += 'Package 1.84 Head\n'
+    text += 'Package 1.85 Head\n'
 
     totalTime184 = 0.0
     totalTimeHead = 0.0
@@ -354,8 +356,9 @@ def server(server_address_port, packages, packageIndex, resultPath):
     sock.listen(1)
 
     latestResults = []
-    with open('latest.txt', 'rt') as f:
-        latestResults = f.read().strip().split(' ')
+    if os.path.isfile('latest.txt'):
+        with open('latest.txt', 'rt') as f:
+            latestResults = f.read().strip().split(' ')
 
     while True:
         # wait for a connection

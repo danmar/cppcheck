@@ -110,6 +110,7 @@ public:
 private:
     void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr);
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
+    void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, unsigned int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void mathfunctionCallWarning(const Token *tok, const unsigned int numParam = 1);
     void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
@@ -126,6 +127,7 @@ private:
 
         c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr,"1:4");
         c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
+        c.invalidFunctionArgStrError(nullptr, "func_name", 1);
         c.ignoredReturnValueError(nullptr, "malloc");
         c.mathfunctionCallWarning(nullptr);
         c.mathfunctionCallWarning(nullptr, "1 - erf(x)", "erfc(x)");

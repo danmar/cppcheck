@@ -133,6 +133,22 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+const Token * nextAfterAstRightmostLeaf(const Token * tok)
+{
+    const Token * rightmostLeaf = tok;
+    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
+        return nullptr;
+    do {
+        if (rightmostLeaf->astOperand2())
+            rightmostLeaf = rightmostLeaf->astOperand2();
+        else
+            rightmostLeaf = rightmostLeaf->astOperand1();
+    } while (rightmostLeaf->astOperand1());
+    if(rightmostLeaf->str() == "{" && rightmostLeaf->link())
+        rightmostLeaf = rightmostLeaf->link();
+    return rightmostLeaf->next();
+}
+
 static const Token * getVariableInitExpression(const Variable * var)
 {
     if (!var || !var->declEndToken())
@@ -580,7 +596,7 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
     return false;
 }
 
-bool isConstExpression(const Token *tok, const Library& library, bool pure)
+bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp)
 {
     if (!tok)
         return true;
@@ -592,10 +608,14 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure)
     }
     if (tok->tokType() == Token::eIncDecOp)
         return false;
+    if (tok->isAssignmentOp())
+        return false;
+    if (isLikelyStreamRead(cpp, tok))
+        return false;
     // bailout when we see ({..})
     if (tok->str() == "{")
         return false;
-    return isConstExpression(tok->astOperand1(), library, pure) && isConstExpression(tok->astOperand2(), library, pure);
+    return isConstExpression(tok->astOperand1(), library, pure, cpp) && isConstExpression(tok->astOperand2(), library, pure, cpp);
 }
 
 bool isWithoutSideEffects(bool cpp, const Token* tok)
@@ -869,6 +889,20 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             return true;
     }
     return false;
+}
+
+bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    const Token * start = var->declEndToken();
+    if (!start)
+        return false;
+    if (Token::Match(start, "; %varid% =", var->declarationId()))
+        start = start->tokAt(2);
+    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp);
 }
 
 int numberOfArguments(const Token *start)

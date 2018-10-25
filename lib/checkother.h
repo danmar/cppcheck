@@ -81,6 +81,7 @@ public:
         checkOther.checkUnusedLabel();
         checkOther.checkEvaluationOrder();
         checkOther.checkFuncArgNamesDifferent();
+        checkOther.checkShadowVariables();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -211,6 +212,9 @@ public:
     /** @brief %Check if function declaration and definition argument names different */
     void checkFuncArgNamesDifferent();
 
+    /** @brief %Check for shadow variables. Less noisy than gcc/clang -Wshadow. */
+    void checkShadowVariables();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
@@ -237,8 +241,8 @@ private:
     void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void duplicateBranchError(const Token *tok1, const Token *tok2);
-    void duplicateAssignExpressionError(const Token *tok1, const Token *tok2);
+    void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
+    void duplicateAssignExpressionError(const Token *tok1, const Token *tok2, bool inconclusive);
     void oppositeExpressionError(const Token *opTok, ErrorPath errors);
     void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
     void duplicateValueTernaryError(const Token *tok);
@@ -263,6 +267,7 @@ private:
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, size_t index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
+    void shadowVariablesError(const Token *var, const Token *shadowed);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
@@ -301,7 +306,8 @@ private:
         c.selfAssignmentError(nullptr,  "varname");
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
-        c.duplicateBranchError(nullptr, nullptr);
+        c.duplicateBranchError(nullptr, nullptr, errorPath);
+        c.duplicateAssignExpressionError(nullptr, nullptr, true);
         c.oppositeExpressionError(nullptr, errorPath);
         c.duplicateExpressionError(nullptr, nullptr, nullptr, errorPath);
         c.duplicateValueTernaryError(nullptr);
@@ -324,6 +330,7 @@ private:
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
         c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
+        c.shadowVariablesError(nullptr, nullptr);
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
@@ -372,7 +379,7 @@ private:
                "- assignment of a variable to itself\n"
                "- Comparison of values leading always to true or false\n"
                "- Clarify calculation with parentheses\n"
-               "- suspicious comparison of '\\0' with a char* variable\n"
+               "- suspicious comparison of '\\0' with a char\\* variable\n"
                "- duplicate break statement\n"
                "- unreachable code\n"
                "- testing if unsigned variable is negative/positive\n"
@@ -382,10 +389,11 @@ private:
                "- comma in return statement (the comma can easily be misread as a semicolon).\n"
                "- prefer erfc, expm1 or log1p to avoid loss of precision.\n"
                "- identical code in both branches of if/else or ternary operator.\n"
-               "- redundant pointer operation on pointer like &*some_ptr.\n"
+               "- redundant pointer operation on pointer like &\\*some_ptr.\n"
                "- find unused 'goto' labels.\n"
                "- function declaration and definition argument names different.\n"
-               "- function declaration and definition argument order different.\n";
+               "- function declaration and definition argument order different.\n"
+               "- shadow variable.\n";
     }
 };
 /// @}

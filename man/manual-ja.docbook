@@ -2,9 +2,9 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck 1.82</title>
+    <title>Cppcheck 1.85</title>
 
-    <date>2018-01-21</date>
+    <date>2018-04-23</date>
   </bookinfo>
 
   <chapter>
@@ -478,7 +478,7 @@ cppcheck -DA --force file.c</programlisting>
           <term><sgmltag>cwe</sgmltag></term>
 
           <listitem>
-            <para>メッセージのCWE ID。こ属性は、メッセージのCWE IDが判明している場合のみ使用されます。</para>
+            <para>メッセージのCWE ID。この属性は、メッセージのCWE IDが判明している場合のみ使用されます。</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -517,10 +517,10 @@ cppcheck -DA --force file.c</programlisting>
         </varlistentry>
 
         <varlistentry>
-          <term><sgmltag>msg</sgmltag></term>
+          <term><sgmltag class="attribute">info</sgmltag></term>
 
           <listitem>
-            <para>この属性は使用しません。ただし将来のいつか、それぞれの位置に短いメッセージを追加するようになるかもしれません。</para>
+            <para>オプションの、それぞれの位置につiての短い情報</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -532,89 +532,271 @@ cppcheck -DA --force file.c</programlisting>
 
     <para>もし、テンプレートを使用して、出力の形式を変更することができます。</para>
 
-    <para>Visual Studioに互換性のある形式が必要な場合には、<parameter class="command">--template=vs</parameter>を使用します。</para>
+    <section>
+      <title>事前定義した出力フォーマット</title>
 
-    <programlisting>cppcheck --template=vs gui/test.cpp</programlisting>
+      <para>Visual Studioに互換性のある形式が必要な場合には、<parameter class="command">--template=vs</parameter>を使用します。</para>
 
-    <para>このオプションは出力形式を次のように変更します。:</para>
+      <programlisting>cppcheck --template=vs samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-    <programlisting>Checking gui/test.cpp...
-gui/test.cpp(31): error: Memory leak: b
-gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
+      <para>このオプションは出力形式を次のように変更します。:</para>
 
-    <para>gcc に互換性のある形式が必要な場合には、<parameter class="command">--template=gcc</parameter>を使用します。:</para>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c(6): error: Array 'a[2]' accessed at index 2, which is out of bounds.</programlisting>
 
-    <programlisting>cppcheck --template=gcc gui/test.cpp</programlisting>
+      <para><literal>gcc</literal>に互換性のある出力が必要な場合には、<parameter class="command">--template=gcc</parameter>を使用します。:</para>
 
-    <para>このオプションは出力形式を次のように変更します。:</para>
+      <programlisting>cppcheck --template=gcc samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-    <programlisting>Checking gui/test.cpp...
-gui/test.cpp:31: error: Memory leak: b
-gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisting>
+      <para>このオプションは出力形式を次のように変更します。:</para>
 
-    <para>それ以外に、自分自身の作成したパターンで指定することもできます。例としてコンマ区切りで出力してみましょう。:</para>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c:6:6: warning: Array 'a[2]' accessed at index 2, which is out of bounds. [arrayIndexOutOfBounds]
+    a[2] = 0;
+     ^</programlisting>
+    </section>
 
-    <programlisting>cppcheck --template=&quot;{file},{line},{severity},{id},{message}&quot; gui/test.cpp</programlisting>
+    <section>
+      <title>ユーザー定義出力形式(1行)</title>
 
-    <para>このオプションは出力形式を次のように変更します。:</para>
+      <para>自分で自身でパターンを作成できます。例えば古い<literal>gcc</literal> のよuな出力フォーマットで警告メッセージを出力してほしい場合次のように指定します。:</para>
 
-    <programlisting>Checking gui/test.cpp...
-gui/test.cpp,31,error,memleak,Memory leak: b
-gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
+      <programlisting>cppcheck --template=&quot;{file}:{line}: {severity}: {message}&quot; samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-    <para>以下のようなフォーマット指定項目がサポートされています。</para>
+      <para>このオプションは出力形式を次のように変更します。:</para>
 
-    <variablelist>
-      <varlistentry>
-        <term>callstack</term>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c:6: error: Array 'a[2]' accessed at index 2, which is out of bounds.</programlisting>
 
-        <listitem>
-          <para>callstack ただし可能な場合に限る。</para>
-        </listitem>
-      </varlistentry>
+      <para>コンマ区切りフォーマット:</para>
 
-      <varlistentry>
-        <term>file</term>
+      <programlisting>cppcheck --template=&quot;{file},{line},{severity},{id},{message}&quot; samples/arrayIndexOutOfBounds/bad.c</programlisting>
 
-        <listitem>
-          <para>ファイル名</para>
-        </listitem>
-      </varlistentry>
+      <para>このオプションは出力形式を次のように変更します。:</para>
 
-      <varlistentry>
-        <term>id</term>
+      <programlisting>Checking samples/arrayIndexOutOfBounds/bad.c ...
+samples/arrayIndexOutOfBounds/bad.c,6,error,arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.</programlisting>
+    </section>
 
-        <listitem>
-          <para>メッセージid</para>
-        </listitem>
-      </varlistentry>
+    <section>
+      <title>ユーザー定義出力形式(複数行)</title>
 
-      <varlistentry>
-        <term>line</term>
+      <para>多くの警告は、複数の位置を指定します。サンプルコード:</para>
 
-        <listitem>
-          <para>行数</para>
-        </listitem>
-      </varlistentry>
+      <programlisting>void f(int *p)
+{
+    *p = 3;       // line 3
+}
 
-      <varlistentry>
-        <term>message</term>
+int main()
+{
+    int *p = 0;   // line 8
+    f(p);         // line 9
+    return 0;
+}</programlisting>
 
-        <listitem>
-          <para>長い形式のメッセージ</para>
-        </listitem>
-      </varlistentry>
+      <para>3行目でヌルポインタのデリファレンスの可能性があります。Cppcheckは追加の位置情報を表示してその結論がどこから発生したかを示すことができます。そのためには、コマンドラインで<literal>--template</literal> と <literal>--template-location</literal>の両方を使用する必要があります。</para>
 
-      <varlistentry>
-        <term>severity</term>
+      <para>サンプルコマンド:</para>
 
-        <listitem>
-          <para>メッセージの種類、レベル</para>
-        </listitem>
-      </varlistentry>
-    </variablelist>
+      <programlisting>cppcheck --template=&quot;{file}:{line}: {severity}: {message}\n{code}&quot; --template-location=&quot;{file}:{line}: note: {info}\n{code}&quot; multiline.c</programlisting>
 
-    <para>その他エスケープシーケンス \b (バックスペース), \n (改行), \r (改ページ) , \t (タブ) がサポートされています。</para>
+      <para>cppcheck は次のように出力します。</para>
+
+      <programlisting>Checking multiline.c ...
+multiline.c:3: warning: Possible null pointer dereference: p
+    *p = 3;
+     ^
+multiline.c:8: note: Assignment 'p=0', assigned value is 0
+    int *p = 0;
+             ^
+multiline.c:9: note: Calling function 'f', 1st argument 'p' value is 0
+    f(p);
+      ^
+multiline.c:3: note: Null pointer dereference
+    *p = 3;
+     ^</programlisting>
+
+      <para>この警告の最初の行は<literal>--template</literal> で指定したフォーマットです。</para>
+
+      <para>この警告の残りの行は<literal>--template-location</literal>で指定したフォーマットです。</para>
+    </section>
+
+    <section>
+      <title>--templateで指定するフォーマット</title>
+
+      <para><literal>--template</literal> では以下の要素が利用できます。:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>{file}</term>
+
+          <listitem>
+            <para>ファイル名</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{line}</term>
+
+          <listitem>
+            <para>行数</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{column}</term>
+
+          <listitem>
+            <para>カラム番号</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{callstack}</term>
+
+          <listitem>
+            <para>全ての位置。それぞれの位置は[{file}:{line}]のフォーマットで記載され、また-&gt;で位置を区切ります。例えば次のようになります。: [multiline.c:8] -&gt; [multiline.c:9] -&gt; [multiline.c:3]</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{inconclusive:text}</term>
+
+          <listitem>
+            <para>警告が確定的でない場合のメッセージを表示します。このメッセージは含まれていない場合もある、任意のテキストです。サンプル: {inconclusive:inconclusive,}</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{severity}</term>
+
+          <listitem>
+            <para>エラー/警告/スタイル/性能/移植性/情報</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{message}</term>
+
+          <listitem>
+            <para>警告メッセージ</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{id}</term>
+
+          <listitem>
+            <para>警告id</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{code}</term>
+
+          <listitem>
+            <para>実際のコード</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\t</term>
+
+          <listitem>
+            <para>タブ</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\n</term>
+
+          <listitem>
+            <para>改行</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\r</term>
+
+          <listitem>
+            <para>キャリッジリターン</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section>
+      <title>--template-location で指定するフォーマット</title>
+
+      <para><literal>--template-location</literal>では以下の要素が利用できます。:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>{file}</term>
+
+          <listitem>
+            <para>ファイル名</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{line}</term>
+
+          <listitem>
+            <para>行数</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{column}</term>
+
+          <listitem>
+            <para>カラム番号</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{info}</term>
+
+          <listitem>
+            <para>現在位置についての情報メッセージ</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>{code}</term>
+
+          <listitem>
+            <para>実際のコード</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\t</term>
+
+          <listitem>
+            <para>タブ</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\t</term>
+
+          <listitem>
+            <para>改行</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\r</term>
+
+          <listitem>
+            <para>キャリッジリターン</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
   </chapter>
 
   <chapter>
@@ -622,12 +804,10 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
 
     <para>Cppcheckは<literal>MISRA</literal> C 2012 向けのチェッカのアドオンを持っています。</para>
 
-    <para><literal>MISRA</literal>ルールテキストの公開は禁止されています。そのため<literal>MISRA</literal>ルールテキストはこのアドオンから直接利用できません。その代わりにこのアドオンは<literal>Misra</literal> PDF ファイルまたはテキストファイルのどちらかからルールテキストを読み込めます。</para>
-
     <section>
       <title>要求事項</title>
 
-      <para>Cppcheck MISRA アドオンには次のものが必要です。:</para>
+      <para>必要なもの:</para>
 
       <itemizedlist>
         <listitem>
@@ -635,25 +815,21 @@ gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocati
         </listitem>
 
         <listitem>
-          <para><literal>MISRA</literal> PDF/Text ファイル(ルールテキスト）</para>
+          <para><literal>MISRA C 2012</literal>の PDFこのPDFは<uri>http://www.misra.org.uk</uri>で購入できます (15-20 ポンド)</para>
         </listitem>
       </itemizedlist>
     </section>
 
     <section>
-      <title>MISRA PDF</title>
-
-      <para>もしあなたのコード<literal>MISRA</literal>規格に合致していることを望んでいるなら、あなたは<literal>MISRA</literal> PDFを持っているでしょう。</para>
-
-      <para>しかしながら、MISRA PDF が直接このアドオンから使用するには、<literal>xpdf</literal>パッケージを持っている場合に限ります。これはクロスプラットフォームのオープンソースパッケージです。</para>
-    </section>
-
-    <section>
       <title>MISRA テキストファイル</title>
+
+      <para><literal>MISRA</literal>ルールテキストの公開は禁止されています。そのため<literal>MISRA</literal>ルールテキストはこのアドオンから直接利用できません。代わりにこのアドオンはテキストファイルからルールのテキストを読み込みます。MISRA PDFの ”Appendix A Summary of guidelines&quot;のテキストをコピーペーストした場合、それがルールのテキストになります。</para>
 
       <para>もしあなたが<literal>xpdf</literal>を持っているなら、テキストファイルはコマンドラインから簡単に生成できます。 (<literal>pdftotext</literal> は<literal>xpdf</literal>に含まれています。):</para>
 
       <programlisting>pdftotext misra-c-2012.pdf output.txt</programlisting>
+
+      <para>この出力は100%完璧であるとは限りません。少し手直しする必要があることもあります。</para>
 
       <para>その他のpdfからtextに変換するソフトでもうまくいくでしょう。</para>
 
@@ -665,6 +841,8 @@ Rule text
 Rule 1.2
 Rule text
 ...</programlisting>
+
+      <para>あなたが無効にしたいルールは、ルールテキストがなくても構いません。ルールテキストのないルールはアドオンによって抑制されます。</para>
     </section>
   </chapter>
 
@@ -674,7 +852,7 @@ Rule text
     <para>ある種のエラーをフィルタリングしたい場合、出力を抑制することができます。</para>
 
     <section>
-      <title>エラー種による出力の抑制</title>
+      <title>プレーンテキスト抑制</title>
 
       <para>エラーの種類によって出力を抑制することができます。つぎのいずれかの形式で出力を抑制します。:</para>
 
@@ -715,6 +893,24 @@ uninitvar</programlisting>
     </section>
 
     <section>
+      <title>XML 抑制</title>
+
+      <para>XMLファイルで抑制を指定できます。サンプルファイル:</para>
+
+      <programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;suppressions&gt;
+  &lt;suppression&gt;
+    &lt;id&gt;uninitvar&lt;/id&gt;
+    &lt;fileName&gt;src/file1.c&lt;/fileName&gt;
+    &lt;lineNumber&gt;10&lt;/lineNumber&gt;
+    &lt;symbolName&gt;var&lt;/symbolName&gt;
+  &lt;/suppression&gt;
+&lt;/suppressions&gt;</programlisting>
+
+      <para>このXMLフォーマットは拡張可能であり、将来さらなる属性を加えるかもしれません。</para>
+    </section>
+
+    <section>
       <title>インライン出力抑制</title>
 
       <para>エラー出力の抑制をソースコード中に直接、コメントの形で記載することもできます。このコメントには特別なキーワードを含めて記載します。ただし、インライン出力を抑制するコメントをソースコードに追加すると、ソースコードの可読性が少し悪くなってしまうかもしれません。</para>
@@ -744,6 +940,15 @@ Checking test.c...
       <para>これで、--inline-suppr オプションの準備ができました。次のようにcppcheckを起動するとエラーが抑制されます。:</para>
 
       <programlisting>cppcheck --inline-suppr test.c</programlisting>
+
+      <para>特定のシンボルにのみ適用するインライン抑制を指定できます。:</para>
+
+      <programlisting>// cppcheck-suppress arrayIndexOutOfBounds symbolName=arr</programlisting>
+
+      <para>抑制のためにコメントを書きます。; や // を使って開始点を指定できます。</para>
+
+      <programlisting>// cppcheck-suppress arrayIndexOutOfBounds ; some comment
+// cppcheck-suppress arrayIndexOutOfBounds // some comment</programlisting>
     </section>
   </chapter>
 
@@ -1045,7 +1250,8 @@ Checking range.c...
 -10:20  =&gt;  -10 から 20 までの値(両端含む)が有効な値です。
 :0  =&gt;  0または0未満の値が有効な値です。
 0:  =&gt;  0または0以上の値が有効な値です。
-0,2:32  =&gt;  0 または2から32までの値(両端含む)が有効な値です。 </programlisting>
+0,2:32  =&gt;  0 または2から32までの値(両端含む)が有効な値です。
+-1.5:5.6  =&gt;  -1.5 から 5.6 までの値(両端含む)が有効な値です。 </programlisting>
         </section>
 
         <section>
@@ -1121,7 +1327,7 @@ Checking minsize.c...
         <section>
           <title>strz</title>
 
-          <para>この設定は、Cppcheckで現在使用できません。しかし、これであなたは引数が0終端文字列でなければならないということができます。</para>
+          <para>これを指定すると、数が0終端文字列でなければならないということができます。</para>
 
           <para><programlisting>&lt;?xml version=&quot;1.0&quot;?&gt;
 &lt;def&gt;
