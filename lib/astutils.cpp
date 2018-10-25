@@ -789,10 +789,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
         const unsigned int argCount = numberOfArguments(tok);
         const Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
-            for (std::list<Function>::const_iterator it = typeScope->functionList.begin(); it != typeScope->functionList.end(); ++it) {
-                if (!it->isConstructor() || it->argCount() < argCount)
+            for (const Function &function : typeScope->functionList) {
+                if (!function.isConstructor() || function.argCount() < argCount)
                     continue;
-                const Variable *arg = it->getArgumentVar(argnr);
+                const Variable *arg = function.getArgumentVar(argnr);
                 if (arg && arg->isReference() && !arg->isConst())
                     return true;
             }
