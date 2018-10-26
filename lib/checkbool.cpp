@@ -464,19 +464,13 @@ void CheckBool::returnValueOfFunctionReturningBool(void)
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        if (scope->function && Token::Match(scope->function->retDef, "bool|_Bool")) {
-            for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
-                if (Token::simpleMatch(tok, "return")) {
-                    const ValueFlow::Value * maxValue = tok->astOperand1()->getValueGE(2, mSettings);
-                    if (maxValue) {
-                        returnValueBoolError(tok);
-                    }
-                    const ValueFlow::Value * minValue = tok->astOperand1()->getValueLE(-1, mSettings);
-                    if (minValue) {
-                        returnValueBoolError(tok);
-                    }
-                }
-            }
+        if (!(scope->function && Token::Match(scope->function->retDef, "bool|_Bool")))
+            continue;
+
+        for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
+            if (Token::simpleMatch(tok, "return") &&
+                (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)))
+                returnValueBoolError(tok);
         }
     }
 }
