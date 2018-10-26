@@ -171,9 +171,6 @@ private:
         TEST_CASE(privateCtor1);           // If constructor is private..
         TEST_CASE(privateCtor2);           // If constructor is private..
         TEST_CASE(function);               // Function is not variable
-        TEST_CASE(uninitVarHeader1);       // Class is defined in header
-        TEST_CASE(uninitVarHeader2);       // Class is defined in header
-        TEST_CASE(uninitVarHeader3);       // Class is defined in header
         TEST_CASE(uninitVarPublished);     // Borland C++: Variables in the published section are auto-initialized
         TEST_CASE(uninitOperator);         // No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);        // No FP when initialized in function
@@ -3042,42 +3039,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void uninitVarHeader1() {
-        check("#line 1 \"fred.h\"\n"
-              "class Fred\n"
-              "{\n"
-              "private:\n"
-              "    unsigned int i;\n"
-              "public:\n"
-              "    Fred();\n"
-              "};\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void uninitVarHeader2() {
-        check("#line 1 \"fred.h\"\n"
-              "class Fred\n"
-              "{\n"
-              "private:\n"
-              "    unsigned int i;\n"
-              "public:\n"
-              "    Fred() { }\n"
-              "};\n");
-        ASSERT_EQUALS("[fred.h:6]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
-    }
-
-    void uninitVarHeader3() {
-        check("#line 1 \"fred.h\"\n"
-              "class Fred\n"
-              "{\n"
-              "private:\n"
-              "    mutable int i;\n"
-              "public:\n"
-              "    Fred() { }\n"
-              "};\n");
-        ASSERT_EQUALS("[fred.h:6]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
-    }
 
     // Borland C++: No FP for published pointers - they are automatically initialized
     void uninitVarPublished() {
