@@ -8484,16 +8484,6 @@ void Tokenizer::findGarbageCode() const
     // Operators without operands..
     const Token *templateEndToken = nullptr;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        // Skip preprocessor directives
-        if(Token::simpleMatch(tok, "#")) {
-            if(!Token::Match(tok->next(), "if|elif|else|endif|defined|ifdef|ifndef|define|undef|include|line|error|pragma"))
-                syntaxError(tok);
-            unsigned int fidx = tok->fileIndex();
-            while(tok && tok->fileIndex() == fidx)
-                tok = tok->next();
-            if(!tok)
-                break;
-        }
         if (!templateEndToken) {
             if (tok->str() == "<" && isCPP())
                 templateEndToken = tok->findClosingBracket();
