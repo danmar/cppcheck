@@ -959,7 +959,6 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
 {
     std::string::size_type start = 0;
     std::string::size_type end = 0;
-    std::string temp;
     while ((end = templateDeclaration.scope.find(" ", start)) != std::string::npos) {
         std::string token = templateDeclaration.scope.substr(start, end - start);
         mTokenList.addtoken(token, tok->linenr(), tok->fileIndex());
