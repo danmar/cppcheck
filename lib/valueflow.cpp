@@ -3481,7 +3481,7 @@ static void valueFlowContainerReverse(const Token *tok, unsigned int containerId
     }
 }
 
-static void valueFlowContainerForward(const Token *tok, unsigned int containerId, const ValueFlow::Value &value, const Settings *settings, bool cpp)
+static void valueFlowContainerForward(const Token *tok, unsigned int containerId, ValueFlow::Value value, const Settings *settings, bool cpp)
 {
     while (nullptr != (tok = tok->next())) {
         if (Token::Match(tok, "[{}]"))
@@ -3490,6 +3490,25 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
             continue;
         if (Token::Match(tok, "%name% ="))
             break;
+        if (Token::Match(tok, "%name% +=")) {
+            if (!tok->valueType() || !tok->valueType()->container || !tok->valueType()->container->stdStringLike)
+                break;
+            const Token *rhs = tok->next()->astOperand2();
+            if (rhs->tokType() == Token::eString)
+                value.intvalue += Token::getStrLength(rhs);
+            else if (rhs->valueType() && rhs->valueType()->container && rhs->valueType()->container->stdStringLike) {
+                bool found = false;
+                for (const ValueFlow::Value &rhsval : rhs->values()) {
+                    if (rhsval.isKnown() && rhsval.isContainerSizeValue()) {
+                        value.intvalue += rhsval.intvalue;
+                        found = true;
+                    }
+                }
+                if (!found)
+                    break;
+            } else
+                break;
+        }
         if (isLikelyStreamRead(cpp, tok->astParent()))
             break;
         if (isContainerSizeChangedByFunction(tok))

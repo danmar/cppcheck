@@ -3384,6 +3384,20 @@ private:
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
 
+        code = "void f() {\n"
+               "  std::string s=\"abc\";\n" // size of s is 3
+               "  s += unknown;\n"
+               "  s.size();\n"
+               "}";
+        ASSERT(tokenValues(code, "s . size").empty());
+
+        code = "void f() {\n"
+               "  std::string s=\"abc\";\n" // size of s is 3
+               "  s += \"def\";\n" // size of s => 6
+               "  s.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 6));
+
         // valueFlowContainerForward, function call
         code = "void f() {\n"
                "  std::list<int> x;\n"
