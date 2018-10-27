@@ -65,39 +65,39 @@ void CheckUninitVar::check()
     }
 
     // check every executable scope
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (scope->isExecutable()) {
-            checkScope(&*scope, arrayTypeDefs);
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.isExecutable()) {
+            checkScope(&scope, arrayTypeDefs);
         }
     }
 }
 
 void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs)
 {
-    for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
-        if ((mTokenizer->isCPP() && i->type() && !i->isPointer() && i->type()->needInitialization != Type::True) ||
-            i->isStatic() || i->isExtern() || i->isReference())
+    for (const Variable &var : scope->varlist) {
+        if ((mTokenizer->isCPP() && var.type() && !var.isPointer() && var.type()->needInitialization != Type::True) ||
+            var.isStatic() || var.isExtern() || var.isReference())
             continue;
 
         // don't warn for try/catch exception variable
-        if (i->isThrow())
+        if (var.isThrow())
             continue;
 
-        if (Token::Match(i->nameToken()->next(), "[({:]"))
+        if (Token::Match(var.nameToken()->next(), "[({:]"))
             continue;
 
-        if (Token::Match(i->nameToken(), "%name% =")) { // Variable is initialized, but Rhs might be not
-            checkRhs(i->nameToken(), *i, NO_ALLOC, 0U, emptyString);
+        if (Token::Match(var.nameToken(), "%name% =")) { // Variable is initialized, but Rhs might be not
+            checkRhs(var.nameToken(), var, NO_ALLOC, 0U, emptyString);
             continue;
         }
-        if (Token::Match(i->nameToken(), "%name% ) (") && Token::simpleMatch(i->nameToken()->linkAt(2), ") =")) { // Function pointer is initialized, but Rhs might be not
-            checkRhs(i->nameToken()->linkAt(2)->next(), *i, NO_ALLOC, 0U, emptyString);
+        if (Token::Match(var.nameToken(), "%name% ) (") && Token::simpleMatch(var.nameToken()->linkAt(2), ") =")) { // Function pointer is initialized, but Rhs might be not
+            checkRhs(var.nameToken()->linkAt(2)->next(), var, NO_ALLOC, 0U, emptyString);
             continue;
         }
 
-        if (i->isArray() || i->isPointerToArray()) {
-            const Token *tok = i->nameToken()->next();
-            if (i->isPointerToArray())
+        if (var.isArray() || var.isPointerToArray()) {
+            const Token *tok = var.nameToken()->next();
+            if (var.isPointerToArray())
                 tok = tok->next();
             while (Token::simpleMatch(tok->link(), "] ["))
                 tok = tok->link()->next();
@@ -105,13 +105,13 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                 continue;
         }
 
-        bool stdtype = mTokenizer->isC() && arrayTypeDefs.find(i->typeStartToken()->str()) == arrayTypeDefs.end();
-        const Token* tok = i->typeStartToken();
-        for (; tok != i->nameToken() && tok->str() != "<"; tok = tok->next()) {
+        bool stdtype = mTokenizer->isC() && arrayTypeDefs.find(var.typeStartToken()->str()) == arrayTypeDefs.end();
+        const Token* tok = var.typeStartToken();
+        for (; tok != var.nameToken() && tok->str() != "<"; tok = tok->next()) {
             if (tok->isStandardType() || tok->isEnumType())
                 stdtype = true;
         }
-        if (i->isArray() && !stdtype)
+        if (var.isArray() && !stdtype)
             continue;
 
         while (tok && tok->str() != ";")
@@ -120,38 +120,37 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             continue;
 
         if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "for (") &&
-            checkLoopBody(tok->astParent()->link()->next(), *i, i->isArray() ? ARRAY : NO_ALLOC, emptyString, true))
+            checkLoopBody(tok->astParent()->link()->next(), var, var.isArray() ? ARRAY : NO_ALLOC, emptyString, true))
             continue;
 
-        if (i->isArray()) {
+        if (var.isArray()) {
             Alloc alloc = ARRAY;
             const std::map<unsigned int, VariableValue> variableValue;
-            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
+            checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
             continue;
         }
-        if (stdtype || i->isPointer()) {
+        if (stdtype || var.isPointer()) {
             Alloc alloc = NO_ALLOC;
             const std::map<unsigned int, VariableValue> variableValue;
-            checkScopeForVariable(tok, *i, nullptr, nullptr, &alloc, emptyString, variableValue);
+            checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
         }
-        if (i->type())
-            checkStruct(tok, *i);
+        if (var.type())
+            checkStruct(tok, var);
     }
 
     if (scope->function) {
-        for (unsigned int i = 0; i < scope->function->argCount(); i++) {
-            const Variable *arg = scope->function->getArgumentVar(i);
-            if (arg && arg->declarationId() && Token::Match(arg->typeStartToken(), "%type% * %name% [,)]")) {
+        for (const Variable &arg : scope->function->argumentList) {
+            if (arg.declarationId() && Token::Match(arg.typeStartToken(), "%type% * %name% [,)]")) {
                 // Treat the pointer as initialized until it is assigned by malloc
                 for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-                    if (Token::Match(tok, "[;{}] %varid% = %name% (", arg->declarationId()) &&
+                    if (Token::Match(tok, "[;{}] %varid% = %name% (", arg.declarationId()) &&
                         mSettings->library.returnuninitdata.count(tok->strAt(3)) == 1U) {
-                        if (arg->typeStartToken()->strAt(-1) == "struct" || (arg->type() && arg->type()->isStructType()))
-                            checkStruct(tok, *arg);
-                        else if (arg->typeStartToken()->isStandardType() || arg->typeStartToken()->isEnumType()) {
+                        if (arg.typeStartToken()->strAt(-1) == "struct" || (arg.type() && arg.type()->isStructType()))
+                            checkStruct(tok, arg);
+                        else if (arg.typeStartToken()->isStandardType() || arg.typeStartToken()->isEnumType()) {
                             Alloc alloc = NO_ALLOC;
                             const std::map<unsigned int, VariableValue> variableValue;
-                            checkScopeForVariable(tok->next(), *arg, nullptr, nullptr, &alloc, emptyString, variableValue);
+                            checkScopeForVariable(tok->next(), arg, nullptr, nullptr, &alloc, emptyString, variableValue);
                         }
                     }
                 }
@@ -164,23 +163,19 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 {
     const Token *typeToken = structvar.typeStartToken();
     const SymbolDatabase * symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::size_t j = 0U; j < symbolDatabase->classAndStructScopes.size(); ++j) {
-        const Scope *scope2 = symbolDatabase->classAndStructScopes[j];
+    for (const Scope *scope2 : symbolDatabase->classAndStructScopes) {
         if (scope2->className == typeToken->str() && scope2->numConstructors == 0U) {
-            for (std::list<Variable>::const_iterator it = scope2->varlist.begin(); it != scope2->varlist.end(); ++it) {
-                const Variable &var = *it;
-
+            for (const Variable &var : scope2->varlist) {
                 if (var.isStatic() || var.hasDefault() || var.isArray() ||
                     (!mTokenizer->isC() && var.isClass() && (!var.type() || var.type()->needInitialization != Type::True)))
                     continue;
 
                 // is the variable declared in a inner union?
                 bool innerunion = false;
-                for (auto it2 = scope2->nestedList.cbegin(); it2 != scope2->nestedList.cend(); ++it2) {
-                    const Scope &innerScope = **it2;
-                    if (innerScope.type == Scope::eUnion) {
-                        if (var.typeStartToken()->linenr() >= innerScope.bodyStart->linenr() &&
-                            var.typeStartToken()->linenr() <= innerScope.bodyEnd->linenr()) {
+                for (const Scope *innerScope : scope2->nestedList) {
+                    if (innerScope->type == Scope::eUnion) {
+                        if (var.typeStartToken()->linenr() >= innerScope->bodyStart->linenr() &&
+                            var.typeStartToken()->linenr() <= innerScope->bodyEnd->linenr()) {
                             innerunion = true;
                             break;
                         }
@@ -1231,10 +1226,10 @@ void CheckUninitVar::valueFlowUninit()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // check every executable scope
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isExecutable())
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (!scope.isExecutable())
             continue;
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;
@@ -1256,11 +1251,11 @@ void CheckUninitVar::deadPointer()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // check every executable scope
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isExecutable())
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (!scope.isExecutable())
             continue;
         // Dead pointers..
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
             if (tok->variable() &&
                 tok->variable()->isPointer() &&
                 isVariableUsage(tok, true, NO_ALLOC)) {

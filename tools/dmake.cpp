@@ -440,6 +440,8 @@ int main(int argc, char **argv)
     fout << "validateXML: createXMLExamples\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
+    fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
+    fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml";
 
     fout << "\n###### Build\n\n";
 

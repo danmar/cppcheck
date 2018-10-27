@@ -98,6 +98,7 @@ private:
         TEST_CASE(ifelse7); // #5576 - if (fd < 0)
         TEST_CASE(ifelse8); // #5747 - if (fd == -1)
         TEST_CASE(ifelse9); // #5273 - if (X(p==NULL, 0))
+        TEST_CASE(ifelse10); // #8794 - if (!(x!=NULL))
 
         // switch
         TEST_CASE(switch1);
@@ -1146,6 +1147,16 @@ private:
               "    if (dostuff(p==NULL,0))\n"
               "        return;\n"
               "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse10() { // #8794
+        check("void f() {\n"
+              "    void *x = malloc(1U);\n"
+              "    if (!(x != NULL))\n"
+              "        return;\n"
+              "    free(x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

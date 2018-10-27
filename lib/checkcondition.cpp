@@ -1298,6 +1298,10 @@ void CheckCondition::alwaysTrueFalse()
                     !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
                 continue;
 
+            // FIXME checking of return statements does not work well. See #8801
+            if (returnStatement)
+                continue;
+
             // Don't warn in assertions. Condition is often 'always true' by intention.
             // If platform,defines,etc cause 'always false' then that is not dangerous neither.
             bool assertFound = false;

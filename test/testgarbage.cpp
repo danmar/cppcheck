@@ -1629,13 +1629,6 @@ private:
 
         // #8749
         checkCode(
-            "typedef char A[1];\n"
-            "void f(void) {\n"
-            "   char (*p)[1] = new A[1];\n"
-            "}\n");
-
-        // #8749
-        checkCode(
             "struct A {\n"
             "    void operator+=(A&) && = delete;\n"
             "};\n");

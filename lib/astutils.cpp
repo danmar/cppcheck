@@ -121,8 +121,11 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     } else if (comp == "!=" && rhs == std::string("0")) {
         ret = tok;
     } else if (comp == "==" && rhs == std::string("0")) {
-        if (tok->str() == "!")
+        if (tok->str() == "!") {
             ret = tok->astOperand1();
+            // handle (!(x!=0)) as (x==0)
+            astIsVariableComparison(ret, "!=", "0", &ret);
+        }
     }
     while (ret && ret->str() == ".")
         ret = ret->astOperand2();
@@ -180,9 +183,12 @@ static bool exprDependsOnThis(const Token *expr)
     // calling nonstatic method?
     if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
         // is it a method of this?
-        const Scope *nestedIn = expr->scope();
-        while (nestedIn && nestedIn != expr->function()->nestedIn)
+        const Scope *nestedIn = expr->scope()->functionOf;
+        if (nestedIn && nestedIn->function)
+            nestedIn = nestedIn->function->token->scope();
+        while (nestedIn && nestedIn != expr->function()->nestedIn) {
             nestedIn = nestedIn->nestedIn;
+        }
         return nestedIn == expr->function()->nestedIn;
     }
     return exprDependsOnThis(expr->astOperand1()) || exprDependsOnThis(expr->astOperand2());
@@ -786,10 +792,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
         const unsigned int argCount = numberOfArguments(tok);
         const Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
-            for (std::list<Function>::const_iterator it = typeScope->functionList.begin(); it != typeScope->functionList.end(); ++it) {
-                if (!it->isConstructor() || it->argCount() < argCount)
+            for (const Function &function : typeScope->functionList) {
+                if (!function.isConstructor() || function.argCount() < argCount)
                     continue;
-                const Variable *arg = it->getArgumentVar(argnr);
+                const Variable *arg = function.getArgumentVar(argnr);
                 if (arg && arg->isReference() && !arg->isConst())
                     return true;
             }

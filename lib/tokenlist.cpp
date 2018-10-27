@@ -680,8 +680,10 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
-                    while (Token::Match(curlyBracket, "%name%|.|::|&"))
-                        curlyBracket = curlyBracket->next();
+                    if (curlyBracket && curlyBracket->originalName() == "->") {
+                        while (Token::Match(curlyBracket, "%name%|.|::|&|*"))
+                            curlyBracket = curlyBracket->next();
+                    }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);
@@ -1235,9 +1237,6 @@ void TokenList::validateAst() const
                 continue;
             // FIXME: Workaround broken AST assignment in type aliases
             if (Token::Match(tok->previous(), "%name% = %name%"))
-                continue;
-            // FIXME: Workaround when assigning from a new expression: #8749
-            if (Token::simpleMatch(tok, "= new"))
                 continue;
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);

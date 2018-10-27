@@ -34,6 +34,18 @@
 #include "library.h"
 #include "platforms.h"
 
+/** Return paths from QListWidget */
+static QStringList getPaths(const QListWidget *list)
+{
+    const int count = list->count();
+    QStringList paths;
+    for (int i = 0; i < count; i++) {
+        QListWidgetItem *item = list->item(i);
+        paths << QDir::fromNativeSeparators(item->text());
+    }
+    return paths;
+}
+
 /** Platforms shown in the platform combobox */
 static const cppcheck::Platform::PlatformType builtinPlatforms[] = {
     cppcheck::Platform::Native,
@@ -253,14 +265,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         mUI.mToolClangTidy->setText(tr("Clang-tidy (not found)"));
         mUI.mToolClangTidy->setEnabled(false);
     }
-    QString tags;
-    foreach (const QString tag, projectFile->getTags()) {
-        if (tags.isEmpty())
-            tags = tag;
-        else
-            tags += ';' + tag;
-    }
-    mUI.mEditTags->setText(tags);
+    mUI.mEditTags->setText(projectFile->getTags().join(';'));
     updatePathsAndDefines();
 }
 
@@ -298,9 +303,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setAddons(list);
     projectFile->setClangAnalyzer(mUI.mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI.mToolClangTidy->isChecked());
-    QStringList tags(mUI.mEditTags->text().split(";"));
-    tags.removeAll(QString());
-    projectFile->setTags(tags);
+    projectFile->setTags(mUI.mEditTags->text().split(";", QString::SkipEmptyParts));
 }
 
 void ProjectFileDialog::ok()
@@ -436,30 +439,14 @@ QString ProjectFileDialog::getBuildDir() const
     return mUI.mEditBuildDir->text();
 }
 
-
 QStringList ProjectFileDialog::getIncludePaths() const
 {
-    const int count = mUI.mListIncludeDirs->count();
-    QStringList includePaths;
-    for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = mUI.mListIncludeDirs->item(i);
-        includePaths << QDir::fromNativeSeparators(item->text());
-    }
-    return includePaths;
+    return getPaths(mUI.mListIncludeDirs);
 }
 
 QStringList ProjectFileDialog::getDefines() const
 {
-    QString define = mUI.mEditDefines->text();
-    QStringList defines;
-    if (!define.isEmpty()) {
-        define = define.trimmed();
-        if (define.indexOf(';') != -1)
-            defines = define.split(";");
-        else
-            defines.append(define);
-    }
-    return defines;
+    return mUI.mEditDefines->text().trimmed().split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts);
 }
 
 QStringList ProjectFileDialog::getUndefines() const
@@ -472,24 +459,12 @@ QStringList ProjectFileDialog::getUndefines() const
 
 QStringList ProjectFileDialog::getCheckPaths() const
 {
-    const int count = mUI.mListCheckPaths->count();
-    QStringList paths;
-    for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = mUI.mListCheckPaths->item(i);
-        paths << QDir::fromNativeSeparators(item->text());
-    }
-    return paths;
+    return getPaths(mUI.mListCheckPaths);
 }
 
 QStringList ProjectFileDialog::getExcludedPaths() const
 {
-    const int count = mUI.mListExcludedPaths->count();
-    QStringList paths;
-    for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = mUI.mListExcludedPaths->item(i);
-        paths << QDir::fromNativeSeparators(item->text());
-    }
-    return paths;
+    return getPaths(mUI.mListExcludedPaths);
 }
 
 QStringList ProjectFileDialog::getLibraries() const
@@ -526,16 +501,7 @@ void ProjectFileDialog::setIncludepaths(const QStringList &includes)
 
 void ProjectFileDialog::setDefines(const QStringList &defines)
 {
-    QString definestr;
-    QString define;
-    foreach (define, defines) {
-        definestr += define;
-        definestr += ";";
-    }
-    // Remove ; from the end of the string
-    if (definestr.endsWith(';'))
-        definestr = definestr.left(definestr.length() - 1);
-    mUI.mEditDefines->setText(definestr);
+    mUI.mEditDefines->setText(defines.join(";"));
 }
 
 void ProjectFileDialog::setUndefines(const QStringList &undefines)
