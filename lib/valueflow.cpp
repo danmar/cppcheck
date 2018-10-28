@@ -2725,7 +2725,7 @@ struct Lambda
             arguments = capture->link()->next();
         }
         const Token * afterArguments = arguments ? arguments->link()->next() : capture->link()->next();
-        if(Token::simpleMatch(afterArguments, "->")) {
+        if(afterArguments && afterArguments->originalName() == "->") {
             returnTok = afterArguments->next();
             bodyTok = Token::findsimplematch(returnTok, "{");
         } else if(Token::simpleMatch(afterArguments, "{")) {
