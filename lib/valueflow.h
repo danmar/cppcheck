@@ -39,7 +39,7 @@ namespace ValueFlow {
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
 
-        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), defaultArg(false), valueKind(ValueKind::Possible) {}
+        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), defaultArg(false), lifetimeKind(Object), valueKind(ValueKind::Possible) {}
         Value(const Token *c, long long val);
 
         bool operator==(const Value &rhs) const {
@@ -135,6 +135,8 @@ namespace ValueFlow {
 
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
+        
+        enum LifetimeKind {Object, Lambda, Iterator} lifetimeKind;
 
         static const char * toString(MoveKind moveKind) {
             switch (moveKind) {

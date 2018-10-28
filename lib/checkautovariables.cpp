@@ -623,7 +623,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 continue;
             if(Token::Match(tok->astParent(), "return|throw")) {
                 if (isInScope(val.tokvalue, scope)) {
-                    errorReturnDanglingLifetime(tok, val.tokvalue);
+                    errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
             }
@@ -650,19 +650,42 @@ void CheckAutoVariables::checkVarLifetime()
     }
 }
 
-void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Token *vartok)
+void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val)
 {
-    ErrorPath errorPath;
+    const Token *vartok = val->tokvalue;
+    ErrorPath errorPath = val->errorPath;
     std::string msg = "";
+    switch(val->lifetimeKind) {
+        case ValueFlow::Value::Object:
+            msg = "Returning object";
+            break;
+        case ValueFlow::Value::Lambda:
+            msg = "Returning lambda";
+            break;
+        case ValueFlow::Value::Iterator:
+            msg = "Returning iterator";
+            break;
+    }
     if(vartok) {
         errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
         if(var) {
-            msg = " from local variable '" + var->name() + "'";
+            switch(val->lifetimeKind) {
+                case ValueFlow::Value::Object:
+                    msg += " that points to local variable";
+                    break;
+                case ValueFlow::Value::Lambda:
+                    msg += " that captures local variable";
+                    break;
+                case ValueFlow::Value::Iterator:
+                    msg += " to local container";
+                    break;
+            }
+            msg += " '" + var->name() + "'";
         }
     }
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "returnDanglingLifetime", "Returning object with dangling lifetime" + msg + ".", CWE562, false);
+    reportError(errorPath, Severity::error, "returnDanglingLifetime", msg + " that will be invalid when returning.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnReference(const Token *tok)

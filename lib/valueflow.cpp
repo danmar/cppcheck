@@ -2773,6 +2773,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
                     ValueFlow::Value value;
                     value.valueType = ValueFlow::Value::LIFETIME;
                     value.tokvalue = var->nameToken();
+                    value.lifetimeKind = ValueFlow::Value::Lambda;
                     setTokenValue(tok, value, tokenlist->getSettings());
 
                     valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
@@ -2794,6 +2795,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
                         ValueFlow::Value value;
                         value.valueType = ValueFlow::Value::LIFETIME;
                         value.tokvalue = var->nameToken();
+                        value.lifetimeKind = ValueFlow::Value::Lambda;
                         setTokenValue(tok, value, tokenlist->getSettings());
 
                         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
@@ -2837,6 +2839,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.tokvalue = var->nameToken();
+            value.lifetimeKind = ValueFlow::Value::Iterator;
             setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
 
             valueFlowForwardLifetime(tok->tokAt(3), tokenlist, errorLogger, settings);
@@ -3834,6 +3837,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       varId(0U),
       conditional(false),
       defaultArg(false),
+      lifetimeKind(Object),
       valueKind(ValueKind::Possible)
 {
     errorPath.emplace_back(c, "Assuming that condition '" + c->expressionString() + "' is not redundant");
