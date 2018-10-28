@@ -2694,7 +2694,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
 }
 
-static const Variable * getLifetimeVariable(const Token * tok)
+static const Variable * getLifetimeVariable(const Token * tok, ErrorPath& errorPath)
 {
     const Variable * var = tok->variable();
     if(!var)
@@ -2703,7 +2703,8 @@ static const Variable * getLifetimeVariable(const Token * tok)
         for(const ValueFlow::Value& v:tok->values()) {
             if(!v.isLifetimeValue() && !v.tokvalue)
                 continue;
-            const Variable * var2 = getLifetimeVariable(v.tokvalue);
+            errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
+            const Variable * var2 = getLifetimeVariable(v.tokvalue, errorPath);
             if(var2)
                 return var2;
         }
@@ -2759,8 +2760,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
             bool captureByValue = Token::Match(lam.capture, "[ = ]");
 
             for(const Token * tok2 = lam.bodyTok;tok2 != lam.bodyTok->link();tok2 = tok2->next()) {
+                ErrorPath errorPath;
                 if(captureByRef) {
-                    const Variable * var = getLifetimeVariable(tok2);
+                    const Variable * var = getLifetimeVariable(tok2, errorPath);
                     if(!var)
                         continue;
                     const Scope * scope = var->scope();
@@ -2769,10 +2771,12 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
                     if(scope->isNestedIn(bodyScope))
                         continue;
                     scopes.insert(scope);
+                    errorPath.emplace_back(tok2, "Lambda captures variable by reference here.");
 
                     ValueFlow::Value value;
                     value.valueType = ValueFlow::Value::LIFETIME;
                     value.tokvalue = var->nameToken();
+                    value.errorPath = errorPath;
                     value.lifetimeKind = ValueFlow::Value::Lambda;
                     setTokenValue(tok, value, tokenlist->getSettings());
 
@@ -2782,7 +2786,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
                         if(!v.isLifetimeValue() && !v.tokvalue)
                             continue;
                         const Token * tok3 = v.tokvalue;
-                        const Variable * var = getLifetimeVariable(tok3);
+                        errorPath = v.errorPath;
+                        const Variable * var = getLifetimeVariable(tok3, errorPath);
                         if(!var)
                             continue;
                         const Scope * scope = var->scope();
@@ -2791,10 +2796,12 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
                         if(scope->isNestedIn(bodyScope))
                             continue;
                         scopes.insert(scope);
+                        errorPath.emplace_back(tok2, "Lambda captures variable by value here.");
 
                         ValueFlow::Value value;
                         value.valueType = ValueFlow::Value::LIFETIME;
                         value.tokvalue = var->nameToken();
+                        value.errorPath = errorPath;
                         value.lifetimeKind = ValueFlow::Value::Lambda;
                         setTokenValue(tok, value, tokenlist->getSettings());
 
@@ -2805,6 +2812,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
         }
         // address of
         else if (tok->isUnaryOp("&")) {
+            ErrorPath errorPath;
             // child should be some buffer or variable
             const Token *vartok = tok->astOperand1();
             while (vartok) {
@@ -2818,28 +2826,39 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
 
             if(!vartok)
                 continue;
-            const Variable * var = getLifetimeVariable(vartok);
+            const Variable * var = getLifetimeVariable(vartok, errorPath);
             if (!(var && !var->isPointer()))
                 continue;
+
+            errorPath.emplace_back(tok, "Address of variable taken here.");
 
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.tokvalue = var->nameToken();
+            value.errorPath = errorPath;
             setTokenValue(tok, value, tokenlist->getSettings());
 
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
         else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str (")) {
+            ErrorPath errorPath;
             const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
             if(!container)
                 continue;
             const Variable * var = tok->variable();
 
+            bool isIterator = !Token::Match(tok->tokAt(2), "data|c_str");
+            if(isIterator)
+                errorPath.emplace_back(tok, "Iterator to container is created here.");
+            else
+                errorPath.emplace_back(tok, "Pointer to container is created here.");
+
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.tokvalue = var->nameToken();
-            value.lifetimeKind = ValueFlow::Value::Iterator;
+            value.errorPath = errorPath;
+            value.lifetimeKind = isIterator ? ValueFlow::Value::Iterator : ValueFlow::Value::Object;
             setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
 
             valueFlowForwardLifetime(tok->tokAt(3), tokenlist, errorLogger, settings);
