@@ -1077,6 +1077,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n"
                       "[test.cpp:4]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

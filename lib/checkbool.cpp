@@ -468,7 +468,7 @@ void CheckBool::returnValueOfFunctionReturningBool(void)
             continue;
 
         for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
-            if (Token::simpleMatch(tok, "return") &&
+            if (Token::simpleMatch(tok, "return") && tok->astOperand1() &&
                 (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)))
                 returnValueBoolError(tok);
         }
