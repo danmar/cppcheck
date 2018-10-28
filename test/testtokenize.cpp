@@ -8653,33 +8653,33 @@ private:
 
     void checkEnableIf() {
         ASSERT_NO_THROW(tokenizeAndStringify(
-            "template<\n"
-            "    typename U,\n"
-            "    typename std::enable_if<\n"
-            "        std::is_convertible<U, T>{}>::type* = nullptr>\n"
-            "void foo(U x);\n"))
+                            "template<\n"
+                            "    typename U,\n"
+                            "    typename std::enable_if<\n"
+                            "        std::is_convertible<U, T>{}>::type* = nullptr>\n"
+                            "void foo(U x);\n"))
 
         ASSERT_NO_THROW(tokenizeAndStringify(
-            "template<class t>\n"
-            "T f(const T a, const T b) {\n"
-            "    return a < b ? b : a;\n"
-            "}\n"))
+                            "template<class t>\n"
+                            "T f(const T a, const T b) {\n"
+                            "    return a < b ? b : a;\n"
+                            "}\n"))
 
         ASSERT_NO_THROW(tokenizeAndStringify(
-            "template<class T>\n"
-            "struct A {\n"
-            "    T f(const T a, const T b) {\n"
-            "        return a < b ? b : a;\n"
-            "    }\n"
-            "};\n"))
+                            "template<class T>\n"
+                            "struct A {\n"
+                            "    T f(const T a, const T b) {\n"
+                            "        return a < b ? b : a;\n"
+                            "    }\n"
+                            "};\n"))
 
         ASSERT_NO_THROW(tokenizeAndStringify(
-            "const int a = 1;\n"
-            "const int b = 2;\n"
-            "template<class T>\n"
-            "struct A {\n"
-            "    int x = a < b ? b : a;"
-            "};\n"))
+                            "const int a = 1;\n"
+                            "const int b = 2;\n"
+                            "template<class T>\n"
+                            "struct A {\n"
+                            "    int x = a < b ? b : a;"
+                            "};\n"))
 
     }
 
