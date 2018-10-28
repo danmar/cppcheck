@@ -53,6 +53,7 @@ private:
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
         TEST_CASE(valueFlowPointerAlias);
+        TEST_CASE(valueFlowLifetime);
         TEST_CASE(valueFlowArrayElement);
         TEST_CASE(valueFlowMove);
 
@@ -189,7 +190,7 @@ private:
         return "";
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, const char value[]) {
+    bool testValueOfX(const char code[], unsigned int linenr, const char value[], ValueFlow::Value::ValueType type) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -199,7 +200,7 @@ private:
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isTokValue() && Token::simpleMatch(it->tokvalue, value))
+                    if (it->valueType == type && Token::simpleMatch(it->tokvalue, value))
                         return true;
                 }
             }
@@ -301,7 +302,7 @@ private:
                 "    if (a) x = \"123\";\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "\"123\""));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "\"123\"", ValueFlow::Value::TOK));
 
         // valueFlowSubFunction
         code  = "void dostuff(const char *x) {\n"
@@ -309,7 +310,7 @@ private:
                 "}\n"
                 "\n"
                 "void test() { dostuff(\"abc\"); }";
-        ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\""));
+        ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\"", ValueFlow::Value::TOK));
     }
 
     void valueFlowPointerAlias() {
@@ -321,7 +322,7 @@ private:
                 "    if (a) x = &ret[0];\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 5, "& ret [ 0 ]"));
+        ASSERT_EQUALS(true, testValueOfX(code, 5, "& ret [ 0 ]", ValueFlow::Value::TOK));
 
         // dead pointer
         code  = "void f() {\n"
@@ -329,7 +330,7 @@ private:
                 "  if (cond) { int i; x = &i; }\n"
                 "  *x = 0;\n"  // <- x can point at i
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "& i"));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "& i", ValueFlow::Value::TOK));
 
         code  = "void f() {\n"
                 "  struct X *x;\n"
@@ -337,6 +338,41 @@ private:
                 "}";
         ASSERT_EQUALS(true, tokenValues(code, "&").empty());
         ASSERT_EQUALS(true, tokenValues(code, "x [").empty());
+    }
+    
+    void valueFlowLifetime() {
+        const char *code;
+
+        LOAD_LIB_2(settings.library, "std.cfg");
+
+        code  = "void f() {\n"
+                "    int a = 1;\n"
+                "    auto x = [&]() { return a + 1; };\n"
+                "    auto b = x;\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "a ;", ValueFlow::Value::LIFETIME));
+
+        code  = "void f() {\n"
+                "    int a = 1;\n"
+                "    auto x = [=]() { return a + 1; };\n"
+                "    auto b = x;\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4, "a ;", ValueFlow::Value::LIFETIME));
+
+        code  = "void f(int v) {\n"
+                "    int a = v;\n"
+                "    int * p = &a;\n"
+                "    auto x = [=]() { return p + 1; };\n"
+                "    auto b = x;\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 5, "a ;", ValueFlow::Value::LIFETIME));
+
+        code  = "void f() {\n"
+                "    std::vector<int> v;\n"
+                "    auto x = v.begin();\n"
+                "    auto it = x;\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "v ;", ValueFlow::Value::LIFETIME));
     }
 
     void valueFlowArrayElement() {
@@ -346,26 +382,26 @@ private:
                 "    const int x[] = {43,23,12};\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, "{ 43 , 23 , 12 }"));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "{ 43 , 23 , 12 }", ValueFlow::Value::TOK));
 
         code  = "void f() {\n"
                 "    const char x[] = \"abcd\";\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, "\"abcd\""));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "\"abcd\"", ValueFlow::Value::TOK));
 
         code  = "void f() {\n"
                 "    char x[32] = \"abcd\";\n"
                 "    return x;\n"
                 "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, "\"abcd\""));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, "\"abcd\"", ValueFlow::Value::TOK));
 
         code = "void f() {\n"
                "  int a[10];\n"
                "  int *x = a;\n" // <- a value is a
                "  *x = 0;\n"     // .. => x value is a
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "a"));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "a", ValueFlow::Value::TOK));
 
         code  = "char f() {\n"
                 "    const char *x = \"abcd\";\n"
@@ -1390,7 +1426,7 @@ private:
                "    a = ((x[0] == 'U') ?\n"
                "        x[1] : 0);\n" // <- x is not ""
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, "\"\""));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, "\"\"", ValueFlow::Value::TOK));
 
         code = "void f() {\n" // #6973
                "    char *x = getenv (\"LC_ALL\");\n"
@@ -1403,10 +1439,10 @@ private:
                "          x[2] ))\n"          // x can't be ""
                "    {}\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 6U, "\"\""));
-        ASSERT_EQUALS(false, testValueOfX(code, 7U, "\"\""));
-        ASSERT_EQUALS(false, testValueOfX(code, 8U, "\"\""));
-        ASSERT_EQUALS(false, testValueOfX(code, 9U, "\"\""));
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, "\"\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, "\"\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, "\"\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, "\"\"", ValueFlow::Value::TOK));
 
         code = "void f() {\n" // #7599
                "  t *x = 0;\n"

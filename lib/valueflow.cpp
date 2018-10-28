@@ -1629,7 +1629,8 @@ static bool valueFlowForward(Token * const               startToken,
         // TODO: handle lambda functions
         if (Token::simpleMatch(tok2, "= [")) {
             Token *lambdaEndToken = const_cast<Token *>(findLambdaEndToken(tok2->next()));
-            if (lambdaEndToken) {
+            // Dont skip lambdas for lifetime values
+            if (lambdaEndToken && !std::all_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 tok2 = lambdaEndToken;
                 continue;
             }
@@ -2654,6 +2655,11 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
     }
 }
 
+static bool isNotLifetimeValue(const ValueFlow::Value& val)
+{
+    return !val.isLifetimeValue();
+}
+
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     const Token * assignTok = tok->astParent();
@@ -2683,6 +2689,8 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     // Skip RHS
     const Token * nextExpression = nextAfterAstRightmostLeaf(assignTok);
 
+    // Only forward lifetime values
+    values.remove_if(&isNotLifetimeValue);
     valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
 }
 
@@ -2747,8 +2755,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldataba
             std::set<const Scope *> scopes;
 
             // TODO: Handle explicit capture
-            bool captureByRef = Token::Match(lam.capture, "[ &");
-            bool captureByValue = Token::Match(lam.capture, "[ =");
+            bool captureByRef = Token::Match(lam.capture, "[ & ]");
+            bool captureByValue = Token::Match(lam.capture, "[ = ]");
 
             for(const Token * tok2 = lam.bodyTok;tok2 != lam.bodyTok->link();tok2 = tok2->next()) {
                 if(captureByRef) {
