@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
