@@ -3598,26 +3598,31 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         for (const Token *tok = scope.classDef; tok && tok->str() != "{"; tok = tok->next()) {
             if (!tok->isName() || !tok->valueType() || tok->valueType()->type != ValueType::CONTAINER || !tok->valueType()->container)
                 continue;
-            if (!Token::Match(tok, "%name% . %name% ("))
-                continue;
 
             const Token *conditionToken;
             MathLib::bigint intval;
 
-            if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE) {
-                const Token *parent = tok->tokAt(3)->astParent();
-                if (!parent || !parent->isComparisonOp() || !parent->astOperand2())
+            if (Token::Match(tok, "%name% . %name% (")) {
+                if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE) {
+                    const Token *parent = tok->tokAt(3)->astParent();
+                    if (!parent || !parent->isComparisonOp() || !parent->astOperand2())
+                        continue;
+                    if (parent->astOperand1()->hasKnownIntValue())
+                        intval = parent->astOperand1()->values().front().intvalue;
+                    else if (parent->astOperand2()->hasKnownIntValue())
+                        intval = parent->astOperand2()->values().front().intvalue;
+                    else
+                        continue;
+                    conditionToken = parent;
+                } else if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY) {
+                    conditionToken = tok->tokAt(3);
+                    intval = 0;
+                } else {
                     continue;
-                if (parent->astOperand1()->hasKnownIntValue())
-                    intval = parent->astOperand1()->values().front().intvalue;
-                else if (parent->astOperand2()->hasKnownIntValue())
-                    intval = parent->astOperand2()->values().front().intvalue;
-                else
-                    continue;
-                conditionToken = parent;
-            } else if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY) {
-                conditionToken = tok->tokAt(3);
-                intval = 0;
+                }
+            } else if (tok->valueType()->container->stdStringLike && Token::Match(tok, "%name% ==|!= %str%") && tok->next()->astOperand2() == tok->tokAt(2)) {
+                intval = Token::getStrLength(tok->tokAt(2));
+                conditionToken = tok->next();
             } else {
                 continue;
             }
