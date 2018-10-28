@@ -476,6 +476,7 @@ private:
         // Make sure the Tokenizer::findGarbageCode() does not have false positives
         // The TestGarbage ensures that there are true positives
         TEST_CASE(findGarbageCode);
+        TEST_CASE(checkEnableIf);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -8259,6 +8260,9 @@ private:
         ASSERT_EQUALS("DerivedDerived::(", testAst("Derived::~Derived() {}"));
 
         ASSERT_EQUALS("ifCA_FarReadfilenew(,sizeofobjtype(,(!(", testAst("if (!CA_FarRead(file, (void far *)new, sizeof(objtype)))")); // #5910 - don't hang if C code is parsed as C++
+
+        // Variable declaration
+        ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
     }
 
     void astexpr2() { // limit for large expressions
@@ -8545,7 +8549,8 @@ private:
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [something]() -> int { return 0; }();"));
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
-        TODO_ASSERT_EQUALS("x{([=", "stdconst::x{([=&", testAst("x = [&]()->std::string const & { 1; }"));
+        ASSERT_EQUALS("x{([=", testAst("x = [&]()->std::string const & {};"));
+        ASSERT_EQUALS("f{([=", testAst("f = []() -> foo* {};"));
 
         ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
 
@@ -8636,6 +8641,8 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"))
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { label: switch (a) {} }"));
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { UNKNOWN_MACRO if (a) {} }"))
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() { []() -> int * {}; }"));
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() { const char* var = \"1\" \"2\"; }"));
         // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(switch); }"));
         // TODO ASSERT_NO_THROW(tokenizeAndStringify("void f() { MACRO(x,switch); }"));
 
@@ -8643,6 +8650,38 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
     }
 
+
+    void checkEnableIf() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template<\n"
+                            "    typename U,\n"
+                            "    typename std::enable_if<\n"
+                            "        std::is_convertible<U, T>{}>::type* = nullptr>\n"
+                            "void foo(U x);\n"))
+
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template<class t>\n"
+                            "T f(const T a, const T b) {\n"
+                            "    return a < b ? b : a;\n"
+                            "}\n"))
+
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template<class T>\n"
+                            "struct A {\n"
+                            "    T f(const T a, const T b) {\n"
+                            "        return a < b ? b : a;\n"
+                            "    }\n"
+                            "};\n"))
+
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "const int a = 1;\n"
+                            "const int b = 2;\n"
+                            "template<class T>\n"
+                            "struct A {\n"
+                            "    int x = a < b ? b : a;"
+                            "};\n"))
+
+    }
 
     void checkConfig(const char code[]) {
         errout.str("");

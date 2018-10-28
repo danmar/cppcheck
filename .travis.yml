@@ -82,6 +82,8 @@ script:
 #  - make validateXML doesn't work in this context unfortunately
   - ${CPPCHECK} --errorlist >/tmp/errorlist.xml
   - xmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml
+# check for missing CWE entries
+  - make checkCWEEntries
 # check test/cfg
   - make checkcfg
   - make validateXML

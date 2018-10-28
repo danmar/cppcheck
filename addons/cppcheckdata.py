@@ -445,23 +445,45 @@ class ValueFlow:
         Value class
 
         Attributes:
-            intvalue     integer value
-            tokvalue     token value
-            condition    condition where this Value comes from
+            intvalue         integer value
+            tokvalue         token value
+            floatvalue       float value
+            containerSize    container size
+            condition        condition where this Value comes from
+            valueKind        'known' or 'possible'
+            inconclusive     Is value inconclusive?
         """
 
         intvalue = None
         tokvalue = None
+        floatvalue = None
+        containerSize = None
         condition = None
+        valueKind = None
+        inconclusive = False
+
+        def isKnown(self):
+            return self.valueKind and self.valueKind == 'known'
+
+        def isPossible(self):
+            return self.valueKind and self.valueKind == 'possible'
 
         def __init__(self, element):
             self.intvalue = element.get('intvalue')
             if self.intvalue:
                 self.intvalue = int(self.intvalue)
             self.tokvalue = element.get('tokvalue')
+            self.floatvalue = element.get('floatvalue')
+            self.containerSize = element.get('container-size')
             self.condition = element.get('condition-line')
             if self.condition:
                 self.condition = int(self.condition)
+            if element.get('known'):
+                valueKind = 'known'
+            elif element.get('possible'):
+                valueKind = 'possible'
+            if element.get('inconclusive'):
+                inconclusive = 'known'
 
     def __init__(self, element):
         self.Id = element.get('id')

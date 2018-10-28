@@ -8,9 +8,34 @@
 //
 
 #include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
+
+void ignoreleak(void)
+{
+    char *p = (char *)malloc(10);
+    __builtin_memset(&(p[0]), 0, 10);
+    // cppcheck-suppress memleak
+}
+
+void uninitvar__builtin_memset(void)
+{
+    void *s;
+    int c;
+    size_t n;
+    // cppcheck-suppress uninitvar
+    (void)__builtin_memset(s,c,n);
+}
+
+void bufferAccessOutOfBounds__builtin_memset(void)
+{
+    uint8_t buf[42];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)__builtin_memset(buf,0,1000);
+}
 
 void bufferAccessOutOfBounds()
 {
