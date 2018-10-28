@@ -476,6 +476,7 @@ private:
         // Make sure the Tokenizer::findGarbageCode() does not have false positives
         // The TestGarbage ensures that there are true positives
         TEST_CASE(findGarbageCode);
+        TEST_CASE(checkEnableIf);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -8647,6 +8648,38 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { switch (a) int b; }"));
     }
 
+
+    void checkEnableIf() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+            "template<\n"
+            "    typename U,\n"
+            "    typename std::enable_if<\n"
+            "        std::is_convertible<U, T>{}>::type* = nullptr>\n"
+            "void foo(U x);\n"))
+
+        ASSERT_NO_THROW(tokenizeAndStringify(
+            "template<class t>\n"
+            "T f(const T a, const T b) {\n"
+            "    return a < b ? b : a;\n"
+            "}\n"))
+
+        ASSERT_NO_THROW(tokenizeAndStringify(
+            "template<class T>\n"
+            "struct A {\n"
+            "    T f(const T a, const T b) {\n"
+            "        return a < b ? b : a;\n"
+            "    }\n"
+            "};\n"))
+
+        ASSERT_NO_THROW(tokenizeAndStringify(
+            "const int a = 1;\n"
+            "const int b = 2;\n"
+            "template<class T>\n"
+            "struct A {\n"
+            "    int x = a < b ? b : a;"
+            "};\n"))
+
+    }
 
     void checkConfig(const char code[]) {
         errout.str("");
