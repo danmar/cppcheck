@@ -33,9 +33,31 @@ public:
 private:
 
     void run() override {
+        TEST_CASE(findLambdaEndToken);
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);
         TEST_CASE(isVariableChangedByFunctionCall);
+    }
+
+    bool findLambdaEndToken(const char code[]) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token * const tokEnd = ::findLambdaEndToken(tokenizer.tokens());
+        return tokEnd && tokEnd->next() == nullptr;
+    }
+
+    void findLambdaEndToken() {
+        ASSERT_EQUALS(false, findLambdaEndToken("void f() { }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[]{ }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](){ }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[&](){ }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[&, i](){ }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) { return a + b }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) mutable { return a + b }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) constexpr { return a + b }"));
     }
 
     bool isReturnScope(const char code[], int offset) {
