@@ -1279,6 +1279,9 @@ void CheckCondition::alwaysTrueFalse()
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
                 continue;
 
+            if (returnStatement && scope->function && !Token::simpleMatch(scope->function->retDef, "bool"))
+                continue;
+
             if (returnStatement && isConstVarExpression(tok))
                 continue;
 
@@ -1287,10 +1290,6 @@ void CheckCondition::alwaysTrueFalse()
                     tok->variable()->isReference() ||
                     tok->variable()->isConst() ||
                     !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
-                continue;
-
-            // FIXME checking of return statements does not work well. See #8801
-            if (returnStatement)
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.

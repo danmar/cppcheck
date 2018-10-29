@@ -2069,8 +2069,8 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
 
-        check("bool f(int a) {\n"
-              "    if(a == 1) { return a == 1; }\n"
+        check("bool f(int a, int b) {\n"
+              "    if(a == b) { return a == b; }\n"
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'return' condition is always true.\n", errout.str());
@@ -2505,7 +2505,7 @@ private:
               "  if(x == 0) { x++; return x == 0; } \n"
               "  return false;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", errout.str());
 
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"
@@ -2623,15 +2623,27 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(void){return 1/abs(10);}");
+        ASSERT_EQUALS("", errout.str());
+
         check("bool f() { \n"
               "    int x = 0;\n"
               "    return x; \n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("int f() {\n"
+        check("bool f() {\n"
               "    const int a = 50;\n"
               "    const int b = 52;\n"
+              "    return a+b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    int a = 50;\n"
+              "    int b = 52;\n"
+              "    a++;\n"
+              "    b++;\n"
               "    return a+b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
