@@ -949,6 +949,8 @@ const Token *findLambdaEndToken(const Token *first)
         tok = tok->next();
     if (tok && tok->str() == "mutable")
         tok = tok->next();
+    if (tok && tok->originalName() == "->")
+        tok = tok->tokAt(2);
     if (tok && tok->str() == "{")
         return tok->link();
     return nullptr;

@@ -58,6 +58,10 @@ private:
         ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) { return a + b }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) mutable { return a + b }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](int a, int b) constexpr { return a + b }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) -> int { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> int { return -1 }"));
+        ASSERT_EQUALS(false, findLambdaEndToken("[](void) foo -> int { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> int { return -1 }"));
     }
 
     bool isReturnScope(const char code[], int offset) {
