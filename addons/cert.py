@@ -215,7 +215,7 @@ def int31(data, platform):
             minval = 0
             maxval = ((1 << bits) - 1)
         for value in token.astOperand1.values:
-            if value.intvalue and value.intvalue < minval or value.intvalue > maxval:
+            if value.intvalue and (value.intvalue < minval or value.intvalue > maxval):
                 destType = ''
                 if token.valueType.sign:
                     destType = token.valueType.sign + ' ' + token.valueType.type
