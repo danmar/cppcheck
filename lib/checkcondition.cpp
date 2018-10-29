@@ -574,16 +574,6 @@ void CheckCondition::multiCondition2()
 
                     // Condition..
                     const Token *cond2 = tok->str() == "if" ? condStartToken->astOperand2() : condStartToken->astOperand1();
-                    // Check if returning boolean values
-                    if (tok->str() == "return") {
-                        const Variable * condVar = nullptr;
-                        if (Token::Match(cond2, "%var% ;"))
-                            condVar = cond2->variable();
-                        else if (Token::Match(cond2, ". %var% ;"))
-                            condVar = cond2->next()->variable();
-                        if (condVar && (condVar->isClass() || condVar->isPointer()))
-                            break;
-                    }
 
                     ErrorPath errorPath;
 
@@ -602,7 +592,8 @@ void CheckCondition::multiCondition2()
                                 if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     if (!isAliased(vars))
                                         oppositeInnerConditionError(firstCondition, cond2, errorPath);
-                                } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                                } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath) &&
+                                    !(tok->str() == "return" && !Token::Match(cond2, "%cop%"))) {
                                     identicalInnerConditionError(firstCondition, cond2, errorPath);
                                 }
                             }

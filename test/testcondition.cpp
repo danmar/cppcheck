@@ -2069,15 +2069,27 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
 
-        check("bool f(bool a) {\n"
-              "    if(a) { return a; }\n"
+        check("bool f(int a) {\n"
+              "    if(a == 1) { return a == 1; }\n"
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'return' condition is always true.\n", errout.str());
 
+        check("bool f(bool a) {\n"
+              "    if(a) { return a; }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int* f(int* a, int * b) {\n"
               "    if(a) { return a; }\n"
               "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* f(std::shared_ptr<int> a, std::shared_ptr<int> b) {\n"
+              "    if(a.get()) { return a.get(); }\n"
+              "    return b.get();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
