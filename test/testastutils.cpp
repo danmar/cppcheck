@@ -49,8 +49,10 @@ private:
     }
 
     void findLambdaEndToken() {
+        ASSERT(nullptr == ::findLambdaEndToken(nullptr));
         ASSERT_EQUALS(false, findLambdaEndToken("void f() { }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[]{ }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[]{ return 0 }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](){ }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[&](){ }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[&, i](){ }"));
@@ -62,6 +64,11 @@ private:
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> int { return -1 }"));
         ASSERT_EQUALS(false, findLambdaEndToken("[](void) foo -> int { return -1 }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> int { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> int* { return x }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * int { return x }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> const * int { return x }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const ** int { return x }"));
+        ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * const* int { return x }"));
     }
 
     bool isReturnScope(const char code[], int offset) {
