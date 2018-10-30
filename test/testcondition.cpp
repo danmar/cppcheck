@@ -1656,6 +1656,12 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int * f(int * x, int * y) {\n"
+              "    if(!x) return x;\n"
+              "    return y\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionClass() {
