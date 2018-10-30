@@ -65,7 +65,9 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(deadlock_with_many_errors);
+#ifndef LESSTHREADS
         TEST_CASE(many_threads);
+#endif
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
@@ -85,6 +87,7 @@ private:
         check(2, 3, 3, oss.str());
     }
 
+#ifndef LESSTHREADS
     void many_threads() {
         check(16, 100, 100,
               "int main()\n"
@@ -93,6 +96,7 @@ private:
               "  return 0;\n"
               "}");
     }
+#endif
 
     void no_errors_more_files() {
         check(2, 3, 0,
