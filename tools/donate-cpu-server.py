@@ -1,5 +1,8 @@
 
 # Server for 'donate-cpu.py'
+#
+# Syntax: donate-cpu-server.py [--version=revision]')
+#  --version=revision     Use specified revision to compare head to. Default is 1.85.
 
 import glob
 import os
@@ -48,10 +51,10 @@ def fmt(a,b,c,d,e):
     return ret
 
 
-def latestReport(latestResults):
+def latestReport(latestResults, version):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Date       Time ','1.85','Head','Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package','Date       Time ',version[0:4],'Head','Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -73,7 +76,7 @@ def latestReport(latestResults):
                 count = line.split(' ')[1:]
             elif line.startswith('head '):
                 added += 1
-            elif line.startswith('1.85 '):
+            elif line.startswith(version[0:4] + ' '):
                 lost += 1
         diff = ''
         if lost > 0:
@@ -86,11 +89,11 @@ def latestReport(latestResults):
     return html
 
 
-def crashReport():
+def crashReport(version):
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>Package                                 1.85  Head</b>\n'
+    html += '<b>Package                                 ' + version[0:4] + '  Head</b>\n'
     for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
         if not os.path.isfile(filename):
             continue
@@ -118,9 +121,9 @@ def crashReport():
     return html
 
 
-def diffReportFromDict(out, today):
+def diffReportFromDict(out, today, version):
     html = '<pre>\n'
-    html += '<b>MessageID                           1.85    Head</b>\n'
+    html += '<b>MessageID                           ' + version[0:4] + '    Head</b>\n'
     sum0 = 0
     sum1 = 0
     for messageId in sorted(out.keys()):
@@ -156,7 +159,7 @@ def diffReportFromDict(out, today):
     return html
 
 
-def diffReport(resultsPath):
+def diffReport(resultsPath, version):
     out = {}
     outToday = {}
     today = strDateTime()[:10]
@@ -176,7 +179,7 @@ def diffReport(resultsPath):
             if not line.endswith(']'):
                 continue
             index = None
-            if line.startswith('1.85 '):
+            if line.startswith(version[0:4] + ' '):
                 index = 0
             elif line.startswith('head '):
                 index = 1
@@ -195,9 +198,9 @@ def diffReport(resultsPath):
     html = '<html><head><title>Diff report</title></head><body>\n'
     html += '<h1>Diff report</h1>\n'
     html += '<h2>Uploaded today</h2>'
-    html += diffReportFromDict(outToday, 'today')
+    html += diffReportFromDict(outToday, 'today', version)
     html += '<h2>All</h2>'
-    html += diffReportFromDict(out, '')
+    html += diffReportFromDict(out, '', version)
 
     return html
 
@@ -250,9 +253,9 @@ def diffMessageIdTodayReport(resultPath, messageId):
     return text
 
 
-def timeReport(resultPath):
+def timeReport(resultPath, version):
     text = 'Time report\n\n'
-    text += 'Package 1.85 Head\n'
+    text += 'Package ' + version[0:4] + ' Head\n'
 
     totalTime184 = 0.0
     totalTimeHead = 0.0
@@ -293,12 +296,13 @@ def httpGetResponse(connection, data, contentType):
 
 
 class HttpClientThread(Thread):
-    def __init__(self, connection, cmd, resultPath, latestResults):
+    def __init__(self, connection, cmd, resultPath, latestResults, version):
         Thread.__init__(self)
         self.connection = connection
         self.cmd = cmd[:cmd.find('\n')]
         self.resultPath = resultPath
         self.latestResults = latestResults
+        self.version = version
 
     def run(self):
         try:
@@ -313,13 +317,13 @@ class HttpClientThread(Thread):
                 html = overviewReport()
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'latest.html':
-                html = latestReport(self.latestResults)
+                html = latestReport(self.latestResults, self.version)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'crash':
-                html = crashReport()
+                html = crashReport(self.version)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff':
-                html = diffReport(self.resultPath)
+                html = diffReport(self.resultPath, self.version)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url.startswith('difftoday-'):
                 messageId = url[10:]
@@ -346,8 +350,8 @@ class HttpClientThread(Thread):
             time.sleep(1)
             self.connection.close()
 
-def server(server_address_port, packages, packageIndex, resultPath):
-    socket.setdefaulttimeout(30)
+def server(server_address_port, packages, packageIndex, resultPath, version):
+    socket.setdefaulttimeout(120)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_address = ('', server_address_port)
@@ -376,7 +380,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             connection.close()
             continue;
         if cmd.startswith('GET /'):
-            newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
+            newThread = HttpClientThread(connection, cmd, resultPath, latestResults, version)
             newThread.start()
         elif cmd=='get\n':
             packages[packageIndex] = packages[packageIndex].strip()
@@ -430,6 +434,23 @@ def server(server_address_port, packages, packageIndex, resultPath):
             connection.close()
 
 if __name__ == "__main__":
+    version = '1.85'
+    for arg in sys.argv[1:]:
+        if arg.startswith('--version='):
+            version = arg[arg.find('=')+1:]
+            print('Version:' + version)
+        elif arg == '--help':
+            print('Donate CPU to Cppcheck project server')
+            print('')
+            print('Syntax: donate-cpu-server.py [--version=revision]')
+            print('  --version=revision     Use specified revision to compare head to. Default is 1.85.');
+            print('')
+            print('Quick start: just run this script without any arguments')
+            sys.exit(0)
+        else:
+            print('Unhandled argument: ' + arg)
+            sys.exit(1)
+
     workPath = os.path.expanduser('~/daca@home')
     os.chdir(workPath)
     resultPath = workPath + '/donated-results'
@@ -457,7 +478,7 @@ if __name__ == "__main__":
         server_address_port = 8001
 
     try:
-        server(server_address_port, packages, packageIndex, resultPath)
+        server(server_address_port, packages, packageIndex, resultPath, version)
     except socket.timeout:
         print('Timeout!')
 

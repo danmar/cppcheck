@@ -2,9 +2,12 @@
 #
 # A script a user can run to donate CPU to cppcheck project
 #
-# Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-path=path]
+# Syntax: donate-cpu.py [-jN] [--repository=URL] [--server=address] [--stop-time=HH:MM] [--version=revision] [--work-path=path]
 #  -jN                  Use N threads in compilation/analysis. Default is 1.
+#  --repository=URL     Use specified repository. Default is https://github.com/danmar/cppcheck.git.
+#  --server=address     Use specified server. Default is cppcheck.osuosl.org.
 #  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
+#  --version=revision   Use specified revision to compare head to. Default is 1.85.
 #  --work-path=path     Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
 #
 # What this script does:
@@ -38,7 +41,7 @@ def checkRequirements():
            result = False
     return result
 
-def getCppcheck(cppcheckPath):
+def getCppcheck(cppcheckPath, repository):
     print('Get Cppcheck..')
     for i in range(5):
         if os.path.exists(cppcheckPath):
@@ -46,7 +49,7 @@ def getCppcheck(cppcheckPath):
             subprocess.call(['git', 'checkout', '-f'])
             subprocess.call(['git', 'pull'])
         else:
-            subprocess.call(['git', 'clone', 'https://github.com/danmar/cppcheck.git', cppcheckPath])
+            subprocess.call(['git', 'clone', repository, cppcheckPath])
             if not os.path.exists(cppcheckPath):
                 print('Failed to clone, will try again in 10 minutes..')
                 time.sleep(600)
@@ -87,11 +90,11 @@ def compile(cppcheckPath, jobs):
     return True
 
 
-def getPackage():
+def getPackage(server):
     print('Connecting to server to get assigned work..')
     package = None
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('cppcheck.osuosl.org', 8000)
+    server_address = (server, 8000)
     sock.connect(server_address)
     try:
         sock.send(b'get\n')
@@ -230,10 +233,10 @@ def sendAll(connection, data):
             bytes = None
 
 
-def uploadResults(package, results):
+def uploadResults(server, package, results):
     print('Uploading results..')
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('cppcheck.osuosl.org', 8000)
+    server_address = (server, 8000)
     sock.connect(server_address)
     try:
         sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
@@ -244,6 +247,9 @@ def uploadResults(package, results):
 
 jobs = '-j1'
 stopTime = None
+version = '1.85'
+server = 'cppcheck.osuosl.org'
+repository = 'https://github.com/danmar/cppcheck.git'
 workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
@@ -262,13 +268,25 @@ for arg in sys.argv[1:]:
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
-        print('Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-path=path]')
+        print('Syntax: donate-cpu.py [-jN] [--repository=URL] [--server=address] [--stop-time=HH:MM] [--version=revision] [--work-path=path]')
         print('  -jN                  Use N threads in compilation/analysis. Default is 1.')
+        print('  --repository=URL     Use specified repository. Default is https://github.com/danmar/cppcheck.git.')
+        print('  --server=address     Use specified server. Default is cppcheck.osuosl.org.')
         print('  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.')
+        print('  --version=revision   Use specified revision to compare head to. Default is 1.85.')
         print('  --work-path=path     Work folder path. Default path is ' + workpath)
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
+    elif arg.startswith('--repository='):
+        repository = arg[arg.find('=')+1:]
+        print('Repository:' + repository)
+    elif arg.startswith('--server='):
+        server = arg[arg.find('=')+1:]
+        print('Server:' + server)
+    elif arg.startswith('--version='):
+        version = arg[arg.find('=')+1:]
+        print('Version:' + version)
     else:
         print('Unhandled argument: ' + arg)
         sys.exit(1)
@@ -285,23 +303,23 @@ while True:
         if stopTime < time.strftime('%H:%M'):
             print('Stopping. Thank you!')
             sys.exit(0)
-    if not getCppcheck(cppcheckPath):
+    if not getCppcheck(cppcheckPath, repository):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
-    if compile_version(workpath, jobs, '1.85') == False:
-        print('Failed to compile Cppcheck-1.85, retry later')
+    if compile_version(workpath, jobs, version) == False:
+        print('Failed to compile Cppcheck-' + version + ', retry later')
         sys.exit(1)
     if compile(cppcheckPath, jobs) == False:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
-    package = getPackage()
+    package = getPackage(server)
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
     crash = False
     count = ''
     elapsedTime = ''
     resultsToDiff = []
-    for cppcheck in ['cppcheck/cppcheck', '1.85/cppcheck']:
+    for cppcheck in ['cppcheck/cppcheck', version + '/cppcheck']:
         c,errout,t = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
@@ -313,12 +331,12 @@ while True:
     if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         print('No results')
         continue
-    output = 'cppcheck: head 1.85\n'
+    output = 'cppcheck: head ' + version + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
     if not crash:
-        output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.85', resultsToDiff[1]) + '\n'
-    uploadResults(package, output)
+        output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], version[0:4], resultsToDiff[1]) + '\n'
+    uploadResults(server, package, output)
     print('Results have been uploaded')
     print('Sleep 5 seconds..')
     time.sleep(5)
