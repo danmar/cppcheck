@@ -8551,6 +8551,8 @@ private:
         ASSERT_EQUALS("{([cd,(return 0return", testAst("return [](int a, int b) -> int { return 0; }(c, d);"));
         ASSERT_EQUALS("x{([=", testAst("x = [&]()->std::string const & {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() -> foo* {};"));
+        ASSERT_EQUALS("f{([=", testAst("f = [](void) mutable -> foo* {};"));
+        ASSERT_EQUALS("f{([=", testAst("f = []() mutable {};"));
 
         ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
 
