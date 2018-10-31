@@ -30,8 +30,14 @@ import json
 
 
 def reportError(filename, linenr, severity, msg):
-    sys.stderr.write(
-        '[' + filename + ':' + str(linenr) + '] (' + severity + ') naming.py: ' + msg + '\n')
+    message = "[{filename}:{linenr}] ( {severity} ) naming.py: {msg}\n".format(
+        filename=filename,
+        linenr=linenr,
+        severity=severity,
+        msg=msg
+    )
+    sys.stderr.write(message)
+    return message
 
 
 def loadConfig(configfile):
@@ -42,7 +48,7 @@ def loadConfig(configfile):
 
 def process(dumpfiles, configfile, debugprint=False):
 
-    errors = 0
+    errors = []
 
     conf = loadConfig(configfile)
 
@@ -72,16 +78,21 @@ def process(dumpfiles, configfile, debugprint=False):
                             print("\n")
                             print("\t-- {} {}".format(varType, str(var.nameToken.str)))
 
+                        if conf["skip_one_char_variables"] and len(var.nameToken.str) == 1:
+                            continue
                         if varType in conf["var_prefixes"]:
                             if not var.nameToken.str.startswith(conf["var_prefixes"][varType]):
-                                errors += 1
-                                reportError(var.typeStartToken.file, var.typeStartToken.linenr, 'style', 'Variable ' +
-                                            var.nameToken.str + ' violates naming convention')
+                                errors.append(reportError(
+                                                    var.typeStartToken.file,
+                                                    var.typeStartToken.linenr,
+                                                    'style',
+                                                    'Variable ' +
+                                                    var.nameToken.str +
+                                                    ' violates naming convention'))
                         res = re.match(conf["RE_VARNAME"], var.nameToken.str)
                         if not res:
-                            errors += 1
-                            reportError(var.typeStartToken.file, var.typeStartToken.linenr, 'style', 'Variable ' +
-                                        var.nameToken.str + ' violates naming convention')
+                            errors.append(reportError(var.typeStartToken.file, var.typeStartToken.linenr, 'style', 'Variable ' +
+                                        var.nameToken.str + ' violates naming convention'))
 
             if conf["RE_PRIVATE_MEMBER_VARIABLE"]:
                 # TODO: Not converted yet
@@ -90,9 +101,8 @@ def process(dumpfiles, configfile, debugprint=False):
                         continue
                     res = re.match(conf["RE_PRIVATE_MEMBER_VARIABLE"], var.nameToken.str)
                     if not res:
-                        errors += 1
-                        reportError(var.typeStartToken.file, var.typeStartToken.linenr, 'style', 'Private member variable ' +
-                                    var.nameToken.str + ' violates naming convention')
+                        errors.append(reportError(var.typeStartToken.file, var.typeStartToken.linenr, 'style', 'Private member variable ' +
+                                    var.nameToken.str + ' violates naming convention'))
 
             if conf["RE_FUNCTIONNAME"]:
                 for token in cfg.tokenlist:
@@ -107,14 +117,12 @@ def process(dumpfiles, configfile, debugprint=False):
 
                         if retval and retval in conf["function_prefixes"]:
                             if not token.function.name.startswith(conf["function_prefixes"][retval]):
-                                errors += 1
-                                reportError(
-                                    token.file, token.linenr, 'style', 'Function ' + token.function.name + ' violates naming convention')
+                                errors.append(reportError(
+                                    token.file, token.linenr, 'style', 'Function ' + token.function.name + ' violates naming convention'))
                         res = re.match(conf["RE_FUNCTIONNAME"], token.function.name)
                         if not res:
-                            errors += 1
-                            reportError(
-                                token.file, token.linenr, 'style', 'Function ' + token.function.name + ' violates naming convention')
+                            errors.append(reportError(
+                                token.file, token.linenr, 'style', 'Function ' + token.function.name + ' violates naming convention'))
     return errors
 
 
@@ -126,10 +134,29 @@ if __name__ == "__main__":
                         help="Add debug prints")
     parser.add_argument("--configfile", type=str, default="naming.json",
                         help="Naming check config file")
+    parser.add_argument("--verify", action="store_true", default=False,
+                        help="verify this script")
 
     args = parser.parse_args()
     errors = process(args.dumpfiles, args.configfile, args.debugprint)
 
-    if errors:
-        print('Found errors: {}'.format(errors))
+    if args.verify:
+        print(errors)
+        if len(errors) < 5:
+            print("Not enough errors found")
+            sys.exit(1)
+        target = ['[test/namingng_test.c:8] ( style ) naming.py: Variable badui32 violates naming convention\n',
+         '[test/namingng_test.c:11] ( style ) naming.py: Variable a violates naming convention\n',
+         '[test/namingng_test.c:29] ( style ) naming.py: Variable badui32 violates naming convention\n',
+         '[test/namingng_test.c:20] ( style ) naming.py: Function ui16bad_underscore violates naming convention\n',
+         '[test/namingng_test.c:25] ( style ) naming.py: Function u32Bad violates naming convention\n',
+         '[test/namingng_test.c:37] ( style ) naming.py: Function Badui16 violates naming convention\n']
+        diff = set(errors) - set(target)
+        if len(diff):
+            print("Not the right errors found {}".format(str(diff)))
+            sys.exit(1)
+        print("Verification done\n")
+
+    if len(errors):
+        print('Found errors: {}'.format(len(errors)))
         sys.exit(1)
