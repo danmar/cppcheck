@@ -156,7 +156,9 @@ if __name__ == "__main__":
             print("Not the right errors found {}".format(str(diff)))
             sys.exit(1)
         print("Verification done\n")
+        sys.exit(0)
 
     if len(errors):
         print('Found errors: {}'.format(len(errors)))
         sys.exit(1)
+    sys.exit(0)
