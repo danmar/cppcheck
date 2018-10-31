@@ -142,10 +142,11 @@ if __name__ == "__main__":
 
     if args.verify:
         print(errors)
-        if len(errors) < 5:
+        if len(errors) < 6:
             print("Not enough errors found")
             sys.exit(1)
-        target = ['namingng_test.c:8] ( style ) naming.py: Variable badui32 violates naming convention\n',
+        target = [
+         '[namingng_test.c:8] ( style ) naming.py: Variable badui32 violates naming convention\n',
          '[namingng_test.c:11] ( style ) naming.py: Variable a violates naming convention\n',
          '[namingng_test.c:29] ( style ) naming.py: Variable badui32 violates naming convention\n',
          '[namingng_test.c:20] ( style ) naming.py: Function ui16bad_underscore violates naming convention\n',
