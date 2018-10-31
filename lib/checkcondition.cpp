@@ -574,7 +574,7 @@ void CheckCondition::multiCondition2()
 
                     // Condition..
                     const Token *cond2 = tok->str() == "if" ? condStartToken->astOperand2() : condStartToken->astOperand1();
-                    bool isReturnVar = (tok->str() == "return" && !Token::Match(cond2, "%cop%"));
+                    const bool isReturnVar = (tok->str() == "return" && !Token::Match(cond2, "%cop%"));
 
                     ErrorPath errorPath;
 
@@ -590,10 +590,10 @@ void CheckCondition::multiCondition2()
                                 tokens1.push(firstCondition->astOperand1());
                                 tokens1.push(firstCondition->astOperand2());
                             } else if (!firstCondition->hasKnownValue()) {
-                                if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath) && !isReturnVar) {
+                                if (!isReturnVar && isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     if (!isAliased(vars))
                                         oppositeInnerConditionError(firstCondition, cond2, errorPath);
-                                } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath) && !isReturnVar) {
+                                } else if (!isReturnVar && isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     identicalInnerConditionError(firstCondition, cond2, errorPath);
                                 }
                             }
