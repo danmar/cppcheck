@@ -4408,8 +4408,8 @@ private:
                           "   void foo() {\n"
                           "   }\n"
                           "};");
-            ASSERT(db && db->findScopeByName("Bar") && !db->findScopeByName("Bar")->functionList.front().isImplicitlyVirtual(false));
-            if (db)
+            ASSERT(db && db->findScopeByName("Bar") && !db->findScopeByName("Bar")->functionList.empty() && !db->findScopeByName("Bar")->functionList.front().isImplicitlyVirtual(false));
+            if (db && db->findScopeByName("Bar"))
                 ASSERT_EQUALS(1, db->findScopeByName("Bar")->functionList.size());
         }
 

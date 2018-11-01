@@ -121,8 +121,11 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     } else if (comp == "!=" && rhs == std::string("0")) {
         ret = tok;
     } else if (comp == "==" && rhs == std::string("0")) {
-        if (tok->str() == "!")
+        if (tok->str() == "!") {
             ret = tok->astOperand1();
+            // handle (!(x!=0)) as (x==0)
+            astIsVariableComparison(ret, "!=", "0", &ret);
+        }
     }
     while (ret && ret->str() == ".")
         ret = ret->astOperand2();
@@ -936,18 +939,12 @@ const Token *findLambdaEndToken(const Token *first)
 {
     if (!first || first->str() != "[")
         return nullptr;
-    const Token* tok = first->link();
-    if (Token::simpleMatch(tok, "] {"))
-        return tok->linkAt(1);
-    if (!Token::simpleMatch(tok, "] ("))
-        return nullptr;
-    tok = tok->linkAt(1)->next();
-    if (tok && tok->str() == "constexpr")
-        tok = tok->next();
-    if (tok && tok->str() == "mutable")
-        tok = tok->next();
-    if (tok && tok->str() == "{")
-        return tok->link();
+    const Token * tok = first;
+
+    if (tok->astOperand1() && tok->astOperand1()->str() == "(")
+        tok = tok->astOperand1();
+    if (tok->astOperand1() && tok->astOperand1()->str() == "{")
+        return tok->astOperand1()->link();
     return nullptr;
 }
 
