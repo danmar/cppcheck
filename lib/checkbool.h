@@ -58,6 +58,7 @@ public:
         checkBool.checkComparisonOfBoolWithInt();
         checkBool.checkAssignBoolToFloat();
         checkBool.pointerArithBool();
+        checkBool.returnValueOfFunctionReturningBool();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -100,6 +101,9 @@ public:
     void pointerArithBool();
     void pointerArithBoolCond(const Token *tok);
 
+    /** @brief %Check if a function returning bool returns an integer other than 0 or 1 */
+    void returnValueOfFunctionReturningBool();
+
 private:
     // Error messages..
     void comparisonOfFuncReturningBoolError(const Token *tok, const std::string &expression);
@@ -112,6 +116,7 @@ private:
     void bitwiseOnBooleanError(const Token *tok, const std::string &varname, const std::string &op);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool n0o1);
     void pointerArithBoolError(const Token *tok);
+    void returnValueBoolError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckBool c(nullptr, settings, errorLogger);
@@ -126,6 +131,7 @@ private:
         c.comparisonOfBoolExpressionWithIntError(nullptr, true);
         c.pointerArithBoolError(nullptr);
         c.comparisonOfBoolWithInvalidComparator(nullptr, "expression");
+        c.returnValueBoolError(nullptr);
     }
 
     static std::string myName() {
@@ -140,7 +146,8 @@ private:
                "- comparison of a boolean value with boolean value using relational operator\n"
                "- using bool in bitwise expression\n"
                "- pointer addition in condition (either dereference is forgot or pointer overflow is required to make the condition false)\n"
-               "- Assigning bool value to pointer or float\n";
+               "- Assigning bool value to pointer or float\n"
+               "- Returning an integer other than 0 or 1 from a function with boolean return value\n";
     }
 };
 /// @}
