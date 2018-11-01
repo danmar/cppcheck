@@ -1084,30 +1084,28 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("bool f(void) {\n"
-              "[](void) { return -1 };\n"
+              "auto x = [](void) { return -1; };\n"
               "return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("bool f(void) {\n"
-              "[](void) { return -1 };\n"
+              "auto x = [](void) { return -1; };\n"
               "return 2;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
 
         check("bool f(void) {\n"
-              "[](void) -> int { return -1 };\n"
+              "auto x = [](void) -> int { return -1; };\n"
               "return false;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f(void) {\n"
-              "[](void) -> int { return -1 };\n"
+              "auto x = [](void) -> int { return -1; };\n"
               "return 2;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n",
-                           "[test.cpp:2]: (style) Non-boolean value returned from function returning bool\n"
-                           "[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
     }
 };
 
