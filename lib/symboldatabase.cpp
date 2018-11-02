@@ -91,6 +91,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
     // Store current access in each scope (depends on evaluation progress)
     std::map<const Scope*, AccessControl> access;
 
+    std::stack<Scope *> scopeStack;
+
+    scopeStack.push(scope);
+
     // find all scopes
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok ? tok->next() : nullptr) {
         // #5593 suggested to add here:
@@ -208,6 +212,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     mTokenizer->syntaxError(tok);
                 }
                 scope = new_scope;
+                scopeStack.push(scope);
                 tok = tok2;
             } else {
                 scopeList.emplace_back(this, tok, scope);
@@ -262,6 +267,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // make the new scope the current scope
                     scope->nestedList.push_back(new_scope);
                     scope = new_scope;
+                    scopeStack.push(scope);
                 }
 
                 tok = tok2;
@@ -292,13 +298,28 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             // make the new scope the current scope
             scope->nestedList.push_back(new_scope);
             scope = &scopeList.back();
+            scopeStack.push(scope);
 
             tok = tok2;
         }
 
         // forward declaration
-        else if (Token::Match(tok, "class|struct|union %name% ;") &&
+        else if (mTokenizer->isCPP() &&
+                 Token::Match(tok, "class|struct|union %name% ;") &&
                  tok->strAt(-1) != "friend") {
+            if (!findType(tok->next(), scope)) {
+                scopeList.emplace_back(this, tok, scope);
+                Scope * new_scope = &scopeList.back();
+                // fill typeList..
+                typeList.emplace_back(tok, new_scope, scope);
+                Type* new_type = &typeList.back();
+                scope->definedTypesMap[new_type->name()] = new_type;
+                new_scope->definedType = new_type;
+                scope->nestedList.push_back(new_scope);
+            }
+            tok = tok->tokAt(2);
+        } else if (mTokenizer->isC() &&
+                   Token::Match(tok, "struct|union %name% ;")) {
             if (!findType(tok->next(), scope)) {
                 // fill typeList..
                 typeList.emplace_back(tok, nullptr, scope);
@@ -381,6 +402,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             // make the new scope the current scope
             scope->nestedList.push_back(new_scope);
             scope = new_scope;
+            scopeStack.push(scope);
 
             tok = tok2;
         }
@@ -415,6 +437,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             // make the new scope the current scope
             scope->nestedList.push_back(new_scope);
             scope = new_scope;
+            scopeStack.push(scope);
 
             tok = tok2;
         }
@@ -430,7 +453,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         // check for end of scope
         else if (tok == scope->bodyEnd) {
             access.erase(scope);
-            scope = const_cast<Scope*>(scope->nestedIn);
+            scopeStack.pop();
+            scope = scopeStack.top();
             continue;
         }
 
@@ -513,6 +537,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                             scope->functionOf = function.nestedIn;
                             scope->function = funcptr;
                             scope->function->functionScope = scope;
+
+                            scopeStack.push(scope);
                         }
 
                         tok = tok2;
@@ -524,9 +550,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     /** @todo check entire qualification for match */
                     const Scope * const nested = scope->findInNestedListRecursive(tok->strAt(-2));
 
-                    if (nested)
+                    if (nested) {
                         addClassFunction(&scope, &tok, argStart);
-                    else {
+
+                        scopeStack.push(scope);
+                    } else {
                         /** @todo handle friend functions */
                     }
                 }
@@ -588,6 +616,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // syntax error?
                     if (!scope)
                         mTokenizer->syntaxError(tok);
+
+                    scopeStack.push(scope);
                 }
                 // function prototype?
                 else if (declEnd && declEnd->str() == ";") {
@@ -621,6 +651,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = tok1;
                 scope->nestedList.push_back(&scopeList.back());
                 scope = &scopeList.back();
+                scopeStack.push(scope);
             } else if (Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->next()->link(), ") {")) {
                 const Token *scopeStartTok = tok->next()->link()->next();
                 if (tok->str() == "if")
@@ -636,6 +667,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                 scope->nestedList.push_back(&scopeList.back());
                 scope = &scopeList.back();
+                scopeStack.push(scope);
                 if (scope->type == Scope::eFor)
                     scope->checkVariable(tok->tokAt(2), Local, mSettings); // check for variable declaration and add it to new scope if found
                 else if (scope->type == Scope::eCatch)
@@ -655,10 +687,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         scopeList.emplace_back(this, tok2->link()->linkAt(-1), scope, Scope::eLambda, tok);
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
+                        scopeStack.push(scope);
                     } else if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
                         scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
                         scope->nestedList.push_back(&scopeList.back());
                         scope = &scopeList.back();
+                        scopeStack.push(scope);
                     } else {
                         tok = tok->link();
                     }
@@ -823,6 +857,10 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     scope->definedType = &mBlankTypes.back();
                 }
 
+                // forward declaration
+                if (!scope->bodyStart)
+                    continue;
+
                 if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
                     // check for default constructor
                     bool hasDefaultConstructor = false;
@@ -976,7 +1014,10 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             start = const_cast<Token*>(mTokenizer->list.front());
             end = const_cast<Token*>(mTokenizer->list.back());
         }
-        assert(start && end);
+
+        // forward declaration
+        if (start == nullptr && end == nullptr)
+            continue;
 
         end->scope(&*it);
 
@@ -3309,7 +3350,6 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     // skip over qualification if present
     nameTok = skipScopeIdentifiers(nameTok);
     if (nameTok && ((type == Scope::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
-
         className = nameTok->str();
 }
 

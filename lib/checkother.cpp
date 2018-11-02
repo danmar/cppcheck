@@ -1470,7 +1470,7 @@ void CheckOther::checkPassByReference()
         if (var->valueType()->type == ValueType::Type::CONTAINER) {
         } else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
             // Ensure that it is a large object.
-            if (!var->type()->classScope)
+            if (!var->type()->classScope || !var->type()->classScope->bodyStart)
                 inconclusive = true;
             else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
                 continue;

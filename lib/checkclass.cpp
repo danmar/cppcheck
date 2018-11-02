@@ -1345,7 +1345,14 @@ void CheckClass::operatorEqRetRefThis()
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure return signature is correct
-                if (Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className) {
+                const Token * nameStart = func->token;
+                while (nameStart->strAt(-1) == "::") {
+                    if (nameStart->strAt(-2) == ">")
+                        nameStart = nameStart->linkAt(-2)->previous();
+                    else
+                        nameStart = nameStart->tokAt(-2);
+                }
+                if (func->retType == func->nestedIn->definedType && nameStart->strAt(-1) == "&") {
                     checkReturnPtrThis(scope, &(*func), func->functionScope->bodyStart, func->functionScope->bodyEnd);
                 }
             }
