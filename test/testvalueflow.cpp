@@ -3422,6 +3422,14 @@ private:
                "}";
         ASSERT(tokenValues(code, "s [").empty());
 
+        // valueFlowContainerForward, loop
+        code = "void f() {\n"
+               "    std::stack<Token *> links;\n"
+               "    while (!links.empty() || indentlevel)\n"
+               "        links.push(tok);\n"
+               "}";
+        ASSERT(tokenValues(code, "links . empty").empty());
+
         // valueFlowContainerForward, function call
         code = "void f() {\n"
                "  std::list<int> x;\n"

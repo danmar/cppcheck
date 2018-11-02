@@ -3492,6 +3492,8 @@ static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
     return false;
 }
 
+static bool isContainerSizeChanged(unsigned int varId, const Token *start, const Token *end);
+
 static bool isContainerSizeChangedByFunction(const Token *tok)
 {
     const Token *parent = tok->astParent();
@@ -3536,6 +3538,13 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
     while (nullptr != (tok = tok->next())) {
         if (Token::Match(tok, "[{}]"))
             break;
+        if (Token::Match(tok, "while|for (")) {
+            const Token *start = tok->linkAt(1)->next();
+            if (!Token::simpleMatch(start->link(), "{"))
+                break;
+            if (isContainerSizeChanged(containerId, start, start->link()))
+                break;
+        }
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))
