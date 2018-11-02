@@ -9084,17 +9084,15 @@ void Tokenizer::simplifyKeyword()
                 tok->deleteThis();
         }
 
-
-        if (mSettings->standards.c >= Standards::C99) {
+        if (isC() && mSettings->standards.c >= Standards::C99) {
             while (tok->str() == "restrict") {
                 tok->deleteThis();
             }
-
-            // simplify static keyword:
-            // void foo( int [ static 5 ] ); ==> void foo( int [ 5 ] );
-            if (Token::Match(tok, "[ static %num%")) {
-                tok->deleteNext();
-            }
+        }
+        // simplify static keyword:
+        // void foo( int [ static 5 ] ); ==> void foo( int [ 5 ] );
+        if (Token::Match(tok, "[ static %num%")) {
+            tok->deleteNext();
         }
 
         if (mSettings->standards.c >= Standards::C11) {
