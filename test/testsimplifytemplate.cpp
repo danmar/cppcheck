@@ -108,6 +108,7 @@ private:
         TEST_CASE(template68);  // union
         TEST_CASE(template69);  // #8791
         TEST_CASE(template70);  // #5289
+        TEST_CASE(template71);  // #8821
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1293,6 +1294,27 @@ private:
                             "class Bar : private Bar<void,void> { "
                             "void foo ( ) { } "
                             "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template71() { // #8821
+        const char code[] = "int f1(int * pInterface, int x) { return 0; }\n"
+                            "\n"
+                            "template< class interface_type > class Reference {\n"
+                            "  template< class interface_type > int i();\n"
+                            "  int *pInterface;\n"
+                            "};\n"
+                            "\n"
+                            "template< class interface_type > int Reference< interface_type >::i() {\n"
+                            "    return f1(pInterface, interface_type::static_type());\n"
+                            "}\n"
+                            "\n"
+                            "Reference< class XPropertyList > dostuff();";
+        const char exp [] = "int f1 ( int * pInterface , int x ) { return 0 ; } "
+                            "class Reference<XPropertyList> ; "
+                            "Reference<XPropertyList> dostuff ( ) ; "
+                            "class Reference<XPropertyList> { template < class XPropertyList > int i ( ) ; int * pInterface ; } ; "
+                            "int Reference<XPropertyList> :: i ( ) { return f1 ( pInterface , XPropertyList :: static_type ( ) ) ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
