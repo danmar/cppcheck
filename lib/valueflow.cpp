@@ -375,7 +375,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     if (value.isContainerSizeValue()) {
         // .empty, .size, +"abc", +'a'
-        if (Token::Match(parent, "+")) {
+        if (parent->str() == "+") {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
                 for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
                     ValueFlow::Value result;
