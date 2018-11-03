@@ -57,6 +57,7 @@ private:
         TEST_CASE(valueFlowMove);
 
         TEST_CASE(valueFlowBitAnd);
+        TEST_CASE(valueFlowRightShift);
 
         TEST_CASE(valueFlowCalculations);
         TEST_CASE(valueFlowSizeof);
@@ -2256,6 +2257,22 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code,3U,0));
         ASSERT_EQUALS(false, testValueOfX(code,3U,16));
+    }
+
+    void valueFlowRightShift() {
+        const char *code;
+
+        code = "int f(int a) {\n"
+               "  int x = (a & 0xff) >> 16;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+
+        code = "int f(unsigned int a) {\n"
+               "  int x = (a % 123) >> 16;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
     }
 
     void valueFlowSwitchVariable() {
