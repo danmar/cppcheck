@@ -1786,7 +1786,7 @@ class MisraChecker:
         line number, symbol name tuples.  If the list is None then
         the rule is suppressed for the entire file
         If the list of tuples exists then search the list looking for
-        maching line numbers.  Symbol names are currently ignored
+        matching line numbers.  Symbol names are currently ignored
         because they can include regular expressions.
         TODO: Support symbol names and expression matching.
 
