@@ -574,16 +574,7 @@ void CheckCondition::multiCondition2()
 
                     // Condition..
                     const Token *cond2 = tok->str() == "if" ? condStartToken->astOperand2() : condStartToken->astOperand1();
-                    // Check if returning boolean values
-                    if (tok->str() == "return") {
-                        const Variable * condVar = nullptr;
-                        if (Token::Match(cond2, "%var% ;"))
-                            condVar = cond2->variable();
-                        else if (Token::Match(cond2, ". %var% ;"))
-                            condVar = cond2->next()->variable();
-                        if (condVar && (condVar->isClass() || condVar->isPointer()))
-                            break;
-                    }
+                    const bool isReturnVar = (tok->str() == "return" && !Token::Match(cond2, "%cop%"));
 
                     ErrorPath errorPath;
 
@@ -599,10 +590,10 @@ void CheckCondition::multiCondition2()
                                 tokens1.push(firstCondition->astOperand1());
                                 tokens1.push(firstCondition->astOperand2());
                             } else if (!firstCondition->hasKnownValue()) {
-                                if (isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                                if (!isReturnVar && isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     if (!isAliased(vars))
                                         oppositeInnerConditionError(firstCondition, cond2, errorPath);
-                                } else if (isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
+                                } else if (!isReturnVar && isSameExpression(mTokenizer->isCPP(), true, firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     identicalInnerConditionError(firstCondition, cond2, errorPath);
                                 }
                             }
@@ -1288,6 +1279,9 @@ void CheckCondition::alwaysTrueFalse()
             if (!(constIfWhileExpression || constValExpr || compExpr || returnStatement))
                 continue;
 
+            if (returnStatement && scope->function && !Token::simpleMatch(scope->function->retDef, "bool"))
+                continue;
+
             if (returnStatement && isConstVarExpression(tok))
                 continue;
 
@@ -1296,10 +1290,6 @@ void CheckCondition::alwaysTrueFalse()
                     tok->variable()->isReference() ||
                     tok->variable()->isConst() ||
                     !isVariableChanged(tok->variable(), mSettings, mTokenizer->isCPP())))
-                continue;
-
-            // FIXME checking of return statements does not work well. See #8801
-            if (returnStatement)
                 continue;
 
             // Don't warn in assertions. Condition is often 'always true' by intention.

@@ -8741,7 +8741,7 @@ void Tokenizer::simplifyStructDecl()
             continue;
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
-            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{")) {
+            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{|=")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
@@ -9072,6 +9072,9 @@ void Tokenizer::simplifyKeyword()
     // linux kernel code at least uses "_inline" as struct member name at some
     // places.
 
+    const bool c99 = isC() && mSettings->standards.c >= Standards::C99;
+    const bool cpp11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (keywords.find(tok->str()) != keywords.end()) {
             // Don't remove struct members
@@ -9084,26 +9087,22 @@ void Tokenizer::simplifyKeyword()
                 tok->deleteThis();
         }
 
+        // simplify static keyword:
+        // void foo( int [ static 5 ] ); ==> void foo( int [ 5 ] );
+        if (Token::Match(tok, "[ static %num%"))
+            tok->deleteNext();
 
-        if (mSettings->standards.c >= Standards::C99) {
-            while (tok->str() == "restrict") {
+        if (c99) {
+            while (tok->str() == "restrict")
                 tok->deleteThis();
-            }
 
-            // simplify static keyword:
-            // void foo( int [ static 5 ] ); ==> void foo( int [ 5 ] );
-            if (Token::Match(tok, "[ static %num%")) {
-                tok->deleteNext();
+            if (mSettings->standards.c >= Standards::C11) {
+                while (tok->str() == "_Atomic")
+                    tok->deleteThis();
             }
         }
 
-        if (mSettings->standards.c >= Standards::C11) {
-            while (tok->str() == "_Atomic") {
-                tok->deleteThis();
-            }
-        }
-
-        if (isCPP() && mSettings->standards.cpp >= Standards::CPP11) {
+        else if (cpp11) {
             while (tok->str() == "constexpr") {
                 tok->deleteThis();
             }

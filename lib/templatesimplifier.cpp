@@ -575,7 +575,9 @@ void TemplateSimplifier::getTemplateInstantiations()
                 if (Token::Match(tok2, ", %name% <") &&
                     templateParameters(tok2->tokAt(2))) {
                     mTemplateInstantiations.emplace_back(tok2->next(), getScopeName(scopeList), tok2->strAt(1));
-                }
+                } else if (Token::Match(tok2->next(), "class|struct"))
+                    const_cast<Token *>(tok2)->deleteNext();
+
             }
 
             // Add outer template..

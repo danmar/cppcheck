@@ -959,18 +959,12 @@ const Token *findLambdaEndToken(const Token *first)
 {
     if (!first || first->str() != "[")
         return nullptr;
-    const Token* tok = first->link();
-    if (Token::simpleMatch(tok, "] {"))
-        return tok->linkAt(1);
-    if (!Token::simpleMatch(tok, "] ("))
-        return nullptr;
-    tok = tok->linkAt(1)->next();
-    if (tok && tok->str() == "constexpr")
-        tok = tok->next();
-    if (tok && tok->str() == "mutable")
-        tok = tok->next();
-    if (tok && tok->str() == "{")
-        return tok->link();
+    const Token * tok = first;
+
+    if (tok->astOperand1() && tok->astOperand1()->str() == "(")
+        tok = tok->astOperand1();
+    if (tok->astOperand1() && tok->astOperand1()->str() == "{")
+        return tok->astOperand1()->link();
     return nullptr;
 }
 

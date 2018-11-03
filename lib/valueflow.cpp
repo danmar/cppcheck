@@ -100,6 +100,8 @@
 #include <stack>
 #include <vector>
 
+static const int TIMEOUT = 10; // Do not repeat ValueFlow analysis more than 10 seconds
+
 namespace {
     struct ProgramMemory {
         std::map<unsigned int, ValueFlow::Value> values;
@@ -345,6 +347,20 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
     return value;
 }
 
+static void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
+{
+    if (value1.isKnown() && value2.isKnown())
+        result->setKnown();
+    else if (value1.isInconclusive() || value2.isInconclusive())
+        result->setInconclusive();
+    else
+        result->setPossible();
+    result->condition = value1.condition ? value1.condition : value2.condition;
+    result->varId = (value1.varId != 0U) ? value1.varId : value2.varId;
+    result->varvalue = (result->varId == value1.varId) ? value1.varvalue : value2.varvalue;
+    result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
+}
+
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
@@ -358,6 +374,48 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     Token *parent = const_cast<Token*>(tok->astParent());
     if (!parent)
         return;
+
+    if (value.isContainerSizeValue()) {
+        // .empty, .size, +"abc", +'a'
+        if (parent->str() == "+") {
+            for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
+                for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
+                    ValueFlow::Value result;
+                    result.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                    if (value1.isContainerSizeValue() && value2.isContainerSizeValue())
+                        result.intvalue = value1.intvalue + value2.intvalue;
+                    else if (value1.isContainerSizeValue() && value2.isTokValue() && value2.tokvalue->tokType() == Token::eString)
+                        result.intvalue = value1.intvalue + Token::getStrLength(value2.tokvalue);
+                    else if (value2.isContainerSizeValue() && value1.isTokValue() && value1.tokvalue->tokType() == Token::eString)
+                        result.intvalue = Token::getStrLength(value1.tokvalue) + value2.intvalue;
+                    else
+                        continue;
+
+                    combineValueProperties(value1, value2, &result);
+
+                    setTokenValue(parent, result, settings);
+                }
+            }
+        }
+
+
+        else if (Token::Match(parent, ". %name% (") && parent->astParent() == parent->tokAt(2) && parent->astOperand1() && parent->astOperand1()->valueType()) {
+            const Library::Container *c = parent->astOperand1()->valueType()->container;
+            const Library::Container::Yield yields = c ? c->getYield(parent->strAt(1)) : Library::Container::Yield::NO_YIELD;
+            if (yields == Library::Container::Yield::SIZE) {
+                ValueFlow::Value v(value);
+                v.valueType = ValueFlow::Value::ValueType::INT;
+                setTokenValue(const_cast<Token *>(parent->astParent()), v, settings);
+            } else if (yields == Library::Container::Yield::EMPTY) {
+                ValueFlow::Value v(value);
+                v.intvalue = !v.intvalue;
+                v.valueType = ValueFlow::Value::ValueType::INT;
+                setTokenValue(const_cast<Token *>(parent->astParent()), v, settings);
+            }
+        }
+
+        return;
+    }
 
     if (parent->str() == "(" && !parent->astOperand2() && Token::Match(parent,"( %name%")) {
         const ValueType &valueType = ValueType::parseDecl(parent->next(), settings);
@@ -471,13 +529,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                 if (known || value1.varId == 0U || value2.varId == 0U ||
                     (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() && value2.isIntValue())) {
                     ValueFlow::Value result(0);
-                    result.condition = value1.condition ? value1.condition : value2.condition;
-                    result.setInconclusive(value1.isInconclusive() | value2.isInconclusive());
-                    result.varId = (value1.varId != 0U) ? value1.varId : value2.varId;
-                    result.varvalue = (result.varId == value1.varId) ? value1.varvalue : value2.varvalue;
-                    result.errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
-                    if (value1.valueKind == value2.valueKind)
-                        result.valueKind = value1.valueKind;
+                    combineValueProperties(value1, value2, &result);
                     const float floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
                     const float floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
                     switch (parent->str()[0]) {
@@ -2355,7 +2407,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             // Lhs should be a variable
-            if (!tok->astOperand1() || !tok->astOperand1()->varId())
+            if (!tok->astOperand1() || !tok->astOperand1()->varId() || tok->astOperand1()->hasKnownValue())
                 continue;
             const unsigned int varid = tok->astOperand1()->varId();
             if (aliased.find(varid) != aliased.end())
@@ -3530,6 +3582,9 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand1()->function())
             continue;
 
+        if (tok->hasKnownValue())
+            continue;
+
         // Arguments..
         std::vector<MathLib::bigint> parvalues;
         if (tok->astOperand2()) {
@@ -3655,6 +3710,8 @@ static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
     return false;
 }
 
+static bool isContainerSizeChanged(unsigned int varId, const Token *start, const Token *end);
+
 static bool isContainerSizeChangedByFunction(const Token *tok)
 {
     const Token *parent = tok->astParent();
@@ -3699,6 +3756,13 @@ static void valueFlowContainerForward(const Token *tok, unsigned int containerId
     while (nullptr != (tok = tok->next())) {
         if (Token::Match(tok, "[{}]"))
             break;
+        if (Token::Match(tok, "while|for (")) {
+            const Token *start = tok->linkAt(1)->next();
+            if (!Token::simpleMatch(start->link(), "{"))
+                break;
+            if (isContainerSizeChanged(containerId, start, start->link()))
+                break;
+        }
         if (tok->varId() != containerId)
             continue;
         if (Token::Match(tok, "%name% ="))
@@ -3776,6 +3840,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!var->valueType() || !var->valueType()->container)
             continue;
         if (!Token::Match(var->nameToken(), "%name% ;"))
+            continue;
+        if (var->nameToken()->hasKnownValue())
             continue;
         ValueFlow::Value value(0);
         if (var->valueType()->container->size_templateArgNo >= 0) {
@@ -3917,6 +3983,13 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, c
     return expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
 }
 
+static std::size_t getTotalValues(TokenList *tokenlist)
+{
+    std::size_t n = 1;
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next())
+        n += tok->values().size();
+    return n;
+}
 
 void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -3931,18 +4004,25 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
-    valueFlowOppositeCondition(symboldatabase, settings);
-    valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowSubFunction(tokenlist, errorLogger, settings);
-    valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
-    if (tokenlist->isCPP())
-        valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
+
+    // Temporary hack.. run valueflow until there is nothing to update or timeout expires
+    const std::time_t timeout = std::time(0) + TIMEOUT;
+    std::size_t values = 0;
+    while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
+        values = getTotalValues(tokenlist);
+        valueFlowOppositeCondition(symboldatabase, settings);
+        valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowSubFunction(tokenlist, errorLogger, settings);
+        valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
+        if (tokenlist->isCPP())
+            valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
+    }
 }
 
 

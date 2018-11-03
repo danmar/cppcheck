@@ -3415,7 +3415,7 @@ private:
         ASSERT(tokenValues(code, "s [").empty());
 
         code = "void f() {\n"
-               "  std::string s=\"abc\";\n" // size of s is 3
+               "  std::string s = \"abc\";\n" // size of s is 3
                "  s.size();\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
@@ -3458,6 +3458,14 @@ private:
                "}";
         ASSERT(tokenValues(code, "s [").empty());
 
+        // valueFlowContainerForward, loop
+        code = "void f() {\n"
+               "    std::stack<Token *> links;\n"
+               "    while (!links.empty() || indentlevel)\n"
+               "        links.push(tok);\n"
+               "}";
+        ASSERT(tokenValues(code, "links . empty").empty());
+
         // valueFlowContainerForward, function call
         code = "void f() {\n"
                "  std::list<int> x;\n"
@@ -3480,6 +3488,25 @@ private:
                "}";
         ASSERT(tokenValues(code, "ints [").empty());
 
+        // container size => yields
+        code = "void f() {\n"
+               "  std::string s = \"abcd\";\n"
+               "  s.size();\n"
+               "}";
+        ASSERT_EQUALS(4, tokenValues(code, "( ) ;").front().intvalue);
+
+        code = "void f() {\n"
+               "  std::string s;\n"
+               "  s.empty();\n"
+               "}";
+        ASSERT_EQUALS(1, tokenValues(code, "( ) ;").front().intvalue);
+
+        // Calculations
+        code = "void f() {\n"
+               "  std::string s = \"abcd\";\n"
+               "  x = s + s;\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "+"), 8));
     }
 };
 

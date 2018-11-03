@@ -680,6 +680,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
+                    if (curlyBracket && curlyBracket->str() == "mutable")
+                        curlyBracket = curlyBracket->next();
                     if (curlyBracket && curlyBracket->originalName() == "->") {
                         while (Token::Match(curlyBracket, "%name%|.|::|&|*"))
                             curlyBracket = curlyBracket->next();
@@ -1220,7 +1222,7 @@ void TokenList::validateAst() const
             // Skip lambda captures
             if (Token::Match(tok, "= ,|]"))
                 continue;
-            // Dont check templates
+            // Don't check templates
             if (tok->link())
                 continue;
             // Skip pure virtual functions

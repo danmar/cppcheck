@@ -636,6 +636,9 @@ void ProjectFileDialog::removeSuppression()
 {
     const int row = mUI.mListSuppressions->currentRow();
     QListWidgetItem *item = mUI.mListSuppressions->takeItem(row);
+    if (!item)
+        return;
+
     int suppressionIndex = getSuppressionIndex(item->text());
     if (suppressionIndex >= 0)
         mSuppressions.removeAt(suppressionIndex);

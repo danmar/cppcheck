@@ -439,7 +439,6 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             if (oldLastToken != cback()) {
                 oldLastToken = cback();
                 const std::string lastline(lastLine());
-
                 if (lastline == "# file %str%") {
                     loc.push(location);
                     location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
@@ -448,6 +447,10 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     loc.push(location);
                     location.line = std::atol(cback()->str().c_str());
                 } else if (lastline == "# line %num% %str%") {
+                    loc.push(location);
+                    location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
+                    location.line = std::atol(cback()->previous->str().c_str());
+                } else if (lastline == "# %num% %str%") {
                     loc.push(location);
                     location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
                     location.line = std::atol(cback()->previous->str().c_str());

@@ -126,7 +126,6 @@ std::vector<const Token *> getArguments(const Token *ftok);
 
 /**
  * find lambda function end token
- * \todo handle explicit return type
  * \param first The [ token
  * \return nullptr or the }
  */

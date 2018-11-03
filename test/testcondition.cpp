@@ -1656,6 +1656,12 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int * f(int * x, int * y) {\n"
+              "    if(!x) return x;\n"
+              "    return y;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionClass() {
@@ -1986,7 +1992,8 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f1(QString s) { if(s.isEmpty()) if(s.length() > 42) {}} ");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
+                      "[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.length()>42' is always false\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
         ASSERT_EQUALS("", errout.str());
@@ -2069,15 +2076,27 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
 
-        check("bool f(bool a) {\n"
-              "    if(a) { return a; }\n"
+        check("bool f(int a, int b) {\n"
+              "    if(a == b) { return a == b; }\n"
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'return' condition is always true.\n", errout.str());
 
+        check("bool f(bool a) {\n"
+              "    if(a) { return a; }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int* f(int* a, int * b) {\n"
               "    if(a) { return a; }\n"
               "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* f(std::shared_ptr<int> a, std::shared_ptr<int> b) {\n"
+              "    if(a.get()) { return a.get(); }\n"
+              "    return b.get();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -2493,7 +2512,7 @@ private:
               "  if(x == 0) { x++; return x == 0; } \n"
               "  return false;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", errout.str());
 
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"
@@ -2611,15 +2630,27 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(void){return 1/abs(10);}");
+        ASSERT_EQUALS("", errout.str());
+
         check("bool f() { \n"
               "    int x = 0;\n"
               "    return x; \n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("int f() {\n"
+        check("bool f() {\n"
               "    const int a = 50;\n"
               "    const int b = 52;\n"
+              "    return a+b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    int a = 50;\n"
+              "    int b = 52;\n"
+              "    a++;\n"
+              "    b++;\n"
               "    return a+b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
