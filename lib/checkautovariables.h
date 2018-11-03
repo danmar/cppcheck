@@ -89,7 +89,7 @@ private:
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
-    void errorInvalidDeallocation(const Token *tok);
+    void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
     void errorUselessAssignmentArg(const Token *tok);
     void errorUselessAssignmentPtrArg(const Token *tok);
@@ -102,7 +102,7 @@ private:
         c.errorReturnPointerToLocalArray(nullptr);
         c.errorReturnReference(nullptr);
         c.errorReturnTempReference(nullptr);
-        c.errorInvalidDeallocation(nullptr);
+        c.errorInvalidDeallocation(nullptr, nullptr);
         c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
         c.errorUselessAssignmentArg(nullptr);
         c.errorUselessAssignmentPtrArg(nullptr);
