@@ -102,11 +102,11 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
     std::ifstream fin(files);
     if (fin.is_open()) {
         std::string line;
-        const std::string endsWith(':' + cfg + ':' + sourcefile);
+        const std::string end(':' + cfg + ':' + sourcefile);
         while (std::getline(fin,line)) {
-            if (line.size() <= endsWith.size() + 2U)
+            if (line.size() <= end.size() + 2U)
                 continue;
-            if (line.compare(line.size()-endsWith.size(), endsWith.size(), endsWith) != 0)
+            if (!endsWith(line, end.c_str(), end.size()))
                 continue;
             std::ostringstream ostr;
             ostr << buildDir << '/' << line.substr(0,line.find(':'));
