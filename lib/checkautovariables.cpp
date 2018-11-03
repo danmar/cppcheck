@@ -599,7 +599,7 @@ void CheckAutoVariables::errorReturnTempReference(const Token *tok)
 
 void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val)
 {
-    const Variable *var = val ? val->tokvalue->variable() : tok->variable();
+    const Variable *var = val ? val->tokvalue->variable() : (tok ? tok->variable() : nullptr);
 
     std::string type = "auto-variable";
     if (var) {
