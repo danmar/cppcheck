@@ -8741,7 +8741,7 @@ void Tokenizer::simplifyStructDecl()
             continue;
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
-            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{")) {
+            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{|=")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
