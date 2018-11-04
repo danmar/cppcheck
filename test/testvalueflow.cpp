@@ -3333,6 +3333,12 @@ private:
                "    if (i != j) return; \n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
+
+        code = "void f(int i, int j, bool b) {\n"
+               "    if (i == j) { if(b) return; }\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
