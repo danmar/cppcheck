@@ -48,6 +48,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
         mDefaultSignedness = ValueType::UNKNOWN_SIGN;
 
     createSymbolDatabaseFindAllScopes();
+    createSymbolDatabaseRemoveForwardDeclarations();
     createSymbolDatabaseClassInfo();
     createSymbolDatabaseVariableInfo();
     createSymbolDatabaseCopyAndMoveConstructors();
@@ -702,6 +703,23 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
     }
 }
 
+void SymbolDatabase::createSymbolDatabaseRemoveForwardDeclarations()
+{
+    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end();) {
+        if (it->isClassOrStructOrUnion() && it->definedType && it->definedType->classScope && !it->definedType->classScope->bodyStart) {
+            it->definedType->classScope = nullptr;
+            for (std::vector<const Scope *>::iterator it2 = classAndStructScopes.begin(); it2 != classAndStructScopes.end(); ++it2) {
+                if (*it2 == &(*it)) {
+                    classAndStructScopes.erase(it2);
+                    break;
+                }
+            }
+            it = scopeList.erase(it);
+        } else
+            ++it;
+    }
+}
+
 void SymbolDatabase::createSymbolDatabaseClassInfo()
 {
     if (mTokenizer->isC())
@@ -857,10 +875,6 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     scope->definedType = &mBlankTypes.back();
                 }
 
-                // forward declaration
-                if (!scope->bodyStart)
-                    continue;
-
                 if (scope->isClassOrStruct() && scope->definedType->needInitialization == Type::Unknown) {
                     // check for default constructor
                     bool hasDefaultConstructor = false;
@@ -1014,10 +1028,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             start = const_cast<Token*>(mTokenizer->list.front());
             end = const_cast<Token*>(mTokenizer->list.back());
         }
-
-        // forward declaration
-        if (start == nullptr && end == nullptr)
-            continue;
+        assert(start && end);
 
         end->scope(&*it);
 

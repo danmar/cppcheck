@@ -1198,6 +1198,7 @@ private:
 
     // Create symboldatabase...
     void createSymbolDatabaseFindAllScopes();
+    void createSymbolDatabaseRemoveForwardDeclarations();
     void createSymbolDatabaseClassInfo();
     void createSymbolDatabaseVariableInfo();
     void createSymbolDatabaseCopyAndMoveConstructors();

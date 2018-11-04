@@ -1315,10 +1315,6 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (scope->type != Scope::eStruct && scope->type != Scope::eUnion)
             continue;
 
-        // forward declaration
-        if (!scope->bodyStart)
-            continue;
-
         if (scope->bodyStart->fileIndex() != 0 || scope->className.empty())
             continue;
 

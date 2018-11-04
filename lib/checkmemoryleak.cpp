@@ -2219,7 +2219,7 @@ void CheckMemoryLeakInFunction::check()
             continue;
 
         // check for known class without implementation (forward declaration)
-        if (var->isPointer() && var->type() && (!var->typeScope() || !var->typeScope()->bodyStart))
+        if (var->isPointer() && var->type() && !var->typeScope())
             continue;
 
         if (var->scope()->hasInlineOrLambdaFunction())
