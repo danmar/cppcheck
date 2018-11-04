@@ -222,7 +222,7 @@ public:
             std::string stringify() const;
 
             unsigned int fileIndex;
-            unsigned int line;
+            int line; // negative value means "no line"
             unsigned int col;
 
             std::string getinfo() const {

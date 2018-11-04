@@ -27,6 +27,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "valueflow.h"
 
 #include <cstddef>
 #include <list>
@@ -453,4 +454,32 @@ void CheckBool::assignBoolToFloatError(const Token *tok)
 {
     reportError(tok, Severity::style, "assignBoolToFloat",
                 "Boolean value assigned to floating point variable.", CWE704, false);
+}
+
+void CheckBool::returnValueOfFunctionReturningBool(void)
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+
+    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        if (!(scope->function && Token::Match(scope->function->retDef, "bool|_Bool")))
+            continue;
+
+        for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
+            // Skip lambdas
+            const Token* tok2 = findLambdaEndToken(tok);
+            if (tok2)
+                tok = tok2;
+            else if (Token::simpleMatch(tok, "return") && tok->astOperand1() &&
+                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)))
+                returnValueBoolError(tok);
+        }
+    }
+}
+
+void CheckBool::returnValueBoolError(const Token *tok)
+{
+    reportError(tok, Severity::style, "returnNonBoolInBooleanFunction", "Non-boolean value returned from function returning bool");
 }

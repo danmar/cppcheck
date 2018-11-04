@@ -230,6 +230,7 @@ private:
         TEST_CASE(garbageCode197); // #8385
         TEST_CASE(garbageCode198); // #8383
         TEST_CASE(garbageCode199); // #8752
+        TEST_CASE(garbageCode200); // #8757
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -578,7 +579,7 @@ private:
 
     void garbageCode35() {
         // ticket #2604 segmentation fault
-        checkCode("sizeof <= A");
+        ASSERT_THROW(checkCode("sizeof <= A"), InternalError);
     }
 
     void garbageCode36() { // #6334
@@ -782,7 +783,7 @@ private:
     }
 
     void garbageCode91() { // #6791
-        checkCode("typedef __attribute__((vector_size (16))) { return[ (v2df){ } ;] }"); // do not crash
+        ASSERT_THROW(checkCode("typedef __attribute__((vector_size (16))) { return[ (v2df){ } ;] }"), InternalError); // throw syntax error
     }
 
     void garbageCode92() { // #6792
@@ -799,7 +800,7 @@ private:
     }
 
     void garbageCode96() { // #6807
-        ASSERT_THROW(checkCode("typedef J J[ ; typedef ( ) ( ) { ; } typedef J J ;] ( ) ( J cx ) { n } ;"), InternalError);
+        ASSERT_THROW(checkCode("typedef J J[ ; typedef ( ) ( ) { ; } typedef J J ;] ( ) ( J cx ) { n } ;"), InternalError); // throw syntax error
     }
 
     void garbageCode97() { // #6808
@@ -975,7 +976,7 @@ private:
     }
 
     void garbageCode131() {
-        checkCode("( void ) { ( ) } ( ) / { ( ) }");
+        ASSERT_THROW(checkCode("( void ) { ( ) } ( ) / { ( ) }"), InternalError);
         // actually the invalid code should trigger an syntax error...
     }
 
@@ -1028,8 +1029,8 @@ private:
         // Ticket #5605, #5759, #5762, #5774, #5823, #6059
         ASSERT_THROW(checkCode("foo() template<typename T1 = T2 = typename = unused, T5 = = unused> struct tuple Args> tuple<Args...> { } main() { foo<int,int,int,int,int,int>(); }"), InternalError);
         ASSERT_THROW(checkCode("( ) template < T1 = typename = unused> struct Args { } main ( ) { foo < int > ( ) ; }"), InternalError);
-        checkCode("() template < T = typename = x > struct a {} { f <int> () }");
-        checkCode("template < T = typename = > struct a { f <int> }");
+        ASSERT_THROW(checkCode("() template < T = typename = x > struct a {} { f <int> () }"), InternalError);
+        ASSERT_THROW(checkCode("template < T = typename = > struct a { f <int> }"), InternalError);
         checkCode("struct S { int i, j; }; "
                   "template<int S::*p, typename U> struct X {}; "
                   "X<&S::i, int> x = X<&S::i, int>(); "
@@ -1438,11 +1439,10 @@ private:
     }
 
     void garbageCode184() { // #7699
-        ASSERT_THROW(checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
-                               "    NSArray* pScreens = [NSScreen screens];\n"
-                               "    return pScreens ? [pScreens count] : 1;\n"
-                               "}"),
-                     InternalError);
+        checkCode("unsigned int AquaSalSystem::GetDisplayScreenCount() {\n"
+                  "    NSArray* pScreens = [NSScreen screens];\n"
+                  "    return pScreens ? [pScreens count] : 1;\n"
+                  "}");
     }
 
     void garbageCode185() { // #6011 crash in libreoffice failure to create proper AST
@@ -1546,6 +1546,11 @@ private:
         checkCode("d f(){e n00e0[]n00e0&""0+f=0}");
     }
 
+    // #8757
+    void garbageCode200() {
+        ASSERT_THROW(checkCode("(){e break,{(case)!{e:[]}}}"), InternalError);
+    }
+
     void syntaxErrorFirstToken() {
         ASSERT_THROW(checkCode("&operator(){[]};"), InternalError); // #7818
         ASSERT_THROW(checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }"), InternalError); // #6858
@@ -1600,6 +1605,10 @@ private:
         // case must be inside switch block
         ASSERT_THROW(checkCode("void f() { switch (a) {}; case 1: }"), InternalError); // #8184
         ASSERT_THROW(checkCode("struct V : { public case {} ; struct U : U  void { V *f (int x) (x) } }"), InternalError); // #5120
+        ASSERT_THROW(checkCode("void f() { 0 0; }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { true 0; }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { 'a' 0; }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { 1 \"\"; }"), InternalError);
     }
 
     void enumTrailingComma() {
@@ -1617,6 +1626,19 @@ private:
                   "template< class Predicate > int\n"
                   "List<T>::DeleteIf( const Predicate &pred )\n"
                   "{}\n");
+
+        // #8749
+        checkCode(
+            "struct A {\n"
+            "    void operator+=(A&) && = delete;\n"
+            "};\n");
+
+        // #8788
+        checkCode(
+            "struct foo;\n"
+            "void f() {\n"
+            "    auto fn = []() -> foo* { return new foo(); };\n"
+            "}\n");
     }
 };
 

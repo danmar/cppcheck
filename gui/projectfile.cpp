@@ -37,6 +37,8 @@ static const char DirNameAttrib[] = "name";
 static const char DefinesElementName[] = "defines";
 static const char DefineName[] = "define";
 static const char DefineNameAttrib[] = "name";
+static const char UndefinesElementName[] = "undefines";
+static const char UndefineName[] = "undefine";
 static const char PathsElementName[] = "paths";
 static const char PathName[] = "dir";
 static const char PathNameAttrib[] = "name";
@@ -82,6 +84,7 @@ void ProjectFile::clear()
     mAnalyzeAllVsConfigs = true;
     mIncludeDirs.clear();
     mDefines.clear();
+    mUndefines.clear();
     mPaths.clear();
     mExcludedPaths.clear();
     mLibraries.clear();
@@ -137,6 +140,10 @@ bool ProjectFile::read(const QString &filename)
             // Find preprocessor define from inside project element
             if (insideProject && xmlReader.name() == DefinesElementName)
                 readDefines(xmlReader);
+
+            // Find preprocessor define from inside project element
+            if (insideProject && xmlReader.name() == UndefinesElementName)
+                readStringList(mUndefines, xmlReader, UndefineName);
 
             // Find exclude list from inside project element
             if (insideProject && xmlReader.name() == ExcludeElementName)
@@ -557,6 +564,11 @@ void ProjectFile::setDefines(const QStringList &defines)
     mDefines = defines;
 }
 
+void ProjectFile::setUndefines(const QStringList &undefines)
+{
+    mUndefines = undefines;
+}
+
 void ProjectFile::setCheckPaths(const QStringList &paths)
 {
     mPaths = paths;
@@ -649,6 +661,11 @@ bool ProjectFile::write(const QString &filename)
         }
         xmlWriter.writeEndElement();
     }
+
+    writeStringList(xmlWriter,
+                    mUndefines,
+                    UndefinesElementName,
+                    UndefineName);
 
     if (!mPaths.isEmpty()) {
         xmlWriter.writeStartElement(PathsElementName);

@@ -113,7 +113,9 @@ namespace simplecpp {
             op = (string.size() == 1U) ? string[0] : '\0';
         }
 
-        const TokenString& str() const { return string; }
+        const TokenString& str() const {
+            return string;
+        }
         void setstr(const std::string &s) {
             string = s;
             flags();
@@ -258,7 +260,7 @@ namespace simplecpp {
 
         std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList);
 
-        std::string lastLine(int maxsize=10) const;
+        std::string lastLine(int maxsize=100000) const;
 
         unsigned int fileIndex(const std::string &filename);
 
@@ -269,10 +271,11 @@ namespace simplecpp {
 
     /** Tracking how macros are used */
     struct SIMPLECPP_LIB MacroUsage {
-        explicit MacroUsage(const std::vector<std::string> &f) : macroLocation(f), useLocation(f) {}
+        explicit MacroUsage(const std::vector<std::string> &f, bool macroValueKnown_) : macroLocation(f), useLocation(f), macroValueKnown(macroValueKnown_) {}
         std::string macroName;
         Location    macroLocation;
         Location    useLocation;
+        bool        macroValueKnown;
     };
 
     /**

@@ -139,7 +139,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->debugSimplified = true;
 
             // Show --debug output after the first simplifications
-            else if (std::strcmp(argv[i], "--debug-normal") == 0)
+            else if (std::strcmp(argv[i], "--debug") == 0 ||
+                     std::strcmp(argv[i], "--debug-normal") == 0)
                 mSettings->debugnormal = true;
 
             // Show debug warnings

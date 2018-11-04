@@ -191,7 +191,7 @@ void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
     // it will cause the mVerboseMessage to be empty which will show
     // as an empty message to the user if --verbose is used.
     // Even this doesn't cause problems with messages that have multiple
-    // lines, none of the the error messages should end into it.
+    // lines, none of the error messages should end into it.
     assert(!endsWith(msg,'\n'));
 
     // The summary and verbose message are separated by a newline
@@ -401,7 +401,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         if (!file0.empty() && (*it).getfile() != file0)
             printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
-        printer.PushAttribute("line", (*it).line);
+        printer.PushAttribute("line", std::max((*it).line,0));
         if (!it->getinfo().empty())
             printer.PushAttribute("info", it->getinfo().c_str());
         printer.CloseElement(false);
@@ -546,17 +546,17 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
 void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
 {
     // Report unmatched suppressions
-    for (std::list<Suppressions::Suppression>::const_iterator i = unmatched.begin(); i != unmatched.end(); ++i) {
+    for (const Suppressions::Suppression &s : unmatched) {
         // don't report "unmatchedSuppression" as unmatched
-        if (i->errorId == "unmatchedSuppression")
+        if (s.errorId == "unmatchedSuppression")
             continue;
 
         // check if this unmatched suppression is suppressed
         bool suppressed = false;
-        for (std::list<Suppressions::Suppression>::const_iterator i2 = unmatched.begin(); i2 != unmatched.end(); ++i2) {
-            if (i2->errorId == "unmatchedSuppression") {
-                if ((i2->fileName == "*" || i2->fileName == i->fileName) &&
-                    (i2->lineNumber == Suppressions::Suppression::NO_LINE || i2->lineNumber == i->lineNumber)) {
+        for (const Suppressions::Suppression &s2 : unmatched) {
+            if (s2.errorId == "unmatchedSuppression") {
+                if ((s2.fileName == "*" || s2.fileName == s.fileName) &&
+                    (s2.lineNumber == Suppressions::Suppression::NO_LINE || s2.lineNumber == s.lineNumber)) {
                     suppressed = true;
                     break;
                 }
@@ -567,9 +567,9 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
             continue;
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
-        if (!i->fileName.empty())
-            callStack.emplace_back(i->fileName, i->lineNumber);
-        reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + i->errorId, "unmatchedSuppression", false));
+        if (!s.fileName.empty())
+            callStack.emplace_back(s.fileName, s.lineNumber);
+        reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", false));
     }
 }
 
@@ -611,7 +611,7 @@ std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const
 {
     std::ostringstream oss;
     oss << '[' << Path::toNativeSeparators(mFileName);
-    if (line != 0)
+    if (line != Suppressions::Suppression::NO_LINE)
         oss << ':' << line;
     oss << ']';
     return oss.str();

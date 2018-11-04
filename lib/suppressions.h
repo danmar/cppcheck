@@ -67,7 +67,7 @@ public:
             if (errorId != other.errorId)
                 return errorId < other.errorId;
             if (lineNumber < other.lineNumber)
-                return lineNumber < other.lineNumber;
+                return true;
             if (fileName != other.fileName)
                 return fileName < other.fileName;
             if (symbolName != other.symbolName)
@@ -98,7 +98,7 @@ public:
         std::string symbolName;
         bool matched;
 
-        static const int NO_LINE = 0;
+        enum { NO_LINE = -1 };
     };
 
     /**
