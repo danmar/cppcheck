@@ -358,7 +358,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                     return false;
             } else {
                 const Token * ftok = tok1;
-                if (Token::Match(tok1->previous(), "::"))
+                if (Token::simpleMatch(tok1->previous(), "::"))
                     ftok = tok1->previous();
                 if (!library.isFunctionConst(ftok) && !ftok->isAttributeConst() && !ftok->isAttributePure())
                     return false;
