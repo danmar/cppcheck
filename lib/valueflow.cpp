@@ -1156,6 +1156,10 @@ static void valueFlowRightShift(TokenList *tokenList)
         if (!tok->astOperand2()->hasKnownValue())
             continue;
 
+        const MathLib::bigint rhsvalue = tok->astOperand2()->values().front().intvalue;
+        if (rhsvalue < 0)
+            continue;
+
         if (!tok->astOperand1()->valueType() || !tok->astOperand1()->valueType()->isIntegral())
             continue;
 
@@ -1167,7 +1171,7 @@ static void valueFlowRightShift(TokenList *tokenList)
             continue;
         if (lhsmax < 0)
             continue;
-        if ((1 << tok->astOperand2()->values().front().intvalue) <= lhsmax)
+        if ((1 << rhsvalue) <= lhsmax)
             continue;
 
         ValueFlow::Value val(0);
