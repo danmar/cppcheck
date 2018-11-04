@@ -1864,8 +1864,7 @@ private:
     void simplifyTypedef81() { // ticket #2603 segmentation fault
         ASSERT_THROW(checkSimplifyTypedef("typedef\n"), InternalError);
 
-        checkSimplifyTypedef("typedef constexpr\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(checkSimplifyTypedef("typedef constexpr\n"), InternalError);
     }
 
     void simplifyTypedef82() { // ticket #2403

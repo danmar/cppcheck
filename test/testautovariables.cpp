@@ -527,6 +527,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void func1() {\n"
+              "    static char tmp1[256];\n"
+              "    char *p = tmp1;\n"
+              "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of an static variable (tmp1) results in undefined behaviour.\n", errout.str());
+
+        check("char tmp1[256];\n"
+              "void func1() {\n"
+              "    char *p; if (x) p = tmp1;\n"
+              "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of an global variable (tmp1) results in undefined behaviour.\n", errout.str());
+
         check("void f()\n"
               "{\n"
               "    char psz_title[10];\n"

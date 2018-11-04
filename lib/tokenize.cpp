@@ -9103,8 +9103,9 @@ void Tokenizer::simplifyKeyword()
         }
 
         else if (cpp11) {
-            while (tok->str() == "constexpr") {
-                tok->deleteThis();
+            if (tok->str() == "constexpr") {
+                tok->originalName(tok->str());
+                tok->str("const");
             }
 
             // final:

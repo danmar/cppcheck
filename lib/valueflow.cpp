@@ -1193,7 +1193,93 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             }
         }
     }
+}
 
+static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
+{
+    if (expr->hasKnownIntValue()) {
+        if (minvalue)
+            *minvalue = expr->values().front().intvalue;
+        if (maxvalue)
+            *maxvalue = expr->values().front().intvalue;
+        return true;
+    }
+
+    if (expr->str() == "&" && expr->astOperand1() && expr->astOperand2()) {
+        MathLib::bigint vals[4];
+        bool lhsHasKnownRange = getExpressionRange(expr->astOperand1(), &vals[0], &vals[1]);
+        bool rhsHasKnownRange = getExpressionRange(expr->astOperand2(), &vals[2], &vals[3]);
+        if (!lhsHasKnownRange && !rhsHasKnownRange)
+            return false;
+        if (!lhsHasKnownRange || !rhsHasKnownRange) {
+            if (minvalue)
+                *minvalue = lhsHasKnownRange ? vals[0] : vals[2];
+            if (maxvalue)
+                *maxvalue = lhsHasKnownRange ? vals[1] : vals[3];
+        } else {
+            if (minvalue)
+                *minvalue = vals[0] & vals[2];
+            if (maxvalue)
+                *maxvalue = vals[1] & vals[3];
+        }
+        return true;
+    }
+
+    if (expr->str() == "%" && expr->astOperand1() && expr->astOperand2()) {
+        MathLib::bigint vals[4];
+        if (!getExpressionRange(expr->astOperand2(), &vals[2], &vals[3]))
+            return false;
+        if (vals[2] <= 0)
+            return false;
+        bool lhsHasKnownRange = getExpressionRange(expr->astOperand1(), &vals[0], &vals[1]);
+        if (lhsHasKnownRange && vals[0] < 0)
+            return false;
+        // If lhs has unknown value, it must be unsigned
+        if (!lhsHasKnownRange && (!expr->astOperand1()->valueType() || expr->astOperand1()->valueType()->sign != ValueType::Sign::UNSIGNED))
+            return false;
+        if (minvalue)
+            *minvalue = 0;
+        if (maxvalue)
+            *maxvalue = vals[3] - 1;
+        return true;
+    }
+
+    return false;
+}
+
+static void valueFlowRightShift(TokenList *tokenList)
+{
+    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (tok->str() != ">>")
+            continue;
+
+        if (tok->hasKnownValue())
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        if (!tok->astOperand2()->hasKnownValue())
+            continue;
+
+        if (!tok->astOperand1()->valueType() || !tok->astOperand1()->valueType()->isIntegral())
+            continue;
+
+        if (!tok->astOperand2()->valueType() || !tok->astOperand2()->valueType()->isIntegral())
+            continue;
+
+        MathLib::bigint lhsmax=0;
+        if (!getExpressionRange(tok->astOperand1(), nullptr, &lhsmax))
+            continue;
+        if (lhsmax < 0)
+            continue;
+        if ((1 << tok->astOperand2()->values().front().intvalue) <= lhsmax)
+            continue;
+
+        ValueFlow::Value val(0);
+        val.setKnown();
+        setTokenValue(tok, val, tokenList->getSettings());
+    }
 }
 
 static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Settings *settings)
@@ -3892,6 +3978,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t values = 0;
     while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
+        valueFlowRightShift(tokenlist);
         valueFlowOppositeCondition(symboldatabase, settings);
         valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
