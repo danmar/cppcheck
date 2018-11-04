@@ -2667,6 +2667,12 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(long maxtime) {\n"
+              "  if (std::time(0) > maxtime)\n"
+              "    return std::time(0) > maxtime;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
