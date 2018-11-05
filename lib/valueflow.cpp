@@ -3309,6 +3309,27 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
 {
     if (!expr)
         return false;
+    // unary operands
+    if (expr->astOperand1() && !expr->astOperand2()) {
+        std::list<ValueFlow::Value> opvalues;
+        if (!evaluate(expr->astOperand1(), values, &opvalues))
+            return false;
+        if (expr->str() == "+") {
+            result->swap(opvalues);
+            return true;
+        }
+        if (expr->str() == "-") {
+            for (ValueFlow::Value v: opvalues) {
+                if (v.isIntValue()) {
+                    v.intvalue = -v.intvalue;
+                    result->emplace_back(v);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    // binary/ternary operands
     if (expr->astOperand1() && expr->astOperand2()) {
         std::list<ValueFlow::Value> lhsValues, rhsValues;
         if (!evaluate(expr->astOperand1(), values, &lhsValues))
@@ -3360,6 +3381,14 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
                     result->emplace_back(ValueFlow::Value(val1.intvalue >= val2.intvalue));
                 else if (expr->str() == "<=")
                     result->emplace_back(ValueFlow::Value(val1.intvalue <= val2.intvalue));
+                else if (expr->str() == "&&")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue && val2.intvalue));
+                else if (expr->str() == "||")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue || val2.intvalue));
+                else if (expr->str() == "<<")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue << val2.intvalue));
+                else if (expr->str() == ">>")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue >> val2.intvalue));
                 else
                     return false;
                 combineValueProperties(val1, val2, &result->back());
@@ -3373,10 +3402,16 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
     }
     if (expr->isNumber()) {
         result->emplace_back(ValueFlow::Value(MathLib::toLongNumber(expr->str())));
+        result->back().setKnown();
         return true;
     }
     if (expr->str() == "(" && Token::Match(expr->previous(), "strlen ( %name% )")) {
-        for (const ValueFlow::Value &argvalue : values[expr->next()->str()[3] - '1']) {
+        if (expr->str().compare(0,3,"arg") != 0 || expr->str().size() != 4)
+            return false;
+        const char n = expr->str()[3];
+        if (n < '1' || n - '1' >= values.size())
+            return false;
+        for (const ValueFlow::Value &argvalue : values[n - '1']) {
             if (argvalue.isTokValue() && argvalue.tokvalue->tokType() == Token::eString) {
                 ValueFlow::Value res(argvalue); // copy all "inconclusive", "condition", etc attributes
                 // set return value..
