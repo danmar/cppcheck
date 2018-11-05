@@ -58,3 +58,6 @@ done
 
 xmllint --format -o man/cppcheck.1.xml_ man/cppcheck.1.xml 
 mv -f man/cppcheck.1.xml_ man/cppcheck.1.xml
+
+xmllint --format -o cppcheck-errors_.rng cppcheck-errors.rng
+mv cppcheck-errors_.rng cppcheck-errors.rng
