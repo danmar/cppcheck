@@ -23,4 +23,7 @@ if (BUILD_TESTS)
 
     add_test(NAME testrunner COMMAND testrunner WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+    add_custom_target(check COMMAND $<TARGET_FILE:testrunner> -q WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    add_dependencies(check testrunner)
+
 endif()
