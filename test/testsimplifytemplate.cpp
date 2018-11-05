@@ -127,6 +127,8 @@ private:
         TEST_CASE(template_namespace_5);
         TEST_CASE(template_namespace_6);
         TEST_CASE(template_namespace_7); // #8768
+        TEST_CASE(template_namespace_8);
+        TEST_CASE(template_namespace_9);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1822,6 +1824,71 @@ private:
                       "} "
                       "N1 :: N2 :: C c3 ; "
                       "N1 :: N2 :: CT<int> ct3 ; struct N1 :: N2 :: CT<int> { } ;", tok(code));
+    }
+
+    void template_namespace_8() { // #8768
+        const char code[] = "namespace NS1 {\n"
+                            "namespace NS2 {\n"
+                            "    template <typename T>\n"
+                            "    struct Fred {\n"
+                            "        Fred();\n"
+                            "        Fred(const Fred &);\n"
+                            "        Fred & operator = (const Fred &);\n"
+                            "        ~Fred();\n"
+                            "    };\n"
+                            "    template <typename T>\n"
+                            "    Fred<T>::Fred() { }\n"
+                            "    template <typename T>\n"
+                            "    Fred<T>::Fred(const Fred<T> & f) { }\n"
+                            "    template <typename T>\n"
+                            "    Fred<T> & Fred<T>::operator = (const Fred<T> & f) { }\n"
+                            "    template <typename T>\n"
+                            "    Fred<T>::~Fred() { }\n"
+                            "}\n"
+                            "}\n"
+                            "NS1::NS2::Fred<int> fred;";
+        ASSERT_EQUALS("namespace NS1 { "
+                      "namespace NS2 { "
+                      "struct Fred<int> ; "
+                      "} "
+                      "} "
+                      "NS1 :: NS2 :: Fred<int> fred ; struct NS1 :: NS2 :: Fred<int> { "
+                      "Fred<int> ( ) ; "
+                      "Fred<int> ( const NS1 :: NS2 :: Fred<int> & ) ; "
+                      "NS1 :: NS2 :: Fred<int> & operator= ( const NS1 :: NS2 :: Fred<int> & ) ; "
+                      "~ Fred<int> ( ) ; "
+                      "} ; "
+                      "NS1 :: NS2 :: Fred<int> :: Fred<int> ( ) { } "
+                      "NS1 :: NS2 :: Fred<int> :: Fred<int> ( const NS1 :: NS2 :: Fred<int> & f ) { } "
+                      "NS1 :: NS2 :: Fred<int> & NS1 :: NS2 :: Fred<int> :: operator= ( const NS1 :: NS2 :: Fred<int> & f ) { } "
+                      "NS1 :: NS2 :: Fred<int> :: ~ Fred<int> ( ) { }", tok(code));
+    }
+
+    void template_namespace_9() {
+        const char code[] = "namespace NS {\n"
+                            "template<int type> struct Barney;\n"
+                            "template<> struct Barney<1> { };\n"
+                            "template<int type>\n"
+                            "class Fred {\n"
+                            "public:\n"
+                            "  Fred();\n"
+                            "private:\n"
+                            "  Barney<type> m_data;\n"
+                            "};\n"
+                            "template class Fred<1>;\n"
+                            "}\n";
+        ASSERT_EQUALS("namespace NS { "
+                      "template < int type > struct Barney ; "
+                      "struct Barney<1> { } ; "
+                      "class Fred<1> ; "
+                      "template class Fred<1> ; "
+                      "} "
+                      "class NS :: Fred<1> { "
+                      "public: "
+                      "Fred<1> ( ) ; "
+                      "private: "
+                      "Barney<1> m_data ; "
+                      "} ;", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {
