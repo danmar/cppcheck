@@ -65,6 +65,12 @@ static bool isArrayArg(const Token *tok)
     return (var && var->isArgument() && var->isArray());
 }
 
+static bool isArrayVar(const Token *tok)
+{
+    const Variable *var = tok->variable();
+    return (var && var->isArray());
+}
+
 static bool isRefPtrArg(const Token *tok)
 {
     const Variable *var = tok->variable();
@@ -305,13 +311,21 @@ void CheckAutoVariables::autoVariables()
             else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.dealloc(tok)) ||
                      (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
-                if (isAutoVarArray(tok))
-                    errorInvalidDeallocation(tok);
+                if (isArrayVar(tok))
+                    errorInvalidDeallocation(tok, nullptr);
+                else if (tok && tok->variable() && tok->variable()->isPointer()) {
+                    for (const ValueFlow::Value &v : tok->values()) {
+                        if (v.isTokValue() && isArrayVar(v.tokvalue)) {
+                            errorInvalidDeallocation(tok, &v);
+                            break;
+                        }
+                    }
+                }
             } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && mSettings->library.dealloc(tok)) ||
                        (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVar(tok))
-                    errorInvalidDeallocation(tok);
+                    errorInvalidDeallocation(tok, nullptr);
             }
         }
     }
@@ -698,12 +712,25 @@ void CheckAutoVariables::errorReturnTempReference(const Token *tok)
     reportError(tok, Severity::error, "returnTempReference", "Reference to temporary returned.", CWE562, false);
 }
 
-void CheckAutoVariables::errorInvalidDeallocation(const Token *tok)
+void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val)
 {
-    reportError(tok,
+    const Variable *var = val ? val->tokvalue->variable() : (tok ? tok->variable() : nullptr);
+
+    std::string type = "auto-variable";
+    if (var) {
+        if (var->isGlobal())
+            type = "global variable";
+        else if (var->isStatic())
+            type = "static variable";
+    }
+
+    if (val)
+        type += " (" + val->tokvalue->str() + ")";
+
+    reportError(getErrorPath(tok, val, "Deallocating memory that was not dynamically allocated"),
                 Severity::error,
                 "autovarInvalidDeallocation",
-                "Deallocation of an auto-variable results in undefined behaviour.\n"
-                "The deallocation of an auto-variable results in undefined behaviour. You should only free memory "
+                "Deallocation of an " + type + " results in undefined behaviour.\n"
+                "The deallocation of an " + type + " results in undefined behaviour. You should only free memory "
                 "that has been allocated dynamically.", CWE590, false);
 }

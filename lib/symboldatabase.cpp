@@ -1991,7 +1991,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             }
 
             // remove class name
-            else if (arg_path_length > 2) {
+            else if (arg_path_length > 2 && first->strAt(1) != second->strAt(1)) {
                 std::string short_path = path;
                 unsigned int short_path_length = arg_path_length;
 
@@ -2628,16 +2628,7 @@ void SymbolDatabase::printVariable(const Variable *var, const char *indent) cons
         }
     }
     std::cout << indent << "mIndex: " << var->index() << std::endl;
-    std::cout << indent << "mAccess: " <<
-              (var->isPublic() ? "Public" :
-               var->isProtected() ? "Protected" :
-               var->isPrivate() ? "Private" :
-               var->isGlobal() ? "Global" :
-               var->isNamespace() ? "Namespace" :
-               var->isArgument() ? "Argument" :
-               var->isLocal() ? "Local" :
-               var->isThrow() ? "Throw" :
-               "Unknown")  << std::endl;
+    std::cout << indent << "mAccess: " << accessControlToString(var->accessControl()) << std::endl;
     std::cout << indent << "mFlags: " << std::endl;
     std::cout << indent << "    isMutable: " << var->isMutable() << std::endl;
     std::cout << indent << "    isStatic: " << var->isStatic() << std::endl;
@@ -2704,10 +2695,7 @@ void SymbolDatabase::printOut(const char *title) const
                                               func->type == Function::eDestructor ? "Destructor" :
                                               func->type == Function::eFunction ? "Function" :
                                               "Unknown") << std::endl;
-            std::cout << "        access: " << (func->access == Public ? "Public" :
-                                                func->access == Protected ? "Protected" :
-                                                func->access == Private ? "Private" :
-                                                "Unknown")  << std::endl;
+            std::cout << "        access: " << accessControlToString(func->access) << std::endl;
             std::cout << "        hasBody: " << func->hasBody() << std::endl;
             std::cout << "        isInline: " << func->isInline() << std::endl;
             std::cout << "        isConst: " << func->isConst() << std::endl;
@@ -3309,7 +3297,6 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     // skip over qualification if present
     nameTok = skipScopeIdentifiers(nameTok);
     if (nameTok && ((type == Scope::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
-
         className = nameTok->str();
 }
 

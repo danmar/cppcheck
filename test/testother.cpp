@@ -6317,7 +6317,7 @@ private:
 
 
         // check getc
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "unsigned char c;\n"
               "do {\n"
               "  c = getc (pFile);\n"
@@ -6325,7 +6325,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing getc() return value in char variable and then comparing with EOF.\n", errout.str());
 
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "unsigned char c;\n"
               "do {\n"
               "  c = getc (pFile);\n"
@@ -6333,7 +6333,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing getc() return value in char variable and then comparing with EOF.\n", errout.str());
 
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "int i;\n"
               "do {\n"
               "  i = getc (pFile);\n"
@@ -6341,7 +6341,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "int i;\n"
               "do {\n"
               "  i = getc (pFile);\n"
@@ -6351,7 +6351,7 @@ private:
 
 
         // check fgetc
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "unsigned char c;\n"
               "do {\n"
               "  c = fgetc (pFile);\n"
@@ -6359,7 +6359,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing fgetc() return value in char variable and then comparing with EOF.\n", errout.str());
 
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "char c;\n"
               "do {\n"
               "  c = fgetc (pFile);\n"
@@ -6367,7 +6367,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing fgetc() return value in char variable and then comparing with EOF.\n", errout.str());
 
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "signed char c;\n"
               "do {\n"
               "  c = fgetc (pFile);\n"
@@ -6375,7 +6375,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "int i;\n"
               "do {\n"
               "  i = fgetc (pFile);\n"
@@ -6383,7 +6383,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("voif f (FILE * pFile){\n"
+        check("void f (FILE * pFile){\n"
               "int i;\n"
               "do {\n"
               "  i = fgetc (pFile);\n"

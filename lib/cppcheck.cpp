@@ -156,9 +156,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
 
         // If there is a syntax error, report it and stop
-        for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
+        for (const simplecpp::Output &output : outputList) {
             bool err;
-            switch (it->type) {
+            switch (output.type) {
             case simplecpp::Output::ERROR:
             case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
             case simplecpp::Output::SYNTAX_ERROR:
@@ -173,13 +173,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             };
 
             if (err) {
-                const ErrorLogger::ErrorMessage::FileLocation loc1(it->location.file(), it->location.line);
+                const ErrorLogger::ErrorMessage::FileLocation loc1(output.location.file(), output.location.line);
                 std::list<ErrorLogger::ErrorMessage::FileLocation> callstack(1, loc1);
 
                 ErrorLogger::ErrorMessage errmsg(callstack,
                                                  "",
                                                  Severity::error,
-                                                 it->msg,
+                                                 output.msg,
                                                  "syntaxError",
                                                  false);
                 reportErr(errmsg);
@@ -314,7 +314,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         unsigned int checkCount = 0;
         bool hasValidConfig = false;
         std::list<std::string> configurationError;
-        for (std::set<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it) {
+        for (const std::string &currCfg : configurations) {
             // bail out if terminated
             if (mSettings.terminated())
                 break;
@@ -324,7 +324,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (!mSettings.force && ++checkCount > mSettings.maxConfigs)
                 break;
 
-            mCurrentConfig = *it;
+            mCurrentConfig = currCfg;
 
             if (!mSettings.userDefines.empty()) {
                 if (!mCurrentConfig.empty())
@@ -367,7 +367,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 hasValidConfig = true;
 
                 // If only errors are printed, print filename after the check
-                if (!mSettings.quiet && (!mCurrentConfig.empty() || it != configurations.begin())) {
+                if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
                     std::string fixedpath = Path::simplifyPath(filename);
                     fixedpath = Path::toNativeSeparators(fixedpath);
                     mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...");

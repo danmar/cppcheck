@@ -1089,6 +1089,97 @@ static void valueFlowBitAnd(TokenList *tokenlist)
     }
 }
 
+static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
+{
+    if (expr->hasKnownIntValue()) {
+        if (minvalue)
+            *minvalue = expr->values().front().intvalue;
+        if (maxvalue)
+            *maxvalue = expr->values().front().intvalue;
+        return true;
+    }
+
+    if (expr->str() == "&" && expr->astOperand1() && expr->astOperand2()) {
+        MathLib::bigint vals[4];
+        bool lhsHasKnownRange = getExpressionRange(expr->astOperand1(), &vals[0], &vals[1]);
+        bool rhsHasKnownRange = getExpressionRange(expr->astOperand2(), &vals[2], &vals[3]);
+        if (!lhsHasKnownRange && !rhsHasKnownRange)
+            return false;
+        if (!lhsHasKnownRange || !rhsHasKnownRange) {
+            if (minvalue)
+                *minvalue = lhsHasKnownRange ? vals[0] : vals[2];
+            if (maxvalue)
+                *maxvalue = lhsHasKnownRange ? vals[1] : vals[3];
+        } else {
+            if (minvalue)
+                *minvalue = vals[0] & vals[2];
+            if (maxvalue)
+                *maxvalue = vals[1] & vals[3];
+        }
+        return true;
+    }
+
+    if (expr->str() == "%" && expr->astOperand1() && expr->astOperand2()) {
+        MathLib::bigint vals[4];
+        if (!getExpressionRange(expr->astOperand2(), &vals[2], &vals[3]))
+            return false;
+        if (vals[2] <= 0)
+            return false;
+        bool lhsHasKnownRange = getExpressionRange(expr->astOperand1(), &vals[0], &vals[1]);
+        if (lhsHasKnownRange && vals[0] < 0)
+            return false;
+        // If lhs has unknown value, it must be unsigned
+        if (!lhsHasKnownRange && (!expr->astOperand1()->valueType() || expr->astOperand1()->valueType()->sign != ValueType::Sign::UNSIGNED))
+            return false;
+        if (minvalue)
+            *minvalue = 0;
+        if (maxvalue)
+            *maxvalue = vals[3] - 1;
+        return true;
+    }
+
+    return false;
+}
+
+static void valueFlowRightShift(TokenList *tokenList)
+{
+    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (tok->str() != ">>")
+            continue;
+
+        if (tok->hasKnownValue())
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        if (!tok->astOperand2()->hasKnownValue())
+            continue;
+
+        const MathLib::bigint rhsvalue = tok->astOperand2()->values().front().intvalue;
+        if (rhsvalue < 0)
+            continue;
+
+        if (!tok->astOperand1()->valueType() || !tok->astOperand1()->valueType()->isIntegral())
+            continue;
+
+        if (!tok->astOperand2()->valueType() || !tok->astOperand2()->valueType()->isIntegral())
+            continue;
+
+        MathLib::bigint lhsmax=0;
+        if (!getExpressionRange(tok->astOperand1(), nullptr, &lhsmax))
+            continue;
+        if (lhsmax < 0)
+            continue;
+        if ((1 << rhsvalue) <= lhsmax)
+            continue;
+
+        ValueFlow::Value val(0);
+        val.setKnown();
+        setTokenValue(tok, val, tokenList->getSettings());
+    }
+}
+
 static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Settings *settings)
 {
     for (const Scope &scope : symboldatabase->scopeList) {
@@ -3421,64 +3512,180 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
 
 static void setTokenValues(Token *tok, const std::list<ValueFlow::Value> &values, const Settings *settings)
 {
-    for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-        const ValueFlow::Value &value = *it;
+    for (const ValueFlow::Value &value : values) {
         if (value.isIntValue())
             setTokenValue(tok, value, settings);
     }
 }
 
-static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue, const Settings *settings)
+static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::Value>> &values, std::list<ValueFlow::Value> *result)
 {
-    std::istringstream istr(returnValue);
-    TokenList tokenList(settings);
-    if (!tokenList.createTokens(istr))
-        return;
+    if (!expr)
+        return false;
+    // unary operands
+    if (expr->astOperand1() && !expr->astOperand2()) {
+        std::list<ValueFlow::Value> opvalues;
+        if (!evaluate(expr->astOperand1(), values, &opvalues))
+            return false;
+        if (expr->str() == "+") {
+            result->swap(opvalues);
+            return true;
+        }
+        if (expr->str() == "-") {
+            for (ValueFlow::Value v: opvalues) {
+                if (v.isIntValue()) {
+                    v.intvalue = -v.intvalue;
+                    result->emplace_back(v);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    // binary/ternary operands
+    if (expr->astOperand1() && expr->astOperand2()) {
+        std::list<ValueFlow::Value> lhsValues, rhsValues;
+        if (!evaluate(expr->astOperand1(), values, &lhsValues))
+            return false;
+        if (expr->str() != "?" && !evaluate(expr->astOperand2(), values, &rhsValues))
+            return false;
 
-    const Token *arg1 = tok->astOperand2();
-    while (arg1 && arg1->str() == ",")
-        arg1 = arg1->astOperand1();
-    if (Token::findsimplematch(tokenList.front(), "arg1") && !arg1)
-        return;
+        for (const ValueFlow::Value &val1 : lhsValues) {
+            if (!val1.isIntValue())
+                continue;
+            if (expr->str() == "?") {
+                rhsValues.clear();
+                const Token *expr2 = val1.intvalue ? expr->astOperand2()->astOperand1() : expr->astOperand2()->astOperand2();
+                if (!evaluate(expr2, values, &rhsValues))
+                    continue;
+                result->insert(result->end(), rhsValues.begin(), rhsValues.end());
+                continue;
+            }
 
-    if (Token::simpleMatch(tokenList.front(), "strlen ( arg1 )") && arg1) {
-        for (const ValueFlow::Value &value : arg1->values()) {
-            if (value.isTokValue() && value.tokvalue->tokType() == Token::eString) {
-                ValueFlow::Value retval(value); // copy all "inconclusive", "condition", etc attributes
-                // set return value..
-                retval.valueType = ValueFlow::Value::INT;
-                retval.tokvalue = nullptr;
-                retval.intvalue = Token::getStrLength(value.tokvalue);
-                setTokenValue(tok, retval, settings);
+            for (const ValueFlow::Value &val2 : rhsValues) {
+                if (!val2.isIntValue())
+                    continue;
+
+                if (expr->str() == "+")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue + val2.intvalue));
+                else if (expr->str() == "-")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue - val2.intvalue));
+                else if (expr->str() == "*")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue * val2.intvalue));
+                else if (expr->str() == "/" && val2.intvalue != 0)
+                    result->emplace_back(ValueFlow::Value(val1.intvalue / val2.intvalue));
+                else if (expr->str() == "%" && val2.intvalue != 0)
+                    result->emplace_back(ValueFlow::Value(val1.intvalue % val2.intvalue));
+                else if (expr->str() == "&")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue & val2.intvalue));
+                else if (expr->str() == "|")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue | val2.intvalue));
+                else if (expr->str() == "^")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue ^ val2.intvalue));
+                else if (expr->str() == "==")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue == val2.intvalue));
+                else if (expr->str() == "!=")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue != val2.intvalue));
+                else if (expr->str() == "<")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue < val2.intvalue));
+                else if (expr->str() == ">")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue > val2.intvalue));
+                else if (expr->str() == ">=")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue >= val2.intvalue));
+                else if (expr->str() == "<=")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue <= val2.intvalue));
+                else if (expr->str() == "&&")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue && val2.intvalue));
+                else if (expr->str() == "||")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue || val2.intvalue));
+                else if (expr->str() == "<<")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue << val2.intvalue));
+                else if (expr->str() == ">>")
+                    result->emplace_back(ValueFlow::Value(val1.intvalue >> val2.intvalue));
+                else
+                    return false;
+                combineValueProperties(val1, val2, &result->back());
             }
         }
-        return;
+        return !result->empty();
+    }
+    if (expr->str().compare(0,3,"arg")==0) {
+        *result = values[expr->str()[3] - '1'];
+        return true;
+    }
+    if (expr->isNumber()) {
+        result->emplace_back(ValueFlow::Value(MathLib::toLongNumber(expr->str())));
+        result->back().setKnown();
+        return true;
+    }
+    if (expr->str() == "(" && Token::Match(expr->previous(), "strlen ( %name% )")) {
+        if (expr->str().compare(0,3,"arg") != 0 || expr->str().size() != 4)
+            return false;
+        const char n = expr->str()[3];
+        if (n < '1' || n - '1' >= values.size())
+            return false;
+        for (const ValueFlow::Value &argvalue : values[n - '1']) {
+            if (argvalue.isTokValue() && argvalue.tokvalue->tokType() == Token::eString) {
+                ValueFlow::Value res(argvalue); // copy all "inconclusive", "condition", etc attributes
+                // set return value..
+                res.valueType = ValueFlow::Value::INT;
+                res.tokvalue = nullptr;
+                res.intvalue = Token::getStrLength(argvalue.tokvalue);
+            }
+        }
+        return !result->empty();
+    }
+    return false;
+}
+
+static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue, const Settings *settings)
+{
+    unsigned int varId = 0;
+    std::vector<std::list<ValueFlow::Value>> argValues;
+    for (const Token *argtok : getArguments(tok->previous())) {
+        argValues.emplace_back(argtok->values());
+        if (argValues.back().empty())
+            return;
+        for (const ValueFlow::Value &argval : argValues.back()) {
+            if (argval.varId) {
+                if (varId && varId != argval.varId)
+                    return;
+                varId = argval.varId;
+            }
+        }
+    }
+
+    TokenList tokenList(settings);
+    {
+        const std::string code = "return " + returnValue + ";";
+        std::istringstream istr(code);
+        if (!tokenList.createTokens(istr))
+            return;
     }
 
     // combine operators, set links, etc..
+    std::stack<Token *> lpar;
     for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
         if (Token::Match(tok2, "[!<>=] =")) {
             tok2->str(tok2->str() + "=");
             tok2->deleteNext();
+        } else if (tok2->str() == "(")
+            lpar.push(tok2);
+        else if (tok2->str() == ")") {
+            if (lpar.empty())
+                return;
+            Token::createMutualLinks(lpar.top(), tok2);
+            lpar.pop();
         }
     }
+    if (!lpar.empty())
+        return;
 
     // Evaluate expression
     tokenList.createAst();
-    valueFlowNumber(&tokenList);
-    for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
-        if (tok2->str() == "arg1" && arg1) {
-            setTokenValues(tok2, arg1->values(), settings);
-        }
-    }
-
-    // Find result..
-    for (const Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
-        if (!tok2->astParent() && !tok2->values().empty()) {
-            setTokenValues(tok, tok2->values(), settings);
-            return;
-        }
-    }
+    std::list<ValueFlow::Value> results;
+    if (evaluate(tokenList.front()->astOperand1(), argValues, &results))
+        setTokenValues(tok, results, settings);
 }
 
 static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
@@ -4010,6 +4217,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t values = 0;
     while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
+        valueFlowRightShift(tokenlist);
         valueFlowOppositeCondition(symboldatabase, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);

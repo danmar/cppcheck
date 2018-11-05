@@ -58,6 +58,7 @@ private:
         TEST_CASE(valueFlowMove);
 
         TEST_CASE(valueFlowBitAnd);
+        TEST_CASE(valueFlowRightShift);
 
         TEST_CASE(valueFlowCalculations);
         TEST_CASE(valueFlowSizeof);
@@ -90,6 +91,7 @@ private:
 
         TEST_CASE(valueFlowForLoop);
         TEST_CASE(valueFlowSubFunction);
+        TEST_CASE(valueFlowSubFunctionLibrary);
         TEST_CASE(valueFlowFunctionReturn);
 
         TEST_CASE(valueFlowFunctionDefaultParameter);
@@ -2294,6 +2296,22 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code,3U,16));
     }
 
+    void valueFlowRightShift() {
+        const char *code;
+
+        code = "int f(int a) {\n"
+               "  int x = (a & 0xff) >> 16;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+
+        code = "int f(unsigned int a) {\n"
+               "  int x = (a % 123) >> 16;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+    }
+
     void valueFlowSwitchVariable() {
         const char *code;
         code = "void f(int x) {\n"
@@ -2698,6 +2716,39 @@ private:
                "  foo(1, 10);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 1));
+    }
+
+    void valueFlowSubFunctionLibrary() {
+        const char *code;
+
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"add\">\n"
+                               "    <returnValue>arg1+arg2</returnValue>\n"
+                               "    <arg nr=\"1\"/>\n"
+                               "    <arg nr=\"2\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+
+        settings.library.loadxmldata(xmldata, sizeof(xmldata));
+
+        code = "void f() {\n"
+               "  int x = add(100, 23);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
+
+        code = "void f() {\n"
+               "  int a;\n"
+               "  if (cond)\n"
+               "    a = 1;\n"
+               "  else\n"
+               "    a = 2;\n"
+               "  int x = add(3, a);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 4));
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 5));
     }
 
     void valueFlowFunctionReturn() {

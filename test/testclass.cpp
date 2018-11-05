@@ -1237,6 +1237,90 @@ private:
             "};\n"
             "A::B & A::B::operator=(const A::B &b) { return b; }");
         ASSERT_EQUALS("[test.cpp:10]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class B;\n"
+            "};\n"
+            "class A::B\n"
+            "{\n"
+            "  B & operator=(const B & b) { return b; }\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class B;\n"
+            "};\n"
+            "class A::B\n"
+            "{\n"
+            "  B & operator=(const B &);\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B & b) { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class B;\n"
+            "};\n"
+            "class A::B\n"
+            "{\n"
+            "  A::B & operator=(const A::B & b) { return b; }\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class B;\n"
+            "};\n"
+            "class A::B\n"
+            "{\n"
+            "  A::B & operator=(const A::B &);\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B & b) { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace A {\n"
+            "    class B;\n"
+            "}\n"
+            "class A::B\n"
+            "{\n"
+            "  B & operator=(const B & b) { return b; }\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace A {\n"
+            "    class B;\n"
+            "}\n"
+            "class A::B\n"
+            "{\n"
+            "  B & operator=(const B &);\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B & b) { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace A {\n"
+            "    class B;\n"
+            "}\n"
+            "class A::B\n"
+            "{\n"
+            "  A::B & operator=(const A::B & b) { return b; }\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace A {\n"
+            "    class B;\n"
+            "}\n"
+            "class A::B\n"
+            "{\n"
+            "  A::B & operator=(const A::B &);\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B & b) { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
     }
 
     void operatorEqRetRefThis2() {
@@ -1244,7 +1328,7 @@ private:
         checkOpertorEqRetRefThis(
             "class szp\n"
             "{\n"
-            "  szp &operator =(int *other) {};\n"
+            "  szp &operator =(int *other) {}\n"
             "};");
         ASSERT_EQUALS("[test.cpp:3]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
 
@@ -1255,6 +1339,90 @@ private:
             "};\n"
             "szp &szp::operator =(int *other) {}");
         ASSERT_EQUALS("[test.cpp:5]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace NS {\n"
+            "    class szp;\n"
+            "}\n"
+            "class NS::szp\n"
+            "{\n"
+            "  szp &operator =(int *other) {}\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace NS {\n"
+            "    class szp;\n"
+            "}\n"
+            "class NS::szp\n"
+            "{\n"
+            "  szp &operator =(int *other);\n"
+            "};\n"
+            "NS::szp &NS::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace NS {\n"
+            "    class szp;\n"
+            "}\n"
+            "class NS::szp\n"
+            "{\n"
+            "  NS::szp &operator =(int *other) {}\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "namespace NS {\n"
+            "    class szp;\n"
+            "}\n"
+            "class NS::szp\n"
+            "{\n"
+            "  NS::szp &operator =(int *other);\n"
+            "};\n"
+            "NS::szp &NS::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class szp;\n"
+            "};\n"
+            "class A::szp\n"
+            "{\n"
+            "  szp &operator =(int *other) {}\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class szp;\n"
+            "};\n"
+            "class A::szp\n"
+            "{\n"
+            "  szp &operator =(int *other);\n"
+            "};\n"
+            "A::szp &A::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class szp;\n"
+            "};\n"
+            "class A::szp\n"
+            "{\n"
+            "  A::szp &operator =(int *other) {}\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "    class szp;\n"
+            "};\n"
+            "class A::szp\n"
+            "{\n"
+            "  A::szp &operator =(int *other);\n"
+            "};\n"
+            "A::szp &A::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
     }
 
     void operatorEqRetRefThis3() {
