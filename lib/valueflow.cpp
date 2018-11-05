@@ -3309,6 +3309,28 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
 {
     if (!expr)
         return false;
+
+    // strlen(arg)..
+    if (expr->str() == "(" && Token::Match(expr->previous(), "strlen ( %name% )")) {
+        const Token *arg = expr->next();
+        if (arg->str().compare(0,3,"arg") != 0 || arg->str().size() != 4)
+            return false;
+        const char n = arg->str()[3];
+        if (n < '1' || n - '1' >= values.size())
+            return false;
+        for (const ValueFlow::Value &argvalue : values[n - '1']) {
+            if (argvalue.isTokValue() && argvalue.tokvalue->tokType() == Token::eString) {
+                ValueFlow::Value res(argvalue); // copy all "inconclusive", "condition", etc attributes
+                // set return value..
+                res.valueType = ValueFlow::Value::INT;
+                res.tokvalue = nullptr;
+                res.intvalue = Token::getStrLength(argvalue.tokvalue);
+                result->emplace_back(res);
+            }
+        }
+        return !result->empty();
+    }
+
     // unary operands
     if (expr->astOperand1() && !expr->astOperand2()) {
         std::list<ValueFlow::Value> opvalues;
@@ -3404,23 +3426,10 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
         result->emplace_back(ValueFlow::Value(MathLib::toLongNumber(expr->str())));
         result->back().setKnown();
         return true;
-    }
-    if (expr->str() == "(" && Token::Match(expr->previous(), "strlen ( %name% )")) {
-        if (expr->str().compare(0,3,"arg") != 0 || expr->str().size() != 4)
-            return false;
-        const char n = expr->str()[3];
-        if (n < '1' || n - '1' >= values.size())
-            return false;
-        for (const ValueFlow::Value &argvalue : values[n - '1']) {
-            if (argvalue.isTokValue() && argvalue.tokvalue->tokType() == Token::eString) {
-                ValueFlow::Value res(argvalue); // copy all "inconclusive", "condition", etc attributes
-                // set return value..
-                res.valueType = ValueFlow::Value::INT;
-                res.tokvalue = nullptr;
-                res.intvalue = Token::getStrLength(argvalue.tokvalue);
-            }
-        }
-        return !result->empty();
+    } else if (expr->tokType() == Token::eChar) {
+        result->emplace_back(ValueFlow::Value(MathLib::toLongNumber(expr->str())));
+        result->back().setKnown();
+        return true;
     }
     return false;
 }
