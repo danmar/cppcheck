@@ -1991,7 +1991,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             }
 
             // remove class name
-            else if (arg_path_length > 2) {
+            else if (arg_path_length > 2 && first->strAt(1) != second->strAt(1)) {
                 std::string short_path = path;
                 unsigned int short_path_length = arg_path_length;
 
@@ -3297,7 +3297,6 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     // skip over qualification if present
     nameTok = skipScopeIdentifiers(nameTok);
     if (nameTok && ((type == Scope::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
-
         className = nameTok->str();
 }
 
