@@ -764,7 +764,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             else {
                 assignAllVar(usage);
             }
-        } else if (Token::Match(ftok, "::| %name% (") && ftok->str() != "if") {
+        } else if (Token::Match(ftok, "::| %name% (") && !Token::Match(ftok, "if|while|for")) {
             if (ftok->str() == "::")
                 ftok = ftok->next();
 
