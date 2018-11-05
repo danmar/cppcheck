@@ -166,6 +166,21 @@ private:
         std::set<std::string> &expandedtemplates);
 
     /**
+     * Simplify templates : add namespace to template name
+     * @param templateDeclaration template declaration
+     * @param tok place to insert namespace
+     */
+    void addNamespace(const TokenAndName &templateDeclaration, const Token *tok);
+
+    /**
+     * Simplify templates : check if namespace already present
+     * @param templateDeclaration template declaration
+     * @param tok place to start looking for namespace
+     * @return true if namespace already present
+     */
+    bool alreadyHasNamespace(const TokenAndName &templateDeclaration, const Token *tok) const;
+
+    /**
      * Expand a template. Create "expanded" class/function at end of tokenlist.
      * @param templateDeclaration               Template declaration information
      * @param templateDeclarationToken          Template declaration token
