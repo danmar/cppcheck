@@ -119,7 +119,7 @@ public:
 
 private:
     // The conditions that have been diagnosed
-    std::set<const Token*> condDiags;
+    std::set<const Token*> mCondDiags;
     bool diag(const Token* tok, bool insert=true);
     bool isAliased(const std::set<unsigned int> &vars) const;
     bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;

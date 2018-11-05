@@ -55,9 +55,9 @@ bool CheckCondition::diag(const Token* tok, bool insert)
 {
     if(!tok)
         return false;
-    if(condDiags.find(tok) == condDiags.end()) {
+    if(mCondDiags.find(tok) == mCondDiags.end()) {
         if(insert) 
-            condDiags.insert(tok);
+            mCondDiags.insert(tok);
         return false;
     }
     return true;
