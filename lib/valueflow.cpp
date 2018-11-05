@@ -3375,6 +3375,11 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
                 if (!val2.isIntValue())
                     continue;
 
+                if (val1.varId != 0 && val2.varId != 0) {
+                    if (val1.varId != val2.varId || val1.varvalue != val2.varvalue)
+                        continue;
+                }
+
                 if (expr->str() == "+")
                     result->emplace_back(ValueFlow::Value(val1.intvalue + val2.intvalue));
                 else if (expr->str() == "-")
@@ -3436,19 +3441,11 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
 
 static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue, const Settings *settings)
 {
-    unsigned int varId = 0;
     std::vector<std::list<ValueFlow::Value>> argValues;
     for (const Token *argtok : getArguments(tok->previous())) {
         argValues.emplace_back(argtok->values());
         if (argValues.back().empty())
             return;
-        for (const ValueFlow::Value &argval : argValues.back()) {
-            if (argval.varId) {
-                if (varId && varId != argval.varId)
-                    return;
-                varId = argval.varId;
-            }
-        }
     }
 
     TokenList tokenList(settings);

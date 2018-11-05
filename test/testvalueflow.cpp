@@ -2708,11 +2708,12 @@ private:
                "    a = 1;\n"
                "  else\n"
                "    a = 2;\n"
-               "  int x = add(3, a);\n"
-               "  return x;\n"
+               "  add(a, a);\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 8U, 4));
-        ASSERT_EQUALS(true, testValueOfX(code, 8U, 5));
+        std::list<ValueFlow::Value> values = tokenValues(code, "( a , a )");
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(2, values.front().intvalue);
+        ASSERT_EQUALS(4, values.back().intvalue);
     }
 
     void valueFlowFunctionReturn() {
