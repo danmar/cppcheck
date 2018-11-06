@@ -145,6 +145,7 @@ private:
         TEST_CASE(uninitVar29);
         TEST_CASE(uninitVar30); // ticket #6417
         TEST_CASE(uninitVar31); // ticket #8271
+        TEST_CASE(uninitVar32); // ticket #8835
         TEST_CASE(uninitVarEnum1);
         TEST_CASE(uninitVarEnum2); // ticket #8146
         TEST_CASE(uninitVarStream);
@@ -2424,6 +2425,39 @@ private:
               "    m_retCode = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar32() { // ticket #8835
+        check("class Foo {\n"
+              "   friend class Bar;\n"
+              "   int member;\n"
+              "public:\n"
+              "   Foo()\n"
+              "   {\n"
+              "      if (1) {}\n"
+              "   }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
+        check("class Foo {\n"
+              "   friend class Bar;\n"
+              "   int member;\n"
+              "public:\n"
+              "   Foo()\n"
+              "   {\n"
+              "      while (1) {}\n"
+              "   }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
+        check("class Foo {\n"
+              "   friend class Bar;\n"
+              "   int member;\n"
+              "public:\n"
+              "   Foo()\n"
+              "   {\n"
+              "      for (;;) {}\n"
+              "   }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {
