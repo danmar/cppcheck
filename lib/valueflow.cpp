@@ -3442,13 +3442,9 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
 static std::list<ValueFlow::Value> getFunctionArgumentValues(const Token *argtok)
 {
     std::list<ValueFlow::Value> argvalues(argtok->values());
-    if (argvalues.empty()) {
-        if (Token::Match(argtok, "%comp%|%oror%|&&|!")) {
-            argvalues.emplace_back(0);
-            argvalues.emplace_back(1);
-        } else {
-            argvalues = argtok->values();
-        }
+    if (argvalues.empty() && Token::Match(argtok, "%comp%|%oror%|&&|!")) {
+        argvalues.emplace_back(0);
+        argvalues.emplace_back(1);
     }
     return argvalues;
 }
