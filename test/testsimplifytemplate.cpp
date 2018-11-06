@@ -129,6 +129,7 @@ private:
         TEST_CASE(template_namespace_7); // #8768
         TEST_CASE(template_namespace_8);
         TEST_CASE(template_namespace_9);
+        TEST_CASE(template_namespace_10);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1888,6 +1889,31 @@ private:
                       "Fred<1> ( ) ; "
                       "private: "
                       "Barney<1> m_data ; "
+                      "} ;", tok(code));
+    }
+
+    void template_namespace_10() {
+        const char code[] = "namespace NS1 {\n"
+                            "namespace NS2 {\n"
+                            "template<class T>\n"
+                            "class Fred {\n"
+                            "    T * t;\n"
+                            "public:\n"
+                            "    Fred<T>() : t(nullptr) {}\n"
+                            "};\n"
+                            "}\n"
+                            "}\n"
+                            "NS1::NS2::Fred<int> fred;";
+        ASSERT_EQUALS("namespace NS1 { "
+                      "namespace NS2 { "
+                      "class Fred<int> ; "
+                      "} "
+                      "} "
+                      "NS1 :: NS2 :: Fred<int> fred ; class NS1 :: NS2 :: Fred<int> "
+                      "{ "
+                      "int * t ; "
+                      "public: "
+                      "Fred<int> ( ) : t ( nullptr ) { } "
                       "} ;", tok(code));
     }
 
