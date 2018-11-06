@@ -3439,11 +3439,25 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
     return false;
 }
 
+static std::list<ValueFlow::Value> getFunctionArgumentValues(const Token *argtok)
+{
+    std::list<ValueFlow::Value> argvalues(argtok->values());
+    if (argvalues.empty()) {
+        if (Token::Match(argtok, "%comp%|%oror%|&&|!")) {
+            argvalues.emplace_back(0);
+            argvalues.emplace_back(1);
+        } else {
+            argvalues = argtok->values();
+        }
+    }
+    return argvalues;
+}
+
 static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue, const Settings *settings)
 {
     std::vector<std::list<ValueFlow::Value>> argValues;
     for (const Token *argtok : getArguments(tok->previous())) {
-        argValues.emplace_back(argtok->values());
+        argValues.emplace_back(getFunctionArgumentValues(argtok));
         if (argValues.back().empty())
             return;
     }
@@ -3509,30 +3523,24 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
                 break;
 
             // passing value(s) to function
-            std::list<ValueFlow::Value> argvalues;
-            if (Token::Match(argtok, "%comp%|%oror%|&&|!") && !argtok->hasKnownIntValue()) {
-                argvalues.emplace_back(0);
-                argvalues.emplace_back(1);
-            } else {
-                argvalues = argtok->values();
-            }
+            std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
 
             if (argvalues.empty())
                 continue;
 
             // Error path..
-            for (std::list<ValueFlow::Value>::iterator it = argvalues.begin(); it != argvalues.end(); ++it) {
+            for (ValueFlow::Value &v : argvalues) {
                 const std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
 
-                it->errorPath.emplace_back(argtok,
-                                           "Calling function '" +
-                                           calledFunction->name() +
-                                           "', " +
-                                           nr +
-                                           " argument '" +
-                                           argvar->name() +
-                                           "' value is " +
-                                           it->infoString());
+                v.errorPath.emplace_back(argtok,
+                                         "Calling function '" +
+                                         calledFunction->name() +
+                                         "', " +
+                                         nr +
+                                         " argument '" +
+                                         argtok->expressionString() +
+                                         "' value is " +
+                                         v.infoString());
             }
 
             // passed values are not "known"..
