@@ -107,6 +107,8 @@ private:
 
         TEST_CASE(valueFlowUninit);
 
+        TEST_CASE(valueFlowTerminatingCond);
+
         TEST_CASE(valueFlowContainerSize);
     }
 
@@ -3302,6 +3304,76 @@ private:
         ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
         ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
+    }
+
+    void valueFlowTerminatingCond() {
+        const char* code;
+
+        // opposite condition
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) return;\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) return;\n"
+               "    i++;\n"
+               "    if (i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(int i, int j, bool a) {\n"
+               "    if (a) {\n"
+               "        if (i == j) return;\n"
+               "    }\n"
+               "    if (i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(int i, int j, bool a) {\n"
+               "    if (i != j) {}\n"
+               "    if (i == j) return; \n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+
+        // same expression
+        code = "void f(int i, int j) {\n"
+               "    if (i != j) return;\n"
+               "    bool x = (i != j);\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(int i, int j) {\n"
+               "    if (i != j) return;\n"
+               "    i++;\n"
+               "    bool x = (i != j);\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 0));
+
+        code = "void f(int i, int j, bool a) {\n"
+               "    if (a) {\n"
+               "        if (i != j) return;\n"
+               "    }\n"
+               "    bool x = (i != j);\n"
+               "    bool b = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
+
+        code = "void f(int i, int j, bool a) {\n"
+               "    bool x = (i != j);\n"
+               "    bool b = x;\n"
+               "    if (i != j) return; \n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
+
+        code = "void f(int i, int j, bool b) {\n"
+               "    if (i == j) { if(b) return; }\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {

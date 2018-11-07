@@ -347,8 +347,6 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return false;
     if (pure && tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof") {
         if (!tok1->function()) {
-            if (!Token::Match(tok1->previous(), ".|::") && !library.isFunctionConst(tok1) && !tok1->isAttributeConst() && !tok1->isAttributePure())
-                return false;
             if (Token::simpleMatch(tok1->previous(), ".")) {
                 const Token *lhs = tok1->previous();
                 while (Token::Match(lhs, "(|.|["))
@@ -357,6 +355,12 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                                         (lhs->valueType() && lhs->valueType()->constness > 0) ||
                                         (Token::Match(lhs, "%var% . %name% (") && library.isFunctionConst(lhs->tokAt(2)));
                 if (!lhsIsConst)
+                    return false;
+            } else {
+                const Token * ftok = tok1;
+                if (Token::simpleMatch(tok1->previous(), "::"))
+                    ftok = tok1->previous();
+                if (!library.isFunctionConst(ftok) && !ftok->isAttributeConst() && !ftok->isAttributePure())
                     return false;
             }
         } else {

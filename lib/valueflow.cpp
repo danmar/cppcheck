@@ -304,6 +304,15 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
     return nullptr;
 }
 
+static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    const Token * termTok = Token::findmatch(tok, "return|continue|break|throw|goto", tok->link());
+    return (termTok && termTok->scope() == tok->scope()) ||
+           (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
+}
+
 static bool bailoutSelfAssignment(const Token * const tok)
 {
     const Token *parent = tok;
@@ -1089,6 +1098,104 @@ static void valueFlowBitAnd(TokenList *tokenlist)
     }
 }
 
+static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
+{
+    const bool cpp = symboldatabase->isCPP();
+    typedef std::pair<const Token*, const Scope*> Condition;
+    for (const Scope * scope : symboldatabase->functionScopes) {
+        std::vector<Condition> conds;
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "if ("))
+                continue;
+            // Skip known values
+            if (tok->next()->hasKnownValue())
+                continue;
+            const Token * condTok = tok->next();
+            if (!Token::simpleMatch(condTok->link(), ") {"))
+                continue;
+            const Token * blockTok = condTok->link()->tokAt(1);
+            // Check if the block terminates early
+            if(!isEscapeScope(blockTok, tokenlist))
+                continue;
+            // Check if any variables are modified in scope
+            bool bail = false;
+            for(const Token * tok2=condTok->next();tok2 != condTok->link();tok2 = tok2->next()) {
+                const Variable * var = tok2->variable();
+                if(!var)
+                    continue;
+                const Token * endToken = var->scope()->bodyEnd;
+                if(!var->isLocal() && !var->isConst() && !var->isArgument()) {
+                    bail = true;
+                    break;
+                }
+                if(var->isStatic() && !var->isConst()) {
+                    bail = true;
+                    break;
+                }
+                if(!var->isConst() && var->declEndToken() && isVariableChanged(var->declEndToken()->next(), endToken, tok2->varId(), false, settings, cpp)) {
+                    bail = true;
+                    break;
+                }
+            }
+            if(bail)
+                continue;
+            // TODO: Handle multiple conditions
+            if(Token::Match(condTok->astOperand2(), "%oror%|%or%|&|&&"))
+                continue;
+            const Scope * condScope = nullptr;
+            for(const Scope * parent = condTok->scope();parent;parent = parent->nestedIn) {
+                if (parent->type == Scope::eIf || 
+                    parent->type == Scope::eSwitch) {
+                    condScope = parent;
+                    break;
+                }
+            }
+            conds.emplace_back(condTok->astOperand2(), condScope);
+
+        }
+        for(Condition cond:conds) {
+            if(!cond.first)
+                continue;
+            for (Token* tok = cond.first->next(); tok != scope->bodyEnd; tok = tok->next()) {
+                if(tok == cond.first)
+                    continue;
+                if (!Token::Match(tok, "%comp%"))
+                    continue;
+                // Skip known values
+                if (tok->hasKnownValue())
+                    continue;
+                if(cond.second) {
+                    bool bail = true;
+                    for(const Scope * parent = tok->scope()->nestedIn;parent;parent = parent->nestedIn) {
+                        if(parent == cond.second) {
+                            bail = false;
+                            break;
+                        }
+                    }
+                    if(bail)
+                        continue;
+                }
+                ErrorPath errorPath;
+                if(isOppositeCond(true, cpp, tok, cond.first, settings->library, true, &errorPath)) {
+                    ValueFlow::Value val(1);
+                    val.setKnown();
+                    val.condition = cond.first;
+                    val.errorPath = errorPath;
+                    val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
+                    setTokenValue(tok, val, tokenlist->getSettings());
+                } else if(isSameExpression(cpp, true, tok, cond.first, settings->library, true, &errorPath)) {
+                    ValueFlow::Value val(0);
+                    val.setKnown();
+                    val.condition = cond.first;
+                    val.errorPath = errorPath;
+                    val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
+                    setTokenValue(tok, val, tokenlist->getSettings());
+                }
+            }
+        }
+    }
+}
+
 static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
 {
     if (expr->hasKnownIntValue()) {
@@ -1686,14 +1793,6 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
         return false;
     }
     return true;
-}
-
-static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
-{
-    if (!Token::simpleMatch(tok, "{"))
-        return false;
-    return Token::findmatch(tok, "return|continue|break|throw|goto", tok->link()) ||
-           (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
 }
 
 static bool valueFlowForward(Token * const               startToken,
@@ -4012,6 +4111,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         values = getTotalValues(tokenlist);
         valueFlowRightShift(tokenlist);
         valueFlowOppositeCondition(symboldatabase, settings);
+        valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
