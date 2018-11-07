@@ -1149,10 +1149,11 @@ void TemplateSimplifier::expandTemplate(
             // replace name..
             if (tok3->str() == lastName) {
                 if (Token::simpleMatch(tok3->next(), "<")) {
-                    // replace multi token name with single token name
-                    if (tok3 == templateDeclarationNameToken || Token::Match(tok3, newName.c_str())) {
-                        Token *closingBracket = tok3->next()->findClosingBracket();
-                        if (closingBracket) {
+                    Token *closingBracket = tok3->next()->findClosingBracket();
+                    if (closingBracket) {
+                        // replace multi token name with single token name
+                        if (tok3 == templateDeclarationNameToken ||
+                            Token::Match(tok3, newName.c_str())) {
                             if (copy) {
                                 mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
                                 tok3 = closingBracket;
@@ -1161,11 +1162,12 @@ void TemplateSimplifier::expandTemplate(
                                 eraseTokens(tok3, closingBracket->next());
                             }
                             continue;
+                        } else if (!templateDeclaration.scope.empty() &&
+                                   !alreadyHasNamespace(templateDeclaration, tok3) &&
+                                   closingBracket->strAt(1) != "(") {
+                            if (copy)
+                                addNamespace(templateDeclaration, tok3);
                         }
-                    } else if (!templateDeclaration.scope.empty() &&
-                               !alreadyHasNamespace(templateDeclaration, tok3)) {
-                        if (copy)
-                            addNamespace(templateDeclaration, tok3);
                     }
                 } else {
                     if (copy) {
