@@ -64,7 +64,7 @@ void CheckAssert::assertWithSideEffects()
             if (!scope) continue;
 
             for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-                if (tok2->tokType() != Token::eAssignmentOp && tok2->tokType() != Token::eIncDecOp)
+                if (!tok2->isAssignmentOp() && tok2->tokType() != Token::eIncDecOp)
                     continue;
 
                 const Variable* var = tok2->previous()->variable();
