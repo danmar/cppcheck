@@ -193,7 +193,8 @@ private:
         const char code[] = "template <class T> class Fred { T a; };\n"
                             "Fred<int> fred;";
 
-        const char expected[] = "Fred<int> fred ; "
+        const char expected[] = "class Fred<int> ; "
+                                "Fred<int> fred ; "
                                 "class Fred<int> { int a ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -203,7 +204,8 @@ private:
         const char code[] = "template <class T, int sz> class Fred { T data[sz]; };\n"
                             "Fred<float,4> fred;";
 
-        const char expected[] = "Fred<float,4> fred ; "
+        const char expected[] = "class Fred<float,4> ; "
+                                "Fred<float,4> fred ; "
                                 "class Fred<float,4> { float data [ 4 ] ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -213,7 +215,8 @@ private:
         const char code[] = "template <class T> class Fred { Fred(); };\n"
                             "Fred<float> fred;";
 
-        const char expected[] = "Fred<float> fred ; "
+        const char expected[] = "class Fred<float> ; "
+                                "Fred<float> fred ; "
                                 "class Fred<float> { Fred<float> ( ) ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -224,7 +227,8 @@ private:
                             "template <class T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const char expected[] = "Fred<float> fred ; "
+        const char expected[] = "class Fred<float> ; "
+                                "Fred<float> fred ; "
                                 "class Fred<float> { } ; "
                                 "Fred<float> :: Fred<float> ( ) { }";
 
@@ -236,7 +240,8 @@ private:
                             "Fred<float> fred1;\n"
                             "Fred<float> fred2;";
 
-        const char expected[] = "Fred<float> fred1 ; "
+        const char expected[] = "class Fred<float> ; "
+                                "Fred<float> fred1 ; "
                                 "Fred<float> fred2 ; "
                                 "class Fred<float> { } ;";
 
@@ -350,7 +355,8 @@ private:
                             "} ;\n";
 
         // The expected result..
-        const char expected[] = "void f ( ) { A<int> a ; } "
+        const char expected[] = "class A<int> ; "
+                                "void f ( ) { A<int> a ; } "
                                 "template < typename T > class B { void g ( ) { A < T > b ; b = A < T > :: h ( ) ; } } ; "
                                 "class A<int> { } ;";
 
@@ -404,7 +410,8 @@ private:
                             "}\n";
 
         // The expected result..
-        const char expected[] = "void f ( ) "
+        const char expected[] = "class A<12,12,11> ; "
+                                "void f ( ) "
                                 "{"
                                 " A<12,12,11> a ; "
                                 "} "
@@ -491,7 +498,8 @@ private:
                              "};\n"
                              "\n"
                              "vec<4> v;";
-        const char expected2[] = "vec<4> v ; "
+        const char expected2[] = "struct vec<4> ; "
+                                 "vec<4> v ; "
                                  "struct vec<4> { "
                                  "vec<4> ( ) { } "
                                  "vec<4> ( const vec < 4 - 1 > & v ) { } "
@@ -540,7 +548,8 @@ private:
         const char code[] = "template <class T> class foo { T a; };\n"
                             "foo<int> *f;";
 
-        const char expected[] = "foo<int> * f ; "
+        const char expected[] = "class foo<int> ; "
+                                "foo<int> * f ; "
                                 "class foo<int> { int a ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -571,7 +580,8 @@ private:
                             "A<int> a;\n";
 
         // The expected result..
-        const char expected[] = "A<int> a ; "
+        const char expected[] = "class A<int> ; "
+                                "A<int> a ; "
                                 "class A<int> { public: ~ A<int> ( ) ; } ; "
                                 "A<int> :: ~ A<int> ( ) { }";
         ASSERT_EQUALS(expected, tok(code));
@@ -582,7 +592,8 @@ private:
             const char code[] = "template <class T> struct Fred { T a; };\n"
                                 "Fred<int> fred;";
 
-            const char expected[] = "Fred<int> fred ; "
+            const char expected[] = "struct Fred<int> ; "
+                                    "Fred<int> fred ; "
                                     "struct Fred<int> { int a ; } ;";
 
             ASSERT_EQUALS(expected, tok(code));
@@ -592,7 +603,8 @@ private:
             const char code[] = "template <class T, int sz> struct Fred { T data[sz]; };\n"
                                 "Fred<float,4> fred;";
 
-            const char expected[] = "Fred<float,4> fred ; "
+            const char expected[] = "struct Fred<float,4> ; "
+                                    "Fred<float,4> fred ; "
                                     "struct Fred<float,4> { float data [ 4 ] ; } ;";
 
             ASSERT_EQUALS(expected, tok(code));
@@ -602,7 +614,8 @@ private:
             const char code[] = "template <class T> struct Fred { Fred(); };\n"
                                 "Fred<float> fred;";
 
-            const char expected[] = "Fred<float> fred ; "
+            const char expected[] = "struct Fred<float> ; "
+                                    "Fred<float> fred ; "
                                     "struct Fred<float> { Fred<float> ( ) ; } ;";
 
             ASSERT_EQUALS(expected, tok(code));
@@ -613,7 +626,8 @@ private:
                                 "Fred<float> fred1;\n"
                                 "Fred<float> fred2;";
 
-            const char expected[] = "Fred<float> fred1 ; "
+            const char expected[] = "struct Fred<float> ; "
+                                    "Fred<float> fred1 ; "
                                     "Fred<float> fred2 ; "
                                     "struct Fred<float> { } ;";
 
@@ -625,7 +639,8 @@ private:
         const char code[] = "template <class T> struct Fred { T a; };\n"
                             "Fred<std::string> fred;";
 
-        const char expected[] = "Fred<std::string> fred ; "
+        const char expected[] = "struct Fred<std::string> ; "
+                                "Fred<std::string> fred ; "
                                 "struct Fred<std::string> { std :: string a ; } ;";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -656,7 +671,8 @@ private:
                             "{};\n"
                             "\n"
                             "bitset<1> z;";
-        const char expected[] = "class bitset<1> ; "
+        const char expected[] = "struct B<4> ; "
+                                "class bitset<1> ; "
                                 "bitset<1> z ; "
                                 "class bitset<1> : B<4> { } ; "
                                 "struct B<4> { int a [ 4 ] ; } ;";
@@ -710,7 +726,11 @@ private:
         // #3226 - inner template
         const char code[] = "template<class A, class B> class Fred {};\n"
                             "Fred<int,Fred<int,int> > x;\n";
-        ASSERT_EQUALS("Fred<int,Fred<int,int>> x ; class Fred<int,int> { } ; class Fred<int,Fred<int,int>> { } ;", tok(code));
+        ASSERT_EQUALS("class Fred<int,int> ; "
+                      "class Fred<int,Fred<int,int>> ; "
+                      "Fred<int,Fred<int,int>> x ; "
+                      "class Fred<int,int> { } ; "
+                      "class Fred<int,Fred<int,int>> { } ;", tok(code));
     }
 
     void template30() {
@@ -722,11 +742,15 @@ private:
     void template31() {
         // #4010 - template reference type
         const char code[] = "template<class T> struct A{}; A<int&> a;";
-        ASSERT_EQUALS("A<int&> a ; struct A<int&> { } ;", tok(code));
+        ASSERT_EQUALS("struct A<int&> ; "
+                      "A<int&> a ; "
+                      "struct A<int&> { } ;", tok(code));
 
         // #7409 - rvalue
         const char code2[] = "template<class T> struct A{}; A<int&&> a;";
-        ASSERT_EQUALS("A<int&&> a ; struct A<int&&> { } ;", tok(code2));
+        ASSERT_EQUALS("struct A<int&&> ; "
+                      "A<int&&> a ; "
+                      "struct A<int&&> { } ;", tok(code2));
     }
 
     void template32() {
@@ -754,7 +778,8 @@ private:
                                 "template<class T> struct B { };\n"
                                 "template<class T> struct C { A<B<X<T> > > ab; };\n"
                                 "C<int> c;";
-            ASSERT_EQUALS("struct B<X<int>> ; "
+            ASSERT_EQUALS("struct A<B<X<int>>> ; "
+                          "struct B<X<int>> ; "
                           "struct C<int> ; "
                           "C<int> c ; "
                           "struct C<int> { A<B<X<int>>> ab ; } ; "
@@ -789,14 +814,17 @@ private:
     void template35() { // #4074 - "A<'x'> a;" is not recognized as template instantiation
         const char code[] = "template <char c> class A {};\n"
                             "A <'x'> a;";
-        ASSERT_EQUALS("A<'x'> a ; class A<'x'> { } ;", tok(code));
+        ASSERT_EQUALS("class A<'x'> ; "
+                      "A<'x'> a ; "
+                      "class A<'x'> { } ;", tok(code));
     }
 
     void template36() { // #4310 - Passing unknown template instantiation as template argument
         const char code[] = "template <class T> struct X { T t; };\n"
                             "template <class C> struct Y { Foo < X< Bar<C> > > _foo; };\n" // <- Bar is unknown
                             "Y<int> bar;";
-        ASSERT_EQUALS("struct Y<int> ; "
+        ASSERT_EQUALS("struct X<Bar<int>> ; "
+                      "struct Y<int> ; "
                       "Y<int> bar ; "
                       "struct Y<int> { Foo < X<Bar<int>> > _foo ; } ; "
                       "struct X<Bar<int>> { Bar < int > t ; } ;",
@@ -871,7 +899,9 @@ private:
     void template41() { // #4710 - const in template instantiation not handled perfectly
         const char code1[] = "template<class T> struct X { };\n"
                              "void f(const X<int> x) { }";
-        ASSERT_EQUALS("void f ( const X<int> x ) { } struct X<int> { } ;", tok(code1));
+        ASSERT_EQUALS("struct X<int> ; "
+                      "void f ( const X<int> x ) { } "
+                      "struct X<int> { } ;", tok(code1));
 
         const char code2[] = "template<class T> T f(T t) { return t; }\n"
                              "int x() { return f<int>(123); }";
@@ -962,7 +992,9 @@ private:
                             "template void Fred<float>::f();\n"
                             "template void Fred<int>::g();\n";
 
-        const char expected[] = "template void Fred<float> :: f ( ) ; "
+        const char expected[] = "class Fred<float> ; "
+                                "class Fred<int> ; "
+                                "template void Fred<float> :: f ( ) ; "
                                 "template void Fred<int> :: g ( ) ; "
                                 "class Fred<float> { void f ( ) ; void g ( ) ; } ; "
                                 "void Fred<float> :: f ( ) { } "
@@ -1044,7 +1076,10 @@ private:
 
         // Similar problem can also happen with ...
         ASSERT_EQUALS(
-            "A<int> a ( 0 ) ; struct A<int> { "
+            "struct A<int> ; "
+            "struct A<int...> ; "
+            "A<int> a ( 0 ) ; "
+            "struct A<int> { "
             "A<int> ( int * p ) { p ; } "
             "} ; "
             "struct A<int...> { "
@@ -1073,7 +1108,8 @@ private:
     void template57() { // #7891
         const char code[] = "template<class T> struct Test { Test(T); };\n"
                             "Test<unsigned long> test( 0 );";
-        const char exp [] = "Test<unsignedlong> test ( 0 ) ; "
+        const char exp [] = "struct Test<unsignedlong> ; "
+                            "Test<unsignedlong> test ( 0 ) ; "
                             "struct Test<unsignedlong> { Test<unsignedlong> ( long ) ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
@@ -1111,7 +1147,11 @@ private:
                             "int main () {\n"
                             "    return diagonalGroupTest<4>();\n"
                             "}";
-        const char exp[] = "struct Factorial<0> { enum FacHelper { value = 1 } ; } ; "
+        const char exp[] = "struct Factorial<4> ; "
+                           "struct Factorial<3> ; "
+                           "struct Factorial<2> ; "
+                           "struct Factorial<1> ; "
+                           "struct Factorial<0> { enum FacHelper { value = 1 } ; } ; "
                            "int main ( ) { return diagonalGroupTest<4> ( ) ; } "
                            "int diagonalGroupTest<4> ( ) { return Factorial<4> :: value ; } "
                            "struct Factorial<4> { enum FacHelper { value = 4 * Factorial<3> :: value } ; } ; "
@@ -1127,7 +1167,8 @@ private:
                             "template <typename T> void h() { f<typename S<T>::type(0)>(); }\n"
                             "\n"
                             "void j() { h<int>(); }";
-        const char exp[] = "template < typename T > void f ( ) { } " // <- TODO: This template is not expanded
+        const char exp[] = "struct S<int> ; "
+                           "template < typename T > void f ( ) { } " // <- TODO: This template is not expanded
                            "void j ( ) { h<int> ( ) ; } "
                            "void h<int> ( ) { f < S<int> :: type ( 0 ) > ( ) ; } "
                            "struct S<int> { } ;";
@@ -1141,7 +1182,8 @@ private:
                             "  Foo<Bar<T>> f2() { }\n"
                             "};\n"
                             "Bar<int> c;";
-        const char exp[] = "struct Bar<int> ; "
+        const char exp[] = "struct Foo<Bar<int>> ; "
+                           "struct Bar<int> ; "
                            "Bar<int> c ; "
                            "struct Bar<int> {"
                            " void f1 ( Bar<int> x ) { }"
@@ -1157,7 +1199,8 @@ private:
                             "template <class T, unsigned S> class C3 {};\n"
                             "template <class T, unsigned S> C3<T, S>::C3(const C3<T, S> &v) { C1<T *> c1; }\n"
                             "C3<int,6> c3;";
-        const char exp[] = "template < class T > void f ( ) { x = y ? ( C1 < int > :: allocate ( 1 ) ) : 0 ; } "
+        const char exp[] = "struct C1<int*> ; "
+                           "template < class T > void f ( ) { x = y ? ( C1 < int > :: allocate ( 1 ) ) : 0 ; } "
                            "class C3<int,6> ; "
                            "C3<int,6> c3 ; "
                            "class C3<int,6> { } ; "
@@ -1167,8 +1210,11 @@ private:
     }
 
     void template63() { // #8576
-        const char code[] = "template<class T> struct TestClass { T m_hi; }; TestClass<std::auto_ptr<v>> objTest3;";
-        const char exp[] = "TestClass<std::auto_ptr<v>> objTest3 ; struct TestClass<std::auto_ptr<v>> { std :: auto_ptr < v > m_hi ; } ;";
+        const char code[] = "template<class T> struct TestClass { T m_hi; };"
+                            "TestClass<std::auto_ptr<v>> objTest3;";
+        const char exp[] = "struct TestClass<std::auto_ptr<v>> ; "
+                           "TestClass<std::auto_ptr<v>> objTest3 ; "
+                           "struct TestClass<std::auto_ptr<v>> { std :: auto_ptr < v > m_hi ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1215,7 +1261,9 @@ private:
                             "};\n"
                             "template <class T> const int ** Fred<T>::foo() { return nullptr; }\n"
                             "Fred<int> fred;";
-        const char exp [] = "Fred<int> fred ; struct Fred<int> { "
+        const char exp [] = "struct Fred<int> ; "
+                            "Fred<int> fred ; "
+                            "struct Fred<int> { "
                             "const int * * foo ( ) ; "
                             "} ; "
                             "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
@@ -1237,7 +1285,8 @@ private:
                             "template <class T> Containter<T>::~Containter() {}\n"
                             "Containter<int> intContainer;";
 
-        const char expected[] = "Containter<int> intContainer ; "
+        const char expected[] = "struct Containter<int> ; "
+                                "Containter<int> intContainer ; "
                                 "struct Containter<int> { "
                                 "Containter<int> ( ) ; "
                                 "Containter<int> ( const Containter<int> & ) ; "
@@ -1260,7 +1309,9 @@ private:
                             "    T value;\n"
                             "};\n"
                             "Fred<int> fred;";
-        const char exp [] = "Fred<int> fred ; union Fred<int> { "
+        const char exp [] = "union Fred<int> ; "
+                            "Fred<int> fred ; "
+                            "union Fred<int> { "
                             "char dummy [ 4 ] ; "
                             "int value ; "
                             "} ;";
@@ -1392,7 +1443,9 @@ private:
                                 "}\n";
 
             // The expected result..
-            const char expected[] = "void f ( ) "
+            const char expected[] = "class A<int,2> ; "
+                                    "class A<int,3> ; "
+                                    "void f ( ) "
                                     "{"
                                     " A<int,2> a1 ;"
                                     " A<int,3> a2 ; "
@@ -1415,7 +1468,8 @@ private:
                                 "}\n";
 
             // The expected result..
-            const char expected[] = "void f ( ) "
+            const char expected[] = "class A<int,3,2> ; "
+                                    "void f ( ) "
                                     "{"
                                     " A<int,3,2> a1 ;"
                                     " A<int,3,2> a2 ; "
@@ -1448,7 +1502,8 @@ private:
                                   " class A<int,3>"
                                   " { int ar [ 3 ] ; }";
 
-            const char current[] = "void f ( ) "
+            const char current[] = "class A<int,3> ; "
+                                   "void f ( ) "
                                    "{ "
                                    "A < int , ( int ) 2 > a1 ; "
                                    "A<int,3> a2 ; "
@@ -1764,7 +1819,9 @@ private:
     void template_namespace_5() {
         const char code[] = "template<class C> struct S {};\n"
                             "namespace X { S<int> s; }";
-        ASSERT_EQUALS("namespace X { S<int> s ; } struct S<int> { } ;", tok(code));
+        ASSERT_EQUALS("struct S<int> ; "
+                      "namespace X { S<int> s ; } "
+                      "struct S<int> { } ;", tok(code));
     }
 
     void template_namespace_6() {
@@ -2153,7 +2210,8 @@ private:
                                 "template<> class C<char> { };\n"
                                 "map<int> m;\n"
                                 "C<int> i;";
-            const char expected[] = "class C<char> { } ; "
+            const char expected[] = "class C<int> ; "
+                                    "class C<char> { } ; "
                                     "map < int > m ; "
                                     "C<int> i ; "
                                     "class C<int> { } ;";
@@ -2165,7 +2223,8 @@ private:
                                 "map<int> m;\n"
                                 "C<int> i;\n"
                                 "C<char> c;";
-            const char expected[] = "class C<char> { } ; "
+            const char expected[] = "class C<int> ; "
+                                    "class C<char> { } ; "
                                     "map < int > m ; "
                                     "C<int> i ; "
                                     "C<char> c ; "
@@ -2179,7 +2238,9 @@ private:
                             "template<class T> using Bar = Foo<T,3>;\n"
                             "Bar<int> b;\n";
 
-        const char expected[] = "; Foo<int,3> b ; struct Foo<int,3> { } ;";
+        const char expected[] = "struct Foo<int,3> ; "
+                                "Foo<int,3> b ; "
+                                "struct Foo<int,3> { } ;";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -2201,7 +2262,9 @@ private:
         const char code[] = "template <int> struct Tag {};\n"
                             "template <int ID> using SPtr = std::shared_ptr<void(Tag<ID>)>;\n"
                             "SPtr<0> s;";
-        const char expected[] = "; std :: shared_ptr < void ( Tag<0> ) > s ; struct Tag<0> { } ;";
+        const char expected[] = "struct Tag<0> ; "
+                                "std :: shared_ptr < void ( Tag<0> ) > s ; "
+                                "struct Tag<0> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
