@@ -1277,7 +1277,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            // Skip already diagnised values
+            // Skip already diagnosed values
             if(diag(tok, false))
                 continue;
             if (Token::Match(tok, "%num%|%bool%|%char%"))
