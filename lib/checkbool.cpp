@@ -189,7 +189,7 @@ void CheckBool::checkComparisonOfFuncReturningBool()
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->tokType() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
+            if (!tok->isComparisonOp() || tok->str() == "==" || tok->str() == "!=")
                 continue;
             const Token *firstToken = tok->previous();
             if (tok->strAt(-1) == ")") {
@@ -251,7 +251,7 @@ void CheckBool::checkComparisonOfBoolWithBool()
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->tokType() != Token::eComparisonOp || tok->str() == "==" || tok->str() == "!=")
+            if (!tok->isComparisonOp() || tok->str() == "==" || tok->str() == "!=")
                 continue;
             bool firstTokenBool = false;
 
