@@ -19,6 +19,8 @@
     GOTO EXIT_ERROR
 )
 
+@SET RCFILE=.astylerc
+
 %ASTYLE% --options=%RCFILE% cli/*.cpp
 %ASTYLE% --options=%RCFILE% cli/*.h
 %ASTYLE% --options=%RCFILE% democlient/*.cpp
