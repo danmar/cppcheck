@@ -1852,8 +1852,6 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
 
 bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int path_length)
 {
-    assert(first->str() == "(" && second->str() == "(");
-
     const bool isCPP = scope->check->isCPP();
     if (!isCPP) // C does not support overloads
         return true;
