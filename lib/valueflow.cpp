@@ -1145,6 +1145,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             const Scope * condScope = nullptr;
             for(const Scope * parent = condTok->scope();parent;parent = parent->nestedIn) {
                 if (parent->type == Scope::eIf || 
+                    parent->type == Scope::eWhile ||
                     parent->type == Scope::eSwitch) {
                     condScope = parent;
                     break;
