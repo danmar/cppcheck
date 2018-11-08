@@ -1355,6 +1355,22 @@ private:
               "    return [=](){ return it; };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Make sure we dont hang
+        check("struct A;\n"
+              "void f() {\n"
+              "    using T = A[3];\n"
+              "    A &&a = T{1, 2, 3}[1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Make sure we dont hang
+        check("struct A;\n"
+              "void f() {\n"
+              "    using T = A[3];\n"
+              "    A &&a = T{1, 2, 3}[1]();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

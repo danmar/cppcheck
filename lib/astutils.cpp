@@ -959,6 +959,10 @@ const Token *findLambdaEndToken(const Token *first)
 {
     if (!first || first->str() != "[")
         return nullptr;
+    if(!Token::Match(first->link(), "] (|{"))
+        return nullptr;
+    if(first->astOperand1() != first->link()->next())
+        return nullptr;
     const Token * tok = first;
 
     if (tok->astOperand1() && tok->astOperand1()->str() == "(")
