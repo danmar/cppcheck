@@ -2673,6 +2673,16 @@ private:
               "    return std::time(0) > maxtime;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(double param) {\n"
+              "  while(bar()) {\n"
+              "    if (param<0.)\n"
+              "       return;\n"
+              "  }\n"
+              "  if (param<0.)\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
