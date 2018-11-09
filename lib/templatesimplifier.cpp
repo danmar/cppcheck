@@ -959,6 +959,34 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok, bool forward)
     return namepos;
 }
 
+void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, const Token *tok)
+{
+    std::string::size_type start = 0;
+    std::string::size_type end = 0;
+    while ((end = templateDeclaration.scope.find(" ", start)) != std::string::npos) {
+        std::string token = templateDeclaration.scope.substr(start, end - start);
+        mTokenList.addtoken(token, tok->linenr(), tok->fileIndex());
+        start = end + 1;
+    }
+    mTokenList.addtoken(templateDeclaration.scope.substr(start), tok->linenr(), tok->fileIndex());
+    mTokenList.addtoken("::", tok->linenr(), tok->fileIndex());
+}
+
+bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclaration, const Token *tok) const
+{
+    std::string scope = templateDeclaration.scope;
+
+    // get the length in tokens of the namespace
+    std::string::size_type pos = 0;
+    int offset = -2;
+
+    while ((pos = scope.find("::", pos)) != std::string::npos) {
+        offset -= 2;
+        pos += 2;
+    }
+
+    return Token::simpleMatch(tok->tokAt(offset), scope.c_str()) ;
+}
 
 void TemplateSimplifier::expandTemplate(
     const TokenAndName &templateDeclaration,
@@ -1049,6 +1077,8 @@ void TemplateSimplifier::expandTemplate(
                 // replace name if found
                 if (Token::Match(tok5, "%name% <") && tok5->str() == templateInstantiation.name) {
                     if (copy) {
+                        if (!templateDeclaration.scope.empty() && tok5->strAt(-1) != "::")
+                            addNamespace(templateDeclaration, tok5);
                         mTokenList.addtoken(newName, tok5->linenr(), tok5->fileIndex());
                         tok5 = tok5->next()->findClosingBracket();
                     } else {
@@ -1060,8 +1090,11 @@ void TemplateSimplifier::expandTemplate(
 
                 tok5 = tok5->next();
             }
-            if (copy)
+            if (copy) {
+                if (!templateDeclaration.scope.empty() && tok3->strAt(-1) != "::")
+                    addNamespace(templateDeclaration, tok3);
                 mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
+            }
 
             while (tok3 && tok3->str() != "::")
                 tok3 = tok3->next();
@@ -1116,10 +1149,11 @@ void TemplateSimplifier::expandTemplate(
             // replace name..
             if (tok3->str() == lastName) {
                 if (Token::simpleMatch(tok3->next(), "<")) {
-                    // replace multi token name with single token name
-                    if (tok3 == templateDeclarationNameToken || Token::Match(tok3, newName.c_str())) {
-                        Token *closingBracket = tok3->next()->findClosingBracket();
-                        if (closingBracket) {
+                    Token *closingBracket = tok3->next()->findClosingBracket();
+                    if (closingBracket) {
+                        // replace multi token name with single token name
+                        if (tok3 == templateDeclarationNameToken ||
+                            Token::Match(tok3, newName.c_str())) {
                             if (copy) {
                                 mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
                                 tok3 = closingBracket;
@@ -1128,22 +1162,19 @@ void TemplateSimplifier::expandTemplate(
                                 eraseTokens(tok3, closingBracket->next());
                             }
                             continue;
+                        } else if (!templateDeclaration.scope.empty() &&
+                                   !alreadyHasNamespace(templateDeclaration, tok3) &&
+                                   closingBracket->strAt(1) != "(") {
+                            if (copy)
+                                addNamespace(templateDeclaration, tok3);
                         }
                     }
                 } else {
                     if (copy) {
                         // add namespace if necessary
-                        if (!templateDeclaration.scope.empty() && (isClass ? tok3->strAt(1) != "(" : true)) {
-                            std::string::size_type start = 0;
-                            std::string::size_type end = 0;
-                            std::string temp;
-                            while ((end = templateDeclaration.scope.find(" ", start)) != std::string::npos) {
-                                std::string token = templateDeclaration.scope.substr(start, end - start);
-                                mTokenList.addtoken(token, tok3->linenr(), tok3->fileIndex());
-                                start = end + 1;
-                            }
-                            mTokenList.addtoken(templateDeclaration.scope.substr(start), tok3->linenr(), tok3->fileIndex());
-                            mTokenList.addtoken("::", tok3->linenr(), tok3->fileIndex());
+                        if (!templateDeclaration.scope.empty() &&
+                            (isClass ? tok3->strAt(1) != "(" : true)) {
+                            addNamespace(templateDeclaration, tok3);
                         }
                         mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
                     } else if (!Token::Match(tok3->next(), ":|{"))
@@ -1818,7 +1849,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         const std::string newName(templateDeclaration.name + " < " + typeForNewName + " >");
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
-            expandTemplate(templateDeclaration, tok, templateDeclaration, typeParametersInDeclaration, newName, !specialized);
+            expandTemplate(templateDeclaration, tok, templateDeclaration, typeParametersInDeclaration, newName, false);
             instantiated = true;
         }
 

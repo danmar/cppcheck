@@ -51,6 +51,18 @@ namespace {
     CheckCondition instance;
 }
 
+bool CheckCondition::diag(const Token* tok, bool insert)
+{
+    if(!tok)
+        return false;
+    if(mCondDiags.find(tok) == mCondDiags.end()) {
+        if(insert) 
+            mCondDiags.insert(tok);
+        return false;
+    }
+    return true;
+}
+
 bool CheckCondition::isAliased(const std::set<unsigned int> &vars) const
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -705,6 +717,8 @@ static std::string innerSmtString(const Token * tok)
 
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
+    if(diag(tok1) & diag(tok2))
+        return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
     const std::string innerSmt = innerSmtString(tok2);
@@ -718,6 +732,8 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 
 void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
+    if(diag(tok1) & diag(tok2))
+        return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
     const std::string innerSmt = innerSmtString(tok2);
@@ -731,6 +747,8 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
 {
+    if(diag(cond1) & diag(cond2))
+        return;
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     errorPath.emplace_back(ErrorPathItem(cond1, "first condition"));
     errorPath.emplace_back(ErrorPathItem(cond2, "second condition"));
@@ -1176,7 +1194,7 @@ void CheckCondition::clarifyCondition()
                 for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "[")
                         tok2 = tok2->link();
-                    else if (tok2->tokType() == Token::eComparisonOp) {
+                    else if (tok2->isComparisonOp()) {
                         // This might be a template
                         if (!isC && tok2->link())
                             break;
@@ -1258,6 +1276,9 @@ void CheckCondition::alwaysTrueFalse()
             if (tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
+                continue;
+            // Skip already diagnosed values
+            if(diag(tok, false))
                 continue;
             if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;

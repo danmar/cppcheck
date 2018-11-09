@@ -764,7 +764,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             else {
                 assignAllVar(usage);
             }
-        } else if (Token::Match(ftok, "::| %name% (") && ftok->str() != "if") {
+        } else if (Token::Match(ftok, "::| %name% (") && !Token::Match(ftok, "if|while|for")) {
             if (ftok->str() == "::")
                 ftok = ftok->next();
 
@@ -1988,7 +1988,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             const Token* lhs = tok1->previous();
             if (lhs->str() == "&") {
                 lhs = lhs->previous();
-                if (lhs->tokType() == Token::eAssignmentOp && lhs->previous()->variable()) {
+                if (lhs->isAssignmentOp() && lhs->previous()->variable()) {
                     if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
                         return false;
                 }
@@ -1997,7 +1997,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 if (lhs->astParent()->strAt(1) != "const")
                     return false;
             } else {
-                if (lhs->tokType() == Token::eAssignmentOp) {
+                if (lhs->isAssignmentOp()) {
                     const Variable* lhsVar = lhs->previous()->variable();
                     if (lhsVar && !lhsVar->isConst() && lhsVar->isReference() && lhs == lhsVar->nameToken()->next())
                         return false;
@@ -2039,7 +2039,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             }
 
             // Assignment
-            else if (end->next()->tokType() == Token::eAssignmentOp)
+            else if (end->next()->isAssignmentOp())
                 return false;
 
             // Streaming

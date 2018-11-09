@@ -840,7 +840,11 @@ private:
                                 "};\n"
                                 "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
                                 "Containter<int> intContainer;";
-            const char exp [] = "6: Containter<int> intContainer@1 ; struct Containter<int> {\n"
+            const char exp [] = "1: struct Containter<int> ;\n"
+                                "2:\n"
+                                "|\n"
+                                "5:\n"
+                                "6: Containter<int> intContainer@1 ; struct Containter<int> {\n"
                                 "2: Containter<int> ( ) ;\n"
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"

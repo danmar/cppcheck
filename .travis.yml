@@ -140,6 +140,11 @@ script:
   - ${CPPCHECK} --dump misra-test.cpp
   - python3 ../misra.py -verify misra-test.cpp.dump
   - cd ../../
+# check addons/namingng.py
+  - cd addons/test
+  - ${CPPCHECK} --dump namingng_test.c
+  - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
+  - cd ../..
 
 
 notifications:

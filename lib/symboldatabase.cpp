@@ -593,7 +593,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 else if (declEnd && declEnd->str() == ";") {
                     bool newFunc = true; // Is this function already in the database?
                     for (std::multimap<std::string, const Function *>::const_iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-                        if (Function::argsMatch(scope, i->second->argDef->next(), argStart->next(), emptyString, 0)) {
+                        if (Function::argsMatch(scope, i->second->argDef, argStart, emptyString, 0)) {
                             newFunc = false;
                             break;
                         }
@@ -1856,23 +1856,25 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     if (!isCPP) // C does not support overloads
         return true;
 
-    // skip "struct"
-    if (first->str() == "struct" || first->str() == "enum")
-        first = first->next();
-    if (second->str() == "struct" || second->str() == "enum")
-        second = second->next();
-
-    // skip const on type passed by value
-    if (Token::Match(first, "const %type% %name%|,|)"))
-        first = first->next();
-    if (Token::Match(second, "const %type% %name%|,|)"))
-        second = second->next();
-
     unsigned int arg_path_length = path_length;
 
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
+
+        // skip optional type information
+        if (Token::Match(first->next(), "struct|enum|union|class"))
+            first = first->next();
+        if (Token::Match(second->next(), "struct|enum|union|class"))
+            second = second->next();
+
+        // skip const on type passed by value
+        if (Token::Match(first->next(), "const %type% %name%|,|)") &&
+            !Token::Match(first->next(), "const %type% %name%| ["))
+            first = first->next();
+        if (Token::Match(second->next(), "const %type% %name%|,|)") &&
+            !Token::Match(second->next(), "const %type% %name%| ["))
+            second = second->next();
 
         // at end of argument list
         if (first->str() == ")") {
@@ -2028,20 +2030,6 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         // reset path length
         if (first->str() == "," || second->str() == ",")
             arg_path_length = path_length;
-
-        // skip "struct"
-        if (first->str() == "struct" || first->str() == "enum")
-            first = first->next();
-        if (second->str() == "struct" || second->str() == "enum")
-            second = second->next();
-
-        // skip const on type passed by value
-        if (Token::Match(first, "const %type% %name%|,|)") &&
-            !Token::Match(first, "const %type% %name%| ["))
-            first = first->next();
-        if (Token::Match(second, "const %type% %name%|,|)") &&
-            !Token::Match(second, "const %type% %name%| ["))
-            second = second->next();
     }
 
     return false;
@@ -2063,7 +2051,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
         const Function *f = i->second;
         if (f->hasBody())
             continue;
-        if (Function::argsMatch(scope, f->argDef->next(), argStart->next(), emptyString, 0)) {
+        if (Function::argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
             function = const_cast<Function *>(i->second);
             break;
         }
@@ -4734,7 +4722,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
     for (std::multimap<std::string, const Function *>::const_iterator it = ns->functionMap.find(func->str());
          it != ns->functionMap.end() && it->first == func->str(); ++it) {
 
-        if (Function::argsMatch(ns, it->second->argDef->next(), func->tokAt(2), path, path_length) &&
+        if (Function::argsMatch(ns, it->second->argDef, func->next(), path, path_length) &&
             it->second->isDestructor() == destructor) {
             function = it->second;
             break;

@@ -1,70 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar ns=""
-         xmlns="http://relaxng.org/ns/structure/1.0"
-         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
-	<start>
-		<element name="results">
-			<attribute name="version">
-				<data type="integer"/>
-			</attribute>
-			<element name="cppcheck">
-				<attribute name="version">
-					<data type="string"/>
-				</attribute>
-			</element>
-			<element name="errors">
-				<zeroOrMore>
-					<element name="error">
-						<optional>
-							<attribute name="cwe">
-								<data type="integer"/>
-							</attribute>
-						</optional>
-						<attribute name="id">
-							<data type="NCName"/>
-						</attribute>
-						<optional>
-							<attribute name="inconclusive">
-								<data type="boolean"/>
-							</attribute>
-						</optional>
-						<attribute name="msg">
-							<data type="string"/>
-						</attribute>
-						<attribute name="severity">
-							<data type="NCName"/>
-						</attribute>
-						<attribute name="verbose">
-							<data type="string"/>
-						</attribute>
-						<zeroOrMore>
-							<element name="location">
-								<optional>
-									<attribute name="file0">
-										<data type="string"/>
-									</attribute>
-								</optional>
-								<attribute name="file">
-									<data type="string"/>
-								</attribute>
-								<attribute name="line">
-									<data type="integer"/>
-								</attribute>
-								<optional>
-									<attribute name="info">
-										<data type="string"/>
-									</attribute>
-								</optional>
-							</element>
-						</zeroOrMore>
-						<zeroOrMore>
-							<element name="symbol">
-								<data type="string"/>
-							</element>
-						</zeroOrMore>
-					</element>
-				</zeroOrMore>
-			</element>
-		</element>
-	</start>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" ns="" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <element name="results">
+      <attribute name="version">
+        <data type="integer"/>
+      </attribute>
+      <element name="cppcheck">
+        <attribute name="version">
+          <data type="string"/>
+        </attribute>
+      </element>
+      <element name="errors">
+        <zeroOrMore>
+          <element name="error">
+            <optional>
+              <attribute name="cwe">
+                <data type="integer"/>
+              </attribute>
+            </optional>
+            <attribute name="id">
+              <data type="NCName"/>
+            </attribute>
+            <optional>
+              <attribute name="inconclusive">
+                <data type="boolean"/>
+              </attribute>
+            </optional>
+            <attribute name="msg">
+              <data type="string"/>
+            </attribute>
+            <attribute name="severity">
+              <data type="NCName"/>
+            </attribute>
+            <attribute name="verbose">
+              <data type="string"/>
+            </attribute>
+            <zeroOrMore>
+              <element name="location">
+                <optional>
+                  <attribute name="file0">
+                    <data type="string"/>
+                  </attribute>
+                </optional>
+                <attribute name="file">
+                  <data type="string"/>
+                </attribute>
+                <attribute name="line">
+                  <data type="integer"/>
+                </attribute>
+                <optional>
+                  <attribute name="info">
+                    <data type="string"/>
+                  </attribute>
+                </optional>
+              </element>
+            </zeroOrMore>
+            <zeroOrMore>
+              <element name="symbol">
+                <data type="string"/>
+              </element>
+            </zeroOrMore>
+          </element>
+        </zeroOrMore>
+      </element>
+    </element>
+  </start>
 </grammar>

@@ -950,10 +950,6 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
 
 void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
 {
-    //TODO: Find a solution for the first token on the list
-    if (prepend && !this->previous())
-        return;
-
     Token *newToken;
     if (mStr.empty())
         newToken = this;
@@ -969,12 +965,12 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
         newToken->mProgressValue = mProgressValue;
 
         if (prepend) {
-            /*if (this->previous())*/ {
+            if (this->previous()) {
                 newToken->previous(this->previous());
                 newToken->previous()->next(newToken);
-            } /*else if (tokensFront?) {
-              *tokensFront? = newToken;
-              }*/
+            } else if (mTokensFrontBack) {
+                mTokensFrontBack->front = newToken;
+            }
             this->previous(newToken);
             newToken->next(this);
         } else {

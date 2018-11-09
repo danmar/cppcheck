@@ -17,28 +17,27 @@ if [[ "$DETECTED_VERSION" != ${ASTYLE_VERSION}* ]]; then
     exit 1;
 fi
 
-style="--style=kr --indent=spaces=4 --indent-namespaces --lineend=linux --min-conditional-indent=0"
-options="--options=none --pad-header --unpad-paren --suffix=none --convert-tabs --attach-inlines --attach-classes --attach-namespaces"
+RCFILE=.astylerc
 
-$ASTYLE $style $options cli/*.cpp
-$ASTYLE $style $options cli/*.h
-$ASTYLE $style $options democlient/*.cpp
-$ASTYLE $style $options gui/*.cpp
-$ASTYLE $style $options gui/*.h
-$ASTYLE $style $options -r gui/test/*.cpp
-$ASTYLE $style $options -r gui/test/*.h
-$ASTYLE $style $options lib/*.cpp
-$ASTYLE $style $options lib/*.h
-$ASTYLE $style $options test/*.cpp
-$ASTYLE $style $options test/cfg/*.c
-$ASTYLE $style $options test/cfg/*.cpp
-$ASTYLE $style $options test/*.h
+$ASTYLE --options=$RCFILE cli/*.cpp
+$ASTYLE --options=$RCFILE cli/*.h
+$ASTYLE --options=$RCFILE democlient/*.cpp
+$ASTYLE --options=$RCFILE gui/*.cpp
+$ASTYLE --options=$RCFILE gui/*.h
+$ASTYLE --options=$RCFILE -r gui/test/*.cpp
+$ASTYLE --options=$RCFILE -r gui/test/*.h
+$ASTYLE --options=$RCFILE lib/*.cpp
+$ASTYLE --options=$RCFILE lib/*.h
+$ASTYLE --options=$RCFILE test/*.cpp
+$ASTYLE --options=$RCFILE test/cfg/*.c
+$ASTYLE --options=$RCFILE test/cfg/*.cpp
+$ASTYLE --options=$RCFILE test/*.h
 
-$ASTYLE $style $options --recursive "tools/*.cpp"
-$ASTYLE $style $options --recursive "tools/*.h"
+$ASTYLE --options=$RCFILE --recursive "tools/*.cpp"
+$ASTYLE --options=$RCFILE --recursive "tools/*.h"
 
-$ASTYLE $style $options --recursive "samples/*.c"
-$ASTYLE $style $options --recursive "samples/*.cpp"
+$ASTYLE --options=$RCFILE --recursive "samples/*.c"
+$ASTYLE --options=$RCFILE --recursive "samples/*.cpp"
 
 # Convert tabs to spaces.. even in strings
 # sed -i "s/\t/ /g" test/test*.cpp
@@ -58,3 +57,6 @@ done
 
 xmllint --format -o man/cppcheck.1.xml_ man/cppcheck.1.xml 
 mv -f man/cppcheck.1.xml_ man/cppcheck.1.xml
+
+xmllint --format -o cppcheck-errors_.rng cppcheck-errors.rng
+mv cppcheck-errors_.rng cppcheck-errors.rng
