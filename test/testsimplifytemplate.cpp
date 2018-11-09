@@ -130,6 +130,7 @@ private:
         TEST_CASE(template_namespace_8);
         TEST_CASE(template_namespace_9);
         TEST_CASE(template_namespace_10);
+        TEST_CASE(template_namespace_11); // #7145
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -1972,6 +1973,34 @@ private:
                       "public: "
                       "Fred<int> ( ) : t ( nullptr ) { } "
                       "} ;", tok(code));
+    }
+
+    void template_namespace_11() {// #7145
+        const char code[] = "namespace MyNamespace {\n"
+                            "class TestClass {\n"
+                            "public:\n"
+                            "    TestClass() {\n"
+                            "        SomeFunction();\n"
+                            "        TemplatedMethod< int >();\n"
+                            "    }\n"
+                            "    void SomeFunction() { }\n"
+                            "private:\n"
+                            "    template< typename T > void TemplatedMethod();\n"
+                            "};\n"
+                            "template< typename T > void TestClass::TemplatedMethod() { }\n"
+                            "}";
+        ASSERT_EQUALS("namespace MyNamespace { "
+                      "class TestClass { "
+                      "public: "
+                      "TestClass ( ) { "
+                      "SomeFunction ( ) ; "
+                      "TemplatedMethod<int> ( ) ; "
+                      "} "
+                      "void SomeFunction ( ) { } "
+                      "private: "
+                      "template < typename T > void TemplatedMethod ( ) ; "
+                      "} ; "
+                      "} void MyNamespace :: TestClass :: TemplatedMethod<int> ( ) { }", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {

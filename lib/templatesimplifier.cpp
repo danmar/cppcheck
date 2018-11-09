@@ -961,15 +961,33 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok, bool forward)
 
 void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, const Token *tok)
 {
+    // find start of qualification
+    const Token * tokStart = tok;
+    int offset = 0;
+    while (Token::Match(tokStart->tokAt(-2), "%name% ::")) {
+        tokStart = tokStart->tokAt(-2);
+        offset -= 2;
+    }
+    // decide if namespace needs to be inserted in or appended to token list
+    const bool insert = tokStart != tok;
+
     std::string::size_type start = 0;
     std::string::size_type end = 0;
     while ((end = templateDeclaration.scope.find(" ", start)) != std::string::npos) {
         std::string token = templateDeclaration.scope.substr(start, end - start);
-        mTokenList.addtoken(token, tok->linenr(), tok->fileIndex());
+        if (insert)
+            mTokenList.back()->tokAt(offset)->insertToken(token, "");
+        else
+            mTokenList.addtoken(token, tok->linenr(), tok->fileIndex());
         start = end + 1;
     }
-    mTokenList.addtoken(templateDeclaration.scope.substr(start), tok->linenr(), tok->fileIndex());
-    mTokenList.addtoken("::", tok->linenr(), tok->fileIndex());
+    if (insert) {
+        mTokenList.back()->tokAt(offset)->insertToken(templateDeclaration.scope.substr(start), "");
+        mTokenList.back()->tokAt(offset)->insertToken("::", "");
+    } else {
+        mTokenList.addtoken(templateDeclaration.scope.substr(start), tok->linenr(), tok->fileIndex());
+        mTokenList.addtoken("::", tok->linenr(), tok->fileIndex());
+    }
 }
 
 bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclaration, const Token *tok) const
