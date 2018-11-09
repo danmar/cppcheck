@@ -1862,10 +1862,10 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
 
-        // skip "struct"
-        if (first->strAt(1) == "struct" || first->strAt(1) == "enum")
+        // skip optional type information
+        if (Token::Match(first->next(), "struct|enum|union|class"))
             first = first->next();
-        if (second->strAt(1) == "struct" || second->strAt(1) == "enum")
+        if (Token::Match(second->next(), "struct|enum|union|class"))
             second = second->next();
 
         // skip const on type passed by value
