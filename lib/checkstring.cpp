@@ -169,7 +169,7 @@ void CheckString::checkSuspiciousStringCompare()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->tokType() != Token::eComparisonOp)
+            if (!tok->isComparisonOp())
                 continue;
 
             const Token* varTok = tok->astOperand1();

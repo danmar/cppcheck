@@ -1194,7 +1194,7 @@ void CheckCondition::clarifyCondition()
                 for (const Token *tok2 = tok->tokAt(3); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "[")
                         tok2 = tok2->link();
-                    else if (tok2->tokType() == Token::eComparisonOp) {
+                    else if (tok2->isComparisonOp()) {
                         // This might be a template
                         if (!isC && tok2->link())
                             break;
