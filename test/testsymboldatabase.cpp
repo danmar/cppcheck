@@ -3103,6 +3103,17 @@ private:
                       "}");
         ASSERT(db != nullptr);
         ASSERT(db && db->scopeList.size() == 5);
+        if (db && db->scopeList.size() == 5) {
+            const Scope *scope = db->findScopeByName("A");
+            ASSERT(scope != nullptr);
+            if (scope) {
+                const Function *function = findFunctionByName("Foo", scope);
+                ASSERT(function != nullptr);
+                if (function) {
+                    ASSERT(function->hasBody());
+                }
+            }
+        }
     }
 
     void symboldatabase63() {
