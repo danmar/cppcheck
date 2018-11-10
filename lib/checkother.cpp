@@ -619,8 +619,11 @@ void CheckOther::checkRedundantAssignment()
                             if (printWarning && scope.type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, eq->astOperand1()->expressionString());
                             else if (printStyle) {
-                                // c++, unknown type => assignment might have additional side effects
-                                const bool possibleSideEffects(mTokenizer->isCPP() && !tok->valueType());
+                                // c++ and (unknown type or overloaded assignment operator) => assignment might have additional side effects
+                                const bool possibleSideEffects = mTokenizer->isCPP() &&
+                                                                 (!tok->valueType() ||
+                                                                  (tok->valueType()->typeScope &&
+                                                                   tok->valueType()->typeScope->functionMap.count("operator=")));
 
                                 // TODO nonlocal variables are not tracked entirely.
                                 const bool nonlocal = it->second->variable() && nonLocalVolatile(it->second->variable());

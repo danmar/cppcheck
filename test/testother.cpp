@@ -5993,6 +5993,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used if variable is no semaphore variable.\n",
                       errout.str());
 
+        check("class C { void operator=(int x); };\n" // #8368 - assignment operator might have side effects => inconclusive
+              "void f() {\n"
+              "    C c;\n"
+              "    c = x;\n"
+              "    c = x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Variable 'c' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
     }
 
     void redundantVarAssignment_stackoverflow() {
