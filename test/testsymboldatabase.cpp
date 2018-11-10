@@ -294,6 +294,7 @@ private:
         TEST_CASE(symboldatabase71);
         TEST_CASE(symboldatabase72); // #8600
         TEST_CASE(symboldatabase73); // #8603
+        TEST_CASE(symboldatabase74); // #8838 - final
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4133,6 +4134,17 @@ private:
         ASSERT_EQUALS(3, f2->bodyStart->linenr());
         ASSERT_EQUALS(3, f2->bodyEnd->linenr());
         ASSERT_EQUALS(3, f2->function->token->linenr());
+    }
+
+    void symboldatabase74() { // #8838 - final
+        GET_SYMBOL_DB("class Base { virtual int f() const = 0; };\n"
+                      "class Derived : Base { virtual int f() const final { return 6; } };");
+
+        ASSERT_EQUALS(4, db->scopeList.size());
+        ASSERT_EQUALS(1, db->functionScopes.size());
+
+        const Scope *f1 = db->functionScopes[0];
+        ASSERT(f1->function->hasFinalSpecifier());
     }
 
     void createSymbolDatabaseFindAllScopes1() {

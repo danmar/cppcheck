@@ -9060,7 +9060,7 @@ static const std::set<std::string> keywords = {
     , "__restrict__"
     , "__thread"
 };
-// Remove "inline", "register", "restrict", "override", "final", "static" and "constexpr"
+// Remove "inline", "register", "restrict", "override", "static" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
 //   - Not in C++ standard yet
@@ -9110,7 +9110,7 @@ void Tokenizer::simplifyKeyword()
 
             // final:
             // 1) struct name final { };   <- struct is final
-            if (Token::Match(tok, "%type% final [:{]")) {
+            if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {
                 tok->deleteNext();
             }
 
