@@ -362,7 +362,7 @@ struct AST_state {
     unsigned int inArrayAssignment;
     bool cpp;
     unsigned int assign;
-    bool inCase;
+    bool inCase; // true from case to :
     explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_), assign(0U), inCase(false) {}
 };
 
@@ -563,8 +563,10 @@ static void compileTerm(Token *&tok, AST_state& state)
                 state.inCase = true;
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
-            if (state.inCase && Token::simpleMatch(tok, ": ;"))
+            if (state.inCase && Token::simpleMatch(tok, ": ;")) {
+                state.inCase = false;
                 tok = tok->next();
+            }
         } else if (Token::Match(tok, "sizeof !!(")) {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
@@ -967,8 +969,11 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
             compileBinOp(tok, state, compileAssignTernary);
             state.assign = assign;
         } else if (tok->str() == ":") {
-            if (state.depth == 1U && state.inCase)
+            if (state.depth == 1U && state.inCase) {
+                state.inCase = false;
+                tok = tok->next();
                 break;
+            }
             if (state.assign > 0U)
                 break;
             compileBinOp(tok, state, compileAssignTernary);
