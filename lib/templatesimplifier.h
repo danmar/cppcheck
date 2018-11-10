@@ -123,11 +123,9 @@ public:
 private:
     /**
      * Get template declarations
-     * @param codeWithTemplates set to true if code has templates
-     * @param forward declaration or forward declaration
-     * @return list of template declarations
+     * @return true if code has templates.
      */
-    std::list<TokenAndName> getTemplateDeclarations(bool &codeWithTemplates, bool forward = false);
+    bool getTemplateDeclarations();
 
     /**
      * Get template instantiations
@@ -264,6 +262,7 @@ private:
     ErrorLogger *mErrorLogger;
 
     std::list<TokenAndName> mTemplateDeclarations;
+    std::list<TokenAndName> mTemplateForwardDeclarations;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
