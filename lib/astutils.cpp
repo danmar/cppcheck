@@ -136,11 +136,31 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+static bool hasToken(const Token * startTok, const Token * stopTok, const Token * tok)
+{
+    for(const Token * tok2 = startTok;tok2 != stopTok;tok2 = tok2->next()) {
+        if(tok2 == tok)
+            return true;
+    }
+    return false;
+}
+
 const Token * nextAfterAstRightmostLeaf(const Token * tok)
 {
-    if (!tok || !tok->astOperand1())
+    const Token * rightmostLeaf = tok;
+    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
         return nullptr;
-    return tok->findExpressionStartEndTokens().second->next();
+    do {
+        if (rightmostLeaf->astOperand2())
+            rightmostLeaf = rightmostLeaf->astOperand2();
+        else
+            rightmostLeaf = rightmostLeaf->astOperand1();
+    } while (rightmostLeaf->astOperand1());
+    while(Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->next()->link(), rightmostLeaf->next(), tok))
+        rightmostLeaf = rightmostLeaf->next();
+    if(rightmostLeaf->str() == "{" && rightmostLeaf->link())
+        rightmostLeaf = rightmostLeaf->link();
+    return rightmostLeaf->next();
 }
 
 static const Token * getVariableInitExpression(const Variable * var)
@@ -942,6 +962,10 @@ std::vector<const Token *> getArguments(const Token *ftok)
 const Token *findLambdaEndToken(const Token *first)
 {
     if (!first || first->str() != "[")
+        return nullptr;
+    if(!Token::Match(first->link(), "] (|{"))
+        return nullptr;
+    if(first->astOperand1() != first->link()->next())
         return nullptr;
     const Token * tok = first;
 
