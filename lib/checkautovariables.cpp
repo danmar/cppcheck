@@ -590,23 +590,23 @@ void CheckAutoVariables::returnReference()
 
 static bool isInScope(const Token * tok, const Scope * scope)
 {
-    if(!tok)
+    if (!tok)
         return false;
-    if(!scope)
+    if (!scope)
         return false;
     const Variable * var = tok->variable();
-    if(var && (var->isGlobal() || var->isStatic() || var->isExtern()))
+    if (var && (var->isGlobal() || var->isStatic() || var->isExtern()))
         return false;
-    if(tok->scope() && tok->scope()->isNestedIn(scope))
+    if (tok->scope() && tok->scope()->isNestedIn(scope))
         return true;
-    if(!var)
+    if (!var)
         return false;
-    if(var->isArgument() && !var->isReference()) {
+    if (var->isArgument() && !var->isReference()) {
         const Scope * tokScope = tok->scope();
-        if(!tokScope)
+        if (!tokScope)
             return false;
-        for(const Scope * argScope:tokScope->nestedList) {
-            if(argScope && argScope->isNestedIn(scope))
+        for (const Scope * argScope:tokScope->nestedList) {
+            if (argScope && argScope->isNestedIn(scope))
                 return true;
         }
     }
@@ -615,27 +615,27 @@ static bool isInScope(const Token * tok, const Scope * scope)
 
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
-    if(!start)
+    if (!start)
         return;
     const Scope * scope = start->scope();
-    if(!scope)
+    if (!scope)
         return;
     // If the scope is not set correctly then skip checking it
-    if(scope->bodyStart != start)
+    if (scope->bodyStart != start)
         return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Skip duplicate warning from dangling references
-        if(Token::Match(tok, "& %var%"))
+        if (Token::Match(tok, "& %var%"))
             continue;
-        if(tok->variable() && tok->variable()->isPointer())
+        if (tok->variable() && tok->variable()->isPointer())
             continue;
-        if(std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue)))
+        if (std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue)))
             continue;
 
-        for(const ValueFlow::Value& val:tok->values()) {
-            if(!val.isLifetimeValue())
+        for (const ValueFlow::Value& val:tok->values()) {
+            if (!val.isLifetimeValue())
                 continue;
-            if(Token::Match(tok->astParent(), "return|throw")) {
+            if (Token::Match(tok->astParent(), "return|throw")) {
                 if (isInScope(val.tokvalue, scope)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
@@ -643,7 +643,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             }
         }
         const Token *lambdaEndToken = findLambdaEndToken(tok);
-        if(lambdaEndToken) {
+        if (lambdaEndToken) {
             checkVarLifetimeScope(lambdaEndToken->link(), lambdaEndToken);
             tok = lambdaEndToken;
         }
@@ -669,31 +669,31 @@ void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Val
     const Token *vartok = val->tokvalue;
     ErrorPath errorPath = val->errorPath;
     std::string msg = "";
-    switch(val->lifetimeKind) {
-        case ValueFlow::Value::Object:
-            msg = "Returning object";
-            break;
-        case ValueFlow::Value::Lambda:
-            msg = "Returning lambda";
-            break;
-        case ValueFlow::Value::Iterator:
-            msg = "Returning iterator";
-            break;
+    switch (val->lifetimeKind) {
+    case ValueFlow::Value::Object:
+        msg = "Returning object";
+        break;
+    case ValueFlow::Value::Lambda:
+        msg = "Returning lambda";
+        break;
+    case ValueFlow::Value::Iterator:
+        msg = "Returning iterator";
+        break;
     }
-    if(vartok) {
+    if (vartok) {
         errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
-        if(var) {
-            switch(val->lifetimeKind) {
-                case ValueFlow::Value::Object:
-                    msg += " that points to local variable";
-                    break;
-                case ValueFlow::Value::Lambda:
-                    msg += " that captures local variable";
-                    break;
-                case ValueFlow::Value::Iterator:
-                    msg += " to local container";
-                    break;
+        if (var) {
+            switch (val->lifetimeKind) {
+            case ValueFlow::Value::Object:
+                msg += " that points to local variable";
+                break;
+            case ValueFlow::Value::Lambda:
+                msg += " that captures local variable";
+                break;
+            case ValueFlow::Value::Iterator:
+                msg += " to local container";
+                break;
             }
             msg += " '" + var->name() + "'";
         }

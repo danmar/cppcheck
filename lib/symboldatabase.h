@@ -959,16 +959,15 @@ public:
         return nullptr;
     }
 
-    bool isNestedIn(const Scope * outer) const
-    {
-        if(!outer)
+    bool isNestedIn(const Scope * outer) const {
+        if (!outer)
             return false;
-        if(outer == this)
+        if (outer == this)
             return true;
         const Scope * parent = nestedIn;
-        while(outer != parent && parent)
+        while (outer != parent && parent)
             parent = parent->nestedIn;
-        if(parent && parent == outer)
+        if (parent && parent == outer)
             return true;
         return false;
     }

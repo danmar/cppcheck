@@ -135,7 +135,7 @@ namespace ValueFlow {
 
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
-        
+
         enum LifetimeKind {Object, Lambda, Iterator} lifetimeKind;
 
         static const char * toString(MoveKind moveKind) {

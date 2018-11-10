@@ -138,8 +138,8 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 static bool hasToken(const Token * startTok, const Token * stopTok, const Token * tok)
 {
-    for(const Token * tok2 = startTok;tok2 != stopTok;tok2 = tok2->next()) {
-        if(tok2 == tok)
+    for (const Token * tok2 = startTok; tok2 != stopTok; tok2 = tok2->next()) {
+        if (tok2 == tok)
             return true;
     }
     return false;
@@ -156,9 +156,9 @@ const Token * nextAfterAstRightmostLeaf(const Token * tok)
         else
             rightmostLeaf = rightmostLeaf->astOperand1();
     } while (rightmostLeaf->astOperand1());
-    while(Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->next()->link(), rightmostLeaf->next(), tok))
+    while (Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->next()->link(), rightmostLeaf->next(), tok))
         rightmostLeaf = rightmostLeaf->next();
-    if(rightmostLeaf->str() == "{" && rightmostLeaf->link())
+    if (rightmostLeaf->str() == "{" && rightmostLeaf->link())
         rightmostLeaf = rightmostLeaf->link();
     return rightmostLeaf->next();
 }
@@ -963,9 +963,9 @@ const Token *findLambdaEndToken(const Token *first)
 {
     if (!first || first->str() != "[")
         return nullptr;
-    if(!Token::Match(first->link(), "] (|{"))
+    if (!Token::Match(first->link(), "] (|{"))
         return nullptr;
-    if(first->astOperand1() != first->link()->next())
+    if (first->astOperand1() != first->link()->next())
         return nullptr;
     const Token * tok = first;
 

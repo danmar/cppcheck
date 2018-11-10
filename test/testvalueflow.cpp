@@ -343,7 +343,7 @@ private:
         ASSERT_EQUALS(true, tokenValues(code, "&").empty());
         ASSERT_EQUALS(true, tokenValues(code, "x [").empty());
     }
-    
+
     void valueFlowLifetime() {
         const char *code;
 
