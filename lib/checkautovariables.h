@@ -93,6 +93,7 @@ private:
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
+    void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);

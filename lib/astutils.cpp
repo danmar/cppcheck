@@ -178,7 +178,7 @@ static bool isInLoopCondition(const Token * tok)
 }
 
 /// If tok2 comes after tok1
-static bool precedes(const Token * tok1, const Token * tok2)
+bool precedes(const Token * tok1, const Token * tok2)
 {
     if (!tok1)
         return false;
