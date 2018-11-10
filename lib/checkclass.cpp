@@ -764,7 +764,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             else {
                 assignAllVar(usage);
             }
-        } else if (Token::Match(ftok, "::| %name% (") && ftok->str() != "if") {
+        } else if (Token::Match(ftok, "::| %name% (") && !Token::Match(ftok, "if|while|for")) {
             if (ftok->str() == "::")
                 ftok = ftok->next();
 
@@ -1345,7 +1345,7 @@ void CheckClass::operatorEqRetRefThis()
         for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure return signature is correct
-                if (Token::Match(func->retDef, "%type% &") && func->retDef->str() == scope->className) {
+                if (func->retType == func->nestedIn->definedType && func->tokenDef->strAt(-1) == "&") {
                     checkReturnPtrThis(scope, &(*func), func->functionScope->bodyStart, func->functionScope->bodyEnd);
                 }
             }
@@ -1773,19 +1773,19 @@ void CheckClass::checkConst()
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (const Function &func : scope->functionList) {
             // does the function have a body?
-            if (func->type != Function::eFunction || !func->hasBody())
+            if (func.type != Function::eFunction || !func.hasBody())
                 continue;
             // don't warn for friend/static/virtual methods
-            if (func->isFriend() || func->isStatic() || func->isVirtual())
+            if (func.isFriend() || func.isStatic() || func.isVirtual())
                 continue;
             // get last token of return type
-            const Token *previous = func->tokenDef->previous();
+            const Token *previous = func.tokenDef->previous();
 
             // does the function return a pointer or reference?
             if (Token::Match(previous, "*|&")) {
-                if (func->retDef->str() != "const")
+                if (func.retDef->str() != "const")
                     continue;
             } else if (Token::Match(previous->previous(), "*|& >")) {
                 const Token *temp = previous->previous();
@@ -1801,11 +1801,11 @@ void CheckClass::checkConst()
 
                 if (!foundConst)
                     continue;
-            } else if (func->isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
-                const std::string& opName = func->tokenDef->str();
+            } else if (func.isOperator() && Token::Match(previous, ";|{|}|public:|private:|protected:")) { // Operator without return type: conversion operator
+                const std::string& opName = func.tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
-            } else if (Token::simpleMatch(func->retDef, "std :: shared_ptr <")) {
+            } else if (Token::simpleMatch(func.retDef, "std :: shared_ptr <")) {
                 // Don't warn if a std::shared_ptr is returned
                 continue;
             } else {
@@ -1816,15 +1816,15 @@ void CheckClass::checkConst()
             }
 
             // check if base class function is virtual
-            if (!scope->definedType->derivedFrom.empty() && func->isImplicitlyVirtual(true))
+            if (!scope->definedType->derivedFrom.empty() && func.isImplicitlyVirtual(true))
                 continue;
 
             bool memberAccessed = false;
             // if nothing non-const was found. write error..
-            if (!checkConstFunc(scope, &*func, memberAccessed))
+            if (!checkConstFunc(scope, &func, memberAccessed))
                 continue;
 
-            if (func->isConst() && (memberAccessed || func->isOperator()))
+            if (func.isConst() && (memberAccessed || func.isOperator()))
                 continue;
 
             std::string classname = scope->className;
@@ -1835,17 +1835,17 @@ void CheckClass::checkConst()
             }
 
             // get function name
-            std::string functionName = (func->tokenDef->isName() ? "" : "operator") + func->tokenDef->str();
+            std::string functionName = (func.tokenDef->isName() ? "" : "operator") + func.tokenDef->str();
 
-            if (func->tokenDef->str() == "(")
+            if (func.tokenDef->str() == "(")
                 functionName += ")";
-            else if (func->tokenDef->str() == "[")
+            else if (func.tokenDef->str() == "[")
                 functionName += "]";
 
-            if (func->isInline())
-                checkConstError(func->token, classname, functionName, !memberAccessed && !func->isOperator());
+            if (func.isInline())
+                checkConstError(func.token, classname, functionName, !memberAccessed && !func.isOperator());
             else // not inline
-                checkConstError2(func->token, func->tokenDef, classname, functionName, !memberAccessed && !func->isOperator());
+                checkConstError2(func.token, func.tokenDef, classname, functionName, !memberAccessed && !func.isOperator());
         }
     }
 }
@@ -1988,7 +1988,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             const Token* lhs = tok1->previous();
             if (lhs->str() == "&") {
                 lhs = lhs->previous();
-                if (lhs->tokType() == Token::eAssignmentOp && lhs->previous()->variable()) {
+                if (lhs->isAssignmentOp() && lhs->previous()->variable()) {
                     if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
                         return false;
                 }
@@ -1997,7 +1997,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 if (lhs->astParent()->strAt(1) != "const")
                     return false;
             } else {
-                if (lhs->tokType() == Token::eAssignmentOp) {
+                if (lhs->isAssignmentOp()) {
                     const Variable* lhsVar = lhs->previous()->variable();
                     if (lhsVar && !lhsVar->isConst() && lhsVar->isReference() && lhs == lhsVar->nameToken()->next())
                         return false;
@@ -2039,7 +2039,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             }
 
             // Assignment
-            else if (end->next()->tokType() == Token::eAssignmentOp)
+            else if (end->next()->isAssignmentOp())
                 return false;
 
             // Streaming
@@ -2071,6 +2071,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
         }
 
+        // streaming: >> *this
+        else if (Token::simpleMatch(tok1, ">> * this") && isLikelyStreamRead(true, tok1)) {
+            return false;
+        }
 
         // function call..
         else if (Token::Match(tok1, "%name% (") && !tok1->isStandardType() &&

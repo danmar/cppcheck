@@ -118,6 +118,9 @@ public:
     void checkPointerAdditionResultNotNull();
 
 private:
+    // The conditions that have been diagnosed
+    std::set<const Token*> mCondDiags;
+    bool diag(const Token* tok, bool insert=true);
     bool isAliased(const std::set<unsigned int> &vars) const;
     bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
@@ -137,7 +140,7 @@ private:
 
     void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2, ErrorPath errorPath);
 
-    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive);
+    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive, ErrorPath errors);
     void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
 
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
@@ -162,7 +165,7 @@ private:
         c.oppositeInnerConditionError(nullptr, nullptr, errorPath);
         c.identicalInnerConditionError(nullptr, nullptr, errorPath);
         c.identicalConditionAfterEarlyExitError(nullptr, nullptr, errorPath);
-        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false);
+        c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false, errorPath);
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
         c.clarifyConditionError(nullptr, true, false);

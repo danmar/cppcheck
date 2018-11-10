@@ -22,6 +22,7 @@
 #include "suppressions.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
+#include "path.h"
 
 #include <cstddef>
 #include <list>
@@ -46,6 +47,7 @@ private:
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
+        TEST_CASE(suppressionsLine0);
 
         TEST_CASE(inlinesuppress);
         TEST_CASE(inlinesuppress_symbolname);
@@ -219,7 +221,7 @@ private:
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
             executor.addFileContent(i->first, code);
 
-        unsigned int exitCode = executor.check();
+        const unsigned int exitCode = executor.check();
 
         std::map<std::string, std::string> files_for_report;
         for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)
@@ -403,6 +405,12 @@ private:
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
     }
 
+    void suppressionsLine0() {
+        Suppressions suppressions;
+        suppressions.addSuppressionLine("syntaxError:*:0");
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("syntaxError", "test.cpp", 0)));
+    }
+
     void inlinesuppress() {
         Suppressions::Suppression s;
         std::string msg;
@@ -439,13 +447,13 @@ private:
 
     void inlinesuppress_comment() {
         Suppressions::Suppression s;
-        std::string errmsg;
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errmsg));
-        ASSERT_EQUALS("", errmsg);
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc // some comment", &errmsg));
-        ASSERT_EQUALS("", errmsg);
-        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errmsg));
-        ASSERT_EQUALS("", errmsg);
+        std::string errMsg;
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc // some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errMsg));
+        ASSERT_EQUALS("", errMsg);
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)

@@ -64,6 +64,8 @@ private:
 
         // Converting pointer addition result to bool
         TEST_CASE(pointerArithBool1);
+
+        TEST_CASE(returnNonBool);
     }
 
     void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
@@ -1007,6 +1009,103 @@ private:
               "    if (p+2 || p) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+    }
+
+    void returnNonBool() {
+        check("bool f(void) {\n"
+              "    return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "    return 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "    return 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "    return -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "    return 1 + 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "    int x = 0;\n"
+              "    return x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "    int x = 10;\n"
+              "    return x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "    return 2 < 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "    int ret = 0;\n"
+              "    if (a)\n"
+              "        ret = 1;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "    int ret = 0;\n"
+              "    if (a)\n"
+              "        ret = 3;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "    if (a)\n"
+              "        return 3;\n"
+              "    return 4;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n"
+                      "[test.cpp:4]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "auto x = [](void) { return -1; };\n"
+              "return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "auto x = [](void) { return -1; };\n"
+              "return 2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(void) {\n"
+              "auto x = [](void) -> int { return -1; };\n"
+              "return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(void) {\n"
+              "auto x = [](void) -> int { return -1; };\n"
+              "return 2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
     }
 };
 

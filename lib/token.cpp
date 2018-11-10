@@ -878,6 +878,38 @@ Token * Token::findClosingBracket()
     return const_cast<Token*>(const_cast<const Token*>(this)->findClosingBracket());
 }
 
+const Token * Token::findOpeningBracket() const
+{
+    if (mStr != ">")
+        return nullptr;
+
+    const Token *opening = nullptr;
+
+    unsigned int depth = 0;
+    for (opening = this; opening != nullptr; opening = opening->previous()) {
+        if (Token::Match(opening, "}|]|)")) {
+            opening = opening->link();
+            if (!opening)
+                return nullptr;
+        } else if (Token::Match(opening, "{|{|(|;"))
+            return nullptr;
+        else if (opening->str() == ">")
+            ++depth;
+        else if (opening->str() == "<") {
+            if (--depth == 0)
+                return opening;
+        }
+    }
+
+    return opening;
+}
+
+Token * Token::findOpeningBracket()
+{
+    // return value of const function
+    return const_cast<Token*>(const_cast<const Token*>(this)->findOpeningBracket());
+}
+
 //---------------------------------------------------------------------------
 
 const Token *Token::findsimplematch(const Token * const startTok, const char pattern[])
@@ -918,10 +950,6 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
 
 void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
 {
-    //TODO: Find a solution for the first token on the list
-    if (prepend && !this->previous())
-        return;
-
     Token *newToken;
     if (mStr.empty())
         newToken = this;
@@ -937,12 +965,12 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
         newToken->mProgressValue = mProgressValue;
 
         if (prepend) {
-            /*if (this->previous())*/ {
+            if (this->previous()) {
                 newToken->previous(this->previous());
                 newToken->previous()->next(newToken);
-            } /*else if (tokensFront?) {
-              *tokensFront? = newToken;
-              }*/
+            } else if (mTokensFrontBack) {
+                mTokensFrontBack->front = newToken;
+            }
             this->previous(newToken);
             newToken->next(this);
         } else {
@@ -1134,6 +1162,62 @@ void Token::astOperand2(Token *tok)
     mAstOperand2 = tok;
 }
 
+static const Token* goToLeftParenthesis(const Token* start, const Token* end)
+{
+    // move start to lpar in such expression: '(*it).x'
+    int par = 0;
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        if (tok->str() == "(")
+            ++par;
+        else if (tok->str() == ")") {
+            if (par == 0)
+                start = tok->link();
+            else
+                --par;
+        }
+    }
+    return start;
+}
+
+static const Token* goToRightParenthesis(const Token* start, const Token* end)
+{
+    // move end to rpar in such expression: '2>(x+1)'
+    int par = 0;
+    for (const Token *tok = end; tok && tok != start; tok = tok->previous()) {
+        if (tok->str() == ")")
+            ++par;
+        else if (tok->str() == "(") {
+            if (par == 0)
+                end = tok->link();
+            else
+                --par;
+        }
+    }
+    return end;
+}
+
+std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() const
+{
+    const Token * const top = this;
+    const Token *start = top;
+    while (start->astOperand1() &&
+           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )") || start->str() == "{"))
+        start = start->astOperand1();
+    const Token *end = top;
+    while (end->astOperand1() && (end->astOperand2() || end->isUnaryPreOp())) {
+        if (Token::Match(end,"(|[") &&
+            !(Token::Match(end, "( %type%") && !end->astOperand2())) {
+            end = end->link();
+            break;
+        }
+        end = end->astOperand2() ? end->astOperand2() : end->astOperand1();
+    }
+
+    start = goToLeftParenthesis(start, end);
+    end = goToRightParenthesis(start, end);
+    return std::pair<const Token *, const Token *>(start,end);
+}
+
 bool Token::isCalculation() const
 {
     if (!Token::Match(this, "%cop%|++|--"))
@@ -1189,40 +1273,6 @@ bool Token::isUnaryPreOp() const
     return false; // <- guess
 }
 
-static const Token* goToLeftParenthesis(const Token* start, const Token* end)
-{
-    // move start to lpar in such expression: '(*it).x'
-    int par = 0;
-    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        if (tok->str() == "(")
-            ++par;
-        else if (tok->str() == ")") {
-            if (par == 0)
-                start = tok->link();
-            else
-                --par;
-        }
-    }
-    return start;
-}
-
-static const Token* goToRightParenthesis(const Token* start, const Token* end)
-{
-    // move end to rpar in such expression: '2>(x+1)'
-    int par = 0;
-    for (const Token *tok = end; tok && tok != start; tok = tok->previous()) {
-        if (tok->str() == ")")
-            ++par;
-        else if (tok->str() == "(") {
-            if (par == 0)
-                end = tok->link();
-            else
-                --par;
-        }
-    }
-    return end;
-}
-
 static std::string stringFromTokenRange(const Token* start, const Token* end)
 {
     std::ostringstream ret;
@@ -1245,25 +1295,8 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
 
 std::string Token::expressionString() const
 {
-    const Token * const top = this;
-    const Token *start = top;
-    while (start->astOperand1() &&
-           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )") || start->str() == "{"))
-        start = start->astOperand1();
-    const Token *end = top;
-    while (end->astOperand1() && (end->astOperand2() || end->isUnaryPreOp())) {
-        if (Token::Match(end,"(|[") &&
-            !(Token::Match(end, "( %type%") && !end->astOperand2())) {
-            end = end->link();
-            break;
-        }
-        end = end->astOperand2() ? end->astOperand2() : end->astOperand1();
-    }
-
-    start = goToLeftParenthesis(start, end);
-    end = goToRightParenthesis(start, end);
-
-    return stringFromTokenRange(start, end);
+    const auto tokens = findExpressionStartEndTokens();
+    return stringFromTokenRange(tokens.first, tokens.second);
 }
 
 static void astStringXml(const Token *tok, std::size_t indent, std::ostream &out)

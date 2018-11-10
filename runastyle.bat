@@ -19,28 +19,27 @@
     GOTO EXIT_ERROR
 )
 
-@SET STYLE=--style=kr --indent=spaces=4 --indent-namespaces --lineend=linux --min-conditional-indent=0
-@SET OPTIONS=--pad-header --unpad-paren --suffix=none --convert-tabs --attach-inlines --attach-classes --attach-namespaces
+@SET RCFILE=.astylerc
 
-%ASTYLE% %STYLE% %OPTIONS% cli/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% cli/*.h
-%ASTYLE% %STYLE% %OPTIONS% democlient/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% gui/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% gui/*.h
-%ASTYLE% %STYLE% %OPTIONS% -r gui/test/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% -r gui/test/*.h
-%ASTYLE% %STYLE% %OPTIONS% lib/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% lib/*.h
-%ASTYLE% %STYLE% %OPTIONS% test/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% test/cfg/*.c
-%ASTYLE% %STYLE% %OPTIONS% test/cfg/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% test/*.h
+%ASTYLE% --options=%RCFILE% cli/*.cpp
+%ASTYLE% --options=%RCFILE% cli/*.h
+%ASTYLE% --options=%RCFILE% democlient/*.cpp
+%ASTYLE% --options=%RCFILE% gui/*.cpp
+%ASTYLE% --options=%RCFILE% gui/*.h
+%ASTYLE% --options=%RCFILE% -r gui/test/*.cpp
+%ASTYLE% --options=%RCFILE% -r gui/test/*.h
+%ASTYLE% --options=%RCFILE% lib/*.cpp
+%ASTYLE% --options=%RCFILE% lib/*.h
+%ASTYLE% --options=%RCFILE% test/*.cpp
+%ASTYLE% --options=%RCFILE% test/cfg/*.c
+%ASTYLE% --options=%RCFILE% test/cfg/*.cpp
+%ASTYLE% --options=%RCFILE% test/*.h
 
-%ASTYLE% %STYLE% %OPTIONS% -r tools/*.cpp
-%ASTYLE% %STYLE% %OPTIONS% -r tools/*.h
+%ASTYLE% --options=%RCFILE% -r tools/*.cpp
+%ASTYLE% --options=%RCFILE% -r tools/*.h
 
-%ASTYLE% %STYLE% %OPTIONS% -r samples/*.c
-%ASTYLE% %STYLE% %OPTIONS% -r samples/*.cpp
+%ASTYLE% --options=%RCFILE% -r samples/*.c
+%ASTYLE% --options=%RCFILE% -r samples/*.cpp
 
 @REM Format configuration files
 @SET XMLLINT=xmllint

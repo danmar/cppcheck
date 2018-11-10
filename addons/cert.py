@@ -194,7 +194,7 @@ def int31(data, platform):
         if token.valueType.sign == 'unsigned':
             found = False
             for value in token.astOperand1.values:
-                if value.intvalue < 0:
+                if value.intvalue and value.intvalue < 0:
                     found = True
                     reportError(
                         token,
@@ -215,7 +215,7 @@ def int31(data, platform):
             minval = 0
             maxval = ((1 << bits) - 1)
         for value in token.astOperand1.values:
-            if value.intvalue < minval or value.intvalue > maxval:
+            if value.intvalue and (value.intvalue < minval or value.intvalue > maxval):
                 destType = ''
                 if token.valueType.sign:
                     destType = token.valueType.sign + ' ' + token.valueType.type

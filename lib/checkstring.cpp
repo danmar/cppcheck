@@ -169,7 +169,7 @@ void CheckString::checkSuspiciousStringCompare()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->tokType() != Token::eComparisonOp)
+            if (!tok->isComparisonOp())
                 continue;
 
             const Token* varTok = tok->astOperand1();
@@ -391,7 +391,7 @@ void CheckString::overlappingStrcmp()
                     if (args1[1]->isLiteral() &&
                         args2[1]->isLiteral() &&
                         args1[1]->str() != args2[1]->str() &&
-                        isSameExpression(mTokenizer->isCPP(), true, args1[0], args2[0], mSettings->library, true))
+                        isSameExpression(mTokenizer->isCPP(), true, args1[0], args2[0], mSettings->library, true, false))
                         overlappingStrcmpError(eq0, ne0);
                 }
             }
@@ -433,7 +433,8 @@ void CheckString::sprintfOverlappingData()
                                                    args[0],
                                                    args[argnr],
                                                    mSettings->library,
-                                                   true);
+                                                   true,
+                                                   false);
                 if (same) {
                     sprintfOverlappingDataError(args[argnr], args[argnr]->expressionString());
                 }

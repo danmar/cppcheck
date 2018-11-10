@@ -605,6 +605,10 @@ public:
 
     void setValueType(const ValueType &valueType);
 
+    AccessControl accessControl() const {
+        return mAccess;
+    }
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;

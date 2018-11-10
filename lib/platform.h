@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <climits>
 #include <string>
 
 /// @addtogroup Core
@@ -41,7 +42,7 @@ namespace cppcheck {
     private:
         static long long min_value(int bit) {
             if (bit >= 64)
-                return 1LL << 63;
+                return LLONG_MIN;
             return -(1LL << (bit-1));
         }
 

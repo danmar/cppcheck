@@ -82,9 +82,11 @@ script:
 #  - make validateXML doesn't work in this context unfortunately
   - ${CPPCHECK} --errorlist >/tmp/errorlist.xml
   - xmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml
+# check for missing CWE entries
+  - make checkCWEEntries
 # check test/cfg
   - make checkcfg
-  - make validateCFG
+  - make validateXML
   - cd ./gui
 # clean rebuild
   - git clean -dfx .
@@ -138,6 +140,11 @@ script:
   - ${CPPCHECK} --dump misra-test.cpp
   - python3 ../misra.py -verify misra-test.cpp.dump
   - cd ../../
+# check addons/namingng.py
+  - cd addons/test
+  - ${CPPCHECK} --dump namingng_test.c
+  - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
+  - cd ../..
 
 
 notifications:
