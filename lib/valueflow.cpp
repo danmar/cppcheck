@@ -309,8 +309,12 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
     if (!Token::simpleMatch(tok, "{"))
         return false;
     const Token * termTok = Token::findmatch(tok, "return|continue|break|throw|goto", tok->link());
-    return (termTok && termTok->scope() == tok->scope()) ||
-           (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), nullptr));
+    if(termTok && termTok->scope() == tok->scope())
+        return true;
+    std::string unknownFunction;
+    if(tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction))
+        return unknownFunction.empty();
+    return false;
 }
 
 static bool bailoutSelfAssignment(const Token * const tok)
