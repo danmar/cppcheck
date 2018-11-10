@@ -304,7 +304,7 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
     return nullptr;
 }
 
-static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
+static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown = false)
 {
     if (!Token::simpleMatch(tok, "{"))
         return false;
@@ -312,8 +312,8 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist)
     if(termTok && termTok->scope() == tok->scope())
         return true;
     std::string unknownFunction;
-    if(tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction))
-        return unknownFunction.empty();
+    if(tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction)) 
+        return unknownFunction.empty() || unknown;
     return false;
 }
 
@@ -4021,7 +4021,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             valueFlowContainerReverse(scope.classDef, tok->varId(), value, settings);
 
             // possible value after condition
-            if (!isEscapeScope(scope.bodyStart, tokenlist)) {
+            if (!isEscapeScope(scope.bodyStart, tokenlist, true)) {
                 const Token *after = scope.bodyEnd;
                 if (Token::simpleMatch(after, "} else {"))
                     after = isEscapeScope(after->tokAt(2), tokenlist) ? nullptr : after->linkAt(2);
