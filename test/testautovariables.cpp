@@ -1394,6 +1394,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using lambda that captures local variable 'b' that is out of scope.\n", errout.str());
 
+        check("void f(bool b)  {\n"
+              "  int* x;\n"
+              "  if(b) {\n"
+              "    int y[6] = {0,1,2,3,4,5};\n"
+              "    x = y;\n"
+              "  }\n"
+              "  x[3];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using object that points to local variable 'y' that is out of scope.\n", errout.str());
+
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
               "    if (a > 0) {\n"
