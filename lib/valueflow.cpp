@@ -3831,6 +3831,9 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             // passing value(s) to function
             std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
 
+            // Dont forward lifetime values
+            argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
+
             if (argvalues.empty())
                 continue;
 

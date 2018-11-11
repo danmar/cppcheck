@@ -1403,6 +1403,14 @@ private:
               "  c.end()\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void b(char f[], char c[]) {\n"
+              "  std::string d(c); {\n"
+              "    std::string e;\n"
+              "    b(f, e.c_str())\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
