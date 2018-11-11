@@ -754,7 +754,7 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
         }
     }
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is invalid.", CWE562, false);
+    reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnReference(const Token *tok)

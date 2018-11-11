@@ -1383,7 +1383,7 @@ private:
               "    }\n"
               "    f();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using lambda that captures local variable 'b' that is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using lambda that captures local variable 'b' that is out of scope.\n", errout.str());
 
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
