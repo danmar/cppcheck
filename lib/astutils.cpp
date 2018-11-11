@@ -71,6 +71,11 @@ bool astIsBool(const Token *tok)
     return tok && (tok->isBoolean() || (tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL && !tok->valueType()->pointer));
 }
 
+bool astIsPointer(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->pointer;
+}
+
 std::string astCanonicalType(const Token *expr)
 {
     if (!expr)

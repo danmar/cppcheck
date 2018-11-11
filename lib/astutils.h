@@ -43,6 +43,8 @@ bool astIsFloat(const Token *tok, bool unknown);
 /** Is expression of boolean type? */
 bool astIsBool(const Token *tok);
 
+bool astIsPointer(const Token *tok);
+
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.
  * For example:
