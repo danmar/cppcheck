@@ -2683,6 +2683,16 @@ private:
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int i) {\n"
+              "  if (i==42)\n"
+              "  {\n"
+              "    bar();\n"
+              "  }\n"
+              "  if (cond && (42==i))\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
