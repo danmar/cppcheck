@@ -3771,6 +3771,8 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
         if (argValues.back().empty())
             return;
     }
+    if (returnValue.find("arg") != std::string::npos && argValues.empty())
+        return;
 
     TokenList tokenList(settings);
     {
