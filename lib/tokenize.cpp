@@ -2343,6 +2343,9 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             }
         } else if (!c && ((TemplateSimplifier::templateParameters(tok2) > 0) ||
                           Token::simpleMatch(tok2, "< >") /* Ticket #4764 */)) {
+            const Token *start = *tok;
+            if (Token::Match(start->previous(), "%or%|%oror%|&&|&|^|+|-|*|/"))
+                return false;
             const Token * tok3 = tok2->findClosingBracket();
             if (tok3 == nullptr) { /* Ticket #8151 */
                 throw tok2;
@@ -2351,6 +2354,14 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             if (tok2->str() != ">")
                 break;
             singleNameCount = 1;
+            if (Token::Match(tok2, "> %name% %or%|%oror%|&&|&|^|+|-|*|/"))
+                return false;
+            if (Token::Match(tok2, "> %name% )")) {
+                if (Token::Match(tok2->linkAt(2)->previous(), "if|for|while ("))
+                    return false;
+                if (!Token::Match(tok2->linkAt(2)->previous(), "%name% ("))
+                    return false;
+            }
         } else if (Token::Match(tok2, "&|&&")) {
             ref = !bracket;
         } else if (singleNameCount == 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {

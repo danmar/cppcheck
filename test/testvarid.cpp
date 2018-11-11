@@ -143,6 +143,7 @@ private:
         TEST_CASE(varid_templateArray);
         TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
         TEST_CASE(varid_templateUsing); // #5781 #7273
+        TEST_CASE(varid_not_template_in_condition); // #7988
         TEST_CASE(varid_cppcast); // #6190
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
@@ -2119,6 +2120,20 @@ private:
                            "1: template < class T > using X = Y < T , 4 > ;\n"
                            "2: X < int > x@1 ;\n",
                            tokenize(code));
+    }
+
+    void varid_not_template_in_condition() {
+        const char code1[] = "void f() { if (x<a||x>b); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( x < a || x > b ) { ; } }\n", tokenize(code1));
+
+        const char code2[] = "void f() { if (1+x<a||x>b); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( 1 + x < a || x > b ) { ; } }\n", tokenize(code2));
+
+        const char code3[] = "void f() { if (x<a||x>b+1); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( x < a || x > b + 1 ) { ; } }\n", tokenize(code3));
+
+        const char code4[] = "void f() { if ((x==13) && (x<a||x>b)); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( ( x == 13 ) && ( x < a || x > b ) ) { ; } }\n", tokenize(code4));
     }
 
     void varid_cppcast() {
