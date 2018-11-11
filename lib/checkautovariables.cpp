@@ -631,14 +631,17 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
     if(!val)
         return "object";
     switch (val->lifetimeKind) {
-    case ValueFlow::Value::Object:
-        result = "object";
-        break;
     case ValueFlow::Value::Lambda:
         result = "lambda";
         break;
     case ValueFlow::Value::Iterator:
         result = "iterator";
+        break;
+    case ValueFlow::Value::Object:
+        if(astIsPointer(tok))
+            result = "pointer";
+        else
+            result = "object";
         break;
     }
     return result;
@@ -648,14 +651,18 @@ void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Val
 {
     const Token *vartok = val ? val->tokvalue : nullptr;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
-    std::string msg = "Returning " + lifetimeType(tok, val);
+    std::string type = lifetimeType(tok, val);
+    std::string msg = "Returning " + type;
     if (vartok) {
         errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
-                msg += " that points to local variable";
+                if(type == "pointer")
+                    msg += " to local variable";
+                else
+                    msg += " that points to local variable";
                 break;
             case ValueFlow::Value::Lambda:
                 msg += " that captures local variable";
@@ -675,14 +682,18 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
 {
     const Token *vartok = val ? val->tokvalue : nullptr;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
-    std::string msg = "Using " + lifetimeType(tok, val);
+    std::string type = lifetimeType(tok, val);
+    std::string msg = "Using " + type;
     if (vartok) {
         errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
-                msg += " that points to local variable";
+                if(type == "pointer")
+                    msg += " to local variable";
+                else
+                    msg += " that points to local variable";
                 break;
             case ValueFlow::Value::Lambda:
                 msg += " that captures local variable";

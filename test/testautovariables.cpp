@@ -473,7 +473,7 @@ private:
               "    int num=2;"
               "    return &num;"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3]: (error) Returning object that points to local variable 'num' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3]: (error) Returning pointer to local variable 'num' that will be invalid when returning.\n", errout.str());
     }
 
     void testautovar_return2() {
@@ -485,7 +485,7 @@ private:
               "    int num=2;"
               "    return &num;"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6]: (error) Returning object that points to local variable 'num' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6]: (error) Returning pointer to local variable 'num' that will be invalid when returning.\n", errout.str());
     }
 
     void testautovar_return3() {
@@ -706,7 +706,7 @@ private:
               "    char str[100] = {0};\n"
               "    return str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning object that points to local variable 'str' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning pointer to local variable 'str' that will be invalid when returning.\n", errout.str());
 
         check("char *foo()\n" // use ValueFlow
               "{\n"
@@ -714,7 +714,7 @@ private:
               "    char *p = str;\n"
               "    return p;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Returning object that points to local variable 'str' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Returning pointer to local variable 'str' that will be invalid when returning.\n", errout.str());
 
         check("class Fred {\n"
               "    char *foo();\n"
@@ -724,7 +724,7 @@ private:
               "    char str[100] = {0};\n"
               "    return str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'str' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning pointer to local variable 'str' that will be invalid when returning.\n", errout.str());
 
         check("char * format_reg(char *outbuffer_start) {\n"
               "    return outbuffer_start;\n"
@@ -763,7 +763,7 @@ private:
               "    char q[] = \"AAAAAAAAAAAA\";\n"
               "    return &q[1];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'q' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'q' that will be invalid when returning.\n", errout.str());
 
         check("char *foo()\n"
               "{\n"
@@ -778,13 +778,13 @@ private:
               "    char x[10] = {0};\n"
               "    return x+5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n", errout.str());
 
         check("char *foo(int y) {\n"
               "    char x[10] = {0};\n"
               "    return (x+8)-y;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n", errout.str());
     }
 
     void returnLocalVariable5() { // cast
@@ -792,7 +792,7 @@ private:
               "    int x[10] = {0};\n"
               "    return (char *)x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n", errout.str());
     }
 
     void returnLocalVariable6() { // valueflow
@@ -1176,14 +1176,14 @@ private:
               "  return &y;\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning object that points to local variable 'y' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning pointer to local variable 'y' that will be invalid when returning.\n", errout.str());
 
         check("int ** foo(int * y)\n"
               "{\n"
               "  return &y;\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning object that points to local variable 'y' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning pointer to local variable 'y' that will be invalid when returning.\n", errout.str());
 
         check("const int * foo(const int & y)\n"
               "{\n"
@@ -1402,7 +1402,7 @@ private:
               "  }\n"
               "  x[3];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using object that points to local variable 'y' that is out of scope.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'y' that is out of scope.\n", errout.str());
 
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
