@@ -82,6 +82,7 @@ private:
         TEST_CASE(testautovar_return1);
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
+        TEST_CASE(testautovar_return4);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testinvaliddealloc);
         TEST_CASE(testinvaliddealloc_C);
@@ -493,6 +494,15 @@ private:
               "{\n"
               "    void *&value = tls[id];"
               "    return &value;"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar_return4() {
+        // #8058 - FP ignore return in lambda
+        check("void foo() {\n"
+              "  int cond2;\n"
+              "  dostuff([&cond2]() { return &cond2; });\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

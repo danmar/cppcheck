@@ -230,6 +230,11 @@ void CheckAutoVariables::autoVariables()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+            // Skip lambda..
+            if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
+                tok = lambdaEndToken;
+                continue;
+            }
             // Critical assignment
             if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
                 if (checkRvalueExpression(tok->tokAt(4)))
