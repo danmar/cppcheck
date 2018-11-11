@@ -124,6 +124,7 @@ private:
         TEST_CASE(danglingLifetimeLambda);
         TEST_CASE(danglingLifetimeContainer);
         TEST_CASE(danglingLifetime);
+        TEST_CASE(invalidLifetime);
     }
 
 
@@ -1379,6 +1380,45 @@ private:
               "void f() {\n"
               "    using T = A[3];\n"
               "    A &&a = T{1, 2, 3}[1]();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void invalidLifetime() {
+        check("void foo(int a) {\n"
+              "    std::function<void()> f;\n"
+              "    if (a > 0) {\n"
+              "        int b = a + 1;\n"
+              "        f = [&]{ return b; };\n"
+              "    }\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using lambda that captures local variable 'b' that is out of scope.\n", errout.str());
+
+        check("void foo(int a) {\n"
+              "    std::function<void()> f;\n"
+              "    if (a > 0) {\n"
+              "        int b = a + 1;\n"
+              "        f = [&]{ return b; };\n"
+              "        f();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  b();\n"
+              "  std::list<int> c;\n"
+              "};\n"
+              "void a::b() {\n"
+              "  c.end()\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void b(char f[], char c[]) {\n"
+              "  std::string d(c); {\n"
+              "    std::string e;\n"
+              "    b(f, e.c_str())\n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
