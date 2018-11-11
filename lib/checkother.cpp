@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 
 #include "astutils.h"
 #include "errorlogger.h"
@@ -2772,6 +2773,7 @@ void CheckOther::checkAccessOfMovedVariable()
 {
     if (!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11 || !mSettings->isEnabled(Settings::WARNING))
         return;
+    CheckUninitVar checkUninitVar(mTokenizer, mSettings, mErrorLogger);
     const bool reportInconclusive = mSettings->inconclusive;
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -2797,7 +2799,7 @@ void CheckOther::checkAccessOfMovedVariable()
                     inconclusive = true;
             } else {
                 const bool isVariableChanged = isVariableChangedByFunctionCall(tok, mSettings, &inconclusive);
-                accessOfMoved = !isVariableChanged;
+                accessOfMoved = !isVariableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
                 if (inconclusive) {
                     accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);
                     if (accessOfMoved)

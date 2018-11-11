@@ -208,6 +208,7 @@ private:
         TEST_CASE(moveAndReturn);
         TEST_CASE(moveAndClear);
         TEST_CASE(movedPointer);
+        TEST_CASE(moveAndAddressOf);
         TEST_CASE(partiallyMoved);
         TEST_CASE(moveAndLambda);
         TEST_CASE(forwardAndUsed);
@@ -7332,6 +7333,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'p'.\n"
                       "[test.cpp:5]: (warning) Access of moved variable 'p'.\n", errout.str());
+    }
+
+    void moveAndAddressOf() {
+        check("void f() {\n"
+              "    std::string s1 = x;\n"
+              "    std::string s2 = std::move(s1);\n"
+              "    p = &s1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void partiallyMoved() {
