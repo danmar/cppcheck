@@ -1181,14 +1181,14 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                         continue;
                 }
                 ErrorPath errorPath;
-                if (isOppositeCond(true, cpp, tok, cond.first, settings->library, true, &errorPath)) {
+                if (isOppositeCond(true, cpp, tok, cond.first, settings->library, true, true, &errorPath)) {
                     ValueFlow::Value val(1);
                     val.setKnown();
                     val.condition = cond.first;
                     val.errorPath = errorPath;
                     val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
                     setTokenValue(tok, val, tokenlist->getSettings());
-                } else if (isSameExpression(cpp, true, tok, cond.first, settings->library, true, &errorPath)) {
+                } else if (isSameExpression(cpp, true, tok, cond.first, settings->library, true, true, &errorPath)) {
                     ValueFlow::Value val(0);
                     val.setKnown();
                     val.condition = cond.first;
@@ -2989,7 +2989,7 @@ struct Lambda {
     }
 };
 
-static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         Lambda lam(tok);
