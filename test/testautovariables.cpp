@@ -1394,6 +1394,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  b();\n"
+              "  std::list<int> c;\n"
+              "};\n"
+              "void a::b() {\n"
+              "  c.end()\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
