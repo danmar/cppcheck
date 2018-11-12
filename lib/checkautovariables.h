@@ -59,7 +59,6 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.autoVariables();
-        checkAutoVariables.returnPointerToLocalArray();
     }
 
     /** assign function argument */
@@ -67,9 +66,6 @@ public:
 
     /** Check auto variables */
     void autoVariables();
-
-    /** Returning pointer to local array */
-    void returnPointerToLocalArray();
 
     /** Returning reference to local/temporary variable */
     void returnReference();
@@ -113,6 +109,8 @@ private:
         c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
         c.errorUselessAssignmentArg(nullptr);
         c.errorUselessAssignmentPtrArg(nullptr);
+        c.errorReturnDanglingLifetime(nullptr, nullptr);
+        c.errorInvalidLifetime(nullptr, nullptr);
     }
 
     static std::string myName() {
