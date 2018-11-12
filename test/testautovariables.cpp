@@ -1430,6 +1430,10 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int &a[];\n"
+              "void b(){int *c = a};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

@@ -2960,6 +2960,8 @@ static const Variable * getLifetimeVariable(const Token * tok, ErrorPath& errorP
         for (const ValueFlow::Value& v:tok->values()) {
             if (!v.isLifetimeValue() && !v.tokvalue)
                 continue;
+            if(v.tokvalue == tok)
+                continue;
             errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
             const Variable * var2 = getLifetimeVariable(v.tokvalue, errorPath);
             if (var2)
