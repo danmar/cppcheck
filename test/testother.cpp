@@ -2754,6 +2754,13 @@ private:
               "    bar();\n"
               "}", nullptr, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
+
+        // #8261
+        check("void foo() {\n"
+              "    (beat < 100) ? (void)0 : throw(0);\n"
+              "    bar();\n"
+              "}", nullptr, false, false, false, &settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
 
