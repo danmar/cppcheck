@@ -628,7 +628,7 @@ void CheckAutoVariables::checkVarLifetime()
 static std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
 {
     std::string result;
-    if(!val)
+    if (!val)
         return "object";
     switch (val->lifetimeKind) {
     case ValueFlow::Value::Lambda:
@@ -638,7 +638,7 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
         result = "iterator";
         break;
     case ValueFlow::Value::Object:
-        if(astIsPointer(tok))
+        if (astIsPointer(tok))
             result = "pointer";
         else
             result = "object";
@@ -659,7 +659,7 @@ void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Val
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
-                if(type == "pointer")
+                if (type == "pointer")
                     msg += " to local variable";
                 else
                     msg += " that points to local variable";
@@ -690,7 +690,7 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
-                if(type == "pointer")
+                if (type == "pointer")
                     msg += " to local variable";
                 else
                     msg += " that points to local variable";
