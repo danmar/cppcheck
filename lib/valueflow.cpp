@@ -309,10 +309,10 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown 
     if (!Token::simpleMatch(tok, "{"))
         return false;
     const Token * termTok = Token::findmatch(tok, "return|continue|break|throw|goto", tok->link());
-    if(termTok && termTok->scope() == tok->scope())
+    if (termTok && termTok->scope() == tok->scope())
         return true;
     std::string unknownFunction;
-    if(tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction)) 
+    if (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction))
         return unknownFunction.empty() || unknown;
     return false;
 }
