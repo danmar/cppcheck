@@ -1615,9 +1615,8 @@ void CheckOther::checkIncompleteStatement()
             tok = tok->link();
 
         // C++11 struct/array/etc initialization in initializer list
-        else if (Token::Match(tok->previous(), "%name%|] {") && !Token::findsimplematch(tok,";",tok->link()))
+        else if (Token::Match(tok->previous(), "%var%|] {"))
             tok = tok->link();
-
 
         if (!Token::Match(tok, "[;{}] %str%|%num%"))
             continue;
