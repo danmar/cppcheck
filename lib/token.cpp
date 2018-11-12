@@ -1432,6 +1432,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
+                case ValueFlow::Value::LIFETIME:
+                    out << "lifetime=\"" << value.tokvalue << '\"';
+                    break;
                 }
                 if (value.condition)
                     out << " condition-line=\"" << value.condition->linenr() << '\"';
@@ -1468,6 +1471,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
+                    break;
+                case ValueFlow::Value::LIFETIME:
+                    out << "lifetime=" << value.tokvalue->str();
                     break;
                 }
             }
