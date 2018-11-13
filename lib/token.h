@@ -25,6 +25,7 @@
 #include "mathlib.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <list>
