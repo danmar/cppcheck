@@ -4198,11 +4198,14 @@ void Tokenizer::removeMacrosInGlobalScope()
                 tok->deleteNext();
         }
 
-        if ((!tok->previous() || Token::Match(tok->previous(), "[;{}]")) &&
-            Token::Match(tok, "%type%") && tok->isUpperCaseName()) {
+        if (Token::Match(tok, "%type%") && tok->isUpperCaseName() &&
+            (!tok->previous() || Token::Match(tok->previous(), "[;{}]") || (tok->previous()->isName() && endsWith(tok->previous()->str(), ':')))) {
             const Token *tok2 = tok->next();
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
+
+            if (Token::Match(tok, "%type% (") && Token::Match(tok2, "%type% (") && !Token::Match(tok2, "noexcept|throw") && isFunctionHead(tok2->next(), ":;{"))
+                unknownMacroError(tok);
 
             // remove unknown macros before namespace|class|struct|union
             if (Token::Match(tok2, "namespace|class|struct|union")) {
@@ -4218,14 +4221,15 @@ void Tokenizer::removeMacrosInGlobalScope()
             }
 
             // replace unknown macros before foo(
-            if (Token::Match(tok2, "%type% (") && isFunctionHead(tok2->next(), "{")) {
-                std::string typeName;
-                for (const Token* tok3 = tok; tok3 != tok2; tok3 = tok3->next())
-                    typeName += tok3->str();
-                Token::eraseTokens(tok, tok2);
-                tok->str(typeName);
-            }
-
+            /*
+                        if (Token::Match(tok2, "%type% (") && isFunctionHead(tok2->next(), "{")) {
+                            std::string typeName;
+                            for (const Token* tok3 = tok; tok3 != tok2; tok3 = tok3->next())
+                                typeName += tok3->str();
+                            Token::eraseTokens(tok, tok2);
+                            tok->str(typeName);
+                        }
+            */
             // remove unknown macros before foo::foo(
             if (Token::Match(tok2, "%type% :: %type%")) {
                 const Token *tok3 = tok2;
@@ -7914,6 +7918,12 @@ void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
 {
     printDebugOutput(0);
     throw InternalError(tok, "Code '"+what+"' is invalid C code. Use --std or --language to configure the language.", InternalError::SYNTAX);
+}
+
+void Tokenizer::unknownMacroError(const Token *tok1) const
+{
+    printDebugOutput(0);
+    throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::SYNTAX);
 }
 
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
