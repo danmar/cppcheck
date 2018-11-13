@@ -225,7 +225,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<unsigned
     }
 
     else if (tok->isComparisonOp()) {
-        if (tok->values().size() == 1U && tok->values().front().isKnown()) {
+        if (tok->hasKnownIntValue()) {
             if (tok->values().front().intvalue)
                 *alwaysTrue = true;
             else

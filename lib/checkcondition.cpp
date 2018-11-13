@@ -285,8 +285,8 @@ void CheckCondition::checkBadBitmaskCheck()
                                    (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while")) ||
                                    (parent->str() == "return" && parent->astOperand1() == tok && inBooleanFunction(tok));
 
-            const bool isTrue = (tok->astOperand1()->values().size() == 1 && tok->astOperand1()->values().front().intvalue != 0 && tok->astOperand1()->values().front().isKnown()) ||
-                                (tok->astOperand2()->values().size() == 1 && tok->astOperand2()->values().front().intvalue != 0 && tok->astOperand2()->values().front().isKnown());
+            const bool isTrue = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue != 0) ||
+                                (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue != 0);
 
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
@@ -441,8 +441,8 @@ void CheckCondition::multiCondition()
 
             if (cond1 &&
                 tok2->astOperand2() &&
-                !cond1->hasKnownValue() &&
-                !tok2->astOperand2()->hasKnownValue() &&
+                !cond1->hasKnownIntValue() &&
+                !tok2->astOperand2()->hasKnownIntValue() &&
                 isOverlappingCond(cond1, tok2->astOperand2(), true))
                 multiConditionError(tok2, cond1->linenr());
         }
@@ -601,7 +601,7 @@ void CheckCondition::multiCondition2()
                             if (firstCondition->str() == "&&") {
                                 tokens1.push(firstCondition->astOperand1());
                                 tokens1.push(firstCondition->astOperand2());
-                            } else if (!firstCondition->hasKnownValue()) {
+                            } else if (!firstCondition->hasKnownIntValue()) {
                                 if (!isReturnVar && isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     if (!isAliased(vars))
                                         oppositeInnerConditionError(firstCondition, cond2, errorPath);
@@ -621,7 +621,7 @@ void CheckCondition::multiCondition2()
                             if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
                                 tokens2.push(secondCondition->astOperand1());
                                 tokens2.push(secondCondition->astOperand2());
-                            } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) &&
+                            } else if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
                                        isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
                                 if (!isAliased(vars))
                                     identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
