@@ -451,7 +451,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 locationList.push_back(loc);
                 ErrorLogger::ErrorMessage errmsg(locationList,
                                                  mTokenizer.list.getSourceFilePath(),
-                                                 e.type == InternalError::UNKNOWN_MACRO ? Severity::information : Severity::error,
+                                                 Severity::error,
                                                  e.errorMessage,
                                                  e.id,
                                                  false);
