@@ -714,7 +714,7 @@ private:
               "    char *p = str;\n"
               "    return p;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Returning pointer to local variable 'str' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:5]: (error) Returning pointer to local variable 'str' that will be invalid when returning.\n", errout.str());
 
         check("class Fred {\n"
               "    char *foo();\n"
@@ -801,7 +801,7 @@ private:
               "    int p = &x;\n"
               "    return p;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning object that will be invalid when returning.\n", errout.str());
     }
 
     void returnReference1() {
@@ -1428,6 +1428,16 @@ private:
               "    std::string e;\n"
               "    b(f, e.c_str())\n"
               "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    std::string s;\n"
+              "    if(b) {\n"
+              "        char buf[3];\n"
+              "        s = buf;\n"
+              "    }\n"
+              "    std::cout << s;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 

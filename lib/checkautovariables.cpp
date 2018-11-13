@@ -591,7 +591,10 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         for (const ValueFlow::Value& val:tok->values()) {
-            if (!val.isLifetimeValue())
+            if (!val.isLifetimeValue() && !val.tokvalue)
+                continue;
+            // Skip temporaries for now
+            if (val.tokvalue == tok)
                 continue;
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (isInScope(val.tokvalue, scope)) {
