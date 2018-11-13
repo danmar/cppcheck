@@ -598,6 +598,9 @@ public:
     /** Syntax error. C++ code in C file. */
     void syntaxErrorC(const Token *tok, const std::string &what) const;
 
+    /** Warn about unknown macro(s), configuration is recommended */
+    void unknownMacroError(const Token *tok1) const;
+
 private:
 
     /** Report that there is an unhandled "class x y {" code */

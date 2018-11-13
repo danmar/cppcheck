@@ -1448,9 +1448,8 @@ private:
             const char code[] = "typedef char (* type1)[10];\n"
                                 "LOCAL(type1) foo() { }";
 
-            // this is invalid C so just make sure it doesn't generate an internal error
-            checkSimplifyTypedef(code);
-            ASSERT_EQUALS("", errout.str());
+            // this is invalid C, assert that an "unknown macro" warning is written
+            ASSERT_THROW(checkSimplifyTypedef(code), InternalError);
         }
     }
 
