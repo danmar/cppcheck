@@ -79,6 +79,7 @@ private:
         TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
         TEST_CASE(increment);           // #3251 : FP for increment
         TEST_CASE(cpp11init);           // #5493 : int i{1};
+        TEST_CASE(cpp11init2);          // #8449
         TEST_CASE(block);               // ({ do_something(); 0; })
         TEST_CASE(mapindex);
     }
@@ -269,6 +270,13 @@ private:
         check("void f() {\n"
               "    int x{1};\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cpp11init2() {
+        check("x<string> handlers{\n"
+              "  { \"mode2\", []() { return 2; } },\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

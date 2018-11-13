@@ -281,37 +281,6 @@ void CheckAutoVariables::autoVariables()
                 if (checkRvalueExpression(varTok))
                     errorAutoVariableAssignment(tok->next(), false);
             }
-            // Critical return
-            else if (Token::Match(tok, "return %var% ;") && isAutoVar(tok->next())) {
-                const std::list<ValueFlow::Value> &values = tok->next()->values();
-                const ValueFlow::Value *value = nullptr;
-                for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-                    if (!it->isTokValue())
-                        continue;
-                    if (!mSettings->inconclusive && it->isInconclusive())
-                        continue;
-                    if (!Token::Match(it->tokvalue->previous(), "= & %var%"))
-                        continue;
-                    if (!isAutoVar(it->tokvalue->next()))
-                        continue;
-                    if (!value || value->isInconclusive())
-                        value = &(*it);
-                }
-
-                if (value)
-                    errorReturnAddressToAutoVariable(tok, value);
-            }
-
-            else if (Token::Match(tok, "return & %var% ;")) {
-                const Token* varTok = tok->tokAt(2);
-                if (isAutoVar(varTok))
-                    errorReturnAddressToAutoVariable(tok);
-                else if (varTok->varId()) {
-                    const Variable * var1 = varTok->variable();
-                    if (var1 && var1->isArgument() && var1->typeEndToken()->str() != "&")
-                        errorReturnAddressOfFunctionParameter(tok, varTok->str());
-                }
-            }
             // Invalid pointer deallocation
             else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.dealloc(tok)) ||
                      (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
@@ -337,28 +306,6 @@ void CheckAutoVariables::autoVariables()
 }
 
 //---------------------------------------------------------------------------
-
-void CheckAutoVariables::returnPointerToLocalArray()
-{
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        if (!scope->function)
-            continue;
-
-        const Token *tok = scope->function->tokenDef;
-
-        // have we reached a function that returns a pointer
-        if (tok->previous() && tok->previous()->str() == "*") {
-            for (const Token *tok2 = scope->bodyStart->next(); tok2 && tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-                // Return pointer to local array variable..
-                if (tok2 ->str() == "return" && isAutoVarArray(tok2->astOperand1())) {
-                    errorReturnPointerToLocalArray(tok2);
-                }
-            }
-        }
-    }
-}
 
 void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok)
 {
@@ -643,14 +590,6 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     if (scope->bodyStart != start)
         return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        // Skip duplicate warning from dangling references
-        if (Token::Match(tok, "& %var%"))
-            continue;
-        if (tok->variable() && tok->variable()->isPointer())
-            continue;
-        if (std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue)))
-            continue;
-
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLifetimeValue())
                 continue;
@@ -686,29 +625,44 @@ void CheckAutoVariables::checkVarLifetime()
     }
 }
 
-void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val)
+static std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
 {
-    const Token *vartok = val->tokvalue;
-    ErrorPath errorPath = val->errorPath;
-    std::string msg = "";
+    std::string result;
+    if (!val)
+        return "object";
     switch (val->lifetimeKind) {
-    case ValueFlow::Value::Object:
-        msg = "Returning object";
-        break;
     case ValueFlow::Value::Lambda:
-        msg = "Returning lambda";
+        result = "lambda";
         break;
     case ValueFlow::Value::Iterator:
-        msg = "Returning iterator";
+        result = "iterator";
+        break;
+    case ValueFlow::Value::Object:
+        if (astIsPointer(tok))
+            result = "pointer";
+        else
+            result = "object";
         break;
     }
+    return result;
+}
+
+void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val)
+{
+    const Token *vartok = val ? val->tokvalue : nullptr;
+    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
+    std::string type = lifetimeType(tok, val);
+    std::string msg = "Returning " + type;
     if (vartok) {
         errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
-                msg += " that points to local variable";
+                if (type == "pointer")
+                    msg += " to local variable";
+                else
+                    msg += " that points to local variable";
                 break;
             case ValueFlow::Value::Lambda:
                 msg += " that captures local variable";
@@ -726,27 +680,20 @@ void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Val
 
 void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val)
 {
-    const Token *vartok = val->tokvalue;
-    ErrorPath errorPath = val->errorPath;
-    std::string msg = "";
-    switch (val->lifetimeKind) {
-    case ValueFlow::Value::Object:
-        msg = "Using object";
-        break;
-    case ValueFlow::Value::Lambda:
-        msg = "Using lambda";
-        break;
-    case ValueFlow::Value::Iterator:
-        msg = "Using iterator";
-        break;
-    }
+    const Token *vartok = val ? val->tokvalue : nullptr;
+    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
+    std::string type = lifetimeType(tok, val);
+    std::string msg = "Using " + type;
     if (vartok) {
         errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
-                msg += " that points to local variable";
+                if (type == "pointer")
+                    msg += " to local variable";
+                else
+                    msg += " that points to local variable";
                 break;
             case ValueFlow::Value::Lambda:
                 msg += " that captures local variable";

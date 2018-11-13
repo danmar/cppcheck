@@ -309,10 +309,10 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown 
     if (!Token::simpleMatch(tok, "{"))
         return false;
     const Token * termTok = Token::findmatch(tok, "return|continue|break|throw|goto", tok->link());
-    if(termTok && termTok->scope() == tok->scope())
+    if (termTok && termTok->scope() == tok->scope())
         return true;
     std::string unknownFunction;
-    if(tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction)) 
+    if (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction))
         return unknownFunction.empty() || unknown;
     return false;
 }
@@ -427,6 +427,15 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             }
         }
 
+        return;
+    }
+
+    if (value.isLifetimeValue()) {
+        if (value.lifetimeKind == ValueFlow::Value::Iterator && parent->isArithmeticalOp()) {
+            setTokenValue(parent,value,settings);
+        } else if (astIsPointer(tok) && astIsPointer(parent) && (parent->isArithmeticalOp() || Token::Match(parent, "( %type%"))) {
+            setTokenValue(parent,value,settings);
+        }
         return;
     }
 
@@ -2950,6 +2959,8 @@ static const Variable * getLifetimeVariable(const Token * tok, ErrorPath& errorP
         for (const ValueFlow::Value& v:tok->values()) {
             if (!v.isLifetimeValue() && !v.tokvalue)
                 continue;
+            if (v.tokvalue == tok)
+                continue;
             errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
             const Variable * var2 = getLifetimeVariable(v.tokvalue, errorPath);
             if (var2)
@@ -3071,7 +3082,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             if (!vartok)
                 continue;
             const Variable * var = getLifetimeVariable(vartok, errorPath);
-            if (!(var && !var->isPointer()))
+            if (!var)
+                continue;
+            if (var->isPointer() && Token::Match(vartok->astParent(), "[|*"))
                 continue;
 
             errorPath.emplace_back(tok, "Address of variable taken here.");
@@ -3107,6 +3120,24 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             valueFlowForwardLifetime(tok->tokAt(3), tokenlist, errorLogger, settings);
 
+        }
+        // Check variables
+        else if (tok->variable()) {
+            ErrorPath errorPath;
+            const Variable * var = getLifetimeVariable(tok, errorPath);
+            if (!var)
+                continue;
+            if (var->isArray() && tok->astParent() && (astIsPointer(tok->astParent()) || Token::Match(tok->astParent(), "%assign%|return"))) {
+                errorPath.emplace_back(tok, "Array decayed to pointer here.");
+
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::LIFETIME;
+                value.tokvalue = var->nameToken();
+                value.errorPath = errorPath;
+                setTokenValue(tok, value, tokenlist->getSettings());
+
+                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+            }
         }
     }
 }

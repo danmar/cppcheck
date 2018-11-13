@@ -164,8 +164,11 @@ def unpackPackage(workPath, tgz):
                 # Skip dangerous file names
                 continue
             elif member.name.lower().endswith(('.c', '.cl', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
-                tf.extract(member.name)
-                print(member.name)
+                try:
+                    tf.extract(member.name)
+                    print(member.name)
+                except OSError:
+                    pass
         tf.close()
     os.chdir(workPath)
 
