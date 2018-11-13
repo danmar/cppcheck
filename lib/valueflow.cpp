@@ -2491,7 +2491,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     if (!assignTok->astOperand2() || assignTok->astOperand2()->values().empty())
         return;
 
-    if(astIsPointer(assignTok->astOperand2()) && !var->isPointer())
+    if(astIsPointer(assignTok->astOperand2()) && !var->isPointer() && !(var->valueType() && var->valueType()->isIntegral()))
         return;
 
     std::list<ValueFlow::Value> values = assignTok->astOperand2()->values();
@@ -2515,7 +2515,7 @@ static const Variable * getLifetimeVariable(const Token * tok, ErrorPath& errorP
         return nullptr;
     if (var->isReference() || var->isRValueReference()) {
         for (const ValueFlow::Value& v:tok->values()) {
-            if (!v.isLifetimeValue() && !v.tokvalue)
+            if (!v.isLifetimeValue())
                 continue;
             if (v.tokvalue == tok)
                 continue;
@@ -2865,6 +2865,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
                 values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
             }
+            if(!var->isPointer())
+                values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
             for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
                 const std::string info = "Assignment '" + tok->expressionString() + "', assigned value is " + it->infoString();
                 it->errorPath.emplace_back(tok->astOperand2(), info);

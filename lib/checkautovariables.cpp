@@ -591,7 +591,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         return;
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         for (const ValueFlow::Value& val:tok->values()) {
-            if (!val.isLifetimeValue() && !val.tokvalue)
+            if (!val.isLifetimeValue())
                 continue;
             // Skip temporaries for now
             if (val.tokvalue == tok)

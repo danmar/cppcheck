@@ -1634,8 +1634,10 @@ const Token *Token::getValueTokenDeadPointer() const
 bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mValues) {
-        // Clear all other values since value is known
-        mValues->clear();
+        // Clear all other values of the same type since value is known
+        mValues->remove_if([&](const ValueFlow::Value & x) {
+            return x.valueType == value.valueType;
+        });
     }
 
     if (mValues) {
@@ -1654,7 +1656,7 @@ bool Token::addValue(const ValueFlow::Value &value)
             // different types => continue
             if (it->valueType != value.valueType)
                 continue;
-            if (value.isTokValue() && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
+            if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
                 continue;
 
             // same value, but old value is inconclusive so replace it
