@@ -26,6 +26,7 @@
 #include "valueflow.h"
 
 #include <cstddef>
+#include <functional>
 #include <list>
 #include <ostream>
 #include <string>
