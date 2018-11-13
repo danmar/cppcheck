@@ -54,10 +54,11 @@ namespace tinyxml2 {
 
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
-    enum Type {AST, SYNTAX, INTERNAL};
+    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL};
     InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
     const Token *token;
     std::string errorMessage;
+    Type type;
     std::string id;
 };
 

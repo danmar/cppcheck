@@ -7923,7 +7923,7 @@ void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
 void Tokenizer::unknownMacroError(const Token *tok1) const
 {
     printDebugOutput(0);
-    throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::SYNTAX);
+    throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::UNKNOWN_MACRO);
 }
 
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const

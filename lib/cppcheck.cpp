@@ -451,14 +451,16 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 locationList.push_back(loc);
                 ErrorLogger::ErrorMessage errmsg(locationList,
                                                  mTokenizer.list.getSourceFilePath(),
-                                                 Severity::error,
+                                                 e.type == InternalError::UNKNOWN_MACRO ? Severity::information : Severity::error,
                                                  e.errorMessage,
                                                  e.id,
                                                  false);
 
-                reportErr(errmsg);
-                if (!mSuppressInternalErrorFound)
-                    internalErrorFound = true;
+                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity)) {
+                    reportErr(errmsg);
+                    if (!mSuppressInternalErrorFound)
+                        internalErrorFound = true;
+                }
             }
         }
 

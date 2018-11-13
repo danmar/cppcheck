@@ -34,7 +34,7 @@
 #include <iomanip>
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
-    token(tok), errorMessage(errorMsg)
+    token(tok), errorMessage(errorMsg), type(type)
 {
     switch (type) {
     case AST:
@@ -42,6 +42,9 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
         break;
     case SYNTAX:
         id = "syntaxError";
+        break;
+    case UNKNOWN_MACRO:
+        id = "unknownMacro";
         break;
     case INTERNAL:
         id = "cppcheckError";
