@@ -123,6 +123,7 @@ private:
         TEST_CASE(danglingLifetimeLambda);
         TEST_CASE(danglingLifetimeContainer);
         TEST_CASE(danglingLifetime);
+        TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(invalidLifetime);
     }
 
@@ -1320,6 +1321,20 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
 
         check("auto f() {\n"
+              "    std::vector<int> x;\n"
+              "    auto it = x.begin();\n"
+              "    return std::next(it);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    std::vector<int> x;\n"
+              "    auto it = x.begin();\n"
+              "    return it + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
               "  static std::vector<int> x;\n"
               "  return x.begin();\n"
               "}\n");
@@ -1381,6 +1396,17 @@ private:
               "    A &&a = T{1, 2, 3}[1]();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetimeFunction() {
+        check("auto f() {\n"
+              "    int a;\n"
+              "    return std::ref(a);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n", errout.str());
+
+        
+
     }
 
     void invalidLifetime() {
