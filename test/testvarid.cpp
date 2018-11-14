@@ -186,6 +186,8 @@ private:
         TEST_CASE(usingNamespace1);
         TEST_CASE(usingNamespace2);
         TEST_CASE(usingNamespace3);
+
+        TEST_CASE(setVarIdStructMembers1);
     }
 
     std::string tokenize(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -1515,21 +1517,14 @@ private:
                             "void Foo::Clone(FooBase& g) {\n"
                             "    ((FooBase)g)->m_bar = m_bar;\n"
                             "}";
-        TODO_ASSERT_EQUALS("1: class Foo : public FooBase {\n"
-                           "2: void Clone ( FooBase & g@1 ) ;\n"
-                           "3: short m_bar@2 ;\n"
-                           "4: } ;\n"
-                           "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
-                           "6: ( ( FooBase ) g@3 ) . m_bar@4 = m_bar@2 ;\n"
-                           "7: }\n",
-                           "1: class Foo : public FooBase {\n"
-                           "2: void Clone ( FooBase & g@1 ) ;\n"
-                           "3: short m_bar@2 ;\n"
-                           "4: } ;\n"
-                           "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
-                           "6: ( ( FooBase ) g@3 ) . m_bar = m_bar@2 ;\n"
-                           "7: }\n",
-                           tokenize(code));
+        ASSERT_EQUALS("1: class Foo : public FooBase {\n"
+                      "2: void Clone ( FooBase & g@1 ) ;\n"
+                      "3: short m_bar@2 ;\n"
+                      "4: } ;\n"
+                      "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
+                      "6: ( ( FooBase ) g@3 ) . m_bar@4 = m_bar@2 ;\n"
+                      "7: }\n",
+                      tokenize(code));
     }
 
     void varid_in_class11() { // #4277 - anonymous union
@@ -2958,6 +2953,20 @@ private:
                                 "9: using namespace A :: B ;\n"
                                 "10: C :: C ( ) : m@1 ( 42 ) { }\n";
 
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void setVarIdStructMembers1() {
+        const char code[] = "void f(Foo foo)\n"
+                            "{\n"
+                            "    foo.size = 0;\n"
+                            "    return ((uint8_t)(foo).size);\n"
+                            "}";
+        const char expected[] = "1: void f ( Foo foo@1 )\n"
+                                "2: {\n"
+                                "3: foo@1 . size@2 = 0 ;\n"
+                                "4: return ( ( uint8_t ) ( foo@1 ) . size@2 ) ;\n"
+                                "5: }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 };
