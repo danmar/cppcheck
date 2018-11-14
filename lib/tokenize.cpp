@@ -2449,11 +2449,14 @@ static void setVarIdStructMembers(Token **tok1,
         return;
     }
 
-    while (Token::Match(tok->next(), ". %name% !!(")) {
+    while (Token::Match(tok->next(), ")| . %name% !!(")) {
         const unsigned int struct_varid = tok->varId();
         tok = tok->tokAt(2);
         if (struct_varid == 0)
             continue;
+
+        if (tok->str() == ".")
+            tok = tok->next();
 
         // Don't set varid for template function
         if (TemplateSimplifier::templateParameters(tok->next()) > 0)

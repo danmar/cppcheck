@@ -96,8 +96,9 @@ def getPackage():
     try:
         sock.send(b'get\n')
         package = sock.recv(256)
-    finally:
-        sock.close()
+    except socket.error:
+        package = ''
+    sock.close()
     return package.decode('utf-8')
 
 
@@ -298,6 +299,9 @@ while True:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
     package = getPackage()
+    if len(package) == 0:
+        time.sleep(5)
+        package = getPackage()
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
     crash = False

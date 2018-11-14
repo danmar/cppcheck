@@ -8536,6 +8536,8 @@ private:
         ASSERT_EQUALS("xatoistr({(=", testAst("x = (struct X){atoi(str)};"));
         ASSERT_EQUALS("xa.0=b.0=,c.0=,{(=", testAst("x = (struct abc) { .a=0, .b=0, .c=0 };"));
 
+        ASSERT_EQUALS("yz.(return", testAst("return (x)(y).z;"));
+
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
