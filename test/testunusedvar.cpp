@@ -171,6 +171,7 @@ private:
         TEST_CASE(localvarTemplate); // #4955 - variable is used as template parameter
         TEST_CASE(localvarFuncPtr); // #7194
         TEST_CASE(localvarAddr); // #7477
+        TEST_CASE(localvarDelete);
 
         TEST_CASE(localvarCppInitialization);
         TEST_CASE(localvarCpp11Initialization);
@@ -4100,6 +4101,20 @@ private:
                               "  int x = 0;\n"
                               "  dostuff(std::ref(x));\n"
                               "  x = 1;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarDelete() { // #8339
+        functionVariableUsage("void reassign(char*& data, int size)"
+                              "{"
+                              "    char* buf = new char[size];"
+                              ""
+                              "    char* tmp = data;"
+                              "    data = buf;"
+                              "    buf = tmp;"
+                              ""
+                              "    delete [] buf;"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

@@ -928,8 +928,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
 
             const Variables::VariableUsage *const var = variables.find(varid);
-            if (var && !var->_allocateMemory) {
-                variables.readAll(varid, tok);
+            if (var) {
+                if (!var->_aliases.empty())
+                    variables.use(varid, tok);
+                else if (!var->_allocateMemory)
+                    variables.readAll(varid, tok);
             }
         }
 
