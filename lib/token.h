@@ -25,7 +25,9 @@
 #include "mathlib.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <list>
 #include <ostream>
 #include <string>
@@ -838,11 +840,11 @@ public:
     }
 
     bool hasKnownIntValue() const {
-        return mValues && mValues->size() == 1U && mValues->front().isKnown() && mValues->front().isIntValue();
+        return hasKnownValue() && std::any_of(mValues->begin(), mValues->end(), std::mem_fn(&ValueFlow::Value::isIntValue));
     }
 
     bool hasKnownValue() const {
-        return mValues && mValues->size() == 1U && mValues->front().isKnown();
+        return mValues && std::any_of(mValues->begin(), mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
     }
 
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {

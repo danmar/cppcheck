@@ -98,7 +98,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (tok->isName() && !tok->varId() && tok->values().size() == 1U && tok->values().front().isKnown() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (tok->isName() && !tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }

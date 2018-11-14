@@ -492,8 +492,7 @@ static bool alwaysTrue(const Token *tok)
 {
     if (!tok)
         return false;
-    if (tok->values().size() == 1U &&
-        tok->values().front().isKnown() &&
+    if (tok->hasKnownIntValue() &&
         tok->values().front().intvalue != 0)
         return true;
     if (tok->str() == "||")
