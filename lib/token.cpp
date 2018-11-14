@@ -1682,7 +1682,7 @@ bool Token::addValue(const ValueFlow::Value &value)
             ValueFlow::Value v(value);
             if (v.varId == 0)
                 v.varId = mVarId;
-            if(v.isKnown() && v.isIntValue())
+            if (v.isKnown() && v.isIntValue())
                 mValues->push_front(v);
             else
                 mValues->push_back(v);
