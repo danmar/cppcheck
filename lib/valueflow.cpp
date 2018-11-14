@@ -2561,6 +2561,9 @@ struct LifetimeStore
         value.tokvalue = var->nameToken();
         value.errorPath = errorPath;
         value.lifetimeKind = type;
+        // Dont add the value a second time
+        if(std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
+            return;
         setTokenValue(tok, value, tokenlist->getSettings());
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
     }
@@ -2590,8 +2593,10 @@ struct LifetimeStore
             value.tokvalue = var->nameToken();
             value.errorPath = errorPath;
             value.lifetimeKind = type;
+            // Dont add the value a second time
+            if(std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
+                continue;
             setTokenValue(tok, value, tokenlist->getSettings());
-
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
     }
