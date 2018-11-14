@@ -1136,6 +1136,8 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
                 const Variable * var = tok2->variable();
                 if (!var)
                     continue;
+                if(!var->scope())
+                    continue;
                 const Token * endToken = var->scope()->bodyEnd;
                 if (!var->isLocal() && !var->isConst() && !var->isArgument()) {
                     bail = true;
