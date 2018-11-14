@@ -2494,41 +2494,49 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
+static void valueFlowLifetimeFunction(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
+
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
-    const Token * assignTok = tok->astParent();
+    const Token * parent = tok->astParent();
+    while(parent && parent->isArithmeticalOp())
+        parent = parent->astParent();
+    if(!parent)
+        return;
     // Assignment
-    if (!assignTok || (assignTok->str() != "=") || assignTok->astParent())
-        return;
+    if(parent->str() == "=" && !parent->astParent()) {
+        // Lhs should be a variable
+        if (!parent->astOperand1() || !parent->astOperand1()->varId())
+            return;
+        const Variable *var = parent->astOperand1()->variable();
+        if (!var || (!var->isLocal() && !var->isGlobal() && !var->isArgument()))
+            return;
 
-    // Lhs should be a variable
-    if (!assignTok->astOperand1() || !assignTok->astOperand1()->varId())
-        return;
-    const Variable *var = assignTok->astOperand1()->variable();
-    if (!var || (!var->isLocal() && !var->isGlobal() && !var->isArgument()))
-        return;
+        const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
-    const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        // Rhs values..
+        if (!parent->astOperand2() || parent->astOperand2()->values().empty())
+            return;
 
-    // Rhs values..
-    if (!assignTok->astOperand2() || assignTok->astOperand2()->values().empty())
-        return;
+        if(astIsPointer(parent->astOperand2()) && !var->isPointer() && !(var->valueType() && var->valueType()->isIntegral()))
+            return;
 
-    if(astIsPointer(assignTok->astOperand2()) && !var->isPointer() && !(var->valueType() && var->valueType()->isIntegral()))
-        return;
+        std::list<ValueFlow::Value> values = parent->astOperand2()->values();
 
-    std::list<ValueFlow::Value> values = assignTok->astOperand2()->values();
+        // Static variable initialisation?
+        if (var->isStatic() && var->nameToken() == parent->astOperand1())
+            changeKnownToPossible(values);
 
-    // Static variable initialisation?
-    if (var->isStatic() && var->nameToken() == assignTok->astOperand1())
-        changeKnownToPossible(values);
+        // Skip RHS
+        const Token * nextExpression = nextAfterAstRightmostLeaf(parent);
 
-    // Skip RHS
-    const Token * nextExpression = nextAfterAstRightmostLeaf(assignTok);
-
-    // Only forward lifetime values
-    values.remove_if(&isNotLifetimeValue);
-    valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
+        // Only forward lifetime values
+        values.remove_if(&isNotLifetimeValue);
+        valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
+    // Function call
+    } else if(Token::Match(parent->previous(), "%name% (")) {
+        valueFlowLifetimeFunction(const_cast<Token *>(parent->previous()), tokenlist, errorLogger, settings);
+    }
 }
 
 struct LifetimeStore
