@@ -414,10 +414,15 @@ static bool iscast(const Token *tok)
 
     bool type = false;
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+        if (tok2->varId() != 0)
+            return false;
+
         while (tok2->link() && Token::Match(tok2, "(|[|<"))
             tok2 = tok2->link()->next();
 
         if (tok2->str() == ")") {
+            if (Token::simpleMatch(tok2, ") (") && Token::simpleMatch(tok2->linkAt(1), ") ."))
+                return true;
             return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
                    (Token::Match(tok2, ") %any%") &&
                     !tok2->next()->isOp() &&
@@ -757,17 +762,10 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             }
             compileUnaryOp(tok, state, compilePrecedence3);
         } else if (tok->str() == "(" && iscast(tok)) {
-            Token* tok2 = tok;
+            Token* castTok = tok;
             tok = tok->link()->next();
-            if (tok && tok->str() == "(" && !iscast(tok)) {
-                Token *tok3 = tok->next();
-                compileExpression(tok3, state);
-                if (tok->link() == tok3)
-                    tok = tok3->next();
-            } else {
-                compilePrecedence3(tok, state);
-            }
-            compileUnaryOp(tok2, state, nullptr);
+            compilePrecedence3(tok, state);
+            compileUnaryOp(castTok, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "new %name%|::|(")) {
             Token* newtok = tok;
             tok = tok->next();
