@@ -1192,6 +1192,13 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("int * foo(int * y)\n"
+              "{\n"
+              "  return y;\n"
+              "}");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testconstructor() { // Ticket #5478 - crash while checking a constructor
@@ -1356,6 +1363,17 @@ private:
         check("std::string g() {\n"
               "    std::vector<char> v;\n"
               "    return v.data();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>::iterator f(std::vector<int>* v) {\n"
+              "    return v->begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>::iterator f(std::vector<int>* v) {\n"
+              "    std::vector<int>* v = new std::vector<int>();\n"
+              "    return v->begin();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
