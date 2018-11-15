@@ -33,7 +33,7 @@ std::ostringstream output;
  **/
 
 struct CompareFixtures {
-    bool operator()(const TestFixture* lhs, const TestFixture* rhs) {
+    bool operator()(const TestFixture* lhs, const TestFixture* rhs) const {
         return lhs->classname < rhs->classname;
     }
 };
