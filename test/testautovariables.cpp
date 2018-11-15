@@ -1388,6 +1388,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int * f(int a[]) {\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Make sure we dont hang
         check("struct A;\n"
               "void f() {\n"
