@@ -2622,12 +2622,12 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         return;
     if (Token::Match(tok->tokAt(-2), "std :: ref|cref|tie|front_inserter|back_inserter")) {
         for (const Token *argtok : getArguments(tok)) {
-            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object}.byRef(
+            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object} .byRef(
                 tok->next(), tokenlist, errorLogger, settings);
         }
     } else if (Token::Match(tok->tokAt(-2), "std :: make_tuple|tuple_cat|make_pair|make_reverse_iterator|next|prev|move")) {
         for (const Token *argtok : getArguments(tok)) {
-            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object}.byVal(
+            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object} .byVal(
                 tok->next(), tokenlist, errorLogger, settings);
         }
     }
@@ -2689,10 +2689,10 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
                 ErrorPath errorPath;
                 if (captureByRef) {
-                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::Lambda}.byRef(
+                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::Lambda} .byRef(
                         tok, tokenlist, errorLogger, settings, isCapturingVariable);
                 } else if (captureByValue) {
-                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::Lambda}.byVal(
+                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::Lambda} .byVal(
                         tok, tokenlist, errorLogger, settings, isCapturingVariable);
                 }
             }
