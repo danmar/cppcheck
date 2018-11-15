@@ -1325,21 +1325,27 @@ private:
               "    auto it = x.begin();\n"
               "    return std::next(it);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n",
+            errout.str());
 
         check("auto f() {\n"
               "    std::vector<int> x;\n"
               "    auto it = x.begin();\n"
               "    return it + 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n",
+            errout.str());
 
         check("auto f() {\n"
               "    std::vector<int> x;\n"
               "    auto it = x.begin();\n"
               "    return std::next(it + 1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n",
+            errout.str());
 
         check("auto f() {\n"
               "  static std::vector<int> x;\n"
@@ -1405,19 +1411,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void danglingLifetimeFunction()
-    {
+    void danglingLifetimeFunction() {
         check("auto f() {\n"
               "    int a;\n"
               "    return std::ref(a);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n",
+            errout.str());
 
         check("auto f() {\n"
               "    int a;\n"
               "    return std::make_tuple(std::ref(a));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n",
+            errout.str());
 
         check("auto f(int x) {\n"
               "    int a;\n"

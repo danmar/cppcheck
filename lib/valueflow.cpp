@@ -2518,7 +2518,8 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!parent->astOperand2() || parent->astOperand2()->values().empty())
             return;
 
-        if (astIsPointer(parent->astOperand2()) && !var->isPointer() && !(var->valueType() && var->valueType()->isIntegral()))
+        if (astIsPointer(parent->astOperand2()) && !var->isPointer() &&
+            !(var->valueType() && var->valueType()->isIntegral()))
             return;
 
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
@@ -2532,7 +2533,16 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
 
         // Only forward lifetime values
         values.remove_if(&isNotLifetimeValue);
-        valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, false, false, tokenlist, errorLogger, settings);
+        valueFlowForward(const_cast<Token *>(nextExpression),
+                         endOfVarScope,
+                         var,
+                         var->declarationId(),
+                         values,
+                         false,
+                         false,
+                         tokenlist,
+                         errorLogger,
+                         settings);
         // Function call
     } else if (Token::Match(parent->previous(), "%name% (")) {
         valueFlowLifetimeFunction(const_cast<Token *>(parent->previous()), tokenlist, errorLogger, settings);
@@ -2545,8 +2555,7 @@ struct LifetimeStore {
     ValueFlow::Value::LifetimeKind type;
 
     template <class Predicate>
-    void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const
-    {
+    void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
         ErrorPath errorPath;
         const Variable *var = getLifetimeVariable(argtok, errorPath);
         if (!var)
@@ -2567,14 +2576,14 @@ struct LifetimeStore {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
     }
 
-    void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const
-    {
-        byRef(tok, tokenlist, errorLogger, settings, [](const Variable *) { return true; });
+    void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
+        byRef(tok, tokenlist, errorLogger, settings, [](const Variable *) {
+            return true;
+        });
     }
 
     template <class Predicate>
-    void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const
-    {
+    void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -2600,9 +2609,10 @@ struct LifetimeStore {
         }
     }
 
-    void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const
-    {
-        byVal(tok, tokenlist, errorLogger, settings, [](const Variable *) { return true; });
+    void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
+        byVal(tok, tokenlist, errorLogger, settings, [](const Variable *) {
+            return true;
+        });
     }
 };
 
@@ -2612,13 +2622,13 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         return;
     if (Token::Match(tok->tokAt(-2), "std :: ref|cref|tie|front_inserter|back_inserter")) {
         for (const Token *argtok : getArguments(tok)) {
-            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object}
-                .byRef(tok->next(), tokenlist, errorLogger, settings);
+            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object}.byRef(
+                tok->next(), tokenlist, errorLogger, settings);
         }
     } else if (Token::Match(tok->tokAt(-2), "std :: make_tuple|tuple_cat|make_pair|make_reverse_iterator|next|prev|move")) {
         for (const Token *argtok : getArguments(tok)) {
-            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object}
-                .byVal(tok->next(), tokenlist, errorLogger, settings);
+            LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object}.byVal(
+                tok->next(), tokenlist, errorLogger, settings);
         }
     }
 }
@@ -2679,11 +2689,11 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
                 ErrorPath errorPath;
                 if (captureByRef) {
-                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::Lambda}
-                        .byRef(tok, tokenlist, errorLogger, settings, isCapturingVariable);
+                    LifetimeStore{tok2, "Lambda captures variable by reference here.", ValueFlow::Value::Lambda}.byRef(
+                        tok, tokenlist, errorLogger, settings, isCapturingVariable);
                 } else if (captureByValue) {
-                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::Lambda}
-                        .byVal(tok, tokenlist, errorLogger, settings, isCapturingVariable);
+                    LifetimeStore{tok2, "Lambda captures variable by value here.", ValueFlow::Value::Lambda}.byVal(
+                        tok, tokenlist, errorLogger, settings, isCapturingVariable);
                 }
             }
         }
