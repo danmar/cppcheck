@@ -1405,7 +1405,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void danglingLifetimeFunction() {
+    void danglingLifetimeFunction()
+    {
         check("auto f() {\n"
               "    int a;\n"
               "    return std::ref(a);\n"
@@ -1424,7 +1425,6 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     void invalidLifetime() {
