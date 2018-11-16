@@ -9,7 +9,7 @@
 ASTYLE_VERSION="3.0.1"
 ASTYLE="${ASTYLE-astyle}"
 
-DETECTED_VERSION=$($ASTYLE --version 2>&1 | awk '{ print $NF; }')
+DETECTED_VERSION=$("$ASTYLE" --version 2>&1 | awk '{ print $NF; }')
 if [ "$DETECTED_VERSION" != "${ASTYLE_VERSION}" ]; then
     echo "You should use version: ${ASTYLE_VERSION}"
     echo "Detected version: ${DETECTED_VERSION}"
@@ -18,25 +18,25 @@ fi
 
 RCFILE=.astylerc
 
-$ASTYLE --options=$RCFILE cli/*.cpp
-$ASTYLE --options=$RCFILE cli/*.h
-$ASTYLE --options=$RCFILE democlient/*.cpp
-$ASTYLE --options=$RCFILE gui/*.cpp
-$ASTYLE --options=$RCFILE gui/*.h
-$ASTYLE --options=$RCFILE --recursive "gui/test/*.cpp"
-$ASTYLE --options=$RCFILE --recursive "gui/test/*.h"
-$ASTYLE --options=$RCFILE lib/*.cpp
-$ASTYLE --options=$RCFILE lib/*.h
-$ASTYLE --options=$RCFILE test/*.cpp
-$ASTYLE --options=$RCFILE test/cfg/*.c
-$ASTYLE --options=$RCFILE test/cfg/*.cpp
-$ASTYLE --options=$RCFILE test/*.h
+"$ASTYLE" --options=$RCFILE cli/*.cpp
+"$ASTYLE" --options=$RCFILE cli/*.h
+"$ASTYLE" --options=$RCFILE democlient/*.cpp
+"$ASTYLE" --options=$RCFILE gui/*.cpp
+"$ASTYLE" --options=$RCFILE gui/*.h
+"$ASTYLE" --options=$RCFILE --recursive "gui/test/*.cpp"
+"$ASTYLE" --options=$RCFILE --recursive "gui/test/*.h"
+"$ASTYLE" --options=$RCFILE lib/*.cpp
+"$ASTYLE" --options=$RCFILE lib/*.h
+"$ASTYLE" --options=$RCFILE test/*.cpp
+"$ASTYLE" --options=$RCFILE test/cfg/*.c
+"$ASTYLE" --options=$RCFILE test/cfg/*.cpp
+"$ASTYLE" --options=$RCFILE test/*.h
 
-$ASTYLE --options=$RCFILE --recursive "tools/*.cpp"
-$ASTYLE --options=$RCFILE --recursive "tools/*.h"
+"$ASTYLE" --options=$RCFILE --recursive "tools/*.cpp"
+"$ASTYLE" --options=$RCFILE --recursive "tools/*.h"
 
-$ASTYLE --options=$RCFILE --recursive "samples/*.c"
-$ASTYLE --options=$RCFILE --recursive "samples/*.cpp"
+"$ASTYLE" --options=$RCFILE --recursive "samples/*.c"
+"$ASTYLE" --options=$RCFILE --recursive "samples/*.cpp"
 
 # Convert tabs to spaces.. even in strings
 # sed -i "s/\t/ /g" test/test*.cpp
@@ -45,13 +45,13 @@ $ASTYLE --options=$RCFILE --recursive "samples/*.cpp"
 # TODO: use other tool than xmllint? use tabs instead of spaces?
 for CFGFILE in cfg/*.cfg
 do
-   xmllint --format -o ${CFGFILE}_ ${CFGFILE}
-   mv -f ${CFGFILE}_ ${CFGFILE}
+   xmllint --format -o "${CFGFILE}_" "$CFGFILE"
+   mv -f "${CFGFILE}_" "$CFGFILE"
 done
 for PLATFORMFILE in platforms/*.xml
 do
-   xmllint --format -o ${PLATFORMFILE}_ ${PLATFORMFILE}
-   mv -f ${PLATFORMFILE}_ ${PLATFORMFILE}
+   xmllint --format -o "${PLATFORMFILE}_" "$PLATFORMFILE"
+   mv -f "${PLATFORMFILE}_" "$PLATFORMFILE"
 done
 
 xmllint --format -o man/cppcheck.1.xml_ man/cppcheck.1.xml 
