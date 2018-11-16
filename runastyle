@@ -6,13 +6,13 @@
 
 # If project management wishes to take a newer astyle version into use
 # just change this string to match the start of astyle version string.
-ASTYLE_VERSION="Artistic Style Version 3.0.1"
+ASTYLE_VERSION="3.0.1"
 ASTYLE="${ASTYLE-astyle}"
 
-DETECTED_VERSION=$($ASTYLE --version 2>&1)
-if [[ "$DETECTED_VERSION" != ${ASTYLE_VERSION}* ]]; then
-    echo "You should use: ${ASTYLE_VERSION}"
-    echo "Detected: ${DETECTED_VERSION}"
+DETECTED_VERSION=$($ASTYLE --version 2>&1 | awk '{ print $NF; }')
+if [ "$DETECTED_VERSION" != "${ASTYLE_VERSION}" ]; then
+    echo "You should use version: ${ASTYLE_VERSION}"
+    echo "Detected version: ${DETECTED_VERSION}"
     exit 1
 fi
 
