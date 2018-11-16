@@ -579,7 +579,7 @@ static bool isDeadScope(const Token * tok, const Scope * scope)
     return false;
 }
 
-static int getPointerDepth(const Token * tok)
+static int getPointerDepth(const Token *tok)
 {
     if (!tok)
         return 0;
