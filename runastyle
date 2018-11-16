@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # The version check in this script is used to avoid commit battles
 # between different developers that use different astyle versions as
@@ -10,11 +9,11 @@
 ASTYLE_VERSION="Artistic Style Version 3.0.1"
 ASTYLE="astyle"
 
-DETECTED_VERSION=`$ASTYLE --version 2>&1`
+DETECTED_VERSION=$($ASTYLE --version 2>&1)
 if [[ "$DETECTED_VERSION" != ${ASTYLE_VERSION}* ]]; then
-    echo "You should use: ${ASTYLE_VERSION}";
+    echo "You should use: ${ASTYLE_VERSION}"
     echo "Detected: ${DETECTED_VERSION}"
-    exit 1;
+    exit 1
 fi
 
 RCFILE=.astylerc
@@ -24,8 +23,8 @@ $ASTYLE --options=$RCFILE cli/*.h
 $ASTYLE --options=$RCFILE democlient/*.cpp
 $ASTYLE --options=$RCFILE gui/*.cpp
 $ASTYLE --options=$RCFILE gui/*.h
-$ASTYLE --options=$RCFILE -r gui/test/*.cpp
-$ASTYLE --options=$RCFILE -r gui/test/*.h
+$ASTYLE --options=$RCFILE --recursive "gui/test/*.cpp"
+$ASTYLE --options=$RCFILE --recursive "gui/test/*.h"
 $ASTYLE --options=$RCFILE lib/*.cpp
 $ASTYLE --options=$RCFILE lib/*.h
 $ASTYLE --options=$RCFILE test/*.cpp
