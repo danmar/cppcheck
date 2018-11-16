@@ -1377,6 +1377,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(std::vector<int> v) {\n"
+              "    return *v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> v) {\n"
+              "    return v.end() - v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("auto g() {\n"
               "    std::vector<char> v;\n"
               "    return {v, [v]() { return v.data(); }};\n"

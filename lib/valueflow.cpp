@@ -431,7 +431,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     if (value.isLifetimeValue()) {
-        if (value.lifetimeKind == ValueFlow::Value::Iterator && parent->isArithmeticalOp()) {
+        if (value.lifetimeKind == ValueFlow::Value::Iterator && astIsIterator(parent)) {
             setTokenValue(parent,value,settings);
         } else if (astIsPointer(tok) && astIsPointer(parent) && (parent->isArithmeticalOp() || Token::Match(parent, "( %type%"))) {
             setTokenValue(parent,value,settings);

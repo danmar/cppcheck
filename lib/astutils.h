@@ -45,6 +45,10 @@ bool astIsBool(const Token *tok);
 
 bool astIsPointer(const Token *tok);
 
+bool astIsIterator(const Token *tok);
+
+bool astIsContainer(const Token *tok);
+
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.
  * For example:
