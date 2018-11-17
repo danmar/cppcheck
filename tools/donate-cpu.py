@@ -167,7 +167,6 @@ def unpackPackage(workPath, tgz):
             elif member.name.lower().endswith(('.c', '.cl', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
                 try:
                     tf.extract(member.name)
-                    print(member.name)
                 except OSError:
                     pass
         tf.close()
