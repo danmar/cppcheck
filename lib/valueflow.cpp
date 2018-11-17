@@ -431,9 +431,10 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     if (value.isLifetimeValue()) {
-        if (value.lifetimeKind == ValueFlow::Value::Iterator && parent->isArithmeticalOp()) {
+        if (value.lifetimeKind == ValueFlow::Value::Iterator && astIsIterator(parent)) {
             setTokenValue(parent,value,settings);
-        } else if (astIsPointer(tok) && astIsPointer(parent) && (parent->isArithmeticalOp() || Token::Match(parent, "( %type%"))) {
+        } else if (astIsPointer(tok) && astIsPointer(parent) &&
+                   (parent->isArithmeticalOp() || Token::Match(parent, "( %type%"))) {
             setTokenValue(parent,value,settings);
         }
         return;
@@ -2763,7 +2764,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Variable * var = getLifetimeVariable(tok, errorPath);
             if (!var)
                 continue;
-            if (var->isArray() && tok->astParent() && (astIsPointer(tok->astParent()) || Token::Match(tok->astParent(), "%assign%|return"))) {
+            if (var->isArray() && !var->isArgument() && tok->astParent() &&
+                (astIsPointer(tok->astParent()) || Token::Match(tok->astParent(), "%assign%|return"))) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;

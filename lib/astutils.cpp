@@ -76,6 +76,16 @@ bool astIsPointer(const Token *tok)
     return tok && tok->valueType() && tok->valueType()->pointer;
 }
 
+bool astIsIterator(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::ITERATOR;
+}
+
+bool astIsContainer(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::CONTAINER;
+}
+
 std::string astCanonicalType(const Token *expr)
 {
     if (!expr)

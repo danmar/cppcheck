@@ -1192,6 +1192,13 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("int * foo(int * y)\n"
+              "{\n"
+              "  return y;\n"
+              "}");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testconstructor() { // Ticket #5478 - crash while checking a constructor
@@ -1359,6 +1366,27 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("std::vector<int>::iterator f(std::vector<int>* v) {\n"
+              "    return v->begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int>::iterator f(std::vector<int>* v) {\n"
+              "    std::vector<int>* v = new std::vector<int>();\n"
+              "    return v->begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> v) {\n"
+              "    return *v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> v) {\n"
+              "    return v.end() - v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("auto g() {\n"
               "    std::vector<char> v;\n"
               "    return {v, [v]() { return v.data(); }};\n"
@@ -1391,6 +1419,11 @@ private:
         check("auto f(std::vector<int>& a) {\n"
               "    auto it = a.begin();\n"
               "    return [=](){ return it; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int * f(int a[]) {\n"
+              "    return a;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 

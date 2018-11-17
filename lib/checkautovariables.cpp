@@ -579,6 +579,13 @@ static bool isDeadScope(const Token * tok, const Scope * scope)
     return false;
 }
 
+static int getPointerDepth(const Token *tok)
+{
+    if (!tok)
+        return 0;
+    return tok->valueType() ? tok->valueType()->pointer : 0;
+}
+
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
     if (!start)
@@ -597,7 +604,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (val.tokvalue == tok)
                 continue;
             if (Token::Match(tok->astParent(), "return|throw")) {
-                if (isInScope(val.tokvalue, scope)) {
+                if (getPointerDepth(tok) >= getPointerDepth(val.tokvalue) && isInScope(val.tokvalue, scope)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
