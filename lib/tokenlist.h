@@ -128,6 +128,8 @@ public:
         return mFiles;
     }
 
+    std::string getOrigFile(const Token *tok) const;
+
     /**
      * get filename for given token
      * @param tok The given token
@@ -186,6 +188,9 @@ private:
 
     /** filenames for the tokenized source code (source + included) */
     std::vector<std::string> mFiles;
+
+    /** Original filenames for the tokenized source code (source + included) */
+    std::vector<std::string> mOrigFiles;
 
     /** settings */
     const Settings* mSettings;

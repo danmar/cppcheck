@@ -266,7 +266,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 {
     if (tokenList->cfront())
-        mFiles = tokenList->cfront()->location.files;
+        mOrigFiles = mFiles = tokenList->cfront()->location.files;
     else
         mFiles.clear();
 
@@ -1247,6 +1247,11 @@ void TokenList::validateAst() const
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);
         }
     }
+}
+
+std::string TokenList::getOrigFile(const Token *tok) const
+{
+    return mOrigFiles.at(tok->fileIndex());
 }
 
 const std::string& TokenList::file(const Token *tok) const
