@@ -37,6 +37,18 @@
               </optional>
               <ref name="DATA-NAME"/>
             </element>
+            <element name="realloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="buffer-size"><ref name="DATA-BUFFER-SIZE"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
             <element name="use"><ref name="DATA-EXTNAME"/></element>
           </choice>
         </zeroOrMore>
@@ -54,6 +66,15 @@
               <ref name="DATA-EXTNAME"/>
             </element>
             <element name="alloc">
+              <optional>
+                <attribute name="init"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <ref name="DATA-NAME"/>
+            </element>
+            <element name="realloc">
               <optional>
                 <attribute name="init"><ref name="DATA-BOOL"/></attribute>
               </optional>

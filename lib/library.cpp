@@ -188,7 +188,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             // add alloc/dealloc/use functions..
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 const std::string memorynodename = memorynode->Name();
-                if (memorynodename == "alloc") {
+                if (memorynodename == "alloc" || memorynodename == "realloc") {
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
 
@@ -225,7 +225,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
                     }
 
-                    mAlloc[memorynode->GetText()] = temp;
+                    if (memorynodename != "realloc")
+                        mAlloc[memorynode->GetText()] = temp;
+                    else
+                        mRealloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
@@ -947,6 +950,13 @@ const Library::AllocFunc* Library::dealloc(const Token *tok) const
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
 }
 
+/** get reallocation info for function */
+const Library::AllocFunc* Library::realloc(const Token *tok) const
+{
+    const std::string funcname = getFunctionName(tok);
+    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mRealloc, funcname);
+}
+
 /** get allocation id for function */
 int Library::alloc(const Token *tok, int arg) const
 {
@@ -958,6 +968,13 @@ int Library::alloc(const Token *tok, int arg) const
 int Library::dealloc(const Token *tok, int arg) const
 {
     const Library::AllocFunc* af = dealloc(tok);
+    return (af && af->arg == arg) ? af->groupId : 0;
+}
+
+/** get reallocation id for function */
+int Library::realloc(const Token *tok, int arg) const
+{
+    const Library::AllocFunc* af = realloc(tok);
     return (af && af->arg == arg) ? af->groupId : 0;
 }
 

@@ -85,11 +85,17 @@ public:
     /** get deallocation info for function */
     const AllocFunc* dealloc(const Token *tok) const;
 
+    /** get reallocation info for function */
+    const AllocFunc* realloc(const Token *tok) const;
+
     /** get allocation id for function */
     int alloc(const Token *tok, int arg) const;
 
     /** get deallocation id for function */
     int dealloc(const Token *tok, int arg) const;
+
+    /** get reallocation id for function */
+    int realloc(const Token *tok, int arg) const;
 
     /** get allocation info for function by name (deprecated, use other alloc) */
     const AllocFunc* alloc(const char name[]) const {
@@ -122,6 +128,11 @@ public:
     void setdealloc(const std::string &functionname, int id, int arg) {
         mDealloc[functionname].groupId = id;
         mDealloc[functionname].arg = arg;
+    }
+
+    void setrealloc(const std::string &functionname, int id, int arg) {
+        mRealloc[functionname].groupId = id;
+        mRealloc[functionname].arg = arg;
     }
 
     /** add noreturn function setting */
@@ -523,6 +534,7 @@ private:
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
+    std::map<std::string, AllocFunc> mRealloc; // reallocation functions
     std::map<std::string, bool> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;

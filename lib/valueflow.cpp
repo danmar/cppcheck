@@ -5311,6 +5311,8 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
                 continue;
 
             const Library::AllocFunc *allocFunc = settings->library.alloc(rhs->previous());
+            if (!allocFunc)
+                allocFunc = settings->library.realloc(rhs->previous());
             if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
                 continue;
 
