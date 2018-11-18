@@ -537,7 +537,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                     endl = "\r\n";
                 else
                     endl = "\r";
-                findAndReplace(text, "{code}", readCode(fileLocation.getfile(), fileLocation.line, fileLocation.col, endl));
+                findAndReplace(text, "{code}", readCode(fileLocation.getOrigFile(), fileLocation.line, fileLocation.col, endl));
             }
             result += '\n' + text;
         }
