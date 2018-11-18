@@ -176,7 +176,7 @@ def unpackPackage(workPath, tgz):
 def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
-    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --inconclusive --enable=style --library=posix --platform=unix64 --template={file}:{line}:{inconclusive:inconclusive:}{message}[{id}] -rp=temp temp'
+    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --inconclusive --enable=style --library=posix --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -197,11 +197,25 @@ def scanPackage(workPath, cppcheck, jobs):
     return count, stderr, elapsedTime
 
 
+def splitResults(results):
+    ret = []
+    w = None
+    for line in results.split('\n'):
+        if line.endswith(']') and re.search(r': (error|warning|style|performance|portability|information|debug):', line):
+            if w is not None:
+                ret.append(w.strip())
+            w = ''
+        if w is not None:
+            w += line + '\n'
+    if w is not None:
+        ret.append(w.strip())
+    return ret
+
 def diffResults(workPath, ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
-    r1 = sorted(results1.split('\n'))
-    r2 = sorted(results2.split('\n'))
+    r1 = sorted(splitResults(results1))
+    r2 = sorted(splitResults(results2))
     i1 = 0
     i2 = 0
     while i1 < len(r1) and i2 < len(r2):
@@ -220,6 +234,7 @@ def diffResults(workPath, ver1, results1, ver2, results2):
     while i2 < len(r2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
+
     return ret
 
 
