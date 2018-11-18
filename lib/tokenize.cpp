@@ -3244,10 +3244,12 @@ void Tokenizer::createLinks2()
             if (Token::Match(token, "{|[|("))
                 type.push(token);
             else if (!type.empty() && Token::Match(token, "}|]|)")) {
-                while (type.top()->str() == "<")
+                while (type.top()->str() == "<") {
+                    if (templateToken && templateToken->next() == type.top())
+                        templateToken = nullptr;
                     type.pop();
+                }
                 type.pop();
-                templateToken = nullptr;
             } else
                 token->link(nullptr);
         } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
