@@ -1,8 +1,8 @@
 unreadVariable
-shadow*
-unused*
+shadowVar
+shadowFunction
+unusedStructMember
 nullPointer
-uninit*
-redundant*
+uninitvar
 noExplicitConstructor
 
