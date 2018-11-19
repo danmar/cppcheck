@@ -604,7 +604,11 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (val.tokvalue == tok)
                 continue;
             if (Token::Match(tok->astParent(), "return|throw")) {
-                if (getPointerDepth(tok) >= getPointerDepth(val.tokvalue) && isInScope(val.tokvalue, scope)) {
+                if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
+                    continue;
+                if(tok->astParent()->str() == "return" && !astIsContainer(tok) && scope->function && mSettings->library.detectContainer(scope->function->retDef))
+                    continue;
+                if (isInScope(val.tokvalue, scope)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
@@ -626,10 +630,6 @@ void CheckAutoVariables::checkVarLifetime()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)
-            continue;
-        // Skip if returning a container
-        const Library::Container * container = mSettings->library.detectContainer(scope->function->retDef);
-        if (container)
             continue;
         checkVarLifetimeScope(scope->bodyStart, scope->bodyEnd);
     }
