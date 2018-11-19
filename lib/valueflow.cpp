@@ -2549,10 +2549,10 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         valueFlowLifetimeFunction(const_cast<Token *>(parent->previous()), tokenlist, errorLogger, settings);
         // Variable
     } else if (tok->variable()) {
-        const Variable * var = tok->variable();
-        if(!var->typeStartToken() && !var->typeStartToken()->scope())
+        const Variable *var = tok->variable();
+        if (!var->typeStartToken() && !var->typeStartToken()->scope())
             return;
-        const Token * endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        const Token *endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
         std::list<ValueFlow::Value> values = tok->values();
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
@@ -2647,9 +2647,9 @@ struct LifetimeStore {
             const Variable *var = getLifetimeVariable(tok2, errorPath);
             if (!var)
                 continue;
-            for(const Token* tok3 = tok;tok != var->declEndToken();tok3 = tok3->previous()) {
-                if(tok3->varId() == var->declarationId()) {
-                    LifetimeStore{tok3, message, type}.byVal(tok, tokenlist, errorLogger, settings, pred);
+            for (const Token *tok3 = tok; tok != var->declEndToken(); tok3 = tok3->previous()) {
+                if (tok3->varId() == var->declarationId()) {
+                    LifetimeStore{tok3, message, type} .byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;
                 }
             }
@@ -2677,16 +2677,18 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object} .byVal(
                 tok->next(), tokenlist, errorLogger, settings);
         }
-    } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") && astIsContainer(tok->tokAt(-2))) {
+    } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
+               astIsContainer(tok->tokAt(-2))) {
         // const Token* containerTypeTok = tok->tokAt(-2)->valueType()->containerTypeToken;
-        Token* vartok = tok->tokAt(-2);
+        Token *vartok = tok->tokAt(-2);
         std::vector<const Token *> args = getArguments(tok);
-        if(args.size() == 2 && astCanonicalType(args[0]) == astCanonicalType(args[1]) && (((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1]))))) {
+        if (args.size() == 2 && astCanonicalType(args[0]) == astCanonicalType(args[1]) &&
+            (((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1]))))) {
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byDerefCopy(
                 vartok, tokenlist, errorLogger, settings);
         }
         // astIsPointer(containerTypeTok) == astIsPointer(args.back())
-        else if(!args.empty()) {
+        else if (!args.empty()) {
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byVal(
                 vartok, tokenlist, errorLogger, settings);
         }
@@ -3428,7 +3430,9 @@ static void execute(const Token *expr,
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
         const Token *tokvalue = nullptr;
         if (!programMemory->getTokValue(expr->astOperand1()->varId(), &tokvalue)) {
-            auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(), expr->astOperand1()->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
+            auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(),
+                                            expr->astOperand1()->values().end(),
+                                            std::mem_fn(&ValueFlow::Value::isTokValue));
             if (tokvalue_it == expr->astOperand1()->values().end()) {
                 *error = true;
                 return;
