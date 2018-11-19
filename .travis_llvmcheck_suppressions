@@ -1,2 +1,8 @@
 unreadVariable
-shadowLocal
+shadow*
+unused*
+nullPointer
+uninit*
+redundant*
+noExplicitConstructor
+
