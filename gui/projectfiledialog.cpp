@@ -119,9 +119,9 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     }
 
     // Platforms..
-    Platforms p;
+    Platforms platforms;
     for (int i = 0; i < numberOfBuiltinPlatforms; i++)
-        mUI.mComboBoxPlatform->addItem(p.get(builtinPlatforms[i]).mTitle);
+        mUI.mComboBoxPlatform->addItem(platforms.get(builtinPlatforms[i]).mTitle);
     QStringList platformFiles;
     foreach (QString sp, searchPaths) {
         if (sp.endsWith("/cfg"))
@@ -133,8 +133,8 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
         foreach (QFileInfo item, dir.entryInfoList()) {
             const QString platformFile = item.fileName();
 
-            cppcheck::Platform p;
-            if (!p.loadPlatformFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
+            cppcheck::Platform plat2;
+            if (!plat2.loadPlatformFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
                 continue;
 
             if (platformFiles.indexOf(platformFile) == -1)
