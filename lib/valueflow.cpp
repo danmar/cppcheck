@@ -3428,11 +3428,12 @@ static void execute(const Token *expr,
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
         const Token *tokvalue = nullptr;
         if (!programMemory->getTokValue(expr->astOperand1()->varId(), &tokvalue)) {
-            if (expr->astOperand1()->values().size() != 1U || !expr->astOperand1()->values().front().isTokValue()) {
+            auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(), expr->astOperand1()->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
+            if (tokvalue_it == expr->astOperand1()->values().end()) {
                 *error = true;
                 return;
             }
-            tokvalue = expr->astOperand1()->values().front().tokvalue;
+            tokvalue = tokvalue_it->tokvalue;
         }
         if (!tokvalue || !tokvalue->isLiteral()) {
             *error = true;
