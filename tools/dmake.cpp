@@ -301,7 +301,7 @@ int main(int argc, char **argv)
 //                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
-                                "-Wshadow "
+                                "-Wno-shadow "
 //                                "-Wsign-conversion "
 //                                "-Wsign-promo "
                                 "-Wno-missing-field-initializers "
