@@ -616,7 +616,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             } else if (isDeadScope(val.tokvalue, tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
-            } else if (tok->variable() && !tok->variable()->isLocal() && !tok->variable()->isArgument() && isInScope(val.tokvalue, tok->scope())) {
+            } else if (tok->variable() && !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
+                       isInScope(val.tokvalue, tok->scope())) {
                 errorDanglngLifetime(tok, &val);
                 break;
             }
@@ -661,7 +662,7 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
     return result;
 }
 
-static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value* val, ErrorPath& errorPath)
+static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
 {
     const Token *vartok = val ? val->tokvalue : nullptr;
     std::string type = lifetimeType(tok, val);
@@ -690,7 +691,7 @@ static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value* val
     return msg;
 }
 
-void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val)
+void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value *val)
 {
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Returning " + lifetimeMessage(tok, val, errorPath);
@@ -706,7 +707,7 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
     reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, false);
 }
 
-void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value* val)
+void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)
 {
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Non-local variable will use " + lifetimeMessage(tok, val, errorPath);
