@@ -3005,16 +3005,18 @@ void CheckOther::checkShadowVariables()
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
                 continue;
-            shadowVariablesError(var.nameToken(), shadowed);
+            shadowError(var.nameToken(), shadowed, shadowed->varId() != 0);
         }
     }
 }
 
-void CheckOther::shadowVariablesError(const Token *var, const Token *shadowed)
+void CheckOther::shadowError(const Token *var, const Token *shadowed, bool shadowVar)
 {
     ErrorPath errorPath;
     errorPath.push_back(ErrorPathItem(shadowed, "Shadowed declaration"));
     errorPath.push_back(ErrorPathItem(var, "Shadow variable"));
-    const std::string &varname = var ? var->str() : "var";
-    reportError(errorPath, Severity::style, "shadowLocal", "$symbol:" + varname + "\nLocal variable $symbol shadows outer symbol", CWE398, false);
+    const std::string &varname = var ? var->str() : (shadowVar ? "var" : "f");
+    const char *id = shadowVar ? "shadowVar" : "shadowFunction";
+    std::string message = "$symbol:" + varname + "\nLocal variable $symbol shadows outer " + (shadowVar ? "variable" : "function");
+    reportError(errorPath, Severity::style, id, message, CWE398, false);
 }
