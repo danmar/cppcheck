@@ -462,17 +462,24 @@ def server(server_address_port, packages, packageIndex, resultPath):
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
-            if res and url in packages:
-                print('results added for package ' + res.group(1))
-                filename = resultPath + '/' + res.group(1)
-                with open(filename, 'wt') as f:
-                    f.write(strDateTime() + '\n' + data)
-                # track latest added results..
-                if len(latestResults) >= 20:
-                    latestResults = latestResults[1:]
-                latestResults.append(filename)
-                with open('latest.txt', 'wt') as f:
-                    f.write(' '.join(latestResults))
+            if res is None:
+                print('results not written. res is None.')
+                continue
+            if url not in packages:
+                url2 = url + '\n'
+                if url2 not in packages:
+                    print('results not written. url is not in packages.')
+                    continue
+            print('results added for package ' + res.group(1))
+            filename = resultPath + '/' + res.group(1)
+            with open(filename, 'wt') as f:
+                f.write(strDateTime() + '\n' + data)
+            # track latest added results..
+            if len(latestResults) >= 20:
+                latestResults = latestResults[1:]
+            latestResults.append(filename)
+            with open('latest.txt', 'wt') as f:
+                f.write(' '.join(latestResults))
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
