@@ -1364,6 +1364,18 @@ private:
             "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:5]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
             errout.str());
 
+        check("std::vector<int*> f() {\n"
+              "    std::vector<int*> r;\n"
+              "    int i = 0;\n"
+              "    std::vector<int*> v;\n"
+              "    v.push_back(&i);\n"
+              "    r.assign(v.begin(), v.end());\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:7]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
+            errout.str());
+
         check("std::vector<std::string> f() {\n"
               "    const char * s = \"hello\";\n"
               "    std::vector<std::string> v;\n"

@@ -2500,7 +2500,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     const Token *parent = tok->astParent();
-    while (parent && parent->isArithmeticalOp())
+    while (parent && (parent->isArithmeticalOp() || parent->str() == ","))
         parent = parent->astParent();
     if (!parent)
         return;
@@ -2639,11 +2639,6 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
-        const Variable *argVar = argtok->variable();
-        if(!argVar)
-            return;
-        if(!argVar->declEndToken())
-            return;
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -2652,7 +2647,7 @@ struct LifetimeStore {
             const Variable *var = getLifetimeVariable(tok2, errorPath);
             if (!var)
                 continue;
-            for(const Token* tok3 = tok;tok != argVar->declEndToken();tok3 = tok3->previous()) {
+            for(const Token* tok3 = tok;tok != var->declEndToken();tok3 = tok3->previous()) {
                 if(tok3->varId() == var->declarationId()) {
                     LifetimeStore{tok3, message, type}.byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;
