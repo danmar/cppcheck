@@ -616,6 +616,9 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             } else if (isDeadScope(val.tokvalue, tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
+            } else if (tok->variable() && !tok->variable()->isLocal() && !tok->variable()->isArgument() && isInScope(val.tokvalue, tok->scope())) {
+                errorDanglngLifetime(tok, &val);
+                break;
             }
         }
         const Token *lambdaEndToken = findLambdaEndToken(tok);
@@ -658,12 +661,11 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
     return result;
 }
 
-void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val)
+static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value* val, ErrorPath& errorPath)
 {
     const Token *vartok = val ? val->tokvalue : nullptr;
-    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string type = lifetimeType(tok, val);
-    std::string msg = "Returning " + type;
+    std::string msg = type;
     if (vartok) {
         errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
@@ -685,39 +687,31 @@ void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const Val
             msg += " '" + var->name() + "'";
         }
     }
+    return msg;
+}
+
+void CheckAutoVariables::errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val)
+{
+    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
+    std::string msg = "Returning " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "returnDanglingLifetime", msg + " that will be invalid when returning.", CWE562, false);
 }
 
 void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val)
 {
-    const Token *vartok = val ? val->tokvalue : nullptr;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
-    std::string type = lifetimeType(tok, val);
-    std::string msg = "Using " + type;
-    if (vartok) {
-        errorPath.emplace_back(vartok, "Variable created here.");
-        const Variable * var = vartok->variable();
-        if (var) {
-            switch (val->lifetimeKind) {
-            case ValueFlow::Value::Object:
-                if (type == "pointer")
-                    msg += " to local variable";
-                else
-                    msg += " that points to local variable";
-                break;
-            case ValueFlow::Value::Lambda:
-                msg += " that captures local variable";
-                break;
-            case ValueFlow::Value::Iterator:
-                msg += " to local container";
-                break;
-            }
-            msg += " '" + var->name() + "'";
-        }
-    }
+    std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, false);
+}
+
+void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value* val)
+{
+    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
+    std::string msg = "Non-local variable will use " + lifetimeMessage(tok, val, errorPath);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnReference(const Token *tok)

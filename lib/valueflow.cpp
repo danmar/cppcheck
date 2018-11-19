@@ -2679,7 +2679,6 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         }
     } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
                astIsContainer(tok->tokAt(-2))) {
-        // const Token* containerTypeTok = tok->tokAt(-2)->valueType()->containerTypeToken;
         Token *vartok = tok->tokAt(-2);
         std::vector<const Token *> args = getArguments(tok);
         if (args.size() == 2 && astCanonicalType(args[0]) == astCanonicalType(args[1]) &&
@@ -2687,7 +2686,6 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byDerefCopy(
                 vartok, tokenlist, errorLogger, settings);
         }
-        // astIsPointer(containerTypeTok) == astIsPointer(args.back())
         else if (!args.empty()) {
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byVal(
                 vartok, tokenlist, errorLogger, settings);

@@ -1388,6 +1388,29 @@ private:
             "[test.cpp:5] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:7]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
             errout.str());
 
+        check("struct A {\n"
+              "    std::vector<int*> v;\n"
+              "    void f() {\n"
+              "        int i;\n"
+              "        v.push_back(&i);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Non-local variable will use object that points to local variable 'i'.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int*> v;\n"
+              "    void f() {\n"
+              "        int i;\n"
+              "        int * p = &i;\n"
+              "        v.push_back(p);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:6]: (error) Non-local variable will use object that points to local variable 'i'.\n",
+            errout.str());
+
         check("std::vector<std::string> f() {\n"
               "    const char * s = \"hello\";\n"
               "    std::vector<std::string> v;\n"

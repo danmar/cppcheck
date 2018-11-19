@@ -90,6 +90,7 @@ private:
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
+    void errorDanglngLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
@@ -111,6 +112,7 @@ private:
         c.errorUselessAssignmentPtrArg(nullptr);
         c.errorReturnDanglingLifetime(nullptr, nullptr);
         c.errorInvalidLifetime(nullptr, nullptr);
+        c.errorDanglngLifetime(nullptr, nullptr);
     }
 
     static std::string myName() {
