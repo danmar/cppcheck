@@ -2343,6 +2343,9 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             }
         } else if (!c && ((TemplateSimplifier::templateParameters(tok2) > 0) ||
                           Token::simpleMatch(tok2, "< >") /* Ticket #4764 */)) {
+            const Token *start = *tok;
+            if (Token::Match(start->previous(), "%or%|%oror%|&&|&|^|+|-|*|/"))
+                return false;
             const Token * tok3 = tok2->findClosingBracket();
             if (tok3 == nullptr) { /* Ticket #8151 */
                 throw tok2;
@@ -2351,6 +2354,14 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             if (tok2->str() != ">")
                 break;
             singleNameCount = 1;
+            if (Token::Match(tok2, "> %name% %or%|%oror%|&&|&|^|+|-|*|/"))
+                return false;
+            if (Token::Match(tok2, "> %name% )")) {
+                if (Token::Match(tok2->linkAt(2)->previous(), "if|for|while ("))
+                    return false;
+                if (!Token::Match(tok2->linkAt(2)->previous(), "%name% ("))
+                    return false;
+            }
         } else if (Token::Match(tok2, "&|&&")) {
             ref = !bracket;
         } else if (singleNameCount == 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {
@@ -2438,11 +2449,14 @@ static void setVarIdStructMembers(Token **tok1,
         return;
     }
 
-    while (Token::Match(tok->next(), ". %name% !!(")) {
+    while (Token::Match(tok->next(), ")| . %name% !!(")) {
         const unsigned int struct_varid = tok->varId();
         tok = tok->tokAt(2);
         if (struct_varid == 0)
             continue;
+
+        if (tok->str() == ".")
+            tok = tok->next();
 
         // Don't set varid for template function
         if (TemplateSimplifier::templateParameters(tok->next()) > 0)
@@ -3230,10 +3244,12 @@ void Tokenizer::createLinks2()
             if (Token::Match(token, "{|[|("))
                 type.push(token);
             else if (!type.empty() && Token::Match(token, "}|]|)")) {
-                while (type.top()->str() == "<")
+                while (type.top()->str() == "<") {
+                    if (templateToken && templateToken->next() == type.top())
+                        templateToken = nullptr;
                     type.pop();
+                }
                 type.pop();
-                templateToken = nullptr;
             } else
                 token->link(nullptr);
         } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
@@ -4187,11 +4203,14 @@ void Tokenizer::removeMacrosInGlobalScope()
                 tok->deleteNext();
         }
 
-        if ((!tok->previous() || Token::Match(tok->previous(), "[;{}]")) &&
-            Token::Match(tok, "%type%") && tok->isUpperCaseName()) {
+        if (Token::Match(tok, "%type%") && tok->isUpperCaseName() &&
+            (!tok->previous() || Token::Match(tok->previous(), "[;{}]") || (tok->previous()->isName() && endsWith(tok->previous()->str(), ':')))) {
             const Token *tok2 = tok->next();
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
+
+            if (Token::Match(tok, "%type% (") && Token::Match(tok2, "%type% (") && !Token::Match(tok2, "noexcept|throw") && isFunctionHead(tok2->next(), ":;{"))
+                unknownMacroError(tok);
 
             // remove unknown macros before namespace|class|struct|union
             if (Token::Match(tok2, "namespace|class|struct|union")) {
@@ -4207,14 +4226,15 @@ void Tokenizer::removeMacrosInGlobalScope()
             }
 
             // replace unknown macros before foo(
-            if (Token::Match(tok2, "%type% (") && isFunctionHead(tok2->next(), "{")) {
-                std::string typeName;
-                for (const Token* tok3 = tok; tok3 != tok2; tok3 = tok3->next())
-                    typeName += tok3->str();
-                Token::eraseTokens(tok, tok2);
-                tok->str(typeName);
-            }
-
+            /*
+                        if (Token::Match(tok2, "%type% (") && isFunctionHead(tok2->next(), "{")) {
+                            std::string typeName;
+                            for (const Token* tok3 = tok; tok3 != tok2; tok3 = tok3->next())
+                                typeName += tok3->str();
+                            Token::eraseTokens(tok, tok2);
+                            tok->str(typeName);
+                        }
+            */
             // remove unknown macros before foo::foo(
             if (Token::Match(tok2, "%type% :: %type%")) {
                 const Token *tok3 = tok2;
@@ -7905,6 +7925,12 @@ void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
     throw InternalError(tok, "Code '"+what+"' is invalid C code. Use --std or --language to configure the language.", InternalError::SYNTAX);
 }
 
+void Tokenizer::unknownMacroError(const Token *tok1) const
+{
+    printDebugOutput(0);
+    throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::UNKNOWN_MACRO);
+}
+
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
 {
     reportError(tok,
@@ -9060,7 +9086,7 @@ static const std::set<std::string> keywords = {
     , "__restrict__"
     , "__thread"
 };
-// Remove "inline", "register", "restrict", "override", "final", "static" and "constexpr"
+// Remove "inline", "register", "restrict", "override", "static" and "constexpr"
 // "restrict" keyword
 //   - New to 1999 ANSI/ISO C standard
 //   - Not in C++ standard yet
@@ -9110,7 +9136,7 @@ void Tokenizer::simplifyKeyword()
 
             // final:
             // 1) struct name final { };   <- struct is final
-            if (Token::Match(tok, "%type% final [:{]")) {
+            if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {
                 tok->deleteNext();
             }
 

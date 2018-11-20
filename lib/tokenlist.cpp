@@ -266,7 +266,7 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 void TokenList::createTokens(const simplecpp::TokenList *tokenList)
 {
     if (tokenList->cfront())
-        mFiles = tokenList->cfront()->location.files;
+        mOrigFiles = mFiles = tokenList->cfront()->location.files;
     else
         mFiles.clear();
 
@@ -362,7 +362,7 @@ struct AST_state {
     unsigned int inArrayAssignment;
     bool cpp;
     unsigned int assign;
-    bool inCase;
+    bool inCase; // true from case to :
     explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_), assign(0U), inCase(false) {}
 };
 
@@ -414,10 +414,15 @@ static bool iscast(const Token *tok)
 
     bool type = false;
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
+        if (tok2->varId() != 0)
+            return false;
+
         while (tok2->link() && Token::Match(tok2, "(|[|<"))
             tok2 = tok2->link()->next();
 
         if (tok2->str() == ")") {
+            if (Token::simpleMatch(tok2, ") (") && Token::simpleMatch(tok2->linkAt(1), ") ."))
+                return true;
             return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
                    (Token::Match(tok2, ") %any%") &&
                     !tok2->next()->isOp() &&
@@ -563,8 +568,10 @@ static void compileTerm(Token *&tok, AST_state& state)
                 state.inCase = true;
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
-            if (state.inCase && Token::simpleMatch(tok, ": ;"))
+            if (state.inCase && Token::simpleMatch(tok, ": ;")) {
+                state.inCase = false;
                 tok = tok->next();
+            }
         } else if (Token::Match(tok, "sizeof !!(")) {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
@@ -755,17 +762,10 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             }
             compileUnaryOp(tok, state, compilePrecedence3);
         } else if (tok->str() == "(" && iscast(tok)) {
-            Token* tok2 = tok;
+            Token* castTok = tok;
             tok = tok->link()->next();
-            if (tok && tok->str() == "(" && !iscast(tok)) {
-                Token *tok3 = tok->next();
-                compileExpression(tok3, state);
-                if (tok->link() == tok3)
-                    tok = tok3->next();
-            } else {
-                compilePrecedence3(tok, state);
-            }
-            compileUnaryOp(tok2, state, nullptr);
+            compilePrecedence3(tok, state);
+            compileUnaryOp(castTok, state, nullptr);
         } else if (state.cpp && Token::Match(tok, "new %name%|::|(")) {
             Token* newtok = tok;
             tok = tok->next();
@@ -967,8 +967,11 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
             compileBinOp(tok, state, compileAssignTernary);
             state.assign = assign;
         } else if (tok->str() == ":") {
-            if (state.depth == 1U && state.inCase)
+            if (state.depth == 1U && state.inCase) {
+                state.inCase = false;
+                tok = tok->next();
                 break;
+            }
             if (state.assign > 0U)
                 break;
             compileBinOp(tok, state, compileAssignTernary);
@@ -1244,6 +1247,11 @@ void TokenList::validateAst() const
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);
         }
     }
+}
+
+std::string TokenList::getOrigFile(const Token *tok) const
+{
+    return mOrigFiles.at(tok->fileIndex());
 }
 
 const std::string& TokenList::file(const Token *tok) const

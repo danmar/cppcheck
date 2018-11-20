@@ -43,6 +43,12 @@ bool astIsFloat(const Token *tok, bool unknown);
 /** Is expression of boolean type? */
 bool astIsBool(const Token *tok);
 
+bool astIsPointer(const Token *tok);
+
+bool astIsIterator(const Token *tok);
+
+bool astIsContainer(const Token *tok);
+
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.
  * For example:
@@ -58,6 +64,8 @@ std::string astCanonicalType(const Token *expr);
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
+
+bool precedes(const Token * tok1, const Token * tok2);
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 

@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 
 #include "astutils.h"
 #include "errorlogger.h"
@@ -619,8 +620,11 @@ void CheckOther::checkRedundantAssignment()
                             if (printWarning && scope.type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
                                 redundantAssignmentInSwitchError(it->second, tok, eq->astOperand1()->expressionString());
                             else if (printStyle) {
-                                // c++, unknown type => assignment might have additional side effects
-                                const bool possibleSideEffects(mTokenizer->isCPP() && !tok->valueType());
+                                // c++ and (unknown type or overloaded assignment operator) => assignment might have additional side effects
+                                const bool possibleSideEffects = mTokenizer->isCPP() &&
+                                                                 (!tok->valueType() ||
+                                                                  (tok->valueType()->typeScope &&
+                                                                   tok->valueType()->typeScope->functionMap.count("operator=")));
 
                                 // TODO nonlocal variables are not tracked entirely.
                                 const bool nonlocal = it->second->variable() && nonLocalVolatile(it->second->variable());
@@ -1015,6 +1019,8 @@ void CheckOther::checkUnreachableCode()
             else if (Token::Match(tok, "break|continue ;"))
                 secondBreak = tok->tokAt(2);
             else if (Token::Match(tok, "[;{}:] return|throw")) {
+                if (Token::simpleMatch(tok->astParent(), "?"))
+                    continue;
                 tok = tok->next(); // tok should point to return or throw
                 for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
                     if (tok2->str() == "(" || tok2->str() == "{")
@@ -1609,9 +1615,8 @@ void CheckOther::checkIncompleteStatement()
             tok = tok->link();
 
         // C++11 struct/array/etc initialization in initializer list
-        else if (Token::Match(tok->previous(), "%name%|] {") && !Token::findsimplematch(tok,";",tok->link()))
+        else if (Token::Match(tok->previous(), "%var%|] {"))
             tok = tok->link();
-
 
         if (!Token::Match(tok, "[;{}] %str%|%num%"))
             continue;
@@ -2769,6 +2774,7 @@ void CheckOther::checkAccessOfMovedVariable()
 {
     if (!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11 || !mSettings->isEnabled(Settings::WARNING))
         return;
+    CheckUninitVar checkUninitVar(mTokenizer, mSettings, mErrorLogger);
     const bool reportInconclusive = mSettings->inconclusive;
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -2794,7 +2800,7 @@ void CheckOther::checkAccessOfMovedVariable()
                     inconclusive = true;
             } else {
                 const bool isVariableChanged = isVariableChangedByFunctionCall(tok, mSettings, &inconclusive);
-                accessOfMoved = !isVariableChanged;
+                accessOfMoved = !isVariableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
                 if (inconclusive) {
                     accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);
                     if (accessOfMoved)
@@ -2999,16 +3005,18 @@ void CheckOther::checkShadowVariables()
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
                 continue;
-            shadowVariablesError(var.nameToken(), shadowed);
+            shadowError(var.nameToken(), shadowed, shadowed->varId() != 0);
         }
     }
 }
 
-void CheckOther::shadowVariablesError(const Token *var, const Token *shadowed)
+void CheckOther::shadowError(const Token *var, const Token *shadowed, bool shadowVar)
 {
     ErrorPath errorPath;
     errorPath.push_back(ErrorPathItem(shadowed, "Shadowed declaration"));
     errorPath.push_back(ErrorPathItem(var, "Shadow variable"));
-    const std::string &varname = var ? var->str() : "var";
-    reportError(errorPath, Severity::style, "shadowLocal", "$symbol:" + varname + "\nLocal variable $symbol shadows outer symbol", CWE398, false);
+    const std::string &varname = var ? var->str() : (shadowVar ? "var" : "f");
+    const char *id = shadowVar ? "shadowVar" : "shadowFunction";
+    std::string message = "$symbol:" + varname + "\nLocal variable $symbol shadows outer " + (shadowVar ? "variable" : "function");
+    reportError(errorPath, Severity::style, id, message, CWE398, false);
 }

@@ -54,10 +54,11 @@ namespace tinyxml2 {
 
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
-    enum Type {AST, SYNTAX, INTERNAL};
+    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL};
     InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
     const Token *token;
     std::string errorMessage;
+    Type type;
     std::string id;
 };
 
@@ -193,11 +194,11 @@ public:
             }
 
             FileLocation(const std::string &file, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mFileName(file) {
+                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file) {
             }
 
             FileLocation(const std::string &file, const std::string &info, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mFileName(file), mInfo(info) {
+                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file), mInfo(info) {
             }
 
             FileLocation(const Token* tok, const TokenList* tokenList);
@@ -209,6 +210,8 @@ public:
              * @return filename.
              */
             std::string getfile(bool convert = true) const;
+
+            std::string getOrigFile(bool convert = true) const;
 
             /**
              * Set the filename.
@@ -233,6 +236,7 @@ public:
             }
 
         private:
+            std::string mOrigFileName;
             std::string mFileName;
             std::string mInfo;
         };

@@ -34,7 +34,7 @@
 #include <iomanip>
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
-    token(tok), errorMessage(errorMsg)
+    token(tok), errorMessage(errorMsg), type(type)
 {
     switch (type) {
     case AST:
@@ -42,6 +42,9 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
         break;
     case SYNTAX:
         id = "syntaxError";
+        break;
+    case UNKNOWN_MACRO:
+        id = "unknownMacro";
         break;
     case INTERNAL:
         id = "cppcheckError";
@@ -503,7 +506,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                 endl = "\r\n";
             else
                 endl = "\r";
-            findAndReplace(result, "{code}", readCode(_callStack.back().getfile(), _callStack.back().line, _callStack.back().col, endl));
+            findAndReplace(result, "{code}", readCode(_callStack.back().getOrigFile(), _callStack.back().line, _callStack.back().col, endl));
         }
     } else {
         findAndReplace(result, "{file}", "nofile");
@@ -534,7 +537,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                     endl = "\r\n";
                 else
                     endl = "\r";
-                findAndReplace(text, "{code}", readCode(fileLocation.getfile(), fileLocation.line, fileLocation.col, endl));
+                findAndReplace(text, "{code}", readCode(fileLocation.getOrigFile(), fileLocation.line, fileLocation.col, endl));
             }
             result += '\n' + text;
         }
@@ -584,12 +587,12 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mFileName(tokenList->file(tok))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
 {
 }
 
 ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mFileName(tokenList->file(tok)), mInfo(info)
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
 {
 }
 
@@ -598,6 +601,13 @@ std::string ErrorLogger::ErrorMessage::FileLocation::getfile(bool convert) const
     if (convert)
         return Path::toNativeSeparators(mFileName);
     return mFileName;
+}
+
+std::string ErrorLogger::ErrorMessage::FileLocation::getOrigFile(bool convert) const
+{
+    if (convert)
+        return Path::toNativeSeparators(mOrigFileName);
+    return mOrigFileName;
 }
 
 void ErrorLogger::ErrorMessage::FileLocation::setfile(const std::string &file)

@@ -456,9 +456,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  e.id,
                                                  false);
 
-                reportErr(errmsg);
-                if (!mSuppressInternalErrorFound)
-                    internalErrorFound = true;
+                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity)) {
+                    reportErr(errmsg);
+                    if (!mSuppressInternalErrorFound)
+                        internalErrorFound = true;
+                }
             }
         }
 

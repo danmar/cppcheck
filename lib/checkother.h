@@ -267,7 +267,7 @@ private:
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, size_t index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
-    void shadowVariablesError(const Token *var, const Token *shadowed);
+    void shadowError(const Token *var, const Token *shadowed, bool shadowVar);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
@@ -330,7 +330,8 @@ private:
         c.accessMovedError(nullptr, "v", nullptr, false);
         c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
         c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
-        c.shadowVariablesError(nullptr, nullptr);
+        c.shadowError(nullptr, nullptr, false);
+        c.shadowError(nullptr, nullptr, true);
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);

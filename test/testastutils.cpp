@@ -37,6 +37,7 @@ private:
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);
         TEST_CASE(isVariableChangedByFunctionCall);
+        TEST_CASE(nextAfterAstRightmostLeaf);
     }
 
     bool findLambdaEndToken(const char code[]) {
@@ -128,6 +129,29 @@ private:
         inconclusive = false;
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
         ASSERT_EQUALS(true, inconclusive);
+    }
+
+    bool nextAfterAstRightmostLeaf(const char code[], const char parentPattern[], const char rightPattern[]) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern);
+        return Token::simpleMatch(::nextAfterAstRightmostLeaf(tok), rightPattern);
+    }
+
+    void nextAfterAstRightmostLeaf() {
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("void f(int a, int b) { int x = a + b; }", "=", "; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a); }", "=", "; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a)[b]; }", "=", "; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(g(a)[b]); }", "=", "; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(g(a)[b] + a); }", "=", "; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a)[b + 1]; }", "=", "; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("void f() { int a; int b; int x = [](int a){}; }", "=", "; }"));
+
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = a + b; }", "+", "; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a)[b + 1]; }", "+", "] ; }"));
+        ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a + 1)[b]; }", "+", ") ["));
     }
 };
 

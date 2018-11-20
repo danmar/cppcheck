@@ -346,6 +346,41 @@ class HttpClientThread(Thread):
             time.sleep(1)
             self.connection.close()
 
+
+def getCrashUrls():
+    ret = []
+    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+        if not os.path.isfile(filename):
+            continue
+        url = None
+        for line in open(filename, 'rt'):
+            if line.startswith('ftp://'):
+                url = line.strip()
+            if not line.startswith('count:'):
+                continue
+            if url and line.find('Crash') > 0:
+                ret.append(url)
+            break
+    return ret
+
+
+def writeCrashUrls(crashUrls):
+    f = open(os.path.expanduser('crash-urls.txt'), 'wt')
+    for url in crashUrls:
+        f.write(url + '\n')
+    f.close()
+
+def readCrashUrls():
+    ret = []
+    filename = 'crash-urls.txt'
+    if os.path.isfile(filename):
+        f = open(filename, 'rt')
+        for url in f.read().split():
+            if len(url) > 10:
+                ret.append(url.strip())
+        f.close()
+    return ret
+
 def server(server_address_port, packages, packageIndex, resultPath):
     socket.setdefaulttimeout(30)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -354,6 +389,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
     sock.bind(server_address)
 
     sock.listen(1)
+
+    crashUrls = readCrashUrls()
 
     latestResults = []
     if os.path.isfile('latest.txt'):
@@ -379,15 +416,26 @@ def server(server_address_port, packages, packageIndex, resultPath):
             newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
             newThread.start()
         elif cmd=='get\n':
-            packages[packageIndex] = packages[packageIndex].strip()
-            print('[' + strDateTime() + '] get:' + packages[packageIndex])
-            connection.send(packages[packageIndex])
-            packageIndex += 1
-            if packageIndex >= len(packages):
-                packageIndex = 0
-            f = open('package-index.txt', 'wt')
-            f.write(str(packageIndex) + '\n')
-            f.close()
+            # Get crash package urls..
+            if (packageIndex % 500) == 0:
+                crashUrls = getCrashUrls()
+                writeCrashUrls(crashUrls)
+            if (packageIndex % 500) == 1 and len(crashUrls) > 0:
+                pkg = crashUrls[0]
+                crashUrls = crashUrls[1:]
+                writeCrashUrls(crashUrls)
+                print('[' + strDateTime() + '] CRASH: ' + pkg)
+            else:
+                pkg = packages[packageIndex].strip()
+                packages[packageIndex] = pkg
+                packageIndex += 1
+                if packageIndex >= len(packages):
+                    packageIndex = 0
+                f = open('package-index.txt', 'wt')
+                f.write(str(packageIndex) + '\n')
+                f.close()
+            print('[' + strDateTime() + '] get:' + pkg)
+            connection.send(pkg)
             connection.close()
         elif cmd.startswith('write\nftp://'):
             # read data
@@ -414,17 +462,24 @@ def server(server_address_port, packages, packageIndex, resultPath):
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
-            if res and url in packages:
-                print('results added for package ' + res.group(1))
-                filename = resultPath + '/' + res.group(1)
-                with open(filename, 'wt') as f:
-                    f.write(strDateTime() + '\n' + data)
-                # track latest added results..
-                if len(latestResults) >= 20:
-                    latestResults = latestResults[1:]
-                latestResults.append(filename)
-                with open('latest.txt', 'wt') as f:
-                    f.write(' '.join(latestResults))
+            if res is None:
+                print('results not written. res is None.')
+                continue
+            if url not in packages:
+                url2 = url + '\n'
+                if url2 not in packages:
+                    print('results not written. url is not in packages.')
+                    continue
+            print('results added for package ' + res.group(1))
+            filename = resultPath + '/' + res.group(1)
+            with open(filename, 'wt') as f:
+                f.write(strDateTime() + '\n' + data)
+            # track latest added results..
+            if len(latestResults) >= 20:
+                latestResults = latestResults[1:]
+            latestResults.append(filename)
+            with open('latest.txt', 'wt') as f:
+                f.write(' '.join(latestResults))
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()

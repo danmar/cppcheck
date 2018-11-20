@@ -353,6 +353,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
     // Get return pointer..
     unsigned int varid = 0;
     for (const Token *tok2 = func->functionScope->bodyStart; tok2 != func->functionScope->bodyEnd; tok2 = tok2->next()) {
+        if (const Token *endOfLambda = findLambdaEndToken(tok2))
+            tok2 = endOfLambda;
         if (tok2->str() == "return") {
             const AllocType allocType = getAllocationType(tok2->next(), 0, callstack);
             if (allocType != No)
@@ -490,8 +492,7 @@ static bool alwaysTrue(const Token *tok)
 {
     if (!tok)
         return false;
-    if (tok->values().size() == 1U &&
-        tok->values().front().isKnown() &&
+    if (tok->hasKnownIntValue() &&
         tok->values().front().intvalue != 0)
         return true;
     if (tok->str() == "||")

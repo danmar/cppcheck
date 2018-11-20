@@ -4716,6 +4716,16 @@ private:
             const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
             ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
         }
+        {
+            // #8851
+            const char code[] = "template<typename std::enable_if<!(std::value1) && std::value2>::type>"
+                                "void basic_json() {}";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_EQUALS(true, Token::simpleMatch(tokenizer.tokens()->next()->link(), "> void"));
+        }
     }
 
     void simplifyString() {
@@ -6155,8 +6165,8 @@ private:
         ASSERT_EQUALS("; foo :: foo ( ) { }",
                       tokenizeAndStringify("; AB(foo*) foo::foo() { }"));
 
-        // #4834
-        ASSERT_EQUALS("A(B) foo ( ) { }", tokenizeAndStringify("A(B) foo() {}"));
+        // #4834 - syntax error
+        ASSERT_THROW(tokenizeAndStringify("A(B) foo() {}"), InternalError);
 
         // #3855
         ASSERT_EQUALS("; class foo { }",
@@ -8536,6 +8546,8 @@ private:
         ASSERT_EQUALS("xatoistr({(=", testAst("x = (struct X){atoi(str)};"));
         ASSERT_EQUALS("xa.0=b.0=,c.0=,{(=", testAst("x = (struct abc) { .a=0, .b=0, .c=0 };"));
 
+        ASSERT_EQUALS("yz.(return", testAst("return (x)(y).z;"));
+
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
@@ -8561,6 +8573,9 @@ private:
         ASSERT_EQUALS("x{([= 0return", testAst("x = [](){return 0; };"));
 
         ASSERT_EQUALS("ab{[(= cd=", testAst("a = b([&]{c=d;});"));
+
+        // 8628
+        ASSERT_EQUALS("f{([( switchx( 1case y++", testAst("f([](){switch(x){case 1:{++y;}}});"));
     }
 
     void astcase() {

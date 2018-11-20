@@ -928,8 +928,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
 
             const Variables::VariableUsage *const var = variables.find(varid);
-            if (var && !var->_allocateMemory) {
-                variables.readAll(varid, tok);
+            if (var) {
+                if (!var->_aliases.empty())
+                    variables.use(varid, tok);
+                else if (!var->_allocateMemory)
+                    variables.readAll(varid, tok);
             }
         }
 
@@ -1220,10 +1223,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // only check functions
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
-
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         // Bailout when there are lambdas or inline functions
         // TODO: Handle lambdas and inline functions properly
         if (scope->hasInlineOrLambdaFunction())
@@ -1311,27 +1311,27 @@ void CheckUnusedVar::checkStructMemberUsage()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator scope = symbolDatabase->scopeList.cbegin(); scope != symbolDatabase->scopeList.cend(); ++scope) {
-        if (scope->type != Scope::eStruct && scope->type != Scope::eUnion)
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eStruct && scope.type != Scope::eUnion)
             continue;
 
-        if (scope->bodyStart->fileIndex() != 0 || scope->className.empty())
+        if (scope.bodyStart->fileIndex() != 0 || scope.className.empty())
             continue;
 
         // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.
-        if (scope->bodyEnd->isAttributePacked())
+        if (scope.bodyEnd->isAttributePacked())
             continue;
 
         // Bail out if struct/union contains any functions
-        if (!scope->functionList.empty())
+        if (!scope.functionList.empty())
             continue;
 
         // bail out if struct is inherited
         bool bailout = false;
-        for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.cbegin(); i != symbolDatabase->scopeList.cend(); ++i) {
-            if (i->definedType) {
-                for (size_t j = 0; j < i->definedType->derivedFrom.size(); j++) {
-                    if (i->definedType->derivedFrom[j].type == scope->definedType) {
+        for (const Scope &derivedScope : symbolDatabase->scopeList) {
+            if (derivedScope.definedType) {
+                for (const Type::BaseInfo &derivedFrom : derivedScope.definedType->derivedFrom) {
+                    if (derivedFrom.type == scope.definedType) {
                         bailout = true;
                         break;
                     }
@@ -1343,7 +1343,7 @@ void CheckUnusedVar::checkStructMemberUsage()
 
         // bail out for extern/global struct
         for (const Variable* var : symbolDatabase->variableList()) {
-            if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == scope->className) {
+            if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == scope.className) {
                 bailout = true;
                 break;
             }
@@ -1352,19 +1352,19 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // Bail out if some data is casted to struct..
-        const std::string castPattern("( struct| " + scope->className + " * ) & %name% [");
-        if (Token::findmatch(scope->bodyEnd, castPattern.c_str()))
+        const std::string castPattern("( struct| " + scope.className + " * ) & %name% [");
+        if (Token::findmatch(scope.bodyEnd, castPattern.c_str()))
             continue;
 
         // (struct S){..}
-        const std::string initPattern("( struct| " + scope->className + " ) {");
-        if (Token::findmatch(scope->bodyEnd, initPattern.c_str()))
+        const std::string initPattern("( struct| " + scope.className + " ) {");
+        if (Token::findmatch(scope.bodyEnd, initPattern.c_str()))
             continue;
 
         // Bail out if struct is used in sizeof..
-        for (const Token *tok = scope->bodyEnd; nullptr != (tok = Token::findsimplematch(tok, "sizeof ("));) {
+        for (const Token *tok = scope.bodyEnd; nullptr != (tok = Token::findsimplematch(tok, "sizeof ("));) {
             tok = tok->tokAt(2);
-            if (Token::Match(tok, ("struct| " + scope->className).c_str())) {
+            if (Token::Match(tok, ("struct| " + scope.className).c_str())) {
                 bailout = true;
                 break;
             }
@@ -1373,19 +1373,19 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // Try to prevent false positives when struct members are not used directly.
-        if (Token::findmatch(scope->bodyEnd, (scope->className + " %type%| *").c_str()))
+        if (Token::findmatch(scope.bodyEnd, (scope.className + " %type%| *").c_str()))
             continue;
 
-        for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
+        for (const Variable &var : scope.varlist) {
             // declaring a POD member variable?
-            if (!var->typeStartToken()->isStandardType() && !var->isPointer())
+            if (!var.typeStartToken()->isStandardType() && !var.isPointer())
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
-            if (Token::findsimplematch(mTokenizer->tokens(), (". " + var->name()).c_str()))
+            if (Token::findsimplematch(mTokenizer->tokens(), (". " + var.name()).c_str()))
                 continue;
 
-            unusedStructMemberError(var->nameToken(), scope->className, var->name(), scope->type == Scope::eUnion);
+            unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);
         }
     }
 }

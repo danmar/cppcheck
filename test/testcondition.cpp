@@ -2683,6 +2683,26 @@ private:
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int i) {\n"
+              "  if (i==42)\n"
+              "  {\n"
+              "    bar();\n"
+              "  }\n"
+              "  if (cond && (42==i))\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // 8842 crash
+        check("class a {\n"
+              "  int b;\n"
+              "  c(b);\n"
+              "  void f() {\n"
+              "    if (b) return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {

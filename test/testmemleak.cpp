@@ -5869,6 +5869,16 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Return value of allocation function 'f' is not stored.\n", errout.str());
 
+        check("void f()\n" // #8100
+              "{\n"
+              "    auto lambda = [](){return malloc(10);};\n"
+              "}\n"
+              "void x()\n"
+              "{\n"
+              "    f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void x()\n"
               "{\n"
               "    if(!malloc(5)) fail();\n"

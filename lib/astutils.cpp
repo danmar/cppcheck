@@ -71,6 +71,21 @@ bool astIsBool(const Token *tok)
     return tok && (tok->isBoolean() || (tok->valueType() && tok->valueType()->type == ValueType::Type::BOOL && !tok->valueType()->pointer));
 }
 
+bool astIsPointer(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->pointer;
+}
+
+bool astIsIterator(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::ITERATOR;
+}
+
+bool astIsContainer(const Token *tok)
+{
+    return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::CONTAINER;
+}
+
 std::string astCanonicalType(const Token *expr)
 {
     if (!expr)
@@ -93,7 +108,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (tok->isName() && !tok->varId() && tok->values().size() == 1U && tok->values().front().isKnown() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (tok->isName() && !tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }
@@ -136,11 +151,31 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+static bool hasToken(const Token * startTok, const Token * stopTok, const Token * tok)
+{
+    for (const Token * tok2 = startTok; tok2 != stopTok; tok2 = tok2->next()) {
+        if (tok2 == tok)
+            return true;
+    }
+    return false;
+}
+
 const Token * nextAfterAstRightmostLeaf(const Token * tok)
 {
-    if (!tok || !tok->astOperand1())
+    const Token * rightmostLeaf = tok;
+    if (!rightmostLeaf || !rightmostLeaf->astOperand1())
         return nullptr;
-    return tok->findExpressionStartEndTokens().second->next();
+    do {
+        if (rightmostLeaf->astOperand2())
+            rightmostLeaf = rightmostLeaf->astOperand2();
+        else
+            rightmostLeaf = rightmostLeaf->astOperand1();
+    } while (rightmostLeaf->astOperand1());
+    while (Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->next()->link(), rightmostLeaf->next(), tok))
+        rightmostLeaf = rightmostLeaf->next();
+    if (rightmostLeaf->str() == "{" && rightmostLeaf->link())
+        rightmostLeaf = rightmostLeaf->link();
+    return rightmostLeaf->next();
 }
 
 static const Token * getVariableInitExpression(const Variable * var)
@@ -158,7 +193,7 @@ static bool isInLoopCondition(const Token * tok)
 }
 
 /// If tok2 comes after tok1
-static bool precedes(const Token * tok1, const Token * tok2)
+bool precedes(const Token * tok1, const Token * tok2)
 {
     if (!tok1)
         return false;
@@ -942,6 +977,10 @@ std::vector<const Token *> getArguments(const Token *ftok)
 const Token *findLambdaEndToken(const Token *first)
 {
     if (!first || first->str() != "[")
+        return nullptr;
+    if (!Token::Match(first->link(), "] (|{"))
+        return nullptr;
+    if (first->astOperand1() != first->link()->next())
         return nullptr;
     const Token * tok = first;
 

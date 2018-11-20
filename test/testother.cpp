@@ -208,6 +208,7 @@ private:
         TEST_CASE(moveAndReturn);
         TEST_CASE(moveAndClear);
         TEST_CASE(movedPointer);
+        TEST_CASE(moveAndAddressOf);
         TEST_CASE(partiallyMoved);
         TEST_CASE(moveAndLambda);
         TEST_CASE(forwardAndUsed);
@@ -216,7 +217,7 @@ private:
         TEST_CASE(funcArgOrderDifferent);
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
 
-        TEST_CASE(shadowLocal);
+        TEST_CASE(shadowVariables);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -2750,6 +2751,13 @@ private:
 
         check("void foo() {\n"
               "    (beat < 100) ? exit(0) : (void)0;\n"
+              "    bar();\n"
+              "}", nullptr, false, false, false, &settings);
+        ASSERT_EQUALS("", errout.str());
+
+        // #8261
+        check("void foo() {\n"
+              "    (beat < 100) ? (void)0 : throw(0);\n"
               "    bar();\n"
               "}", nullptr, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
@@ -5372,7 +5380,7 @@ private:
               "    const int a = getA + 3;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Local variable getA shadows outer symbol\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Local variable getA shadows outer function\n", errout.str());
 
         check("class A{public:A(){}};\n"
               "const A& getA(){static A a;return a;}\n"
@@ -5993,6 +6001,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style, inconclusive) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used if variable is no semaphore variable.\n",
                       errout.str());
 
+        check("class C { void operator=(int x); };\n" // #8368 - assignment operator might have side effects => inconclusive
+              "void f() {\n"
+              "    C c;\n"
+              "    c = x;\n"
+              "    c = x;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Variable 'c' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
     }
 
     void redundantVarAssignment_stackoverflow() {
@@ -7327,6 +7342,15 @@ private:
                       "[test.cpp:5]: (warning) Access of moved variable 'p'.\n", errout.str());
     }
 
+    void moveAndAddressOf() {
+        check("void f() {\n"
+              "    std::string s1 = x;\n"
+              "    std::string s2 = std::move(s1);\n"
+              "    p = &s1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void partiallyMoved() {
         check("void f() {\n"
               "    A a;\n"
@@ -7417,14 +7441,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void shadowLocal() {
+    void shadowVariables() {
         check("int x;\n"
               "void f() { int x; }\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer symbol\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer variable\n", errout.str());
 
         check("int x();\n"
               "void f() { int x; }\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer symbol\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer function\n", errout.str());
+
+        check("struct C {\n"
+              "    C(int x) : x(x) {}\n" // <- we do not want a FP here
+              "    int x;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  if (cond) {int x;}\n" // <- not a shadow variable

@@ -53,10 +53,10 @@ namespace {
 
 bool CheckCondition::diag(const Token* tok, bool insert)
 {
-    if(!tok)
+    if (!tok)
         return false;
-    if(mCondDiags.find(tok) == mCondDiags.end()) {
-        if(insert) 
+    if (mCondDiags.find(tok) == mCondDiags.end()) {
+        if (insert)
             mCondDiags.insert(tok);
         return false;
     }
@@ -285,8 +285,8 @@ void CheckCondition::checkBadBitmaskCheck()
                                    (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while")) ||
                                    (parent->str() == "return" && parent->astOperand1() == tok && inBooleanFunction(tok));
 
-            const bool isTrue = (tok->astOperand1()->values().size() == 1 && tok->astOperand1()->values().front().intvalue != 0 && tok->astOperand1()->values().front().isKnown()) ||
-                                (tok->astOperand2()->values().size() == 1 && tok->astOperand2()->values().front().intvalue != 0 && tok->astOperand2()->values().front().isKnown());
+            const bool isTrue = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue != 0) ||
+                                (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue != 0);
 
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
@@ -441,8 +441,8 @@ void CheckCondition::multiCondition()
 
             if (cond1 &&
                 tok2->astOperand2() &&
-                !cond1->hasKnownValue() &&
-                !tok2->astOperand2()->hasKnownValue() &&
+                !cond1->hasKnownIntValue() &&
+                !tok2->astOperand2()->hasKnownIntValue() &&
                 isOverlappingCond(cond1, tok2->astOperand2(), true))
                 multiConditionError(tok2, cond1->linenr());
         }
@@ -601,7 +601,7 @@ void CheckCondition::multiCondition2()
                             if (firstCondition->str() == "&&") {
                                 tokens1.push(firstCondition->astOperand1());
                                 tokens1.push(firstCondition->astOperand2());
-                            } else if (!firstCondition->hasKnownValue()) {
+                            } else if (!firstCondition->hasKnownIntValue()) {
                                 if (!isReturnVar && isOppositeCond(false, mTokenizer->isCPP(), firstCondition, cond2, mSettings->library, true, true, &errorPath)) {
                                     if (!isAliased(vars))
                                         oppositeInnerConditionError(firstCondition, cond2, errorPath);
@@ -621,7 +621,7 @@ void CheckCondition::multiCondition2()
                             if (secondCondition->str() == "||" || secondCondition->str() == "&&") {
                                 tokens2.push(secondCondition->astOperand1());
                                 tokens2.push(secondCondition->astOperand2());
-                            } else if ((!cond1->hasKnownValue() || !secondCondition->hasKnownValue()) &&
+                            } else if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
                                        isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
                                 if (!isAliased(vars))
                                     identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
@@ -717,7 +717,7 @@ static std::string innerSmtString(const Token * tok)
 
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
-    if(diag(tok1) & diag(tok2))
+    if (diag(tok1) & diag(tok2))
         return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
@@ -732,7 +732,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 
 void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
-    if(diag(tok1) & diag(tok2))
+    if (diag(tok1) & diag(tok2))
         return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
@@ -747,7 +747,7 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
 {
-    if(diag(cond1) & diag(cond2))
+    if (diag(cond1) & diag(cond2))
         return;
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     errorPath.emplace_back(ErrorPathItem(cond1, "first condition"));
@@ -1278,7 +1278,7 @@ void CheckCondition::alwaysTrueFalse()
             if (!tok->hasKnownIntValue())
                 continue;
             // Skip already diagnosed values
-            if(diag(tok, false))
+            if (diag(tok, false))
                 continue;
             if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;

@@ -92,12 +92,13 @@ def getPackage():
     package = None
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('cppcheck.osuosl.org', 8000)
-    sock.connect(server_address)
     try:
+        sock.connect(server_address)
         sock.send(b'get\n')
         package = sock.recv(256)
-    finally:
-        sock.close()
+    except socket.error:
+        package = ''
+    sock.close()
     return package.decode('utf-8')
 
 
@@ -164,8 +165,10 @@ def unpackPackage(workPath, tgz):
                 # Skip dangerous file names
                 continue
             elif member.name.lower().endswith(('.c', '.cl', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
-                tf.extract(member.name)
-                print(member.name)
+                try:
+                    tf.extract(member.name)
+                except OSError:
+                    pass
         tf.close()
     os.chdir(workPath)
 
@@ -173,7 +176,7 @@ def unpackPackage(workPath, tgz):
 def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
-    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --inconclusive --enable=style --library=posix --platform=unix64 --template={file}:{line}:{inconclusive:inconclusive:}{message}[{id}] -rp=temp temp'
+    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --inconclusive --enable=style --library=posix --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -194,11 +197,25 @@ def scanPackage(workPath, cppcheck, jobs):
     return count, stderr, elapsedTime
 
 
+def splitResults(results):
+    ret = []
+    w = None
+    for line in results.split('\n'):
+        if line.endswith(']') and re.search(r': (error|warning|style|performance|portability|information|debug):', line):
+            if w is not None:
+                ret.append(w.strip())
+            w = ''
+        if w is not None:
+            w += line + '\n'
+    if w is not None:
+        ret.append(w.strip())
+    return ret
+
 def diffResults(workPath, ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
-    r1 = sorted(results1.split('\n'))
-    r2 = sorted(results2.split('\n'))
+    r1 = sorted(splitResults(results1))
+    r2 = sorted(splitResults(results2))
     i1 = 0
     i2 = 0
     while i1 < len(r1) and i2 < len(r2):
@@ -217,6 +234,7 @@ def diffResults(workPath, ver1, results1, ver2, results2):
     while i2 < len(r2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
+
     return ret
 
 
@@ -245,6 +263,7 @@ def uploadResults(package, results):
 jobs = '-j1'
 stopTime = None
 workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
+packageUrl = None
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -253,6 +272,9 @@ for arg in sys.argv[1:]:
     elif arg.startswith('-j'):
         jobs = arg
         print('Jobs:' + jobs[2:])
+    elif arg.startswith('--package='):
+        packageUrl = arg[arg.find('=')+1:]
+        print('Package:' + packageUrl)
     elif arg.startswith('--work-path='):
         workpath = arg[arg.find('=')+1:]
         print('workpath:' + workpath)
@@ -294,7 +316,14 @@ while True:
     if compile(cppcheckPath, jobs) == False:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
-    package = getPackage()
+    if packageUrl:
+        package = packageUrl
+    else:
+        package = getPackage()
+    while len(package) == 0:
+        print("network or server might be temporarily down.. will try again in 30 seconds..")
+        time.sleep(30)
+        package = getPackage()
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
     crash = False
@@ -318,6 +347,11 @@ while True:
     output += 'elapsed-time:' + elapsedTime + '\n'
     if not crash:
         output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.85', resultsToDiff[1]) + '\n'
+    if packageUrl:
+        print('=========================================================')
+        print(output)
+        print('=========================================================')
+        break
     uploadResults(package, output)
     print('Results have been uploaded')
     print('Sleep 5 seconds..')

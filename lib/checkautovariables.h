@@ -53,12 +53,12 @@ public:
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.assignFunctionArg();
         checkAutoVariables.returnReference();
+        checkAutoVariables.checkVarLifetime();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.autoVariables();
-        checkAutoVariables.returnPointerToLocalArray();
     }
 
     /** assign function argument */
@@ -67,11 +67,12 @@ public:
     /** Check auto variables */
     void autoVariables();
 
-    /** Returning pointer to local array */
-    void returnPointerToLocalArray();
-
     /** Returning reference to local/temporary variable */
     void returnReference();
+
+    void checkVarLifetime();
+
+    void checkVarLifetimeScope(const Token * start, const Token * end);
 
 private:
     /**
@@ -87,6 +88,8 @@ private:
     void errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable);
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
+    void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
+    void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorReturnReference(const Token *tok);
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
@@ -106,6 +109,8 @@ private:
         c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
         c.errorUselessAssignmentArg(nullptr);
         c.errorUselessAssignmentPtrArg(nullptr);
+        c.errorReturnDanglingLifetime(nullptr, nullptr);
+        c.errorInvalidLifetime(nullptr, nullptr);
     }
 
     static std::string myName() {
