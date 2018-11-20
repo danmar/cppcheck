@@ -187,7 +187,8 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizer, settings, errorLogger);
         checkMemoryLeak.checkReallocUsage();
-        checkMemoryLeak.check();
+        // Commented out so we can evaluate if this checking can be removed.
+        //checkMemoryLeak.check();
     }
 
     /** @brief Unit testing : testing the white list */
