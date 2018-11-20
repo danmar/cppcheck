@@ -31,7 +31,10 @@ if response.status_code == 200:
 
     p = subprocess.Popen('git show --format=format:%h'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
-    print('\nMessage: I merged this with ' + comm[0])
+    stdout = comm[0]
+    if stdout.find('\n') > 0:
+        stdout = stdout[:stdout.find('\n')]
+    print('\nMessage: I merged this with ' + stdout)
 
 
 
