@@ -263,6 +263,7 @@ def uploadResults(package, results):
 jobs = '-j1'
 stopTime = None
 workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
+packageUrl = None
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -271,6 +272,9 @@ for arg in sys.argv[1:]:
     elif arg.startswith('-j'):
         jobs = arg
         print('Jobs:' + jobs[2:])
+    elif arg.startswith('--package='):
+        packageUrl = arg[arg.find('=')+1:]
+        print('Package:' + packageUrl)
     elif arg.startswith('--work-path='):
         workpath = arg[arg.find('=')+1:]
         print('workpath:' + workpath)
@@ -312,9 +316,13 @@ while True:
     if compile(cppcheckPath, jobs) == False:
         print('Failed to compile Cppcheck, retry later')
         sys.exit(1)
-    package = getPackage()
-    if len(package) == 0:
-        time.sleep(5)
+    if packageUrl:
+        package = packageUrl
+    else:
+        package = getPackage()
+    while len(package) == 0:
+        print("network or server might be temporarily down.. will try again in 30 seconds..")
+        time.sleep(30)
         package = getPackage()
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
@@ -339,6 +347,11 @@ while True:
     output += 'elapsed-time:' + elapsedTime + '\n'
     if not crash:
         output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.85', resultsToDiff[1]) + '\n'
+    if packageUrl:
+        print('=========================================================')
+        print(output)
+        print('=========================================================')
+        break
     uploadResults(package, output)
     print('Results have been uploaded')
     print('Sleep 5 seconds..')
