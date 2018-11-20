@@ -473,7 +473,6 @@ static bool checkExceptionHandling(const Token* tok)
 
 void CheckOther::checkRedundantAssignment()
 {
-    // TODO: Rewrite this messy checker.
     const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
     const bool printStyle = mSettings->isEnabled(Settings::STYLE);
     const bool printWarning = mSettings->isEnabled(Settings::WARNING);
@@ -492,7 +491,6 @@ void CheckOther::checkRedundantAssignment()
         std::map<unsigned int, const Token*> memAssignments;
         std::map<unsigned int, std::set<unsigned int> > membervars;
         std::set<unsigned int> initialized;
-        std::map<unsigned int, std::set<unsigned int>> dependencies;
         const Token* writtenArgumentsEnd = nullptr;
 
         for (const Token* tok = scope.bodyStart->next(); tok && tok != scope.bodyEnd; tok = tok->next()) {
@@ -505,18 +503,15 @@ void CheckOther::checkRedundantAssignment()
                     break;
                 varAssignments.clear();
                 memAssignments.clear();
-                dependencies.clear();
             } else if (tok->str() == "{" && tok->strAt(-1) != "{" && tok->strAt(-1) != "=" && tok->strAt(-4) != "case" && tok->strAt(-3) != "default") { // conditional or non-executable inner scope: Skip it and reset status
                 tok = tok->link();
                 varAssignments.clear();
                 memAssignments.clear();
-                dependencies.clear();
             } else if (Token::Match(tok, "for|if|while (")) {
                 tok = tok->linkAt(1);
             } else if (Token::Match(tok, "break|return|continue|throw|goto|asm")) {
                 varAssignments.clear();
                 memAssignments.clear();
-                dependencies.clear();
             } else if (Token::Match(tok, "%var% = [ & ] (")) {
                 const unsigned int lambdaId = tok->varId();
                 const Token *lambdaParams = tok->tokAt(5);
@@ -528,38 +523,29 @@ void CheckOther::checkRedundantAssignment()
                             usedByLambda[lambdaId].insert(tok2->varId());
                     }
                 }
-            } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%var% (")) {
-                const Token *eq = tok;
-                while (Token::Match(eq->astParent(), ".|::|["))
-                    eq = eq->astParent();
-                if (Token::simpleMatch(eq->astParent(), "=") && eq == eq->astParent()->astOperand1())
-                    eq = eq->astParent();
-                else
-                    eq = nullptr;
-
-                if (eq) {
-                    for (const Token *tok2 = tok->next(); tok2 != eq; tok2 = tok2->next()) {
-                        if (tok2->str() == "[")
-                            tok2 = tok2->link();
-                        else if (tok2->str() == "]") {
-                            eq = nullptr;
-                            break;
+            } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%name% (")) {
+                const Token *eq = nullptr;
+                for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "[([]")) {
+                        // bail out if there is a variable in rhs - we only track 1 variable
+                        bool bailout = false;
+                        for (const Token *tok3 = tok2->link(); tok3 != tok2; tok3 = tok3->previous()) {
+                            if (tok3->varId()) {
+                                const Variable *var = tok3->variable();
+                                if (!var || !var->isConst() || var->isReference() || var->isPointer()) {
+                                    bailout = true;
+                                    break;
+                                }
+                            }
                         }
-                    }
-                }
-
-                if (eq) {
-                    bool arrayIndex = false;
-                    for (const Token *tok2 = tok->next(); tok2 != eq; tok2 = tok2->next()) {
-                        if (tok2->str() == "[")
-                            arrayIndex = true;
-                        if (arrayIndex && tok2->varId() != 0)
-                            dependencies[tok2->varId()].insert(tok->varId());
-                    }
-
-                    for (unsigned int varId : dependencies[tok->varId()]) {
-                        varAssignments.erase(varId);
-                        memAssignments.erase(varId);
+                        if (bailout)
+                            break;
+                        tok2 = tok2->link();
+                    } else if (Token::Match(tok2, "[)];,]"))
+                        break;
+                    else if (tok2->str() == "=") {
+                        eq = tok2;
+                        break;
                     }
                 }
 
