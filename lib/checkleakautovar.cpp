@@ -668,6 +668,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
 {
     // Deallocation and then dereferencing pointer..
     if (tok->varId() > 0) {
+        // TODO : Write a separate checker for this that uses valueFlowForward.
         const std::map<unsigned int, VarInfo::AllocInfo>::const_iterator var = varInfo->alloctype.find(tok->varId());
         if (var != varInfo->alloctype.end()) {
             bool unknown = false;

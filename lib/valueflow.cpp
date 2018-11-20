@@ -3946,6 +3946,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         if (!calledFunctionScope)
             continue;
 
+        // TODO: Rewrite this. It does not work well to inject 1 argument at a time.
         const std::vector<const Token *> &callArguments = getArguments(tok);
         for (unsigned int argnr = 0U; argnr < callArguments.size(); ++argnr) {
             const Token *argtok = callArguments[argnr];

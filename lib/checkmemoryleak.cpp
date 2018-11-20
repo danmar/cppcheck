@@ -2035,6 +2035,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *startTok, const std::str
             tok2->deleteNext();
     }
     if ((result = Token::findmatch(tok, "[;{}] dealloc ; use_ ;")) != nullptr) {
+        // TODO : Write a separate checker for this that uses valueFlowForward.
         deallocuseError(result->tokAt(3), varname);
     }
 
