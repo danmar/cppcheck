@@ -710,7 +710,8 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
 void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)
 {
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
-    std::string msg = "Non-local variable will use " + lifetimeMessage(tok, val, errorPath);
+    std::string tokName = tok ? tok->str() : "x";
+    std::string msg = "Non-local variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
 }

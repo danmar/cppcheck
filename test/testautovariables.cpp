@@ -1396,7 +1396,7 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS(
-            "[test.cpp:5] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Non-local variable will use object that points to local variable 'i'.\n",
+            "[test.cpp:5] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Non-local variable 'v' will use object that points to local variable 'i'.\n",
             errout.str());
 
         check("struct A {\n"
@@ -1408,7 +1408,7 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS(
-            "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:6]: (error) Non-local variable will use object that points to local variable 'i'.\n",
+            "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:6]: (error) Non-local variable 'v' will use object that points to local variable 'i'.\n",
             errout.str());
 
         check("struct A {\n"
