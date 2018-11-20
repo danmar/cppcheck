@@ -2901,6 +2901,19 @@ void uninitvar_strchr(void)
     (void)strchr(cs,c);
 }
 
+void invalidFunctionArg_strchr(char *cs, int c)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)strchr(cs,-1);
+
+    // No warning shall be issued for
+    (void)strchr(cs, 0);
+    (void)strchr(cs, 255);
+
+    // cppcheck-suppress invalidFunctionArg
+    (void)strchr(cs, 256);
+}
+
 void uninitvar_wcschr(void)
 {
     wchar_t *cs;
