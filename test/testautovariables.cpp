@@ -1411,6 +1411,15 @@ private:
             "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:6]: (error) Non-local variable will use object that points to local variable 'i'.\n",
             errout.str());
 
+        check("struct A {\n"
+              "    std::vector<std::string> v;\n"
+              "    void f() {\n"
+              "        char s[3];\n"
+              "        v.push_back(s);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("std::vector<std::string> f() {\n"
               "    const char * s = \"hello\";\n"
               "    std::vector<std::string> v;\n"
