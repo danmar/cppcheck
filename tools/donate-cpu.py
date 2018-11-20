@@ -92,8 +92,8 @@ def getPackage():
     package = None
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('cppcheck.osuosl.org', 8000)
-    sock.connect(server_address)
     try:
+        sock.connect(server_address)
         sock.send(b'get\n')
         package = sock.recv(256)
     except socket.error:
