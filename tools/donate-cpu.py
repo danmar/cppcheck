@@ -169,6 +169,8 @@ def unpackPackage(workPath, tgz):
                     tf.extract(member.name)
                 except OSError:
                     pass
+                except AttributeError:
+                    pass
         tf.close()
     os.chdir(workPath)
 
