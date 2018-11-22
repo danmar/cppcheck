@@ -20,6 +20,7 @@
 #include <wx/memory.h>
 #include <wx/frame.h>
 #include <wx/menu.h>
+#include <wx/stattext.h>
 
 void validCode()
 {
@@ -124,6 +125,15 @@ void uninitvar(wxWindow &w)
     wxLogMessage(pcUninit);
     // cppcheck-suppress uninitvar
     w.Close(uninitBool);
+}
+
+void uninitvar_wxStaticText(wxStaticText &s)
+{
+    // no warning
+    s.Wrap(-1);
+    bool uninitBool;
+    // cppcheck-suppress uninitvar
+    s.Wrap(uninitBool);
 }
 
 void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)
