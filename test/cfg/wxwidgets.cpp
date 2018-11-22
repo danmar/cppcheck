@@ -110,17 +110,20 @@ void invalidFunctionArg(const wxString &str)
     (void)str.ToLong(&l, 37);
 }
 
-void uninitvar(void)
+void uninitvar(wxWindow &w)
 {
     wxLogLevel logLevelUninit;
     char cBufUninit[10];
     char *pcUninit;
+    bool uninitBool;
     // cppcheck-suppress uninitvar
     wxLogGeneric(logLevelUninit, "test");
     // cppcheck-suppress uninitvar
     wxLogMessage(cBufUninit);
     // cppcheck-suppress uninitvar
     wxLogMessage(pcUninit);
+    // cppcheck-suppress uninitvar
+    w.Close(uninitBool);
 }
 
 void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)
