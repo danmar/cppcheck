@@ -1028,7 +1028,7 @@ void TemplateSimplifier::expandTemplate(
         Token * temp = templateInstantiation.token;
         while (temp && !Token::Match(temp->previous(), "}|;"))
             temp = temp->previous();
-        if (temp && Token::Match(temp, "template !!<")) {
+        if (Token::Match(temp, "template !!<")) {
             // just delete "template"
             deleteToken(temp);
         } else {
