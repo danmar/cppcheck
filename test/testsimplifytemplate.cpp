@@ -109,6 +109,14 @@ private:
         TEST_CASE(template69);  // #8791
         TEST_CASE(template70);  // #5289
         TEST_CASE(template71);  // #8821
+        TEST_CASE(template72);
+        TEST_CASE(template73);
+        TEST_CASE(template74);
+        TEST_CASE(template75);
+        TEST_CASE(template76);
+        TEST_CASE(template77);
+        TEST_CASE(template78);
+        TEST_CASE(template79); // #5133
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -184,7 +192,8 @@ private:
         const char code[] = "template <class T> void f(T val) { T a; }\n"
                             "f<int>(10);";
 
-        const char expected[] = "f<int> ( 10 ) ; "
+        const char expected[] = "void f<int> ( int val ) ; "
+                                "f<int> ( 10 ) ; "
                                 "void f<int> ( int val ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -374,7 +383,8 @@ private:
                             "}\n";
 
         // The expected result..
-        const char expected[] = "void f ( ) "
+        const char expected[] = "int * foo<3,int> ( ) ; "
+                                "void f ( ) "
                                 "{"
                                 " foo<3,int> ( ) ; "
                                 "} "
@@ -392,7 +402,8 @@ private:
                             "}\n";
 
         // The expected result..
-        const char expected[] = "void f ( ) "
+        const char expected[] = "char * foo<3,char> ( ) ; "
+                                "void f ( ) "
                                 "{"
                                 " char * p ; p = foo<3,char> ( ) ; "
                                 "} "
@@ -484,7 +495,9 @@ private:
                             "}\n";
 
         // The expected result..
-        const char expected[] = "void a<0> ( ) { } "
+        const char expected[] = "void a<2> ( ) ; "
+                                "void a<1> ( ) ; "
+                                "void a<0> ( ) { } "
                                 "int main ( ) "
                                 "{ a<2> ( ) ; return 0 ; } "
                                 "void a<2> ( ) { a<1> ( ) ; } "
@@ -522,7 +535,9 @@ private:
                             "    return 0;\n"
                             "}\n";
 
-        const char expected[] = "int main ( ) { b<2> ( ) ; return 0 ; } "
+        const char expected[] = "void a<2> ( ) ; "
+                                "void b<2> ( ) ; "
+                                "int main ( ) { b<2> ( ) ; return 0 ; } "
                                 "void b<2> ( ) { a<2> ( ) ; } "
                                 "void a<2> ( ) { }";
 
@@ -566,7 +581,8 @@ private:
                             "}\n";
 
         // The expected result..
-        const char expected[] = "void f ( ) "
+        const char expected[] = "char & foo<char> ( ) ; "
+                                "void f ( ) "
                                 "{"
                                 " char p ; p = foo<char> ( ) ; "
                                 "} "
@@ -653,7 +669,8 @@ private:
                             "    std::cout << (foo<double>());\n"
                             "}";
 
-        const char expected[] = "void bar ( ) {"
+        const char expected[] = "void foo<double> ( ) ; "
+                                "void bar ( ) {"
                                 " std :: cout << ( foo<double> ( ) ) ; "
                                 "} "
                                 "void foo<double> ( ) { }";
@@ -906,7 +923,9 @@ private:
 
         const char code2[] = "template<class T> T f(T t) { return t; }\n"
                              "int x() { return f<int>(123); }";
-        ASSERT_EQUALS("int x ( ) { return f<int> ( 123 ) ; } int f<int> ( int t ) { return t ; }", tok(code2));
+        ASSERT_EQUALS("int f<int> ( int t ) ; "
+                      "int x ( ) { return f<int> ( 123 ) ; } "
+                      "int f<int> ( int t ) { return t ; }", tok(code2));
     }
 
     void template42() { // #4878 cpcheck aborts in ext-blocks.cpp (clang testcode)
@@ -1123,7 +1142,8 @@ private:
                             "void foo() {\n"
                             "  TestArithmetic<int>();\n"
                             "}";
-        const char exp[] = "void foo ( ) {"
+        const char exp[] = "void TestArithmetic<int> ( ) ; "
+                           "void foo ( ) {"
                            " TestArithmetic<int> ( ) ; "
                            "} "
                            "void TestArithmetic<int> ( ) {"
@@ -1153,6 +1173,7 @@ private:
                            "struct Factorial<2> ; "
                            "struct Factorial<1> ; "
                            "struct Factorial<0> { enum FacHelper { value = 1 } ; } ; "
+                           "int diagonalGroupTest<4> ( ) ; "
                            "int main ( ) { return diagonalGroupTest<4> ( ) ; } "
                            "int diagonalGroupTest<4> ( ) { return Factorial<4> :: value ; } "
                            "struct Factorial<4> { enum FacHelper { value = 4 * Factorial<3> :: value } ; } ; "
@@ -1170,6 +1191,7 @@ private:
                             "void j() { h<int>(); }";
         const char exp[] = "struct S<int> ; "
                            "template < typename T > void f ( ) { } " // <- TODO: This template is not expanded
+                           "void h<int> ( ) ; "
                            "void j ( ) { h<int> ( ) ; } "
                            "void h<int> ( ) { f < S<int> :: type ( 0 ) > ( ) ; } "
                            "struct S<int> { } ;";
@@ -1327,6 +1349,7 @@ private:
                             "};";
         const char exp [] = "class Test { "
                             "int test ; "
+                            "int lookup<int> ( ) ; "
                             "int Fun ( ) { return lookup<int> ( ) ; } "
                             "} ; "
                             "int Test :: lookup<int> ( ) { return test ; }";
@@ -1370,6 +1393,127 @@ private:
                             "Reference<XPropertyList> dostuff ( ) ; "
                             "class Reference<XPropertyList> { template < class XPropertyList > int i ( ) ; int * pInterface ; } ; "
                             "int Reference<XPropertyList> :: i ( ) { return f1 ( pInterface , XPropertyList :: static_type ( ) ) ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template72() {
+        const char code[] = "template <typename N, typename P> class Tokenizer;\n"
+                            "const Tokenizer<Node, Path> *tokenizer() const;\n"
+                            "template <typename N, typename P>\n"
+                            "Tokenizer<N, P>::Tokenizer() { }";
+        const char exp [] = "template < typename N , typename P > class Tokenizer ; "
+                            "const Tokenizer < Node , Path > * tokenizer ( ) const ; "
+                            "template < typename N , typename P > "
+                            "Tokenizer < N , P > :: Tokenizer ( ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template73() {
+        const char code[] = "template<typename T>\n"
+                            "void keep_range(T& value, const T mini, const T maxi){}\n"
+                            "template void keep_range<float>(float& v, const float l, const float u);\n"
+                            "template void keep_range<int>(int& v, const int l, const int u);";
+        const char exp[] = "void keep_range<float> ( float & v , const float l , const float u ) ; "
+                           "void keep_range<int> ( int & v , const int l , const int u ) ; "
+                           "void keep_range<float> ( float & value , const float mini , const float maxi ) { } "
+                           "void keep_range<int> ( int & value , const int mini , const int maxi ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template74() {
+        const char code[] = "template <class T> class BTlist { };\n"
+                            "class PushBackStreamBuf {\n"
+                            "public:\n"
+                            "    void pushBack(const BTlist<int> &vec);\n"
+                            "};";
+        const char exp[] = "class BTlist<int> ; "
+                           "class PushBackStreamBuf { "
+                           "public: "
+                           "void pushBack ( const BTlist<int> & vec ) ; "
+                           "} ; "
+                           "class BTlist<int> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template75() {
+        const char code[] = "template<typename T>\n"
+                            "T foo(T& value){ return value; }\n"
+                            "template std::vector<std::vector<int>> foo<std::vector<std::vector<int>>>(std::vector<std::vector<int>>& v);";
+        const char exp[] = "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & v ) ; "
+                           "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & value ) { return value ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template76() {
+        const char code[] = "namespace NS {\n"
+                            "    template<typename T> T foo(T& value) { return value; }\n"
+                            "    template std::vector<std::vector<int>> foo<std::vector<std::vector<int>>>(std::vector<std::vector<int>>& v);\n"
+                            "}\n"
+                            "std::vector<std::vector<int>> v;\n"
+                            "v = foo<std::vector<std::vector<int>>>(v);\n";
+        const char exp[] = "namespace NS { "
+                           "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & v ) ; "
+                           "} "
+                           "std :: vector < std :: vector < int > > v ; "
+                           "v = foo<std::vector<std::vector<int>>> ( v ) ; "
+                           "std :: vector < std :: vector < int > > NS :: foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & value ) { return value ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template77() {
+        const char code[] = "template<typename T>\n"
+                            "struct is_void : std::false_type { };\n"
+                            "template<>\n"
+                            "struct is_void<void> : std::true_type { };\n"
+                            "int main() {\n"
+                            "    std::cout << is_void<char>::value << std::endl;\n"
+                            "    std::cout << is_void<void>::value << std::endl;\n"
+                            "}";
+        const char exp[] = "struct is_void<char> ; "
+                           "struct is_void<void> : std :: true_type { } ; "
+                           "int main ( ) { "
+                           "std :: cout << is_void<char> :: value << std :: endl ; "
+                           "std :: cout << is_void<void> :: value << std :: endl ; "
+                           "} "
+                           "struct is_void<char> : std :: false_type { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template78() {
+        const char code[] = "template <typename>\n"
+                            "struct Base { };\n"
+                            "struct S : Base <void>::Type { };";
+        const char exp[] = "struct Base<void> ; "
+                           "struct S : Base<void> :: Type { } ; "
+                           "struct Base<void> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template79() { // #5133
+        const char code[] = "class Foo {\n"
+                            "public:\n"
+                            "    template<typename T> void foo() { bar<T>(); }\n"
+                            "private:\n"
+                            "    template<typename T> void bar() { bazz(); }\n"
+                            "    void bazz() { }\n"
+                            "};\n"
+                            "void some_func() {\n"
+                            "    Foo x;\n"
+                            "    x.foo<int>();\n"
+                            "}";
+        const char exp[] = "class Foo { "
+                           "public: "
+                           "void foo<int> ( ) ; "
+                           "private: "
+                           "void bar<int> ( ) ; "
+                           "void bazz ( ) { } "
+                           "} ; "
+                           "void some_func ( ) { "
+                           "Foo x ; "
+                           "x . foo<int> ( ) ; "
+                           "} "
+                           "void Foo :: foo<int> ( ) { bar<int> ( ) ; } "
+                           "void Foo :: bar<int> ( ) { bazz ( ) ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1761,7 +1905,9 @@ private:
                             "  template<class T> void Fred(T value) { }\n"
                             "}\n"
                             "Fred<int>(123);";
-        ASSERT_EQUALS("namespace { } "
+        ASSERT_EQUALS("namespace { "
+                      "void Fred<int> ( int value ) ; "
+                      "} "
                       "Fred<int> ( 123 ) ; "
                       "void Fred<int> ( int value ) { }", tok(code));
     }
@@ -1985,9 +2131,9 @@ private:
                             "    }\n"
                             "    void SomeFunction() { }\n"
                             "private:\n"
-                            "    template< typename T > void TemplatedMethod();\n"
+                            "    template< typename T > T TemplatedMethod(T);\n"
                             "};\n"
-                            "template< typename T > void TestClass::TemplatedMethod() { }\n"
+                            "template< typename T > T TestClass::TemplatedMethod(T t) { return t; }\n"
                             "}";
         ASSERT_EQUALS("namespace MyNamespace { "
                       "class TestClass { "
@@ -1998,9 +2144,10 @@ private:
                       "} "
                       "void SomeFunction ( ) { } "
                       "private: "
-                      "template < typename T > void TemplatedMethod ( ) ; "
+                      "int TemplatedMethod<int> ( int ) ; "
+                      "template < typename T > T TemplatedMethod ( T ) ; " // this should be removed
                       "} ; "
-                      "} void MyNamespace :: TestClass :: TemplatedMethod<int> ( ) { }", tok(code));
+                      "} int MyNamespace :: TestClass :: TemplatedMethod<int> ( int t ) { return t ; }", tok(code));
     }
 
     unsigned int templateParameters(const char code[]) {
