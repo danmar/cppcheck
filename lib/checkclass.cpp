@@ -1547,26 +1547,23 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs)
         if (!Token::simpleMatch(tok, "if ("))
             continue;
 
-        std::stack<const Token *> tokens;
-        tokens.push(tok->next()->astOperand2());
-        while (!tokens.empty()) {
-            const Token *tok2 = tokens.top();
-            tokens.pop();
-            if (!tok2)
-                continue;
-            tokens.push(tok2->astOperand1());
-            tokens.push(tok2->astOperand2());
+        bool ret = false;
+        visitAstNodes(tok->next()->astOperand2(),
+        [&](const Token *tok2) {
             if (!Token::Match(tok2, "==|!="))
-                continue;
+                return ChildrenToVisit::op1_and_op2;
             if (Token::simpleMatch(tok2->astOperand1(), "this"))
                 tok2 = tok2->astOperand2();
             else if (Token::simpleMatch(tok2->astOperand2(), "this"))
                 tok2 = tok2->astOperand1();
             else
-                continue;
+                return ChildrenToVisit::op1_and_op2;
             if (tok2 && tok2->isUnaryOp("&") && tok2->astOperand1()->str() == rhs->str())
-                return true;
-        }
+                ret = true;
+            return ret ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+        });
+        if (ret)
+            return ret;
     }
 
     return false;

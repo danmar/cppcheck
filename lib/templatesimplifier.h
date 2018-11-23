@@ -26,6 +26,7 @@
 
 #include <ctime>
 #include <list>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -68,13 +69,14 @@ public:
      * Token and its full scopename
      */
     struct TokenAndName {
-        TokenAndName(Token *tok, const std::string &s, const std::string &n);
+        TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt);
         bool operator == (const TokenAndName & rhs) const {
-            return token == rhs.token && scope == rhs.scope && name == rhs.name;
+            return token == rhs.token && scope == rhs.scope && name == rhs.name && nameToken == rhs.nameToken;
         }
         Token *token;
         std::string scope;
         std::string name;
+        const Token *nameToken;
     };
 
     /**
@@ -263,6 +265,7 @@ private:
 
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;
+    std::map<Token *, Token *> mTemplateForwardDeclarationsMap;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;

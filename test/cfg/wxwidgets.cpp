@@ -20,6 +20,8 @@
 #include <wx/memory.h>
 #include <wx/frame.h>
 #include <wx/menu.h>
+#include <wx/stattext.h>
+#include <wx/sizer.h>
 
 void validCode()
 {
@@ -76,7 +78,26 @@ void nullPointer(const wxString &str)
     unsigned long long * ulongLongPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToULongLong(ulongLongPtr);
+}
 
+void nullPointer_wxSizer_Add(wxSizer &sizer, wxWindow *w)
+{
+    wxWindow * const ptr = 0;
+    // @todo cppcheck-suppress nullPointer
+    sizer.Add(ptr);
+    // No warning shall be issued for
+    sizer.Add(w);
+}
+
+void uninitvar_wxSizer_Add(wxSizer &sizer, wxWindow *w,wxObject* userData)
+{
+    int uninit;
+    // cppcheck-suppress uninitvar
+    sizer.Add(w,uninit);
+    // cppcheck-suppress uninitvar
+    sizer.Add(w,4,uninit);
+    // cppcheck-suppress uninitvar
+    sizer.Add(w,4,2,uninit,userData);
 }
 
 void ignoredReturnValue(const wxString &s)
@@ -110,17 +131,29 @@ void invalidFunctionArg(const wxString &str)
     (void)str.ToLong(&l, 37);
 }
 
-void uninitvar(void)
+void uninitvar(wxWindow &w)
 {
     wxLogLevel logLevelUninit;
     char cBufUninit[10];
     char *pcUninit;
+    bool uninitBool;
     // cppcheck-suppress uninitvar
     wxLogGeneric(logLevelUninit, "test");
     // cppcheck-suppress uninitvar
     wxLogMessage(cBufUninit);
     // cppcheck-suppress uninitvar
     wxLogMessage(pcUninit);
+    // cppcheck-suppress uninitvar
+    w.Close(uninitBool);
+}
+
+void uninitvar_wxStaticText(wxStaticText &s)
+{
+    // no warning
+    s.Wrap(-1);
+    bool uninitBool;
+    // cppcheck-suppress uninitvar
+    s.Wrap(uninitBool);
 }
 
 void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)

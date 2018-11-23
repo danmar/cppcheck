@@ -1604,7 +1604,7 @@ private:
 
         // The expected tokens..
         const char expected2[] = "void f ( ) { char a [ 256 ] ; a = { 0 } ; char b [ 256 ] ; b = { 0 } ; }";
-        ASSERT_EQUALS(expected2, tok(code2, false));
+        ASSERT_EQUALS(expected2, tok(code2, false, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
 
         const char code3[] = "typedef char TString[256];\n"
@@ -1615,7 +1615,7 @@ private:
 
         // The expected tokens..
         const char expected3[] = "void f ( ) { char a [ 256 ] ; a = \"\" ; char b [ 256 ] ; b = \"\" ; }";
-        ASSERT_EQUALS(expected3, tok(code3, false));
+        ASSERT_EQUALS(expected3, tok(code3, false, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
 
         const char code4[] = "typedef char TString[256];\n"
@@ -1626,7 +1626,7 @@ private:
 
         // The expected tokens..
         const char expected4[] = "void f ( ) { char a [ 256 ] ; a = \"1234\" ; char b [ 256 ] ; b = \"5678\" ; }";
-        ASSERT_EQUALS(expected4, tok(code4, false));
+        ASSERT_EQUALS(expected4, tok(code4, false, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
     }
 

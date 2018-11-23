@@ -284,22 +284,20 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
             continue;
 
         // Is variable protected in LHS..
-        std::stack<const Token *> tokens;
-        tokens.push(tok->astOperand1());
-        while (!tokens.empty()) {
-            const Token * const tok2 = tokens.top();
-            tokens.pop();
-            if (!tok2 || tok2->str() == ".")
-                continue;
+        bool bailout = false;
+        visitAstNodes(tok->astOperand1(), [&](const Token *tok2) {
+            if (tok2->str() == ".")
+                return ChildrenToVisit::none;
             // A variable is seen..
             if (tok2 != valuetok && tok2->variable() && (tok2->varId() == valuetok->varId() || !tok2->variable()->isArgument())) {
                 // TODO: limit this bailout
-                return tok;
+                bailout = true;
+                return ChildrenToVisit::done;
             }
-            tokens.push(tok2->astOperand2());
-            tokens.push(tok2->astOperand1());
-        }
-
+            return ChildrenToVisit::op1_and_op2;
+        });
+        if (bailout)
+            return tok;
     }
     return nullptr;
 }
@@ -485,23 +483,20 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             }
         } else {
             // is condition only depending on 1 variable?
-            std::stack<const Token*> tokens;
-            tokens.push(parent->astOperand1());
             unsigned int varId = 0;
-            while (!tokens.empty()) {
-                const Token *t = tokens.top();
-                tokens.pop();
-                if (!t)
-                    continue;
-                tokens.push(t->astOperand1());
-                tokens.push(t->astOperand2());
+            bool ret = false;
+            visitAstNodes(parent->astOperand1(),
+            [&](const Token *t) {
                 if (t->varId()) {
                     if (varId > 0 || value.varId != 0U)
-                        return;
+                        ret = true;
                     varId = t->varId();
                 } else if (t->str() == "(" && Token::Match(t->previous(), "%name%"))
-                    return; // function call
-            }
+                    ret = true; // function call
+                return ret ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+            });
+            if (ret)
+                return;
 
             ValueFlow::Value v(value);
             v.conditional = true;
@@ -2536,7 +2531,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     const Token *parent = tok->astParent();
-    while (parent && parent->isArithmeticalOp())
+    while (parent && (parent->isArithmeticalOp() || parent->str() == ","))
         parent = parent->astParent();
     if (!parent)
         return;
@@ -2583,6 +2578,27 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         // Function call
     } else if (Token::Match(parent->previous(), "%name% (")) {
         valueFlowLifetimeFunction(const_cast<Token *>(parent->previous()), tokenlist, errorLogger, settings);
+        // Variable
+    } else if (tok->variable()) {
+        const Variable *var = tok->variable();
+        if (!var->typeStartToken() && !var->typeStartToken()->scope())
+            return;
+        const Token *endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+
+        std::list<ValueFlow::Value> values = tok->values();
+        const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
+        // Only forward lifetime values
+        values.remove_if(&isNotLifetimeValue);
+        valueFlowForward(const_cast<Token *>(nextExpression),
+                         endOfVarScope,
+                         var,
+                         var->declarationId(),
+                         values,
+                         false,
+                         false,
+                         tokenlist,
+                         errorLogger,
+                         settings);
     }
 }
 
@@ -2651,7 +2667,45 @@ struct LifetimeStore {
             return true;
         });
     }
+
+    template <class Predicate>
+    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        for (const ValueFlow::Value &v : argtok->values()) {
+            if (!v.isLifetimeValue())
+                continue;
+            const Token *tok2 = v.tokvalue;
+            ErrorPath errorPath = v.errorPath;
+            const Variable *var = getLifetimeVariable(tok2, errorPath);
+            if (!var)
+                continue;
+            for (const Token *tok3 = tok; tok != var->declEndToken(); tok3 = tok3->previous()) {
+                if (tok3->varId() == var->declarationId()) {
+                    LifetimeStore{tok3, message, type} .byVal(tok, tokenlist, errorLogger, settings, pred);
+                    break;
+                }
+            }
+        }
+    }
+
+    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
+        byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Variable *) {
+            return true;
+        });
+    }
 };
+
+static const Token *endTemplateArgument(const Token *tok)
+{
+    for (; tok; tok = tok->next()) {
+        if (Token::Match(tok, ">|,"))
+            return tok;
+        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
+            tok = tok->link();
+        else if (Token::simpleMatch(tok, ";"))
+            return nullptr;
+    }
+    return nullptr;
+}
 
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -2666,6 +2720,21 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         for (const Token *argtok : getArguments(tok)) {
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object} .byVal(
                 tok->next(), tokenlist, errorLogger, settings);
+        }
+    } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
+               astIsContainer(tok->tokAt(-2))) {
+        const Token *containerTypeTok = tok->tokAt(-2)->valueType()->containerTypeToken;
+        const Token *endTypeTok = endTemplateArgument(containerTypeTok);
+        const bool isPointer = endTypeTok && Token::simpleMatch(endTypeTok->previous(), "*");
+        Token *vartok = tok->tokAt(-2);
+        std::vector<const Token *> args = getArguments(tok);
+        if (args.size() == 2 && astCanonicalType(args[0]) == astCanonicalType(args[1]) &&
+            (((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1]))))) {
+            LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byDerefCopy(
+                vartok, tokenlist, errorLogger, settings);
+        } else if (!args.empty() && astIsPointer(args.back()) == isPointer) {
+            LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byVal(
+                vartok, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -3131,23 +3200,17 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                     ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
                      (op == "||" && Token::Match(tok, "%name%|!=")))) {
                     for (; parent && parent->str() == op; parent = const_cast<Token*>(parent->astParent())) {
-                        std::stack<Token *> tokens;
-                        tokens.push(const_cast<Token*>(parent->astOperand2()));
                         bool assign = false;
-                        while (!tokens.empty()) {
-                            Token *rhstok = tokens.top();
-                            tokens.pop();
-                            if (!rhstok)
-                                continue;
-                            tokens.push(const_cast<Token*>(rhstok->astOperand1()));
-                            tokens.push(const_cast<Token*>(rhstok->astOperand2()));
+                        visitAstNodes(parent->astOperand2(),
+                        [&](const Token *rhstok) {
                             if (rhstok->varId() == varid)
-                                setTokenValue(rhstok, true_values.front(), settings);
+                                setTokenValue(const_cast<Token *>(rhstok), true_values.front(), settings);
                             else if (Token::Match(rhstok, "++|--|=") && Token::Match(rhstok->astOperand1(), "%varid%", varid)) {
                                 assign = true;
-                                break;
+                                return ChildrenToVisit::done;
                             }
-                        }
+                            return ChildrenToVisit::op1_and_op2;
+                        });
                         if (assign)
                             break;
                         while (parent->astParent() && parent == parent->astParent()->astOperand2())
@@ -3405,11 +3468,14 @@ static void execute(const Token *expr,
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
         const Token *tokvalue = nullptr;
         if (!programMemory->getTokValue(expr->astOperand1()->varId(), &tokvalue)) {
-            if (expr->astOperand1()->values().size() != 1U || !expr->astOperand1()->values().front().isTokValue()) {
+            auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(),
+                                            expr->astOperand1()->values().end(),
+                                            std::mem_fn(&ValueFlow::Value::isTokValue));
+            if (tokvalue_it == expr->astOperand1()->values().end()) {
                 *error = true;
                 return;
             }
-            tokvalue = expr->astOperand1()->values().front().tokvalue;
+            tokvalue = tokvalue_it->tokvalue;
         }
         if (!tokvalue || !tokvalue->isLiteral()) {
             *error = true;
@@ -3489,19 +3555,16 @@ static bool valueFlowForLoop2(const Token *tok,
         return false;
     if (error) {
         // If a variable is reassigned in second expression, return false
-        std::stack<const Token *> tokens;
-        tokens.push(secondExpression);
-        while (!tokens.empty()) {
-            const Token *t = tokens.top();
-            tokens.pop();
-            if (!t)
-                continue;
+        bool reassign = false;
+        visitAstNodes(secondExpression,
+        [&](const Token *t) {
             if (t->str() == "=" && t->astOperand1() && programMemory.hasValue(t->astOperand1()->varId()))
                 // TODO: investigate what variable is assigned.
-                return false;
-            tokens.push(t->astOperand1());
-            tokens.push(t->astOperand2());
-        }
+                reassign = true;
+            return reassign ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+        });
+        if (reassign)
+            return false;
     }
 
     ProgramMemory startMemory(programMemory);
@@ -3982,6 +4045,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         if (!calledFunctionScope)
             continue;
 
+        // TODO: Rewrite this. It does not work well to inject 1 argument at a time.
         const std::vector<const Token *> &callArguments = getArguments(tok);
         for (unsigned int argnr = 0U; argnr < callArguments.size(); ++argnr) {
             const Token *argtok = callArguments[argnr];
@@ -4173,18 +4237,15 @@ static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
         if (!Token::Match(parent, "%oror%|&&|?"))
             continue;
         // is container found in lhs?
-        std::stack<const Token *> tokens;
-        tokens.push(parent->astOperand1());
-        while (!tokens.empty()) {
-            const Token *t = tokens.top();
-            tokens.pop();
-            if (!t)
-                continue;
+        bool found = false;
+        visitAstNodes(parent->astOperand1(),
+        [&](const Token *t) {
             if (t->varId() == containerId)
-                return true;
-            tokens.push(t->astOperand1());
-            tokens.push(t->astOperand2());
-        }
+                found = true;
+            return found ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+        });
+        if (found)
+            return true;
     }
     return false;
 }

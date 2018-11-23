@@ -510,18 +510,12 @@ void CheckCondition::multiCondition2()
         bool nonConstFunctionCall = false;
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<unsigned int> vars; // variables used in condition
-        std::stack<const Token *> tokens;
-        tokens.push(condTok);
-        while (!tokens.empty()) {
-            const Token *cond = tokens.top();
-            tokens.pop();
-            if (!cond)
-                continue;
-
+        visitAstNodes(condTok,
+        [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
                 nonConstFunctionCall = isNonConstFunctionCall(cond, mSettings->library);
                 if (nonConstFunctionCall)
-                    break;
+                    return ChildrenToVisit::done;
             }
 
             if (cond->varId()) {
@@ -538,10 +532,10 @@ void CheckCondition::multiCondition2()
                 // varid is 0. this is possibly a nonlocal variable..
                 nonlocal = Token::Match(cond->astParent(), "%cop%|(|[") || Token::Match(cond, "%name% .") || (mTokenizer->isCPP() && cond->str() == "this");
             } else {
-                tokens.push(cond->astOperand1());
-                tokens.push(cond->astOperand2());
+                return ChildrenToVisit::op1_and_op2;
             }
-        }
+            return ChildrenToVisit::none;
+        });
 
         if (nonConstFunctionCall)
             continue;

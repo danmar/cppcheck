@@ -473,6 +473,7 @@ static bool checkExceptionHandling(const Token* tok)
 
 void CheckOther::checkRedundantAssignment()
 {
+    // TODO: This function should be rewritten, it's far too complex.
     const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
     const bool printStyle = mSettings->isEnabled(Settings::STYLE);
     const bool printWarning = mSettings->isEnabled(Settings::WARNING);
@@ -593,28 +594,24 @@ void CheckOther::checkRedundantAssignment()
                         bool error = oldeq && eq->astOperand1() && isSameExpression(mTokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), mSettings->library, true, false);
 
                         // Ensure that variable is not used on right side
-                        std::stack<const Token *> tokens;
-                        tokens.push(eq->astOperand2());
-                        while (!tokens.empty()) {
-                            const Token *rhs = tokens.top();
-                            tokens.pop();
-                            if (!rhs)
-                                continue;
-                            tokens.push(rhs->astOperand1());
-                            tokens.push(rhs->astOperand2());
+                        visitAstNodes(eq->astOperand2(),
+                        [&](const Token *rhs) {
                             if (rhs->varId() == tok->varId()) {
                                 error = false;
-                                break;
+                                return ChildrenToVisit::done;
                             }
+
                             if (Token::Match(rhs->previous(), "%name% (") && nonLocalVolatile(tok->variable())) { // Called function might use the variable
                                 const Function* const func = rhs->function();
                                 const Variable* const var = tok->variable();
                                 if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && rhs->strAt(-1) != ".")) {// Global variable, or member function
                                     error = false;
-                                    break;
+                                    return ChildrenToVisit::done;
                                 }
                             }
-                        }
+
+                            return ChildrenToVisit::op1_and_op2;
+                        });
 
                         if (error) {
                             if (printWarning && scope.type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
@@ -2737,23 +2734,16 @@ void CheckOther::checkEvaluationOrder()
 
                 // Is expression used?
                 bool foundError = false;
-                std::stack<const Token *> tokens;
-                tokens.push((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2());
-                while (!tokens.empty() && !foundError) {
-                    const Token * const tok3 = tokens.top();
-                    tokens.pop();
-                    if (!tok3)
-                        continue;
+                visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(),
+                [&](const Token *tok3) {
                     if (tok3->str() == "&" && !tok3->astOperand2())
-                        continue; // don't handle address-of for now
+                        return ChildrenToVisit::none; // don't handle address-of for now
                     if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
-                        continue; // don't care about sizeof usage
-                    tokens.push(tok3->astOperand1());
-                    tokens.push(tok3->astOperand2());
-                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true, false)) {
+                        return ChildrenToVisit::none; // don't care about sizeof usage
+                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true, false))
                         foundError = true;
-                    }
-                }
+                    return foundError ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+                });
 
                 if (foundError) {
                     unknownEvaluationOrder(parent);
