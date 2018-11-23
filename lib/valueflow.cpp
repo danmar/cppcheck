@@ -284,22 +284,20 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
             continue;
 
         // Is variable protected in LHS..
-        std::stack<const Token *> tokens;
-        tokens.push(tok->astOperand1());
-        while (!tokens.empty()) {
-            const Token * const tok2 = tokens.top();
-            tokens.pop();
-            if (!tok2 || tok2->str() == ".")
-                continue;
+        bool bailout = false;
+        visitAstNodes(tok->astOperand1(), [&](const Token *tok2) {
+            if (tok2->str() == ".")
+                return ChildrenToVisit::none;
             // A variable is seen..
             if (tok2 != valuetok && tok2->variable() && (tok2->varId() == valuetok->varId() || !tok2->variable()->isArgument())) {
                 // TODO: limit this bailout
-                return tok;
+                bailout = true;
+                return ChildrenToVisit::done;
             }
-            tokens.push(tok2->astOperand2());
-            tokens.push(tok2->astOperand1());
-        }
-
+            return ChildrenToVisit::op1_and_op2;
+        });
+        if (bailout)
+            return tok;
     }
     return nullptr;
 }
