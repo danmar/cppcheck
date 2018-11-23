@@ -4482,7 +4482,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             vartok = vartok->tokAt(-3);
             if (!Token::Match(vartok, "%var% . %name% ("))
                 return cond;
-            if (!astIsContainer(vartok))
+            if (!astIsContainer(vartok) || !vartok->valueType()->container)
                 return cond;
             if (vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::SIZE)
                 return cond;
@@ -4499,7 +4499,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             vartok = tok->tokAt(-3);
             if (!Token::Match(vartok, "%var% . %name% ("))
                 return cond;
-            if (!astIsContainer(vartok))
+            if (!astIsContainer(vartok) || !vartok->valueType()->container)
                 return cond;
             // TODO: Handle .size()
             if (vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::EMPTY)
