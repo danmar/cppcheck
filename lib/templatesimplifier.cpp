@@ -53,8 +53,8 @@ namespace {
     };
 }
 
-TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s, const std::string &n) :
-    token(tok), scope(s), name(n)
+TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt) :
+    token(tok), scope(s), name(n), nameToken(nt)
 {
     token->hasTemplateSimplifierPointer(true);
 }
@@ -513,14 +513,14 @@ bool TemplateSimplifier::getTemplateDeclarations()
             else if (tok2->str() == ";") {
                 const int namepos = getTemplateNamePosition(parmEnd, true);
                 if (namepos > 0)
-                    mTemplateForwardDeclarations.emplace_back(tok, getScopeName(scopeInfo), parmEnd->strAt(namepos));
+                    mTemplateForwardDeclarations.emplace_back(tok, getScopeName(scopeInfo), parmEnd->strAt(namepos), parmEnd->tokAt(namepos));
                 break;
             }
             // Implementation => add to mTemplateDeclarations
             else if (tok2->str() == "{") {
                 const int namepos = getTemplateNamePosition(parmEnd, false);
                 if (namepos > 0)
-                    mTemplateDeclarations.emplace_back(tok, getScopeName(scopeInfo), parmEnd->strAt(namepos));
+                    mTemplateDeclarations.emplace_back(tok, getScopeName(scopeInfo), parmEnd->strAt(namepos), parmEnd->tokAt(namepos));
                 break;
             }
         }
@@ -549,7 +549,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             const Token *tok2 = Token::findmatch(tok, "{|;");
             if (tok2 && tok2->str() == "{")
                 tok = tok2->link();
-        } else if (Token::Match(tok->previous(), "[({};=] %name% ::|<") ||
+        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|. %name% ::|<") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
 
@@ -570,7 +570,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
                 if (Token::Match(tok2, ", %name% <") &&
                     templateParameters(tok2->tokAt(2))) {
-                    mTemplateInstantiations.emplace_back(tok2->next(), getScopeName(scopeList), tok2->strAt(1));
+                    mTemplateInstantiations.emplace_back(tok2->next(), getScopeName(scopeList), tok2->strAt(1), tok2->tokAt(1));
                 } else if (Token::Match(tok2->next(), "class|struct"))
                     const_cast<Token *>(tok2)->deleteNext();
 
@@ -583,11 +583,11 @@ void TemplateSimplifier::getTemplateInstantiations()
                     const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") + tok->str();
                     const std::list<TokenAndName>::const_iterator it = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), FindName(fullName));
                     if (it != mTemplateDeclarations.end()) {
-                        mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList), fullName);
+                        mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList), fullName, tok);
                         break;
                     } else {
                         if (scopeName.empty()) {
-                            mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList), scopeName1 + (scopeName1.empty()?"":" :: ") + tok->str());
+                            mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList), scopeName1 + (scopeName1.empty()?"":" :: ") + tok->str(), tok);
                             break;
                         }
                         const std::string::size_type pos = scopeName.rfind(" :: ");
@@ -831,7 +831,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
                                 mTemplateInstantiations.end(),
                                 FindToken(tok1));
                         if (it != mTemplateInstantiations.end())
-                            mTemplateInstantiations.emplace_back(tok2, it->scope, it->name);
+                            mTemplateInstantiations.emplace_back(tok2, it->scope, it->name, it->nameToken);
                     }
                     continue;
                 }
@@ -1016,12 +1016,66 @@ void TemplateSimplifier::expandTemplate(
     const Token *endOfTemplateDefinition = nullptr;
     const Token * const templateDeclarationNameToken = templateDeclarationToken->tokAt(getTemplateNamePosition(templateDeclarationToken));
     const bool isClass = Token::Match(templateDeclarationToken->next(), "class|struct|union %name% <|{|:");
+    const bool isFunction = templateDeclarationNameToken->strAt(1) == "(";
 
-    // add forward declaration for classes
+    // add forward declarations
     if (copy && isClass) {
         templateDeclaration.token->insertToken(templateDeclarationToken->strAt(1), "", true);
         templateDeclaration.token->insertToken(newName, "", true);
         templateDeclaration.token->insertToken(";", "", true);
+    } else if (copy && isFunction) {
+        // check if this is an explicit instantiation
+        Token * temp = templateInstantiation.token;
+        while (temp && !Token::Match(temp->previous(), "}|;"))
+            temp = temp->previous();
+        if (Token::Match(temp, "template !!<")) {
+            // just delete "template"
+            deleteToken(temp);
+        } else {
+            // add forward declaration
+            Token * dst = templateDeclaration.token;
+            Token * start;
+            Token * end;
+            auto it = mTemplateForwardDeclarationsMap.find(dst);
+            if (it != mTemplateForwardDeclarationsMap.end()) {
+                dst = it->second;
+                const Token * temp1 = dst->tokAt(1)->findClosingBracket();
+                const Token * temp2 = temp1->tokAt(getTemplateNamePosition(temp1));
+                start = temp1->next();
+                end = temp2->linkAt(1)->next();
+            } else {
+                start = templateDeclarationToken->next();
+                end = templateDeclarationNameToken->linkAt(1)->next();
+            }
+
+            std::map<const Token *, Token *> links;
+            while (start && start != end) {
+                unsigned int itype = 0;
+                while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != start->str())
+                    ++itype;
+
+                if (itype < typeParametersInDeclaration.size()) {
+                    dst->insertToken(mTypesUsedInTemplateInstantiation[itype]->str(), "", true);
+                    dst->previous()->isTemplateArg(true);
+                } else {
+                    if (start->str() == templateDeclarationNameToken->str())
+                        dst->insertToken(newName, "", true);
+                    else
+                        dst->insertToken(start->str(), "", true);
+                    if (start->link()) {
+                        if (Token::Match(start, "[|{|(")) {
+                            links[start->link()] = dst->previous();
+                        } else if (Token::Match(start, "]|}|)")) {
+                            Token::createMutualLinks(links[start], dst->previous());
+                            links.erase(start);
+                        }
+                    }
+                }
+
+                start = start->next();
+            }
+            dst->insertToken(";", "", true);
+        }
     }
 
     for (Token *tok3 = mTokenList.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
@@ -1220,7 +1274,7 @@ void TemplateSimplifier::expandTemplate(
                 std::string name = tok3->str();
                 for (const Token *prev = tok3->tokAt(-2); Token::Match(prev, "%name% ::"); prev = prev->tokAt(-2))
                     name = prev->str() + " :: " + name;
-                mTemplateInstantiations.emplace_back(mTokenList.back(), getScopeName(scopeInfo), name);
+                mTemplateInstantiations.emplace_back(mTokenList.back(), getScopeName(scopeInfo), name, tok3);
             }
 
             // link() newly tokens manually
@@ -1757,8 +1811,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 startToken = startToken->tokAt(-2);
         }
 
-        if (Token::Match(startToken->previous(), "[;{}=]") &&
-            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %name%")))
+        if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
+            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : "*|&| %name%")))
             continue;
 
         // New type..
@@ -1823,8 +1877,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 startToken = startToken->tokAt(-2);
         }
 
-        if (Token::Match(startToken->previous(), "[;{}=]") &&
-            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : "*| %name%")))
+        if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
+            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : "*|&| %name%")))
             return false;
 
         // already simplified
@@ -1988,8 +2042,35 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
 
             // make sure the number of arguments match
             if (params1.size() == params2.size()) {
+                std::string declName = decl.scope;
+                if (!declName.empty())
+                    declName += " :: ";
+                if (decl.nameToken->strAt(-1) == "::") {
+                    const Token * start = decl.nameToken;
+
+                    while (Token::Match(start->tokAt(-2), "%name% ::"))
+                        start = start->tokAt(-2);
+
+                    while (start != decl.nameToken) {
+                        declName += (start->str() + " ");
+                        start = start->next();
+                    }
+                }
+                declName += decl.name;
+
+                std::string forwardDeclName = forwardDecl.scope;
+                if (!forwardDeclName.empty())
+                    forwardDeclName += " :: ";
+                forwardDeclName += forwardDecl.name;
+
                 // make sure the scopes and names match
-                if (forwardDecl.scope == decl.scope && forwardDecl.name == decl.name) {
+                if (forwardDeclName == declName) {
+                    // save forward declaration for lookup later
+                    if ((decl.nameToken->strAt(1) == "(" && forwardDecl.nameToken->strAt(1) == "(") ||
+                        (decl.nameToken->strAt(1) == "{" && forwardDecl.nameToken->strAt(1) == ";")) {
+                        mTemplateForwardDeclarationsMap[decl.token] = forwardDecl.token;
+                    }
+
                     for (size_t k = 0; k < params1.size(); k++) {
                         // copy default value to declaration if not present
                         if (params1[k]->strAt(1) == "=" && params2[k]->strAt(1) != "=") {
@@ -2018,6 +2099,7 @@ void TemplateSimplifier::simplifyTemplates(
         if (i) {
             mTemplateDeclarations.clear();
             mTemplateForwardDeclarations.clear();
+            mTemplateForwardDeclarationsMap.clear();
             mTemplateInstantiations.clear();
             mInstantiatedTemplates.clear();
         }
