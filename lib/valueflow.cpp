@@ -4254,6 +4254,32 @@ static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
     return false;
 }
 
+static bool isContainerSize(const Token* tok)
+{
+    if (!Token::Match(tok, "%var% . %name% ("))
+        return false;
+    if (!astIsContainer(tok))
+        return false;
+    if (tok->valueType()->container && tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE)
+        return true;
+    if (Token::Match(tok->tokAt(2), "size|length ( )"))
+        return true;
+    return false;
+}
+
+static bool isContainerEmpty(const Token* tok)
+{
+    if (!Token::Match(tok, "%var% . %name% ("))
+        return false;
+    if (!astIsContainer(tok))
+        return false;
+    if (tok->valueType()->container && tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY)
+        return true;
+    if (Token::simpleMatch(tok->tokAt(2), "empty ( )"))
+        return true;
+    return false;
+}
+
 static bool isContainerSizeChanged(unsigned int varId, const Token *start, const Token *end);
 
 static bool isContainerSizeChangedByFunction(const Token *tok)
@@ -4480,11 +4506,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
             vartok = vartok->tokAt(-3);
-            if (!Token::Match(vartok, "%var% . %name% ("))
-                return cond;
-            if (!astIsContainer(vartok) || !vartok->valueType()->container)
-                return cond;
-            if (vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::SIZE)
+            if(!isContainerSize(vartok))
                 return cond;
             true_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
@@ -4497,12 +4519,8 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
         // Empty check
         if (tok->str() == "(") {
             vartok = tok->tokAt(-3);
-            if (!Token::Match(vartok, "%var% . %name% ("))
-                return cond;
-            if (!astIsContainer(vartok) || !vartok->valueType()->container)
-                return cond;
             // TODO: Handle .size()
-            if (vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::EMPTY)
+            if(!isContainerEmpty(vartok))
                 return cond;
             ValueFlow::Value value(tok, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
