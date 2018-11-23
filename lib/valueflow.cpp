@@ -483,23 +483,20 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             }
         } else {
             // is condition only depending on 1 variable?
-            std::stack<const Token*> tokens;
-            tokens.push(parent->astOperand1());
             unsigned int varId = 0;
-            while (!tokens.empty()) {
-                const Token *t = tokens.top();
-                tokens.pop();
-                if (!t)
-                    continue;
-                tokens.push(t->astOperand1());
-                tokens.push(t->astOperand2());
+            bool ret = false;
+            visitAstNodes(parent->astOperand1(),
+            [&](const Token *t) {
                 if (t->varId()) {
                     if (varId > 0 || value.varId != 0U)
-                        return;
+                        ret = true;
                     varId = t->varId();
                 } else if (t->str() == "(" && Token::Match(t->previous(), "%name%"))
-                    return; // function call
-            }
+                    ret = true; // function call
+                return ret ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+            });
+            if (ret)
+                return;
 
             ValueFlow::Value v(value);
             v.conditional = true;
@@ -3167,23 +3164,17 @@ static void valueFlowAfterCondition(TokenList *tokenlist, SymbolDatabase* symbol
                     ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
                      (op == "||" && Token::Match(tok, "%name%|!=")))) {
                     for (; parent && parent->str() == op; parent = const_cast<Token*>(parent->astParent())) {
-                        std::stack<Token *> tokens;
-                        tokens.push(const_cast<Token*>(parent->astOperand2()));
                         bool assign = false;
-                        while (!tokens.empty()) {
-                            Token *rhstok = tokens.top();
-                            tokens.pop();
-                            if (!rhstok)
-                                continue;
-                            tokens.push(const_cast<Token*>(rhstok->astOperand1()));
-                            tokens.push(const_cast<Token*>(rhstok->astOperand2()));
+                        visitAstNodes(parent->astOperand2(),
+                        [&](const Token *rhstok) {
                             if (rhstok->varId() == varid)
-                                setTokenValue(rhstok, true_values.front(), settings);
+                                setTokenValue(const_cast<Token *>(rhstok), true_values.front(), settings);
                             else if (Token::Match(rhstok, "++|--|=") && Token::Match(rhstok->astOperand1(), "%varid%", varid)) {
                                 assign = true;
-                                break;
+                                return ChildrenToVisit::done;
                             }
-                        }
+                            return ChildrenToVisit::op1_and_op2;
+                        });
                         if (assign)
                             break;
                         while (parent->astParent() && parent == parent->astParent()->astOperand2())
@@ -3528,19 +3519,16 @@ static bool valueFlowForLoop2(const Token *tok,
         return false;
     if (error) {
         // If a variable is reassigned in second expression, return false
-        std::stack<const Token *> tokens;
-        tokens.push(secondExpression);
-        while (!tokens.empty()) {
-            const Token *t = tokens.top();
-            tokens.pop();
-            if (!t)
-                continue;
+        bool reassign = false;
+        visitAstNodes(secondExpression,
+        [&](const Token *t) {
             if (t->str() == "=" && t->astOperand1() && programMemory.hasValue(t->astOperand1()->varId()))
                 // TODO: investigate what variable is assigned.
-                return false;
-            tokens.push(t->astOperand1());
-            tokens.push(t->astOperand2());
-        }
+                reassign = true;
+            return reassign ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+        });
+        if (reassign)
+            return false;
     }
 
     ProgramMemory startMemory(programMemory);
@@ -4213,18 +4201,15 @@ static bool hasContainerSizeGuard(const Token *tok, unsigned int containerId)
         if (!Token::Match(parent, "%oror%|&&|?"))
             continue;
         // is container found in lhs?
-        std::stack<const Token *> tokens;
-        tokens.push(parent->astOperand1());
-        while (!tokens.empty()) {
-            const Token *t = tokens.top();
-            tokens.pop();
-            if (!t)
-                continue;
+        bool found = false;
+        visitAstNodes(parent->astOperand1(),
+        [&](const Token *t) {
             if (t->varId() == containerId)
-                return true;
-            tokens.push(t->astOperand1());
-            tokens.push(t->astOperand2());
-        }
+                found = true;
+            return found ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+        });
+        if (found)
+            return true;
     }
     return false;
 }
