@@ -83,7 +83,7 @@ void nullPointer(const wxString &str)
 void nullPointer_wxSizer_Add(wxSizer &sizer, wxWindow *w)
 {
     wxWindow * const ptr = 0;
-    // cppcheck-suppress nullPointer
+    // @todo cppcheck-suppress nullPointer
     sizer.Add(ptr);
     // No warning shall be issued for
     sizer.Add(w);
