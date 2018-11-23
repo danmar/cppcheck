@@ -22,6 +22,7 @@
 #define astutilsH
 //---------------------------------------------------------------------------
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -31,6 +32,19 @@ class Library;
 class Settings;
 class Token;
 class Variable;
+
+enum class ChildrenToVisit {
+    none,
+    op1,
+    op2,
+    op1_and_op2,
+    done  // found what we looked for, don't visit any more children
+};
+
+/**
+ * Visit AST nodes recursively. The order is not "well defined"
+ */
+void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
 
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);

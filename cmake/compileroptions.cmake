@@ -52,7 +52,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Woverloaded-virtual")       # when a function declaration hides virtual functions from a base class
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wpacked")                   # 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wredundant-decls")          # if anything is declared more than once in the same scope
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wshadow")                   # whenever a local variable or type declaration shadows another one
+    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-shadow")                # whenever a local variable or type declaration shadows another one
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wsign-promo")               # 
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-field-initializers")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-missing-braces")

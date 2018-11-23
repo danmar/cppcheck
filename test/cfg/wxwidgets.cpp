@@ -82,22 +82,22 @@ void nullPointer(const wxString &str)
 
 void nullPointer_wxSizer_Add(wxSizer &sizer, wxWindow *w)
 {
-	wxWindow * const ptr = 0;
-	// cppcheck-suppress nullPointer
-	sizer.Add(ptr);
-	// No warning shall be issued for
-	sizer.Add(w);
+    wxWindow * const ptr = 0;
+    // @todo cppcheck-suppress nullPointer
+    sizer.Add(ptr);
+    // No warning shall be issued for
+    sizer.Add(w);
 }
 
-void uninitvar_wxSizer_Add(wxSizer &sizer, wxWindow *w,wxObject* userData )
+void uninitvar_wxSizer_Add(wxSizer &sizer, wxWindow *w,wxObject* userData)
 {
-	int uninit;
-	// cppcheck-suppress uninitvar
-	sizer.Add(w,uninit);
-	// cppcheck-suppress uninitvar
-	sizer.Add(w,4,uninit);
-	// cppcheck-suppress uninitvar
-	sizer.Add(w,4,2,uninit,userData);
+    int uninit;
+    // cppcheck-suppress uninitvar
+    sizer.Add(w,uninit);
+    // cppcheck-suppress uninitvar
+    sizer.Add(w,4,uninit);
+    // cppcheck-suppress uninitvar
+    sizer.Add(w,4,2,uninit,userData);
 }
 
 void ignoredReturnValue(const wxString &s)
