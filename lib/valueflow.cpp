@@ -3164,6 +3164,42 @@ struct ValueFlowConditionHandler {
     }
 };
 
+static void setConditionalValues(const Token * tok, bool invert, long long value, ValueFlow::Value& true_value, ValueFlow::Value& false_value)
+{
+    if (Token::Match(tok, "==|!=|>=|<=")) {
+        true_value = ValueFlow::Value{tok, value};
+        false_value = ValueFlow::Value{tok, value};
+        return;
+    }
+    const char * greaterThan = ">";
+    const char * lessThan = "<";
+    if (invert)
+        std::swap(greaterThan, lessThan);
+    if (Token::simpleMatch(tok, greaterThan)) {
+        true_value = ValueFlow::Value{tok, value + 1};
+        false_value = ValueFlow::Value{tok, value};
+    } else if (Token::simpleMatch(tok, lessThan)) {
+        true_value = ValueFlow::Value{tok, value - 1};
+        false_value = ValueFlow::Value{tok, value};
+    }
+}
+
+static const Token * parseCompareInt(const Token * tok, ValueFlow::Value& true_value, ValueFlow::Value& false_value)
+{
+    if (!tok->astOperand1() || !tok->astOperand2())
+        return nullptr;
+    if (Token::Match(tok, "%comp%")) {
+        if (tok->astOperand1()->hasKnownIntValue()) {
+            setConditionalValues(tok, true, tok->astOperand1()->values().front().intvalue, true_value, false_value);
+            return tok->astOperand2();
+        } else if (tok->astOperand2()->hasKnownIntValue()) {
+            setConditionalValues(tok, false, tok->astOperand2()->values().front().intvalue, true_value, false_value);
+            return tok->astOperand1();
+        }
+    }
+    return nullptr;
+}
+
 static void valueFlowAfterCondition(TokenList *tokenlist,
                                     SymbolDatabase *symboldatabase,
                                     ErrorLogger *errorLogger,
@@ -3181,94 +3217,34 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
     };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
-        const Token *vartok = nullptr;
-        const Token *numtok = nullptr;
-        const Token *uppertok = nullptr;
-        const Token *lowertok = nullptr;
-        // Comparison
-        if (Token::Match(tok, "==|!=|>=|<=")) {
-            if (!tok->astOperand1() || !tok->astOperand2())
-                return cond;
-            if (tok->astOperand1()->hasKnownIntValue()) {
-                numtok = tok->astOperand1();
-                vartok = tok->astOperand2();
-            } else {
-                numtok = tok->astOperand2();
-                vartok = tok->astOperand1();
-            }
+        ValueFlow::Value true_value;
+        ValueFlow::Value false_value;
+        const Token *vartok = parseCompareInt(tok, true_value, false_value);;
+        if (vartok) {
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
             if (!vartok->isName())
                 return cond;
-        } else if (Token::simpleMatch(tok, ">")) {
-            if (!tok->astOperand1() || !tok->astOperand2())
-                return cond;
-            if (tok->astOperand1()->hasKnownIntValue()) {
-                uppertok = tok->astOperand1();
-                vartok = tok->astOperand2();
-            } else {
-                lowertok = tok->astOperand2();
-                vartok = tok->astOperand1();
-            }
-            if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
-                vartok = vartok->astOperand1();
-            if (!vartok->isName())
-                return cond;
-        } else if (Token::simpleMatch(tok, "<")) {
-            if (!tok->astOperand1() || !tok->astOperand2())
-                return cond;
-            if (tok->astOperand1()->hasKnownIntValue()) {
-                lowertok = tok->astOperand1();
-                vartok = tok->astOperand2();
-            } else {
-                uppertok = tok->astOperand2();
-                vartok = tok->astOperand1();
-            }
-            if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
-                vartok = vartok->astOperand1();
-            if (!vartok->isName())
-                return cond;
-        } else if (tok->str() == "!") {
+            cond.true_values.push_back(true_value);
+            cond.false_values.push_back(false_value);
+            cond.vartok = vartok;
+            return cond;
+        }
+        
+        if (tok->str() == "!") {
             vartok = tok->astOperand1();
-            numtok = nullptr;
-            if (!vartok || !vartok->isName())
-                return cond;
 
         } else if (tok->isName() && (Token::Match(tok->astParent(), "%oror%|&&") ||
                                      Token::Match(tok->tokAt(-2), "if|while ( %var% [)=]"))) {
             vartok = tok;
-            numtok = nullptr;
-
-        } else {
-            return cond;
         }
 
-        if (numtok && !numtok->hasKnownIntValue())
+        if (!vartok || !vartok->isName())
             return cond;
-        if (lowertok && !lowertok->hasKnownIntValue())
-            return cond;
-        if (uppertok && !uppertok->hasKnownIntValue())
-            return cond;
-
-        // TODO: We should add all known values
-        if (numtok) {
-            cond.false_values.emplace_back(tok, numtok->values().front().intvalue);
-            cond.true_values.emplace_back(tok, numtok->values().front().intvalue);
-        } else if (lowertok) {
-            long long v = lowertok->values().front().intvalue;
-            cond.true_values.emplace_back(tok, v + 1);
-            cond.false_values.emplace_back(tok, v);
-
-        } else if (uppertok) {
-            long long v = uppertok->values().front().intvalue;
-            cond.true_values.emplace_back(tok, v - 1);
-            cond.false_values.emplace_back(tok, v);
-
-        } else {
-            cond.true_values.emplace_back(tok, 0LL);
-            cond.false_values.emplace_back(tok, 0LL);
-        }
+        cond.true_values.emplace_back(tok, 0LL);
+        cond.false_values.emplace_back(tok, 0LL);
         cond.vartok = vartok;
+
         return cond;
     };
     handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
