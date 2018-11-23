@@ -3000,6 +3000,8 @@ struct ValueFlowConditionHandler {
                 Condition cond = parse(tok);
                 if (!cond.vartok)
                     continue;
+                if (cond.true_values.empty() || cond.false_values.empty())
+                    continue;
                 const unsigned int varid = cond.vartok->varId();
                 if (varid == 0U)
                     continue;
