@@ -24,7 +24,7 @@ HTML_REPORT_BIN = os.path.join(os.path.abspath(os.path.dirname(__file__)),
 class TestHTMLReport(unittest.TestCase):
 
     def testReportError(self):
-        for xml_version in ['1', '2']:
+        for xml_version in ['2']:
             self.checkReportError(xml_version)
 
     def checkReportError(self, xml_version):
@@ -47,7 +47,7 @@ class TestHTMLReport(unittest.TestCase):
                 self.assertIn('Memory leak:', detail_contents)
 
     def testReportNoError(self):
-        for xml_version in ['1', '2']:
+        for xml_version in ['2']:
             self.checkReportNoError(xml_version)
 
     def checkReportNoError(self, xml_version):

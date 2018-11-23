@@ -473,6 +473,7 @@ static bool checkExceptionHandling(const Token* tok)
 
 void CheckOther::checkRedundantAssignment()
 {
+    // TODO: This function should be rewritten, it's far too complex.
     const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
     const bool printStyle = mSettings->isEnabled(Settings::STYLE);
     const bool printWarning = mSettings->isEnabled(Settings::WARNING);

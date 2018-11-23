@@ -61,6 +61,8 @@ private:
         FileLister::recursiveAddFiles(files, "samples", matcher);
 #endif
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i) {
+            if (i->first.find("memleak") != std::string::npos)
+                continue;
             CLEAR_REDIRECT_ERROUT;
             char* path = new char[i->first.size() + 1];
             strcpy(path, i->first.c_str());

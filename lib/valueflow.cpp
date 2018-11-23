@@ -2500,7 +2500,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     const Token *parent = tok->astParent();
-    while (parent && parent->isArithmeticalOp())
+    while (parent && (parent->isArithmeticalOp() || parent->str() == ","))
         parent = parent->astParent();
     if (!parent)
         return;
@@ -2547,6 +2547,27 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         // Function call
     } else if (Token::Match(parent->previous(), "%name% (")) {
         valueFlowLifetimeFunction(const_cast<Token *>(parent->previous()), tokenlist, errorLogger, settings);
+        // Variable
+    } else if (tok->variable()) {
+        const Variable *var = tok->variable();
+        if (!var->typeStartToken() && !var->typeStartToken()->scope())
+            return;
+        const Token *endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+
+        std::list<ValueFlow::Value> values = tok->values();
+        const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
+        // Only forward lifetime values
+        values.remove_if(&isNotLifetimeValue);
+        valueFlowForward(const_cast<Token *>(nextExpression),
+                         endOfVarScope,
+                         var,
+                         var->declarationId(),
+                         values,
+                         false,
+                         false,
+                         tokenlist,
+                         errorLogger,
+                         settings);
     }
 }
 
@@ -2615,7 +2636,45 @@ struct LifetimeStore {
             return true;
         });
     }
+
+    template <class Predicate>
+    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+        for (const ValueFlow::Value &v : argtok->values()) {
+            if (!v.isLifetimeValue())
+                continue;
+            const Token *tok2 = v.tokvalue;
+            ErrorPath errorPath = v.errorPath;
+            const Variable *var = getLifetimeVariable(tok2, errorPath);
+            if (!var)
+                continue;
+            for (const Token *tok3 = tok; tok != var->declEndToken(); tok3 = tok3->previous()) {
+                if (tok3->varId() == var->declarationId()) {
+                    LifetimeStore{tok3, message, type} .byVal(tok, tokenlist, errorLogger, settings, pred);
+                    break;
+                }
+            }
+        }
+    }
+
+    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
+        byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Variable *) {
+            return true;
+        });
+    }
 };
+
+static const Token *endTemplateArgument(const Token *tok)
+{
+    for (; tok; tok = tok->next()) {
+        if (Token::Match(tok, ">|,"))
+            return tok;
+        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
+            tok = tok->link();
+        else if (Token::simpleMatch(tok, ";"))
+            return nullptr;
+    }
+    return nullptr;
+}
 
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -2630,6 +2689,21 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         for (const Token *argtok : getArguments(tok)) {
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object} .byVal(
                 tok->next(), tokenlist, errorLogger, settings);
+        }
+    } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
+               astIsContainer(tok->tokAt(-2))) {
+        const Token *containerTypeTok = tok->tokAt(-2)->valueType()->containerTypeToken;
+        const Token *endTypeTok = endTemplateArgument(containerTypeTok);
+        const bool isPointer = endTypeTok && Token::simpleMatch(endTypeTok->previous(), "*");
+        Token *vartok = tok->tokAt(-2);
+        std::vector<const Token *> args = getArguments(tok);
+        if (args.size() == 2 && astCanonicalType(args[0]) == astCanonicalType(args[1]) &&
+            (((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1]))))) {
+            LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byDerefCopy(
+                vartok, tokenlist, errorLogger, settings);
+        } else if (!args.empty() && astIsPointer(args.back()) == isPointer) {
+            LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byVal(
+                vartok, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -3388,11 +3462,14 @@ static void execute(const Token *expr,
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
         const Token *tokvalue = nullptr;
         if (!programMemory->getTokValue(expr->astOperand1()->varId(), &tokvalue)) {
-            if (expr->astOperand1()->values().size() != 1U || !expr->astOperand1()->values().front().isTokValue()) {
+            auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(),
+                                            expr->astOperand1()->values().end(),
+                                            std::mem_fn(&ValueFlow::Value::isTokValue));
+            if (tokvalue_it == expr->astOperand1()->values().end()) {
                 *error = true;
                 return;
             }
-            tokvalue = expr->astOperand1()->values().front().tokvalue;
+            tokvalue = tokvalue_it->tokvalue;
         }
         if (!tokvalue || !tokvalue->isLiteral()) {
             *error = true;
@@ -3965,6 +4042,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
         if (!calledFunctionScope)
             continue;
 
+        // TODO: Rewrite this. It does not work well to inject 1 argument at a time.
         const std::vector<const Token *> &callArguments = getArguments(tok);
         for (unsigned int argnr = 0U; argnr < callArguments.size(); ++argnr) {
             const Token *argtok = callArguments[argnr];
