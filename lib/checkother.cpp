@@ -2734,23 +2734,16 @@ void CheckOther::checkEvaluationOrder()
 
                 // Is expression used?
                 bool foundError = false;
-                std::stack<const Token *> tokens;
-                tokens.push((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2());
-                while (!tokens.empty() && !foundError) {
-                    const Token * const tok3 = tokens.top();
-                    tokens.pop();
-                    if (!tok3)
-                        continue;
+                visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(),
+                [&](const Token *tok3) {
                     if (tok3->str() == "&" && !tok3->astOperand2())
-                        continue; // don't handle address-of for now
+                        return ChildrenToVisit::none; // don't handle address-of for now
                     if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
-                        continue; // don't care about sizeof usage
-                    tokens.push(tok3->astOperand1());
-                    tokens.push(tok3->astOperand2());
-                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true, false)) {
+                        return ChildrenToVisit::none; // don't care about sizeof usage
+                    if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true, false))
                         foundError = true;
-                    }
-                }
+                    return foundError ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+                });
 
                 if (foundError) {
                     unknownEvaluationOrder(parent);
