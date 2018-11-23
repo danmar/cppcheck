@@ -3507,6 +3507,41 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
 
         code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.size() == 3) {\n"
+               "    ints.front();\n" // <- container is 3
+               "  }\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 3));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.size() <= 3) {\n"
+               "    ints.front();\n" // <- container is 3
+               "  }\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.size() >= 3) {\n"
+               "    ints.front();\n" // <- container is 3
+               "  }\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.size() < 3) {\n"
+               "    ints.front();\n" // <- container is 2
+               "  }\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 2));
+
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (ints.size() > 3) {\n"
+               "    ints.front();\n" // <- container is 4
+               "  }\n"
+               "}";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 4));
+
+        code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty() == false) {\n"
                "    ints.front();\n" // <- container is not empty
                "  }\n"
