@@ -1081,30 +1081,22 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
 // Negative size in array declarations
 //---------------------------------------------------------------------------
 
-static bool isVLAIndex(const Token *index)
+static bool isVLAIndex(const Token *tok)
 {
-    std::stack<const Token *> tokens;
-    tokens.push(index);
-    while (!tokens.empty()) {
-        const Token *tok = tokens.top();
-        tokens.pop();
-        if (!tok)
-            continue;
-        if (tok->varId() != 0U)
+    if (!tok)
+        return false;
+    if (tok->varId() != 0U)
+        return true;
+    if (tok->str() == "?") {
+        // this is a VLA index if both expressions around the ":" is VLA index
+        if (tok->astOperand2() &&
+            tok->astOperand2()->str() == ":" &&
+            isVLAIndex(tok->astOperand2()->astOperand1()) &&
+            isVLAIndex(tok->astOperand2()->astOperand2()))
             return true;
-        if (tok->str() == "?") {
-            // this is a VLA index if both expressions around the ":" is VLA index
-            if (tok->astOperand2() &&
-                tok->astOperand2()->str() == ":" &&
-                isVLAIndex(tok->astOperand2()->astOperand1()) &&
-                isVLAIndex(tok->astOperand2()->astOperand2()))
-                return true;
-            continue;
-        }
-        tokens.push(tok->astOperand1());
-        tokens.push(tok->astOperand2());
+        return false;
     }
-    return false;
+    return isVLAIndex(tok->astOperand1()) || isVLAIndex(tok->astOperand2());
 }
 
 void CheckBufferOverrun::negativeArraySize()
