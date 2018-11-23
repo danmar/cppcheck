@@ -594,28 +594,24 @@ void CheckOther::checkRedundantAssignment()
                         bool error = oldeq && eq->astOperand1() && isSameExpression(mTokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), mSettings->library, true, false);
 
                         // Ensure that variable is not used on right side
-                        std::stack<const Token *> tokens;
-                        tokens.push(eq->astOperand2());
-                        while (!tokens.empty()) {
-                            const Token *rhs = tokens.top();
-                            tokens.pop();
-                            if (!rhs)
-                                continue;
-                            tokens.push(rhs->astOperand1());
-                            tokens.push(rhs->astOperand2());
+                        visitAstNodes(eq->astOperand2(),
+                        [&](const Token *rhs) {
                             if (rhs->varId() == tok->varId()) {
                                 error = false;
-                                break;
+                                return ChildrenToVisit::done;
                             }
+
                             if (Token::Match(rhs->previous(), "%name% (") && nonLocalVolatile(tok->variable())) { // Called function might use the variable
                                 const Function* const func = rhs->function();
                                 const Variable* const var = tok->variable();
                                 if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && rhs->strAt(-1) != ".")) {// Global variable, or member function
                                     error = false;
-                                    break;
+                                    return ChildrenToVisit::done;
                                 }
                             }
-                        }
+
+                            return ChildrenToVisit::op1_and_op2;
+                        });
 
                         if (error) {
                             if (printWarning && scope.type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))

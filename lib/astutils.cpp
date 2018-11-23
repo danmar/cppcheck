@@ -28,7 +28,30 @@
 #include "valueflow.h"
 
 #include <list>
-#include <functional>
+#include <stack>
+
+
+void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
+{
+    std::stack<const Token *> tokens;
+    tokens.push(ast);
+    while (!tokens.empty()) {
+        const Token *tok = tokens.top();
+        tokens.pop();
+        if (!tok)
+            continue;
+
+        ChildrenToVisit c = visitor(tok);
+
+        if (c == ChildrenToVisit::done)
+            break;
+        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
+            tokens.push(tok->astOperand1());
+        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
+            tokens.push(tok->astOperand2());
+    }
+}
+
 
 static bool astIsCharWithSign(const Token *tok, ValueType::Sign sign)
 {
