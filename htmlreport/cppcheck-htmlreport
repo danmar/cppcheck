@@ -330,6 +330,10 @@ class CppCheckHandler(XmlContentHandler):
         self.errors.append({
             'file': attributes.get('file', ''),
             'line': int(attributes.get('line', 0)),
+            'locations': [{
+                'file': attributes.get('file', ''),
+                'line': int(attributes.get('line', 0)),
+            }],
             'id': attributes['id'],
             'severity': attributes['severity'],
             'msg': attributes['msg']
@@ -339,51 +343,36 @@ class CppCheckHandler(XmlContentHandler):
         if name == 'cppcheck':
             self.versionCppcheck = attributes['version']
         if name == 'error':
-            # is there a better solution than this?
-            if ('inconclusive' in attributes and 'cwe' in attributes):
-                self.errors.append({
-                    'file': '',
-                    'line': 0,
-                    'id': attributes['id'],
-                    'severity': attributes['severity'],
-                    'msg': attributes['msg'],
-                    'verbose': attributes.get('verbose'),
-                    'inconclusive': attributes['inconclusive'],
-                    'cwe': attributes['cwe']
-                })
-            elif 'inconclusive' in attributes:
-                self.errors.append({
-                    'file': '',
-                    'line': 0,
-                    'id': attributes['id'],
-                    'severity': attributes['severity'],
-                    'msg': attributes['msg'],
-                    'verbose': attributes.get('verbose'),
-                    'inconclusive': attributes['inconclusive']
-                })
-            elif 'cwe' in attributes:
-                self.errors.append({
-                    'file': '',
-                    'line': 0,
-                    'id': attributes['id'],
-                    'severity': attributes['severity'],
-                    'msg': attributes['msg'],
-                    'verbose': attributes.get('verbose'),
-                    'cwe': attributes['cwe']
-                })
-            else:
-                self.errors.append({
-                    'file': '',
-                    'line': 0,
-                    'id': attributes['id'],
-                    'severity': attributes['severity'],
-                    'msg': attributes['msg'],
-                    'verbose': attributes.get('verbose')
-                })
+            error = {
+                'locations': [],
+                'file': '',
+                'line': 0,
+                'id': attributes['id'],
+                'severity': attributes['severity'],
+                'msg': attributes['msg'],
+                'verbose': attributes.get('verbose')
+            }
+
+            if 'inconclusive' in attributes:
+                error['inconclusive'] = attributes['inconclusive']
+            if 'cwe' in attributes:
+                error['cwe'] = attributes['cwe']
+
+            self.errors.append(error)
         elif name == 'location':
             assert self.errors
-            self.errors[-1]['file'] = attributes['file']
-            self.errors[-1]['line'] = int(attributes['line'])
+            error = self.errors[-1]
+            locations = error['locations']
+            file = attributes['file']
+            line = int(attributes['line'])
+            if not locations:
+                error['file'] = file
+                error['line'] = line
+            locations.append({
+                'file': file,
+                'line': line,
+                'info': attributes.get('info')
+            })
 
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
@@ -464,7 +453,21 @@ if __name__ == '__main__':
     decode_errors = []
     for filename, data in sorted(files.items()):
         htmlfile = data['htmlfile']
-        errors = data['errors']
+        errors = []
+
+        for error in data['errors']:
+            for location in error['locations']:
+                if filename == location['file']:
+                    newError = dict(error)
+
+                    del newError['locations']
+                    newError['line'] = location['line']
+                    if location.get('info'):
+                        newError['msg'] = location['info']
+                        newError['severity'] = 'information'
+                        del newError['verbose']
+
+                    errors.append(newError)
 
         lines = []
         for error in errors:
