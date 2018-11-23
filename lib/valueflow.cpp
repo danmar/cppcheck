@@ -4393,64 +4393,63 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
     };
     handler.parse = [&](const Token *tok) {
         ValueFlowConditionHandler::Condition cond;
-        const Token *numtok = nullptr;
-        const Token *strtok = nullptr;
-        const Token *vartok = nullptr;
-        // Comparison
-        if (Token::Match(tok, "==|!=")) {
-            if (!tok->astOperand1() || !tok->astOperand2())
+        ValueFlow::Value true_value;
+        ValueFlow::Value false_value;
+        const Token *vartok = parseCompareInt(tok, true_value, false_value);;
+        if (vartok) {
+            vartok = vartok->tokAt(-3);
+            if (!Token::Match(vartok, "%var% . %name% ("))
                 return cond;
-            if (tok->astOperand1()->hasKnownIntValue()) {
-                numtok = tok->astOperand1();
-                vartok = tok->astOperand2()->tokAt(-3);
-            } else if (tok->astOperand2()->hasKnownIntValue()) {
-                numtok = tok->astOperand2();
-                vartok = tok->astOperand1()->tokAt(-3);
-            } else if (Token::Match(tok->astOperand2(), "%str%")) {
-                strtok = tok->astOperand2();
-                vartok = tok->astOperand1();
-            }
-        } else if (tok->str() == "(") {
-            vartok = tok->tokAt(-3);
-            numtok = nullptr;
-
-        } else {
+            if (!astIsContainer(vartok))
+                return cond;
+            if(vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::SIZE)
+                return cond;
+            true_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
+            false_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
+            cond.true_values.push_back(true_value);
+            cond.false_values.push_back(false_value);
+            cond.vartok = vartok;
             return cond;
         }
-        if (numtok && !numtok->hasKnownIntValue())
-            return cond;
 
-        if (!astIsContainer(vartok))
-            return cond;
-
-        if (!strtok && !Token::Match(vartok, "%var% . %name% ("))
-            return cond;
-
-        if (!strtok && vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::SIZE &&
-            vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::EMPTY)
-            return cond;
-
-        if (numtok && vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::SIZE)
-            return cond;
-
-        if (numtok) {
-            ValueFlow::Value value(tok, numtok->values().front().intvalue);
-            value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-            cond.false_values.emplace_back(value);
-            cond.true_values.emplace_back(value);
-        } else if (strtok) {
-            ValueFlow::Value value(tok, Token::getStrLength(strtok));
-            value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-            cond.false_values.emplace_back(value);
-            cond.true_values.emplace_back(value);
-        } else if (vartok &&
-                   vartok->valueType()->container->getYield(vartok->strAt(2)) == Library::Container::Yield::EMPTY) {
+        // Empty check
+        if (tok->str() == "(") {
+            vartok = tok->tokAt(-3);
+            if (!Token::Match(vartok, "%var% . %name% ("))
+                return cond;
+            if (!astIsContainer(vartok))
+                return cond;
+            // TODO: Handle .size()
+            if(vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::EMPTY)
+                return cond;
             ValueFlow::Value value(tok, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.emplace_back(value);
             cond.false_values.emplace_back(value);
+            cond.vartok = vartok;
+            return cond;
         }
-        cond.vartok = vartok;
+        // String compare
+        if (Token::Match(tok, "==|!=")) {
+            const Token * strtok = nullptr;
+            if (Token::Match(tok->astOperand1(), "%str%")) {
+                strtok = tok->astOperand1();
+                vartok = tok->astOperand2();
+            } else if (Token::Match(tok->astOperand2(), "%str%")) {
+                strtok = tok->astOperand2();
+                vartok = tok->astOperand1();
+            }
+            if (!strtok)
+                return cond;
+            if (!astIsContainer(vartok))
+                return cond;
+            ValueFlow::Value value(tok, Token::getStrLength(strtok));
+            value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+            cond.false_values.emplace_back(value);
+            cond.true_values.emplace_back(value);
+            cond.vartok = vartok;
+            return cond;
+        }
         return cond;
     };
     handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
