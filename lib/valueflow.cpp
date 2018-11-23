@@ -3238,15 +3238,19 @@ struct ValueFlowConditionHandler {
     }
 };
 
-static void setConditionalValues(const Token * tok, bool invert, long long value, ValueFlow::Value& true_value, ValueFlow::Value& false_value)
+static void setConditionalValues(const Token *tok,
+                                 bool invert,
+                                 long long value,
+                                 ValueFlow::Value &true_value,
+                                 ValueFlow::Value &false_value)
 {
     if (Token::Match(tok, "==|!=|>=|<=")) {
         true_value = ValueFlow::Value{tok, value};
         false_value = ValueFlow::Value{tok, value};
         return;
     }
-    const char * greaterThan = ">";
-    const char * lessThan = "<";
+    const char *greaterThan = ">";
+    const char *lessThan = "<";
     if (invert)
         std::swap(greaterThan, lessThan);
     if (Token::simpleMatch(tok, greaterThan)) {
@@ -3258,7 +3262,7 @@ static void setConditionalValues(const Token * tok, bool invert, long long value
     }
 }
 
-static const Token * parseCompareInt(const Token * tok, ValueFlow::Value& true_value, ValueFlow::Value& false_value)
+static const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
 {
     if (!tok->astOperand1() || !tok->astOperand2())
         return nullptr;
@@ -3293,7 +3297,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
         ValueFlowConditionHandler::Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
-        const Token *vartok = parseCompareInt(tok, true_value, false_value);;
+        const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
@@ -3304,7 +3308,7 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
             cond.vartok = vartok;
             return cond;
         }
-        
+
         if (tok->str() == "!") {
             vartok = tok->astOperand1();
 
@@ -4473,14 +4477,14 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
         ValueFlowConditionHandler::Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
-        const Token *vartok = parseCompareInt(tok, true_value, false_value);;
+        const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
             vartok = vartok->tokAt(-3);
             if (!Token::Match(vartok, "%var% . %name% ("))
                 return cond;
             if (!astIsContainer(vartok))
                 return cond;
-            if(vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::SIZE)
+            if (vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::SIZE)
                 return cond;
             true_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
@@ -4498,7 +4502,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             if (!astIsContainer(vartok))
                 return cond;
             // TODO: Handle .size()
-            if(vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::EMPTY)
+            if (vartok->valueType()->container->getYield(vartok->strAt(2)) != Library::Container::Yield::EMPTY)
                 return cond;
             ValueFlow::Value value(tok, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
@@ -4509,7 +4513,7 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
         }
         // String compare
         if (Token::Match(tok, "==|!=")) {
-            const Token * strtok = nullptr;
+            const Token *strtok = nullptr;
             if (Token::Match(tok->astOperand1(), "%str%")) {
                 strtok = tok->astOperand1();
                 vartok = tok->astOperand2();
