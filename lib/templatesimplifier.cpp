@@ -1072,13 +1072,11 @@ void TemplateSimplifier::expandTemplate(
                             ++typeindentlevel;
                         else if (typeindentlevel > 0 && typetok->str() == ">")
                             --typeindentlevel;
-                        if (copy) {
-                            dst->insertToken(typetok->str(), typetok->originalName(), true);
-                            dst->previous()->isTemplateArg(true);
-                            dst->previous()->isSigned(typetok->isSigned());
-                            dst->previous()->isUnsigned(typetok->isUnsigned());
-                            dst->previous()->isLong(typetok->isLong());
-                        }
+                        dst->insertToken(typetok->str(), typetok->originalName(), true);
+                        dst->previous()->isTemplateArg(true);
+                        dst->previous()->isSigned(typetok->isSigned());
+                        dst->previous()->isUnsigned(typetok->isUnsigned());
+                        dst->previous()->isLong(typetok->isLong());
                     }
                 } else {
                     if (start->str() == templateDeclarationNameToken->str())
