@@ -915,6 +915,9 @@ static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos
                     namepos++;
                 }
                 return true;
+            } else if (closing && closing->strAt(1) == "(") {
+                namepos--;
+                return true;
             }
         }
         tok = tok->next();
@@ -1047,6 +1050,8 @@ void TemplateSimplifier::expandTemplate(
                 start = templateDeclarationToken->next();
                 end = templateDeclarationNameToken->linkAt(1)->next();
             }
+            while (!Token::Match(end, ";|{"))
+                end = end->next();
 
             std::map<const Token *, Token *> links;
             while (start && start != end) {
@@ -1055,8 +1060,26 @@ void TemplateSimplifier::expandTemplate(
                     ++itype;
 
                 if (itype < typeParametersInDeclaration.size()) {
-                    dst->insertToken(mTypesUsedInTemplateInstantiation[itype]->str(), "", true);
-                    dst->previous()->isTemplateArg(true);
+                    unsigned int typeindentlevel = 0;
+                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype];
+                         typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
+                         typetok = typetok->next()) {
+                        if (Token::simpleMatch(typetok, ". . .")) {
+                            typetok = typetok->tokAt(2);
+                            continue;
+                        }
+                        if (Token::Match(typetok, "%name% <") && templateParameters(typetok->next()) > 0)
+                            ++typeindentlevel;
+                        else if (typeindentlevel > 0 && typetok->str() == ">")
+                            --typeindentlevel;
+                        if (copy) {
+                            dst->insertToken(typetok->str(), typetok->originalName(), true);
+                            dst->previous()->isTemplateArg(true);
+                            dst->previous()->isSigned(typetok->isSigned());
+                            dst->previous()->isUnsigned(typetok->isUnsigned());
+                            dst->previous()->isLong(typetok->isLong());
+                        }
+                    }
                 } else {
                     if (start->str() == templateDeclarationNameToken->str())
                         dst->insertToken(newName, "", true);

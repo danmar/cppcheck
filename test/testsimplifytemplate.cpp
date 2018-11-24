@@ -117,6 +117,7 @@ private:
         TEST_CASE(template77);
         TEST_CASE(template78);
         TEST_CASE(template79); // #5133
+        TEST_CASE(template80);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1514,6 +1515,19 @@ private:
                            "} "
                            "void Foo :: foo<int> ( ) { bar<int> ( ) ; } "
                            "void Foo :: bar<int> ( ) { bazz ( ) ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template80() {
+        const char code[] = "class Fred {\n"
+                            "    template <typename T> T foo(T t) const { return t; }\n"
+                            "};\n"
+                            "const void * p = Fred::foo<const void *>(nullptr);";
+        const char exp[] = "class Fred { "
+                           "const void * foo<constvoid*> ( const void * t ) const ; "
+                           "} ; "
+                           "const void * p ; p = Fred :: foo<constvoid*> ( nullptr ) ; "
+                           "const void * Fred :: foo<constvoid*> ( const void * t ) const { return t ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
