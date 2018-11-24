@@ -37,7 +37,6 @@
 #include <map>
 #include <ostream>
 #include <set>
-#include <stack>
 #include <utility>
 //---------------------------------------------------------------------------
 
@@ -418,24 +417,6 @@ static bool nonLocal(const Variable* var)
     return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
 }
 
-static bool nonLocalVolatile(const Variable* var)
-{
-    if (var && var->isVolatile())
-        return false;
-    return nonLocal(var);
-}
-
-static void eraseNotLocalArg(std::map<unsigned int, const Token*>& container, const SymbolDatabase* symbolDatabase)
-{
-    for (std::map<unsigned int, const Token*>::iterator i = container.begin(); i != container.end();) {
-        const Variable* var = symbolDatabase->getVariableFromVarId(i->first);
-        if (!var || nonLocal(var)) {
-            container.erase(i++);
-        } else
-            ++i;
-    }
-}
-
 static void eraseMemberAssignments(const unsigned int varId, const std::map<unsigned int, std::set<unsigned int> > &membervars, std::map<unsigned int, const Token*> &varAssignments)
 {
     const std::map<unsigned int, std::set<unsigned int> >::const_iterator it = membervars.find(varId);
@@ -449,274 +430,175 @@ static void eraseMemberAssignments(const unsigned int varId, const std::map<unsi
     }
 }
 
-static bool checkExceptionHandling(const Token* tok)
+static bool hasFunctionCall(const Token *tok)
 {
-    const Variable* var = tok->variable();
-    const Scope* upperScope = tok->scope();
-    if (var && upperScope == var->scope())
+    if (!tok)
+        return false;
+    if (Token::Match(tok, "%name% ("))
+        // todo, const/pure function?
         return true;
-    while (upperScope && upperScope->type != Scope::eTry && upperScope->type != Scope::eLambda && (!var || upperScope->nestedIn != var->scope()) && upperScope->isExecutable()) {
-        upperScope = upperScope->nestedIn;
-    }
-    if (var && upperScope && upperScope->type == Scope::eTry) {
-        // Check all exception han
-        const Token* tok2 = upperScope->bodyEnd;
-        while (Token::simpleMatch(tok2, "} catch (")) {
-            tok2 = tok2->linkAt(2)->next();
-            if (Token::findmatch(tok2, "%varid%", tok2->link(), var->declarationId()))
-                return false;
-            tok2 = tok2->link();
+    return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
+}
+
+static bool hasOperand(const Token *tok, const Token *lhs, bool cpp, const Library &library)
+{
+    if (!tok)
+        return false;
+    if (isSameExpression(cpp, false, tok, lhs, library, false, false, nullptr))
+        return true;
+    return hasOperand(tok->astOperand1(), lhs, cpp, library) || hasOperand(tok->astOperand2(), lhs, cpp, library);
+}
+
+const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1, const Token *startToken, const Token *endToken, bool *read) const
+{
+    // all variable ids in assign1 LHS.
+    std::set<unsigned int> assign1LhsVarIds;
+    bool local = true;
+    visitAstNodes(assign1->astOperand1(),
+    [&](const Token *tok) {
+        if (tok->varId() > 0) {
+            assign1LhsVarIds.insert(tok->varId());
+            local &= !nonLocal(tok->variable());
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+
+    // Parse the given tokens
+    for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "try {")) {
+            // TODO: handle try
+            *read = true;
+            return nullptr;
+        }
+
+        if (Token::Match(tok, "break|continue|return|throw")) {
+            // TODO: handle these better
+            *read = true;
+            return nullptr;
+        }
+
+        if (Token::simpleMatch(tok, "else {"))
+            tok = tok->linkAt(1);
+
+        if (Token::simpleMatch(tok, "asm (")) {
+            *read = true;
+            return nullptr;
+        }
+
+        if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+            // TODO: this is a quick bailout
+            *read = true;
+            return nullptr;
+        }
+
+        if (assign1LhsVarIds.find(tok->varId()) != assign1LhsVarIds.end()) {
+            const Token *parent = tok;
+            while (Token::Match(parent->astParent(), ".|::|["))
+                parent = parent->astParent();
+            if (Token::simpleMatch(parent->astParent(), "=") && parent == parent->astParent()->astOperand1()) {
+                if (!local && hasFunctionCall(parent->astParent()->astOperand2())) {
+                    // TODO: this is a quick bailout
+                    *read = true;
+                    return nullptr;
+                }
+                if (hasOperand(parent->astParent()->astOperand2(), assign1->astOperand1(), mTokenizer->isCPP(), mSettings->library)) {
+                    *read = true;
+                    return nullptr;
+                }
+                const bool reassign = isSameExpression(mTokenizer->isCPP(), false, assign1->astOperand1(), parent, mSettings->library, false, false, nullptr);
+                if (reassign)
+                    return parent->astParent();
+                *read = true;
+                return nullptr;
+            } else {
+                // TODO: this is a quick bailout
+                *read = true;
+                return nullptr;
+            }
+        }
+
+        if (Token::Match(tok, ") {")) {
+            const Token *a1 = checkRedundantAssignmentRecursive(assign1, tok->tokAt(2), tok->linkAt(1), read);
+            if (*read)
+                return nullptr;
+            if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
+                const Token *elseStart = tok->linkAt(1)->tokAt(2);
+                const Token *a2 = checkRedundantAssignmentRecursive(assign1, elseStart, elseStart->link(), read);
+                if (*read)
+                    return nullptr;
+                if (a1 && a2)
+                    return a1;
+                tok = elseStart->link();
+            } else {
+                tok = tok->linkAt(1);
+            }
         }
     }
-    return true;
+    return nullptr;
 }
 
 void CheckOther::checkRedundantAssignment()
 {
-    // TODO: This function should be rewritten, it's far too complex.
-    const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
-    const bool printStyle = mSettings->isEnabled(Settings::STYLE);
-    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
-    if (!printWarning && !printPerformance && !printStyle)
-        return;
-
-    const bool printInconclusive = mSettings->inconclusive;
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
-
-    for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable())
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        if (!scope->bodyStart)
             continue;
-
-        std::map<unsigned int, std::set<unsigned int>> usedByLambda; // map key: lambda function varId. set of varIds used by lambda.
-        std::map<unsigned int, const Token*> varAssignments;
-        std::map<unsigned int, const Token*> memAssignments;
-        std::map<unsigned int, std::set<unsigned int> > membervars;
-        std::set<unsigned int> initialized;
-        const Token* writtenArgumentsEnd = nullptr;
-
-        for (const Token* tok = scope.bodyStart->next(); tok && tok != scope.bodyEnd; tok = tok->next()) {
-            if (tok == writtenArgumentsEnd)
-                writtenArgumentsEnd = nullptr;
-
-            if (tok->str() == "?" && tok->astOperand2()) {
-                tok = Token::findmatch(tok->astOperand2(), ";|}");
-                if (!tok)
-                    break;
-                varAssignments.clear();
-                memAssignments.clear();
-            } else if (tok->str() == "{" && tok->strAt(-1) != "{" && tok->strAt(-1) != "=" && tok->strAt(-4) != "case" && tok->strAt(-3) != "default") { // conditional or non-executable inner scope: Skip it and reset status
-                tok = tok->link();
-                varAssignments.clear();
-                memAssignments.clear();
-            } else if (Token::Match(tok, "for|if|while (")) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "] ("))
+                // todo: handle lambdas
+                break;
+            if (Token::simpleMatch(tok, "try {"))
+                // todo: check try blocks
                 tok = tok->linkAt(1);
-            } else if (Token::Match(tok, "break|return|continue|throw|goto|asm")) {
-                varAssignments.clear();
-                memAssignments.clear();
-            } else if (Token::Match(tok, "%var% = [ & ] (")) {
-                const unsigned int lambdaId = tok->varId();
-                const Token *lambdaParams = tok->tokAt(5);
-                if (Token::simpleMatch(lambdaParams->link(), ") {")) {
-                    const Token *lambdaBodyStart = lambdaParams->link()->next();
-                    const Token * const lambdaBodyEnd = lambdaBodyStart->link();
-                    for (const Token *tok2 = lambdaBodyStart; tok2 != lambdaBodyEnd; tok2 = tok2->next()) {
-                        if (tok2->varId())
-                            usedByLambda[lambdaId].insert(tok2->varId());
-                    }
-                }
-            } else if (tok->tokType() == Token::eVariable && !Token::Match(tok, "%name% (")) {
-                const Token *eq = nullptr;
-                for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
-                    if (Token::Match(tok2, "[([]")) {
-                        // bail out if there is a variable in rhs - we only track 1 variable
-                        bool bailout = false;
-                        for (const Token *tok3 = tok2->link(); tok3 != tok2; tok3 = tok3->previous()) {
-                            if (tok3->varId()) {
-                                const Variable *var = tok3->variable();
-                                if (!var || !var->isConst() || var->isReference() || var->isPointer()) {
-                                    bailout = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (bailout)
+            if ((tok->isAssignmentOp() || Token::Match(tok, "++|--")) && tok->astOperand1()) {
+                if (tok->astParent())
+                    continue;
+                if (Token::simpleMatch(tok->astOperand2(), "0"))
+                    continue;
+                if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
+                    // todo: check references
+                    continue;
+                if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
+                    // todo: check static variables
+                    continue;
+                if (hasOperand(tok->astOperand2(), tok->astOperand1(), mTokenizer->isCPP(), mSettings->library))
+                    continue;
+
+                bool inconclusive = false;
+                if (mTokenizer->isCPP() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->typeScope) {
+                    const std::string op = "operator" + tok->str();
+                    for (const Function &f : tok->astOperand1()->valueType()->typeScope->functionList) {
+                        if (f.name() == op) {
+                            inconclusive = true;
                             break;
-                        tok2 = tok2->link();
-                    } else if (Token::Match(tok2, "[)];,]"))
+                        }
+                    }
+                }
+                if (inconclusive && !mSettings->inconclusive)
+                    continue;
+
+                bool read = false;
+                const Token *start;
+                if (tok->isAssignmentOp())
+                    start = tok->next();
+                else
+                    start = tok->findExpressionStartEndTokens().second->next();
+                const Token *nextAssign = checkRedundantAssignmentRecursive(tok, start, scope->bodyEnd, &read);
+                if (read || !nextAssign)
+                    continue;
+
+                bool hasCase = false;
+                for (const Token *tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
+                    if (tok2->str() == "case") {
+                        hasCase = true;
                         break;
-                    else if (tok2->str() == "=") {
-                        eq = tok2;
-                        break;
                     }
                 }
 
-                // Set initialization flag
-                if (!Token::Match(tok, "%var% ["))
-                    initialized.insert(tok->varId());
-                else {
-                    const Token *tok2 = tok->next();
-                    while (tok2 && tok2->str() == "[")
-                        tok2 = tok2->link()->next();
-                    if (tok2 && tok2->str() != ";")
-                        initialized.insert(tok->varId());
-                }
-
-                const Token *startToken = tok;
-                while (Token::Match(startToken, "%name%|::|.")) {
-                    startToken = startToken->previous();
-                    if (Token::Match(startToken, "%name% . %var%"))
-                        membervars[startToken->varId()].insert(startToken->tokAt(2)->varId());
-                }
-
-                const std::map<unsigned int, const Token*>::iterator it = varAssignments.find(tok->varId());
-                if (eq && Token::Match(startToken, "[;{}]")) { // Assignment
-                    if (it != varAssignments.end()) {
-                        const Token *oldeq = nullptr;
-                        for (const Token *tok2 = it->second; tok2; tok2 = tok2->next()) {
-                            if (Token::Match(tok2, "[([]"))
-                                tok2 = tok2->link();
-                            else if (Token::Match(tok2, "[)];,]"))
-                                break;
-                            else if (Token::Match(tok2, "++|--|=")) {
-                                oldeq = tok2;
-                                break;
-                            }
-                        }
-                        if (!oldeq) {
-                            const Token *tok2 = it->second;
-                            while (Token::Match(tok2, "%name%|.|[|*|("))
-                                tok2 = tok2->astParent();
-                            if (Token::Match(tok2, "++|--"))
-                                oldeq = tok2;
-                        }
-
-                        // Ensure that LHS in assignments are the same
-                        bool error = oldeq && eq->astOperand1() && isSameExpression(mTokenizer->isCPP(), true, eq->astOperand1(), oldeq->astOperand1(), mSettings->library, true, false);
-
-                        // Ensure that variable is not used on right side
-                        visitAstNodes(eq->astOperand2(),
-                        [&](const Token *rhs) {
-                            if (rhs->varId() == tok->varId()) {
-                                error = false;
-                                return ChildrenToVisit::done;
-                            }
-
-                            if (Token::Match(rhs->previous(), "%name% (") && nonLocalVolatile(tok->variable())) { // Called function might use the variable
-                                const Function* const func = rhs->function();
-                                const Variable* const var = tok->variable();
-                                if (!var || var->isGlobal() || var->isReference() || ((!func || func->nestedIn) && rhs->strAt(-1) != ".")) {// Global variable, or member function
-                                    error = false;
-                                    return ChildrenToVisit::done;
-                                }
-                            }
-
-                            return ChildrenToVisit::op1_and_op2;
-                        });
-
-                        if (error) {
-                            if (printWarning && scope.type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
-                                redundantAssignmentInSwitchError(it->second, tok, eq->astOperand1()->expressionString());
-                            else if (printStyle) {
-                                // c++ and (unknown type or overloaded assignment operator) => assignment might have additional side effects
-                                const bool possibleSideEffects = mTokenizer->isCPP() &&
-                                                                 (!tok->valueType() ||
-                                                                  (tok->valueType()->typeScope &&
-                                                                   tok->valueType()->typeScope->functionMap.count("operator=")));
-
-                                // TODO nonlocal variables are not tracked entirely.
-                                const bool nonlocal = it->second->variable() && nonLocalVolatile(it->second->variable());
-
-                                // Warnings are inconclusive if there are possible side effects or if variable is not
-                                // tracked perfectly.
-                                const bool inconclusive = possibleSideEffects | nonlocal;
-
-                                if (printInconclusive || !inconclusive)
-                                    if (mTokenizer->isC() || checkExceptionHandling(tok)) // see #6555 to see how exception handling might have an impact
-                                        redundantAssignmentError(it->second, tok, eq->astOperand1()->expressionString(), inconclusive);
-                            }
-                        }
-                        it->second = tok;
-                    }
-                    if (!Token::simpleMatch(tok->tokAt(2), "0 ;") || (tok->variable() && tok->variable()->nameToken() != tok->tokAt(-2)))
-                        varAssignments[tok->varId()] = tok;
-                    memAssignments.erase(tok->varId());
-                    eraseMemberAssignments(tok->varId(), membervars, varAssignments);
-                } else if ((tok->next() && tok->next()->tokType() == Token::eIncDecOp) || (tok->previous()->tokType() == Token::eIncDecOp && tok->strAt(1) == ";")) { // Variable incremented/decremented; Prefix-Increment is only suspicious, if its return value is unused
-                    varAssignments[tok->varId()] = tok;
-                    memAssignments.erase(tok->varId());
-                    eraseMemberAssignments(tok->varId(), membervars, varAssignments);
-                } else if (!Token::simpleMatch(tok->tokAt(-2), "sizeof (")) { // Other usage of variable
-                    if (it != varAssignments.end())
-                        varAssignments.erase(it);
-                    if (!writtenArgumentsEnd) // Indicates that we are in the first argument of strcpy/memcpy/... function
-                        memAssignments.erase(tok->varId());
-                }
-            } else if (Token::Match(tok, "%name% (") && !mSettings->library.isFunctionConst(tok->str(), true)) { // Function call. Global variables might be used. Reset their status
-                const bool memfunc = Token::Match(tok, "memcpy|memmove|memset|strcpy|strncpy|sprintf|snprintf|strcat|strncat|wcscpy|wcsncpy|swprintf|wcscat|wcsncat");
-                if (tok->varId()) {
-                    // operator(), function pointer
-                    varAssignments.erase(tok->varId());
-
-                    // lambda..
-                    std::map<unsigned int, std::set<unsigned int>>::const_iterator lambda = usedByLambda.find(tok->varId());
-                    if (lambda != usedByLambda.end()) {
-                        for (unsigned int varId : lambda->second) {
-                            varAssignments.erase(varId);
-                        }
-                    }
-                }
-
-                if (memfunc && tok->strAt(-1) != "(" && tok->strAt(-1) != "=") {
-                    const Token* param1 = tok->tokAt(2);
-                    writtenArgumentsEnd = param1->next();
-                    if (param1->varId() && param1->strAt(1) == "," && !Token::Match(tok, "strcat|strncat|wcscat|wcsncat") && param1->variable() && param1->variable()->isLocal() && param1->variable()->isArray()) {
-                        if (tok->str() == "memset" && initialized.find(param1->varId()) == initialized.end())
-                            initialized.insert(param1->varId());
-                        else {
-                            const std::map<unsigned int, const Token*>::const_iterator it = memAssignments.find(param1->varId());
-                            if (it == memAssignments.end())
-                                memAssignments[param1->varId()] = tok;
-                            else {
-                                bool read = false;
-                                for (const Token *tok2 = tok->linkAt(1); tok2 != writtenArgumentsEnd; tok2 = tok2->previous()) {
-                                    if (tok2->varId() == param1->varId()) {
-                                        // TODO: is this a read? maybe it's a write
-                                        read = true;
-                                        break;
-                                    }
-                                }
-                                if (read) {
-                                    memAssignments[param1->varId()] = tok;
-                                    continue;
-                                }
-
-                                if (printWarning && scope.type == Scope::eSwitch && Token::findmatch(it->second, "default|case", tok))
-                                    redundantCopyInSwitchError(it->second, tok, param1->str());
-                                else if (printPerformance)
-                                    redundantCopyError(it->second, tok, param1->str());
-                            }
-                        }
-                    }
-                } else if (scope.type == Scope::eSwitch) { // Avoid false positives if noreturn function is called in switch
-                    const Function* const func = tok->function();
-                    if (!func || !func->hasBody()) {
-                        varAssignments.clear();
-                        memAssignments.clear();
-                        continue;
-                    }
-                    const Token* funcEnd = func->functionScope->bodyEnd;
-                    bool noreturn;
-                    if (!mTokenizer->IsScopeNoReturn(funcEnd, &noreturn) && !noreturn) {
-                        eraseNotLocalArg(varAssignments, symbolDatabase);
-                        eraseNotLocalArg(memAssignments, symbolDatabase);
-                    } else {
-                        varAssignments.clear();
-                        memAssignments.clear();
-                    }
-                } else { // Noreturn functions outside switch don't cause problems
-                    eraseNotLocalArg(varAssignments, symbolDatabase);
-                    eraseNotLocalArg(memAssignments, symbolDatabase);
-                }
+                if (hasCase)
+                    redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
+                else
+                    redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
             }
         }
     }
