@@ -1932,6 +1932,14 @@ private:
               "}\n", nullptr, false, false, true);
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "  int x;\n"
+              "  switch (state) {\n"
+              "  case 1: x = 3; goto a;\n"
+              "  case 1: x = 6; goto a;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantOperationTest() {

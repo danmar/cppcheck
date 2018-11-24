@@ -471,7 +471,7 @@ const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1,
             return nullptr;
         }
 
-        if (Token::Match(tok, "break|continue|return|throw")) {
+        if (Token::Match(tok, "break|continue|return|throw|goto")) {
             // TODO: handle these better
             *read = true;
             return nullptr;
