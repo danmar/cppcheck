@@ -243,7 +243,7 @@ private:
                       "test.cpp:2:note:condition 's.size()==1'\n"
                       "test.cpp:3:note:Access out of bounds\n", errout.str());
 
-        // Fix crash
+        // Do not crash
         checkNormal("void a() {\n"
                     "  std::string b[];\n"
                     "  for (auto c : b)\n"

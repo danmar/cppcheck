@@ -3235,7 +3235,7 @@ struct ValueFlowConditionHandler {
 
 static void setConditionalValues(const Token *tok,
                                  bool invert,
-                                 long long value,
+                                 Mathlib::bigint value,
                                  ValueFlow::Value &true_value,
                                  ValueFlow::Value &false_value)
 {
