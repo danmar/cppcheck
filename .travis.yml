@@ -1,6 +1,5 @@
 language: cpp
 dist: trusty
-sudo: required
 
 compiler:
   - gcc
