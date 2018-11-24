@@ -135,6 +135,7 @@ void validCode()
     WSACleanup();
 
     wordInit = MAKEWORD(1, 2);
+    // cppcheck-suppress redundantAssignment
     dwordInit = MAKELONG(1, 2);
     // cppcheck-suppress redundantAssignment
     wordInit = LOWORD(dwordInit);
@@ -210,13 +211,13 @@ void bufferAccessOutOfBounds()
     RtlCompareMemory(byteBuf, byteBuf2, 20);
     // cppcheck-suppress bufferAccessOutOfBounds
     RtlMoveMemory(byteBuf, byteBuf2, 20);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     // cppcheck-suppress bufferAccessOutOfBounds
     MoveMemory(byteBuf, byteBuf2, 20);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     // cppcheck-suppress bufferAccessOutOfBounds
     RtlCopyMemory(byteBuf, byteBuf2, 20);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     // cppcheck-suppress bufferAccessOutOfBounds
     CopyMemory(byteBuf, byteBuf2, 20);
     // cppcheck-suppress bufferAccessOutOfBounds
