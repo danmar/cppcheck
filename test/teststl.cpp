@@ -242,6 +242,16 @@ private:
         ASSERT_EQUALS("test.cpp:3:warning:Possible access out of bounds of container 's'; size=1, index=2\n"
                       "test.cpp:2:note:condition 's.size()==1'\n"
                       "test.cpp:3:note:Access out of bounds\n", errout.str());
+
+        // Do not crash
+        checkNormal("void a() {\n"
+                    "  std::string b[];\n"
+                    "  for (auto c : b)\n"
+                    "    c.data();\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
     }
 
     void iterator1() {
@@ -947,7 +957,7 @@ private:
               "    std::vector<int>& g();\n"
               "};\n"
               "void foo() {\n"
-              "    (void)std::find(A{}.f().begin(), A{}.g().end(), 0);\n"
+              "    (void)std::find(A{} .f().begin(), A{} .g().end(), 0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Iterators to containers from different expressions 'A{}.f()' and 'A{}.g()' are used together.\n", errout.str());
 
