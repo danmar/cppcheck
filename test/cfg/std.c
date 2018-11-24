@@ -32,27 +32,27 @@ void bufferAccessOutOfBounds(void)
     fgets(a,6,stdin);
     sprintf(a, "ab%s", "cd");
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     sprintf(a, "ab%s", "cde");
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     snprintf(a, 5, "abcde%i", 1);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     // cppcheck-suppress bufferAccessOutOfBounds
     snprintf(a, 6, "abcde%i", 1);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strcpy(a,"abcd");
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strcpy(a, "abcde");
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcde",5);
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcde",6);
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strncpy(a,"a",6);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcdefgh",4);
     // valid call
     strncpy_s(a,5,"abcd",5);
