@@ -110,7 +110,7 @@ void MainWindow::showResult(QListWidgetItem *item)
         return;
     const QString url = lines[0];
     QString msg = lines[1];
-    if (msg.startsWith("head ") || msg.startsWith("1.84 "))
+    if (QRegExp("^(head|1.[0-9][0-9]) .*").exactMatch(msg))
         msg = msg.mid(5);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
