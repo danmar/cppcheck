@@ -553,17 +553,28 @@ void CheckOther::checkRedundantAssignment()
             if ((tok->isAssignmentOp() || Token::Match(tok, "++|--")) && tok->astOperand1()) {
                 if (tok->astParent())
                     continue;
+
+                // Do not warn about redundant initialization
+                // TODO : do not simplify the variable declarations
+                if (Token::Match(tok->tokAt(-3), "%var% ; %var% =") && tok->previous()->variable() && tok->previous()->variable()->nameToken() == tok->tokAt(-3))
+                    continue;
+
+                // Do not warn about assignment with 0 / NULL
                 if (Token::simpleMatch(tok->astOperand2(), "0"))
                     continue;
+
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
                     // todo: check references
                     continue;
+
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
                     // todo: check static variables
                     continue;
+
                 if (hasOperand(tok->astOperand2(), tok->astOperand1(), mTokenizer->isCPP(), mSettings->library))
                     continue;
 
+                // If there is a custom assignment operator => this is inconclusive
                 bool inconclusive = false;
                 if (mTokenizer->isCPP() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->typeScope) {
                     const std::string op = "operator" + tok->str();
@@ -577,6 +588,7 @@ void CheckOther::checkRedundantAssignment()
                 if (inconclusive && !mSettings->inconclusive)
                     continue;
 
+                // Is there a redundant assignment?
                 bool read = false;
                 const Token *start;
                 if (tok->isAssignmentOp())
@@ -587,6 +599,7 @@ void CheckOther::checkRedundantAssignment()
                 if (read || !nextAssign)
                     continue;
 
+                // there is redundant assignment. Is there a case between the assignments?
                 bool hasCase = false;
                 for (const Token *tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
                     if (tok2->str() == "case") {
@@ -595,6 +608,7 @@ void CheckOther::checkRedundantAssignment()
                     }
                 }
 
+                // warn
                 if (hasCase)
                     redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
                 else
