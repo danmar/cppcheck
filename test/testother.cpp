@@ -162,6 +162,7 @@ private:
         TEST_CASE(redundantVarAssignment_7133);
         TEST_CASE(redundantVarAssignment_stackoverflow);
         TEST_CASE(redundantVarAssignment_lambda);
+        TEST_CASE(redundantVarAssignment_for);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -6046,6 +6047,17 @@ private:
               "    x = 6;\n"
               "    f();\n"
               "    return y;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantVarAssignment_for() {
+        check("void f() {\n"
+              "    char buf[10];\n"
+              "    int i;\n"
+              "    for (i = 0; i < 4; i++)\n"
+              "        buf[i] = 131;\n"
+              "    buf[i] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

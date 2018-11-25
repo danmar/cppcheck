@@ -471,6 +471,12 @@ const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1,
             return nullptr;
         }
 
+        if (tok->str() == "}" && (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eWhile)) {
+            // TODO: handle loops better
+            *read = true;
+            return nullptr;
+        }
+
         if (Token::Match(tok, "break|continue|return|throw|goto")) {
             // TODO: handle these better
             *read = true;
