@@ -5602,15 +5602,13 @@ private:
 
         check("void f() {\n"
               "    int i;\n"
-              "    dostuff();\n"
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void f() {\n"
               "    static int i;\n"
-              "    dostuff();\n"
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
@@ -5686,12 +5684,11 @@ private:
 
         check("void f() {\n"
               "    int i;\n"
-              "    dostuff();\n"
               "    i = 1;\n"
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'i' is reassigned a value before the old one has been used.\n", errout.str());
 
         check("void bar(int i) {}\n"
               "void f(int i) {\n"
@@ -5778,17 +5775,15 @@ private:
         // from #3103 (avoid a false negative)
         check("int foo(){\n"
               "    int x;\n"
-              "    dostuff();\n"
               "    x = 1;\n"
               "    x = 1;\n"
               "    return x + 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'x' is reassigned a value before the old one has been used.\n", errout.str());
 
         // from #3103 (avoid a false positive)
         check("int foo(){\n"
               "    int x;\n"
-              "    dostuff();\n"
               "    x = 1;\n"
               "    if (y)\n" // <-- cppcheck does not know anything about 'y'
               "        x = 2;\n"
@@ -6016,11 +6011,10 @@ private:
         check("class C { void operator=(int x); };\n" // #8368 - assignment operator might have side effects => inconclusive
               "void f() {\n"
               "    C c;\n"
-              "    dostuff();\n"
               "    c = x;\n"
               "    c = x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6]: (style, inconclusive) Variable 'c' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style, inconclusive) Variable 'c' is reassigned a value before the old one has been used if variable is no semaphore variable.\n", errout.str());
     }
 
     void redundantVarAssignment_stackoverflow() {

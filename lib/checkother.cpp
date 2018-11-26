@@ -560,13 +560,25 @@ void CheckOther::checkRedundantAssignment()
                 if (tok->astParent())
                     continue;
 
-                // Do not warn about redundant initialization
+                // Do not warn about redundant initialization when rhs is trivial
                 // TODO : do not simplify the variable declarations
-                if (Token::Match(tok->tokAt(-3), "%var% ; %var% =") && tok->previous()->variable() && tok->previous()->variable()->nameToken() == tok->tokAt(-3))
-                    continue;
+                if (Token::Match(tok->tokAt(-3), "%var% ; %var% =") && tok->previous()->variable() && tok->previous()->variable()->nameToken() == tok->tokAt(-3) && tok->tokAt(-3)->linenr() == tok->previous()->linenr()) {
+                    bool trivial = true;
+                    visitAstNodes(tok->astOperand2(),
+                    [&](const Token *rhs) {
+                        if (Token::Match(rhs, "%str%|%num%|%name%"))
+                            return ChildrenToVisit::op1_and_op2;
+                        if (rhs->str() == "(" && !rhs->previous()->isName())
+                            return ChildrenToVisit::op1_and_op2;
+                        trivial = false;
+                        return ChildrenToVisit::done;
+                    });
+                    if (trivial)
+                        continue;
+                }
 
                 // Do not warn about assignment with 0 / NULL
-                if (Token::simpleMatch(tok->astOperand2(), "0"))
+                if (Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
                     continue;
 
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
