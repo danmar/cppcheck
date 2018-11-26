@@ -2239,6 +2239,15 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
+
+        code = "int f(int *);\n"
+               "int g() {\n"
+               "  const int a = 1;\n"
+               "  int x = 11;\n"
+               "  c = (a && f(&x));\n"
+               "  if (x == 42) {}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 11));
     }
 
     void valueFlowForwardTernary() {

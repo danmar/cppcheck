@@ -2363,6 +2363,14 @@ static bool valueFlowForward(Token * const               startToken,
                 const Token *astTop = parent->astTop();
                 if (Token::simpleMatch(astTop->astOperand1(), "for ("))
                     tok2 = const_cast<Token*>(astTop->link());
+
+                // bailout if address of var is taken..
+                if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "Taking address of " + tok2->str());
+                    return false;
+                }
+
                 continue;
             }
 
