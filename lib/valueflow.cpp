@@ -1171,8 +1171,8 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             for (Token* tok = cond.first->next(); tok != scope->bodyEnd; tok = tok->next()) {
                 if (tok == cond.first)
                     continue;
-                const Token * tokParent = tok->astParent();
-                while(tokParent && tokParent != cond.first)
+                const Token *tokParent = tok->astParent();
+                while (tokParent && tokParent != cond.first)
                     tokParent = tokParent->astParent();
                 if (tokParent == cond.first)
                     continue;
