@@ -252,14 +252,17 @@ def sendAll(connection, data):
 
 def uploadResults(package, results):
     print('Uploading results..')
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('cppcheck.osuosl.org', 8000)
-    sock.connect(server_address)
-    try:
-        sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
-        sock.close()
-    except socket.error:
-        pass
+    for retry in range(4):
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_address = ('cppcheck.osuosl.org', 8000)
+            sock.connect(server_address)
+            sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
+            sock.close()
+        except socket.error:
+            print('Upload failed, retry in 60 seconds')
+            time.sleep(30)
+            pass
     return package
 
 jobs = '-j1'
