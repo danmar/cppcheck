@@ -1080,8 +1080,34 @@ void TemplateSimplifier::expandTemplate(
                         dst->insertToken(newName, "", true);
                         if (start->strAt(1) == "<")
                             start = start->next()->findClosingBracket();
-                    } else
-                        dst->insertToken(start->str(), "", true);
+                    } else {
+                        // check if type is a template
+                        if (start->strAt(1) == "<") {
+                            // get the instantiated name
+                            Token * closing = start->next()->findClosingBracket();
+                            std::string name;
+                            const Token * type = start;
+                            while (type && type != closing->next()) {
+                                if (!name.empty())
+                                    name += " ";
+                                name += type->str();
+                                type = type->next();
+                            }
+                            // check if type is instantiated
+                            for (const auto & inst : mTemplateInstantiations) {
+                                if (Token::simpleMatch(inst.nameToken, name.c_str())) {
+                                    // use the instantiated name
+                                    dst->insertToken(name, "", true);
+                                    start = closing;
+                                    break;
+                                }
+                            }
+                            // just copy the token if it wasn't instantiated
+                            if (start != closing)
+                                dst->insertToken(start->str(), "", true);
+                        } else
+                            dst->insertToken(start->str(), "", true);
+                    }
                     if (start->link()) {
                         if (Token::Match(start, "[|{|(")) {
                             links[start->link()] = dst->previous();

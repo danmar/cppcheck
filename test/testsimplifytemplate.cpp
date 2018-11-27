@@ -119,6 +119,7 @@ private:
         TEST_CASE(template79); // #5133
         TEST_CASE(template80);
         TEST_CASE(template81);
+        TEST_CASE(template82); // 8603
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1551,6 +1552,44 @@ private:
                            "SortWith<int> ( 0 ) ; "
                            "} "
                            "SortWith<int> :: SortWith<int> ( int ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template82() { // 8603
+        const char code[] = "typedef int comp;\n"
+                            "const int f16=16;\n"
+                            "template<int x>\n"
+                            "class tvec2 {};\n"
+                            "template<int x>\n"
+                            "class tvec3 {};\n"
+                            "namespace swizzle {\n"
+                            "template <comp> void swizzle(tvec2<f16> v) { }\n"
+                            "template <comp x, comp y> void swizzle(tvec3<f16> v) { }\n"
+                            "}\n"
+                            "void foo() {\n"
+                            "  using namespace swizzle;\n"
+                            "  tvec2<f16> tt2;\n"
+                            "  swizzle<1>(tt2);\n"
+                            "  tvec3<f16> tt3;\n"
+                            "  swizzle<2,3>(tt3);\n"
+                            "}";
+        const char exp[] = "class tvec2<f16> ; "
+                           "class tvec3<f16> ; "
+                           "namespace swizzle { "
+                           "void swizzle<1> ( tvec2<f16> v ) ; "
+                           "void swizzle<2,3> ( tvec3<f16> v ) ; "
+                           "} "
+                           "void foo ( ) { "
+                           "using namespace swizzle ; "
+                           "tvec2<f16> tt2 ; "
+                           "swizzle<1> ( tt2 ) ; "
+                           "tvec3<f16> tt3 ; "
+                           "swizzle<2,3> ( tt3 ) ; "
+                           "} "
+                           "void swizzle :: swizzle<2,3> ( tvec3<f16> v ) { } "
+                           "void swizzle :: swizzle<1> ( tvec2<f16> v ) { } "
+                           "class tvec3<f16> { } ; "
+                           "class tvec2<f16> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
