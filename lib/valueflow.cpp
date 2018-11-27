@@ -1168,14 +1168,8 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
         for (Condition cond:conds) {
             if (!cond.first)
                 continue;
-            for (Token* tok = cond.first->next(); tok != scope->bodyEnd; tok = tok->next()) {
-                if (tok == cond.first)
-                    continue;
-                const Token *tokParent = tok->astParent();
-                while (tokParent && tokParent != cond.first)
-                    tokParent = tokParent->astParent();
-                if (tokParent == cond.first)
-                    continue;
+            Token *const startToken = cond.first->findExpressionStartEndTokens().second->next();
+            for (Token* tok = startToken; tok != scope->bodyEnd; tok = tok->next()) {
                 if (!Token::Match(tok, "%comp%"))
                     continue;
                 // Skip known values
