@@ -545,6 +545,8 @@ const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1,
 
 void CheckOther::checkRedundantAssignment()
 {
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         if (!scope->bodyStart)
