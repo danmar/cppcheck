@@ -364,20 +364,19 @@ def getCrashUrls():
     return ret
 
 
-def writeCrashUrls(crashUrls):
-    f = open(os.path.expanduser('crash-urls.txt'), 'wt')
-    for url in crashUrls:
-        f.write(url + '\n')
+def writeStringList(filename, stringList):
+    f = open(os.path.expanduser(filename), 'wt')
+    for s in stringList:
+        f.write(s + '\n')
     f.close()
 
-def readCrashUrls():
+def readStringList(filename):
     ret = []
-    filename = 'crash-urls.txt'
     if os.path.isfile(filename):
         f = open(filename, 'rt')
-        for url in f.read().split():
-            if len(url) > 10:
-                ret.append(url.strip())
+        for line in f.read().split():
+            if len(line) > 10:
+                ret.append(line.strip())
         f.close()
     return ret
 
@@ -390,7 +389,10 @@ def server(server_address_port, packages, packageIndex, resultPath):
 
     sock.listen(1)
 
-    crashUrls = readCrashUrls()
+    FILENAME_CRASH_URLS = 'crash-urls.txt'
+    FILENAME_CRASH_HISTORY = 'crash-history.txt'
+    crashUrls = readStringList(FILENAME_CRASH_URLS)
+    crashHistory = readStringList(FILENAME_CRASH_HISTORY)
 
     latestResults = []
     if os.path.isfile('latest.txt'):
@@ -419,11 +421,11 @@ def server(server_address_port, packages, packageIndex, resultPath):
             # Get crash package urls..
             if (packageIndex % 500) == 0:
                 crashUrls = getCrashUrls()
-                writeCrashUrls(crashUrls)
+                writeStringList(FILENAME_CRASH_URLS, crashUrls)
             if (packageIndex % 500) == 1 and len(crashUrls) > 0:
                 pkg = crashUrls[0]
                 crashUrls = crashUrls[1:]
-                writeCrashUrls(crashUrls)
+                writeStringList(FILENAME_CRASH_URLS, crashUrls)
                 print('[' + strDateTime() + '] CRASH: ' + pkg)
             else:
                 pkg = packages[packageIndex].strip()
@@ -480,6 +482,12 @@ def server(server_address_port, packages, packageIndex, resultPath):
             latestResults.append(filename)
             with open('latest.txt', 'wt') as f:
                 f.write(' '.join(latestResults))
+            pos = data.find('\ncount:')
+            if pos > 0:
+                count = data[pos+1:data.find('\n', pos+1)]
+                if count.find('CRASH') > 0:
+                    crashHistory.append(strDateTime() + ' ' + res.group(1) + ' ' + count)
+                    writeStringList(FILENAME_CRASH_HISTORY, crashHistory)
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
