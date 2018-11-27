@@ -38,6 +38,7 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings0.library, "qt.cfg");
+        LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.addEnabled("style");
         settings0.addEnabled("warning");
@@ -1991,9 +1992,6 @@ private:
         check("void f1(QString s) { if(s.isEmpty()) if(s.length() > 42) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
-        check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
-        ASSERT_EQUALS("", errout.str());
-
         check("void f1(const std::string &s, bool b) { if(s.empty() || ((s.size() == 1) && b)) {}} ");
         ASSERT_EQUALS("", errout.str());
 
@@ -2519,6 +2517,9 @@ private:
                       "[test.cpp:4]: (style) Condition 'x++==2' is always false\n",
                       errout.str());
 
+        check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.size()==0' is always true\n", errout.str());
+
         // Avoid FP when condition comes from macro
         check("#define NOT !\n"
               "void f() {\n"
@@ -2702,6 +2703,11 @@ private:
               "    if (b) return;\n"
               "  }\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char* x, const char* t) {\n"
+              "    if (!(strcmp(x, y) == 0)) { return; }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
