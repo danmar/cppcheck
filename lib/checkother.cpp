@@ -458,7 +458,8 @@ const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1,
     [&](const Token *tok) {
         if (tok->varId() > 0) {
             assign1LhsVarIds.insert(tok->varId());
-            local &= !nonLocal(tok->variable());
+            if (!Token::simpleMatch(tok->previous(), "."))
+                local &= !nonLocal(tok->variable());
         }
         return ChildrenToVisit::op1_and_op2;
     });

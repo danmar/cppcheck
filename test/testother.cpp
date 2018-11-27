@@ -159,6 +159,7 @@ private:
         TEST_CASE(incompleteArrayFill);
 
         TEST_CASE(redundantVarAssignment);
+        TEST_CASE(redundantVarAssignment_struct);
         TEST_CASE(redundantVarAssignment_7133);
         TEST_CASE(redundantVarAssignment_stackoverflow);
         TEST_CASE(redundantVarAssignment_lambda);
@@ -5966,6 +5967,19 @@ private:
               "        memptr = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
+    }
+
+    void redundantVarAssignment_struct() {
+        check("struct foo {\n"
+              "  int a,b;\n"
+              "};\n"
+              "\n"
+              "int main() {\n"
+              "  struct foo x;\n"
+              "  x.a = _mm_set1_ps(1.0);\n"
+              "  x.a = _mm_set1_ps(2.0);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8]: (style) Variable 'x.a' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantVarAssignment_7133() {
