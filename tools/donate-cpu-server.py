@@ -114,6 +114,15 @@ def crashReport():
             html += out + '\n'
             break
     html += '</pre>\n'
+
+    if os.path.isfile('crash-history.txt'):
+        html += '<h2>history</h2>\n'
+        html += '<pre>\n'
+        f = open('crash-history.txt')
+        html += f.read()
+        f.close()
+        html += '</pre>'
+
     html += '</body></html>\n'
     return html
 
