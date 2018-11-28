@@ -115,14 +115,11 @@ void CheckStl::outOfBoundsError(const Token *tok, const ValueFlow::Value *contai
         else
             errmsg = "Accessing an item in container '$symbol' that is empty.";
     } else if (index) {
-        if (containerSize->condition || index->condition)
-            errmsg = "Possible access out of bounds";
-        else
-            errmsg = "Access out of bounds";
-
-        errmsg += " of container '$symbol'; size=" +
-                  MathLib::toString(containerSize->intvalue) + ", index=" +
-                  MathLib::toString(index->intvalue);
+        errmsg = "Accessing $symbol[" + MathLib::toString(index->intvalue) + "] is out of bounds when $symbol size is " + MathLib::toString(containerSize->intvalue) + ".";
+        if (containerSize->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + MathLib::toString(containerSize->intvalue) + ". " + errmsg;
+        else if (index->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(index->condition) + " or $symbol item " + MathLib::toString(index->intvalue) + " can be accessed. " + errmsg;
     } else {
         // should not happen
         return;

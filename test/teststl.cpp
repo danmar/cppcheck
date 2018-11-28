@@ -197,6 +197,18 @@ private:
     void outOfBounds() {
         setMultiline();
 
+        checkNormal("void f() {\n"
+                    "  std::string s;\n"
+                    "  s[10] = 1;\n"
+                    "}");
+        ASSERT_EQUALS("test.cpp:3:error:Accessing an item in container 's' that is empty.\n", errout.str());
+
+        checkNormal("void f() {\n"
+                    "  std::string s = \"abcd\";\n"
+                    "  s[10] = 1;\n"
+                    "}");
+        ASSERT_EQUALS("test.cpp:3:error:Accessing s[10] is out of bounds when s size is 4.\n", errout.str());
+
         checkNormal("void f(std::vector<int> v) {\n"
                     "    v.front();\n"
                     "    if (v.empty()) {}\n"
@@ -209,7 +221,7 @@ private:
                     "    if (v.size() == 3) {}\n"
                     "    v[16] = 0;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:3:warning:Possible access out of bounds of container 'v'; size=3, index=16\n"
+        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 'v.size()==3' is redundant or v size can be 3. Accessing v[16] is out of bounds when v size is 3.\n"
                       "test.cpp:2:note:condition 'v.size()==3'\n"
                       "test.cpp:3:note:Access out of bounds\n", errout.str());
 
@@ -219,7 +231,7 @@ private:
                     "        v[i] = 0;\n"
                     "    }\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:4:warning:Possible access out of bounds of container 'v'; size=3, index=16\n"
+        ASSERT_EQUALS("test.cpp:4:warning:Either the condition 'v.size()==3' is redundant or v size can be 3. Accessing v[16] is out of bounds when v size is 3.\n"
                       "test.cpp:3:note:condition 'v.size()==3'\n"
                       "test.cpp:4:note:Access out of bounds\n", errout.str());
 
@@ -239,7 +251,7 @@ private:
                     "        s[2] = 0;\n"
                     "    }\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:3:warning:Possible access out of bounds of container 's'; size=1, index=2\n"
+        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 's.size()==1' is redundant or s size can be 1. Accessing s[2] is out of bounds when s size is 1.\n"
                       "test.cpp:2:note:condition 's.size()==1'\n"
                       "test.cpp:3:note:Access out of bounds\n", errout.str());
 
