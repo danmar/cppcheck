@@ -61,6 +61,7 @@ public:
 
         CheckStl checkStl(tokenizer, settings, errorLogger);
         checkStl.outOfBounds();
+        checkStl.outOfBoundsIndexExpression();
     }
 
     /** Simplified checks. The token list is simplified. */
@@ -93,6 +94,9 @@ public:
 
     /** Accessing container out of bounds using ValueFlow */
     void outOfBounds();
+
+    /** Accessing container out of bounds, following index expression */
+    void outOfBoundsIndexExpression();
 
     /**
      * Finds errors like this:
@@ -185,6 +189,9 @@ public:
     void useStlAlgorithm();
 
 private:
+    bool isContainerSize(const Token *container, const Token *expr) const;
+    bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
+
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);
@@ -192,6 +199,7 @@ private:
     void string_c_strParam(const Token* tok, unsigned int number);
 
     void outOfBoundsError(const Token *tok, const ValueFlow::Value *containerSize, const ValueFlow::Value *index);
+    void outOfBoundsIndexExpressionError(const Token *tok, const Token *index);
     void stlOutOfBoundsError(const Token* tok, const std::string& num, const std::string& var, bool at);
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);

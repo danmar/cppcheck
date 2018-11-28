@@ -149,6 +149,81 @@ void CheckStl::outOfBoundsError(const Token *tok, const ValueFlow::Value *contai
                 (containerSize && containerSize->isInconclusive()) || (index && index->isInconclusive()));
 }
 
+bool CheckStl::isContainerSize(const Token *containerToken, const Token *expr) const
+{
+    if (!Token::simpleMatch(expr, "( )"))
+        return false;
+    if (!Token::Match(expr->astOperand1(), ". %name% ("))
+        return false;
+    if (!isSameExpression(mTokenizer->isCPP(), false, containerToken, expr->astOperand1()->astOperand1(), mSettings->library, false, false))
+        return false;
+    return containerToken->valueType()->container->getYield(expr->previous()->str()) == Library::Container::Yield::SIZE;
+}
+
+bool CheckStl::isContainerSizeGE(const Token * containerToken, const Token *expr) const
+{
+    if (!expr)
+        return false;
+    if (isContainerSize(containerToken, expr))
+        return true;
+    if (expr->str() == "*") {
+        const Token *mul;
+        if (isContainerSize(containerToken, expr->astOperand1()))
+            mul = expr->astOperand2();
+        else if (isContainerSize(containerToken, expr->astOperand2()))
+            mul = expr->astOperand1();
+        else
+            return false;
+        return mul && (!mul->hasKnownIntValue() || mul->values().front().intvalue != 0);
+    }
+    if (expr->str() == "+") {
+        const Token *op;
+        if (isContainerSize(containerToken, expr->astOperand1()))
+            op = expr->astOperand2();
+        else if (isContainerSize(containerToken, expr->astOperand2()))
+            op = expr->astOperand1();
+        else
+            return false;
+        return op && op->getValueGE(0, mSettings);
+    }
+    return false;
+}
+
+void CheckStl::outOfBoundsIndexExpression()
+{
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            if (!tok->isName() || !tok->valueType())
+                continue;
+            const Library::Container *container = tok->valueType()->container;
+            if (!container)
+                continue;
+            if (!container->arrayLike_indexOp && !container->stdStringLike)
+                continue;
+            if (!Token::Match(tok, "%name% ["))
+                continue;
+            if (isContainerSizeGE(tok, tok->next()->astOperand2()))
+                outOfBoundsIndexExpressionError(tok, tok->next()->astOperand2());
+        }
+    }
+}
+
+void CheckStl::outOfBoundsIndexExpressionError(const Token *tok, const Token *index)
+{
+    const std::string varname = tok ? tok->str() : std::string("var");
+    const std::string i = index ? index->expressionString() : std::string(varname + ".size()");
+
+    std::string errmsg = "Out of bounds access of $symbol, index '" + i + "' is out of bounds.";
+
+    reportError(tok,
+                Severity::error,
+                "containerOutOfBoundsIndexExpression",
+                "$symbol:" + varname +"\n" + errmsg,
+                CWE398,
+                false);
+}
+
+
 
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)

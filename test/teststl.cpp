@@ -41,6 +41,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(outOfBounds);
+        TEST_CASE(outOfBoundsIndexExpression);
 
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
@@ -262,8 +263,30 @@ private:
                     "    c.data();\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void outOfBoundsIndexExpression() {
+        setMultiline();
 
+        checkNormal("void f(std::string s) {\n"
+                    "  s[s.size()] = 1;\n"
+                    "}");
+        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 's.size()' is out of bounds.\n", errout.str());
+
+        checkNormal("void f(std::string s) {\n"
+                    "  s[s.size()+1] = 1;\n"
+                    "}");
+        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 's.size()+1' is out of bounds.\n", errout.str());
+
+        checkNormal("void f(std::string s) {\n"
+                    "  s[1+s.size()] = 1;\n"
+                    "}");
+        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index '1+s.size()' is out of bounds.\n", errout.str());
+
+        checkNormal("void f(std::string s) {\n"
+                    "  s[x*s.size()] = 1;\n"
+                    "}");
+        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 'x*s.size()' is out of bounds.\n", errout.str());
     }
 
     void iterator1() {
