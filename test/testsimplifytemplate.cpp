@@ -120,6 +120,7 @@ private:
         TEST_CASE(template80);
         TEST_CASE(template81);
         TEST_CASE(template82); // 8603
+        TEST_CASE(template83);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1590,6 +1591,20 @@ private:
                            "void swizzle :: swizzle<1> ( tvec2<f16> v ) { } "
                            "class tvec3<f16> { } ; "
                            "class tvec2<f16> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template83() {
+        const char code[] = "template<typename Task>\n"
+                            "MultiConsumer<Task>::MultiConsumer() : sizeBuffer(0) {}\n"
+                            "MultiReads::MultiReads() {\n"
+                            "    mc = new MultiConsumer<reads_packet>();\n"
+                            "}";
+        const char exp[] = "MultiConsumer<reads_packet> :: MultiConsumer<reads_packet> ( ) ; "
+                           "MultiReads :: MultiReads ( ) { "
+                           "mc = new MultiConsumer<reads_packet> ( ) ; "
+                           "} "
+                           "MultiConsumer<reads_packet> :: MultiConsumer<reads_packet> ( ) : sizeBuffer ( 0 ) { }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
