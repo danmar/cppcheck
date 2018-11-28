@@ -259,11 +259,12 @@ def uploadResults(package, results):
             sock.connect(server_address)
             sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
             sock.close()
+            return True
         except socket.error:
             print('Upload failed, retry in 60 seconds')
             time.sleep(30)
             pass
-    return package
+    return False
 
 jobs = '-j1'
 stopTime = None
