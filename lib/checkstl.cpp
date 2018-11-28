@@ -766,50 +766,66 @@ void CheckStl::stlOutOfBounds()
         if ((scope.type != Scope::eFor && scope.type != Scope::eWhile && scope.type != Scope::eIf && scope.type != Scope::eDo) || !tok)
             continue;
 
-        if (scope.type == Scope::eFor)
-            tok = Token::findsimplematch(tok->tokAt(2), ";");
-        else if (scope.type == Scope::eDo) {
-            tok = tok->linkAt(1)->tokAt(2);
-        } else
-            tok = tok->next();
+        const Token *condition = nullptr;
+        if (scope.type == Scope::eFor) {
+            if (Token::simpleMatch(tok->next()->astOperand2(), ";") && Token::simpleMatch(tok->next()->astOperand2()->astOperand2(), ";"))
+                condition = tok->next()->astOperand2()->astOperand2()->astOperand1();
+        } else if (Token::simpleMatch(tok, "do {") && Token::simpleMatch(tok->linkAt(1), "} while ("))
+            condition = tok->linkAt(1)->tokAt(2)->astOperand2();
+        else
+            condition = tok->next()->astOperand2();
 
-        if (!tok)
-            continue;
-        tok = tok->next();
-
-        // check if the for loop condition is wrong
-        if (!Token::Match(tok, "%var% <= %var% . %name% ( ) ;|)|%oror%"))
-            continue;
-        // Is it a vector?
-        const Variable *var = tok->tokAt(2)->variable();
-        if (!var)
+        if (!condition)
             continue;
 
-        const Library::Container* container = mSettings->library.detectContainer(var->typeStartToken());
-        if (!container)
-            continue;
+        std::vector<const Token *> conds;
 
-        if (container->getYield(tok->strAt(4)) != Library::Container::SIZE)
-            continue;
+        visitAstNodes(condition,
+        [&](const Token *cond) {
+            if (Token::Match(cond, "%oror%|&&"))
+                return ChildrenToVisit::op1_and_op2;
+            if (cond->isComparisonOp())
+                conds.emplace_back(cond);
+            return ChildrenToVisit::none;
+        });
 
-        // variable id for loop variable.
-        const unsigned int numId = tok->varId();
+        for (const Token *cond : conds) {
+            const Token *vartok;
+            const Token *containerToken;
+            if (Token::Match(cond, "<= %var% . %name% ( )") && Token::Match(cond->astOperand1(), "%var%")) {
+                vartok = cond->astOperand1();
+                containerToken = cond->next();
+            } else {
+                continue;
+            }
 
-        // variable id for the container variable
-        const unsigned int declarationId = var->declarationId();
+            // Is it a array like container?
+            const Library::Container* container = containerToken->valueType() ? containerToken->valueType()->container : nullptr;
+            if (!container)
+                continue;
+            if (container->getYield(containerToken->strAt(2)) != Library::Container::SIZE)
+                continue;
 
-        for (const Token *tok3 = scope.bodyStart; tok3 && tok3 != scope.bodyEnd; tok3 = tok3->next()) {
-            if (tok3->varId() == declarationId) {
-                tok3 = tok3->next();
-                if (Token::Match(tok3, ". %name% ( )")) {
-                    if (container->getYield(tok3->strAt(1)) == Library::Container::SIZE)
-                        break;
-                } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
-                    stlOutOfBoundsError(tok3, tok3->strAt(1), var->name(), false);
-                else if (Token::Match(tok3, ". %name% ( %varid% )", numId)) {
-                    const Library::Container::Yield yield = container->getYield(tok3->strAt(1));
-                    if (yield == Library::Container::AT_INDEX)
-                        stlOutOfBoundsError(tok3, tok3->strAt(3), var->name(), true);
+            // variable id for loop variable.
+            const unsigned int numId = vartok->varId();
+
+            // variable id for the container variable
+            const unsigned int declarationId = containerToken->varId();
+            const std::string &containerName = containerToken->str();
+
+            for (const Token *tok3 = scope.bodyStart; tok3 && tok3 != scope.bodyEnd; tok3 = tok3->next()) {
+                if (tok3->varId() == declarationId) {
+                    tok3 = tok3->next();
+                    if (Token::Match(tok3, ". %name% ( )")) {
+                        if (container->getYield(tok3->strAt(1)) == Library::Container::SIZE)
+                            break;
+                    } else if (container->arrayLike_indexOp && Token::Match(tok3, "[ %varid% ]", numId))
+                        stlOutOfBoundsError(tok3, tok3->strAt(1), containerName, false);
+                    else if (Token::Match(tok3, ". %name% ( %varid% )", numId)) {
+                        const Library::Container::Yield yield = container->getYield(tok3->strAt(1));
+                        if (yield == Library::Container::AT_INDEX)
+                            stlOutOfBoundsError(tok3, tok3->strAt(3), containerName, true);
+                    }
                 }
             }
         }
