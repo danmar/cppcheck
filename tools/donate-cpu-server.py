@@ -485,7 +485,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             pos = data.find('\ncount:')
             if pos > 0:
                 count = data[pos+1:data.find('\n', pos+1)]
-                if count.find('CRASH') > 0:
+                if count.find('Crash') > 0:
                     crashHistory.append(strDateTime() + ' ' + res.group(1) + ' ' + count)
                     writeStringList(FILENAME_CRASH_HISTORY, crashHistory)
         else:
