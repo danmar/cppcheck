@@ -304,7 +304,7 @@ class HttpClientThread(Thread):
         try:
             cmd = self.cmd
             print('[' + strDateTime() + '] ' + cmd)
-            res = re.match(r'GET /([a-zA-Z0-9_\-\.]*) HTTP', cmd)
+            res = re.match(r'GET /([a-zA-Z0-9_\-\.\+]*) HTTP', cmd)
             if res is None:
                 self.connection.close()
                 return
