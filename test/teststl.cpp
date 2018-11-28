@@ -201,7 +201,7 @@ private:
                     "  std::string s;\n"
                     "  s[10] = 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:3:error:Accessing an item in container 's' that is empty.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in s because s is empty.\n", errout.str());
 
         checkNormal("void f() {\n"
                     "  std::string s = \"abcd\";\n"
@@ -213,7 +213,7 @@ private:
                     "    v.front();\n"
                     "    if (v.empty()) {}\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:2:warning:Accessing an item in container 'v'. Either the condition 'v.empty()' is redundant or 'v' can be empty.\n"
+        ASSERT_EQUALS("test.cpp:2:warning:Either the condition 'v.empty()' is redundant or v is accessed out of bounds when v is empty.\n"
                       "test.cpp:3:note:condition 'v.empty()'\n"
                       "test.cpp:2:note:Access out of bounds\n", errout.str());
 
