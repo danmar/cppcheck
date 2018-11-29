@@ -1047,7 +1047,7 @@ void TemplateSimplifier::expandTemplate(
                 start = templateDeclarationToken->next();
                 end = templateDeclarationNameToken->linkAt(1)->next();
             }
-            while (!Token::Match(end, ";|{"))
+            while (!Token::Match(end, ";|{|:"))
                 end = end->next();
 
             std::map<const Token *, Token *> links;
