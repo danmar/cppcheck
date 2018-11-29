@@ -427,6 +427,10 @@ def server(server_address_port, packages, packageIndex, resultPath):
         if cmd.startswith('GET /'):
             newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
             newThread.start()
+        elif cmd=='GetCppcheckVersions\n':
+            print('[' + strDateTime() + '] GetCppcheckVersions: head 1.85')
+            connection.send('head 1.85')
+            connection.close()
         elif cmd=='get\n':
             # Get crash package urls..
             if (packageIndex % 500) == 0:

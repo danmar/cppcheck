@@ -87,6 +87,21 @@ def compile(cppcheckPath, jobs):
     return True
 
 
+def getCppcheckVersions():
+    print('Connecting to server to get Cppcheck versions..')
+    package = None
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ('cppcheck.osuosl.org', 8000)
+    try:
+        sock.connect(server_address)
+        sock.send(b'GetCppcheckVersions\n')
+        versions = sock.recv(256)
+    except socket.error:
+        return ['head', '1.85']
+    sock.close()
+    return versions.decode('utf-8').split()
+
+
 def getPackage():
     print('Connecting to server to get assigned work..')
     package = None
@@ -316,12 +331,15 @@ while True:
     if not getCppcheck(cppcheckPath):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
-    if compile_version(workpath, jobs, '1.85') == False:
-        print('Failed to compile Cppcheck-1.85, retry later')
-        sys.exit(1)
-    if compile(cppcheckPath, jobs) == False:
-        print('Failed to compile Cppcheck, retry later')
-        sys.exit(1)
+    cppcheckVersions = getCppcheckVersions()
+    for ver in cppcheckVersions:
+        if ver == 'head':
+            if compile(cppcheckPath, jobs) == False:
+                print('Failed to compile Cppcheck, retry later')
+                sys.exit(1)
+        elif compile_version(workpath, jobs, ver) == False:
+            print('Failed to compile Cppcheck-{}, retry later'.format(ver))
+            sys.exit(1)
     if packageUrl:
         package = packageUrl
     else:
@@ -336,7 +354,11 @@ while True:
     count = ''
     elapsedTime = ''
     resultsToDiff = []
-    for cppcheck in ['cppcheck/cppcheck', '1.85/cppcheck']:
+    for ver in cppcheckVersions:
+        if ver == 'head':
+            cppcheck = 'cppcheck/cppcheck'
+        else:
+            cppcheck = ver + '/cppcheck'
         c,errout,t = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
@@ -348,11 +370,11 @@ while True:
     if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         print('No results')
         continue
-    output = 'cppcheck: head 1.85\n'
+    output = 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
     if not crash:
-        output += 'diff:\n' + diffResults(workpath, 'head', resultsToDiff[0], '1.85', resultsToDiff[1]) + '\n'
+        output += 'diff:\n' + diffResults(workpath, cppcheckVersions[0], resultsToDiff[0], cppcheckVersions[1], resultsToDiff[1]) + '\n'
     if packageUrl:
         print('=========================================================')
         print(output)
