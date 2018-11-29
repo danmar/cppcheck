@@ -115,10 +115,11 @@ def crashReport():
             break
     html += '</pre>\n'
 
-    if os.path.isfile('crash-history.txt'):
+    FILENAME_CRASH_HISTORY = os.path.expanduser('~/daca@home/crash-history.txt')
+    if os.path.isfile(FILENAME_CRASH_HISTORY):
         html += '<h2>history</h2>\n'
         html += '<pre>\n'
-        f = open('crash-history.txt')
+        f = open(FILENAME_CRASH_HISTORY, 'rt')
         html += f.read()
         f.close()
         html += '</pre>'
