@@ -3340,7 +3340,7 @@ void Tokenizer::sizeofAddParentheses()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "sizeof !!("))
             continue;
-        if (tok->next()->isLiteral() || Token::Match(tok->next(), "%name%|*|~|!")) {
+        if (tok->next()->isLiteral() || Token::Match(tok->next(), "%name%|*|~|!|&")) {
             Token *endToken = tok->next();
             while (Token::simpleMatch(endToken, "* *"))
                 endToken = endToken->next();

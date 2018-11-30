@@ -8662,6 +8662,7 @@ private:
         ASSERT_EQUALS("sizeof ( a . b ) + 3 ;", tokenizeAndStringify("sizeof a.b+3;"));
         ASSERT_EQUALS("sizeof ( a [ 2 ] . b ) + 3 ;", tokenizeAndStringify("sizeof a[2].b+3;"));
         ASSERT_EQUALS("f ( 0 , sizeof ( ptr . bar ) ) ;", tokenizeAndStringify("f(0, sizeof ptr->bar );"));
+        ASSERT_EQUALS("sizeof ( a ) > sizeof ( & main ) ;", tokenizeAndStringify("sizeof a > sizeof &main;"));
     }
 
     void findGarbageCode() { // Make sure the Tokenizer::findGarbageCode() does not have FPs
