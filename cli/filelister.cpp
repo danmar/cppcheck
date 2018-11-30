@@ -186,13 +186,11 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
     if (stat(path.c_str(), &file_stat) != -1) {
         if ((file_stat.st_mode & S_IFMT) == S_IFDIR) {
             DIR * dir = opendir(path.c_str());
-
             if (!dir)
                 return;
 
             dirent entry;
             dirent * dir_result;
-
             std::string new_path;
             new_path.reserve(path.length() + 100);// prealloc some memory to avoid constant new/deletes in loop
 
@@ -210,6 +208,7 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
                     }
                 } else {
                     if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
+                        stat(new_path.c_str(), &file_stat);
                         files[new_path] = file_stat.st_size;
                     }
                 }
