@@ -1516,6 +1516,21 @@ private:
               "    A &&a = T{1, 2, 3}[1]();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Crash #8872
+        check("struct a {\n"
+              "  void operator()(b c) override {\n"
+              "    d(c, [&] { c->e });\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  void operator()(b c) override {\n"
+              "    d(c, [=] { c->e });\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
