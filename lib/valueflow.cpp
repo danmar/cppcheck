@@ -2960,7 +2960,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                 (parent->str() == "return" || // MOVED in return statement
                  parent->str() == "(")) // MOVED in self assignment, isOpenParenthesisMemberFunctionCallOfVarId == true
                 continue;
-            if (parent && parent->astOperand1()->varId() == varId)
+            if (parent && parent->astOperand1() && parent->astOperand1()->varId() == varId)
                 continue;
             const Variable *var = varTok->variable();
             if (!var)
