@@ -2840,7 +2840,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Variable * var = getLifetimeVariable(tok, errorPath);
             if (!var)
                 continue;
-            if (var->isArray() && !var->isArgument() && tok->astParent() &&
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && tok->astParent() &&
                 (astIsPointer(tok->astParent()) || Token::Match(tok->astParent(), "%assign%|return"))) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 

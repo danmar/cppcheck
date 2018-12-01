@@ -1501,6 +1501,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Dont decay std::array
+        check("std::array<char, 1> f() {\n"
+              "    std::array<char, 1> x;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());        
+
         // Make sure we dont hang
         check("struct A;\n"
               "void f() {\n"
