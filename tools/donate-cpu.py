@@ -190,10 +190,29 @@ def unpackPackage(workPath, tgz):
     os.chdir(workPath)
 
 
+def hasInclude(path,inc):
+    for g in glob.glob(path + '/*'):
+        if os.path.isfile(g):
+            f = open(g,'rt')
+            filedata = f.read()
+            f.close()
+            if filedata.find('\n#include ' + inc) >= 0:
+                return True
+        elif os.path.isdir(g) and not g.startswith('.'):
+            if hasInclude(g, inc) is True:
+                return True
+    return False
+
+
 def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
-    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --inconclusive --enable=style --library=posix --platform=unix64 --template=daca2 -rp=temp temp'
+    libraries = ' --library=posix'
+    if hasInclude('<wx/string.h>'):
+        libraries += ' --library=wxwidgets'
+    if hasInclude('<QString>'):
+        libraries += ' --library=qt'
+    cmd = 'nice ' + cppcheck + ' ' + jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
