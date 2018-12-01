@@ -208,9 +208,9 @@ def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix'
-    if hasInclude('<wx/string.h>'):
+    if hasInclude('temp', '<wx/string.h>'):
         libraries += ' --library=wxwidgets'
-    if hasInclude('<QString>'):
+    if hasInclude('temp', '<QString>'):
         libraries += ' --library=qt'
     cmd = 'nice ' + cppcheck + ' ' + jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
