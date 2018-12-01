@@ -1506,7 +1506,7 @@ private:
               "    std::array<char, 1> x;\n"
               "    return x;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());        
+        ASSERT_EQUALS("", errout.str());
 
         // Make sure we dont hang
         check("struct A;\n"
