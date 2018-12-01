@@ -205,6 +205,10 @@ def scanPackage(workPath, cppcheck, jobs):
         # Crash!
         print('Crash!')
         return -1, '', -1
+    if stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
+        # Crash!
+        print('Crash!')
+        return -1, '', -1
     elapsedTime = stopTime - startTime
     count = 0
     for line in stderr.split('\n'):
