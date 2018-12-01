@@ -1510,69 +1510,67 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        <<<<<<< HEAD
-        <<<<<<< HEAD
         check("void f() {\n"
               "    struct b {\n"
               "        uint32_t f[6];\n"
               "    } d;\n"
               "    uint32_t *a = d.f;\n"
-              =======
-                  // Dont decay std::array
-                  check("std::array<char, 1> f() {\n"
-                        "    std::array<char, 1> x;\n"
-                        "    return x;\n"
-                        >>>>>>> 52f00b8c88aecaa064f1acbebbe59331f08f09fc
-                        "}\n");
-              ASSERT_EQUALS("", errout.str());
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
-              // Make sure we dont hang
-              check("struct A;\n"
-                    "void f() {\n"
-                    "    using T = A[3];\n"
-                    "    A &&a = T{1, 2, 3}[1];\n"
-                    "}\n");
-              ASSERT_EQUALS("", errout.str());
+        // Dont decay std::array
+        check("std::array<char, 1> f() {\n"
+              "    std::array<char, 1> x;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
-              // Make sure we dont hang
-              check("struct A;\n"
-                    "void f() {\n"
-                    "    using T = A[3];\n"
-                    "    A &&a = T{1, 2, 3}[1]();\n"
-                    "}\n");
-              ASSERT_EQUALS("", errout.str());
-              =======
-                  // Make sure we dont hang
-                  check("struct A;\n"
-                        "void f() {\n"
-                        "    using T = A[3];\n"
-                        "    A &&a = T{1, 2, 3}[1];\n"
-                        "}\n");
-              ASSERT_EQUALS("", errout.str());
+        // Make sure we dont hang
+        check("struct A;\n"
+              "void f() {\n"
+              "    using T = A[3];\n"
+              "    A &&a = T{1, 2, 3}[1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
-              // Make sure we dont hang
-              check("struct A;\n"
-                    "void f() {\n"
-                    "    using T = A[3];\n"
-                    "    A &&a = T{1, 2, 3}[1]();\n"
-                    "}\n");
-              ASSERT_EQUALS("", errout.str());
+        // Make sure we dont hang
+        check("struct A;\n"
+              "void f() {\n"
+              "    using T = A[3];\n"
+              "    A &&a = T{1, 2, 3}[1]();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
-              // Crash #8872
-              check("struct a {\n"
-                    "  void operator()(b c) override {\n"
-                    "    d(c, [&] { c->e });\n"
-                    "  }\n"
-                    "};\n");
-              ASSERT_EQUALS("", errout.str());
+        // Make sure we dont hang
+        check("struct A;\n"
+              "void f() {\n"
+              "    using T = A[3];\n"
+              "    A &&a = T{1, 2, 3}[1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
-              check("struct a {\n"
-                    "  void operator()(b c) override {\n"
-                    "    d(c, [=] { c->e });\n"
-                    "  }\n"
-                    "};\n");
-              ASSERT_EQUALS("", errout.str());
-              >>>>>>> 6586f2d354d3f9dc26d830b6e641f158a5c58432
+        // Make sure we dont hang
+        check("struct A;\n"
+              "void f() {\n"
+              "    using T = A[3];\n"
+              "    A &&a = T{1, 2, 3}[1]();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Crash #8872
+        check("struct a {\n"
+              "  void operator()(b c) override {\n"
+              "    d(c, [&] { c->e });\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "  void operator()(b c) override {\n"
+              "    d(c, [=] { c->e });\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
