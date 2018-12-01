@@ -1510,6 +1510,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    struct b {\n"
+              "        uint32_t f[6];\n"
+              "    } d;\n"
+              "    uint32_t *a = d.f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Make sure we dont hang
         check("struct A;\n"
               "void f() {\n"
