@@ -231,6 +231,7 @@ private:
         TEST_CASE(garbageCode198); // #8383
         TEST_CASE(garbageCode199); // #8752
         TEST_CASE(garbageCode200); // #8757
+        TEST_CASE(garbageCode201); // #8873
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1426,7 +1427,7 @@ private:
     }
 
     void garbageCode181() {
-        checkCode("int test() { int +; }");
+        ASSERT_THROW(checkCode("int test() { int +; }"), InternalError);
     }
 
     // #4195 - segfault for "enum { int f ( ) { return = } r = f ( ) ; }"
@@ -1549,6 +1550,11 @@ private:
     // #8757
     void garbageCode200() {
         ASSERT_THROW(checkCode("(){e break,{(case)!{e:[]}}}"), InternalError);
+    }
+
+    // #8873
+    void garbageCode201() {
+        ASSERT_THROW(checkCode("void f() { std::string s=\"abc\"; return s + }"), InternalError);
     }
 
     void syntaxErrorFirstToken() {

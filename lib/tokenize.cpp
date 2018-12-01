@@ -8533,6 +8533,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|, &|= ]")))
             syntaxError(tok);
+        if (Token::Match(tok, "[+-] [;,)]}]"))
+            syntaxError(tok);
     }
 
     // ternary operator without :
