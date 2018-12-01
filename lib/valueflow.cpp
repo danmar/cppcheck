@@ -2751,6 +2751,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             auto isCapturingVariable = [&](const Variable *var) {
                 const Scope *scope = var->scope();
+                if (!scope)
+                    return false;
                 if (scopes.count(scope) > 0)
                     return false;
                 if (scope->isNestedIn(bodyScope))
