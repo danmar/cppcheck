@@ -24,6 +24,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <ios>
 #include <limits>
 #include <locale>
 
