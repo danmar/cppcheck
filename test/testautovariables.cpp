@@ -75,6 +75,7 @@ private:
         TEST_CASE(testautovar13); // ticket #5537 - crash
         TEST_CASE(testautovar14); // ticket #4776 - assignment of function parameter, goto
         TEST_CASE(testautovar15); // ticket #6538
+        TEST_CASE(testautovar16); // ticket #8114
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_ptrptr); // ticket #6956
@@ -436,6 +437,14 @@ private:
               "        return &darkOutline;\n"
               "    return 0;\n"
               "}", false, false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar16() { // Ticket #8114
+        check("void f(const void* ptr, bool* result) {\n"
+              "  int dummy;\n"
+              "  *result = (&dummy < ptr);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

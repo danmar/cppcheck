@@ -167,6 +167,34 @@ static bool checkRvalueExpression(const Token * const vartok)
     return ((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
+static bool isAddressOfLocalVariableRecursive(const Token *expr)
+{
+    if (!expr)
+        return false;
+    if (Token::Match(expr, "+|-"))
+        return isAddressOfLocalVariableRecursive(expr->astOperand1()) || isAddressOfLocalVariableRecursive(expr->astOperand2());
+    if (expr->str() == "(" && !expr->astOperand2())
+        return isAddressOfLocalVariableRecursive(expr->astOperand1());
+    if (expr->str() == "&" && !expr->astOperand2()) {
+        const Token *op = expr->astOperand1();
+        bool deref = false;
+        while (Token::Match(op, ".|[")) {
+            if (op->str() == "[")
+                deref = true;
+            op = op->astOperand1();
+        }
+        return op && isAutoVar(op) && (!deref || !op->variable()->isPointer());
+    }
+    return false;
+}
+
+static bool isAddressOfLocalVariable(const Token *expr)
+{
+    if (!expr || !expr->valueType() || expr->valueType()->pointer == 0)
+        return false;
+    return isAddressOfLocalVariableRecursive(expr);
+}
+
 static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)
 {
     if (!start) // Ticket #5024
@@ -239,9 +267,8 @@ void CheckAutoVariables::autoVariables()
             if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
                 if (checkRvalueExpression(tok->tokAt(4)))
                     errorAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] * %var% = & %var%") && isPtrArg(tok->tokAt(2)) && isAutoVar(tok->tokAt(5))) {
-                if (checkRvalueExpression(tok->tokAt(5)))
-                    errorAutoVariableAssignment(tok->next(), false);
+            } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAddressOfLocalVariable(tok->tokAt(3)->astOperand2())) {
+                errorAutoVariableAssignment(tok->next(), false);
             } else if (mSettings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = &| %var% ;") && isGlobalPtr(tok->next())) {
                 const Token * const pointer = tok->next();
                 if (isAutoVarArray(tok->tokAt(3))) {
