@@ -567,8 +567,6 @@ double MathLib::toDoubleNumber(const std::string &str)
     std::istringstream istr(str);
     istr.imbue(std::locale::classic());
     double ret;
-    if (isFloatHex(str))
-        istr >> std::hexfloat;
     istr >> ret;
     return ret;
 }
