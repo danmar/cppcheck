@@ -2701,7 +2701,8 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         std::vector<const Token *> args = getArguments(tok);
         std::size_t n = args.size();
         if (n > 1 && astCanonicalType(args[n - 2]) == astCanonicalType(args[n - 1]) &&
-            (((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) || (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1]))))) {
+            (((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) ||
+              (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1]))))) {
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byDerefCopy(
                 vartok, tokenlist, errorLogger, settings);
         } else if (!args.empty() && astIsPointer(args.back()) == isPointer) {

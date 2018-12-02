@@ -1429,7 +1429,9 @@ private:
               "        m.insert(m.end(), v.begin(), v.end());\n"
               "    }\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:7]: (error) Non-local variable 'm' will use object that points to local variable 'x'.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:7]: (error) Non-local variable 'm' will use object that points to local variable 'x'.\n",
+            errout.str());
 
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
