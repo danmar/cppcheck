@@ -115,15 +115,6 @@ def crashReport():
             break
     html += '</pre>\n'
 
-    FILENAME_CRASH_HISTORY = os.path.expanduser('~/daca@home/crash-history.txt')
-    if os.path.isfile(FILENAME_CRASH_HISTORY):
-        html += '<h2>history</h2>\n'
-        html += '<pre>\n'
-        f = open(FILENAME_CRASH_HISTORY, 'rt')
-        html += f.read()
-        f.close()
-        html += '</pre>'
-
     html += '</body></html>\n'
     return html
 
@@ -357,39 +348,6 @@ class HttpClientThread(Thread):
             self.connection.close()
 
 
-def getCrashUrls():
-    ret = []
-    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
-        if not os.path.isfile(filename):
-            continue
-        url = None
-        for line in open(filename, 'rt'):
-            if line.startswith('ftp://'):
-                url = line.strip()
-            if not line.startswith('count:'):
-                continue
-            if url and line.find('Crash') > 0:
-                ret.append(url)
-            break
-    return ret
-
-
-def writeStringList(filename, stringList):
-    f = open(os.path.expanduser(filename), 'wt')
-    for s in stringList:
-        f.write(s + '\n')
-    f.close()
-
-def readStringList(filename):
-    ret = []
-    if os.path.isfile(filename):
-        f = open(filename, 'rt')
-        for line in f.read().split():
-            if len(line) > 10:
-                ret.append(line.strip())
-        f.close()
-    return ret
-
 def server(server_address_port, packages, packageIndex, resultPath):
     socket.setdefaulttimeout(30)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -398,11 +356,6 @@ def server(server_address_port, packages, packageIndex, resultPath):
     sock.bind(server_address)
 
     sock.listen(1)
-
-    FILENAME_CRASH_URLS = 'crash-urls.txt'
-    FILENAME_CRASH_HISTORY = 'crash-history.txt'
-    crashUrls = readStringList(FILENAME_CRASH_URLS)
-    crashHistory = readStringList(FILENAME_CRASH_HISTORY)
 
     latestResults = []
     if os.path.isfile('latest.txt'):
@@ -432,24 +385,16 @@ def server(server_address_port, packages, packageIndex, resultPath):
             connection.send('head 1.85')
             connection.close()
         elif cmd=='get\n':
-            # Get crash package urls..
-            if (packageIndex % 500) == 0:
-                crashUrls = getCrashUrls()
-                writeStringList(FILENAME_CRASH_URLS, crashUrls)
-            if (packageIndex % 500) == 1 and len(crashUrls) > 0:
-                pkg = crashUrls[0]
-                crashUrls = crashUrls[1:]
-                writeStringList(FILENAME_CRASH_URLS, crashUrls)
-                print('[' + strDateTime() + '] CRASH: ' + pkg)
-            else:
-                pkg = packages[packageIndex].strip()
-                packages[packageIndex] = pkg
-                packageIndex += 1
-                if packageIndex >= len(packages):
-                    packageIndex = 0
-                f = open('package-index.txt', 'wt')
-                f.write(str(packageIndex) + '\n')
-                f.close()
+            pkg = packages[packageIndex].strip()
+            packages[packageIndex] = pkg
+            packageIndex += 1
+            if packageIndex >= len(packages):
+                packageIndex = 0
+
+            f = open('package-index.txt', 'wt')
+            f.write(str(packageIndex) + '\n')
+            f.close()
+
             print('[' + strDateTime() + '] get:' + pkg)
             connection.send(pkg)
             connection.close()
@@ -496,12 +441,6 @@ def server(server_address_port, packages, packageIndex, resultPath):
             latestResults.append(filename)
             with open('latest.txt', 'wt') as f:
                 f.write(' '.join(latestResults))
-            pos = data.find('\ncount:')
-            if pos > 0:
-                count = data[pos+1:data.find('\n', pos+1)]
-                if count.find('Crash') > 0:
-                    crashHistory.append(strDateTime() + ' ' + res.group(1) + ' ' + count)
-                    writeStringList(FILENAME_CRASH_HISTORY, crashHistory)
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
