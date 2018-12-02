@@ -160,4 +160,28 @@ const Token *findLambdaEndToken(const Token *first);
  */
 bool isLikelyStreamRead(bool cpp, const Token *op);
 
+class FwdAnalysis {
+public:
+    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library) {}
+
+    /** Result of forward analysis */
+    struct Result {
+        enum class Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
+        Result(Type type) : type(type), token(nullptr) {}
+        Result(Type type, const Token *token) : type(type), token(token) {}
+        const Token *token;
+    };
+
+    /** forward analysis */
+    struct Result check(const Token *assign1, const Token *startToken, const Token *endToken);
+
+    bool hasOperand(const Token *tok, const Token *lhs) const;
+
+private:
+    struct Result checkRecursive(const Token *assign1, const Token *startToken, const Token *endToken);
+
+    const bool mCpp;
+    const Library &mLibrary;
+};
+
 #endif // astutilsH

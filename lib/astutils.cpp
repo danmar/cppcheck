@@ -1037,3 +1037,135 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     return (!parent->astOperand1()->valueType() || !parent->astOperand1()->valueType()->isIntegral());
 }
 
+
+static bool nonLocal(const Variable* var)
+{
+    return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
+}
+
+static bool hasFunctionCall(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (Token::Match(tok, "%name% ("))
+        // todo, const/pure function?
+        return true;
+    return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
+}
+
+FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *assign1, const Token *startToken, const Token *endToken)
+{
+    // all variable ids in assign1 LHS.
+    std::set<unsigned int> assign1LhsVarIds;
+    bool local = true;
+    visitAstNodes(assign1->astOperand1(),
+    [&](const Token *tok) {
+        if (tok->varId() > 0) {
+            assign1LhsVarIds.insert(tok->varId());
+            if (!Token::simpleMatch(tok->previous(), "."))
+                local &= !nonLocal(tok->variable());
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+
+    // Parse the given tokens
+    for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "try {")) {
+            // TODO: handle try
+            return Result(Result::Type::BAILOUT);
+        }
+
+        if (tok->str() == "}" && (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eWhile)) {
+            // TODO: handle loops better
+            return Result(Result::Type::BAILOUT);
+        }
+
+        if (Token::simpleMatch(tok, "break ;")) {
+            return Result(Result::Type::BREAK, tok);
+        }
+
+        if (Token::Match(tok, "continue|return|throw|goto")) {
+            // TODO: Handle these better
+            return Result(Result::Type::RETURN);
+        }
+
+        if (Token::simpleMatch(tok, "else {"))
+            tok = tok->linkAt(1);
+
+        if (Token::simpleMatch(tok, "asm (")) {
+            return Result(Result::Type::BAILOUT);
+        }
+
+        if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+            // TODO: this is a quick bailout
+            return Result(Result::Type::BAILOUT);
+        }
+
+        if (assign1LhsVarIds.find(tok->varId()) != assign1LhsVarIds.end()) {
+            const Token *parent = tok;
+            while (Token::Match(parent->astParent(), ".|::|["))
+                parent = parent->astParent();
+            if (Token::simpleMatch(parent->astParent(), "=") && parent == parent->astParent()->astOperand1()) {
+                if (!local && hasFunctionCall(parent->astParent()->astOperand2())) {
+                    // TODO: this is a quick bailout
+                    return Result(Result::Type::BAILOUT);
+                }
+                if (hasOperand(parent->astParent()->astOperand2(), assign1->astOperand1())) {
+                    return Result(Result::Type::READ);
+                }
+                const bool reassign = isSameExpression(mCpp, false, assign1->astOperand1(), parent, mLibrary, false, false, nullptr);
+                if (reassign)
+                    return Result(Result::Type::WRITE, parent->astParent());
+                return Result(Result::Type::READ);
+            } else {
+                // TODO: this is a quick bailout
+                return Result(Result::Type::BAILOUT);
+            }
+        }
+
+        if (Token::Match(tok, ") {")) {
+            const Result &result1 = checkRecursive(assign1, tok->tokAt(2), tok->linkAt(1));
+            if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
+                return result1;
+            if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
+                const Token *elseStart = tok->linkAt(1)->tokAt(2);
+                const Result &result2 = checkRecursive(assign1, elseStart, elseStart->link());
+                if (result2.type == Result::Type::READ || result2.type == Result::Type::BAILOUT)
+                    return result2;
+                if (result1.type == Result::Type::WRITE && result2.type == Result::Type::WRITE)
+                    return result1;
+                tok = elseStart->link();
+            } else {
+                tok = tok->linkAt(1);
+            }
+        }
+    }
+
+    return Result(Result::Type::NONE);
+}
+
+FwdAnalysis::Result FwdAnalysis::check(const Token *assign1, const Token *startToken, const Token *endToken)
+{
+    Result result = checkRecursive(assign1, startToken, endToken);
+
+    // Break => continue checking in outer scope
+    while (result.type == FwdAnalysis::Result::Type::BREAK) {
+        const Scope *s = result.token->scope();
+        while (s->type == Scope::eIf)
+            s = s->nestedIn;
+        if (s->type != Scope::eSwitch)
+            break;
+        result = checkRecursive(assign1, s->bodyEnd->next(), endToken);
+    }
+
+    return result;
+}
+
+bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
+{
+    if (!tok)
+        return false;
+    if (isSameExpression(mCpp, false, tok, lhs, mLibrary, false, false, nullptr))
+        return true;
+    return hasOperand(tok->astOperand1(), lhs) || hasOperand(tok->astOperand2(), lhs);
+}

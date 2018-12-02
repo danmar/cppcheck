@@ -217,15 +217,6 @@ public:
 
 private:
 
-    struct ScopeResult {
-        enum Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
-        ScopeResult(Type type) : type(type), token(nullptr) {}
-        ScopeResult(Type type, const Token *token) : type(type), token(token) {}
-        const Token *token;
-    };
-    /** Recursively check for redundant assignments. */
-    struct ScopeResult checkRedundantAssignmentRecursive(const Token *assign1, const Token *startToken, const Token *endToken) const;
-
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
