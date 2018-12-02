@@ -486,14 +486,14 @@ void CheckOther::checkRedundantAssignment()
                     start = tok->findExpressionStartEndTokens().second->next();
 
                 // Get next assignment..
-                FwdAnalysis::Result nextAssign = fwdAnalysis.check(tok->astOperand1(), start, scope->bodyEnd);
+                const Token *nextAssign = fwdAnalysis.reassign(tok->astOperand1(), start, scope->bodyEnd);
 
-                if (nextAssign.type != FwdAnalysis::Result::Type::WRITE || !nextAssign.token)
+                if (!nextAssign)
                     continue;
 
                 // there is redundant assignment. Is there a case between the assignments?
                 bool hasCase = false;
-                for (const Token *tok2 = tok; tok2 != nextAssign.token; tok2 = tok2->next()) {
+                for (const Token *tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
                     if (tok2->str() == "case") {
                         hasCase = true;
                         break;
@@ -502,9 +502,9 @@ void CheckOther::checkRedundantAssignment()
 
                 // warn
                 if (hasCase)
-                    redundantAssignmentInSwitchError(tok, nextAssign.token, tok->astOperand1()->expressionString());
+                    redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
                 else
-                    redundantAssignmentError(tok, nextAssign.token, tok->astOperand1()->expressionString(), inconclusive);
+                    redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
             }
         }
     }

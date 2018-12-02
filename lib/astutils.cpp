@@ -1053,7 +1053,7 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
+struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
 {
     // Parse the given tokens
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
@@ -1098,7 +1098,9 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
                     return Result(Result::Type::BAILOUT);
                 }
                 if (hasOperand(parent->astParent()->astOperand2(), expr)) {
-                    return Result(Result::Type::READ);
+                    if (mReassign)
+                        return Result(Result::Type::READ);
+                    continue;
                 }
                 const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
                 if (reassign)
@@ -1168,4 +1170,19 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
     if (isSameExpression(mCpp, false, tok, lhs, mLibrary, false, false, nullptr))
         return true;
     return hasOperand(tok->astOperand1(), lhs) || hasOperand(tok->astOperand2(), lhs);
+}
+
+const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
+{
+    mReassign = true;
+    Result result = check(expr, startToken, endToken);
+    return result.type == FwdAnalysis::Result::Type::WRITE ? result.token : nullptr;
+}
+
+std::vector<const Token *> FwdAnalysis::reads(const Token *expr, const Token *startToken, const Token *endToken)
+{
+    mReassign = false;
+    mReads.clear();
+    check(expr, startToken, endToken);
+    return mReads;
 }
