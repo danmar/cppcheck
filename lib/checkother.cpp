@@ -449,8 +449,7 @@ static bool hasOperand(const Token *tok, const Token *lhs, bool cpp, const Libra
     return hasOperand(tok->astOperand1(), lhs, cpp, library) || hasOperand(tok->astOperand2(), lhs, cpp, library);
 }
 
-const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1, const Token *startToken, const Token *endToken, bool *read) const
-{
+struct CheckOther::ScopeResult CheckOther::checkRedundantAssignmentRecursive(const Token *assign1, const Token *startToken, const Token *endToken) const {
     // all variable ids in assign1 LHS.
     std::set<unsigned int> assign1LhsVarIds;
     bool local = true;
@@ -468,34 +467,33 @@ const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1,
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
         if (Token::simpleMatch(tok, "try {")) {
             // TODO: handle try
-            *read = true;
-            return nullptr;
+            return ScopeResult(ScopeResult::BAILOUT);
         }
 
         if (tok->str() == "}" && (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eWhile)) {
             // TODO: handle loops better
-            *read = true;
-            return nullptr;
+            return ScopeResult(ScopeResult::BAILOUT);
         }
 
-        if (Token::Match(tok, "break|continue|return|throw|goto")) {
-            // TODO: handle these better
-            *read = true;
-            return nullptr;
+        if (Token::simpleMatch(tok, "break ;")) {
+            return ScopeResult(ScopeResult::BREAK);
+        }
+
+        if (Token::Match(tok, "continue|return|throw|goto")) {
+            // TODO: Handle these better
+            return ScopeResult(ScopeResult::RETURN);
         }
 
         if (Token::simpleMatch(tok, "else {"))
             tok = tok->linkAt(1);
 
         if (Token::simpleMatch(tok, "asm (")) {
-            *read = true;
-            return nullptr;
+            return ScopeResult(ScopeResult::BAILOUT);
         }
 
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // TODO: this is a quick bailout
-            *read = true;
-            return nullptr;
+            return ScopeResult(ScopeResult::BAILOUT);
         }
 
         if (assign1LhsVarIds.find(tok->varId()) != assign1LhsVarIds.end()) {
@@ -505,43 +503,39 @@ const Token *CheckOther::checkRedundantAssignmentRecursive(const Token *assign1,
             if (Token::simpleMatch(parent->astParent(), "=") && parent == parent->astParent()->astOperand1()) {
                 if (!local && hasFunctionCall(parent->astParent()->astOperand2())) {
                     // TODO: this is a quick bailout
-                    *read = true;
-                    return nullptr;
+                    return ScopeResult(ScopeResult::BAILOUT);
                 }
                 if (hasOperand(parent->astParent()->astOperand2(), assign1->astOperand1(), mTokenizer->isCPP(), mSettings->library)) {
-                    *read = true;
-                    return nullptr;
+                    return ScopeResult(ScopeResult::READ);
                 }
                 const bool reassign = isSameExpression(mTokenizer->isCPP(), false, assign1->astOperand1(), parent, mSettings->library, false, false, nullptr);
                 if (reassign)
-                    return parent->astParent();
-                *read = true;
-                return nullptr;
+                    return ScopeResult(ScopeResult::WRITE, parent->astParent());
+                return ScopeResult(ScopeResult::READ);
             } else {
                 // TODO: this is a quick bailout
-                *read = true;
-                return nullptr;
+                return ScopeResult(ScopeResult::BAILOUT);
             }
         }
 
         if (Token::Match(tok, ") {")) {
-            const Token *a1 = checkRedundantAssignmentRecursive(assign1, tok->tokAt(2), tok->linkAt(1), read);
-            if (*read)
-                return nullptr;
+            const ScopeResult &result1 = checkRedundantAssignmentRecursive(assign1, tok->tokAt(2), tok->linkAt(1));
+            if (result1.type == ScopeResult::READ || result1.type == ScopeResult::BAILOUT)
+                return result1;
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
-                const Token *a2 = checkRedundantAssignmentRecursive(assign1, elseStart, elseStart->link(), read);
-                if (*read)
-                    return nullptr;
-                if (a1 && a2)
-                    return a1;
+                const ScopeResult &result2 = checkRedundantAssignmentRecursive(assign1, elseStart, elseStart->link());
+                if (result2.type == ScopeResult::READ || result2.type == ScopeResult::BAILOUT)
+                    return result2;
+                if (result1.type == ScopeResult::WRITE && result2.type == ScopeResult::WRITE)
+                    return result1;
                 tok = elseStart->link();
             } else {
                 tok = tok->linkAt(1);
             }
         }
     }
-    return nullptr;
+    return ScopeResult(ScopeResult::NONE);
 }
 
 void CheckOther::checkRedundantAssignment()
@@ -610,19 +604,18 @@ void CheckOther::checkRedundantAssignment()
                     continue;
 
                 // Is there a redundant assignment?
-                bool read = false;
                 const Token *start;
                 if (tok->isAssignmentOp())
                     start = tok->next();
                 else
                     start = tok->findExpressionStartEndTokens().second->next();
-                const Token *nextAssign = checkRedundantAssignmentRecursive(tok, start, scope->bodyEnd, &read);
-                if (read || !nextAssign)
+                const ScopeResult &nextAssign = checkRedundantAssignmentRecursive(tok, start, scope->bodyEnd);
+                if (nextAssign.type != ScopeResult::WRITE || !nextAssign.token)
                     continue;
 
                 // there is redundant assignment. Is there a case between the assignments?
                 bool hasCase = false;
-                for (const Token *tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
+                for (const Token *tok2 = tok; tok2 != nextAssign.token; tok2 = tok2->next()) {
                     if (tok2->str() == "case") {
                         hasCase = true;
                         break;
@@ -631,9 +624,9 @@ void CheckOther::checkRedundantAssignment()
 
                 // warn
                 if (hasCase)
-                    redundantAssignmentInSwitchError(tok, nextAssign, tok->astOperand1()->expressionString());
+                    redundantAssignmentInSwitchError(tok, nextAssign.token, tok->astOperand1()->expressionString());
                 else
-                    redundantAssignmentError(tok, nextAssign, tok->astOperand1()->expressionString(), inconclusive);
+                    redundantAssignmentError(tok, nextAssign.token, tok->astOperand1()->expressionString(), inconclusive);
             }
         }
     }

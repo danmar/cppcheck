@@ -216,9 +216,15 @@ public:
     void checkShadowVariables();
 
 private:
-    // Recursively check for redundant assignments..
-    // TODO: when we support C++17, return std::variant
-    const Token *checkRedundantAssignmentRecursive(const Token *assign1, const Token *startToken, const Token *endToken, bool *read) const;
+
+    struct ScopeResult {
+        enum Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
+        ScopeResult(Type type) : type(type), token(nullptr) {}
+        ScopeResult(Type type, const Token *token) : type(type), token(token) {}
+        const Token *token;
+    };
+    /** Recursively check for redundant assignments. */
+    struct ScopeResult checkRedundantAssignmentRecursive(const Token *assign1, const Token *startToken, const Token *endToken) const;
 
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
