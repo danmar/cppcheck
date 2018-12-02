@@ -1506,6 +1506,17 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    int f( P p ) {\n"
+              "        std::vector< S > maps;\n"
+              "        m2.insert( m1.begin(), m1.end() );\n"
+              "    }\n"
+              "    struct B {};\n"
+              "    std::map< S, B > m1;\n"
+              "    std::map< S, B > m2;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {

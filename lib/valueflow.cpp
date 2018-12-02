@@ -2649,7 +2649,7 @@ struct LifetimeStore {
             const Variable *var = getLifetimeVariable(tok2, errorPath);
             if (!var)
                 continue;
-            for (const Token *tok3 = tok; tok != var->declEndToken(); tok3 = tok3->previous()) {
+            for (const Token *tok3 = tok; tok3 && tok3 != var->declEndToken(); tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
                     LifetimeStore{tok3, message, type} .byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;
