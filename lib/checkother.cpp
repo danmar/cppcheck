@@ -486,7 +486,7 @@ void CheckOther::checkRedundantAssignment()
                     start = tok->findExpressionStartEndTokens().second->next();
 
                 // Get next assignment..
-                FwdAnalysis::Result nextAssign = fwdAnalysis.check(tok, start, scope->bodyEnd);
+                FwdAnalysis::Result nextAssign = fwdAnalysis.check(tok->astOperand1(), start, scope->bodyEnd);
 
                 if (nextAssign.type != FwdAnalysis::Result::Type::WRITE || !nextAssign.token)
                     continue;

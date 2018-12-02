@@ -1053,21 +1053,8 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *assign1, const Token *startToken, const Token *endToken)
+FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
 {
-    // all variable ids in assign1 LHS.
-    std::set<unsigned int> assign1LhsVarIds;
-    bool local = true;
-    visitAstNodes(assign1->astOperand1(),
-    [&](const Token *tok) {
-        if (tok->varId() > 0) {
-            assign1LhsVarIds.insert(tok->varId());
-            if (!Token::simpleMatch(tok->previous(), "."))
-                local &= !nonLocal(tok->variable());
-        }
-        return ChildrenToVisit::op1_and_op2;
-    });
-
     // Parse the given tokens
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
         if (Token::simpleMatch(tok, "try {")) {
@@ -1101,7 +1088,7 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *assign1, const Toke
             return Result(Result::Type::BAILOUT);
         }
 
-        if (assign1LhsVarIds.find(tok->varId()) != assign1LhsVarIds.end()) {
+        if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;
             while (Token::Match(parent->astParent(), ".|::|["))
                 parent = parent->astParent();
@@ -1110,10 +1097,10 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *assign1, const Toke
                     // TODO: this is a quick bailout
                     return Result(Result::Type::BAILOUT);
                 }
-                if (hasOperand(parent->astParent()->astOperand2(), assign1->astOperand1())) {
+                if (hasOperand(parent->astParent()->astOperand2(), expr)) {
                     return Result(Result::Type::READ);
                 }
-                const bool reassign = isSameExpression(mCpp, false, assign1->astOperand1(), parent, mLibrary, false, false, nullptr);
+                const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
@@ -1124,12 +1111,12 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *assign1, const Toke
         }
 
         if (Token::Match(tok, ") {")) {
-            const Result &result1 = checkRecursive(assign1, tok->tokAt(2), tok->linkAt(1));
+            const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local);
             if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
                 return result1;
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
-                const Result &result2 = checkRecursive(assign1, elseStart, elseStart->link());
+                const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local);
                 if (result2.type == Result::Type::READ || result2.type == Result::Type::BAILOUT)
                     return result2;
                 if (result1.type == Result::Type::WRITE && result2.type == Result::Type::WRITE)
@@ -1144,9 +1131,22 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *assign1, const Toke
     return Result(Result::Type::NONE);
 }
 
-FwdAnalysis::Result FwdAnalysis::check(const Token *assign1, const Token *startToken, const Token *endToken)
+FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    Result result = checkRecursive(assign1, startToken, endToken);
+    // all variable ids in expr.
+    std::set<unsigned int> exprVarIds;
+    bool local = true;
+    visitAstNodes(expr,
+    [&](const Token *tok) {
+        if (tok->varId() > 0) {
+            exprVarIds.insert(tok->varId());
+            if (!Token::simpleMatch(tok->previous(), "."))
+                local &= !nonLocal(tok->variable());
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+
+    Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
     // Break => continue checking in outer scope
     while (result.type == FwdAnalysis::Result::Type::BREAK) {
@@ -1155,7 +1155,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *assign1, const Token *startT
             s = s->nestedIn;
         if (s->type != Scope::eSwitch)
             break;
-        result = checkRecursive(assign1, s->bodyEnd->next(), endToken);
+        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local);
     }
 
     return result;

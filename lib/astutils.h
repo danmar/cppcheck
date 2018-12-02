@@ -172,13 +172,19 @@ public:
         const Token *token;
     };
 
-    /** forward analysis */
-    struct Result check(const Token *assign1, const Token *startToken, const Token *endToken);
+    /**
+     * General purpose forward analysis for "expr". The "expr" can be a tree (x.y[12]) or something like that.
+     * @param expr Symbolic expression to perform forward analysis for
+     * @param startToken First token in forward analysis
+     * @param endToken Last token in forward analysis
+     * @return A Result struct.
+     */
+    struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 
 private:
-    struct Result checkRecursive(const Token *assign1, const Token *startToken, const Token *endToken);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local);
 
     const bool mCpp;
     const Library &mLibrary;
