@@ -2751,6 +2751,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             auto isCapturingVariable = [&](const Variable *var) {
                 const Scope *scope = var->scope();
+                if (!scope)
+                    return false;
                 if (scopes.count(scope) > 0)
                     return false;
                 if (scope->isNestedIn(bodyScope))
@@ -2840,7 +2842,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Variable * var = getLifetimeVariable(tok, errorPath);
             if (!var)
                 continue;
-            if (var->isArray() && !var->isArgument() && tok->astParent() &&
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && tok->astParent() &&
                 (astIsPointer(tok->astParent()) || Token::Match(tok->astParent(), "%assign%|return"))) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 

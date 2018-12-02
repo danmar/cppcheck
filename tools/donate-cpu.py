@@ -190,10 +190,29 @@ def unpackPackage(workPath, tgz):
     os.chdir(workPath)
 
 
+def hasInclude(path,inc):
+    for g in glob.glob(path + '/*'):
+        if os.path.isfile(g):
+            f = open(g,'rt')
+            filedata = f.read()
+            f.close()
+            if filedata.find('\n#include ' + inc) >= 0:
+                return True
+        elif os.path.isdir(g) and not g.startswith('.'):
+            if hasInclude(g, inc) is True:
+                return True
+    return False
+
+
 def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
-    cmd = 'nice ' + cppcheck + ' ' + jobs + ' -D__GCC__ --inconclusive --enable=style --library=posix --platform=unix64 --template=daca2 -rp=temp temp'
+    libraries = ' --library=posix'
+    if hasInclude('temp', '<wx/string.h>'):
+        libraries += ' --library=wxwidgets'
+    if hasInclude('temp', '<QString>'):
+        libraries += ' --library=qt'
+    cmd = 'nice ' + cppcheck + ' ' + jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -202,6 +221,10 @@ def scanPackage(workPath, cppcheck, jobs):
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
     if p.returncode != 0 and 'cppcheck: error: could not find or open any of the paths given.' not in stdout:
+        # Crash!
+        print('Crash!')
+        return -1, '', -1
+    if stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
         # Crash!
         print('Crash!')
         return -1, '', -1
