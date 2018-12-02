@@ -1421,6 +1421,19 @@ private:
             errout.str());
 
         check("struct A {\n"
+              "    std::vector<int*> m;\n"
+              "    void f() {\n"
+              "        int x;\n"
+              "        std::vector<int*> v;\n"
+              "        v.push_back(&x);\n"
+              "        m.insert(m.end(), v.begin(), v.end());\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:7]: (error) Non-local variable 'm' will use object that points to local variable 'x'.\n",
+            errout.str());
+
+        check("struct A {\n"
               "    std::vector<std::string> v;\n"
               "    void f() {\n"
               "        char s[3];\n"
@@ -1482,6 +1495,27 @@ private:
               "    std::vector<char> v;\n"
               "    return g([&]() { return v.data(); });\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int> g();\n"
+              "struct A {\n"
+              "    std::vector<int> m;\n"
+              "    void f() {\n"
+              "        std::vector<int> v = g();\n"
+              "        m.insert(m.end(), v.begin(), v.end());\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A {\n"
+              "    int f( P p ) {\n"
+              "        std::vector< S > maps;\n"
+              "        m2.insert( m1.begin(), m1.end() );\n"
+              "    }\n"
+              "    struct B {};\n"
+              "    std::map< S, B > m1;\n"
+              "    std::map< S, B > m2;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
