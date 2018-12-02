@@ -129,6 +129,7 @@ private:
         TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
+        TEST_CASE(varid_namespace_3);   // #8627
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -1823,6 +1824,41 @@ private:
         const std::string actual = tokenize(code, false, "test.cpp");
 
         ASSERT(actual.find("X@2 = 0") != std::string::npos);
+    }
+
+    std::string getLine(const std::string &code, int lineNumber) {
+        std::string nr = MathLib::toString(lineNumber);
+        const std::string::size_type pos1 = code.find('\n' + nr + ": ");
+        if (pos1 == std::string::npos)
+            return "";
+        const std::string::size_type pos2 = code.find('\n', pos1+1);
+        if (pos2 == std::string::npos)
+            return "";
+        return code.substr(pos1+1, pos2-pos1-1);
+    }
+
+    void varid_namespace_3() { // #8627
+        const char code[] = "namespace foo {\n"
+                            "struct Bar {\n"
+                            "  explicit Bar(int type);\n"
+                            "  void f();\n"
+                            "  int type;\n"  // <- Same varid here ...
+                            "};\n"
+                            "\n"
+                            "Bar::Bar(int type) : type(type) {}\n"
+                            "\n"
+                            "void Bar::f() {\n"
+                            "  type = 0;\n"  // <- ... and here
+                            "}\n"
+                            "}";
+
+        const std::string actual = tokenize(code, false, "test.cpp");
+
+        const std::string line5 = getLine(actual, 5);
+        const std::string line11 = getLine(actual, 11);
+
+        ASSERT_EQUALS("5: int type@2 ;", getLine(actual,5));
+        ASSERT_EQUALS("11: type@2 = 0 ;", getLine(actual,11));
     }
 
     void varid_initList() {

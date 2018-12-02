@@ -3093,8 +3093,13 @@ void Tokenizer::setVarIdPass2()
                     if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
                         setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &mVarId);
                     tok2 = tok2->link();
-                } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(")
+                } else if (tok2->str() == "(" && tok2->link()->strAt(1) != "(") {
                     tok2 = tok2->link();
+
+                    // Skip initialization list
+                    while (Token::Match(tok2, ") [:,] %name% ("))
+                        tok2 = tok2->linkAt(3);
+                }
             }
 
             // Found a member variable..
