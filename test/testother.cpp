@@ -164,6 +164,7 @@ private:
         TEST_CASE(redundantVarAssignment_stackoverflow);
         TEST_CASE(redundantVarAssignment_lambda);
         TEST_CASE(redundantVarAssignment_for);
+        TEST_CASE(redundantVarAssignment_after_switch);
         TEST_CASE(redundantMemWrite);
 
         TEST_CASE(varFuncNullUB);
@@ -6068,6 +6069,19 @@ private:
               "    buf[i] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantVarAssignment_after_switch() {
+        check("void f(int x) {\n" // #7907
+              "    int ret;\n"
+              "    switch (x) {\n"
+              "    case 123:\n"
+              "        ret = 1;\n" // redundant assignment
+              "        break;\n"
+              "    }\n"
+              "    ret = 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:8]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantMemWrite() {

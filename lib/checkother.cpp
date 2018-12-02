@@ -476,7 +476,7 @@ struct CheckOther::ScopeResult CheckOther::checkRedundantAssignmentRecursive(con
         }
 
         if (Token::simpleMatch(tok, "break ;")) {
-            return ScopeResult(ScopeResult::BREAK);
+            return ScopeResult(ScopeResult::BREAK, tok);
         }
 
         if (Token::Match(tok, "continue|return|throw|goto")) {
@@ -609,7 +609,26 @@ void CheckOther::checkRedundantAssignment()
                     start = tok->next();
                 else
                     start = tok->findExpressionStartEndTokens().second->next();
-                const ScopeResult &nextAssign = checkRedundantAssignmentRecursive(tok, start, scope->bodyEnd);
+
+                // Get next assignment..
+                ScopeResult nextAssign(ScopeResult::NONE);
+                while (true) {
+                    nextAssign = checkRedundantAssignmentRecursive(tok, start, scope->bodyEnd);
+
+                    // Break => continue checking in outer scope
+                    if (nextAssign.type == ScopeResult::BREAK) {
+                        const Scope *s = nextAssign.token->scope();
+                        while (s->type == Scope::eIf)
+                            s = s->nestedIn;
+                        if (s->type == Scope::eSwitch) {
+                            start = s->bodyEnd->next();
+                            continue;
+                        }
+                    }
+
+                    break;
+                }
+
                 if (nextAssign.type != ScopeResult::WRITE || !nextAssign.token)
                     continue;
 
