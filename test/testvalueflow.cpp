@@ -495,6 +495,20 @@ private:
                "    return h(std::move(x));\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+
+        code = "struct X {\n"
+               "};\n"
+               "struct Data {\n"
+               "  template<typename Fun>\n"
+               "  void foo(Fun f) {}\n"
+               "};\n"
+               "Data g(X value) { return Data(); }\n"
+               "void f() {\n"
+               "   X x;\n"
+               "   g(std::move(x)).foo([=](int value) mutable {;});\n"
+               "   X y=x;\n"
+               "}";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 11U, ValueFlow::Value::MovedVariable));
     }
 
     void valueFlowCalculations() {
