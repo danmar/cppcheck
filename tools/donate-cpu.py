@@ -279,7 +279,7 @@ def diffResults(workPath, ver1, results1, ver2, results2):
 
 
 def sendAll(connection, data):
-    bytes = data.encode()
+    bytes = data.encode('ascii', 'ignore')
     while bytes:
         num = connection.send(bytes)
         if num < len(bytes):
