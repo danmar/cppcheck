@@ -19,7 +19,6 @@
 # Quick start: just run this script without any arguments
 
 import shutil
-import glob
 import os
 import subprocess
 import sys
@@ -190,16 +189,14 @@ def unpackPackage(workPath, tgz):
     os.chdir(workPath)
 
 
-def hasInclude(path,inc):
-    for g in glob.glob(path + '/*'):
-        if os.path.isfile(g):
-            f = open(g,'rt')
-            filedata = f.read()
+def hasInclude(path, inc):
+    for root, _, files in os.walk(path):
+        for name in files:
+            filename = os.path.join(root, name)
+            f = open(filename, 'rt')
+            filedata = f.read().decode(encoding='utf-8', errors='ignore')
             f.close()
             if filedata.find('\n#include ' + inc) >= 0:
-                return True
-        elif os.path.isdir(g) and not g.startswith('.'):
-            if hasInclude(g, inc) is True:
                 return True
     return False
 
