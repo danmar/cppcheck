@@ -548,6 +548,28 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     return ret;
 }
 
+// Assuming a limited support of built-in hexadecimal floats (see C99, C++17) that is a fall-back implementation.
+// For now it's not optimized WRT performance at all...
+static double FloatHexToDoubleNumber(const std::string& str)
+{
+    const std::size_t p = str.find('p');
+    const std::string number = str.substr(2, str.find('p') - 2);
+    const std::size_t decimal = number.find('.');
+    const std::string whole = number.substr(0, decimal);
+
+    double factor1 = std::stoi(whole, nullptr, 16);
+    if (std::string::npos != decimal) {
+        const std::string fraction = number.substr(decimal + 1);
+        const int b = std::stoi(fraction, nullptr, 16);
+        factor1 += (double)b / std::pow(16, fraction.length());
+    }
+
+    const std::string exponent = str.substr(p + 1);
+    const int power = std::stoi(exponent);
+    const double factor2 = std::pow(2, power);
+
+    return factor1 * factor2;
+}
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
@@ -563,6 +585,8 @@ double MathLib::toDoubleNumber(const std::string &str)
         // TODO : handle locale
         return std::strtod(str.c_str(), nullptr);
 #endif
+    if (isFloatHex(str))
+        return FloatHexToDoubleNumber(str);
     // otherwise, convert to double
     std::istringstream istr(str);
     istr.imbue(std::locale::classic());
