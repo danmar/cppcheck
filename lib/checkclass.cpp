@@ -2125,12 +2125,13 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     else
         reportError(toks, Severity::performance, "functionStatic",
                     "$symbol:" + classname + "::" + funcname +"\n"
-                    "Technically the member function '$symbol' can be static.\n"
+                    "Technically the member function '$symbol' can be static (but you may consider moving to unnamed namespace).\n"
                     "The member function '$symbol' can be made a static "
                     "function. Making a function static can bring a performance benefit since no 'this' instance is "
                     "passed to the function. This change should not cause compiler errors but it does not "
                     "necessarily make sense conceptually. Think about your design and the task of the function first - "
-                    "is it a function that must not access members of class instances?", CWE398, true);
+                    "is it a function that must not access members of class instances? And maybe it is more appropriate "
+                    "to move this function to a unnamed namespace.", CWE398, true);
 }
 
 //---------------------------------------------------------------------------
