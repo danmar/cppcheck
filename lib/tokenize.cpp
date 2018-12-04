@@ -9385,12 +9385,28 @@ void Tokenizer::simplifyAsm2()
 
 void Tokenizer::simplifyAt()
 {
+    std::set<std::string> var;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%name% @ %num% ;")) {
+            var.insert(tok->str());
             tok->isAtAddress(true);
             Token::eraseTokens(tok,tok->tokAt(3));
         }
-        if (Token::Match(tok, "@ far|near|interrupt")) {
+        if (Token::Match(tok, "%name% @ %num% : %num% ;")) {
+            var.insert(tok->str());
+            tok->isAtAddress(true);
+            Token::eraseTokens(tok,tok->tokAt(5));
+        }
+        if (Token::Match(tok, "%name% @ %name% : %num% ;") && var.find(tok->strAt(2)) != var.end()) {
+            var.insert(tok->str());
+            tok->isAtAddress(true);
+            Token::eraseTokens(tok,tok->tokAt(5));
+        }
+
+        // keywords in compiler from cosmic software for STM8
+        // TODO: Should use platform configuration.
+        if (Token::Match(tok, "@ builtin|eeprom|far|inline|interrupt|near|noprd|nostack|nosvf|packed|stack|svlreg|tiny|vector")) {
             tok->str(tok->next()->str() + "@");
             tok->deleteNext();
         }
