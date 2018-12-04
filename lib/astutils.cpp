@@ -1178,11 +1178,3 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
     Result result = check(expr, startToken, endToken);
     return result.type == FwdAnalysis::Result::Type::WRITE ? result.token : nullptr;
 }
-
-std::vector<const Token *> FwdAnalysis::reads(const Token *expr, const Token *startToken, const Token *endToken)
-{
-    mReassign = false;
-    mReads.clear();
-    check(expr, startToken, endToken);
-    return mReads;
-}

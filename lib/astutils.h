@@ -175,20 +175,11 @@ public:
      */
     const Token *reassign(const Token *expr, const Token *startToken, const Token *endToken);
 
-    /**
-     * Get tokens where "expr" is read. The "expr" can be a tree (x.y[12]).
-     * @param expr Symbolic expression to perform forward analysis for
-     * @param startToken First token in forward analysis
-     * @param endToken Last token in forward analysis
-     * @return vector of read tokens
-     */
-    std::vector<const Token *> reads(const Token *expr, const Token *startToken, const Token *endToken);
-
 private:
     /** Result of forward analysis */
     struct Result {
         enum class Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
-        Result(Type type) : type(type), token(nullptr) {}
+        explicit Result(Type type) : type(type), token(nullptr) {}
         Result(Type type, const Token *token) : type(type), token(token) {}
         const Token *token;
     };
