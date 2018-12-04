@@ -1069,7 +1069,7 @@ private:
 
     void simplifyAt() {
         ASSERT_EQUALS("int x ;", tokenizeAndStringify("int x@123;"));
-        ASSERT_EQUALS("int x ;", tokenizeAndStringify("bool x@123:1;"));
+        ASSERT_EQUALS("bool x ;", tokenizeAndStringify("bool x@123:1;"));
         ASSERT_EQUALS("char PORTB ; bool PB3 ;", tokenizeAndStringify("char PORTB @ 0x10; bool PB3 @ PORTB:3;\n"));
 
         ASSERT_EQUALS("interrupt@ f ( ) { }", tokenizeAndStringify("@interrupt f() {}"));
