@@ -1880,10 +1880,10 @@ static bool valueFlowForward(Token * const               startToken,
 
         // skip lambda functions
         // TODO: handle lambda functions
-        if (Token::simpleMatch(tok2, "= [")) {
-            Token *lambdaEndToken = const_cast<Token *>(findLambdaEndToken(tok2->next()));
+        if (tok2->str() == "[" && findLambdaEndToken(tok2)) {
+            Token *lambdaEndToken = const_cast<Token *>(findLambdaEndToken(tok2));
             // Dont skip lambdas for lifetime values
-            if (lambdaEndToken && !std::all_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
+            if (!std::all_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 tok2 = lambdaEndToken;
                 continue;
             }

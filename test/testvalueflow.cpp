@@ -1431,6 +1431,16 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        code = "void f() {\n"
+               "    int x = 0;\n"
+               "    dostuff([&]() {\n"
+               "        if (x > 0) {}\n"
+               "        x++;\n"
+               "    });\n"
+               "    dosomething(q);\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
         // ?:
         code = "void f() {\n"
                "    int x = 8;\n"
