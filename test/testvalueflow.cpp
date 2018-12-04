@@ -1441,6 +1441,15 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        code = "int f() {\n"
+               "    int x = 1;\n"
+               "    dostuff([&]() {\n"
+               "        x = y;\n"
+               "    });\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 1));
+
         // ?:
         code = "void f() {\n"
                "    int x = 8;\n"

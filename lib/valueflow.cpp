@@ -1882,6 +1882,8 @@ static bool valueFlowForward(Token * const               startToken,
         // TODO: handle lambda functions
         if (tok2->str() == "[" && findLambdaEndToken(tok2)) {
             Token *lambdaEndToken = const_cast<Token *>(findLambdaEndToken(tok2));
+            if (isVariableChanged(lambdaEndToken->link(), lambdaEndToken, varid, var->isGlobal(), settings, tokenlist->isCPP()))
+                return false;
             // Dont skip lambdas for lifetime values
             if (!std::all_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 tok2 = lambdaEndToken;
