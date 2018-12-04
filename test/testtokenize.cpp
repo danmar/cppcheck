@@ -109,6 +109,8 @@ private:
         TEST_CASE(simplifyCasts16); // #6278
         TEST_CASE(simplifyCasts17); // #6110 - don't remove any parentheses in 'a(b)(c)'
 
+        TEST_CASE(simplifyAt);
+
         TEST_CASE(inlineasm);
         TEST_CASE(simplifyAsm2);  // #4725 (writing asm() around "^{}")
 
@@ -1063,6 +1065,11 @@ private:
     void simplifyCasts17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
         ASSERT_EQUALS("if ( a ( b ) ( c ) >= 3 )",
                       tokenizeAndStringify("if (a(b)(c) >= 3)", true));
+    }
+
+    void simplifyAt() {
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify("int x@123;"));
+        ASSERT_EQUALS("interrupt@ f ( ) { }", tokenizeAndStringify("@interrupt f() {}"));
     }
 
     void inlineasm() {

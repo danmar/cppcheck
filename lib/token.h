@@ -448,6 +448,12 @@ public:
     void isEnumType(const bool value) {
         setFlag(fIsEnumType, value);
     }
+    bool isAtAddress() const {
+        return getFlag(fAtAddress);
+    }
+    void isAtAddress(bool b) {
+        setFlag(fAtAddress, b);
+    }
 
     bool isBitfield() const {
         return mBits > 0;
@@ -984,6 +990,7 @@ private:
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
         fHasTemplateSimplifierPointer = (1 << 24), // used by template simplifier to indicate it has a pointer to this token
+        fAtAddress              = (1 << 25), // @ 0x4000
     };
 
     unsigned int mFlags;

@@ -658,6 +658,11 @@ private:
     void simplifyAsm2();
 
     /**
+     * Simplify @..
+     */
+    void simplifyAt();
+
+    /**
      * Simplify bitfields - the field width is removed as we don't use it.
      */
     void simplifyBitfields();

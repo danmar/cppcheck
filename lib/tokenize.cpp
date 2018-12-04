@@ -3807,6 +3807,20 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Put ^{} statements in asm()
     simplifyAsm2();
 
+    // @..
+    simplifyAt();
+
+    // When the assembly code has been cleaned up, no @ is allowed
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == "(") {
+            tok = tok->link();
+            if (!tok)
+                syntaxError(nullptr);
+        } else if (tok->str() == "@") {
+            syntaxError(nullptr);
+        }
+    }
+
     // Order keywords "static" and "const"
     simplifyStaticConst();
 
@@ -9367,15 +9381,18 @@ void Tokenizer::simplifyAsm2()
             }
         }
     }
+}
 
-    // When the assembly code has been cleaned up, no @ is allowed
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(") {
-            tok = tok->link();
-            if (!tok)
-                syntaxError(nullptr);
-        } else if (tok->str()[0] == '@') {
-            syntaxError(nullptr);
+void Tokenizer::simplifyAt()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%name% @ %num% ;")) {
+            tok->isAtAddress(true);
+            Token::eraseTokens(tok,tok->tokAt(3));
+        }
+        if (Token::Match(tok, "@ far|near|interrupt")) {
+            tok->str(tok->next()->str() + "@");
+            tok->deleteNext();
         }
     }
 }
