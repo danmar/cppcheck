@@ -2,8 +2,9 @@
 #
 # A script a user can run to donate CPU to cppcheck project
 #
-# Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-path=path]
+# Syntax: donate-cpu.py [-jN] [--package=url] [--stop-time=HH:MM] [--work-path=path]
 #  -jN                  Use N threads in compilation/analysis. Default is 1.
+#  --package=url        Check a specific package and then stop. Can be useful if you want to reproduce some warning/crash/exception/etc..
 #  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
 #  --work-path=path     Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
 #
@@ -193,11 +194,14 @@ def hasInclude(path, inc):
     for root, _, files in os.walk(path):
         for name in files:
             filename = os.path.join(root, name)
-            f = open(filename, 'rt')
-            filedata = f.read().decode(encoding='utf-8', errors='ignore')
-            f.close()
-            if filedata.find('\n#include ' + inc) >= 0:
-                return True
+            try:
+                f = open(filename, 'rt')
+                filedata = f.read().decode(encoding='utf-8', errors='ignore')
+                f.close()
+                if filedata.find('\n#include ' + inc) >= 0:
+                    return True
+            except IOError:
+                pass
     return False
 
 
