@@ -605,7 +605,6 @@ private:
 
     void isFloatHex() const {
         // hex number syntax: [sign]0x[hexnumbers][suffix]
-        ASSERT_EQUALS(false, MathLib::isFloatHex(""));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.999999999999ap-4"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x0.3p10"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.fp3"));
@@ -613,7 +612,12 @@ private:
         ASSERT_EQUALS(true, MathLib::isFloatHex("0xcc.ccccccccccdp-11"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x3.243F6A88p+03"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0xA.Fp-10"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.2p-10f"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.2p+10F"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.2p+10l"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.2p+10L"));
 
+        ASSERT_EQUALS(false, MathLib::isFloatHex(""));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0"));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0x"));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0xa"));
@@ -623,6 +627,10 @@ private:
         ASSERT_EQUALS(false, MathLib::isFloatHex("0x."));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0XP"));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0xx"));
+		ASSERT_EQUALS(false, MathLib::isFloatHex("0x1P+-1"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0x1p+10e"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0x1p+1af"));
+        ASSERT_EQUALS(false, MathLib::isFloatHex("0x1p+10LL"));
     }
 
     void isIntHex() const {

@@ -818,7 +818,7 @@ bool MathLib::isIntHex(const std::string& str)
 bool MathLib::isFloatHex(const std::string& str)
 {
     enum Status {
-        START, PLUSMINUS, HEX_PREFIX, WHOLE_NUMBER_DIGIT, WHOLE_NUMBER_DIGITS, FRACTION, EXPONENT_DIGIT, EXPONENT_DIGITS
+        START, PLUSMINUS, HEX_0, HEX_X, WHOLE_NUMBER_DIGITS, FRACTION, EXPONENT_P, EXPONENT_SIGN, EXPONENT_DIGITS, EXPONENT_SUFFIX
     } state = START;
     for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
@@ -826,23 +826,23 @@ bool MathLib::isFloatHex(const std::string& str)
             if (*it == '+' || *it == '-')
                 state = PLUSMINUS;
             else if (*it == '0')
-                state = HEX_PREFIX;
+                state = HEX_0;
             else
                 return false;
             break;
         case PLUSMINUS:
             if (*it == '0')
-                state = HEX_PREFIX;
+                state = HEX_0;
             else
                 return false;
             break;
-        case HEX_PREFIX:
+        case HEX_0:
             if (*it == 'x' || *it == 'X')
-                state = WHOLE_NUMBER_DIGIT;
+                state = HEX_X;
             else
                 return false;
             break;
-        case WHOLE_NUMBER_DIGIT:
+        case HEX_X:
             if (isxdigit(static_cast<unsigned char>(*it)))
                 state = WHOLE_NUMBER_DIGITS;
             else
@@ -854,33 +854,45 @@ bool MathLib::isFloatHex(const std::string& str)
             else if (*it=='.')
                 state = FRACTION;
             else if (*it=='p' || *it=='P')
-                state = EXPONENT_DIGIT;
+                state = EXPONENT_P;
             else
                 return false;
             break;
         case FRACTION:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                state = FRACTION;
-            else if (*it=='p' || *it=='P')
-                state = EXPONENT_DIGIT;
+                ; // state = FRACTION;
+            else if (*it == 'p' || *it == 'P')
+                state = EXPONENT_P;
+            else
+                return false;
             break;
-        case EXPONENT_DIGIT:
-            if (isxdigit(static_cast<unsigned char>(*it)))
+        case EXPONENT_P:
+            if (isdigit(static_cast<unsigned char>(*it)))
                 state = EXPONENT_DIGITS;
-            else if (*it=='+' || *it=='-')
+            else if (*it == '+' || *it == '-')
+                state = EXPONENT_SIGN;
+            else
+                return false;
+            break;
+        case EXPONENT_SIGN:
+            if (isdigit(static_cast<unsigned char>(*it)))
                 state = EXPONENT_DIGITS;
             else
                 return false;
             break;
         case EXPONENT_DIGITS:
-            if (isxdigit(static_cast<unsigned char>(*it)))
-                state = EXPONENT_DIGITS;
+            if (isdigit(static_cast<unsigned char>(*it)))
+                ; //  state = EXPONENT_DIGITS;
+            else if (*it == 'f' || *it == 'F' || *it == 'l' || *it == 'L')
+                state = EXPONENT_SUFFIX;
             else
-                return *it=='f'||*it=='F'||*it=='l'||*it=='L';
+                return false;
             break;
+        case EXPONENT_SUFFIX:
+            return false;
         }
     }
-    return state==EXPONENT_DIGITS;
+    return (EXPONENT_DIGITS==state) || (EXPONENT_SUFFIX == state);
 }
 
 bool MathLib::isValidIntegerSuffix(const std::string& str)
