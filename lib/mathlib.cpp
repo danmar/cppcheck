@@ -568,7 +568,7 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
     } else  if (decimalsep > (to - str.begin()))
         return 0.; // error handling??
     else
-        distance = decimalsep-(from - str.begin());
+        distance = int(decimalsep)-(from - str.begin());
     auto digitval = [&](char c) {
         if ((10 < base) && (c > '9'))
             return 10 + std::tolower(c) - 'a';
@@ -591,7 +591,6 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
 static double FloatHexToDoubleNumber(const std::string& str)
 {
     const std::size_t p = str.find_first_of("pP",3);
-    const std::size_t decimal = str.find('.', 2);
     const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
     const bool suffix = (str.back() == 'f') || (str.back() == 'F') || (str.back() == 'l') || (str.back() == 'L');
     const double exponent = myStod(str, str.begin() + p + 1, (suffix)?str.end()-1:str.end(), 10);
