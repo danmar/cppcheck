@@ -548,26 +548,54 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     return ret;
 }
 
+// in-place conversion of (sub)string to double. Requires now heap.
+static double myStod(const std::string& str, std::string::const_iterator from, std::string::const_iterator to, int base)
+{
+    double result = 0.;
+    bool positivesign = true;
+    std::string::const_iterator it;
+    if ('+' == *from) {
+        it = from + 1;
+    } else if ('-' == *from) {
+        it = from + 1;
+        positivesign = false;
+    } else
+        it = from;
+    const std::size_t decimalsep = str.find('.', it-str.begin());
+    int distance;
+    if (std::string::npos == decimalsep) {
+        distance = to - it;
+    } else  if (decimalsep > (to - str.begin()))
+        return 0.; // error handling??
+    else
+        distance = decimalsep-(from - str.begin());
+    auto digitval = [&](char c) {
+        if ((10 < base) && (c > '9'))
+            return 10 + std::tolower(c) - 'a';
+        else
+            return c - '0';
+    };
+    for (; it!=to; ++it) {
+        if ('.' == *it)
+            continue;
+        else
+            --distance;
+        result += digitval(*it)* std::pow(base, distance);
+    }
+    return (positivesign)?result:-result;
+}
+
+
 // Assuming a limited support of built-in hexadecimal floats (see C99, C++17) that is a fall-back implementation.
-// For now it's not optimized WRT performance at all...
+// Performance has been optimized WRT to heap activity, however the calculation part is not optimized.
 static double FloatHexToDoubleNumber(const std::string& str)
 {
-    const std::size_t p = str.find('p');
-    const std::string number = str.substr(2, str.find('p') - 2);
-    const std::size_t decimal = number.find('.');
-    const std::string whole = number.substr(0, decimal);
-
-    double factor1 = std::stoi(whole, nullptr, 16);
-    if (std::string::npos != decimal) {
-        const std::string fraction = number.substr(decimal + 1);
-        const int b = std::stoi(fraction, nullptr, 16);
-        factor1 += (double)b / std::pow(16, fraction.length());
-    }
-
-    const std::string exponent = str.substr(p + 1);
-    const int power = std::stoi(exponent);
-    const double factor2 = std::pow(2, power);
-
+    const std::size_t p = str.find_first_of("pP",3);
+    const std::size_t decimal = str.find('.', 2);
+    const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
+    const bool suffix = (str.back() == 'f') || (str.back() == 'F') || (str.back() == 'l') || (str.back() == 'L');
+    const double exponent = myStod(str, str.begin() + p + 1, (suffix)?str.end()-1:str.end(), 10);
+    const double factor2 = std::pow(2, exponent);
     return factor1 * factor2;
 }
 
