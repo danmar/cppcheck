@@ -121,6 +121,7 @@ private:
         TEST_CASE(template81);
         TEST_CASE(template82); // 8603
         TEST_CASE(template83);
+        TEST_CASE(template84); // #8880
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1605,6 +1606,18 @@ private:
                            "mc = new MultiConsumer<reads_packet> ( ) ; "
                            "} "
                            "MultiConsumer<reads_packet> :: MultiConsumer<reads_packet> ( ) : sizeBuffer ( 0 ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template84() { // #8880
+        const char code[] = "template <class b, int c, class>\n"
+                            "auto d() -> typename a<decltype(b{})>::e {\n"
+                            "  d<int, c, int>();\n"
+                            "}";
+        const char exp[] = "auto d<int,c,int> ( ) . a < decltype ( int { } ) > :: e ; "
+                           "auto d<int,c,int> ( ) . a < decltype ( int { } ) > :: e { "
+                           "d<int,c,int> ( ) ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
