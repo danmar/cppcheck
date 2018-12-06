@@ -247,7 +247,7 @@ def splitResults(results):
                 ret.append(w.strip())
             w = ''
         if w is not None:
-            w += line + '\n'
+            w += ' ' * 5 + line + '\n'
     if w is not None:
         ret.append(w.strip())
     return ret
