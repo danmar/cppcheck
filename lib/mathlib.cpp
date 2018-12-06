@@ -548,6 +548,55 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     return ret;
 }
 
+// in-place conversion of (sub)string to double. Requires no heap.
+static double myStod(const std::string& str, std::string::const_iterator from, std::string::const_iterator to, int base)
+{
+    double result = 0.;
+    bool positivesign = true;
+    std::string::const_iterator it;
+    if ('+' == *from) {
+        it = from + 1;
+    } else if ('-' == *from) {
+        it = from + 1;
+        positivesign = false;
+    } else
+        it = from;
+    const std::size_t decimalsep = str.find('.', it-str.begin());
+    int distance;
+    if (std::string::npos == decimalsep) {
+        distance = to - it;
+    } else  if (decimalsep > (to - str.begin()))
+        return 0.; // error handling??
+    else
+        distance = int(decimalsep)-(from - str.begin());
+    auto digitval = [&](char c) {
+        if ((10 < base) && (c > '9'))
+            return 10 + std::tolower(c) - 'a';
+        else
+            return c - '0';
+    };
+    for (; it!=to; ++it) {
+        if ('.' == *it)
+            continue;
+        else
+            --distance;
+        result += digitval(*it)* std::pow(base, distance);
+    }
+    return (positivesign)?result:-result;
+}
+
+
+// Assuming a limited support of built-in hexadecimal floats (see C99, C++17) that is a fall-back implementation.
+// Performance has been optimized WRT to heap activity, however the calculation part is not optimized.
+static double FloatHexToDoubleNumber(const std::string& str)
+{
+    const std::size_t p = str.find_first_of("pP",3);
+    const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
+    const bool suffix = (str.back() == 'f') || (str.back() == 'F') || (str.back() == 'l') || (str.back() == 'L');
+    const double exponent = myStod(str, str.begin() + p + 1, (suffix)?str.end()-1:str.end(), 10);
+    const double factor2 = std::pow(2, exponent);
+    return factor1 * factor2;
+}
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
@@ -563,6 +612,8 @@ double MathLib::toDoubleNumber(const std::string &str)
         // TODO : handle locale
         return std::strtod(str.c_str(), nullptr);
 #endif
+    if (isFloatHex(str))
+        return FloatHexToDoubleNumber(str);
     // otherwise, convert to double
     std::istringstream istr(str);
     istr.imbue(std::locale::classic());
@@ -794,69 +845,76 @@ bool MathLib::isIntHex(const std::string& str)
 bool MathLib::isFloatHex(const std::string& str)
 {
     enum Status {
-        START, PLUSMINUS, HEX_PREFIX, WHOLE_NUMBER_DIGIT, WHOLE_NUMBER_DIGITS, FRACTION, EXPONENT_DIGIT, EXPONENT_DIGITS
+        START, HEX_0, HEX_X, WHOLE_NUMBER_DIGIT, POINT, FRACTION, EXPONENT_P, EXPONENT_SIGN, EXPONENT_DIGITS, EXPONENT_SUFFIX
     } state = START;
     for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
-            if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
-            else if (*it == '0')
-                state = HEX_PREFIX;
-            else
-                return false;
-            break;
-        case PLUSMINUS:
             if (*it == '0')
-                state = HEX_PREFIX;
+                state = HEX_0;
             else
                 return false;
             break;
-        case HEX_PREFIX:
+        case HEX_0:
             if (*it == 'x' || *it == 'X')
+                state = HEX_X;
+            else
+                return false;
+            break;
+        case HEX_X:
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = WHOLE_NUMBER_DIGIT;
+            else if (*it == '.')
+                state = POINT;
             else
                 return false;
             break;
         case WHOLE_NUMBER_DIGIT:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                state = WHOLE_NUMBER_DIGITS;
-            else
-                return false;
-            break;
-        case WHOLE_NUMBER_DIGITS:
-            if (isxdigit(static_cast<unsigned char>(*it)))
-                state = WHOLE_NUMBER_DIGITS;
+                ; // state = WHOLE_NUMBER_DIGITS;
             else if (*it=='.')
                 state = FRACTION;
             else if (*it=='p' || *it=='P')
-                state = EXPONENT_DIGIT;
+                state = EXPONENT_P;
             else
                 return false;
             break;
+        case POINT:
         case FRACTION:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                state = FRACTION;
-            else if (*it=='p' || *it=='P')
-                state = EXPONENT_DIGIT;
+                state=FRACTION;
+            else if (*it == 'p' || *it == 'P')
+                state = EXPONENT_P;
+            else
+                return false;
             break;
-        case EXPONENT_DIGIT:
-            if (isxdigit(static_cast<unsigned char>(*it)))
+        case EXPONENT_P:
+            if (isdigit(static_cast<unsigned char>(*it)))
                 state = EXPONENT_DIGITS;
-            else if (*it=='+' || *it=='-')
+            else if (*it == '+' || *it == '-')
+                state = EXPONENT_SIGN;
+            else
+                return false;
+            break;
+        case EXPONENT_SIGN:
+            if (isdigit(static_cast<unsigned char>(*it)))
                 state = EXPONENT_DIGITS;
             else
                 return false;
             break;
         case EXPONENT_DIGITS:
-            if (isxdigit(static_cast<unsigned char>(*it)))
-                state = EXPONENT_DIGITS;
+            if (isdigit(static_cast<unsigned char>(*it)))
+                ; //  state = EXPONENT_DIGITS;
+            else if (*it == 'f' || *it == 'F' || *it == 'l' || *it == 'L')
+                state = EXPONENT_SUFFIX;
             else
-                return *it=='f'||*it=='F'||*it=='l'||*it=='L';
+                return false;
             break;
+        case EXPONENT_SUFFIX:
+            return false;
         }
     }
-    return state==EXPONENT_DIGITS;
+    return (EXPONENT_DIGITS==state) || (EXPONENT_SUFFIX == state);
 }
 
 bool MathLib::isValidIntegerSuffix(const std::string& str)
