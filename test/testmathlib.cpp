@@ -378,6 +378,7 @@ private:
         ASSERT_EQUALS_DOUBLE(1e-010, MathLib::toDoubleNumber("0x1.b7cdfep-34"), 0.000001);
         ASSERT_EQUALS_DOUBLE(.484375, MathLib::toDoubleNumber("0x1.fp-2"), 0.000001);
         ASSERT_EQUALS_DOUBLE(9.0, MathLib::toDoubleNumber("0x1.2P3"), 0.000001);
+        ASSERT_EQUALS_DOUBLE(0.0625, MathLib::toDoubleNumber("0x.1P0"), 0.000001);
 
         // verify: string --> double --> string conversion
         ASSERT_EQUALS("1.0",  MathLib::toString(MathLib::toDoubleNumber("1.0f")));
@@ -617,6 +618,7 @@ private:
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.2p+10F"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.2p+10l"));
         ASSERT_EQUALS(true, MathLib::isFloatHex("0x1.2p+10L"));
+        ASSERT_EQUALS(true, MathLib::isFloatHex("0X.2p-0"));
 
         ASSERT_EQUALS(false, MathLib::isFloatHex(""));
         ASSERT_EQUALS(false, MathLib::isFloatHex("0"));

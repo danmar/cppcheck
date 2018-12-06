@@ -548,7 +548,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     return ret;
 }
 
-// in-place conversion of (sub)string to double. Requires now heap.
+// in-place conversion of (sub)string to double. Requires no heap.
 static double myStod(const std::string& str, std::string::const_iterator from, std::string::const_iterator to, int base)
 {
     double result = 0.;
@@ -845,19 +845,11 @@ bool MathLib::isIntHex(const std::string& str)
 bool MathLib::isFloatHex(const std::string& str)
 {
     enum Status {
-        START, PLUSMINUS, HEX_0, HEX_X, WHOLE_NUMBER_DIGITS, FRACTION, EXPONENT_P, EXPONENT_SIGN, EXPONENT_DIGITS, EXPONENT_SUFFIX
+        START, HEX_0, HEX_X, WHOLE_NUMBER_DIGIT, POINT, FRACTION, EXPONENT_P, EXPONENT_SIGN, EXPONENT_DIGITS, EXPONENT_SUFFIX
     } state = START;
     for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
         switch (state) {
         case START:
-            if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
-            else if (*it == '0')
-                state = HEX_0;
-            else
-                return false;
-            break;
-        case PLUSMINUS:
             if (*it == '0')
                 state = HEX_0;
             else
@@ -871,13 +863,15 @@ bool MathLib::isFloatHex(const std::string& str)
             break;
         case HEX_X:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                state = WHOLE_NUMBER_DIGITS;
+                state = WHOLE_NUMBER_DIGIT;
+            else if (*it == '.')
+                state = POINT;
             else
                 return false;
             break;
-        case WHOLE_NUMBER_DIGITS:
+        case WHOLE_NUMBER_DIGIT:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                state = WHOLE_NUMBER_DIGITS;
+                ; // state = WHOLE_NUMBER_DIGITS;
             else if (*it=='.')
                 state = FRACTION;
             else if (*it=='p' || *it=='P')
@@ -885,9 +879,10 @@ bool MathLib::isFloatHex(const std::string& str)
             else
                 return false;
             break;
+        case POINT:
         case FRACTION:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                ; // state = FRACTION;
+                state=FRACTION;
             else if (*it == 'p' || *it == 'P')
                 state = EXPONENT_P;
             else
