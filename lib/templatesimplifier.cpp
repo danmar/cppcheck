@@ -1047,8 +1047,14 @@ void TemplateSimplifier::expandTemplate(
                 start = templateDeclarationToken->next();
                 end = templateDeclarationNameToken->linkAt(1)->next();
             }
-            while (!Token::Match(end, ";|{|:"))
+            unsigned int typeindentlevel = 0;
+            while (!(typeindentlevel == 0 && Token::Match(end, ";|{|:"))) {
+                if (Token::Match(end, "<|(|{"))
+                    ++typeindentlevel;
+                else if (Token::Match(end, ">|)|}"))
+                    --typeindentlevel;
                 end = end->next();
+            }
 
             std::map<const Token *, Token *> links;
             while (start && start != end) {
@@ -1057,7 +1063,7 @@ void TemplateSimplifier::expandTemplate(
                     ++itype;
 
                 if (itype < typeParametersInDeclaration.size()) {
-                    unsigned int typeindentlevel = 0;
+                    typeindentlevel = 0;
                     for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype];
                          typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                          typetok = typetok->next()) {
