@@ -196,7 +196,13 @@ def hasInclude(path, inc):
             filename = os.path.join(root, name)
             try:
                 f = open(filename, 'rt')
-                filedata = f.read().decode(encoding='utf-8', errors='ignore')
+                filedata = f.read()
+                try:
+                    # Python2 needs to decode the data first
+                    filedata = filedata.decode(encoding='utf-8', errors='ignore')
+                except AttributeError:
+                    # Python3 directly reads the data into a string object that has no decode()
+                    pass
                 f.close()
                 if filedata.find('\n#include ' + inc) >= 0:
                     return True
