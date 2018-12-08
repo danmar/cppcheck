@@ -1098,7 +1098,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     return Result(Result::Type::BAILOUT);
                 }
                 if (hasOperand(parent->astParent()->astOperand2(), expr)) {
-                    if (mReassign)
+                    if (mWhat == What::Reassign)
                         return Result(Result::Type::READ);
                     continue;
                 }
@@ -1174,7 +1174,22 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 
 const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    mReassign = true;
+    mWhat = What::Reassign;
     Result result = check(expr, startToken, endToken);
     return result.type == FwdAnalysis::Result::Type::WRITE ? result.token : nullptr;
+}
+
+bool FwdAnalysis::isUsed(const Token *expr, const Token *startToken, const Token *endToken)
+{
+    mWhat = What::IsUsed;
+    Result result = check(expr, startToken, endToken);
+    return result.type == FwdAnalysis::Result::Type::READ || result.type == FwdAnalysis::Result::Type::BAILOUT;
+}
+
+std::vector<const Token *> FwdAnalysis::reads(const Token *expr, const Token *startToken, const Token *endToken)
+{
+    mWhat = What::GetReads;
+    mReads.clear();
+    check(expr, startToken, endToken);
+    return mReads;
 }

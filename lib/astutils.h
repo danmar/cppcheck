@@ -162,7 +162,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 
 class FwdAnalysis {
 public:
-    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mReassign(false) {}
+    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mWhat(What::Reassign) {}
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 
@@ -174,6 +174,24 @@ public:
      * @return Token where expr is reassigned. If it's not reassigned then nullptr is returned.
      */
     const Token *reassign(const Token *expr, const Token *startToken, const Token *endToken);
+
+    /**
+     * Check if "expr" is used. The "expr" can be a tree (x.y[12]).
+     * @param expr Symbolic expression to perform forward analysis for
+     * @param startToken First token in forward analysis
+     * @param endToken Last token in forward analysis
+     * @return true if expr is used.
+     */
+    bool isUsed(const Token *expr, const Token *startToken, const Token *endToken);
+
+    /**
+     * Get tokens where "expr" is read. The "expr" can be a tree (x.y[12]).
+     * @param expr Symbolic expression to perform forward analysis for
+     * @param startToken First token in forward analysis
+     * @param endToken Last token in forward analysis
+     * @return vector of read tokens
+     */
+    std::vector<const Token *> reads(const Token *expr, const Token *startToken, const Token *endToken);
 
 private:
     /** Result of forward analysis */
@@ -189,7 +207,7 @@ private:
 
     const bool mCpp;
     const Library &mLibrary;
-    bool mReassign;
+    enum class What { GetReads, Reassign, IsUsed } mWhat;
     std::vector<const Token *> mReads;
 };
 
