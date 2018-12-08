@@ -1174,6 +1174,8 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 
 const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
 {
+    if (expr->str() == "&")
+        return nullptr;
     mWhat = What::Reassign;
     Result result = check(expr, startToken, endToken);
     return result.type == FwdAnalysis::Result::Type::WRITE ? result.token : nullptr;
@@ -1181,9 +1183,32 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
 
 bool FwdAnalysis::isUsed(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    mWhat = What::IsUsed;
+    if (expr->str() == "&")
+        return false;
+    mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
-    return result.type == FwdAnalysis::Result::Type::READ || result.type == FwdAnalysis::Result::Type::BAILOUT;
+    return result.type == FwdAnalysis::Result::Type::NONE && !possiblyAliased(expr, startToken);
+}
+
+bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
+{
+    const bool macro = false;
+    const bool pure = false;
+    const bool followVar = false;
+    for (const Token *tok = startToken; tok; tok = tok->previous()) {
+        if (tok->str() == "{" && tok->scope()->type == Scope::eFunction)
+            continue;
+        if (isSameExpression(mCpp, macro, expr, tok, mLibrary, pure, followVar)) {
+            const Token *parent = tok->astParent();
+            if (parent && parent->str() == "&" && parent->isUnaryOp("&"))
+                return true;
+            if (parent && Token::Match(parent->tokAt(-2), "& %name% ="))
+                return true;
+            if (parent && Token::simpleMatch(parent->tokAt(-3), "std :: ref ("))
+                return true;
+        }
+    }
+    return false;
 }
 
 std::vector<const Token *> FwdAnalysis::reads(const Token *expr, const Token *startToken, const Token *endToken)

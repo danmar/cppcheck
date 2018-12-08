@@ -1229,6 +1229,43 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         if (scope->hasInlineOrLambdaFunction())
             continue;
 
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "] ("))
+                // todo: handle lambdas
+                break;
+            if (Token::simpleMatch(tok, "std :: ref ("))
+                // todo: handle std::ref
+                break;
+
+            if (Token::simpleMatch(tok, "try {"))
+                // todo: check try blocks
+                tok = tok->linkAt(1);
+            if (!tok->isAssignmentOp() || !tok->astOperand1())
+                continue;
+            if (tok->astParent())
+                continue;
+
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
+                // todo: check references
+                continue;
+
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
+                // todo: check static variables
+                continue;
+
+            FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
+            if (fwdAnalysis.hasOperand(tok->astOperand2(), tok->astOperand1()))
+                continue;
+
+            // Is there a redundant assignment?
+            const Token *start = tok->findExpressionStartEndTokens().second->next();
+
+
+            if (fwdAnalysis.unusedValue(tok->astOperand1(), start, scope->bodyEnd))
+                // warn
+                unreadVariableError(tok, tok->astOperand1()->expressionString(), tok->str() == "=");
+        }
+
         // varId, usage {read, write, modified}
         Variables variables;
 
