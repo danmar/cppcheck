@@ -1252,6 +1252,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 // todo: check static variables
                 continue;
 
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->nameToken()->isAttributeUnused())
+                continue;
+
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             if (fwdAnalysis.hasOperand(tok->astOperand2(), tok->astOperand1()))
                 continue;
