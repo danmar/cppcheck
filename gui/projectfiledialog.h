@@ -132,9 +132,9 @@ private:
 
     /**
     * @brief Set undefine names to dialog control.
-    * @param defines List of undefine names to set to dialog control.
+    * @param undefines List of undefine names to set to dialog control.
     */
-    void setUndefines(const QStringList &defines);
+    void setUndefines(const QStringList &undefines);
 
     /**
     * @brief Set check paths to dialog control.
