@@ -3993,7 +3993,7 @@ private:
                               " }\n"
                               " return false;\n"
                               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'X' is assigned a value that is never used.\n", errout.str());
 
         // #4558
         functionVariableUsage("int f() {\n"

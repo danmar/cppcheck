@@ -1071,8 +1071,13 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             return Result(Result::Type::BREAK, tok);
         }
 
-        if (Token::Match(tok, "continue|return|throw|goto")) {
+        if (Token::simpleMatch(tok, "goto"))
+            return Result(Result::Type::BAILOUT);
+
+        if (Token::Match(tok, "continue|return|throw")) {
             // TODO: Handle these better
+            if (hasOperand(tok, expr))
+                return Result(Result::Type::READ);
             return Result(Result::Type::RETURN);
         }
 
@@ -1196,7 +1201,7 @@ bool FwdAnalysis::isUsed(const Token *expr, const Token *startToken, const Token
         return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
-    return result.type == FwdAnalysis::Result::Type::NONE && !possiblyAliased(expr, startToken);
+    return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
 }
 
 bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
