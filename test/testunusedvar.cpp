@@ -3318,12 +3318,13 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // FIXME : this is probably inconclusive
         functionVariableUsage("void f() {\n"
                               "  Fred fred;\n"
                               "  int *a; a = b;\n"
                               "  fred += a;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'fred' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarFor() {
