@@ -800,6 +800,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isDecimalFloat("."));
         ASSERT_EQUALS(false, MathLib::isDecimalFloat("..."));
         ASSERT_EQUALS(false, MathLib::isDecimalFloat(".e"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(".e2"));
         ASSERT_EQUALS(false, MathLib::isDecimalFloat(".E"));
         ASSERT_EQUALS(false, MathLib::isDecimalFloat("+E."));
         ASSERT_EQUALS(false, MathLib::isDecimalFloat("+e."));
@@ -932,6 +933,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isDec("-x"));
         ASSERT_EQUALS(false, MathLib::isDec("+x"));
         ASSERT_EQUALS(false, MathLib::isDec("x"));
+        ASSERT_EQUALS(false, MathLib::isDec(""));
     }
 
     void isNullValue() const {
