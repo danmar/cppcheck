@@ -1265,7 +1265,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             if (fwdAnalysis.unusedValue(tok->astOperand1(), start, scope->bodyEnd))
                 // warn
-                unreadVariableError(tok, tok->astOperand1()->expressionString(), tok->str() == "=");
+                unreadVariableError(tok, tok->astOperand1()->expressionString(), false);
         }
 
         // varId, usage {read, write, modified}

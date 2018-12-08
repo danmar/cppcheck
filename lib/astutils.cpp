@@ -1144,7 +1144,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     bool local = true;
     visitAstNodes(expr,
     [&](const Token *tok) {
-        if (tok->isName() && tok->varId() == 0 && mWhat == What::UnusedValue)
+        if (tok->isName() && tok->varId() == 0 && mWhat == What::UnusedValue && tok->previous()->str() != ".")
             local = false;
         if (tok->varId() > 0) {
             exprVarIds.insert(tok->varId());

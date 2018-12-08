@@ -3231,9 +3231,9 @@ private:
         // #3633 - detect that struct array is assigned a value
         functionVariableUsage("void f() {\n"
                               "    struct X x[10];\n"
-                              "    x[0].a = 0;\n"
+                              "    x[0].a = 5;\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x[0].a' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarOp() {
