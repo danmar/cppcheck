@@ -1144,6 +1144,8 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     bool local = true;
     visitAstNodes(expr,
     [&](const Token *tok) {
+        if (tok->isName() && tok->varId() == 0 && mWhat == What::UnusedValue)
+            local = false;
         if (tok->varId() > 0) {
             exprVarIds.insert(tok->varId());
             if (!Token::simpleMatch(tok->previous(), "."))
@@ -1151,6 +1153,9 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         }
         return ChildrenToVisit::op1_and_op2;
     });
+
+    if (!local && mWhat == What::UnusedValue)
+        return Result(FwdAnalysis::Result::Type::BAILOUT);
 
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
