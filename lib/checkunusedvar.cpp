@@ -1233,16 +1233,15 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (Token::simpleMatch(tok, "] ("))
                 // todo: handle lambdas
                 break;
-            if (Token::simpleMatch(tok, "std :: ref ("))
-                // todo: handle std::ref
-                break;
-
             if (Token::simpleMatch(tok, "try {"))
                 // todo: check try blocks
                 tok = tok->linkAt(1);
             if (!tok->isAssignmentOp() || !tok->astOperand1())
                 continue;
             if (tok->astParent())
+                continue;
+            // Do not warn about assignment with 0 / NULL
+            if (Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
                 continue;
 
             if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
