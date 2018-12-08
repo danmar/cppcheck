@@ -1196,6 +1196,9 @@ bool FwdAnalysis::isUsed(const Token *expr, const Token *startToken, const Token
 
 bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
 {
+    if (expr->isUnaryOp("*"))
+        return true;
+
     const bool macro = false;
     const bool pure = false;
     const bool followVar = false;
@@ -1204,7 +1207,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
             continue;
         if (isSameExpression(mCpp, macro, expr, tok, mLibrary, pure, followVar)) {
             const Token *parent = tok->astParent();
-            if (parent && parent->str() == "&" && parent->isUnaryOp("&"))
+            if (parent && parent->isUnaryOp("&"))
                 return true;
             if (parent && Token::Match(parent->tokAt(-2), "& %name% ="))
                 return true;
