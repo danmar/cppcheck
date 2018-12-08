@@ -5968,14 +5968,6 @@ private:
               "        memptr = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
-
-        // issue #8884
-        check("template <class F, class... Ts>\n"
-              "auto foo(F f, Ts... xs) {\n"
-              "    auto x = f(xs...);\n"
-              "    return x;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_struct() {

@@ -490,9 +490,6 @@ void CheckOther::checkRedundantAssignment()
 
                 if (!nextAssign)
                     continue;
-                
-                if (nextAssign == tok)
-                    continue;
 
                 // there is redundant assignment. Is there a case between the assignments?
                 bool hasCase = false;
