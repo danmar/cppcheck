@@ -1240,7 +1240,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
             if (tok->astParent())
                 continue;
-            // Do not warn about assignment with 0 / NULL
+            // Do not warn about assignment with NULL
             if (Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
                 continue;
 
