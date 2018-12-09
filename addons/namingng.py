@@ -175,7 +175,7 @@ def process(dumpfiles, configfile, debugprint=False):
                     msgType = 'Public member variable'
                     for exp in conf["RE_GLOBAL_VARNAME"]:
                         evalExpr(conf["RE_GLOBAL_VARNAME"], exp, mockToken, msgType, errors)
-                         
+
             ## Check Functions naming
             if "RE_FUNCTIONNAME" in conf and conf["RE_FUNCTIONNAME"]:
                 for token in cfg.tokenlist:
