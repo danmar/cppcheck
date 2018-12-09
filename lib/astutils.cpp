@@ -1152,7 +1152,8 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     bool local = true;
     visitAstNodes(expr,
     [&](const Token *tok) {
-        if (tok->isName() && tok->varId() == 0 && mWhat == What::UnusedValue && tok->previous()->str() != ".")
+        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".")
+            // unknown variables are not local
             local = false;
         if (tok->varId() > 0) {
             exprVarIds.insert(tok->varId());
@@ -1162,8 +1163,34 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         return ChildrenToVisit::op1_and_op2;
     });
 
-    if (!local && mWhat == What::UnusedValue)
-        return Result(FwdAnalysis::Result::Type::BAILOUT);
+    // In unused values checking we do not want to check assignments to
+    // global data.
+    if (mWhat == What::UnusedValue) {
+        bool globalData = false;
+        visitAstNodes(expr,
+        [&](const Token *tok) {
+            if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()) {
+                // TODO : Check references
+                if (tok->variable()->isGlobal() || tok->variable()->isReference()) {
+                    globalData = true;
+                    return ChildrenToVisit::none;
+                }
+                if (tok->variable()->isArgument() && tok->variable()->isPointer() && tok != expr) {
+                    globalData = true;
+                    return ChildrenToVisit::none;
+                }
+            }
+            if (Token::Match(tok, ".|["))
+                return ChildrenToVisit::op1;
+            return ChildrenToVisit::op1_and_op2;
+        });
+        if (globalData)
+            return Result(FwdAnalysis::Result::Type::BAILOUT);
+    }
 
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
