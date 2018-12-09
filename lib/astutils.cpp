@@ -1152,6 +1152,38 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
     return Result(Result::Type::NONE);
 }
 
+bool FwdAnalysis::isGlobalData(const Token *expr) const
+{
+    bool globalData = false;
+    visitAstNodes(expr,
+    [&](const Token *tok) {
+        if (Token::Match(tok, "[.*[]") && tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->isPointer()) {
+            // TODO check if pointer points at local data
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (tok->variable()) {
+            // TODO : Check references
+            if (tok->variable()->isGlobal() || tok->variable()->isExtern() || tok->variable()->isReference()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isArgument() && tok->variable()->isPointer() && tok != expr) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+        }
+        if (Token::Match(tok, ".|["))
+            return ChildrenToVisit::op1;
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return globalData;
+}
+
 FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
 {
     // all variable ids in expr.
@@ -1172,37 +1204,8 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
 
     // In unused values checking we do not want to check assignments to
     // global data.
-    if (mWhat == What::UnusedValue) {
-        bool globalData = false;
-        visitAstNodes(expr,
-        [&](const Token *tok) {
-            if (Token::Match(tok, "[.*[]") && tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->isPointer()) {
-                // TODO check if pointer points at local data
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-            if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
-                globalData = true;
-                return ChildrenToVisit::none;
-            }
-            if (tok->variable()) {
-                // TODO : Check references
-                if (tok->variable()->isGlobal() || tok->variable()->isExtern() || tok->variable()->isReference()) {
-                    globalData = true;
-                    return ChildrenToVisit::none;
-                }
-                if (tok->variable()->isArgument() && tok->variable()->isPointer() && tok != expr) {
-                    globalData = true;
-                    return ChildrenToVisit::none;
-                }
-            }
-            if (Token::Match(tok, ".|["))
-                return ChildrenToVisit::op1;
-            return ChildrenToVisit::op1_and_op2;
-        });
-        if (globalData)
-            return Result(FwdAnalysis::Result::Type::BAILOUT);
-    }
+    if (mWhat == What::UnusedValue && isGlobalData(expr))
+        return Result(FwdAnalysis::Result::Type::BAILOUT);
 
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 

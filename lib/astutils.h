@@ -199,6 +199,9 @@ private:
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
     struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local);
 
+    // Is expression a l-value global data?
+    bool isGlobalData(const Token *expr) const;
+
     const bool mCpp;
     const Library &mLibrary;
     enum class What { GetReads, Reassign, IsUsed } mWhat;
