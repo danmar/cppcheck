@@ -1040,7 +1040,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
 
 static bool nonLocal(const Variable* var)
 {
-    return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
+    return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference() || var->isExtern();
 }
 
 static bool hasFunctionCall(const Token *tok)
@@ -1169,13 +1169,18 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         bool globalData = false;
         visitAstNodes(expr,
         [&](const Token *tok) {
+            if (Token::Match(tok, "[.*[]") && tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->isPointer()) {
+                // TODO check if pointer points at local data
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
             if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
                 globalData = true;
                 return ChildrenToVisit::none;
             }
             if (tok->variable()) {
                 // TODO : Check references
-                if (tok->variable()->isGlobal() || tok->variable()->isReference()) {
+                if (tok->variable()->isGlobal() || tok->variable()->isExtern() || tok->variable()->isReference()) {
                     globalData = true;
                     return ChildrenToVisit::none;
                 }
