@@ -669,13 +669,13 @@ private:
                               "{\n"
                               "    struct S & i = j;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    const struct S & i = j;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -1259,16 +1259,15 @@ private:
                               "    int i = 0;\n"
                               "    int &j = i;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n"
-        //              "[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i;\n"
                               "    int &j = i;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n"
-        //              "[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Unused variable: i\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"

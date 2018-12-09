@@ -1268,6 +1268,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Token *expr = tok->astOperand1();
             if (Token::Match(expr->previous(), "%var% [") && expr->previous()->variable() && expr->previous()->variable()->nameToken() == expr->previous())
                 expr = expr->previous();
+            else if (Token::Match(expr, "& %var% ="))
+                expr = expr->next();
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))

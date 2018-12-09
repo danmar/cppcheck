@@ -1168,7 +1168,11 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
         }
         if (tok->variable()) {
             // TODO : Check references
-            if (tok->variable()->isGlobal() || tok->variable()->isExtern() || tok->variable()->isReference()) {
+            if (tok->variable()->isReference() && tok != tok->variable()->nameToken()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isGlobal() || tok->variable()->isExtern()) {
                 globalData = true;
                 return ChildrenToVisit::none;
             }
@@ -1242,8 +1246,8 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
 
 bool FwdAnalysis::isUsed(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    if (expr->str() == "&")
-        return false;
+    if (Token::Match(expr, "& %var% ="))
+        expr = expr->next();
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
