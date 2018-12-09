@@ -56,7 +56,8 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation>ここにエラー指摘のあるファイルを開くアプリケーションを追加できます。そのアプリケーションの名前、実行ファイル名、コマンドラインパラメータを指定してください。
+        <translatorcomment>fix Japanese word 名前 to 表示名</translatorcomment>
+        <translation>ここにエラー指摘のあるファイルを開くアプリケーションを追加できます。そのアプリケーションの表示名、実行ファイル名、コマンドラインパラメータを指定してください。
 
 パラメータ中の以下の文字列を使用してパラメータ(Parameters:)に設定します。これらの文字列はアプリケーションが実行されたときに、適切な値に変換されます。:
 (file) - エラー指摘のあるファイル
@@ -71,12 +72,12 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="application.ui" line="76"/>
         <source>&amp;Name:</source>
-        <translation>名称(&amp;N):</translation>
+        <translation>表示名(&amp;N):</translation>
     </message>
     <message>
         <location filename="application.ui" line="86"/>
         <source>&amp;Executable:</source>
-        <translation>実行バイナリ(&amp;E):</translation>
+        <translation>実行ファイルのパス(&amp;E):</translation>
     </message>
     <message>
         <location filename="application.ui" line="96"/>
@@ -106,7 +107,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="applicationdialog.cpp" line="78"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
-        <translation>アプリケーションの名称とパスと(オプションの)引数を指定してください!</translation>
+        <translation>アプリケーションの表示名と実行ファイルのパスと(オプションの)引数を指定してください!</translation>
     </message>
 </context>
 <context>
@@ -802,7 +803,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="131"/>
         <source>A&amp;nalyze</source>
-        <translation>解析(&amp;n)</translation>
+        <translation>チェック(&amp;n)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="219"/>
@@ -998,12 +999,12 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="803"/>
         <source>Reanalyze and check library</source>
-        <translation>ライブラリを再解析する</translation>
+        <translation>ライブラリを再チェックする</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="811"/>
         <source>Check configuration (defines, includes)</source>
-        <translation>解析の設定(define、インクルード)</translation>
+        <translation>チェックの設定(define、インクルード)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="321"/>
@@ -1021,7 +1022,7 @@ Cppcheckの古いバージョンの設定には互換性がありません。エ
     <message>
         <location filename="mainwindow.cpp" line="564"/>
         <source>You must close the project file before selecting new files or directories!</source>
-        <translation>新しいファイル／ディレクトリを解析するには現在のプロジェクトを閉じてください!</translation>
+        <translation>新しいファイル／ディレクトリをチェックするには現在のプロジェクトを閉じてください!</translation>
     </message>
     <message>
         <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
@@ -1054,7 +1055,7 @@ Cppcheckの古いバージョンの設定には互換性がありません。エ
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
-        <translation>プロジェクトファイルが検出されました: %1
+        <translation>プロジェクトファイルを検出しました: %1
 
 現在のプロジェクトの代わりにこのプロジェクトファイルを読み込んでもかまいませんか？</translation>
     </message>
@@ -1138,7 +1139,7 @@ Do you want to proceed checking without using any of these project files?</sourc
     <message>
         <location filename="mainwindow.cpp" line="931"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.</source>
-        <translation>%1のロードに失敗しました。あなたの Cppcheck は正しくインストールされていません。あなたは --data-dir=&lt;directory&gt; コマンドラインオプションでこのファイルの場所を指定してできます。ただし、この --data-dir はインストールスクリプトによってサポートされており、GUI版ではサポートされていません。全ての設定は調整済みでなければなりません。</translation>
+        <translation>%1のロードに失敗しました。あなたの Cppcheck は正しくインストールされていません。あなたは --data-dir=&lt;directory&gt; コマンドラインオプションでロードするファイルの場所を指定できます。ただし、この --data-dir はインストールスクリプトによってサポートされており、GUI版ではサポートされていません。全ての設定は調整済みでなければなりません。</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1119"/>
@@ -1520,7 +1521,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="560"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012からテキストをコピーペーストしてください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;MISRA C 2012 pdfのAppendix A &amp;quot;Summary of guidelines&amp;quot; からテキストをコピーペーストしてください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="567"/>
@@ -1573,7 +1574,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="174"/>
         <source>Undefines:</source>
-        <translation>定義取り消し(Undefines)</translation>
+        <translation>定義取り消し(Undefines):</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="184"/>
@@ -1611,7 +1612,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="294"/>
         <source>Checking</source>
-        <translation>解析</translation>
+        <translation>チェック</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="319"/>
@@ -1843,7 +1844,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="200"/>
         <source> (Not found)</source>
-        <translation> (みつかりません)</translation>
+        <translation> (見つかりません)</translation>
     </message>
 </context>
 <context>
@@ -1879,7 +1880,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="1342"/>
         <source>Severity</source>
-        <translation>警告種別</translation>
+        <translation>警告の種別</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="1342"/>
@@ -1889,7 +1890,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="1342"/>
         <source>Summary</source>
-        <translation>内容</translation>
+        <translation>要約</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="137"/>
@@ -1964,7 +1965,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="617"/>
         <source>Hide all with id</source>
-        <translation>IDを表示しない</translation>
+        <translation>IDで非表示を指定</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="618"/>
@@ -2205,7 +2206,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="37"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
-        <translation>オプション: ファイル名を入力(言語は自動判定)して&quot;解析&quot;をクリックしてください:</translation>
+        <translation>オプション: ファイル名を入力(言語は自動判定)して&quot;チェック&quot;をクリックしてください:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
@@ -2215,7 +2216,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="78"/>
         <source>Check</source>
-        <translation>解析</translation>
+        <translation>チェック</translation>
     </message>
 </context>
 <context>
@@ -2273,12 +2274,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="142"/>
         <source>Enable inline suppressions</source>
-        <translation>inline抑制を有効</translation>
+        <translation>inline抑制を有効にする</translation>
     </message>
     <message>
         <location filename="settings.ui" line="149"/>
         <source>Check for inconclusive errors also</source>
-        <translation>結論のでない指摘も解析する</translation>
+        <translation>結論のでない指摘もチェックする</translation>
     </message>
     <message>
         <location filename="settings.ui" line="156"/>
@@ -2378,12 +2379,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="245"/>
         <source>Save all errors when creating report</source>
-        <translation>すべての警告/エラーを保存</translation>
+        <translation>レポート作成時にすべての警告/エラーを保存</translation>
     </message>
     <message>
         <location filename="settings.ui" line="252"/>
         <source>Save full path to files in reports</source>
-        <translation>ファイルのフルパスを保存</translation>
+        <translation>レポートにファイルのフルパスを保存</translation>
     </message>
     <message>
         <location filename="settings.ui" line="273"/>
@@ -2475,17 +2476,17 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="85"/>
         <source>Include paths:</source>
-        <translation>Include ディレクトリ:</translation>
+        <translation>インクルードパス:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="108"/>
         <source>Defines:</source>
-        <translation>Defines:</translation>
+        <translation>定義(define):</translation>
     </message>
     <message>
         <location filename="stats.ui" line="131"/>
         <source>Undefines:</source>
-        <translation>Undefines:</translation>
+        <translation>定義取り消し(undef):</translation>
     </message>
     <message>
         <location filename="stats.ui" line="165"/>
