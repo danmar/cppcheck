@@ -155,7 +155,7 @@ def process(dumpfiles, configfile, debugprint=False):
                     msgType = 'Private member variable'
                     for exp in conf["RE_PRIVATE_MEMBER_VARIABLE"]:
                         evalExpr(conf["RE_PRIVATE_MEMBER_VARIABLE"], exp, mockToken, msgType, errors)
-                        
+
             ## Check Public Member Variable naming
             if "RE_PUBLIC_MEMBER_VARIABLE" in conf and conf["RE_PUBLIC_MEMBER_VARIABLE"]:
                 for var in cfg.variables:
