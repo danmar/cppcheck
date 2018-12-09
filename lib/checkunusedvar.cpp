@@ -1238,8 +1238,15 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 tok = tok->linkAt(1);
             if (!tok->isAssignmentOp() || !tok->astOperand1())
                 continue;
-            if (tok->astParent())
-                continue;
+            if (tok->astParent()) {
+                const Token *parent = tok->astParent();
+                while (Token::Match(parent, "%oror%|%comp%|!|&&"))
+                    parent = parent->astParent();
+                if (!parent)
+                    continue;
+                if (!Token::simpleMatch(parent->previous(), "if ("))
+                    continue;
+            }
             // Do not warn about assignment with NULL
             if (Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
                 continue;

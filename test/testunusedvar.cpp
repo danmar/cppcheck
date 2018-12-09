@@ -1765,12 +1765,11 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
 
-        functionVariableUsage("void f() {\n"
-                              "    int x;\n"
+        functionVariableUsage("void f(int x) {\n"
                               "    C c;\n"
                               "    if (c >>= x) {}\n"
                               "}", "test.c");
-        ASSERT_EQUALS("[test.c:4]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void f(int c) {\n"
                               "    int x;\n"
@@ -2035,7 +2034,7 @@ private:
                               "void A::DoSomething(void) {\n"
                               "    const std::string x = Bar();\n"  // <- warning
                               "}");
-        ASSERT_EQUALS("[test.cpp:16]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+        // TODO ASSERT_EQUALS("[test.cpp:16]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar50() { // #6261, #6542
