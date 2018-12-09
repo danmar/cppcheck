@@ -679,7 +679,7 @@ private:
 
         functionVariableUsage("void foo()\n"
                               "{\n"
-                              "    undefined * i = 0;\n"
+                              "    undefined * i = X;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
 
@@ -739,7 +739,7 @@ private:
                               "        d = code;\n"
                               "    }\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'd' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
