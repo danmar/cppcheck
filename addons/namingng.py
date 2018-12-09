@@ -31,10 +31,10 @@ import os
 
 ## Auxiliary class
 class dataStruct:
-    def __init__(self, file, linenr, str):
+    def __init__(self, file, linenr, string):
         self.file = file
         self.linenr = linenr
-        self.str = str
+        self.str = string
 
 
 def reportError(filename, linenr, severity, msg):
@@ -64,7 +64,7 @@ def checkFalseRegex(data, expr, msg, errors):
         errors.append(reportError(data.file, data.linenr, 'style', msg))
         
 def evalExpr(conf, exp, mockToken, msgType, errors):
-    if (type(conf) is dict): 
+    if isinstance(conf, dict):
         if (conf[exp][0]):
             msg = '[ ' + msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
             checkTrueRegex(mockToken, exp, msg, errors)
@@ -143,7 +143,7 @@ def process(dumpfiles, configfile, debugprint=False):
                         mockToken = dataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
                         msgType = 'Variable'
                         for exp in conf["RE_VARNAME"]:
-                            evalExpr(conf["RE_VARNAME"], exp, mockToken, msgType, errors)  
+                            evalExpr(conf["RE_VARNAME"], exp, mockToken, msgType, errors)
                             
             ## Check Private Variable naming
             if "RE_PRIVATE_MEMBER_VARIABLE" in conf and conf["RE_PRIVATE_MEMBER_VARIABLE"]:
@@ -179,7 +179,7 @@ def process(dumpfiles, configfile, debugprint=False):
             ## Check Functions naming
             if "RE_FUNCTIONNAME" in conf and conf["RE_FUNCTIONNAME"]:
                 for token in cfg.tokenlist:
-                    if token.function: 
+                    if token.function:
                         if token.function.type == 'Constructor' or token.function.type == 'Destructor':
                             continue
                         retval = token.previous.str
@@ -195,10 +195,10 @@ def process(dumpfiles, configfile, debugprint=False):
                                 errors.append(reportError(
                                     token.file, token.linenr, 'style', 'Function ' + token.function.name + ' violates naming convention'))
                         mockToken = dataStruct(token.file, token.linenr, token.function.name)
-                        msgType = 'Function'       
+                        msgType = 'Function'
                         for exp in conf["RE_FUNCTIONNAME"]:
                             evalExpr(conf["RE_FUNCTIONNAME"], exp, mockToken, msgType, errors)
-                            
+
             ## Check Class naming
             if "RE_CLASS_NAME" in conf and conf["RE_CLASS_NAME"]:
                 for fnc in cfg.functions:
