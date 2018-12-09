@@ -1081,6 +1081,13 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             return Result(Result::Type::RETURN);
         }
 
+        if (tok->str() == "}") {
+            Scope::ScopeType scopeType = tok->scope()->type;
+            if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo)
+                // TODO handle loops better
+                return Result(Result::Type::BAILOUT);
+        }
+
         if (Token::simpleMatch(tok, "else {"))
             tok = tok->linkAt(1);
 
