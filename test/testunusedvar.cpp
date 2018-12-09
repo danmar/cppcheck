@@ -2063,7 +2063,6 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'tok' is assigned a value that is never used.\n", errout.str());
 
-        // TODO: False negative
         functionVariableUsage("void foo() {\n"
                               "  int x = 4;\n"
                               "  x = 15 + x;\n"  // read+write
