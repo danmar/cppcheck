@@ -1255,14 +1255,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->nameToken()->isAttributeUnused())
                 continue;
 
-            FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            if (fwdAnalysis.hasOperand(tok->astOperand2(), tok->astOperand1()))
-                continue;
-
             // Is there a redundant assignment?
             const Token *start = tok->findExpressionStartEndTokens().second->next();
 
-
+            FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             if (fwdAnalysis.unusedValue(tok->astOperand1(), start, scope->bodyEnd))
                 // warn
                 unreadVariableError(tok, tok->astOperand1()->expressionString(), false);

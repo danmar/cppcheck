@@ -2033,7 +2033,7 @@ private:
                               "    return \"x\";\n"
                               "}\n"
                               "void A::DoSomething(void) {\n"
-                              "    const std::string x = Bar();\n"
+                              "    const std::string x = Bar();\n"  // <- warning
                               "}");
         ASSERT_EQUALS("[test.cpp:16]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
@@ -2073,7 +2073,7 @@ private:
                               "  int x = 4;\n"
                               "  x = 15 + x;\n"  // read+write
                               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvaralias1() {
@@ -3047,7 +3047,7 @@ private:
                               "    char a[4], *p=a;\n"
                               "    p = dostuff(p);\n"
                               "}");
-        TODO_ASSERT_EQUALS("p is assigned a value that is never used", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'p' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvaralias15() { // #6315
