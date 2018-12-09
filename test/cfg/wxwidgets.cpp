@@ -26,6 +26,7 @@
 void validCode()
 {
     wxString str = wxGetCwd();
+    (void)str;
 
     wxLogGeneric(wxLOG_Message, "test %d", 0);
     wxLogMessage("test %s", "str");
@@ -33,6 +34,9 @@ void validCode()
     wxString translation1 = _("text");
     wxString translation2 = wxGetTranslation("text");
     wxString translation3 = wxGetTranslation("string", "domain");
+    (void)translation1;
+    (void)translation2;
+    (void)translation3;
 }
 
 #if wxUSE_GUI==1
