@@ -1236,9 +1236,15 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (Token::simpleMatch(tok, "try {"))
                 // todo: check try blocks
                 tok = tok->linkAt(1);
-            if (!tok->isAssignmentOp() || !tok->astOperand1())
+            // not assignment/initialization => continue
+            if ((!tok->isAssignmentOp() || !tok->astOperand1()) && !(Token::Match(tok, "%var% (") && tok->variable() && tok->variable()->nameToken() == tok))
                 continue;
-            if (tok->astParent()) {
+            if (tok->isName()) {
+                if (!tok->valueType() || !tok->valueType()->isIntegral())
+                    continue;
+                tok = tok->next();
+            }
+            if (tok->astParent() && tok->str() != "(") {
                 const Token *parent = tok->astParent();
                 while (Token::Match(parent, "%oror%|%comp%|!|&&"))
                     parent = parent->astParent();
@@ -1251,7 +1257,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer && Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
                 continue;
 
-            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() != tok->astOperand1())
                 // todo: check references
                 continue;
 

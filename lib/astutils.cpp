@@ -1200,8 +1200,12 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
             local = false;
         if (tok->varId() > 0) {
             exprVarIds.insert(tok->varId());
-            if (!Token::simpleMatch(tok->previous(), "."))
+            if (!Token::simpleMatch(tok->previous(), ".")) {
+                const Variable *var = tok->variable();
+                if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2()))
+                    return ChildrenToVisit::none;
                 local &= !nonLocal(tok->variable());
+            }
         }
         return ChildrenToVisit::op1_and_op2;
     });
