@@ -1244,10 +1244,8 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
     return result.type == FwdAnalysis::Result::Type::WRITE ? result.token : nullptr;
 }
 
-bool FwdAnalysis::isUsed(const Token *expr, const Token *startToken, const Token *endToken)
+bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    if (Token::Match(expr, "& %var% ="))
-        expr = expr->next();
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
@@ -1275,12 +1273,4 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         }
     }
     return false;
-}
-
-std::vector<const Token *> FwdAnalysis::reads(const Token *expr, const Token *startToken, const Token *endToken)
-{
-    mWhat = What::GetReads;
-    mReads.clear();
-    check(expr, startToken, endToken);
-    return mReads;
 }

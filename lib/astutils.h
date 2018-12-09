@@ -204,8 +204,7 @@ private:
 
     const bool mCpp;
     const Library &mLibrary;
-    enum class What { GetReads, Reassign, IsUsed } mWhat;
-    std::vector<const Token *> mReads;
+    enum class What { Reassign, UnusedValue } mWhat;
 };
 
 #endif // astutilsH

@@ -1315,19 +1315,6 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             else if (usage._modified && !usage._write && !usage._allocateMemory && var && !var->isStlType())
                 unassignedVariableError(usage._var->nameToken(), varname);
 
-            // variable has been written but not read
-            else if (!usage._read) {
-                if (!usage._modified) {
-                    FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-                    const Token *assign = usage._lastAccess;
-                    while (assign && !assign->isAssignmentOp())
-                        assign = assign->astParent();
-                    if (assign && fwdAnalysis.isUsed(usage._lastAccess, assign->findExpressionStartEndTokens().second, scope->bodyEnd))
-                        continue;
-                }
-                unreadVariableError(usage._lastAccess, varname, usage._modified);
-            }
-
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);
