@@ -1076,9 +1076,25 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
         if (Token::Match(tok, "continue|return|throw")) {
             // TODO: Handle these better
-            if (hasOperand(tok, expr))
-                return Result(Result::Type::READ);
-            return Result(Result::Type::RETURN);
+            switch (mWhat) {
+            case What::Reassign:
+                return Result(Result::Type::RETURN);
+            case What::UnusedValue:
+                // Is expr variable used in expression?
+            {
+                bool read = false;
+                visitAstNodes(tok->astOperand1(),
+                [&](const Token *tok2) {
+                    if (!local && Token::Match(tok2, "%name% ("))
+                        read = true;
+                    if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
+                        read = true;
+                    return read ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+                });
+
+                return Result(read ? Result::Type::READ : Result::Type::RETURN);
+            }
+            }
         }
 
         if (tok->str() == "}") {
@@ -1172,7 +1188,7 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
                 globalData = true;
                 return ChildrenToVisit::none;
             }
-            if ((!tok->variable()->isLocal() && !tok->variable()->isArgument()) || tok->variable()->isExtern()) {
+            if ((tok->previous()->str() != "." && (!tok->variable()->isLocal() && !tok->variable()->isArgument())) || tok->variable()->isExtern()) {
                 globalData = true;
                 return ChildrenToVisit::none;
             }

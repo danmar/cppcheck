@@ -105,6 +105,7 @@ private:
         TEST_CASE(localvar49); // ticket #7594
         TEST_CASE(localvar50); // ticket #6261 : dostuff(cond ? buf1 : buf2)
         TEST_CASE(localvar51); // ticket #8128 - FN : tok = tok->next();
+        TEST_CASE(localvar52);
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -2068,6 +2069,15 @@ private:
                               "  x = 15 + x;\n"  // read+write
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar52() {
+        functionVariableUsage("void foo() {\n"
+                              "  std::vector<int> data;\n"
+                              "  data[2] = 32;\n"
+                              "  return data;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {
