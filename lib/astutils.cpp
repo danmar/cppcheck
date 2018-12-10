@@ -1172,7 +1172,7 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
                 globalData = true;
                 return ChildrenToVisit::none;
             }
-            if (tok->variable()->isGlobal() || tok->variable()->isExtern()) {
+            if ((!tok->variable()->isLocal() && !tok->variable()->isArgument()) || tok->variable()->isExtern()) {
                 globalData = true;
                 return ChildrenToVisit::none;
             }
