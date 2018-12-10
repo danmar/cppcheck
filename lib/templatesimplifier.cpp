@@ -343,32 +343,6 @@ void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
         return;
 
     while (begin->next() && begin->next() != end) {
-        // check if token has a pointer to it
-        if (begin->next()->hasTemplateSimplifierPointer()) {
-            // check if the token is in a list
-            const std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
-                    mTemplateInstantiations.end(),
-                    FindToken(begin->next()));
-            if (it != mTemplateInstantiations.end()) {
-                // remove the pointer flag and prevent the deleted pointer from being used
-                it->token->hasTemplateSimplifierPointer(false);
-                it->token = nullptr;
-            }
-            const std::list<TokenAndName>::iterator it2 = std::find_if(mTemplateDeclarations.begin(),
-                    mTemplateDeclarations.end(),
-                    FindToken(begin->next()));
-            if (it2 != mTemplateDeclarations.end()) {
-                // remove the pointer flag and prevent the deleted pointer from being used
-                it2->token->hasTemplateSimplifierPointer(false);
-                it2->token = nullptr;
-            }
-            for (size_t i = 0; i < mTypesUsedInTemplateInstantiation.size(); ++i) {
-                if (mTypesUsedInTemplateInstantiation[i] == begin->next()) {
-                    mTypesUsedInTemplateInstantiation[i]->hasTemplateSimplifierPointer(false);
-                    mTypesUsedInTemplateInstantiation[i] = nullptr;
-                }
-            }
-        }
         begin->deleteNext();
     }
 }
@@ -1492,10 +1466,14 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 
 // TODO: This is not the correct class for simplifyCalculations(), so it
 // should be moved away.
-bool TemplateSimplifier::simplifyCalculations()
+bool TemplateSimplifier::simplifyCalculations(Token* frontToken)
 {
     bool ret = false;
-    for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+    if (!frontToken)
+    {
+        frontToken = mTokenList.front();
+    }
+    for (Token *tok = frontToken; tok; tok = tok->next()) {
         // Remove parentheses around variable..
         // keep parentheses here: dynamic_cast<Fred *>(p);
         // keep parentheses here: A operator * (int);
@@ -1821,7 +1799,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     for (const TokenAndName &instantiation : mTemplateInstantiations) {
         if (numberOfTemplateInstantiations != mTemplateInstantiations.size()) {
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
-            simplifyCalculations();
+            simplifyCalculations(instantiation.token);
             ++recursiveCount;
             if (recursiveCount > 100) {
                 // bail out..
@@ -2000,6 +1978,7 @@ void TemplateSimplifier::replaceTemplateUsage(
 {
     std::list<ScopeInfo2> scopeInfo;
     std::list< std::pair<Token *, Token *> > removeTokens;
+    std::set<Token*> templatesToRemove;
     for (Token *nameTok = instantiationToken; nameTok; nameTok = nameTok->next()) {
         if (Token::Match(nameTok, "}|namespace|class|struct|union")) {
             setScopeInfo(nameTok, &scopeInfo);
@@ -2053,25 +2032,28 @@ void TemplateSimplifier::replaceTemplateUsage(
         if (tok2->str() == ">" && typeCountInInstantiation == mTypesUsedInTemplateInstantiation.size()) {
             const Token * const nameTok1 = nameTok;
             nameTok->str(newName);
-            for (std::list<TokenAndName>::iterator it = mTemplateInstantiations.begin(); it != mTemplateInstantiations.end(); ++it) {
-                if (it->token == nameTok1)
-                    it->token = nameTok;
-            }
             for (Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
                 if (tok->isName()) {
-                    std::list<TokenAndName>::iterator ti;
-                    for (ti = mTemplateInstantiations.begin(); ti != mTemplateInstantiations.end();) {
-                        if (ti->token == tok)
-                            mTemplateInstantiations.erase(ti++);
-                        else
-                            ++ti;
-                    }
+                    templatesToRemove.emplace(tok);
                 }
             }
             removeTokens.emplace_back(nameTok, tok2->next());
         }
 
         nameTok = tok2;
+    }
+
+    std::list<TokenAndName>::iterator it;
+    for (it = mTemplateInstantiations.begin(); it != mTemplateInstantiations.end();)
+    {
+        if (templatesToRemove.find(it->token) != templatesToRemove.end())
+        {
+            mTemplateInstantiations.erase(it++);
+        }
+        else
+        {
+            ++it;
+        }
     }
     while (!removeTokens.empty()) {
         eraseTokens(removeTokens.back().first, removeTokens.back().second);
