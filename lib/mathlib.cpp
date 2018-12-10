@@ -644,35 +644,24 @@ bool MathLib::isDecimalFloat(const std::string &str)
     if (str.empty())
         return false;
     enum State {
-        START, BASE_PLUSMINUS, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
+        START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
     } state = START;
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+    std::string::const_iterator it = str.begin();
+    if ('+' == *it || '-' == *it)
+        ++it;
+    for (; it != str.end(); ++it) {
         switch (state) {
         case START:
-            if (*it=='+' || *it=='-')
-                state=BASE_PLUSMINUS;
-            else if (*it=='.')
-                state=LEADING_DECIMAL;
-            else if (std::isdigit(static_cast<unsigned char>(*it)))
-                state=BASE_DIGITS1;
-            else
-                return false;
-            break;
-        case BASE_PLUSMINUS:
             if (*it=='.')
                 state=LEADING_DECIMAL;
             else if (std::isdigit(static_cast<unsigned char>(*it)))
                 state=BASE_DIGITS1;
-            else if (*it=='e' || *it=='E')
-                state=E;
             else
                 return false;
             break;
         case LEADING_DECIMAL:
             if (std::isdigit(static_cast<unsigned char>(*it)))
                 state=BASE_DIGITS2;
-            else if (*it=='e' || *it=='E')
-                state=E;
             else
                 return false;
             break;
@@ -763,19 +752,16 @@ bool MathLib::isPositive(const std::string &str)
 bool MathLib::isOct(const std::string& str)
 {
     enum Status {
-        START, PLUSMINUS, OCTAL_PREFIX, DIGITS
+        START, OCTAL_PREFIX, DIGITS
     } state = START;
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+    if (str.empty())
+        return false;
+    std::string::const_iterator it = str.begin();
+    if ('+' == *it || '-' == *it)
+        ++it;
+    for (; it != str.end(); ++it) {
         switch (state) {
         case START:
-            if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
-            else if (*it == '0')
-                state = OCTAL_PREFIX;
-            else
-                return false;
-            break;
-        case PLUSMINUS:
             if (*it == '0')
                 state = OCTAL_PREFIX;
             else
@@ -801,45 +787,41 @@ bool MathLib::isOct(const std::string& str)
 bool MathLib::isIntHex(const std::string& str)
 {
     enum Status {
-        START, PLUSMINUS, HEX_PREFIX, DIGIT, DIGITS
+        START, HEX_0, HEX_X, DIGIT
     } state = START;
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+    if (str.empty())
+        return false;
+    std::string::const_iterator it = str.begin();
+    if ('+' == *it || '-' == *it)
+        ++it;
+    for (; it != str.end(); ++it) {
         switch (state) {
         case START:
-            if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
-            else if (*it == '0')
-                state = HEX_PREFIX;
-            else
-                return false;
-            break;
-        case PLUSMINUS:
             if (*it == '0')
-                state = HEX_PREFIX;
+                state = HEX_0;
             else
                 return false;
             break;
-        case HEX_PREFIX:
+        case HEX_0:
             if (*it == 'x' || *it == 'X')
+                state = HEX_X;
+            else
+                return false;
+            break;
+        case HEX_X:
+            if (isxdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
                 return false;
-            break;
         case DIGIT:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                state = DIGITS;
-            else
-                return false;
-            break;
-        case DIGITS:
-            if (isxdigit(static_cast<unsigned char>(*it)))
-                state = DIGITS;
+                ; //  state = DIGITS;
             else
                 return isValidIntegerSuffix(it,str.end());
             break;
         }
     }
-    return state == DIGITS;
+    return DIGIT==state;
 }
 
 bool MathLib::isFloatHex(const std::string& str)
@@ -847,7 +829,12 @@ bool MathLib::isFloatHex(const std::string& str)
     enum Status {
         START, HEX_0, HEX_X, WHOLE_NUMBER_DIGIT, POINT, FRACTION, EXPONENT_P, EXPONENT_SIGN, EXPONENT_DIGITS, EXPONENT_SUFFIX
     } state = START;
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+    if (str.empty())
+        return false;
+    std::string::const_iterator it = str.begin();
+    if ('+' == *it || '-' == *it)
+        ++it;
+    for (; it != str.end(); ++it) {
         switch (state) {
         case START:
             if (*it == '0')
@@ -1018,63 +1005,57 @@ bool MathLib::isValidIntegerSuffix(std::string::const_iterator it, std::string::
 bool MathLib::isBin(const std::string& str)
 {
     enum Status {
-        START, PLUSMINUS, GNU_BIN_PREFIX, DIGIT, DIGITS
+        START, GNU_BIN_PREFIX_0, GNU_BIN_PREFIX_B, DIGIT
     } state = START;
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+    if (str.empty())
+        return false;
+    std::string::const_iterator it = str.begin();
+    if ('+' == *it || '-' == *it)
+        ++it;
+    for (; it != str.end(); ++it) {
         switch (state) {
         case START:
-            if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
-            else if (*it == '0')
-                state = GNU_BIN_PREFIX;
-            else
-                return false;
-            break;
-        case PLUSMINUS:
             if (*it == '0')
-                state = GNU_BIN_PREFIX;
+                state = GNU_BIN_PREFIX_0;
             else
                 return false;
             break;
-        case GNU_BIN_PREFIX:
+        case GNU_BIN_PREFIX_0:
             if (*it == 'b' || *it == 'B')
+                state = GNU_BIN_PREFIX_B;
+            else
+                return false;
+            break;
+        case GNU_BIN_PREFIX_B:
+            if (*it == '0' || *it == '1')
                 state = DIGIT;
             else
                 return false;
             break;
         case DIGIT:
             if (*it == '0' || *it == '1')
-                state = DIGITS;
-            else
-                return false;
-            break;
-        case DIGITS:
-            if (*it == '0' || *it == '1')
-                state = DIGITS;
+                ; //  state = DIGIT;
             else
                 return isValidIntegerSuffix(it,str.end());
             break;
         }
     }
-    return state == DIGITS;
+    return state == DIGIT;
 }
 
 bool MathLib::isDec(const std::string & str)
 {
     enum Status {
-        START, PLUSMINUS, DIGIT
+        START, DIGIT
     } state = START;
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+    if (str.empty())
+        return false;
+    std::string::const_iterator it = str.begin();
+    if ('+' == *it || '-' == *it)
+        ++it;
+    for (; it != str.end(); ++it) {
         switch (state) {
         case START:
-            if (*it == '+' || *it == '-')
-                state = PLUSMINUS;
-            else if (isdigit(static_cast<unsigned char>(*it)))
-                state = DIGIT;
-            else
-                return false;
-            break;
-        case PLUSMINUS:
             if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
