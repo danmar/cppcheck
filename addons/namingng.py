@@ -27,7 +27,6 @@ import sys
 import re
 import argparse
 import json
-import os
 
 ## Auxiliary class
 class dataStruct:
@@ -35,7 +34,6 @@ class dataStruct:
         self.file = file
         self.linenr = linenr
         self.str = string
-
 
 def reportError(filename, linenr, severity, msg):
     message = "[{filename}:{linenr}] ( {severity} ) naming.py: {msg} ]\n".format(
@@ -48,8 +46,7 @@ def reportError(filename, linenr, severity, msg):
     return message
 
 def loadConfig(configfile):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(dir_path+'/'+configfile) as fh:
+    with open(configfile) as fh:
         data = json.load(fh)
     return data
 
@@ -57,12 +54,12 @@ def checkTrueRegex(data, expr, msg, errors):
     res = re.match(expr, data.str)
     if res:
         errors.append(reportError(data.file, data.linenr, 'style', msg))
-        
+
 def checkFalseRegex(data, expr, msg, errors):
     res = re.match(expr, data.str)
     if not res:
         errors.append(reportError(data.file, data.linenr, 'style', msg))
-        
+
 def evalExpr(conf, exp, mockToken, msgType, errors):
     if isinstance(conf, dict):
         if (conf[exp][0]):
@@ -78,7 +75,6 @@ def evalExpr(conf, exp, mockToken, msgType, errors):
         msg = '[ ' + msgType + ' ' + mockToken.str + ' violates naming convention'
         checkFalseRegex(mockToken, exp, msg, errors)
 
-
 def process(dumpfiles, configfile, debugprint=False):
 
     errors = []
@@ -90,14 +86,14 @@ def process(dumpfiles, configfile, debugprint=False):
             continue
         print('Checking ' + afile + '...')
         data = cppcheckdata.parsedump(afile)
-        
+
         ## Check File naming
         if "RE_FILE" in conf and conf["RE_FILE"]:
             mockToken = dataStruct(afile[:-5], "0", afile[:-5])
             msgType = 'File name'
             for exp in conf["RE_FILE"]:
                 evalExpr(conf["RE_FILE"], exp, mockToken, msgType, errors)
-                
+
         ## Check Namespace naming
         if "RE_NAMESPACE" in conf and conf["RE_NAMESPACE"]:
             for tk in data.rawTokens:
@@ -139,12 +135,12 @@ def process(dumpfiles, configfile, debugprint=False):
                                                     'Variable ' +
                                                     var.nameToken.str +
                                                     ' violates naming convention'))
-                        
+
                         mockToken = dataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
                         msgType = 'Variable'
                         for exp in conf["RE_VARNAME"]:
                             evalExpr(conf["RE_VARNAME"], exp, mockToken, msgType, errors)
-                            
+
             ## Check Private Variable naming
             if "RE_PRIVATE_MEMBER_VARIABLE" in conf and conf["RE_PRIVATE_MEMBER_VARIABLE"]:
                 # TODO: Not converted yet
