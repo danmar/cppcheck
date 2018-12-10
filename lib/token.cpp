@@ -1694,5 +1694,4 @@ TokenImpl::~TokenImpl()
     delete mOriginalName;
     delete mValueType;
     delete mValues;
-    delete mCommentToken;
 }
