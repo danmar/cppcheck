@@ -120,7 +120,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations();
+    bool simplifyCalculations(Token* tok = nullptr);
 
 private:
     /**
