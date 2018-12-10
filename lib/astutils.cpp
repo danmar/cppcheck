@@ -772,10 +772,8 @@ bool isReturnScope(const Token * const endToken)
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;
         }
-        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
-            Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "return (")) {
+        if (Token::Match(prev->link()->astTop(), "return|throw"))
             return true;
-        }
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
             return isReturnScope(prev);
     } else if (Token::simpleMatch(prev, ";")) {
