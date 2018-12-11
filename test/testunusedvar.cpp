@@ -106,6 +106,7 @@ private:
         TEST_CASE(localvar50); // ticket #6261 : dostuff(cond ? buf1 : buf2)
         TEST_CASE(localvar51); // ticket #8128 - FN : tok = tok->next();
         TEST_CASE(localvar52);
+        TEST_CASE(localvar53); // continue
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -2078,6 +2079,31 @@ private:
                               "  return data;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar53() {
+        functionVariableUsage("void foo() {\n"
+                              "  bool x = false;\n"
+                              "  while (loop) {\n"
+                              "    if (a) {\n"
+                              "      x = true;\n" // unused value
+                              "      continue;\n"
+                              "    }\n"
+                              "  }\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "  bool x = false;\n"
+                              "  while (loop) {\n"
+                              "    if (a) {\n"
+                              "      x = true;\n"
+                              "      continue;\n"
+                              "    }\n"
+                              "  }\n"
+                              "  return x;\n"
+                              "}");
+        ASSERT_EQUALS("error", errout.str());
     }
 
     void localvaralias1() {
