@@ -9932,7 +9932,7 @@ void Tokenizer::simplifyOperatorName()
             }
         }
 
-        if (par && operatorEnd(par->link())) {
+        if (par && isFunctionHead(par, "{|;")) {
             tok->str("operator" + op);
             Token::eraseTokens(tok, par);
         }
