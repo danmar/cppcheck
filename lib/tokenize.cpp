@@ -9910,9 +9910,12 @@ void Tokenizer::simplifyOperatorName()
                 }
                 done = false;
             } else if (Token::Match(par, ".|%op%|,")) {
-                op += par->str();
-                par = par->next();
-                done = false;
+                // check for operator in template
+                if (!(Token::Match(par, "<|>") && !op.empty())) {
+                    op += par->str();
+                    par = par->next();
+                    done = false;
+                }
             } else if (Token::simpleMatch(par, "[ ]")) {
                 op += "[]";
                 par = par->tokAt(2);
@@ -9932,7 +9935,7 @@ void Tokenizer::simplifyOperatorName()
             }
         }
 
-        if (par && isFunctionHead(par, "{|;")) {
+        if (par && (Token::Match(par, "<|>") || isFunctionHead(par, "{|;"))) {
             tok->str("operator" + op);
             Token::eraseTokens(tok, par);
         }

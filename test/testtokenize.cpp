@@ -6175,6 +6175,15 @@ private:
 
         const char code1[] = "auto operator = (const Fred & other) -> Fred & { }";
         ASSERT_EQUALS("auto operator= ( const Fred & other ) . Fred & { }", tokenizeAndStringify(code1));
+
+        const char code2[] = "template <typename T> void g(S<&T::operator+ >) {}";
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: operator+ > ) { }", tokenizeAndStringify(code2));
+
+        const char code3[] = "template <typename T> void g(S<&T::operator int>) {}";
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: operatorint > ) { }", tokenizeAndStringify(code3));
+
+        const char code4[] = "template <typename T> void g(S<&T::template operator- <double> >) {}";
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: template operator- < double > > ) { }", tokenizeAndStringify(code4));
     }
 
     void simplifyNullArray() {
