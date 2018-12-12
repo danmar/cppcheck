@@ -2091,7 +2091,7 @@ private:
                               "    }\n"
                               "  }\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void foo() {\n"
                               "  bool x = false;\n"
@@ -2103,7 +2103,7 @@ private:
                               "  }\n"
                               "  return x;\n"
                               "}");
-        ASSERT_EQUALS("error", errout.str());
+        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvaralias1() {

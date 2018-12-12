@@ -1074,7 +1074,11 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::simpleMatch(tok, "goto"))
             return Result(Result::Type::BAILOUT);
 
-        if (Token::Match(tok, "continue|return|throw")) {
+        if (tok->str() == "continue")
+            // TODO
+            return Result(Result::Type::BAILOUT);
+
+        if (Token::Match(tok, "return|throw")) {
             // TODO: Handle these better
             switch (mWhat) {
             case What::Reassign:
