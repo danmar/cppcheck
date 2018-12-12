@@ -8546,6 +8546,8 @@ private:
         // This two unit tests were added to avoid a crash. The actual correct AST result for non-executable code has not been determined so far.
         ASSERT_EQUALS("Cpublica::b:::", testAst("class C : public ::a::b<bool> { };"));
         ASSERT_EQUALS("AB: f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
+
+        ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
     }
 
     void astcast() {
