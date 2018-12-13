@@ -188,6 +188,8 @@ private:
         TEST_CASE(lambdaFunction); // #5078
         TEST_CASE(namespaces); // #7557
         TEST_CASE(bracesInitCpp11);// #7895 - "int var{123}" initialization
+
+        TEST_CASE(argument);
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -4263,6 +4265,22 @@ private:
             "}\n"
         );
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void argument() {
+        functionVariableUsage(
+            "void fun(Value value) {\n"
+            " value[10] = 123;\n"
+            "}\n"
+        );
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "void fun(std::string s) {\n"
+            " s[10] = 123;\n"
+            "}\n"
+        );
+        // TODO This works on command line.. load std.cfg? ASSERT_EQUALS("error", errout.str());
     }
 };
 

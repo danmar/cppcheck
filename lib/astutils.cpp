@@ -1181,11 +1181,17 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
             // TODO check if pointer points at local data
             globalData = true;
             return ChildrenToVisit::none;
-        }
-        if (Token::Match(tok, "[.*[]") && tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->isPointer()) {
+        } else if (Token::Match(tok, "[*[]") && tok->astOperand1() && tok->astOperand1()->variable()) {
             // TODO check if pointer points at local data
-            globalData = true;
-            return ChildrenToVisit::none;
+            const Variable *lhsvar = tok->astOperand1()->variable();
+            const ValueType *lhstype = tok->astOperand1()->valueType();
+            if (lhsvar->isPointer()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            } else if (lhsvar->isArgument() && (!lhstype || (lhstype->type <= ValueType::Type::VOID && !lhstype->container))) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
         }
         if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
             globalData = true;
