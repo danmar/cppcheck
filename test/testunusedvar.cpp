@@ -4287,6 +4287,13 @@ private:
             "}\n"
         );
         // TODO This works on command line.. load std.cfg? ASSERT_EQUALS("error", errout.str());
+
+        functionVariableUsage(
+            "void fun(short data[2]) {\n"
+            "  data[2] = 1;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

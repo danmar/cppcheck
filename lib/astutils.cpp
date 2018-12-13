@@ -1181,6 +1181,9 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
             if (lhsvar->isPointer()) {
                 globalData = true;
                 return ChildrenToVisit::none;
+            } else if (lhsvar->isArgument() && lhsvar->isArray()) {
+                globalData = true;
+                return ChildrenToVisit::none;
             } else if (lhsvar->isArgument() && (!lhstype || (lhstype->type <= ValueType::Type::VOID && !lhstype->container))) {
                 globalData = true;
                 return ChildrenToVisit::none;
