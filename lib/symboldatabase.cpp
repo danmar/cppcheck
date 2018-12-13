@@ -1420,15 +1420,16 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         }
 
         // skip over const, noexcept, throw, override, final and volatile specifiers
-        while (Token::Match(tok2, "const|noexcept|throw|override|final|volatile")) {
+        while (Token::Match(tok2, "const|noexcept|throw|override|final|volatile|&|&&")) {
             tok2 = tok2->next();
             if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link()->next();
         }
 
+        // skip over trailing return type
         if (tok2 && tok2->str() == ".") {
             for (tok2 = tok2->next(); tok2; tok2 = tok2->next()) {
-                if (Token::Match(tok2, ";|{|="))
+                if (Token::Match(tok2, ";|{|=|override|final"))
                     break;
                 if (tok2->link() && Token::Match(tok2, "<|[|("))
                     tok2 = tok2->link();
@@ -1794,9 +1795,17 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
 
     // find the return type
     if (!isConstructor() && !isDestructor()) {
-        if (argDef->link()->strAt(1) == ".") // Trailing return type
-            retDef = argDef->link()->tokAt(2);
-        else {
+        // @todo auto type deduction should be checked
+        // @todo attributes and exception specification can also precede trailing return type
+        if (Token::Match(argDef->link()->next(), "const|volatile| &|&&| .")) { // Trailing return type
+            hasTrailingReturnType(true);
+            if (argDef->link()->strAt(1) == ".")
+                retDef = argDef->link()->tokAt(2);
+            else if (argDef->link()->strAt(2) == ".")
+                retDef = argDef->link()->tokAt(3);
+            else if (argDef->link()->strAt(3) == ".")
+                retDef = argDef->link()->tokAt(4);
+        } else {
             if (tok1->str() == ">")
                 tok1 = tok1->next();
             while (Token::Match(tok1, "extern|virtual|static|friend|struct|union|enum"))
@@ -1836,9 +1845,14 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
             isPure(modifier == "0");
             isDefault(modifier == "default");
             isDelete(modifier == "delete");
+        } else if (tok->str() == ".") { // trailing return type
+            // skip over return type
+            while (tok && !Token::Match(tok->next(), ";|{|override|final"))
+                tok = tok->next();
         } else
             break;
-        tok = tok->next();
+        if (tok)
+            tok = tok->next();
     }
 
     if (mTokenizer->isFunctionHead(end, ":{")) {
@@ -2696,6 +2710,8 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        isExplicit: " << func->isExplicit() << std::endl;
             std::cout << "        isDefault: " << func->isDefault() << std::endl;
             std::cout << "        isDelete: " << func->isDelete() << std::endl;
+            std::cout << "        hasOverrideSpecifier: " << func->hasOverrideSpecifier() << std::endl;
+            std::cout << "        hasFinalSpecifier: " << func->hasFinalSpecifier() << std::endl;
             std::cout << "        isNoExcept: " << func->isNoExcept() << std::endl;
             std::cout << "        isThrow: " << func->isThrow() << std::endl;
             std::cout << "        isOperator: " << func->isOperator() << std::endl;
@@ -2703,6 +2719,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        hasRvalRefQual: " << func->hasRvalRefQualifier() << std::endl;
             std::cout << "        isVariadic: " << func->isVariadic() << std::endl;
             std::cout << "        isVolatile: " << func->isVolatile() << std::endl;
+            std::cout << "        hasTrailingReturnType: " << func->hasTrailingReturnType() << std::endl;
             std::cout << "        attributes:";
             if (func->isAttributeConst())
                 std::cout << " const ";
@@ -2727,7 +2744,7 @@ void SymbolDatabase::printOut(const char *title) const
                 std::cout << "        retDef: " << tokenToString(func->retDef, mTokenizer) << std::endl;
             if (func->retDef) {
                 std::cout << "           ";
-                for (const Token * tok = func->retDef; tok && tok != func->tokenDef && !Token::Match(tok, "{|;"); tok = tok->next())
+                for (const Token * tok = func->retDef; tok && tok != func->tokenDef && !Token::Match(tok, "{|;|override|final"); tok = tok->next())
                     std::cout << " " << tokenType(tok);
                 std::cout << std::endl;
             }

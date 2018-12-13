@@ -295,6 +295,7 @@ private:
         TEST_CASE(symboldatabase72); // #8600
         TEST_CASE(symboldatabase73); // #8603
         TEST_CASE(symboldatabase74); // #8838 - final
+        TEST_CASE(symboldatabase75);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4145,6 +4146,43 @@ private:
 
         const Scope *f1 = db->functionScopes[0];
         ASSERT(f1->function->hasFinalSpecifier());
+    }
+
+    void symboldatabase75() {
+        GET_SYMBOL_DB("template <typename T>\n"
+                      "class optional {\n"
+                      "  auto     value() & -> T &;\n"
+                      "  auto     value() && -> T &&;\n"
+                      "  auto     value() const& -> T const &;\n"
+                      "};\n"
+                      "template <typename T>\n"
+                      "auto optional<T>::value() & -> T & {}\n"
+                      "template <typename T>\n"
+                      "auto optional<T>::value() && -> T && {}\n"
+                      "template <typename T>\n"
+                      "auto optional<T>::value() const & -> T const & {}\n"
+                      "optional<int> i;");
+
+        ASSERT_EQUALS(5, db->scopeList.size());
+        ASSERT_EQUALS(3, db->functionScopes.size());
+
+        const Scope *f = db->functionScopes[0];
+        ASSERT(f->function->hasBody());
+        ASSERT(!f->function->isConst());
+        ASSERT(f->function->hasTrailingReturnType());
+        ASSERT(f->function->hasLvalRefQualifier());
+
+        f = db->functionScopes[1];
+        ASSERT(f->function->hasBody());
+        ASSERT(!f->function->isConst());
+        ASSERT(f->function->hasTrailingReturnType());
+        ASSERT(f->function->hasRvalRefQualifier());
+
+        f = db->functionScopes[2];
+        ASSERT(f->function->hasBody());
+        ASSERT(f->function->isConst());
+        ASSERT(f->function->hasTrailingReturnType());
+        ASSERT(f->function->hasLvalRefQualifier());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
