@@ -2052,12 +2052,12 @@ void TemplateSimplifier::replaceTemplateUsage(
 
         nameTok = tok2;
     }
-    
-    for (Token *tok : templatesToRemove) {
-        std::list<TokenAndName>::iterator ti = std::find_if(mTemplateInstantiations.begin(), mTemplateInstantiations.end(), FindToken(tok));
-        if (ti != mTemplateInstantiations.end())
-        {
-            mTemplateInstantiations.erase(ti);
+    std::list<TokenAndName>::iterator it;
+    for (it = mTemplateInstantiations.begin(); it != mTemplateInstantiations.end();) {
+        if (templatesToRemove.find(it->token) != templatesToRemove.end()) {
+            mTemplateInstantiations.erase(it++);
+        } else {
+            ++it;
         }
     }
 
