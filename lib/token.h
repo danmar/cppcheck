@@ -24,6 +24,7 @@
 #include "config.h"
 #include "mathlib.h"
 #include "valueflow.h"
+#include "templatesimplifier.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -88,6 +89,9 @@ struct TokenImpl {
     /** Bitfield bit count. */
     unsigned char mBits;
 
+	// Pointer to a template in the template simplifier
+    TemplateSimplifier::TokenAndName* mTemplateSimplifierPointer;
+
     TokenImpl()
         : mVarId(0)
         , mFileIndex(0)
@@ -103,6 +107,7 @@ struct TokenImpl {
         , mValueType(nullptr)
         , mValues(nullptr)
         , mBits(0)
+        , mTemplateSimplifierPointer(nullptr)
     {}
 
     ~TokenImpl();
@@ -520,11 +525,11 @@ public:
     unsigned char bits() const {
         return mImpl->mBits;
     }
-    bool hasTemplateSimplifierPointer() const {
-        return getFlag(fHasTemplateSimplifierPointer);
+    TemplateSimplifier::TokenAndName* templateSimplifierPointer() const {
+        return mImpl->mTemplateSimplifierPointer;
     }
-    void hasTemplateSimplifierPointer(const bool value) {
-        setFlag(fHasTemplateSimplifierPointer, value);
+    void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
+        mImpl->mTemplateSimplifierPointer = tokenAndName;
     }
     void setBits(const unsigned char b) {
         mImpl->mBits = b;
@@ -1001,8 +1006,6 @@ private:
     Token *mPrevious;
     Token *mLink;
 
-    Token::Type mTokType;
-
     enum {
         fIsUnsigned             = (1 << 0),
         fIsSigned               = (1 << 1),
@@ -1028,11 +1031,12 @@ private:
         fIsLiteral              = (1 << 21),
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
-        fHasTemplateSimplifierPointer = (1 << 24), // used by template simplifier to indicate it has a pointer to this token
-        fAtAddress              = (1 << 25), // @ 0x4000
+        fAtAddress              = (1 << 24), // @ 0x4000
     };
 
     unsigned int mFlags;
+
+    Token::Type mTokType;
 
     TokenImpl *mImpl;
 
