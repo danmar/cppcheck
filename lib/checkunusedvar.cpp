@@ -1229,6 +1229,60 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         if (scope->hasInlineOrLambdaFunction())
             continue;
 
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "] ("))
+                // todo: handle lambdas
+                break;
+            if (Token::simpleMatch(tok, "try {"))
+                // todo: check try blocks
+                tok = tok->linkAt(1);
+            // not assignment/initialization => continue
+            if ((!tok->isAssignmentOp() || !tok->astOperand1()) && !(Token::Match(tok, "%var% (") && tok->variable() && tok->variable()->nameToken() == tok))
+                continue;
+            if (tok->isName()) {
+                if (!tok->valueType() || !tok->valueType()->isIntegral())
+                    continue;
+                tok = tok->next();
+            }
+            if (tok->astParent() && tok->str() != "(") {
+                const Token *parent = tok->astParent();
+                while (Token::Match(parent, "%oror%|%comp%|!|&&"))
+                    parent = parent->astParent();
+                if (!parent)
+                    continue;
+                if (!Token::simpleMatch(parent->previous(), "if ("))
+                    continue;
+            }
+            // Do not warn about assignment with NULL
+            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer && Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
+                continue;
+
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() != tok->astOperand1())
+                // todo: check references
+                continue;
+
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
+                // todo: check static variables
+                continue;
+
+            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->nameToken()->isAttributeUnused())
+                continue;
+
+            // Is there a redundant assignment?
+            const Token *start = tok->findExpressionStartEndTokens().second->next();
+
+            const Token *expr = tok->astOperand1();
+            if (Token::Match(expr->previous(), "%var% [") && expr->previous()->variable() && expr->previous()->variable()->nameToken() == expr->previous())
+                expr = expr->previous();
+            else if (Token::Match(expr, "& %var% ="))
+                expr = expr->next();
+
+            FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
+            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))
+                // warn
+                unreadVariableError(tok, expr->expressionString(), false);
+        }
+
         // varId, usage {read, write, modified}
         Variables variables;
 
@@ -1266,10 +1320,6 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // variable has not been written but has been modified
             else if (usage._modified && !usage._write && !usage._allocateMemory && var && !var->isStlType())
                 unassignedVariableError(usage._var->nameToken(), varname);
-
-            // variable has been written but not read
-            else if (!usage._read)
-                unreadVariableError(usage._lastAccess, varname, usage._modified);
 
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
