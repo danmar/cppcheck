@@ -56,11 +56,10 @@ namespace {
 TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt) :
     token(tok), scope(s), name(n), nameToken(nt)
 {
-    token->hasTemplateSimplifierPointer(true);
+    token->templateSimplifierPointer(this);
 }
 
-TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName &toCopy) :
-    token(toCopy.token), scope(toCopy.scope), name(toCopy.name), nameToken(toCopy.nameToken)
+TemplateSimplifier::TokenAndName::~TokenAndName()
 {
 }
 
@@ -349,30 +348,9 @@ void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
 
     while (begin->next() && begin->next() != end) {
         // check if token has a pointer to it
-        if (begin->next()->hasTemplateSimplifierPointer()) {
-            // check if the token is in a list
-            std::vector<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
-                mTemplateInstantiations.end(),
-                FindToken(begin->next()));
-            if (it != mTemplateInstantiations.end()) {
-                // remove the pointer flag and prevent the deleted pointer from being used
-                it->token->hasTemplateSimplifierPointer(false);
-                it->token = nullptr;
-            }
-            const std::list<TokenAndName>::iterator it2 = std::find_if(mTemplateDeclarations.begin(),
-                mTemplateDeclarations.end(),
-                FindToken(begin->next()));
-            if (it2 != mTemplateDeclarations.end()) {
-                // remove the pointer flag and prevent the deleted pointer from being used
-                it2->token->hasTemplateSimplifierPointer(false);
-                it2->token = nullptr;
-            }
-            for (size_t i = 0; i < mTypesUsedInTemplateInstantiation.size(); ++i) {
-                if (mTypesUsedInTemplateInstantiation[i] == begin->next()) {
-                    mTypesUsedInTemplateInstantiation[i]->hasTemplateSimplifierPointer(false);
-                    mTypesUsedInTemplateInstantiation[i] = nullptr;
-                }
-            }
+        if (begin->next()->templateSimplifierPointer()) {
+            begin->next()->templateSimplifierPointer()->token = nullptr;
+            begin->next()->templateSimplifierPointer(nullptr);
         }
         begin->deleteNext();
     }
@@ -723,7 +701,7 @@ void TemplateSimplifier::useDefaultArgumentValues()
                 if (Token::Match(tok2, "(|{|["))
                     tok2 = tok2->link();
                 else if (Token::Match(tok2, "%type% <") && templateParameters(tok2->next())) {
-                    std::vector<TokenAndName>::iterator ti = std::find_if(mTemplateInstantiations.begin(),
+                    std::list<TokenAndName>::iterator ti = std::find_if(mTemplateInstantiations.begin(),
                                                            mTemplateInstantiations.end(),
                                                            FindToken(tok2));
                     if (ti != mTemplateInstantiations.end())
@@ -742,7 +720,7 @@ void TemplateSimplifier::useDefaultArgumentValues()
                 continue;
 
             // don't strip args from uninstantiated templates
-            std::vector<TokenAndName>::iterator ti2 = std::find_if(mTemplateInstantiations.begin(),
+            std::list<TokenAndName>::iterator ti2 = std::find_if(mTemplateInstantiations.begin(),
                                                     mTemplateInstantiations.end(),
                                                     FindName(template1.name));
 
@@ -757,9 +735,10 @@ void TemplateSimplifier::useDefaultArgumentValues()
 
 void TemplateSimplifier::simplifyTemplateAliases()
 {
-    for (int i = 0; i < mTemplateInstantiations.size(); i++) {
-        TokenAndName &templateAlias = mTemplateInstantiations[i];
-        i++;
+    std::list<TokenAndName>::iterator it1, it2;
+    for (it1 = mTemplateInstantiations.begin(); it1 != mTemplateInstantiations.end();) {
+        TokenAndName &templateAlias = *it1;
+        ++it1;
         Token *startToken = templateAlias.token;
         while (Token::Match(startToken->tokAt(-2), "%name% :: %name%"))
             startToken = startToken->tokAt(-2);
@@ -784,8 +763,8 @@ void TemplateSimplifier::simplifyTemplateAliases()
 
         // Look for alias usages..
         const Token *endToken = nullptr;
-        for (int j = i; j < mTemplateInstantiations.size(); j++) {
-            TokenAndName &aliasUsage = mTemplateInstantiations[j];
+        for (it2 = it1; it2 != mTemplateInstantiations.end(); ++it2) {
+            TokenAndName &aliasUsage = *it2;
             if (aliasUsage.name != aliasName)
                 continue;
             std::vector<std::pair<Token *, Token *>> args;
@@ -831,7 +810,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
                 if (aliasParameterNames.find(tok2->str()) == aliasParameterNames.end()) {
                     // Create template instance..
                     if (Token::Match(tok1, "%name% <")) {
-                        const std::vector<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
+                        const std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
                                 mTemplateInstantiations.end(),
                                 FindToken(tok1));
                         if (it != mTemplateInstantiations.end())
@@ -859,15 +838,15 @@ void TemplateSimplifier::simplifyTemplateAliases()
             for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
                 if (!Token::Match(tok, "%name% <"))
                     continue;
-                std::vector<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
+                std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
                                                        mTemplateInstantiations.end(),
                                                        FindToken(tok));
                 if (it == mTemplateInstantiations.end())
                     continue;
-                std::vector<TokenAndName>::iterator next = it;
+                std::list<TokenAndName>::iterator next = it;
                 ++next;
-                if (*it == mTemplateInstantiations[i])
-                    ++i;
+                if (it == it1)
+                    it1 = next;
                 mTemplateInstantiations.erase(it,next);
             }
 
@@ -1068,7 +1047,7 @@ void TemplateSimplifier::expandTemplate(
 
                 if (itype < typeParametersInDeclaration.size()) {
                     typeindentlevel = 0;
-                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype];
+                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token;
                          typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                          typetok = typetok->next()) {
                         if (Token::simpleMatch(typetok, ". . .")) {
@@ -1227,7 +1206,9 @@ void TemplateSimplifier::expandTemplate(
                                                    mTemplateDeclarations.end(),
                                                    FindToken(startOfTemplateDeclaration));
             if (it != mTemplateDeclarations.end())
+            {
                 mMemberFunctionsToDelete.push_back(*it);
+            }
         }
 
         // not part of template.. go on to next token
@@ -1250,7 +1231,7 @@ void TemplateSimplifier::expandTemplate(
                 // replace type with given type..
                 if (itype < typeParametersInDeclaration.size()) {
                     unsigned int typeindentlevel = 0;
-                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype];
+                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token;
                          typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>"));
                          typetok = typetok->next()) {
                         if (Token::simpleMatch(typetok, ". . .")) {
@@ -1754,8 +1735,7 @@ std::string TemplateSimplifier::getNewName(
         else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
             --indentlevel;
         if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
-            tok3->hasTemplateSimplifierPointer(true);
-            mTypesUsedInTemplateInstantiation.push_back(tok3);
+            mTypesUsedInTemplateInstantiation.emplace_back(tok3, "", "", nullptr);
         }
         const bool constconst = tok3->str() == "const" && tok3->strAt(1) == "const";
         if (!constconst) {
@@ -1826,8 +1806,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
     bool instantiated = false;
 
-    for (int i = 0; i < mTemplateInstantiations.size(); i++){
-        const TokenAndName instantiation(mTemplateInstantiations[i]);
+    for (const TokenAndName &instantiation : mTemplateInstantiations) {
         if (numberOfTemplateInstantiations != mTemplateInstantiations.size()) {
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
             simplifyCalculations(instantiation.token);
@@ -1906,7 +1885,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     }
 
     // process uninstantiated templates
-    const std::vector<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
+    const std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
             mTemplateInstantiations.end(),
             FindName(templateDeclaration.name));
 
@@ -2028,7 +2007,7 @@ void TemplateSimplifier::replaceTemplateUsage(
         // match parameters
         Token * tok2 = nameTok->tokAt(2);
         unsigned int typeCountInInstantiation = 1U; // There is always at least one type
-        const Token *typetok = (!mTypesUsedInTemplateInstantiation.empty()) ? mTypesUsedInTemplateInstantiation[0] : nullptr;
+        const Token *typetok = (!mTypesUsedInTemplateInstantiation.empty()) ? mTypesUsedInTemplateInstantiation[0].token : nullptr;
         unsigned int indentlevel2 = 0;  // indentlevel for tokgt
         while (tok2 && (indentlevel2 > 0 || tok2->str() != ">")) {
             if (tok2->str() == "<" && templateParameters(tok2) > 0)
@@ -2047,7 +2026,7 @@ void TemplateSimplifier::replaceTemplateUsage(
                     typetok = typetok->next();
                 } else {
                     if (typeCountInInstantiation < mTypesUsedInTemplateInstantiation.size())
-                        typetok = mTypesUsedInTemplateInstantiation[typeCountInInstantiation++];
+                        typetok = mTypesUsedInTemplateInstantiation[typeCountInInstantiation++].token;
                     else
                         typetok = nullptr;
                 }
@@ -2073,16 +2052,14 @@ void TemplateSimplifier::replaceTemplateUsage(
 
         nameTok = tok2;
     }
-
-
-    mTemplateInstantiations.erase(
-        std::remove_if(
-            mTemplateInstantiations.begin(),
-            mTemplateInstantiations.end(),
-            [&templatesToRemove](TokenAndName& tokenAndName)
-            {
-                return templatesToRemove.find(tokenAndName.token) != templatesToRemove.end();
-            }), mTemplateInstantiations.end());
+    
+    for (Token *tok : templatesToRemove) {
+        std::list<TokenAndName>::iterator ti = std::find_if(mTemplateInstantiations.begin(), mTemplateInstantiations.end(), FindToken(tok));
+        if (ti != mTemplateInstantiations.end())
+        {
+            mTemplateInstantiations.erase(ti);
+        }
+    }
 
     while (!removeTokens.empty()) {
         eraseTokens(removeTokens.back().first, removeTokens.back().second);
@@ -2223,7 +2200,9 @@ void TemplateSimplifier::simplifyTemplates(
                                           maxtime,
                                           expandedtemplates);
             if (instantiated)
+            {
                 mInstantiatedTemplates.push_back(*iter1);
+            }
         }
 
         for (std::list<TokenAndName>::const_iterator it = mInstantiatedTemplates.begin(); it != mInstantiatedTemplates.end(); ++it) {
