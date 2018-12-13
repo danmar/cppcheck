@@ -122,6 +122,7 @@ private:
         TEST_CASE(localvaralias13); // ticket #4487
         TEST_CASE(localvaralias14); // ticket #5619
         TEST_CASE(localvaralias15); // ticket #6315
+        TEST_CASE(localvaralias16);
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -3090,7 +3091,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvaralias16() {
+        functionVariableUsage("void f() {\n"
+                              "  auto x = dostuff();\n"
+                              "  p = x;\n"
+                              "  x->data[0] = 9;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarasm() {
+
         functionVariableUsage("void foo(int &b)\n"
                               "{\n"
                               "    int a;\n"

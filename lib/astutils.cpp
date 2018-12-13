@@ -1177,6 +1177,11 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
     bool globalData = false;
     visitAstNodes(expr,
     [&](const Token *tok) {
+        if (tok->originalName() == "->") {
+            // TODO check if pointer points at local data
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
         if (Token::Match(tok, "[.*[]") && tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->isPointer()) {
             // TODO check if pointer points at local data
             globalData = true;
