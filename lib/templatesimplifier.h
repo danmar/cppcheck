@@ -70,7 +70,8 @@ public:
      */
     struct TokenAndName {
         TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt);
-        TokenAndName(const TokenAndName &toCopy);
+        ~TokenAndName();
+
         bool operator == (const TokenAndName & rhs) const {
             return token == rhs.token && scope == rhs.scope && name == rhs.name && nameToken == rhs.nameToken;
         }
@@ -267,10 +268,10 @@ private:
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;
     std::map<Token *, Token *> mTemplateForwardDeclarationsMap;
-    std::vector<TokenAndName> mTemplateInstantiations;
+    std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
-    std::vector<Token *> mTypesUsedInTemplateInstantiation;
+    std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
 };
 
 /// @}
