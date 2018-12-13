@@ -4294,6 +4294,14 @@ private:
             "}"
         );
         ASSERT_EQUALS("", errout.str());
+
+        // Unknown variable
+        functionVariableUsage(
+            "void A::b(Date& result) {"
+            "  result = 12;\n"
+            "}"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

@@ -1170,6 +1170,11 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
     bool globalData = false;
     visitAstNodes(expr,
     [&](const Token *tok) {
+        if (tok->varId() && !tok->variable()) {
+            // Bailout, this is probably global
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
         if (tok->originalName() == "->") {
             // TODO check if pointer points at local data
             globalData = true;
