@@ -4019,6 +4019,12 @@ private:
                               "    p = NULL;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(Foo *p) {\n"
+                              "    free(p);\n"
+                              "    p = (Foo *)NULL;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarUnusedGoto() {

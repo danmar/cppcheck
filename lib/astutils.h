@@ -187,6 +187,8 @@ public:
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
+    static bool isNullOperand(const Token *expr);
+
 private:
     /** Result of forward analysis */
     struct Result {

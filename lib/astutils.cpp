@@ -1080,25 +1080,18 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
         if (Token::Match(tok, "return|throw")) {
             // TODO: Handle these better
-            switch (mWhat) {
-            case What::Reassign:
-                return Result(Result::Type::RETURN);
-            case What::UnusedValue:
-                // Is expr variable used in expression?
-            {
-                bool read = false;
-                visitAstNodes(tok->astOperand1(),
-                [&](const Token *tok2) {
-                    if (!local && Token::Match(tok2, "%name% ("))
-                        read = true;
-                    if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
-                        read = true;
-                    return read ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
-                });
+            // Is expr variable used in expression?
+            bool read = false;
+            visitAstNodes(tok->astOperand1(),
+            [&](const Token *tok2) {
+                if (!local && Token::Match(tok2, "%name% ("))
+                    read = true;
+                if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
+                    read = true;
+                return read ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+            });
 
-                return Result(read ? Result::Type::READ : Result::Type::RETURN);
-            }
-            }
+            return Result(read ? Result::Type::READ : Result::Type::RETURN);
         }
 
         if (tok->str() == "}") {
@@ -1306,4 +1299,13 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         }
     }
     return false;
+}
+
+bool FwdAnalysis::isNullOperand(const Token *expr)
+{
+    if (!expr)
+        return false;
+    if (Token::Match(expr, "( %name% %name%| * )") && Token::Match(expr->astOperand1(), "0|NULL|nullptr"))
+        return true;
+    return Token::Match(expr, "NULL|nullptr");
 }

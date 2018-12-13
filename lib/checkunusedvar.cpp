@@ -1254,7 +1254,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
             }
             // Do not warn about assignment with NULL
-            if (tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer && Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
+            if (FwdAnalysis::isNullOperand(tok->astOperand2()))
                 continue;
 
             if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() != tok->astOperand1())
