@@ -780,6 +780,10 @@ bool isReturnScope(const Token * const endToken)
         // noreturn function
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
             return true;
+        if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() && Token::Match(prev->previous()->link()->astTop(), "return|throw"))
+            return true;
+        if (Token::Match(prev->previous()->astTop(), "return|throw"))
+            return true;
         // return/goto statement
         prev = prev->previous();
         while (prev && !Token::Match(prev, ";|{|}|return|goto|throw|continue|break"))

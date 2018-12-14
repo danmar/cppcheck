@@ -85,10 +85,17 @@ private:
 
     void isReturnScope() {
         ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return; } }", -2));
+        ASSERT_EQUALS(true, isReturnScope("int f() { if (a) { return {}; } }", -2)); // #8891
+        ASSERT_EQUALS(true, isReturnScope("std::string f() { if (a) { return std::string{}; } }", -2)); // #8891
+        ASSERT_EQUALS(true, isReturnScope("std::string f() { if (a) { return std::string{\"\"}; } }", -2)); // #8891
         ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return (ab){0}; } }", -2)); // #7103
         ASSERT_EQUALS(false, isReturnScope("void f() { if (a) { return (ab){0}; } }", -4)); // #7103
         ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { {throw new string(x);}; } }", -4)); // #7144
         ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { {throw new string(x);}; } }", -2)); // #7144
+        ASSERT_EQUALS(false, isReturnScope("void f() { [=]() { return data; }; }", -1));
+        ASSERT_EQUALS(true, isReturnScope("auto f() { return [=]() { return data; }; }", -1));
+        ASSERT_EQUALS(true, isReturnScope("auto f() { return [=]() { return data; }(); }", -1));
+        ASSERT_EQUALS(false, isReturnScope("auto f() { [=]() { return data; }(); }", -1));
     }
 
     bool isVariableChanged(const char code[], const char startPattern[], const char endPattern[]) {
