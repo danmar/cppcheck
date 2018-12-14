@@ -251,12 +251,14 @@ void nullpointerMemchr1(char *p, char *s)
 {
     // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 'p', strlen(s));
+    (void)p;
 }
 
 void nullpointerMemchr2(char *p, char *s)
 {
     // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 0, strlen(s));
+    (void)p;
 }
 
 void nullPointer_memchr(char *p)
@@ -265,6 +267,7 @@ void nullPointer_memchr(char *p)
     // cppcheck-suppress nullPointer
     // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 0, strlen(s));
+    (void)p;
 }
 
 void nullPointer_memcmp(char *p)

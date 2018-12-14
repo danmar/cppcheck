@@ -73,7 +73,7 @@ def latestReport(latestResults):
             #    cppcheck = line[9:]
             elif line.startswith('count: '):
                 count = line.split(' ')[1:]
-            elif line.startswith('head '):
+            elif line.startswith('head ') and not line.startswith('head results:'):
                 added += 1
             elif line.startswith(OLD_VERSION + ' '):
                 lost += 1

@@ -112,12 +112,16 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
             tok = tok->linkAt(1)->next();
         if (tok && tok->str() == ".") { // trailing return type
-            for (tok = tok->next(); tok && !Token::Match(tok, "[;{]"); tok = tok->next())
+            for (tok = tok->next(); tok && !Token::Match(tok, ";|{|override|final"); tok = tok->next())
                 if (tok->link() && Token::Match(tok, "<|[|("))
                     tok = tok->link();
         }
+        while (Token::Match(tok, "override|final !!(") ||
+               (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
+            tok = tok->next();
         if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
+
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
     return nullptr;
@@ -9906,9 +9910,12 @@ void Tokenizer::simplifyOperatorName()
                 }
                 done = false;
             } else if (Token::Match(par, ".|%op%|,")) {
-                op += par->str();
-                par = par->next();
-                done = false;
+                // check for operator in template
+                if (!(Token::Match(par, "<|>") && !op.empty())) {
+                    op += par->str();
+                    par = par->next();
+                    done = false;
+                }
             } else if (Token::simpleMatch(par, "[ ]")) {
                 op += "[]";
                 par = par->tokAt(2);
@@ -9928,7 +9935,7 @@ void Tokenizer::simplifyOperatorName()
             }
         }
 
-        if (par && operatorEnd(par->link())) {
+        if (par && (Token::Match(par, "<|>") || isFunctionHead(par, "{|;"))) {
             tok->str("operator" + op);
             Token::eraseTokens(tok, par);
         }

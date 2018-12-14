@@ -162,7 +162,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 
 class FwdAnalysis {
 public:
-    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mReassign(false) {}
+    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mWhat(What::Reassign) {}
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 
@@ -174,6 +174,20 @@ public:
      * @return Token where expr is reassigned. If it's not reassigned then nullptr is returned.
      */
     const Token *reassign(const Token *expr, const Token *startToken, const Token *endToken);
+
+    /**
+     * Check if "expr" is used. The "expr" can be a tree (x.y[12]).
+     * @param expr Symbolic expression to perform forward analysis for
+     * @param startToken First token in forward analysis
+     * @param endToken Last token in forward analysis
+     * @return true if expr is used.
+     */
+    bool unusedValue(const Token *expr, const Token *startToken, const Token *endToken);
+
+    /** Is there some possible alias for given expression */
+    bool possiblyAliased(const Token *expr, const Token *startToken) const;
+
+    static bool isNullOperand(const Token *expr);
 
 private:
     /** Result of forward analysis */
@@ -187,10 +201,12 @@ private:
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
     struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local);
 
+    // Is expression a l-value global data?
+    bool isGlobalData(const Token *expr) const;
+
     const bool mCpp;
     const Library &mLibrary;
-    bool mReassign;
-    std::vector<const Token *> mReads;
+    enum class What { Reassign, UnusedValue } mWhat;
 };
 
 #endif // astutilsH

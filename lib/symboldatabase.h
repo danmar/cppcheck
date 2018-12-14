@@ -657,27 +657,28 @@ private:
 class CPPCHECKLIB Function {
     /** @brief flags mask used to access specific bit. */
     enum {
-        fHasBody              = (1 << 0),  ///< @brief has implementation
-        fIsInline             = (1 << 1),  ///< @brief implementation in class definition
-        fIsConst              = (1 << 2),  ///< @brief is const
-        fIsVirtual            = (1 << 3),  ///< @brief is virtual
-        fIsPure               = (1 << 4),  ///< @brief is pure virtual
-        fIsStatic             = (1 << 5),  ///< @brief is static
-        fIsStaticLocal        = (1 << 6),  ///< @brief is static local
-        fIsExtern             = (1 << 7),  ///< @brief is extern
-        fIsFriend             = (1 << 8),  ///< @brief is friend
-        fIsExplicit           = (1 << 9),  ///< @brief is explicit
-        fIsDefault            = (1 << 10), ///< @brief is default
-        fIsDelete             = (1 << 11), ///< @brief is delete
-        fHasOverrideSpecifier = (1 << 12), ///< @brief does declaration contain 'override' specifier?
-        fHasFinalSpecifier    = (1 << 13), ///< @brief does declaration contain 'final' specifier?
-        fIsNoExcept           = (1 << 14), ///< @brief is noexcept
-        fIsThrow              = (1 << 15), ///< @brief is throw
-        fIsOperator           = (1 << 16), ///< @brief is operator
-        fHasLvalRefQual       = (1 << 17), ///< @brief has & lvalue ref-qualifier
-        fHasRvalRefQual       = (1 << 18), ///< @brief has && rvalue ref-qualifier
-        fIsVariadic           = (1 << 19), ///< @brief is variadic
-        fIsVolatile           = (1 << 20)  ///< @brief is volatile
+        fHasBody               = (1 << 0),  ///< @brief has implementation
+        fIsInline              = (1 << 1),  ///< @brief implementation in class definition
+        fIsConst               = (1 << 2),  ///< @brief is const
+        fIsVirtual             = (1 << 3),  ///< @brief is virtual
+        fIsPure                = (1 << 4),  ///< @brief is pure virtual
+        fIsStatic              = (1 << 5),  ///< @brief is static
+        fIsStaticLocal         = (1 << 6),  ///< @brief is static local
+        fIsExtern              = (1 << 7),  ///< @brief is extern
+        fIsFriend              = (1 << 8),  ///< @brief is friend
+        fIsExplicit            = (1 << 9),  ///< @brief is explicit
+        fIsDefault             = (1 << 10), ///< @brief is default
+        fIsDelete              = (1 << 11), ///< @brief is delete
+        fHasOverrideSpecifier  = (1 << 12), ///< @brief does declaration contain 'override' specifier?
+        fHasFinalSpecifier     = (1 << 13), ///< @brief does declaration contain 'final' specifier?
+        fIsNoExcept            = (1 << 14), ///< @brief is noexcept
+        fIsThrow               = (1 << 15), ///< @brief is throw
+        fIsOperator            = (1 << 16), ///< @brief is operator
+        fHasLvalRefQual        = (1 << 17), ///< @brief has & lvalue ref-qualifier
+        fHasRvalRefQual        = (1 << 18), ///< @brief has && rvalue ref-qualifier
+        fIsVariadic            = (1 << 19), ///< @brief is variadic
+        fIsVolatile            = (1 << 20), ///< @brief is volatile
+        fHasTrailingReturnType = (1 << 21), ///< @brief has trailing return type
     };
 
     /**
@@ -819,6 +820,9 @@ public:
     bool isVolatile() const {
         return getFlag(fIsVolatile);
     }
+    bool hasTrailingReturnType() const {
+        return getFlag(fHasTrailingReturnType);
+    }
 
     void hasBody(bool state) {
         setFlag(fHasBody, state);
@@ -906,6 +910,9 @@ private:
     }
     void isVolatile(bool state) {
         setFlag(fIsVolatile, state);
+    }
+    void hasTrailingReturnType(bool state) {
+        return setFlag(fHasTrailingReturnType, state);
     }
 };
 

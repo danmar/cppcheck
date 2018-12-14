@@ -449,7 +449,7 @@ void CheckOther::checkRedundantAssignment()
                 }
 
                 // Do not warn about assignment with 0 / NULL
-                if (Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
+                if (Token::simpleMatch(tok->astOperand2(), "0") || FwdAnalysis::isNullOperand(tok->astOperand2()))
                     continue;
 
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
