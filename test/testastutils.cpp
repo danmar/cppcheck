@@ -85,8 +85,8 @@ private:
 
     void isReturnScope() {
         ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return; } }", -2));
-        ASSERT_EQUALS(true, isReturnScope("int f() { if (a) { return {}; } }", -2)); // #8891
-        ASSERT_EQUALS(true, isReturnScope("std::string f() { if (a) { return std::string{}; } }", -2)); // #8891
+        ASSERT_EQUALS(true, isReturnScope("int f() { if (a) { return {}; } }", -2));                        // #8891
+        ASSERT_EQUALS(true, isReturnScope("std::string f() { if (a) { return std::string{}; } }", -2));     // #8891
         ASSERT_EQUALS(true, isReturnScope("std::string f() { if (a) { return std::string{\"\"}; } }", -2)); // #8891
         ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return (ab){0}; } }", -2)); // #7103
         ASSERT_EQUALS(false, isReturnScope("void f() { if (a) { return (ab){0}; } }", -4)); // #7103
