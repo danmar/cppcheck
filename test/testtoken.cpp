@@ -939,6 +939,9 @@ private:
         givenACodeSampleToTokenize var2("typedef unsigned long long u64; void f() { *((u64 *)x) = 0; }");
         const Token *const tok2 = Token::findsimplematch(var2.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok2->expressionString());
+
+        givenACodeSampleToTokenize data3("return (t){1,2};");
+        ASSERT_EQUALS("return(t){1,2}", data3.tokens()->expressionString());
     }
 };
 

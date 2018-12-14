@@ -107,6 +107,7 @@ private:
         TEST_CASE(localvar51); // ticket #8128 - FN : tok = tok->next();
         TEST_CASE(localvar52);
         TEST_CASE(localvar53); // continue
+        TEST_CASE(localvar54); // ast, {}
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -2107,6 +2108,14 @@ private:
                               "  return x;\n"
                               "}");
         // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar54() {
+        functionVariableUsage("Padding fun() {\n"
+                              "  Distance d = DISTANCE;\n"
+                              "  return (Padding){ d, d, d, d };\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {

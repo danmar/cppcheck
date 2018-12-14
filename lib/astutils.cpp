@@ -1084,17 +1084,15 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::Match(tok, "return|throw")) {
             // TODO: Handle these better
             // Is expr variable used in expression?
-            bool read = false;
-            visitAstNodes(tok->astOperand1(),
-            [&](const Token *tok2) {
+            const Token *end = tok->findExpressionStartEndTokens().second->next();
+            for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
                 if (!local && Token::Match(tok2, "%name% ("))
-                    read = true;
+                    return Result(Result::Type::READ);
                 if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
-                    read = true;
-                return read ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
-            });
+                    return Result(Result::Type::READ);
+            }
 
-            return Result(read ? Result::Type::READ : Result::Type::RETURN);
+            return Result(Result::Type::RETURN);
         }
 
         if (tok->str() == "}") {
