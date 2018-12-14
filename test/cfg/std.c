@@ -118,11 +118,9 @@ void nullpointer(int value)
     fp = 0;
     // No FP
     fflush(0);
-    // No FP
-    // cppcheck-suppress redundantAssignment
     fp = freopen(0,"abc",stdin);
     fclose(fp);
-    fp = 0;
+    fp = NULL;
     // cppcheck-suppress nullPointer
     fputc(0,0);
     // cppcheck-suppress nullPointer
@@ -249,14 +247,12 @@ void nullpointer(int value)
 
 void nullpointerMemchr1(char *p, char *s)
 {
-    // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 'p', strlen(s));
     (void)p;
 }
 
 void nullpointerMemchr2(char *p, char *s)
 {
-    // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 0, strlen(s));
     (void)p;
 }
@@ -265,7 +261,6 @@ void nullPointer_memchr(char *p)
 {
     char *s = 0;
     // cppcheck-suppress nullPointer
-    // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 0, strlen(s));
     (void)p;
 }
