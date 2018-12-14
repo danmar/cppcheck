@@ -263,6 +263,18 @@ private:
                     "    c.data();\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("std::string f(std::string x) {\n"
+                    "  if (x.empty()) return {};\n"
+                    "  x[0];\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("std::string f(std::string x) {\n"
+                    "  if (x.empty()) return std::string{};\n"
+                    "  x[0];\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
