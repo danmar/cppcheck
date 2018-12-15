@@ -573,7 +573,6 @@ void TemplateSimplifier::getTemplateInstantiations()
                     mTemplateInstantiations.emplace_back(tok2->next(), getScopeName(scopeList), tok2->strAt(1), tok2->tokAt(1));
                 } else if (Token::Match(tok2->next(), "class|struct"))
                     const_cast<Token *>(tok2)->deleteNext();
-
             }
 
             // Add outer template..
@@ -1026,7 +1025,7 @@ void TemplateSimplifier::expandTemplate(
     } else if (copy && isFunction) {
         // check if this is an explicit instantiation
         Token * temp = templateInstantiation.token;
-        while (temp && !Token::Match(temp->previous(), "}|;"))
+        while (temp && !Token::Match(temp->previous(), "}|;|extern"))
             temp = temp->previous();
         if (Token::Match(temp, "template !!<")) {
             // just delete "template"
