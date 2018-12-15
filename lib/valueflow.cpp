@@ -2743,6 +2743,27 @@ struct Lambda {
     }
 };
 
+static bool isDecayedPointer(const Token *tok, const Settings *settings)
+{
+    if (!tok)
+        return false;
+    if (astIsPointer(tok->astParent()) && !Token::simpleMatch(tok->astParent(), "return"))
+        return true;
+    if (!Token::simpleMatch(tok->astParent(), "return"))
+        return false;
+    if (!tok->scope())
+        return false;
+    if (!tok->scope()->function)
+        return false;
+    if (!tok->scope()->function->retDef)
+        return false;
+    // TODO: Add valuetypes to return types of functions
+    ValueType vt = ValueType::parseDecl(tok->scope()->function->retDef, settings);
+    if (vt.pointer > 0)
+        return true;
+    return false;
+}
+
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -2846,8 +2867,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Variable * var = getLifetimeVariable(tok, errorPath);
             if (!var)
                 continue;
-            if (var->isArray() && !var->isStlType() && !var->isArgument() && tok->astParent() &&
-                (astIsPointer(tok->astParent()) || Token::Match(tok->astParent(), "%assign%|return"))) {
+            if (var->nameToken() == tok)
+                continue;
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;
