@@ -98,6 +98,8 @@ def process(dumpfiles, configfile, debugprint=False):
         if "RE_NAMESPACE" in conf and conf["RE_NAMESPACE"]:
             for tk in data.rawTokens:
                 if (tk.str == 'namespace'):
+                    if (tk.next.file != afile[:-5]):
+                        continue
                     mockToken = dataStruct(tk.next.file, tk.next.linenr, tk.next.str)
                     msgType = 'Namespace'
                     for exp in conf["RE_NAMESPACE"]:
@@ -108,6 +110,8 @@ def process(dumpfiles, configfile, debugprint=False):
                 print('Checking ' + afile + ', config "' + cfg.name + '"...')
             if "RE_VARNAME" in conf and conf["RE_VARNAME"]:
                 for var in cfg.variables:
+                    if (var.typeStartToken.file != afile[:-5]):
+                        continue
                     if var.nameToken and var.access != 'Global' and var.access != 'Public' and var.access != 'Private':
                         prev = var.nameToken.previous
                         varType = prev.str
@@ -145,6 +149,8 @@ def process(dumpfiles, configfile, debugprint=False):
             if "RE_PRIVATE_MEMBER_VARIABLE" in conf and conf["RE_PRIVATE_MEMBER_VARIABLE"]:
                 # TODO: Not converted yet
                 for var in cfg.variables:
+                    if (var.typeStartToken.file != afile[:-5]):
+                        continue
                     if (var.access is None) or var.access != 'Private':
                         continue
                     mockToken = dataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
@@ -155,6 +161,8 @@ def process(dumpfiles, configfile, debugprint=False):
             ## Check Public Member Variable naming
             if "RE_PUBLIC_MEMBER_VARIABLE" in conf and conf["RE_PUBLIC_MEMBER_VARIABLE"]:
                 for var in cfg.variables:
+                    if (var.typeStartToken.file != afile[:-5]):
+                        continue
                     if (var.access is None) or var.access != 'Public':
                         continue
                     mockToken = dataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
@@ -165,6 +173,8 @@ def process(dumpfiles, configfile, debugprint=False):
             ## Check Global Variable naming
             if "RE_GLOBAL_VARNAME" in conf and conf["RE_GLOBAL_VARNAME"]:
                 for var in cfg.variables:
+                    if (var.typeStartToken.file != afile[:-5]):
+                        continue
                     if (var.access is None) or var.access != 'Global':
                         continue
                     mockToken = dataStruct(var.typeStartToken.file, var.typeStartToken.linenr, var.nameToken.str)
@@ -176,6 +186,8 @@ def process(dumpfiles, configfile, debugprint=False):
             if "RE_FUNCTIONNAME" in conf and conf["RE_FUNCTIONNAME"]:
                 for token in cfg.tokenlist:
                     if token.function:
+                        if (token.file != afile[:-5]):
+                            continue
                         if token.function.type == 'Constructor' or token.function.type == 'Destructor':
                             continue
                         retval = token.previous.str
@@ -198,6 +210,8 @@ def process(dumpfiles, configfile, debugprint=False):
             ## Check Class naming
             if "RE_CLASS_NAME" in conf and conf["RE_CLASS_NAME"]:
                 for fnc in cfg.functions:
+                    if (fnc.tokenDef.file != afile[:-5]):
+                        continue
                     #Check if it is Constructor/Destructor
                     if (fnc.type == 'Constructor' or fnc.type == 'Destructor'):
                         mockToken = dataStruct(fnc.tokenDef.file, fnc.tokenDef.linenr, fnc.name)
