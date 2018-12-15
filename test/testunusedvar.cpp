@@ -150,6 +150,7 @@ private:
         TEST_CASE(localvarStruct3);
         TEST_CASE(localvarStruct5);
         TEST_CASE(localvarStruct6);
+        TEST_CASE(localvarStruct7);
         TEST_CASE(localvarStructArray);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
@@ -3276,6 +3277,46 @@ private:
                               "private:\n"
                               "    Type t;\n"
                               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct7() {
+        functionVariableUsage("struct IMAPARG {\n"
+                              "  void *text;\n"
+                              "};\n"
+                              "\n"
+                              "void fun() {\n"
+                              "  IMAPARG *args, aatt;\n"
+                              "  args = &aatt;\n"
+                              "  aatt.text = tmp;\n"
+                              "  dostuff(args);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct ARG {\n"
+                              "  void *a;\n"
+                              "  void *b;\n"
+                              "};\n"
+                              "\n"
+                              "void fun() {\n"
+                              "  ARG aatt;\n"
+                              "  int *p = &aatt.b;\n"
+                              "  aatt.a = 123;\n"
+                              "  dostuff(p);\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Variable 'aatt.a' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("struct AB {\n"
+                              "  int a;\n"
+                              "  int b;\n"
+                              "};\n"
+                              "\n"
+                              "void fun() {\n"
+                              "  AB ab;\n"
+                              "  int &a = ab.a;\n"
+                              "  ab.a = 123;\n"
+                              "  dostuff(a);\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

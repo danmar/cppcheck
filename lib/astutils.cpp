@@ -1296,14 +1296,20 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
     const bool followVar = false;
     for (const Token *tok = startToken; tok; tok = tok->previous()) {
         if (tok->str() == "{" && tok->scope()->type == Scope::eFunction)
+            break;
+
+        const Token *addrOf = nullptr;
+        if (Token::Match(tok, "& %name% ="))
+            addrOf = tok->tokAt(2)->astOperand2();
+        else if (tok->isUnaryOp("&"))
+            addrOf = tok->astOperand1();
+        else if (Token::simpleMatch(tok, "std :: ref ("))
+            addrOf = tok->tokAt(3)->astOperand2();
+        else
             continue;
-        if (isSameExpression(mCpp, macro, expr, tok, mLibrary, pure, followVar)) {
-            const Token *parent = tok->astParent();
-            if (parent && parent->isUnaryOp("&"))
-                return true;
-            if (parent && Token::Match(parent->tokAt(-2), "& %name% ="))
-                return true;
-            if (parent && Token::simpleMatch(parent->tokAt(-3), "std :: ref ("))
+
+        for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
+            if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
                 return true;
         }
     }
