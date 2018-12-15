@@ -8792,14 +8792,14 @@ void Tokenizer::simplifyStructDecl()
             continue;
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
-            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{|=")) {
+            if (Token::Match(tok->next()->link(), "} const| *|&| const| %type% ,|;|[|(|{|=")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
         // check for derived anonymous class/struct
         else if (cpp && Token::Match(tok, "class|struct :")) {
             const Token *tok1 = Token::findsimplematch(tok, "{");
-            if (tok1 && Token::Match(tok1->link(), "} *|&| %type% ,|;|[|(|{")) {
+            if (tok1 && Token::Match(tok1->link(), "} const| *|&| const| %type% ,|;|[|(|{")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
