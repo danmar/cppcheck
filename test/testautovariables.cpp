@@ -1538,7 +1538,9 @@ private:
               "    e c[20];\n"
               "    return c;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning pointer to local variable 'c' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning pointer to local variable 'c' that will be invalid when returning.\n",
+            errout.str());
 
         check("auto f(std::vector<int>& a) {\n"
               "    auto it = a.begin();\n"
