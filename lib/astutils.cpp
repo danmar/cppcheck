@@ -1104,20 +1104,12 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     conditionEnd = conditionStart->link();
                 }
                 if (conditionStart && conditionEnd) {
-                    bool write = false;
+                    bool used = false;
                     for (const Token *condTok = conditionStart; condTok != conditionEnd; condTok = condTok->next()) {
-                        if (Token::Match(condTok, "=|++|--")) {
-                            visitAstNodes(condTok->astOperand1(),
-                            [&](const Token *writeTok) {
-                                if (exprVarIds.find(writeTok->varId()) != exprVarIds.end())
-                                    write = true;
-                                return write ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
-                            });
-                            if (write)
-                                break;
-                        }
+                        if (exprVarIds.find(condTok->varId()) != exprVarIds.end())
+                            used = true;
                     }
-                    if (write)
+                    if (used)
                         return Result(Result::Type::BAILOUT);
                 }
 

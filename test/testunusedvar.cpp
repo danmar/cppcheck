@@ -2153,6 +2153,14 @@ private:
                               "  while (x < 10) { x = x + 1; }\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void fun()\n"
+                              "{\n"
+                              "    int   status = 0;\n"
+                              "    for (ind = 0; ((ind < nrArgs) && (status < 10)); ind++)\n"
+                              "        status = x;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {
