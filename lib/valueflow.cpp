@@ -1107,6 +1107,42 @@ static void valueFlowBitAnd(TokenList *tokenlist)
     }
 }
 
+static void valueFlowSameExpressions(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->hasKnownValue())
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        if (tok->astOperand1()->isLiteral() || tok->astOperand2()->isLiteral())
+            continue;
+
+        if (astIsFloat(tok->astOperand1(), true) || astIsFloat(tok->astOperand2(), true))
+            continue;
+
+        ValueFlow::Value val;
+
+        if (Token::Match(tok, "==|>=|<=|/")) {
+            val = ValueFlow::Value(1);
+            val.setKnown();
+        }
+
+        if (Token::Match(tok, "!=|>|<|%|-")) {
+            val = ValueFlow::Value(0);
+            val.setKnown();
+        }
+
+        if (!val.isKnown())
+            continue;
+
+        if (isSameExpression(tokenlist->isCPP(), false, tok->astOperand1(), tok->astOperand2(), tokenlist->getSettings()->library, true, &val.errorPath)) {
+            setTokenValue(tok, val, tokenlist->getSettings());
+        }
+    }
+}
+
 static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
 {
     const bool cpp = symboldatabase->isCPP();
@@ -4648,6 +4684,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
+    valueFlowSameExpressions(tokenlist);
 
     // Temporary hack.. run valueflow until there is nothing to update or timeout expires
     const std::time_t timeout = std::time(0) + TIMEOUT;
