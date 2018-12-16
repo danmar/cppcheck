@@ -5981,6 +5981,14 @@ private:
               "  x.a = _mm_set1_ps(2.0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8]: (style) Variable 'x.a' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "  struct AB ab;\n"
+              "  ab.x = 23;\n"
+              "  ab.y = 41;\n"
+              "  ab.x = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'ab.x' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantVarAssignment_7133() {
