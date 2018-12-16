@@ -1065,11 +1065,6 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             return Result(Result::Type::BAILOUT);
         }
 
-        if (tok->str() == "}" && (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eWhile)) {
-            // TODO: handle loops better
-            return Result(Result::Type::BAILOUT);
-        }
-
         if (Token::simpleMatch(tok, "break ;")) {
             return Result(Result::Type::BREAK, tok);
         }
@@ -1097,17 +1092,19 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
 
         if (tok->str() == "}") {
             Scope::ScopeType scopeType = tok->scope()->type;
-            if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo)
-                // TODO handle loops better
-                return Result(Result::Type::BAILOUT);
+            if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo) {
+                // TODO: check condition
+                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local);
+                if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
+                    return result;
+            }
         }
 
         if (Token::simpleMatch(tok, "else {"))
             tok = tok->linkAt(1);
 
-        if (Token::simpleMatch(tok, "asm (")) {
+        if (Token::simpleMatch(tok, "asm ("))
             return Result(Result::Type::BAILOUT);
-        }
 
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // TODO: this is a quick bailout
@@ -1255,7 +1252,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         const Scope *s = result.token->scope();
         while (s->type == Scope::eIf)
             s = s->nestedIn;
-        if (s->type != Scope::eSwitch)
+        if (s->type != Scope::eSwitch && s->type != Scope::eWhile && s->type != Scope::eFor)
             break;
         result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local);
     }

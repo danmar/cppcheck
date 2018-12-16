@@ -108,6 +108,7 @@ private:
         TEST_CASE(localvar52);
         TEST_CASE(localvar53); // continue
         TEST_CASE(localvar54); // ast, {}
+        TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -746,7 +747,9 @@ private:
                               "        d = code;\n"
                               "    }\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'd' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'd' is assigned a value that is never used.\n"
+                      "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2115,6 +2118,39 @@ private:
         functionVariableUsage("Padding fun() {\n"
                               "  Distance d = DISTANCE;\n"
                               "  return (Padding){ d, d, d, d };\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarloops() {
+        // loops
+        functionVariableUsage("void fun() {\n"
+                              "  int x;\n"
+                              "  while (c) { x=10; }\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void fun() {\n"
+                              "  int x = 1;\n"
+                              "  while (c) {\n"
+                              "    dostuff(x);\n"
+                              "    if (y) { x=10; break; }\n"
+                              "  }\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void fun() {\n"
+                              "  int x = 0;\n"
+                              "  while (c) {\n"
+                              "    dostuff(x);\n"
+                              "    x = 10;\n"
+                              "  }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void fun() {\n"
+                              "  int x = 0;\n"
+                              "  while (x < 10) { x = x + 1; }\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
