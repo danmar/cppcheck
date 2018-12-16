@@ -1236,6 +1236,16 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (Token::simpleMatch(tok, "try {"))
                 // todo: check try blocks
                 tok = tok->linkAt(1);
+            const Token *varDecl = nullptr;
+            if (tok->variable() && tok->variable()->nameToken() == tok) {
+                const Token * eq = tok->next();
+                while (Token::simpleMatch(eq, "["))
+                    eq = eq->link()->next();
+                if (Token::simpleMatch(eq, "=")) {
+                    varDecl = tok;
+                    tok = eq;
+                }
+            }
             // not assignment/initialization => continue
             if ((!tok->isAssignmentOp() || !tok->astOperand1()) && !(Token::Match(tok, "%var% (") && tok->variable() && tok->variable()->nameToken() == tok))
                 continue;
@@ -1271,11 +1281,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // Is there a redundant assignment?
             const Token *start = tok->findExpressionStartEndTokens().second->next();
 
-            const Token *expr = tok->astOperand1();
-            if (Token::Match(expr->previous(), "%var% [") && expr->previous()->variable() && expr->previous()->variable()->nameToken() == expr->previous())
-                expr = expr->previous();
-            else if (Token::Match(expr, "& %var% ="))
-                expr = expr->next();
+            const Token *expr = varDecl ? varDecl : tok->astOperand1();
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))

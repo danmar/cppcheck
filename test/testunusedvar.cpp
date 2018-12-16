@@ -3966,6 +3966,11 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
 
+        functionVariableUsage("void foo() {\n" // #8901
+                              "    const std::string s = \"foo\";\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
+
         functionVariableUsage("std::string foo() {\n"
                               "    std::string s;\n" // Class instances are initialized. Assignment is not necessary
                               "    return s;\n"

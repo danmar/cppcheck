@@ -1138,9 +1138,12 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;
             bool other = false;
+            bool same = false;
             while (Token::Match(parent->astParent(), ".|::|[")) {
                 parent = parent->astParent();
-                if (Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
+                if (parent && isSameExpression(mCpp, false, expr, parent->astOperand1(), mLibrary, false, false, nullptr))
+                    same = true;
+                if (!same && Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
                     other = true;
                     break;
                 }
