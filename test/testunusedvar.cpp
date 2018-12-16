@@ -108,6 +108,7 @@ private:
         TEST_CASE(localvar52);
         TEST_CASE(localvar53); // continue
         TEST_CASE(localvar54); // ast, {}
+        TEST_CASE(localvar55);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -2120,6 +2121,24 @@ private:
                               "  return (Padding){ d, d, d, d };\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar55() {
+        functionVariableUsage("void f(int mode) {\n"
+                              "    int x = 0;\n" // <- redundant assignment
+                              "\n"
+                              "    for (int i = 0; i < 10; i++) {\n"
+                              "        if (mode == 0x04)\n"
+                              "            x = 0;\n" // <- redundant assignment
+                              "        if (mode == 0x0f) {\n"
+                              "            x = address;\n"
+                              "            data[x] = 0;\n"
+                              "        }\n"
+                              "    }\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n"
+                      "[test.cpp:6]: (style) Variable 'x' is assigned a value that is never used.\n",
+                      errout.str());
     }
 
     void localvarloops() {
