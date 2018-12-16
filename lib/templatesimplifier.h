@@ -269,6 +269,7 @@ private:
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
+    std::vector<Token *> mExplicitInstantiationsToDelete;
     std::vector<Token *> mTypesUsedInTemplateInstantiation;
 };
 
