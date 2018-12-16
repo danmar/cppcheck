@@ -123,6 +123,7 @@ private:
         TEST_CASE(template83);
         TEST_CASE(template84); // #8880
         TEST_CASE(template85); // #8902 crash
+        TEST_CASE(template86); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1632,6 +1633,21 @@ private:
                             "template<typename U, typename std::enable_if<(!std::is_fundamental<U>::value)>::type>\n"
                             "void C<T>::foo() {}";
         // @todo the output is very wrong but we are only worried about the crash for now
+        tok(code);
+    }
+
+    void template86() { // crash
+        const char code[] = "struct S {\n"
+                            "  S();\n"
+                            "};\n"
+                            "template <typename T>\n"
+                            "struct U {\n"
+                            "  static S<T> u;\n"
+                            "};\n"
+                            "template <typename T>\n"
+                            "S<T> U<T>::u;\n"
+                            "template S<int> U<int>::u;\n"
+                            "S<int> &i = U<int>::u;";
         tok(code);
     }
 

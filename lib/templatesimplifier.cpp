@@ -368,6 +368,12 @@ void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
                     mTypesUsedInTemplateInstantiation[i] = nullptr;
                 }
             }
+            for (size_t i = 0; i < mExplicitInstantiationsToDelete.size(); ++i) {
+                if (mExplicitInstantiationsToDelete[i] == begin->next()) {
+                    mExplicitInstantiationsToDelete[i]->hasTemplateSimplifierPointer(false);
+                    mExplicitInstantiationsToDelete[i] = nullptr;
+                }
+            }
         }
         begin->deleteNext();
     }
@@ -1119,6 +1125,19 @@ void TemplateSimplifier::expandTemplate(
         dst->insertToken(";", "", true);
     }
 
+    if (copy && (isClass || isFunction)) {
+        // check if this is an explicit instantiation
+        Token * start = templateInstantiation.token;
+        while (start && !Token::Match(start->previous(), "}|;|extern"))
+            start = start->previous();
+        if (Token::Match(start, "template !!<")) {
+            if (start->strAt(-1) == "extern")
+                start = start->previous();
+            start->hasTemplateSimplifierPointer(true);
+            mExplicitInstantiationsToDelete.push_back(start);
+        }
+    }
+
     for (Token *tok3 = mTokenList.front(); tok3; tok3 = tok3 ? tok3->next() : nullptr) {
         if (Token::Match(tok3, "}|namespace|class|struct|union")) {
             setScopeInfo(tok3, &scopeInfo);
@@ -1351,18 +1370,6 @@ void TemplateSimplifier::expandTemplate(
         }
 
         assert(brackets.empty());
-    }
-
-    if (copy && (isClass || isFunction)) {
-        // check if this is an explicit instantiation
-        Token * start = templateInstantiation.token;
-        while (start && !Token::Match(start->previous(), "}|;|extern"))
-            start = start->previous();
-        if (Token::Match(start, "template !!<")) {
-            if (start->strAt(-1) == "extern")
-                start = start->previous();
-            mExplicitInstantiationsToDelete.push_back(start);
-        }
     }
 }
 
@@ -2249,14 +2256,19 @@ void TemplateSimplifier::simplifyTemplates(
             mMemberFunctionsToDelete.erase(mMemberFunctionsToDelete.begin());
         }
 
-        for (size_t i = 0; i < mExplicitInstantiationsToDelete.size(); ++i) {
-            Token * start = mExplicitInstantiationsToDelete[i];
-            Token * end = start->next();
-            while (end && end->str() != ";")
-                end = end->next();
-            eraseTokens(start, end);
-            deleteToken(end);
-            deleteToken(start);
+        // remove explicit instantiations
+        for (size_t j = 0; j < mExplicitInstantiationsToDelete.size(); ++j) {
+            Token * start = mExplicitInstantiationsToDelete[j];
+            if (start) {
+                Token * end = start->next();
+                while (end && end->str() != ";")
+                    end = end->next();
+                if (start->previous())
+                    start = start->previous();
+                if (end->next())
+                    end = end->next();
+                eraseTokens(start, end);
+            }
         }
     }
 }
