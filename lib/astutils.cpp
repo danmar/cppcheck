@@ -1093,7 +1093,35 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (tok->str() == "}") {
             Scope::ScopeType scopeType = tok->scope()->type;
             if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo) {
-                // TODO: check condition
+                // check condition
+                const Token *conditionStart = nullptr;
+                const Token *conditionEnd = nullptr;
+                if (Token::simpleMatch(tok->link()->previous(), ") {")) {
+                    conditionEnd = tok->link()->previous();
+                    conditionStart = conditionEnd->link();
+                } else if (Token::simpleMatch(tok->link()->previous(), "do {") && Token::simpleMatch(tok, "} while (")) {
+                    conditionStart = tok->tokAt(2);
+                    conditionEnd = conditionStart->link();
+                }
+                if (conditionStart && conditionEnd) {
+                    bool write = false;
+                    for (const Token *condTok = conditionStart; condTok != conditionEnd; condTok = condTok->next()) {
+                        if (Token::Match(condTok, "=|++|--")) {
+                            visitAstNodes(condTok->astOperand1(),
+                            [&](const Token *writeTok) {
+                                if (exprVarIds.find(writeTok->varId()) != exprVarIds.end())
+                                    write = true;
+                                return write ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
+                            });
+                            if (write)
+                                break;
+                        }
+                    }
+                    if (write)
+                        return Result(Result::Type::BAILOUT);
+                }
+
+                // check loop body again..
                 const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local);
                 if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
                     return result;
