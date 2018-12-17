@@ -2520,6 +2520,12 @@ private:
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() == 0) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.size()==0' is always true\n", errout.str());
 
+        check("void f() {\n"
+              "   int buf[42];\n"
+              "   if( buf != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'buf!=0' is always true\n", errout.str());
+
         // Avoid FP when condition comes from macro
         check("#define NOT !\n"
               "void f() {\n"

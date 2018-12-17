@@ -1001,6 +1001,14 @@ static void valueFlowArray(TokenList *tokenlist)
 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->varId() > 0U) {
+            // array
+            if (tok->variable() &&
+                     tok->variable()->isArray() &&
+                     !tok->variable()->isStlType()) {
+                ValueFlow::Value value{1};
+                value.setKnown();
+                setTokenValue(tok, value, tokenlist->getSettings());
+            }
             const std::map<unsigned int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
             if (it != constantArrays.end()) {
                 ValueFlow::Value value;
