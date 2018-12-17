@@ -72,8 +72,7 @@ public:
         }
 
         /** variable is used.. set both read+write */
-        void use(std::list<std::set<unsigned int> > & varReadInScope) {
-            varReadInScope.back().insert(_var->declarationId());
+        void use() {
             _read = true;
             _write = true;
         }
@@ -93,28 +92,6 @@ public:
         bool _write;
         bool _modified; // read/modify/write
         bool _allocateMemory;
-    };
-
-    class ScopeGuard {
-    public:
-        ScopeGuard(Variables & guarded,
-                   bool insideLoop)
-            :mGuarded(guarded),
-             mInsideLoop(insideLoop) {
-            mGuarded.enterScope();
-        }
-
-        ~ScopeGuard() {
-            mGuarded.leaveScope(mInsideLoop);
-        }
-
-    private:
-        /** No implementation */
-        ScopeGuard();
-        ScopeGuard& operator=(const ScopeGuard &);
-
-        Variables & mGuarded;
-        bool mInsideLoop;
     };
 
     void clear() {
@@ -142,17 +119,9 @@ public:
     void eraseAll(unsigned int varid);
     void clearAliases(unsigned int varid);
 
-    ScopeGuard newScope(bool insideLoop) {
-        return ScopeGuard(*this, insideLoop);
-    }
-
 private:
-    void enterScope();
-    void leaveScope(bool insideLoop);
 
     std::map<unsigned int, VariableUsage> mVarUsage;
-    std::list<std::set<unsigned int> > mVarAddedInScope;
-    std::list<std::set<unsigned int> > mVarReadInScope;
 };
 
 
@@ -173,7 +142,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
 
     // alias to self
     if (varid1 == varid2) {
-        var1->use(mVarReadInScope);
+        var1->use();
         return;
     }
 
@@ -201,7 +170,6 @@ void Variables::alias(unsigned int varid1, unsigned int varid2, bool replace)
     var1->_aliases.insert(varid2);
 
     if (var2->mType == Variables::pointer) {
-        mVarReadInScope.back().insert(varid2);
         var2->_read = true;
     }
 }
@@ -247,7 +215,6 @@ void Variables::addVar(const Variable *var,
                        bool write_)
 {
     if (var->declarationId() > 0) {
-        mVarAddedInScope.back().insert(var->declarationId());
         mVarUsage.insert(std::make_pair(var->declarationId(), VariableUsage(var, type, false, write_, false)));
     }
 }
@@ -267,7 +234,6 @@ void Variables::read(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        mVarReadInScope.back().insert(varid);
         usage->_read = true;
         if (tok)
             usage->_lastAccess = tok;
@@ -283,7 +249,6 @@ void Variables::readAliases(unsigned int varid, const Token* tok)
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
-                mVarReadInScope.back().insert(*aliases);
                 aliased->_read = true;
                 aliased->_lastAccess = tok;
             }
@@ -336,14 +301,14 @@ void Variables::use(unsigned int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        usage->use(mVarReadInScope);
+        usage->use();
         usage->_lastAccess = tok;
 
         for (std::set<unsigned int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
-                aliased->use(mVarReadInScope);
+                aliased->use();
                 aliased->_lastAccess = tok;
             }
         }
@@ -379,44 +344,6 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
             return &i->second;
     }
     return nullptr;
-}
-
-void Variables::enterScope()
-{
-    mVarAddedInScope.emplace_back();
-    mVarReadInScope.emplace_back();
-}
-
-void Variables::leaveScope(bool insideLoop)
-{
-    if (insideLoop) {
-        // read variables are read again in subsequent run through loop
-        std::set<unsigned int> const & currentVarReadInScope = mVarReadInScope.back();
-        for (std::set<unsigned int>::const_iterator readIter = currentVarReadInScope.begin();
-             readIter != currentVarReadInScope.end();
-             ++readIter) {
-            read(*readIter, nullptr);
-        }
-    }
-
-    std::list<std::set<unsigned int> >::reverse_iterator reverseReadIter = mVarReadInScope.rbegin();
-    ++reverseReadIter;
-    if (reverseReadIter != mVarReadInScope.rend()) {
-        // Transfer read variables into previous scope
-
-        std::set<unsigned int> const & currentVarAddedInScope = mVarAddedInScope.back();
-        std::set<unsigned int>  & currentVarReadInScope = mVarReadInScope.back();
-        for (std::set<unsigned int>::const_iterator addedIter = currentVarAddedInScope.begin();
-             addedIter != currentVarAddedInScope.end();
-             ++addedIter) {
-            currentVarReadInScope.erase(*addedIter);
-        }
-        std::set<unsigned int> & previousVarReadInScope = *reverseReadIter;
-        previousVarReadInScope.insert(currentVarReadInScope.begin(),
-                                      currentVarReadInScope.end());
-    }
-    mVarReadInScope.pop_back();
-    mVarAddedInScope.pop_back();
 }
 
 static const Token* doAssignment(Variables &variables, const Token *tok, bool dereference, const Scope *scope)
@@ -707,10 +634,8 @@ static void useFunctionArgs(const Token *tok, Variables& variables)
 //---------------------------------------------------------------------------
 // Usage of function variables
 //---------------------------------------------------------------------------
-void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables, bool insideLoop)
+void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables)
 {
-    Variables::ScopeGuard scopeGuard=variables.newScope(insideLoop);
-
     // Find declarations if the scope is executable..
     if (scope->isExecutable()) {
         // Find declarations
@@ -796,7 +721,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         if (tok->str() == "{" && tok != scope->bodyStart && !tok->previous()->varId()) {
             for (const Scope *i : scope->nestedList) {
                 if (i->bodyStart == tok) { // Find associated scope
-                    checkFunctionVariableUsage_iterateScopes(i, variables, false); // Scan child scope
+                    checkFunctionVariableUsage_iterateScopes(tok->scope(), variables); // Scan child scope
                     tok = tok->link();
                     break;
                 }
@@ -1237,7 +1162,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         // varId, usage {read, write, modified}
         Variables variables;
 
-        checkFunctionVariableUsage_iterateScopes(scope, variables, false);
+        checkFunctionVariableUsage_iterateScopes(scope, variables);
 
 
         // Check usage of all variables in the current scope..

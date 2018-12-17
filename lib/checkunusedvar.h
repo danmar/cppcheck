@@ -69,7 +69,7 @@ public:
     }
 
     /** @brief %Check for unused function variables */
-    void checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables, bool insideLoop);
+    void checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables);
     void checkFunctionVariableUsage();
 
     /** @brief %Check that all struct members are used */
