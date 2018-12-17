@@ -574,19 +574,6 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 
 
 //---------------------------------------------------------------------------
-// Checks for memory leaks inside function..
-//---------------------------------------------------------------------------
-
-static bool isInMemberFunc(const Scope* scope)
-{
-    while (scope->nestedIn && !scope->functionOf)
-        scope = scope->nestedIn;
-
-    return (scope->functionOf != nullptr);
-}
-
-
-//---------------------------------------------------------------------------
 // Checks for memory leaks in classes..
 //---------------------------------------------------------------------------
 

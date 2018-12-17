@@ -156,8 +156,8 @@ private:
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "posix.cfg");
         LOAD_LIB_2(settings2.library, "std.cfg");
+        return;
 
-/*
         TEST_CASE(simple5);
         TEST_CASE(simple7);
         TEST_CASE(simple9);     // Bug 2435468 - member function "free"
@@ -369,7 +369,6 @@ private:
         TEST_CASE(crash);
         TEST_CASE(trac7680);
         TEST_CASE(trac7440);
-*/
     }
 
 
@@ -5526,10 +5525,9 @@ private:
     void run() override {
         LOAD_LIB_2(settings.library, "gtk.cfg");
         settings.addEnabled("all");
-/*
+        return;
         TEST_CASE(glib1);
         TEST_CASE(glib2); // #2806 - FP when using redundant assignment
-*/
     }
 
     void glib1() {
@@ -5640,11 +5638,10 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
-/*
+        return;
         TEST_CASE(openfileNoLeak);
         TEST_CASE(returnValueNotUsed_tfopen_s);
         TEST_CASE(sendMessage);
-*/
     }
 
     void openfileNoLeak() {
