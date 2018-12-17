@@ -1971,9 +1971,8 @@ private:
 
     void localvar44() { // #4020 - FP
         functionVariableUsage("void func() {\n"
-                              "    int *sp_mem[2] = { 0x00, 0x00 };\n"
-                              "    int src = 1, dst = 2;\n"
-                              "    sp_mem[(dst + i)][3] = src;\n"
+                              "    int *sp_mem[2] = { global1, global2 };\n"
+                              "    sp_mem[0][3] = 123;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4420,6 +4419,15 @@ private:
             "}"
         );
         ASSERT_EQUALS("", errout.str());
+
+        // Unknown struct type
+        functionVariableUsage(
+            "void fun() {"
+            "  struct FOO foo;\n"
+            "  foo.x = 123;\n"
+            "}"
+        );
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'foo.x' is assigned a value that is never used.\n", errout.str());
     }
 };
 
