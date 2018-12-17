@@ -2284,6 +2284,27 @@ private:
               "    bar(y);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+
+        check("bool f() {\n"
+              "    bool ret = false;\n"
+              "    switch (switchCond) {\n"
+              "    case 1:\n"
+              "        ret = true;\n"
+              "        break;\n"
+              "    case 31:\n"
+              "        ret = true;\n"
+              "        break;\n"
+              "    case 54:\n"
+              "        ret = true;\n"
+              "        break;\n"
+              "    };\n"
+              "    ret = true;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:14]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n"
+                      "[test.cpp:8] -> [test.cpp:14]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n"
+                      "[test.cpp:11] -> [test.cpp:14]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n",
+                      errout.str());
     }
 
     void switchRedundantBitwiseOperationTest() {

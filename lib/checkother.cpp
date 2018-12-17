@@ -494,6 +494,8 @@ void CheckOther::checkRedundantAssignment()
                 // there is redundant assignment. Is there a case between the assignments?
                 bool hasCase = false;
                 for (const Token *tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
+                    if (tok2->str() == "break" || tok2->str() == "return")
+                        break;
                     if (tok2->str() == "case") {
                         hasCase = true;
                         break;
