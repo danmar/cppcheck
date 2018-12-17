@@ -47,7 +47,7 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
             break;
         if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
             tokens.push(tok->astOperand1());
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
+        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2)
             tokens.push(tok->astOperand2());
     }
 }
@@ -1260,11 +1260,19 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
                 globalData = true;
                 return ChildrenToVisit::none;
             }
-            if ((tok->previous()->str() != "." && (!tok->variable()->isLocal() && !tok->variable()->isArgument())) || tok->variable()->isExtern()) {
+            if (tok->variable()->isExtern()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->previous()->str() != "." && !tok->variable()->isLocal() && !tok->variable()->isArgument()) {
                 globalData = true;
                 return ChildrenToVisit::none;
             }
             if (tok->variable()->isArgument() && tok->variable()->isPointer() && tok != expr) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isPointerArray()) {
                 globalData = true;
                 return ChildrenToVisit::none;
             }
