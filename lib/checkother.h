@@ -219,7 +219,6 @@ public:
     void checkConstArgument();
 
   private:
-
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
