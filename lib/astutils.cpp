@@ -1046,6 +1046,11 @@ bool isConstVarExpression(const Token *tok)
         return false;
     if (Token::Match(tok->previous(), "sizeof ("))
         return true;
+    if (Token::Match(tok->previous(), "%name% (")) {
+        std::vector<const Token *> args = getArguments(tok);
+        return std::all_of(args.begin(), args.end(), &isConstVarExpression);
+    }
+    // TODO: Check rest of the expression
     if (Token::Match(tok, "( %type%"))
         return true;
     if (Token::Match(tok, "%cop%")) {

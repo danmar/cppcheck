@@ -7539,6 +7539,12 @@ private:
 
         check("void g(int);\n"
               "void f(int x) {\n"
+              "    g(std::strlen(\"a\"));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
               "    g((int)0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
