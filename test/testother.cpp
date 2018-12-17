@@ -221,6 +221,7 @@ private:
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
 
         TEST_CASE(shadowVariables);
+        TEST_CASE(constArgument);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -7520,6 +7521,59 @@ private:
 
         check("int size() {\n"
               "  int size;\n" // <- not a shadow variable
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void constArgument() {
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "   g((x & 0x01) >> 7);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(x&1)>>7' to function g is always 0\n", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "   g((int)((x & 0x01) >> 7));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&1)>>7)' to function g is always 0\n", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void h() { return 1; }\n"
+              "void f(int x) {\n"
+              "    g(h());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g(std::strlen(\"a\"));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g((int)0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    x = 0;\n"
+              "    g(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f() {\n"
+              "    const int x = 0;\n"
+              "    g(x + 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

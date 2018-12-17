@@ -1238,26 +1238,6 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
                 errmsg, CWE398, false);
 }
 
-static bool isConstVarExpression(const Token * tok)
-{
-    if (!tok)
-        return false;
-    if (Token::Match(tok, "%cop%")) {
-        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
-            return false;
-        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
-            return false;
-        return true;
-    }
-    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
-        return true;
-    if (tok->isEnumerator())
-        return true;
-    if (tok->variable())
-        return tok->variable()->isConst();
-    return false;
-}
-
 void CheckCondition::alwaysTrueFalse()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
