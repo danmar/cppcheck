@@ -793,21 +793,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     else
         tok = scope->classDef->next();
     for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
-        if (tok->str() == "for" || tok->str() == "while" || tok->str() == "do") {
-            for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
-                if ((*i)->classDef == tok) { // Find associated scope
-                    checkFunctionVariableUsage_iterateScopes(*i, variables, true); // Scan child scope
-                    tok = (*i)->bodyStart->link();
-                    break;
-                }
-            }
-            if (!tok)
-                break;
-        }
         if (tok->str() == "{" && tok != scope->bodyStart && !tok->previous()->varId()) {
-            for (std::list<Scope*>::const_iterator i = scope->nestedList.begin(); i != scope->nestedList.end(); ++i) {
-                if ((*i)->bodyStart == tok) { // Find associated scope
-                    checkFunctionVariableUsage_iterateScopes(*i, variables, false); // Scan child scope
+            for (const Scope *i : scope->nestedList) {
+                if (i->bodyStart == tok) { // Find associated scope
+                    checkFunctionVariableUsage_iterateScopes(i, variables, false); // Scan child scope
                     tok = tok->link();
                     break;
                 }
@@ -820,10 +809,6 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             variables.clear();
             break;
         }
-        if (Token::Match(tok, "goto|break")) { // #4447
-            variables.clear();
-            break;
-        }
 
         // templates
         if (tok->isName() && endsWith(tok->str(), '>')) {
@@ -831,46 +816,6 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             // as template parameters. Try to handle this better, perhaps
             // only remove constants.
             variables.clear();
-        }
-
-        // bailout when for_each is used
-        if (Token::Match(tok, "%name% (") && Token::simpleMatch(tok->linkAt(1), ") {") && !Token::Match(tok, "if|for|while|switch")) {
-            // does the name contain "for_each" or "foreach"?
-            std::string nameTok;
-            nameTok.resize(tok->str().size());
-            std::transform(tok->str().begin(), tok->str().end(), nameTok.begin(), ::tolower);
-            if (nameTok.find("foreach") != std::string::npos || nameTok.find("for_each") != std::string::npos) {
-                // bailout all variables in the body that are used more than once.
-                // TODO: there is no need to bailout if variable is only read or only written
-                std::set<unsigned int> varid;
-                const Token * const endTok = tok->linkAt(1)->linkAt(1);
-                for (const Token *tok2 = endTok->link(); tok2 && tok2 != endTok; tok2 = tok2->next()) {
-                    if (tok2->varId()) {
-                        if (varid.find(tok2->varId()) == varid.end())
-                            varid.insert(tok2->varId());
-                        else
-                            variables.erase(tok2->varId());
-                    }
-                }
-            }
-        }
-
-        // C++11 std::for_each
-        // No warning should be written if a variable is first read and
-        // then written in the body.
-        else if (mTokenizer->isCPP() && Token::simpleMatch(tok, "for_each (") && Token::simpleMatch(tok->linkAt(1), ") ;")) {
-            const Token *end = tok->linkAt(1);
-            if (end->previous()->str() == "}") {
-                std::set<unsigned int> readvar;
-                for (const Token *body = end->linkAt(-1); body != end; body = body->next()) {
-                    if (body->varId() == 0U)
-                        continue;
-                    if (!Token::simpleMatch(body->next(),"="))
-                        readvar.insert(body->varId());
-                    else if (readvar.find(body->varId()) != readvar.end())
-                        variables.erase(body->varId());
-                }
-            }
         }
 
         else if (Token::Match(tok->previous(), "[;{}]")) {
