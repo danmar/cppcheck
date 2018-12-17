@@ -5969,6 +5969,21 @@ private:
               "        memptr = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
+
+        // Pointer function argument (#3857)
+        check("void f(float * var)\n"
+              "{\n"
+              "  var[0] = 0.2f;\n"
+              "  var[0] = 0.2f;\n" // <-- is initialized twice
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'var[0]' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f(float * var)\n"
+              "{\n"
+              "  *var = 0.2f;\n"
+              "  *var = 0.2f;\n" // <-- is initialized twice
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable '*var' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantVarAssignment_struct() {
