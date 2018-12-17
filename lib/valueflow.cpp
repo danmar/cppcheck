@@ -1002,9 +1002,7 @@ static void valueFlowArray(TokenList *tokenlist)
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->varId() > 0U) {
             // array
-            if (tok->variable() &&
-                     tok->variable()->isArray() &&
-                     !tok->variable()->isStlType()) {
+            if (tok->variable() && tok->variable()->isArray() && !tok->variable()->isStlType()) {
                 ValueFlow::Value value{1};
                 value.setKnown();
                 setTokenValue(tok, value, tokenlist->getSettings());
