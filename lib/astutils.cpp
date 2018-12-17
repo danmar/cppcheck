@@ -1046,6 +1046,8 @@ bool isConstVarExpression(const Token *tok)
         return false;
     if (Token::Match(tok->previous(), "sizeof ("))
         return true;
+    if (Token::Match(tok, "( %type%"))
+        return true;
     if (Token::Match(tok, "%cop%")) {
         if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
             return false;

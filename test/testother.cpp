@@ -7527,6 +7527,24 @@ private:
 
         check("void g(int);\n"
               "void f(int x) {\n"
+              "   g((int)((x & 0x01) >> 7));\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(x&1)>>7' to function g is always 0\n", "", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g((int)0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
               "    x = 0;\n"
               "    g(x);\n"
               "}\n");
