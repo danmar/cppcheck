@@ -2804,30 +2804,30 @@ void CheckOther::checkConstArgument()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * functionScope : symbolDatabase->functionScopes) {
-        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if(!Token::simpleMatch(tok->astParent(), "("))
+    for (const Scope *functionScope : symbolDatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok->astParent(), "("))
                 continue;
-            if(!Token::Match(tok->astParent()->previous(), "%name%"))
+            if (!Token::Match(tok->astParent()->previous(), "%name%"))
                 continue;
-            if(Token::Match(tok->astParent()->previous(), "if|while|switch|sizeof"))
+            if (Token::Match(tok->astParent()->previous(), "if|while|switch|sizeof"))
                 continue;
-            if(tok == tok->astParent()->previous())
+            if (tok == tok->astParent()->previous())
                 continue;
-            if(!tok->hasKnownIntValue())
+            if (!tok->hasKnownIntValue())
                 continue;
-            if(Token::Match(tok, "%var%"))
+            if (Token::Match(tok, "%var%"))
                 continue;
-            if(Token::Match(tok, "++|--"))
+            if (Token::Match(tok, "++|--"))
                 continue;
-            if(isConstVarExpression(tok))
+            if (isConstVarExpression(tok))
                 continue;
             constArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
         }
     }
 }
 
-void CheckOther::constArgumentError(const Token *tok, const Token * ftok, const ValueFlow::Value *value)
+void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value)
 {
     MathLib::bigint intvalue = value ? value->intvalue : 0;
     const std::string expr = tok ? tok->expressionString() : std::string("x");
@@ -2835,9 +2835,5 @@ void CheckOther::constArgumentError(const Token *tok, const Token * ftok, const 
 
     const std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue);
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath,
-                Severity::style,
-                "constArgument",
-                errmsg,
-                CWE570, false);
+    reportError(errorPath, Severity::style, "constArgument", errmsg, CWE570, false);
 }

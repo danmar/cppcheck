@@ -1040,11 +1040,11 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     return (!parent->astOperand1()->valueType() || !parent->astOperand1()->valueType()->isIntegral());
 }
 
-bool isConstVarExpression(const Token * tok)
+bool isConstVarExpression(const Token *tok)
 {
     if (!tok)
         return false;
-    if(Token::Match(tok->previous(), "sizeof ("))
+    if (Token::Match(tok->previous(), "sizeof ("))
         return true;
     if (Token::Match(tok, "%cop%")) {
         if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
@@ -1061,7 +1061,6 @@ bool isConstVarExpression(const Token * tok)
         return tok->variable()->isConst();
     return false;
 }
-
 
 static bool nonLocal(const Variable* var)
 {

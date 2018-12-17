@@ -160,7 +160,7 @@ const Token *findLambdaEndToken(const Token *first);
  */
 bool isLikelyStreamRead(bool cpp, const Token *op);
 
-bool isConstVarExpression(const Token * tok);
+bool isConstVarExpression(const Token *tok);
 
 class FwdAnalysis {
 public:

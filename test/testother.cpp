@@ -7517,7 +7517,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constArgument() {
+    void constArgument()
+    {
         check("void g(int);\n"
               "void f(int x) {\n"
               "   g((x & 0x01) >> 7);\n"
