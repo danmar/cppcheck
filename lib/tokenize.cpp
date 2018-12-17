@@ -8839,7 +8839,7 @@ void Tokenizer::simplifyStructDecl()
             Token *restart = next;
 
             // check for named type
-            if (Token::Match(tok->next(), "*|&| %type% ,|;|[|=|(|{")) {
+            if (Token::Match(tok->next(), "const| *|&| const| %type% ,|;|[|=|(|{")) {
                 tok->insertToken(";");
                 tok = tok->next();
                 while (!Token::Match(start, "struct|class|union|enum")) {
