@@ -123,6 +123,7 @@ private:
         TEST_CASE(template83);
         TEST_CASE(template84); // #8880
         TEST_CASE(template85); // #8902 crash
+        TEST_CASE(template86); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1020,8 +1021,6 @@ private:
 
         const char expected[] = "class Fred<float> ; "
                                 "class Fred<int> ; "
-                                "template void Fred<float> :: f ( ) ; "
-                                "template void Fred<int> :: g ( ) ; "
                                 "class Fred<float> { void f ( ) ; void g ( ) ; } ; "
                                 "void Fred<float> :: f ( ) { } "
                                 "void Fred<float> :: g ( ) { } "
@@ -1419,8 +1418,8 @@ private:
                             "void keep_range(T& value, const T mini, const T maxi){}\n"
                             "template void keep_range<float>(float& v, const float l, const float u);\n"
                             "template void keep_range<int>(int& v, const int l, const int u);";
-        const char exp[] = "void keep_range<float> ( float & v , const float l , const float u ) ; "
-                           "void keep_range<int> ( int & v , const int l , const int u ) ; "
+        const char exp[] = "void keep_range<float> ( float & value , const float mini , const float maxi ) ; "
+                           "void keep_range<int> ( int & value , const int mini , const int maxi ) ; "
                            "void keep_range<float> ( float & value , const float mini , const float maxi ) { } "
                            "void keep_range<int> ( int & value , const int mini , const int maxi ) { }";
         ASSERT_EQUALS(exp, tok(code));
@@ -1445,7 +1444,7 @@ private:
         const char code[] = "template<typename T>\n"
                             "T foo(T& value){ return value; }\n"
                             "template std::vector<std::vector<int>> foo<std::vector<std::vector<int>>>(std::vector<std::vector<int>>& v);";
-        const char exp[] = "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & v ) ; "
+        const char exp[] = "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & value ) ; "
                            "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & value ) { return value ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
@@ -1458,7 +1457,7 @@ private:
                             "std::vector<std::vector<int>> v;\n"
                             "v = foo<std::vector<std::vector<int>>>(v);\n";
         const char exp[] = "namespace NS { "
-                           "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & v ) ; "
+                           "std :: vector < std :: vector < int > > foo<std::vector<std::vector<int>>> ( std :: vector < std :: vector < int > > & value ) ; "
                            "} "
                            "std :: vector < std :: vector < int > > v ; "
                            "v = foo<std::vector<std::vector<int>>> ( v ) ; "
@@ -1634,6 +1633,21 @@ private:
                             "template<typename U, typename std::enable_if<(!std::is_fundamental<U>::value)>::type>\n"
                             "void C<T>::foo() {}";
         // @todo the output is very wrong but we are only worried about the crash for now
+        tok(code);
+    }
+
+    void template86() { // crash
+        const char code[] = "struct S {\n"
+                            "  S();\n"
+                            "};\n"
+                            "template <typename T>\n"
+                            "struct U {\n"
+                            "  static S<T> u;\n"
+                            "};\n"
+                            "template <typename T>\n"
+                            "S<T> U<T>::u;\n"
+                            "template S<int> U<int>::u;\n"
+                            "S<int> &i = U<int>::u;";
         tok(code);
     }
 
@@ -2206,7 +2220,6 @@ private:
                       "template < int type > struct Barney ; "
                       "struct Barney<1> { } ; "
                       "class Fred<1> ; "
-                      "template class Fred<1> ; "
                       "} "
                       "class NS :: Fred<1> { "
                       "public: "
