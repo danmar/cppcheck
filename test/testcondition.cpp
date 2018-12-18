@@ -2715,6 +2715,9 @@ private:
               "    if (!(strcmp(x, y) == 0)) { return; }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int a[]){ if (a == 0){} }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
