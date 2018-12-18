@@ -90,6 +90,7 @@ bool TestFixture::prepareTest(const char testname[])
     // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
         // Tests will be executed - prepare them
+        mTestname = testname;
         ++countTests;
         if (quiet_tests) {
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
@@ -102,10 +103,17 @@ bool TestFixture::prepareTest(const char testname[])
     return false;
 }
 
+void TestFixture::teardownTest()
+{
+    mTestname.clear();
+}
+
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
 {
     std::ostringstream ret;
-    ret << filename << ':' << linenr;
+    ret << filename << ':' << linenr << ':' << classname;
+    if (!mTestname.empty())
+        ret << ':' << mTestname;
     return ret.str();
 }
 
