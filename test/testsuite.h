@@ -48,6 +48,7 @@ protected:
     virtual void run() = 0;
 
     bool prepareTest(const char testname[]);
+    std::string getLocationStr(const char * const filename, const unsigned int linenr) const;
 
     void assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
 
