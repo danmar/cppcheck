@@ -79,7 +79,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
             return (unsigned int)i;
 
     // The "mFiles" vector remembers what files have been tokenized..
-    mFiles.push_back(Path::simplifyPath(fileName));
+    mFiles.push_back(fileName);
 
     // Update mIsC and mIsCpp properties
     if (mFiles.size() == 1) { // Update only useful if first file added to _files

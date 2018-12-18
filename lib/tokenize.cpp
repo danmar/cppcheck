@@ -1734,7 +1734,7 @@ bool Tokenizer::createTokens(std::istream &code,
     // make sure settings specified
     assert(mSettings);
 
-    return list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), mSettings->basePaths));
+    return list.createTokens(code, FileName);
 }
 
 void Tokenizer::createTokens(const simplecpp::TokenList *tokenList)
