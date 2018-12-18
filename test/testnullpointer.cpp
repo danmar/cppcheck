@@ -1345,9 +1345,8 @@ private:
               "  int i = s ? s->value + 1 \n"
               "            : s->value - 1; // <-- null ptr dereference \n"
               "  return i;\n"
-              "}\n"
-              "int main(){f(0);}\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Possible null pointer dereference: s\n", errout.str());
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Possible null pointer dereference: s\n", "", errout.str());
     }
 
     void nullpointer30() { // #6392
@@ -2596,7 +2595,7 @@ private:
               "  p = s - 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", "", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
@@ -2608,7 +2607,7 @@ private:
               "  s -= 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n", "", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
@@ -2628,7 +2627,7 @@ private:
               "  char * p = s + 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", "", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
@@ -2640,7 +2639,7 @@ private:
               "  char * p = 20 + s;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", "", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
@@ -2652,7 +2651,7 @@ private:
               "  s += 20;\n"
               "}\n"
               "void bar() { foo(0); }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Pointer addition with NULL pointer.\n", "", errout.str());
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
@@ -2708,7 +2707,7 @@ private:
             "int main() {\n"
             "  call(4,0);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (error) Null pointer dereference: p\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (error) Null pointer dereference: p\n", "", errout.str());
 
         ctu("void dostuff(int *x, int *y) {\n"
             "  if (!var)\n"
