@@ -2989,7 +2989,13 @@ private:
 
         {
             const char code[] = "struct {int a;} const array[3] = {0};";
-            const char expected[] = "struct Anonymous0 { int a ; } const array [ 3 ] = { 0 } ;";
+            const char expected[] = "struct Anonymous0 { int a ; } ; struct Anonymous0 const array [ 3 ] = { 0 } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "static struct {int a;} const array[3] = {0};";
+            const char expected[] = "struct Anonymous0 { int a ; } ; static struct Anonymous0 const array [ 3 ] = { 0 } ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
 
