@@ -555,7 +555,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             const Token *tok2 = Token::findmatch(tok, "{|;");
             if (tok2 && tok2->str() == "{")
                 tok = tok2->link();
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|. %name% ::|<") ||
+        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|& %name% ::|<") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
 
