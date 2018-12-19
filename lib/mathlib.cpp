@@ -813,9 +813,10 @@ bool MathLib::isIntHex(const std::string& str)
                 state = DIGIT;
             else
                 return false;
+            break;
         case DIGIT:
             if (isxdigit(static_cast<unsigned char>(*it)))
-                ; //  state = DIGITS;
+                ; //  state = DIGIT;
             else
                 return isValidIntegerSuffix(it,str.end());
             break;

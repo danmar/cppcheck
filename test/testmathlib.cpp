@@ -668,6 +668,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isIntHex("+0x"));
         ASSERT_EQUALS(false, MathLib::isIntHex("-0x"));
         ASSERT_EQUALS(false, MathLib::isIntHex("0x"));
+        ASSERT_EQUALS(false, MathLib::isIntHex("0xl"));
         ASSERT_EQUALS(false, MathLib::isIntHex("0xx"));
         ASSERT_EQUALS(false, MathLib::isIntHex("-0175"));
         ASSERT_EQUALS(false, MathLib::isIntHex("-0_garbage_"));
