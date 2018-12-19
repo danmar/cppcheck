@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e # abort on error
-set -x # be verbose
+#set -x # be verbose
 
 if [[ $(pwd) == */test/cfg ]] ; then # we are in test/cfg
 	CPPCHECK="../../cppcheck"
@@ -121,6 +121,5 @@ else
         set -e
         EXTRACTED_DEFINES=$(echo "$EXTRACTED_DEFINES" | sed 's/<define name="/#define /g' | sed 's/" value="/ /g' | sed 's/"\/>//g')
         echo "$EXTRACTED_DEFINES" | gcc -fsyntax-only -xc -Werror -
-        set -x
     done
 fi
