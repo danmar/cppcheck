@@ -124,6 +124,7 @@ private:
         TEST_CASE(template84); // #8880
         TEST_CASE(template85); // #8902 crash
         TEST_CASE(template86); // crash
+        TEST_CASE(template87);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1649,6 +1650,18 @@ private:
                             "template S<int> U<int>::u;\n"
                             "S<int> &i = U<int>::u;";
         tok(code);
+    }
+
+    void template87() {
+        const char code[] = "template<typename T>\n"
+                            "T f1(T t) { return t; }\n"
+                            "template const char * f1<const char *>();\n"
+                            "template const char & f1<const char &>();";
+        const char exp[] = "const char * f1<constchar*> ( const char * t ) ; "
+                           "const char & f1<constchar&> ( const char & t ) ; "
+                           "const char * f1<constchar*> ( const char * t ) { return t ; } "
+                           "const char & f1<constchar&> ( const char & t ) { return t ; }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

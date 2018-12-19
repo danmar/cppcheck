@@ -6073,7 +6073,7 @@ void Tokenizer::simplifyStaticConst()
                 if (behindOther)
                     break;
                 if (!Token::Match(leftTok, "%type%|struct|::") ||
-                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator"))) {
+                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator|template"))) {
                     break;
                 }
             }
