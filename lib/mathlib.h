@@ -92,8 +92,12 @@ public:
     static bool isBin(const std::string& str);
 
     static std::string getSuffix(const std::string& value);
-    static bool isValidIntegerSuffix(const std::string& str);
-    static bool isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end);
+    /**
+     * \param[in] str string
+     * \param[in] supportMicrosoftExtensions support Microsoft extension: i64
+     *  \return true if str is a non-empty valid integer suffix
+     */
+    static bool isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions=true);
 
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);
