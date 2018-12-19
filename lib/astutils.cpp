@@ -1277,6 +1277,11 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
                 return ChildrenToVisit::none;
             }
         }
+        // Unknown argument type => it might be some reference type..
+        if (mCpp && tok->str() == "." && tok->astOperand1() && tok->astOperand1()->variable() && !tok->astOperand1()->valueType()) {
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
         if (Token::Match(tok, ".|["))
             return ChildrenToVisit::op1;
         return ChildrenToVisit::op1_and_op2;

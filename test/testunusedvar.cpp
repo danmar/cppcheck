@@ -4412,13 +4412,39 @@ private:
         );
         ASSERT_EQUALS("", errout.str());
 
-        // Unknown variable
+        // Unknown argument type
         functionVariableUsage(
             "void A::b(Date& result) {"
             "  result = 12;\n"
             "}"
         );
         ASSERT_EQUALS("", errout.str());
+
+        {
+            // #8914
+            functionVariableUsage( // assume unknown argument type is reference
+                "void fun(Date result) {"
+                "  result.x = 12;\n"
+                "}"
+            );
+            ASSERT_EQUALS("", errout.str());
+
+            functionVariableUsage( // there is no reference type in C
+                "void fun(Date result) {"
+                "  result.x = 12;\n"
+                "}",
+                "test.c"
+            );
+            ASSERT_EQUALS("[test.c:1]: (style) Variable 'result.x' is assigned a value that is never used.\n", errout.str());
+
+            functionVariableUsage(
+                "struct Date { int x; };\n"
+                "void fun(Date result) {"
+                "  result.x = 12;\n"
+                "}"
+            );
+            ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'result.x' is assigned a value that is never used.\n", errout.str());
+        }
 
         // Unknown struct type
         functionVariableUsage(
