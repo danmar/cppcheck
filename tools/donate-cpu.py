@@ -34,8 +34,8 @@ def checkRequirements():
         try:
             subprocess.call([app, '--version'])
         except OSError:
-           print(app + ' is required')
-           result = False
+            print(app + ' is required')
+            result = False
     return result
 
 def getCppcheck(cppcheckPath):
@@ -89,7 +89,6 @@ def compile(cppcheckPath, jobs):
 
 def getCppcheckVersions():
     print('Connecting to server to get Cppcheck versions..')
-    package = None
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('cppcheck.osuosl.org', 8000)
     try:
@@ -97,7 +96,7 @@ def getCppcheckVersions():
         sock.send(b'GetCppcheckVersions\n')
         versions = sock.recv(256)
     except socket.error:
-        return ['head', '1.85']
+        return None
     sock.close()
     return versions.decode('utf-8').split()
 
@@ -362,6 +361,9 @@ while True:
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
     cppcheckVersions = getCppcheckVersions()
+    if cppcheckVersions is None:
+        print('Failed to communicate with server, retry later')
+        sys.exit(1)
     for ver in cppcheckVersions:
         if ver == 'head':
             if compile(cppcheckPath, jobs) == False:

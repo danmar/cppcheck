@@ -79,7 +79,7 @@ unsigned int TokenList::appendFileIfNew(const std::string &fileName)
             return (unsigned int)i;
 
     // The "mFiles" vector remembers what files have been tokenized..
-    mFiles.push_back(Path::simplifyPath(fileName));
+    mFiles.push_back(fileName);
 
     // Update mIsC and mIsCpp properties
     if (mFiles.size() == 1) { // Update only useful if first file added to _files
@@ -591,6 +591,8 @@ static void compileTerm(Token *&tok, AST_state& state)
             state.op.push(tok);
             if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
+            else if (Token::Match(tok, "%name% . . ."))
+                tok = tok->tokAt(3);
             tok = tok->next();
             if (Token::Match(tok, "%str%")) {
                 while (Token::Match(tok, "%name%|%str%"))

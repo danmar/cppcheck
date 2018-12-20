@@ -394,6 +394,7 @@ private:
         TEST_CASE(simplifyOperatorName8); // ticket #5706
         TEST_CASE(simplifyOperatorName9); // ticket #5709 - comma operator not properly tokenized
         TEST_CASE(simplifyOperatorName10); // #8746 - using a::operator=
+        TEST_CASE(simplifyOperatorName11); // #8889
 
         TEST_CASE(simplifyNullArray);
 
@@ -6168,6 +6169,23 @@ private:
         ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code));
     }
 
+    void simplifyOperatorName11() { // #8889
+        const char code[] = "auto operator = (const Fred & other) -> Fred & ;";
+        ASSERT_EQUALS("auto operator= ( const Fred & other ) . Fred & ;", tokenizeAndStringify(code));
+
+        const char code1[] = "auto operator = (const Fred & other) -> Fred & { }";
+        ASSERT_EQUALS("auto operator= ( const Fred & other ) . Fred & { }", tokenizeAndStringify(code1));
+
+        const char code2[] = "template <typename T> void g(S<&T::operator+ >) {}";
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: operator+ > ) { }", tokenizeAndStringify(code2));
+
+        const char code3[] = "template <typename T> void g(S<&T::operator int>) {}";
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: operatorint > ) { }", tokenizeAndStringify(code3));
+
+        const char code4[] = "template <typename T> void g(S<&T::template operator- <double> >) {}";
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: template operator- < double > > ) { }", tokenizeAndStringify(code4));
+    }
+
     void simplifyNullArray() {
         ASSERT_EQUALS("* ( foo . bar [ 5 ] ) = x ;", tokenizeAndStringify("0[foo.bar[5]] = x;"));
     }
@@ -8546,6 +8564,8 @@ private:
         // This two unit tests were added to avoid a crash. The actual correct AST result for non-executable code has not been determined so far.
         ASSERT_EQUALS("Cpublica::b:::", testAst("class C : public ::a::b<bool> { };"));
         ASSERT_EQUALS("AB: f( abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
+
+        ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
     }
 
     void astcast() {

@@ -7034,6 +7034,18 @@ private:
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { virtual void f() final; };");
         ASSERT_EQUALS("", errout.str());
+
+        checkOverride("class Base {\n"
+                      "public:\n"
+                      "    virtual auto foo( ) const -> size_t { return 1; }\n"
+                      "    virtual auto bar( ) const -> size_t { return 1; }\n"
+                      "};\n"
+                      "class Derived : public Base {\n"
+                      "public :\n"
+                      "    auto foo( ) const -> size_t { return 0; }\n"
+                      "    auto bar( ) const -> size_t override { return 0; }\n"
+                      "};");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'foo' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
     }
 
     void overrideCVRefQualifiers() {

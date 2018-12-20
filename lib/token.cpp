@@ -1179,6 +1179,8 @@ std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() co
 
     start = goToLeftParenthesis(start, end);
     end = goToRightParenthesis(start, end);
+    if (Token::simpleMatch(end, "{"))
+        end = end->link();
     return std::pair<const Token *, const Token *>(start,end);
 }
 

@@ -85,6 +85,9 @@ private:
 
         // dead pointer
         TEST_CASE(deadPointer);
+
+        // whole program analysis
+        TEST_CASE(ctu);
     }
 
     void checkUninitVar(const char code[], const char fname[] = "test.cpp", bool debugwarnings = false) {
@@ -4012,6 +4015,71 @@ private:
                          "    rep->setEventType(NDB_LE_Connected);\n"
                          "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void ctu(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        // Check code..
+        std::list<Check::FileInfo*> fileInfo;
+        CheckUninitVar check(&tokenizer, &settings, this);
+        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
+        check.analyseWholeProgram(fileInfo, settings, *this);
+        while (!fileInfo.empty()) {
+            delete fileInfo.back();
+            fileInfo.pop_back();
+        }
+    }
+
+    void ctu() {
+        ctu("void f(int *p) {\n"
+            "    a = *p;\n"
+            "}\n"
+            "int main() {\n"
+            "  int x;\n"
+            "  f(&x);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) using argument p that points at uninitialized variable x\n", errout.str());
+
+        ctu("void use(int *p) { a = *p + 3; }\n"
+            "void call(int x, int *p) { x++; use(p); }\n"
+            "int main() {\n"
+            "  int x;\n"
+            "  call(4,&x);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) using argument p that points at uninitialized variable x\n", errout.str());
+
+        ctu("void dostuff(int *x, int *y) {\n"
+            "  if (!var)\n"
+            "    return -1;\n"  // <- early return
+            "  *x = *y;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  int x;\n"
+            "  dostuff(a, &x);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("void dostuff(int *x, int *y) {\n"
+            "  if (cond)\n"
+            "    *y = -1;\n"  // <- conditionally written
+            "  *x = *y;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  int x;\n"
+            "  dostuff(a, &x);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 

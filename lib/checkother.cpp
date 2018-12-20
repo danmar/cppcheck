@@ -449,7 +449,7 @@ void CheckOther::checkRedundantAssignment()
                 }
 
                 // Do not warn about assignment with 0 / NULL
-                if (Token::Match(tok->astOperand2(), "0|NULL|nullptr"))
+                if (Token::simpleMatch(tok->astOperand2(), "0") || FwdAnalysis::isNullOperand(tok->astOperand2()))
                     continue;
 
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
@@ -494,6 +494,8 @@ void CheckOther::checkRedundantAssignment()
                 // there is redundant assignment. Is there a case between the assignments?
                 bool hasCase = false;
                 for (const Token *tok2 = tok; tok2 != nextAssign; tok2 = tok2->next()) {
+                    if (tok2->str() == "break" || tok2->str() == "return")
+                        break;
                     if (tok2->str() == "case") {
                         hasCase = true;
                         break;
@@ -2797,4 +2799,43 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, bool shado
     const char *id = shadowVar ? "shadowVar" : "shadowFunction";
     std::string message = "$symbol:" + varname + "\nLocal variable $symbol shadows outer " + (shadowVar ? "variable" : "function");
     reportError(errorPath, Severity::style, id, message, CWE398, false);
+}
+
+void CheckOther::checkConstArgument()
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *functionScope : symbolDatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok->astParent(), "("))
+                continue;
+            if (!Token::Match(tok->astParent()->previous(), "%name%"))
+                continue;
+            if (Token::Match(tok->astParent()->previous(), "if|while|switch|sizeof"))
+                continue;
+            if (tok == tok->astParent()->previous())
+                continue;
+            if (!tok->hasKnownIntValue())
+                continue;
+            if (Token::Match(tok, "%var%"))
+                continue;
+            if (Token::Match(tok, "++|--"))
+                continue;
+            if (isConstVarExpression(tok))
+                continue;
+            constArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
+        }
+    }
+}
+
+void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value)
+{
+    MathLib::bigint intvalue = value ? value->intvalue : 0;
+    const std::string expr = tok ? tok->expressionString() : std::string("x");
+    const std::string fun = ftok ? ftok->str() : std::string("f");
+
+    const std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue);
+    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(errorPath, Severity::style, "constArgument", errmsg, CWE570, false);
 }

@@ -56,7 +56,8 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation>ここにエラー指摘のあるファイルを開くアプリケーションを追加できます。そのアプリケーションの名前、実行ファイル名、コマンドラインパラメータを指定してください。
+        <translatorcomment>fix Japanese word 名前 to 表示名</translatorcomment>
+        <translation>ここにエラー指摘のあるファイルを開くアプリケーションを追加できます。そのアプリケーションの表示名、実行ファイル名、コマンドラインパラメータを指定してください。
 
 パラメータ中の以下の文字列を使用してパラメータ(Parameters:)に設定します。これらの文字列はアプリケーションが実行されたときに、適切な値に変換されます。:
 (file) - エラー指摘のあるファイル
@@ -71,12 +72,12 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="application.ui" line="76"/>
         <source>&amp;Name:</source>
-        <translation>名称(&amp;N):</translation>
+        <translation>表示名(&amp;N):</translation>
     </message>
     <message>
         <location filename="application.ui" line="86"/>
         <source>&amp;Executable:</source>
-        <translation>実行バイナリ(&amp;E):</translation>
+        <translation>実行ファイルのパス(&amp;E):</translation>
     </message>
     <message>
         <location filename="application.ui" line="96"/>
@@ -106,7 +107,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="applicationdialog.cpp" line="78"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
-        <translation>アプリケーションの名称とパスと(オプションの)引数を指定してください!</translation>
+        <translation>アプリケーションの表示名と実行ファイルのパスと(オプションの)引数を指定してください!</translation>
     </message>
 </context>
 <context>
@@ -434,13 +435,13 @@ Parameters: -l(line) (file)</translation>
         <location filename="mainwindow.cpp" line="563"/>
         <location filename="mainwindow.cpp" line="668"/>
         <location filename="mainwindow.cpp" line="690"/>
-        <location filename="mainwindow.cpp" line="1119"/>
-        <location filename="mainwindow.cpp" line="1244"/>
-        <location filename="mainwindow.cpp" line="1365"/>
-        <location filename="mainwindow.cpp" line="1506"/>
-        <location filename="mainwindow.cpp" line="1529"/>
-        <location filename="mainwindow.cpp" line="1600"/>
-        <location filename="mainwindow.cpp" line="1670"/>
+        <location filename="mainwindow.cpp" line="1118"/>
+        <location filename="mainwindow.cpp" line="1243"/>
+        <location filename="mainwindow.cpp" line="1364"/>
+        <location filename="mainwindow.cpp" line="1505"/>
+        <location filename="mainwindow.cpp" line="1528"/>
+        <location filename="mainwindow.cpp" line="1599"/>
+        <location filename="mainwindow.cpp" line="1669"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -802,7 +803,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="131"/>
         <source>A&amp;nalyze</source>
-        <translation>解析(&amp;n)</translation>
+        <translation>チェック(&amp;n)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="219"/>
@@ -998,12 +999,12 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="803"/>
         <source>Reanalyze and check library</source>
-        <translation>ライブラリを再解析する</translation>
+        <translation>ライブラリを再チェックする</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="811"/>
         <source>Check configuration (defines, includes)</source>
-        <translation>解析の設定(define、インクルード)</translation>
+        <translation>チェックの設定(define、インクルード)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="321"/>
@@ -1021,7 +1022,7 @@ Cppcheckの古いバージョンの設定には互換性がありません。エ
     <message>
         <location filename="mainwindow.cpp" line="564"/>
         <source>You must close the project file before selecting new files or directories!</source>
-        <translation>新しいファイル／ディレクトリを解析するには現在のプロジェクトを閉じてください!</translation>
+        <translation>新しいファイル／ディレクトリをチェックするには現在のプロジェクトを閉じてください!</translation>
     </message>
     <message>
         <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
@@ -1054,7 +1055,7 @@ Cppcheckの古いバージョンの設定には互換性がありません。エ
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
-        <translation>プロジェクトファイルが検出されました: %1
+        <translation>プロジェクトファイルを検出しました: %1
 
 現在のプロジェクトの代わりにこのプロジェクトファイルを読み込んでもかまいませんか？</translation>
     </message>
@@ -1127,7 +1128,7 @@ Do you want to proceed checking without using any of these project files?</sourc
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="932"/>
+        <location filename="mainwindow.cpp" line="931"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
@@ -1136,12 +1137,12 @@ Do you want to proceed checking without using any of these project files?</sourc
         <translation type="obsolete">%1の読み込みに失敗しました。CppCheckのインストールに失敗しています。コマンドライン引数に --data-dir=&lt;directory&gt; を指定して、このファイルの場所を指定してください。 </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="932"/>
+        <location filename="mainwindow.cpp" line="931"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.</source>
-        <translation>%1のロードに失敗しました。あなたの Cppcheck は正しくインストールされていません。あなたは --data-dir=&lt;directory&gt; コマンドラインオプションでこのファイルの場所を指定してできます。ただし、この --data-dir はインストールスクリプトによってサポートされており、GUI版ではサポートされていません。全ての設定は調整済みでなければなりません。</translation>
+        <translation>%1のロードに失敗しました。あなたの Cppcheck は正しくインストールされていません。あなたは --data-dir=&lt;directory&gt; コマンドラインオプションでロードするファイルの場所を指定できます。ただし、この --data-dir はインストールスクリプトによってサポートされており、GUI版ではサポートされていません。全ての設定は調整済みでなければなりません。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1120"/>
+        <location filename="mainwindow.cpp" line="1119"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.Do you want to proceed?</source>
@@ -1150,13 +1151,13 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
 新しくXMLファイルを開くと現在の結果が削除されます。実行しますか？</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1135"/>
-        <location filename="mainwindow.cpp" line="1315"/>
+        <location filename="mainwindow.cpp" line="1134"/>
+        <location filename="mainwindow.cpp" line="1314"/>
         <source>XML files (*.xml)</source>
         <translation>XML ファイル (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1137"/>
+        <location filename="mainwindow.cpp" line="1136"/>
         <source>Open the report file</source>
         <translation>レポートを開く</translation>
     </message>
@@ -1169,12 +1170,12 @@ Do you want to stop the checking and exit Cppcheck?</source>
 解析を停止してCppcheckを終了しますか？.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1286"/>
+        <location filename="mainwindow.cpp" line="1285"/>
         <source>License</source>
         <translation>ライセンス</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1293"/>
+        <location filename="mainwindow.cpp" line="1292"/>
         <source>Authors</source>
         <translation>作者</translation>
     </message>
@@ -1184,7 +1185,7 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XML ファイル (*.xml);;テキストファイル (*.txt);;CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1308"/>
+        <location filename="mainwindow.cpp" line="1307"/>
         <source>Save the report file</source>
         <translation>レポートを保存</translation>
     </message>
@@ -1197,34 +1198,34 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XMLファイルのバージョン2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1319"/>
+        <location filename="mainwindow.cpp" line="1318"/>
         <source>Text files (*.txt)</source>
         <translation>テキストファイル (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1323"/>
+        <location filename="mainwindow.cpp" line="1322"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV形式ファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1367"/>
+        <location filename="mainwindow.cpp" line="1366"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1414"/>
+        <location filename="mainwindow.cpp" line="1413"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>プロジェクトファイル (*.cppcheck);;すべてのファイル(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1416"/>
+        <location filename="mainwindow.cpp" line="1415"/>
         <source>Select Project File</source>
         <translation>プロジェクトファイルを選択</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="156"/>
-        <location filename="mainwindow.cpp" line="1444"/>
-        <location filename="mainwindow.cpp" line="1569"/>
+        <location filename="mainwindow.cpp" line="1443"/>
+        <location filename="mainwindow.cpp" line="1568"/>
         <source>Project:</source>
         <translation>プロジェクト:</translation>
     </message>
@@ -1278,7 +1279,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
 みつかったプロジェクトファイルを使用せずにチェックしますか?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1240"/>
+        <location filename="mainwindow.cpp" line="1239"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1287,37 +1288,37 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 チェックを中断して、Cppcheckを終了しますか?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1306"/>
+        <location filename="mainwindow.cpp" line="1305"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML ファイル (*.xml);;テキストファイル (*.txt);;CSVファイル (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1507"/>
+        <location filename="mainwindow.cpp" line="1506"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>ビルドディレクトリ&apos;%1&apos;がありません。作成しますか?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1530"/>
+        <location filename="mainwindow.cpp" line="1529"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
         <translation>&apos;%1&apos;のインポートに失敗しました。(チェック中断)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1554"/>
+        <location filename="mainwindow.cpp" line="1553"/>
         <source>Project files (*.cppcheck)</source>
         <translation>プロジェクトファイル (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1556"/>
+        <location filename="mainwindow.cpp" line="1555"/>
         <source>Select Project Filename</source>
         <translation>プロジェクトファイル名を選択</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1601"/>
+        <location filename="mainwindow.cpp" line="1600"/>
         <source>No project file loaded</source>
         <translation>プロジェクトファイルが読み込まれていません</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1665"/>
+        <location filename="mainwindow.cpp" line="1664"/>
         <source>The project file
 
 %1
@@ -1329,7 +1330,7 @@ Do you want to remove the file from the recently used projects -list?</source>
 最近使用したプロジェクトのリストからこのファイルを取り除きますか？</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="105"/>
+        <location filename="main.cpp" line="106"/>
         <source>Cppcheck GUI.
 
 Syntax:
@@ -1370,7 +1371,7 @@ Options:
     --data-dir=&lt;directory&gt;  GUI のデータファイル(翻訳やcfg)のあるディレクトリを指定する。このオプションを指定した場合、GUIで起動しません。</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="120"/>
+        <location filename="main.cpp" line="121"/>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation>Cppcheck GUI - コマンドラインパラメータ</translation>
     </message>
@@ -1520,7 +1521,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="560"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012からテキストをコピーペーストしてください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;MISRA C 2012 pdfのAppendix A &amp;quot;Summary of guidelines&amp;quot; からテキストをコピーペーストしてください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="567"/>
@@ -1573,7 +1574,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="174"/>
         <source>Undefines:</source>
-        <translation>定義取り消し(Undefines)</translation>
+        <translation>定義取り消し(Undefines):</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="184"/>
@@ -1611,7 +1612,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="294"/>
         <source>Checking</source>
-        <translation>解析</translation>
+        <translation>チェック</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="319"/>
@@ -1718,12 +1719,12 @@ Options:
 <context>
     <name>ProjectFileDialog</name>
     <message>
-        <location filename="projectfiledialog.cpp" line="59"/>
+        <location filename="projectfiledialog.cpp" line="71"/>
         <source>Project file: %1</source>
         <translation>プロジェクトファイル:%1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="340"/>
+        <location filename="projectfiledialog.cpp" line="343"/>
         <source>Select Cppcheck build dir</source>
         <translation>Cppcheckビルドディレクトリ</translation>
     </message>
@@ -1732,47 +1733,47 @@ Options:
         <translation type="vanished">Visual Studio (*.sln *.vcxproj);;コンパイルデータベース (compile_commands.json)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="604"/>
+        <location filename="projectfiledialog.cpp" line="570"/>
         <source>Select include directory</source>
         <translation>includeディレクトリを選択</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="584"/>
+        <location filename="projectfiledialog.cpp" line="550"/>
         <source>Select a directory to check</source>
         <translation>チェックするディレクトリを選択してください</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="247"/>
+        <location filename="projectfiledialog.cpp" line="259"/>
         <source>(no rule texts file)</source>
         <translation>(ルールテキストファイルがない)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="253"/>
+        <location filename="projectfiledialog.cpp" line="265"/>
         <source>Clang-tidy (not found)</source>
         <translation>Clang-tidy (みつかりません)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="376"/>
+        <location filename="projectfiledialog.cpp" line="379"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="377"/>
+        <location filename="projectfiledialog.cpp" line="380"/>
         <source>Compile database</source>
         <translation>コンパイルデータベース</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="378"/>
+        <location filename="projectfiledialog.cpp" line="381"/>
         <source>Borland C++ Builder 6</source>
         <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="379"/>
+        <location filename="projectfiledialog.cpp" line="382"/>
         <source>Import Project</source>
         <translation>プロジェクトのインポート</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="624"/>
+        <location filename="projectfiledialog.cpp" line="590"/>
         <source>Select directory to ignore</source>
         <translation>除外するディレクトリを選択してください</translation>
     </message>
@@ -1785,12 +1786,12 @@ Options:
         <translation type="vanished">抑制するエラーID(error id)を選択してください</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="706"/>
+        <location filename="projectfiledialog.cpp" line="675"/>
         <source>Select MISRA rule texts file</source>
         <translation>MISRAルールテキストファイルを選択</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="706"/>
+        <location filename="projectfiledialog.cpp" line="675"/>
         <source>Misra rule texts file (%1)</source>
         <translation>Misraルールテキストファイル (%1)</translation>
     </message>
@@ -1841,9 +1842,9 @@ Options:
         <translation>行 %1: 扱われていない要素(Unhandled element) %2</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="188"/>
+        <location filename="projectfiledialog.cpp" line="200"/>
         <source> (Not found)</source>
-        <translation> (みつかりません)</translation>
+        <translation> (見つかりません)</translation>
     </message>
 </context>
 <context>
@@ -1872,24 +1873,24 @@ Options:
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>Severity</source>
-        <translation>警告種別</translation>
+        <translation>警告の種別</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>Line</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>Summary</source>
-        <translation>内容</translation>
+        <translation>要約</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="137"/>
@@ -1964,7 +1965,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="617"/>
         <source>Hide all with id</source>
-        <translation>IDを表示しない</translation>
+        <translation>IDで非表示を指定</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="618"/>
@@ -1978,7 +1979,7 @@ Options:
     </message>
     <message>
         <location filename="resultstree.cpp" line="649"/>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>Tag</source>
         <translation>タグ</translation>
     </message>
@@ -2040,17 +2041,17 @@ Please select the directory where file is located.</source>
         <translation>ディレクトリを選択</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>Inconclusive</source>
         <translation>結論のでない</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1347"/>
+        <location filename="resultstree.cpp" line="1342"/>
         <source>Since date</source>
         <translation>日付</translation>
     </message>
@@ -2147,7 +2148,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <location filename="resultsview.cpp" line="321"/>
-        <location filename="resultsview.cpp" line="342"/>
+        <location filename="resultsview.cpp" line="340"/>
         <source>Failed to read the report.</source>
         <translation>レポートの読み込みに失敗.</translation>
     </message>
@@ -2165,27 +2166,27 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="vanished">メッセージ</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="394"/>
+        <location filename="resultsview.cpp" line="389"/>
         <source>First included by</source>
         <translation>は次のものが最初にインクルードしました</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="397"/>
+        <location filename="resultsview.cpp" line="392"/>
         <source>Id</source>
         <translation>ID</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="466"/>
+        <location filename="resultsview.cpp" line="461"/>
         <source>Clear Log</source>
         <translation>ログの消去</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="467"/>
+        <location filename="resultsview.cpp" line="462"/>
         <source>Copy this Log entry</source>
         <translation>このログ項目をコピー</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="468"/>
+        <location filename="resultsview.cpp" line="463"/>
         <source>Copy complete Log</source>
         <translation>ログ全体をコピー</translation>
     </message>
@@ -2205,7 +2206,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="37"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
-        <translation>オプション: ファイル名を入力(言語は自動判定)して&quot;解析&quot;をクリックしてください:</translation>
+        <translation>オプション: ファイル名を入力(言語は自動判定)して&quot;チェック&quot;をクリックしてください:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
@@ -2215,7 +2216,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="scratchpad.ui" line="78"/>
         <source>Check</source>
-        <translation>解析</translation>
+        <translation>チェック</translation>
     </message>
 </context>
 <context>
@@ -2273,12 +2274,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="142"/>
         <source>Enable inline suppressions</source>
-        <translation>inline抑制を有効</translation>
+        <translation>inline抑制を有効にする</translation>
     </message>
     <message>
         <location filename="settings.ui" line="149"/>
         <source>Check for inconclusive errors also</source>
-        <translation>結論のでない指摘も解析する</translation>
+        <translation>結論のでない指摘もチェックする</translation>
     </message>
     <message>
         <location filename="settings.ui" line="156"/>
@@ -2378,12 +2379,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="245"/>
         <source>Save all errors when creating report</source>
-        <translation>すべての警告/エラーを保存</translation>
+        <translation>レポート作成時にすべての警告/エラーを保存</translation>
     </message>
     <message>
         <location filename="settings.ui" line="252"/>
         <source>Save full path to files in reports</source>
-        <translation>ファイルのフルパスを保存</translation>
+        <translation>レポートにファイルのフルパスを保存</translation>
     </message>
     <message>
         <location filename="settings.ui" line="273"/>
@@ -2475,17 +2476,17 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="stats.ui" line="85"/>
         <source>Include paths:</source>
-        <translation>Include ディレクトリ:</translation>
+        <translation>インクルードパス:</translation>
     </message>
     <message>
         <location filename="stats.ui" line="108"/>
         <source>Defines:</source>
-        <translation>Defines:</translation>
+        <translation>定義(define):</translation>
     </message>
     <message>
         <location filename="stats.ui" line="131"/>
         <source>Undefines:</source>
-        <translation>Undefines:</translation>
+        <translation>定義取り消し(undef):</translation>
     </message>
     <message>
         <location filename="stats.ui" line="165"/>

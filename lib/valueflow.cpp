@@ -1001,6 +1001,13 @@ static void valueFlowArray(TokenList *tokenlist)
 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->varId() > 0U) {
+            // array
+            if (tok->variable() && tok->variable()->isArray() && !tok->variable()->isArgument() &&
+                !tok->variable()->isStlType()) {
+                ValueFlow::Value value{1};
+                value.setKnown();
+                setTokenValue(tok, value, tokenlist->getSettings());
+            }
             const std::map<unsigned int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
             if (it != constantArrays.end()) {
                 ValueFlow::Value value;
@@ -1103,6 +1110,42 @@ static void valueFlowBitAnd(TokenList *tokenlist)
         if ((((MathLib::bigint)1) << bit) == number) {
             setTokenValue(tok, ValueFlow::Value(0), tokenlist->getSettings());
             setTokenValue(tok, ValueFlow::Value(number), tokenlist->getSettings());
+        }
+    }
+}
+
+static void valueFlowSameExpressions(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->hasKnownValue())
+            continue;
+
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+
+        if (tok->astOperand1()->isLiteral() || tok->astOperand2()->isLiteral())
+            continue;
+
+        if (astIsFloat(tok->astOperand1(), true) || astIsFloat(tok->astOperand2(), true))
+            continue;
+
+        ValueFlow::Value val;
+
+        if (Token::Match(tok, "==|>=|<=|/")) {
+            val = ValueFlow::Value(1);
+            val.setKnown();
+        }
+
+        if (Token::Match(tok, "!=|>|<|%|-")) {
+            val = ValueFlow::Value(0);
+            val.setKnown();
+        }
+
+        if (!val.isKnown())
+            continue;
+
+        if (isSameExpression(tokenlist->isCPP(), false, tok->astOperand1(), tok->astOperand2(), tokenlist->getSettings()->library, true, &val.errorPath)) {
+            setTokenValue(tok, val, tokenlist->getSettings());
         }
     }
 }
@@ -2743,6 +2786,27 @@ struct Lambda {
     }
 };
 
+static bool isDecayedPointer(const Token *tok, const Settings *settings)
+{
+    if (!tok)
+        return false;
+    if (astIsPointer(tok->astParent()) && !Token::simpleMatch(tok->astParent(), "return"))
+        return true;
+    if (!Token::simpleMatch(tok->astParent(), "return"))
+        return false;
+    if (!tok->scope())
+        return false;
+    if (!tok->scope()->function)
+        return false;
+    if (!tok->scope()->function->retDef)
+        return false;
+    // TODO: Add valuetypes to return types of functions
+    ValueType vt = ValueType::parseDecl(tok->scope()->function->retDef, settings);
+    if (vt.pointer > 0)
+        return true;
+    return false;
+}
+
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -2846,8 +2910,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Variable * var = getLifetimeVariable(tok, errorPath);
             if (!var)
                 continue;
-            if (var->isArray() && !var->isStlType() && !var->isArgument() && tok->astParent() &&
-                (astIsPointer(tok->astParent()) || Token::Match(tok->astParent(), "%assign%|return"))) {
+            if (var->nameToken() == tok)
+                continue;
+            if (var->isArray() && !var->isStlType() && !var->isArgument() && isDecayedPointer(tok, settings)) {
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;
@@ -4087,7 +4152,8 @@ static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger,
             // passed values are not "known"..
             changeKnownToPossible(argvalues);
 
-            valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
+            // FIXME: We need to rewrite the valueflow analysis of function calls. This does not work well.
+            //valueFlowInjectParameter(tokenlist, errorLogger, settings, argvar, calledFunctionScope, argvalues);
         }
     }
 }
@@ -4626,6 +4692,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
+    valueFlowSameExpressions(tokenlist);
 
     // Temporary hack.. run valueflow until there is nothing to update or timeout expires
     const std::time_t timeout = std::time(0) + TIMEOUT;

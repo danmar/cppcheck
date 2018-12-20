@@ -31,7 +31,7 @@ When building the command line tool, [PCRE](http://www.pcre.org/) is optional. I
 There are multiple compilation choices:
 * qmake - cross platform build tool
 * cmake - cross platform build tool
-* Windows: Visual Studio (VS 2010 and above)
+* Windows: Visual Studio (VS 2013 and above)
 * Windows: Qt Creator + mingw
 * gnu make
 * g++ 4.6 (or later)

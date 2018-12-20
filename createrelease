@@ -3,7 +3,7 @@
 # A script for creating release packages. The release packages are create in the home directory.
 #
 # self check:
-# ./cppcheck --library=cppcheck-lib --enable=style --inconclusive --suppress=bitwiseOnBoolean cli gui/*.cpp lib
+# ./cppcheck --library=cppcheck-lib --enable=style --inconclusive --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm cli gui/*.cpp lib
 #
 # Update translations
 #   lupdate gui.pro

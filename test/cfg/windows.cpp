@@ -257,6 +257,7 @@ void nullPointer()
     //Incorrect: 1. parameter, must not be null
     // cppcheck-suppress nullPointer
     FARPROC pAddr = GetProcAddress(NULL, "name");
+    (void)pAddr;
     HMODULE * phModule = NULL;
     // cppcheck-suppress nullPointer
     GetModuleHandleEx(0, NULL, phModule);

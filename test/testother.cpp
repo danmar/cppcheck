@@ -221,6 +221,7 @@ private:
         TEST_CASE(cpp11FunctionArgInit); // #7846 - "void foo(int declaration = {}) {"
 
         TEST_CASE(shadowVariables);
+        TEST_CASE(constArgument);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
@@ -559,7 +560,7 @@ private:
               "    f1(123,y);\n"
               "    if (y>0){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is redundant or there is division by zero at line 1.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Either the condition 'y>0' is redundant or there is division by zero at line 1.\n", "", errout.str());
 
         // avoid false positives when variable is changed after division
         check("void f() {\n"
@@ -2283,6 +2284,27 @@ private:
               "    bar(y);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+
+        check("bool f() {\n"
+              "    bool ret = false;\n"
+              "    switch (switchCond) {\n"
+              "    case 1:\n"
+              "        ret = true;\n"
+              "        break;\n"
+              "    case 31:\n"
+              "        ret = true;\n"
+              "        break;\n"
+              "    case 54:\n"
+              "        ret = true;\n"
+              "        break;\n"
+              "    };\n"
+              "    ret = true;\n"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:14]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n"
+                      "[test.cpp:8] -> [test.cpp:14]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n"
+                      "[test.cpp:11] -> [test.cpp:14]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n",
+                      errout.str());
     }
 
     void switchRedundantBitwiseOperationTest() {
@@ -5968,6 +5990,21 @@ private:
               "        memptr = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'memptr' is reassigned a value before the old one has been used.\n", errout.str());
+
+        // Pointer function argument (#3857)
+        check("void f(float * var)\n"
+              "{\n"
+              "  var[0] = 0.2f;\n"
+              "  var[0] = 0.2f;\n" // <-- is initialized twice
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable 'var[0]' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f(float * var)\n"
+              "{\n"
+              "  *var = 0.2f;\n"
+              "  *var = 0.2f;\n" // <-- is initialized twice
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Variable '*var' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantVarAssignment_struct() {
@@ -5981,6 +6018,14 @@ private:
               "  x.a = _mm_set1_ps(2.0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8]: (style) Variable 'x.a' is reassigned a value before the old one has been used.\n", errout.str());
+
+        check("void f() {\n"
+              "  struct AB ab;\n"
+              "  ab.x = 23;\n"
+              "  ab.y = 41;\n"
+              "  ab.x = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Variable 'ab.x' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantVarAssignment_7133() {
@@ -7512,6 +7557,59 @@ private:
 
         check("int size() {\n"
               "  int size;\n" // <- not a shadow variable
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void constArgument() {
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "   g((x & 0x01) >> 7);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(x&1)>>7' to function g is always 0\n", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "   g((int)((x & 0x01) >> 7));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&1)>>7)' to function g is always 0\n", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void h() { return 1; }\n"
+              "void f(int x) {\n"
+              "    g(h());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g(std::strlen(\"a\"));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    g((int)0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f(int x) {\n"
+              "    x = 0;\n"
+              "    g(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f() {\n"
+              "    const int x = 0;\n"
+              "    g(x + 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

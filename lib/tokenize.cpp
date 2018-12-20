@@ -112,12 +112,16 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
         if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
             tok = tok->linkAt(1)->next();
         if (tok && tok->str() == ".") { // trailing return type
-            for (tok = tok->next(); tok && !Token::Match(tok, "[;{]"); tok = tok->next())
+            for (tok = tok->next(); tok && !Token::Match(tok, ";|{|override|final"); tok = tok->next())
                 if (tok->link() && Token::Match(tok, "<|[|("))
                     tok = tok->link();
         }
+        while (Token::Match(tok, "override|final !!(") ||
+               (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
+            tok = tok->next();
         if (Token::Match(tok, "= 0|default|delete ;"))
             tok = tok->tokAt(2);
+
         return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
     }
     return nullptr;
@@ -1730,7 +1734,7 @@ bool Tokenizer::createTokens(std::istream &code,
     // make sure settings specified
     assert(mSettings);
 
-    return list.createTokens(code, Path::getRelativePath(Path::simplifyPath(FileName), mSettings->basePaths));
+    return list.createTokens(code, FileName);
 }
 
 void Tokenizer::createTokens(const simplecpp::TokenList *tokenList)
@@ -6069,7 +6073,7 @@ void Tokenizer::simplifyStaticConst()
                 if (behindOther)
                     break;
                 if (!Token::Match(leftTok, "%type%|struct|::") ||
-                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator"))) {
+                    (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator|template"))) {
                     break;
                 }
             }
@@ -8788,14 +8792,14 @@ void Tokenizer::simplifyStructDecl()
             continue;
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
-            if (Token::Match(tok->next()->link(), "} *|&| %type% ,|;|[|(|{|=")) {
+            if (Token::Match(tok->next()->link(), "} const| *|&| const| %type% ,|;|[|(|{|=")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
         // check for derived anonymous class/struct
         else if (cpp && Token::Match(tok, "class|struct :")) {
             const Token *tok1 = Token::findsimplematch(tok, "{");
-            if (tok1 && Token::Match(tok1->link(), "} *|&| %type% ,|;|[|(|{")) {
+            if (tok1 && Token::Match(tok1->link(), "} const| *|&| const| %type% ,|;|[|(|{")) {
                 tok->insertToken("Anonymous" + MathLib::toString(count++));
             }
         }
@@ -8835,7 +8839,7 @@ void Tokenizer::simplifyStructDecl()
             Token *restart = next;
 
             // check for named type
-            if (Token::Match(tok->next(), "*|&| %type% ,|;|[|=|(|{")) {
+            if (Token::Match(tok->next(), "const| *|&| const| %type% ,|;|[|=|(|{")) {
                 tok->insertToken(";");
                 tok = tok->next();
                 while (!Token::Match(start, "struct|class|union|enum")) {
@@ -9906,9 +9910,12 @@ void Tokenizer::simplifyOperatorName()
                 }
                 done = false;
             } else if (Token::Match(par, ".|%op%|,")) {
-                op += par->str();
-                par = par->next();
-                done = false;
+                // check for operator in template
+                if (!(Token::Match(par, "<|>") && !op.empty())) {
+                    op += par->str();
+                    par = par->next();
+                    done = false;
+                }
             } else if (Token::simpleMatch(par, "[ ]")) {
                 op += "[]";
                 par = par->tokAt(2);
@@ -9928,7 +9935,7 @@ void Tokenizer::simplifyOperatorName()
             }
         }
 
-        if (par && operatorEnd(par->link())) {
+        if (par && (Token::Match(par, "<|>") || isFunctionHead(par, "{|;"))) {
             tok->str("operator" + op);
             Token::eraseTokens(tok, par);
         }

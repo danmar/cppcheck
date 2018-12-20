@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checknullpointer.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -588,4 +589,27 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
                 errmsg,
                 CWE682, // unknown - pointer overflow
                 value && value->isInconclusive());
+}
+
+bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return false;
+    for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+        if (Token::simpleMatch(tok2, ") {")) {
+            tok2 = tok2->linkAt(1);
+            if (Token::findmatch(tok2->link(), "return|throw", tok2))
+                return false;
+            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, mSettings, mTokenizer->isCPP()))
+                return false;
+        }
+        if (tok2->variable() != argvar)
+            continue;
+        if (!Token::Match(tok2->astParent(), "*|["))
+            return false;
+        *tok = tok2;
+        return true;
+    }
+    return false;
 }

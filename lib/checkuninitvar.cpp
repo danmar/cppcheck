@@ -1278,3 +1278,329 @@ void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
                 "deadpointer",
                 "$symbol:" + strpointer + "\nDead pointer usage. Pointer '$symbol' is dead if it has been assigned '" + stralias + "' at line " + MathLib::toString(alias ? alias->linenr() : 0U) + ".", CWE825, false);
 }
+
+static void writeFunctionArgsXml(const std::list<CheckUninitVar::MyFileInfo::FunctionArg> &list, const std::string &elementName, std::ostream &out)
+{
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = list.begin(); it != list.end(); ++it)
+        out << "    <" << elementName
+            << " id=\"" << it->id << '\"'
+            << " functionName=\"" << it->functionName << '\"'
+            << " argnr=\"" << it->argnr << '\"'
+            << " variableName=\"" << it->variableName << "\""
+            << " fileName=\"" << it->location.fileName << '\"'
+            << " linenr=\"" << it->location.linenr << '\"'
+            << "/>\n";
+}
+
+std::string CheckUninitVar::MyFileInfo::toString() const
+{
+    std::ostringstream ret;
+    writeFunctionArgsXml(uninitialized, "uninitialized", ret);
+    writeFunctionArgsXml(readData, "readData", ret);
+    writeFunctionArgsXml(nullPointer, "nullPointer", ret);
+    writeFunctionArgsXml(dereferenced, "dereferenced", ret);
+    writeFunctionArgsXml(nestedCall, "nestedCall", ret);
+    return ret.str();
+}
+
+#define FUNCTION_ID(function)  mTokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr())
+
+CheckUninitVar::MyFileInfo::FunctionArg::FunctionArg(const Tokenizer *mTokenizer, const Scope *scope, unsigned int argnr_, const Token *tok)
+    :
+    id(FUNCTION_ID(scope->function)),
+    functionName(scope->className),
+    argnr(argnr_),
+    argnr2(0),
+    variableName(scope->function->getArgumentVar(argnr-1)->name())
+{
+    location.fileName = mTokenizer->list.file(tok);
+    location.linenr   = tok->linenr();
+}
+
+bool CheckUninitVar::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return false;
+    for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+        if (Token::simpleMatch(tok2, ") {")) {
+            tok2 = tok2->linkAt(1);
+            if (Token::findmatch(tok2->link(), "return|throw", tok2))
+                return false;
+            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, mSettings, mTokenizer->isCPP()))
+                return false;
+        }
+        if (tok2->variable() != argvar)
+            continue;
+        if (!isVariableUsage(tok2, true, Alloc::ARRAY))
+            return false;
+        *tok = tok2;
+        return true;
+    }
+    return false;
+}
+
+static int isCallFunction(const Scope *scope, int argnr, const Token **tok)
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return -1;
+    for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+        if (tok2->variable() != argvar)
+            continue;
+        if (!Token::Match(tok2->previous(), "[(,] %var% [,)]"))
+            break;
+        int argnr2 = 1;
+        const Token *prev = tok2;
+        while (prev && prev->str() != "(") {
+            if (Token::Match(prev,"]|)"))
+                prev = prev->link();
+            else if (prev->str() == ",")
+                ++argnr2;
+            prev = prev->previous();
+        }
+        if (!prev || !Token::Match(prev->previous(), "%name% ("))
+            break;
+        if (!prev->astOperand1() || !prev->astOperand1()->function())
+            break;
+        *tok = prev->previous();
+        return argnr2;
+    }
+    return -1;
+}
+
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+{
+    const CheckUninitVar checker(tokenizer, settings, nullptr);
+    return checker.getFileInfo();
+}
+
+Check::FileInfo *CheckUninitVar::getFileInfo() const
+{
+    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+    std::list<Scope>::const_iterator scope;
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+
+    // Parse all functions in TU
+    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
+        if (!scope->isExecutable() || scope->type != Scope::eFunction || !scope->function)
+            continue;
+        const Function *const function = scope->function;
+
+        // function calls where uninitialized data is passed by address
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand2())
+                continue;
+            if (!tok->astOperand1()->function())
+                continue;
+            const std::vector<const Token *> args(getArguments(tok->previous()));
+            for (int argnr = 0; argnr < args.size(); ++argnr) {
+                const Token *argtok = args[argnr];
+                if (!argtok)
+                    continue;
+                if (argtok->valueType() && argtok->valueType()->pointer > 0) {
+                    // null pointer..
+                    const ValueFlow::Value *value = argtok->getValue(0);
+                    if (value && !value->isInconclusive())
+                        fileInfo->nullPointer.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, mTokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
+                }
+                // pointer to uninitialized data..
+                if (argtok->str() != "&" || argtok->astOperand2())
+                    continue;
+                argtok = argtok->astOperand1();
+                if (!argtok || !argtok->valueType() || argtok->valueType()->pointer != 0)
+                    continue;
+                if (argtok->values().size() != 1U)
+                    continue;
+                const ValueFlow::Value &v = argtok->values().front();
+                if (v.valueType != ValueFlow::Value::UNINIT || v.isInconclusive())
+                    continue;
+                fileInfo->uninitialized.push_back(MyFileInfo::FunctionArg(FUNCTION_ID(tok->astOperand1()->function()), tok->astOperand1()->str(), argnr+1, mTokenizer->list.file(argtok), argtok->linenr(), argtok->str()));
+            }
+        }
+
+        // "Unsafe" functions unconditionally reads data before it is written..
+        CheckNullPointer checkNullPointer(mTokenizer, mSettings, mErrorLogger);
+        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+            const Token *tok;
+            if (isUnsafeFunction(&*scope, argnr, &tok))
+                fileInfo->readData.push_back(MyFileInfo::FunctionArg(mTokenizer, &*scope, argnr+1, tok));
+            if (checkNullPointer.isUnsafeFunction(&*scope, argnr, &tok))
+                fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(mTokenizer, &*scope, argnr+1, tok));
+        }
+
+        // Nested function calls
+        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+            const Token *tok;
+            int argnr2 = isCallFunction(&*scope, argnr, &tok);
+            if (argnr2 > 0) {
+                MyFileInfo::FunctionArg fa(mTokenizer, &*scope, argnr+1, tok);
+                fa.id  = FUNCTION_ID(function);
+                fa.id2 = FUNCTION_ID(tok->function());
+                fa.argnr2 = argnr2;
+                fileInfo->nestedCall.push_back(fa);
+            }
+        }
+    }
+
+    return fileInfo;
+}
+
+Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
+{
+    MyFileInfo *fileInfo = nullptr;
+    for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        const char *id = e->Attribute("id");
+        if (!id)
+            continue;
+        const char *functionName = e->Attribute("functionName");
+        if (!functionName)
+            continue;
+        const char *argnr = e->Attribute("argnr");
+        if (!argnr || !MathLib::isInt(argnr))
+            continue;
+        const char *fileName = e->Attribute("fileName");
+        if (!fileName)
+            continue;
+        const char *linenr = e->Attribute("linenr");
+        if (!linenr || !MathLib::isInt(linenr))
+            continue;
+        const char *variableName = e->Attribute("variableName");
+        if (!variableName)
+            continue;
+        const MyFileInfo::FunctionArg fa(id, functionName, MathLib::toLongNumber(argnr), fileName, MathLib::toLongNumber(linenr), variableName);
+        if (!fileInfo)
+            fileInfo = new MyFileInfo;
+        if (std::strcmp(e->Name(), "uninitialized") == 0)
+            fileInfo->uninitialized.push_back(fa);
+        else if (std::strcmp(e->Name(), "readData") == 0)
+            fileInfo->readData.push_back(fa);
+        else if (std::strcmp(e->Name(), "nullPointer") == 0)
+            fileInfo->nullPointer.push_back(fa);
+        else if (std::strcmp(e->Name(), "dereferenced") == 0)
+            fileInfo->dereferenced.push_back(fa);
+        else if (std::strcmp(e->Name(), "nestedCall") == 0)
+            fileInfo->nestedCall.push_back(fa);
+        else
+            throw InternalError(nullptr, "Wrong analyze info");
+    }
+    return fileInfo;
+}
+
+static bool findPath(const CheckUninitVar::MyFileInfo::FunctionArg &from,
+                     const CheckUninitVar::MyFileInfo::FunctionArg &to,
+                     const std::map<std::string, std::list<CheckUninitVar::MyFileInfo::FunctionArg>> &nestedCalls)
+{
+    if (from.id == to.id && from.argnr == to.argnr)
+        return true;
+
+    const std::map<std::string, std::list<CheckUninitVar::MyFileInfo::FunctionArg>>::const_iterator nc = nestedCalls.find(from.id);
+    if (nc == nestedCalls.end())
+        return false;
+
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = nc->second.begin(); it != nc->second.end(); ++it) {
+        if (from.id == it->id && from.argnr == it->argnr && it->id2 == to.id && it->argnr2 == to.argnr)
+            return true;
+    }
+
+    return false;
+}
+
+bool CheckUninitVar::analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+{
+    (void)settings; // This argument is unused
+
+    // Merge all fileinfo..
+    MyFileInfo all;
+    for (std::list<Check::FileInfo *>::const_iterator it = fileInfo.begin(); it != fileInfo.end(); ++it) {
+        const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(*it);
+        if (!fi)
+            continue;
+        all.uninitialized.insert(all.uninitialized.end(), fi->uninitialized.begin(), fi->uninitialized.end());
+        all.readData.insert(all.readData.end(), fi->readData.begin(), fi->readData.end());
+        all.nullPointer.insert(all.nullPointer.end(), fi->nullPointer.begin(), fi->nullPointer.end());
+        all.dereferenced.insert(all.dereferenced.end(), fi->dereferenced.begin(), fi->dereferenced.end());
+        all.nestedCall.insert(all.nestedCall.end(), fi->nestedCall.begin(), fi->nestedCall.end());
+    }
+
+    bool foundErrors = false;
+
+    std::map<std::string, std::list<CheckUninitVar::MyFileInfo::FunctionArg>> nestedCalls;
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it = all.nestedCall.begin(); it != all.nestedCall.end(); ++it) {
+        std::list<CheckUninitVar::MyFileInfo::FunctionArg> &list = nestedCalls[it->id];
+        list.push_back(*it);
+    }
+
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it1 = all.uninitialized.begin(); it1 != all.uninitialized.end(); ++it1) {
+        const CheckUninitVar::MyFileInfo::FunctionArg &uninitialized = *it1;
+        for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.readData.begin(); it2 != all.readData.end(); ++it2) {
+            const CheckUninitVar::MyFileInfo::FunctionArg &readData = *it2;
+
+            if (!findPath(*it1, *it2, nestedCalls))
+                continue;
+
+            ErrorLogger::ErrorMessage::FileLocation fileLoc1;
+            fileLoc1.setfile(uninitialized.location.fileName);
+            fileLoc1.line = uninitialized.location.linenr;
+            fileLoc1.setinfo("Calling function " + uninitialized.functionName + ", variable " + uninitialized.variableName + " is uninitialized");
+
+            ErrorLogger::ErrorMessage::FileLocation fileLoc2;
+            fileLoc2.setfile(readData.location.fileName);
+            fileLoc2.line = readData.location.linenr;
+            fileLoc2.setinfo("Using argument " + readData.variableName);
+
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            locationList.push_back(fileLoc1);
+            locationList.push_back(fileLoc2);
+
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
+                                                   Severity::error,
+                                                   "using argument " + readData.variableName + " that points at uninitialized variable " + uninitialized.variableName,
+                                                   "ctuuninitvar",
+                                                   CWE908, false);
+            errorLogger.reportErr(errmsg);
+
+            foundErrors = true;
+        }
+    }
+
+    // Null pointer checking
+    // TODO: This does not belong here.
+    for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it1 = all.nullPointer.begin(); it1 != all.nullPointer.end(); ++it1) {
+        const CheckUninitVar::MyFileInfo::FunctionArg &nullPointer = *it1;
+        for (std::list<CheckUninitVar::MyFileInfo::FunctionArg>::const_iterator it2 = all.dereferenced.begin(); it2 != all.dereferenced.end(); ++it2) {
+            const CheckUninitVar::MyFileInfo::FunctionArg &dereference = *it2;
+
+            if (!findPath(*it1, *it2, nestedCalls))
+                continue;
+
+            ErrorLogger::ErrorMessage::FileLocation fileLoc1;
+            fileLoc1.setfile(nullPointer.location.fileName);
+            fileLoc1.line = nullPointer.location.linenr;
+            fileLoc1.setinfo("Calling function " + nullPointer.functionName + ", " + MathLib::toString(nullPointer.argnr) + getOrdinalText(nullPointer.argnr) + " argument is null");
+
+            ErrorLogger::ErrorMessage::FileLocation fileLoc2;
+            fileLoc2.setfile(dereference.location.fileName);
+            fileLoc2.line = dereference.location.linenr;
+            fileLoc2.setinfo("Dereferencing argument " + dereference.variableName + " that is null");
+
+            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+            locationList.push_back(fileLoc1);
+            locationList.push_back(fileLoc2);
+
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
+                                                   Severity::error,
+                                                   "Null pointer dereference: " + dereference.variableName,
+                                                   "ctunullpointer",
+                                                   CWE476, false);
+            errorLogger.reportErr(errmsg);
+
+            foundErrors = true;
+        }
+    }
+
+    return foundErrors;
+}

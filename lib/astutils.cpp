@@ -47,7 +47,7 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
             break;
         if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
             tokens.push(tok->astOperand1());
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
+        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2)
             tokens.push(tok->astOperand2());
     }
 }
@@ -772,15 +772,18 @@ bool isReturnScope(const Token * const endToken)
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;
         }
-        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
-            Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "return (")) {
+        if (Token::Match(prev->link()->astTop(), "return|throw"))
             return true;
-        }
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
             return isReturnScope(prev);
     } else if (Token::simpleMatch(prev, ";")) {
         // noreturn function
         if (Token::simpleMatch(prev->previous(), ") ;") && Token::Match(prev->linkAt(-1)->tokAt(-2), "[;{}] %name% ("))
+            return true;
+        if (Token::simpleMatch(prev->previous(), ") ;") && prev->previous()->link() &&
+            Token::Match(prev->previous()->link()->astTop(), "return|throw"))
+            return true;
+        if (Token::Match(prev->previous()->astTop(), "return|throw"))
             return true;
         // return/goto statement
         prev = prev->previous();
@@ -1037,10 +1040,37 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     return (!parent->astOperand1()->valueType() || !parent->astOperand1()->valueType()->isIntegral());
 }
 
+bool isConstVarExpression(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (Token::Match(tok->previous(), "sizeof ("))
+        return true;
+    if (Token::Match(tok->previous(), "%name% (")) {
+        std::vector<const Token *> args = getArguments(tok);
+        return std::all_of(args.begin(), args.end(), &isConstVarExpression);
+    }
+    if (Token::Match(tok, "( %type%"))
+        return isConstVarExpression(tok->astOperand1());
+    if (Token::Match(tok, "%cop%")) {
+        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
+            return false;
+        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
+            return false;
+        return true;
+    }
+    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+        return true;
+    if (tok->isEnumerator())
+        return true;
+    if (tok->variable())
+        return tok->variable()->isConst();
+    return false;
+}
 
 static bool nonLocal(const Variable* var)
 {
-    return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference();
+    return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference() || var->isExtern();
 }
 
 static bool hasFunctionCall(const Token *tok)
@@ -1062,43 +1092,98 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             return Result(Result::Type::BAILOUT);
         }
 
-        if (tok->str() == "}" && (tok->scope()->type == Scope::eFor || tok->scope()->type == Scope::eWhile)) {
-            // TODO: handle loops better
-            return Result(Result::Type::BAILOUT);
-        }
-
         if (Token::simpleMatch(tok, "break ;")) {
             return Result(Result::Type::BREAK, tok);
         }
 
-        if (Token::Match(tok, "continue|return|throw|goto")) {
+        if (Token::simpleMatch(tok, "goto"))
+            return Result(Result::Type::BAILOUT);
+
+        if (tok->str() == "continue")
+            // TODO
+            return Result(Result::Type::BAILOUT);
+
+        if (Token::Match(tok, "return|throw")) {
             // TODO: Handle these better
+            // Is expr variable used in expression?
+            const Token *end = tok->findExpressionStartEndTokens().second->next();
+            for (const Token *tok2 = tok; tok2 != end; tok2 = tok2->next()) {
+                if (!local && Token::Match(tok2, "%name% ("))
+                    return Result(Result::Type::READ);
+                if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
+                    return Result(Result::Type::READ);
+            }
+
             return Result(Result::Type::RETURN);
+        }
+
+        if (tok->str() == "}") {
+            Scope::ScopeType scopeType = tok->scope()->type;
+            if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo) {
+                // check condition
+                const Token *conditionStart = nullptr;
+                const Token *conditionEnd = nullptr;
+                if (Token::simpleMatch(tok->link()->previous(), ") {")) {
+                    conditionEnd = tok->link()->previous();
+                    conditionStart = conditionEnd->link();
+                } else if (Token::simpleMatch(tok->link()->previous(), "do {") && Token::simpleMatch(tok, "} while (")) {
+                    conditionStart = tok->tokAt(2);
+                    conditionEnd = conditionStart->link();
+                }
+                if (conditionStart && conditionEnd) {
+                    bool used = false;
+                    for (const Token *condTok = conditionStart; condTok != conditionEnd; condTok = condTok->next()) {
+                        if (exprVarIds.find(condTok->varId()) != exprVarIds.end())
+                            used = true;
+                    }
+                    if (used)
+                        return Result(Result::Type::BAILOUT);
+                }
+
+                // check loop body again..
+                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local);
+                if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
+                    return result;
+            }
         }
 
         if (Token::simpleMatch(tok, "else {"))
             tok = tok->linkAt(1);
 
-        if (Token::simpleMatch(tok, "asm (")) {
+        if (Token::simpleMatch(tok, "asm ("))
             return Result(Result::Type::BAILOUT);
-        }
 
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // TODO: this is a quick bailout
             return Result(Result::Type::BAILOUT);
         }
 
+        if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find("<") != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
+            return Result(Result::Type::BAILOUT);
+
+
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;
-            while (Token::Match(parent->astParent(), ".|::|["))
+            bool other = false;
+            bool same = false;
+            while (Token::Match(parent->astParent(), "*|.|::|[")) {
                 parent = parent->astParent();
+                if (parent && isSameExpression(mCpp, false, expr, parent->astOperand1(), mLibrary, false, false, nullptr))
+                    same = true;
+                if (!same && Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
+                    other = true;
+                    break;
+                }
+            }
+            if (other)
+                continue;
             if (Token::simpleMatch(parent->astParent(), "=") && parent == parent->astParent()->astOperand1()) {
                 if (!local && hasFunctionCall(parent->astParent()->astOperand2())) {
                     // TODO: this is a quick bailout
                     return Result(Result::Type::BAILOUT);
                 }
                 if (hasOperand(parent->astParent()->astOperand2(), expr)) {
-                    if (mReassign)
+                    if (mWhat == What::Reassign)
                         return Result(Result::Type::READ);
                     continue;
                 }
@@ -1113,6 +1198,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         }
 
         if (Token::Match(tok, ") {")) {
+            if (Token::simpleMatch(tok->link()->previous(), "switch ("))
+                // TODO: parse switch
+                return Result(Result::Type::BAILOUT);
             const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local);
             if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
                 return result1;
@@ -1133,6 +1221,74 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
     return Result(Result::Type::NONE);
 }
 
+bool FwdAnalysis::isGlobalData(const Token *expr) const
+{
+    bool globalData = false;
+    visitAstNodes(expr,
+    [&](const Token *tok) {
+        if (tok->varId() && !tok->variable()) {
+            // Bailout, this is probably global
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (tok->originalName() == "->") {
+            // TODO check if pointer points at local data
+            globalData = true;
+            return ChildrenToVisit::none;
+        } else if (Token::Match(tok, "[*[]") && tok->astOperand1() && tok->astOperand1()->variable()) {
+            // TODO check if pointer points at local data
+            const Variable *lhsvar = tok->astOperand1()->variable();
+            const ValueType *lhstype = tok->astOperand1()->valueType();
+            if (lhsvar->isPointer()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            } else if (lhsvar->isArgument() && lhsvar->isArray()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            } else if (lhsvar->isArgument() && (!lhstype || (lhstype->type <= ValueType::Type::VOID && !lhstype->container))) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+        }
+        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (tok->variable()) {
+            // TODO : Check references
+            if (tok->variable()->isReference() && tok != tok->variable()->nameToken()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isExtern()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->previous()->str() != "." && !tok->variable()->isLocal() && !tok->variable()->isArgument()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isArgument() && tok->variable()->isPointer() && tok != expr) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->variable()->isPointerArray()) {
+                globalData = true;
+                return ChildrenToVisit::none;
+            }
+        }
+        // Unknown argument type => it might be some reference type..
+        if (mCpp && tok->str() == "." && tok->astOperand1() && tok->astOperand1()->variable() && !tok->astOperand1()->valueType()) {
+            globalData = true;
+            return ChildrenToVisit::none;
+        }
+        if (Token::Match(tok, ".|["))
+            return ChildrenToVisit::op1;
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return globalData;
+}
+
 FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
 {
     // all variable ids in expr.
@@ -1140,13 +1296,25 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     bool local = true;
     visitAstNodes(expr,
     [&](const Token *tok) {
+        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".")
+            // unknown variables are not local
+            local = false;
         if (tok->varId() > 0) {
             exprVarIds.insert(tok->varId());
-            if (!Token::simpleMatch(tok->previous(), "."))
+            if (!Token::simpleMatch(tok->previous(), ".")) {
+                const Variable *var = tok->variable();
+                if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2()))
+                    return ChildrenToVisit::none;
                 local &= !nonLocal(tok->variable());
+            }
         }
         return ChildrenToVisit::op1_and_op2;
     });
+
+    // In unused values checking we do not want to check assignments to
+    // global data.
+    if (mWhat == What::UnusedValue && isGlobalData(expr))
+        return Result(FwdAnalysis::Result::Type::BAILOUT);
 
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
@@ -1155,7 +1323,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         const Scope *s = result.token->scope();
         while (s->type == Scope::eIf)
             s = s->nestedIn;
-        if (s->type != Scope::eSwitch)
+        if (s->type != Scope::eSwitch && s->type != Scope::eWhile && s->type != Scope::eFor)
             break;
         result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local);
     }
@@ -1174,7 +1342,53 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 
 const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
 {
-    mReassign = true;
+    mWhat = What::Reassign;
     Result result = check(expr, startToken, endToken);
     return result.type == FwdAnalysis::Result::Type::WRITE ? result.token : nullptr;
+}
+
+bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
+{
+    mWhat = What::UnusedValue;
+    Result result = check(expr, startToken, endToken);
+    return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
+}
+
+bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
+{
+    if (expr->isUnaryOp("*"))
+        return true;
+
+    const bool macro = false;
+    const bool pure = false;
+    const bool followVar = false;
+    for (const Token *tok = startToken; tok; tok = tok->previous()) {
+        if (tok->str() == "{" && tok->scope()->type == Scope::eFunction)
+            break;
+
+        const Token *addrOf = nullptr;
+        if (Token::Match(tok, "& %name% ="))
+            addrOf = tok->tokAt(2)->astOperand2();
+        else if (tok->isUnaryOp("&"))
+            addrOf = tok->astOperand1();
+        else if (Token::simpleMatch(tok, "std :: ref ("))
+            addrOf = tok->tokAt(3)->astOperand2();
+        else
+            continue;
+
+        for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
+            if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool FwdAnalysis::isNullOperand(const Token *expr)
+{
+    if (!expr)
+        return false;
+    if (Token::Match(expr, "( %name% %name%| * )") && Token::Match(expr->astOperand1(), "0|NULL|nullptr"))
+        return true;
+    return Token::Match(expr, "NULL|nullptr");
 }
