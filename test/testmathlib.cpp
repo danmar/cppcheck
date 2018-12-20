@@ -701,75 +701,40 @@ private:
 
     void isValidIntegerSuffix(void) const {
         // negative testing
-        std::string value = "ux";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "ulx";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "lx";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "lux";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "lll";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "garbage";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value.clear();
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "llu ";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "i";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "iX";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "i6X";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "i64X";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "i64 ";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "i66";
-        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(""));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ux"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ulx"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("lx"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("lux"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("lll"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("garbage"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("llu "));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("i"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("iX"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("i6X"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("i64X"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("i64 "));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("i66"));
 
         // positive testing
-        value = "u";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "ul";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "ull";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "l";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "lu";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "ll";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "llu";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "i64";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
-
-        value = "ui64";
-        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix(value.begin(), value.end()));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("u"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ul"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ull"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("l"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("lu"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ll"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("llu"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("llU"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("LLU"));
+        // Microsoft extensions:
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("i64"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("I64"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ui64"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("UI64"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("i64", false));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("I64", false));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ui64", false));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("UI64", false));
     }
 
     void ispositive() const {

@@ -740,6 +740,97 @@ bool MathLib::isPositive(const std::string &str)
     return !MathLib::isNegative(str);
 }
 
+static bool _isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
+{
+    enum { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64 } state = START;
+    for (; it != end; ++it) {
+        switch (state) {
+        case START:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_U;
+            else if (*it == 'l' || *it == 'L')
+                state = SUFFIX_L;
+            else if (supportMicrosoftExtensions && (*it == 'i' || *it == 'I'))
+                state = SUFFIX_I;
+            else
+                return false;
+            break;
+        case SUFFIX_U:
+            if (*it == 'l' || *it == 'L')
+                state = SUFFIX_UL; // UL
+            else if (supportMicrosoftExtensions && (*it == 'i' || *it == 'I'))
+                state = SUFFIX_UI;
+            else
+                return false;
+            break;
+        case SUFFIX_UL:
+            if (*it == 'l' || *it == 'L')
+                state = SUFFIX_ULL; // ULL
+            else
+                return false;
+            break;
+        case SUFFIX_L:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_LU; // LU
+            else if (*it == 'l' || *it == 'L')
+                state = SUFFIX_LL; // LL
+            else
+                return false;
+            break;
+        case SUFFIX_LU:
+            return false;
+        case SUFFIX_LL:
+            if (*it == 'u' || *it == 'U')
+                state = SUFFIX_LLU; // LLU
+            else
+                return false;
+            break;
+        case SUFFIX_I:
+            if (*it == '6')
+                state = SUFFIX_I6;
+            else
+                return false;
+            break;
+        case SUFFIX_I6:
+            if (*it == '4')
+                state = SUFFIX_I64;
+            else
+                return false;
+            break;
+        case SUFFIX_UI:
+            if (*it == '6')
+                state = SUFFIX_UI6;
+            else
+                return false;
+            break;
+        case SUFFIX_UI6:
+            if (*it == '4')
+                state = SUFFIX_UI64;
+            else
+                return false;
+            break;
+        default:
+            return false;
+        }
+    }
+    return ((state == SUFFIX_U) ||
+            (state == SUFFIX_L) ||
+            (state == SUFFIX_UL) ||
+            (state == SUFFIX_LU) ||
+            (state == SUFFIX_LL) ||
+            (state == SUFFIX_ULL) ||
+            (state == SUFFIX_LLU) ||
+            (state == SUFFIX_I64) ||
+            (state == SUFFIX_UI64));
+}
+
+bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
+{
+    return _isValidIntegerSuffix(str.begin(), str.end(), supportMicrosoftExtensions);
+}
+
+
+
 /*! \brief Does the string represent an octal number?
  * In case leading or trailing white space is provided, the function
  * returns false.
@@ -777,7 +868,7 @@ bool MathLib::isOct(const std::string& str)
             if (isOctalDigit(static_cast<unsigned char>(*it)))
                 state = DIGITS;
             else
-                return isValidIntegerSuffix(it,str.end());
+                return _isValidIntegerSuffix(it,str.end());
             break;
         }
     }
@@ -818,7 +909,7 @@ bool MathLib::isIntHex(const std::string& str)
             if (isxdigit(static_cast<unsigned char>(*it)))
                 ; //  state = DIGIT;
             else
-                return isValidIntegerSuffix(it,str.end());
+                return _isValidIntegerSuffix(it,str.end());
             break;
         }
     }
@@ -905,94 +996,6 @@ bool MathLib::isFloatHex(const std::string& str)
     return (EXPONENT_DIGITS==state) || (EXPONENT_SUFFIX == state);
 }
 
-bool MathLib::isValidIntegerSuffix(const std::string& str)
-{
-    return isValidIntegerSuffix(str.begin(), str.end());
-}
-
-bool MathLib::isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end)
-{
-    enum {START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64} state = START;
-    for (; it != end; ++it) {
-        switch (state) {
-        case START:
-            if (*it == 'u' || *it == 'U')
-                state = SUFFIX_U;
-            else if (*it == 'l' || *it == 'L')
-                state = SUFFIX_L;
-            else if (*it == 'i')
-                state = SUFFIX_I;
-            else
-                return false;
-            break;
-        case SUFFIX_U:
-            if (*it == 'l' || *it == 'L')
-                state = SUFFIX_UL; // UL
-            else if (*it == 'i')
-                state = SUFFIX_UI;
-            else
-                return false;
-            break;
-        case SUFFIX_UL:
-            if (*it == 'l' || *it == 'L')
-                state = SUFFIX_ULL; // ULL
-            else
-                return false;
-            break;
-        case SUFFIX_L:
-            if (*it == 'u' || *it == 'U')
-                state = SUFFIX_LU; // LU
-            else if (*it == 'l' || *it == 'L')
-                state = SUFFIX_LL; // LL
-            else
-                return false;
-            break;
-        case SUFFIX_LU:
-            return false;
-        case SUFFIX_LL:
-            if (*it == 'u' || *it == 'U')
-                state = SUFFIX_LLU; // LLU
-            else
-                return false;
-            break;
-        case SUFFIX_I:
-            if (*it == '6')
-                state = SUFFIX_I6;
-            else
-                return false;
-            break;
-        case SUFFIX_I6:
-            if (*it == '4')
-                state = SUFFIX_I64;
-            else
-                return false;
-            break;
-        case SUFFIX_UI:
-            if (*it == '6')
-                state = SUFFIX_UI6;
-            else
-                return false;
-            break;
-        case SUFFIX_UI6:
-            if (*it == '4')
-                state = SUFFIX_UI64;
-            else
-                return false;
-            break;
-        default:
-            return false;
-        }
-    }
-    return ((state == SUFFIX_U)   ||
-            (state == SUFFIX_L)   ||
-            (state == SUFFIX_UL)  ||
-            (state == SUFFIX_LU)  ||
-            (state == SUFFIX_LL)  ||
-            (state == SUFFIX_ULL) ||
-            (state == SUFFIX_LLU) ||
-            (state == SUFFIX_I64) ||
-            (state == SUFFIX_UI64));
-}
 
 /*! \brief Does the string represent a binary number?
  * In case leading or trailing white space is provided, the function
@@ -1037,7 +1040,7 @@ bool MathLib::isBin(const std::string& str)
             if (*it == '0' || *it == '1')
                 ; //  state = DIGIT;
             else
-                return isValidIntegerSuffix(it,str.end());
+                return _isValidIntegerSuffix(it,str.end());
             break;
         }
     }
@@ -1066,7 +1069,7 @@ bool MathLib::isDec(const std::string & str)
             if (isdigit(static_cast<unsigned char>(*it)))
                 state = DIGIT;
             else
-                return isValidIntegerSuffix(it,str.end());
+                return _isValidIntegerSuffix(it,str.end());
             break;
         }
     }
