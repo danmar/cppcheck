@@ -106,7 +106,7 @@ bool TestFixture::prepareTest(const char testname[])
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
 {
     std::ostringstream ret;
-    ret << filename << ':' << linenr << ':' << classname << ':' << mTestname;
+    ret << filename << ':' << linenr << '(' << classname << "::" << mTestname << ')';
     return ret.str();
 }
 
