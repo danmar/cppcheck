@@ -107,7 +107,8 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckNullPointer c(nullptr, settings, errorLogger);
         c.nullPointerError(nullptr, "pointer", nullptr, false);
-        c.arithmeticError(nullptr, nullptr);
+        c.pointerArithmeticError(nullptr, nullptr, false);
+        c.redundantConditionWarning(nullptr, nullptr, nullptr, false);
     }
 
     /** Name of check */
@@ -136,7 +137,8 @@ private:
 
     /** undefined null pointer arithmetic */
     void arithmetic();
-    void arithmeticError(const Token *tok, const ValueFlow::Value *value);
+    void pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
+    void redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive);
 };
 /// @}
 //---------------------------------------------------------------------------

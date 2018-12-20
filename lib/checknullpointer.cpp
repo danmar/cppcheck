@@ -553,42 +553,56 @@ void CheckNullPointer::arithmetic()
                 continue;
             if (value->condition && !mSettings->isEnabled(Settings::WARNING))
                 continue;
-            arithmeticError(tok,value);
+            if (value->condition)
+                redundantConditionWarning(tok, value, value->condition, value->isInconclusive());
+            else
+                pointerArithmeticError(tok, value, value->isInconclusive());
         }
     }
 }
 
-void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value *value)
+static std::string arithmeticTypeString(const Token *tok)
 {
-    std::string arithmetic;
     if (tok && tok->str()[0] == '-')
-        arithmetic = "subtraction";
+        return "subtraction";
     else if (tok && tok->str()[0] == '+')
-        arithmetic = "addition";
+        return "addition";
     else
-        arithmetic = "arithmetic";
+        return "arithmetic";
+}
 
+void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive) {
+    std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
     if (tok && tok->str()[0] == '-') {
-        if (value && value->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is overflow in pointer " + arithmetic + ".";
-        else
-            errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
+        errmsg = "Overflow in pointer arithmetic, NULL pointer is subtracted.";
     } else {
-        if (value && value->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or there is pointer arithmetic with NULL pointer.";
-        else
-            errmsg = "Pointer " + arithmetic + " with NULL pointer.";
+        errmsg = "Pointer " + arithmetic + " with NULL pointer.";
     }
-
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
-
     reportError(errorPath,
-                (value && value->condition) ? Severity::warning : Severity::error,
-                (value && value->condition) ? "nullPointerArithmeticRedundantCheck" : "nullPointerArithmetic",
+                Severity::error,
+                "nullPointerArithmetic",
                 errmsg,
-                CWE682, // unknown - pointer overflow
-                value && value->isInconclusive());
+                CWE682,
+                inconclusive);
+}
+
+void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive) {
+    std::string arithmetic = arithmeticTypeString(tok);
+    std::string errmsg;
+    if (tok && tok->str()[0] == '-') {
+        errmsg = ValueFlow::eitherTheConditionIsRedundant(condition) + " or there is overflow in pointer " + arithmetic + ".";
+    } else {
+        errmsg = ValueFlow::eitherTheConditionIsRedundant(condition) + " or there is pointer arithmetic with NULL pointer.";
+    }
+    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
+    reportError(errorPath,
+                Severity::warning,
+                "nullPointerArithmeticRedundantCheck",
+                errmsg,
+                CWE682,
+                inconclusive);
 }
 
 bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
