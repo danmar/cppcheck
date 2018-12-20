@@ -162,6 +162,7 @@ private:
         c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
         c.invalidLengthModifierError(nullptr,  1, "I");
         c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, 's');
+        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, 's');
         c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 
