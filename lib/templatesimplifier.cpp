@@ -2237,8 +2237,13 @@ void TemplateSimplifier::simplifyTemplates(
                     Token * tok = it->token;
                     tok->deleteNext(2);
                     tok->deleteThis();
-                } else
+                } else {
+                    // remove forward declaration if found
+                    auto it1 = mTemplateForwardDeclarationsMap.find(it->token);
+                    if (it1 != mTemplateForwardDeclarationsMap.end())
+                        removeTemplate(it1->second);
                     removeTemplate(it->token);
+                }
                 mTemplateDeclarations.erase(decl);
             }
         }
