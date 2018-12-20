@@ -218,6 +218,10 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=wxwidgets'
     if hasInclude('temp', '<QString>'):
         libraries += ' --library=qt'
+    if hasInclude('temp', '<zlib.h>'):
+        libraries += ' --library=zlib'
+    if hasInclude('temp', '<gtk/gtk.h>'):
+        libraries += ' --library=gtk'
     cmd = 'nice ' + cppcheck + ' ' + jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
     startTime = time.time()
@@ -336,6 +340,8 @@ for arg in sys.argv[1:]:
         print('')
         print('Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-path=path]')
         print('  -jN                  Use N threads in compilation/analysis. Default is 1.')
+        print('  --package=url        Check a specific package and then stop. Can be useful if you want to reproduce')
+        print('                       some warning/crash/exception/etc..')
         print('  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.')
         print('  --work-path=path     Work folder path. Default path is ' + workpath)
         print('')
