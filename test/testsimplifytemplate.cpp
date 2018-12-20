@@ -1843,30 +1843,18 @@ private:
                                 "    A<int> a2;\n"
                                 "}\n";
 
-            const char wanted[] = "class A<int,2> ; "
-                                  "class A<int,3> ; "
-                                  "void f ( ) "
-                                  "{"
-                                  " A<int,2> a1 ;"
-                                  " A<int,3> a2 ; "
-                                  "} "
-                                  "class A<int,2> "
-                                  "{ int ar [ 2 ] ; } ; "
-                                  "class A<int,3> "
-                                  "{ int ar [ 3 ] ; } ;";
-            const char current[] = "template < class T , int n = 3 > class A ; "
-                                   "class A<int,2> ; "
-                                   "class A<int,3> ; "
-                                   "void f ( ) "
-                                   "{"
-                                   " A<int,2> a1 ;"
-                                   " A<int,3> a2 ; "
-                                   "} "
-                                   "class A<int,2> "
-                                   "{ int ar [ 2 ] ; } ; "
-                                   "class A<int,3> "
-                                   "{ int ar [ 3 ] ; } ;";
-            TODO_ASSERT_EQUALS(wanted, current, tok(code));
+            const char exp[] = "class A<int,2> ; "
+                               "class A<int,3> ; "
+                               "void f ( ) "
+                               "{"
+                               " A<int,2> a1 ;"
+                               " A<int,3> a2 ; "
+                               "} "
+                               "class A<int,2> "
+                               "{ int ar [ 2 ] ; } ; "
+                               "class A<int,3> "
+                               "{ int ar [ 3 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code));
         }
         {
             const char code[] = "template <class, int = 3> class A;\n"
@@ -1880,30 +1868,18 @@ private:
                                 "    A<int> a2;\n"
                                 "}\n";
 
-            const char wanted[] = "class A<int,2> ; "
-                                  "class A<int,3> ; "
-                                  "void f ( ) "
-                                  "{"
-                                  " A<int,2> a1 ;"
-                                  " A<int,3> a2 ; "
-                                  "} "
-                                  "class A<int,2> "
-                                  "{ int ar [ 2 ] ; } ; "
-                                  "class A<int,3> "
-                                  "{ int ar [ 3 ] ; } ;";
-            const char current[] = "template < class , int = 3 > class A ; "
-                                   "class A<int,2> ; "
-                                   "class A<int,3> ; "
-                                   "void f ( ) "
-                                   "{"
-                                   " A<int,2> a1 ;"
-                                   " A<int,3> a2 ; "
-                                   "} "
-                                   "class A<int,2> "
-                                   "{ int ar [ 2 ] ; } ; "
-                                   "class A<int,3> "
-                                   "{ int ar [ 3 ] ; } ;";
-            TODO_ASSERT_EQUALS(wanted, current, tok(code));
+            const char exp[] = "class A<int,2> ; "
+                               "class A<int,3> ; "
+                               "void f ( ) "
+                               "{"
+                               " A<int,2> a1 ;"
+                               " A<int,3> a2 ; "
+                               "} "
+                               "class A<int,2> "
+                               "{ int ar [ 2 ] ; } ; "
+                               "class A<int,3> "
+                               "{ int ar [ 3 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code));
         }
     }
 
@@ -2291,7 +2267,6 @@ private:
                       "void SomeFunction ( ) { } "
                       "private: "
                       "int TemplatedMethod<int> ( int ) ; "
-                      "template < typename T > T TemplatedMethod ( T ) ; " // this should be removed
                       "} ; "
                       "} int MyNamespace :: TestClass :: TemplatedMethod<int> ( int t ) { return t ; }", tok(code));
     }
