@@ -1982,7 +1982,7 @@ void CheckIO::invalidScanfFormatWidthError(const Token* tok, unsigned int numFor
 
     std::ostringstream errmsg;
     if (arrlen > width) {
-        if (!mSettings->inconclusive || !mSettings->isEnabled(Settings::WARNING))
+        if (tok != nullptr && (!mSettings->inconclusive || !mSettings->isEnabled(Settings::WARNING)))
             return;
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is smaller than destination buffer"
                << " '" << varname << "[" << arrlen << "]'.";
