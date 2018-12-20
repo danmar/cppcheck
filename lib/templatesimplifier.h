@@ -70,6 +70,7 @@ public:
      */
     struct TokenAndName {
         TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt);
+        TokenAndName(const TokenAndName& otherTok);
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
@@ -271,6 +272,7 @@ private:
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
+    std::vector<TokenAndName> mExplicitInstantiationsToDelete;
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
 };
 
