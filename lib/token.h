@@ -89,8 +89,8 @@ struct TokenImpl {
     /** Bitfield bit count. */
     unsigned char mBits;
 
-	// Pointer to a template in the template simplifier
-    TemplateSimplifier::TokenAndName* mTemplateSimplifierPointer;
+    // Pointer to a template in the template simplifier
+    std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
 
     TokenImpl()
         : mVarId(0)
@@ -107,7 +107,7 @@ struct TokenImpl {
         , mValueType(nullptr)
         , mValues(nullptr)
         , mBits(0)
-        , mTemplateSimplifierPointer(nullptr)
+        , mTemplateSimplifierPointers()
     {}
 
     ~TokenImpl();
@@ -525,11 +525,11 @@ public:
     unsigned char bits() const {
         return mImpl->mBits;
     }
-    TemplateSimplifier::TokenAndName* templateSimplifierPointer() const {
-        return mImpl->mTemplateSimplifierPointer;
+    std::set<TemplateSimplifier::TokenAndName*> &templateSimplifierPointers() const {
+        return mImpl->mTemplateSimplifierPointers;
     }
     void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
-        mImpl->mTemplateSimplifierPointer = tokenAndName;
+        mImpl->mTemplateSimplifierPointers.emplace(tokenAndName);
     }
     void setBits(const unsigned char b) {
         mImpl->mBits = b;
