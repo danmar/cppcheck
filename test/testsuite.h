@@ -49,7 +49,6 @@ protected:
     virtual void run() = 0;
 
     bool prepareTest(const char testname[]);
-    void teardownTest();
     std::string getLocationStr(const char * const filename, const unsigned int linenr) const;
 
     void assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
@@ -97,7 +96,7 @@ public:
 extern std::ostringstream errout;
 extern std::ostringstream output;
 
-#define TEST_CASE( NAME )  if ( prepareTest(#NAME) ) { setVerbose(false); NAME(); teardownTest(); }
+#define TEST_CASE( NAME )  if ( prepareTest(#NAME) ) { setVerbose(false); NAME(); }
 #define ASSERT( CONDITION )  assert_(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED , ACTUAL )  assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
