@@ -34,8 +34,8 @@ def checkRequirements():
         try:
             subprocess.call([app, '--version'])
         except OSError:
-           print(app + ' is required')
-           result = False
+            print(app + ' is required')
+            result = False
     return result
 
 def getCppcheck(cppcheckPath):
