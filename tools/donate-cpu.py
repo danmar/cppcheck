@@ -336,6 +336,8 @@ for arg in sys.argv[1:]:
         print('')
         print('Syntax: donate-cpu.py [-jN] [--stop-time=HH:MM] [--work-path=path]')
         print('  -jN                  Use N threads in compilation/analysis. Default is 1.')
+        print('  --package=url        Check a specific package and then stop. Can be useful if you want to reproduce')
+        print('                       some warning/crash/exception/etc..')
         print('  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.')
         print('  --work-path=path     Work folder path. Default path is ' + workpath)
         print('')
