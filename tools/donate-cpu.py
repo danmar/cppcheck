@@ -218,6 +218,10 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=wxwidgets'
     if hasInclude('temp', '<QString>'):
         libraries += ' --library=qt'
+    if hasInclude('temp', '<zlib.h>'):
+        libraries += ' --library=zlib'
+    if hasInclude('temp', '<gtk/gtk.h>'):
+        libraries += ' --library=gtk'
     cmd = 'nice ' + cppcheck + ' ' + jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
     print(cmd)
     startTime = time.time()
