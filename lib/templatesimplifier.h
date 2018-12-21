@@ -70,6 +70,9 @@ public:
      */
     struct TokenAndName {
         TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt);
+        TokenAndName(const TokenAndName& otherTok);
+        ~TokenAndName();
+
         bool operator == (const TokenAndName & rhs) const {
             return token == rhs.token && scope == rhs.scope && name == rhs.name && nameToken == rhs.nameToken;
         }
@@ -120,7 +123,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations();
+    bool simplifyCalculations(Token* tok = nullptr);
 
 private:
     /**
@@ -269,8 +272,8 @@ private:
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
-    std::vector<Token *> mExplicitInstantiationsToDelete;
-    std::vector<Token *> mTypesUsedInTemplateInstantiation;
+    std::vector<TokenAndName> mExplicitInstantiationsToDelete;
+    std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
 };
 
 /// @}

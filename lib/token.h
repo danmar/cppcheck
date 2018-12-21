@@ -24,6 +24,7 @@
 #include "config.h"
 #include "mathlib.h"
 #include "valueflow.h"
+#include "templatesimplifier.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -47,6 +48,69 @@ class Variable;
 struct TokensFrontBack {
     Token *front;
     Token *back;
+};
+
+struct TokenImpl {
+    unsigned int mVarId;
+    unsigned int mFileIndex;
+    unsigned int mLineNumber;
+    unsigned int mColumn;
+
+    // AST..
+    Token *mAstOperand1;
+    Token *mAstOperand2;
+    Token *mAstParent;
+
+    // symbol database information
+    const Scope *mScope;
+    union {
+        const Function *mFunction;
+        const Variable *mVariable;
+        const ::Type* mType;
+        const Enumerator *mEnumerator;
+    };
+
+    /**
+     * A value from 0-100 that provides a rough idea about where in the token
+     * list this token is located.
+     */
+    unsigned int mProgressValue;
+
+    // original name like size_t
+    std::string* mOriginalName;
+
+    // ValueType
+    ValueType *mValueType;
+
+    // ValueFlow
+    std::list<ValueFlow::Value>* mValues;
+    static const std::list<ValueFlow::Value> mEmptyValueList;
+
+    /** Bitfield bit count. */
+    unsigned char mBits;
+
+    // Pointer to a template in the template simplifier
+    std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
+
+    TokenImpl()
+        : mVarId(0)
+        , mFileIndex(0)
+        , mLineNumber(0)
+        , mColumn(0)
+        , mAstOperand1(nullptr)
+        , mAstOperand2(nullptr)
+        , mAstParent(nullptr)
+        , mScope(nullptr)
+        , mFunction(nullptr) // Initialize whole union
+        , mProgressValue(0)
+        , mOriginalName(nullptr)
+        , mValueType(nullptr)
+        , mValues(nullptr)
+        , mBits(0)
+        , mTemplateSimplifierPointers()
+    {}
+
+    ~TokenImpl();
 };
 
 /// @addtogroup Core
@@ -86,7 +150,7 @@ public:
     template<typename T>
     void str(T&& s) {
         mStr = s;
-        mVarId = 0;
+        mImpl->mVarId = 0;
 
         update_property_info();
     }
@@ -236,7 +300,7 @@ public:
     static std::string getCharAt(const Token *tok, std::size_t index);
 
     const ValueType *valueType() const {
-        return mValueType;
+        return mImpl->mValueType;
     }
     void setValueType(ValueType *vt);
 
@@ -244,7 +308,7 @@ public:
         const Token *top = this;
         while (top && !Token::Match(top->astParent(), ",|("))
             top = top->astParent();
-        return top ? top->mValueType : nullptr;
+        return top ? top->mImpl->mValueType : nullptr;
     }
 
     Token::Type tokType() const {
@@ -456,19 +520,19 @@ public:
     }
 
     bool isBitfield() const {
-        return mBits > 0;
+        return mImpl->mBits > 0;
     }
     unsigned char bits() const {
-        return mBits;
+        return mImpl->mBits;
     }
-    bool hasTemplateSimplifierPointer() const {
-        return getFlag(fHasTemplateSimplifierPointer);
+    std::set<TemplateSimplifier::TokenAndName*> &templateSimplifierPointers() const {
+        return mImpl->mTemplateSimplifierPointers;
     }
-    void hasTemplateSimplifierPointer(const bool value) {
-        setFlag(fHasTemplateSimplifierPointer, value);
+    void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
+        mImpl->mTemplateSimplifierPointers.emplace(tokenAndName);
     }
     void setBits(const unsigned char b) {
-        mBits = b;
+        mImpl->mBits = b;
     }
 
     /**
@@ -529,24 +593,24 @@ public:
     static int multiCompare(const Token *tok, const char *haystack, unsigned int varid);
 
     unsigned int fileIndex() const {
-        return mFileIndex;
+        return mImpl->mFileIndex;
     }
     void fileIndex(unsigned int indexOfFile) {
-        mFileIndex = indexOfFile;
+        mImpl->mFileIndex = indexOfFile;
     }
 
     unsigned int linenr() const {
-        return mLineNumber;
+        return mImpl->mLineNumber;
     }
     void linenr(unsigned int lineNumber) {
-        mLineNumber = lineNumber;
+        mImpl->mLineNumber = lineNumber;
     }
 
     unsigned int col() const {
-        return mColumn;
+        return mImpl->mColumn;
     }
     void col(unsigned int c) {
-        mColumn = c;
+        mImpl->mColumn = c;
     }
 
     Token *next() const {
@@ -579,10 +643,10 @@ public:
 
 
     unsigned int varId() const {
-        return mVarId;
+        return mImpl->mVarId;
     }
     void varId(unsigned int id) {
-        mVarId = id;
+        mImpl->mVarId = id;
         if (id != 0) {
             tokType(eVariable);
             isStandardType(false);
@@ -681,14 +745,14 @@ public:
      * @param s Scope to be associated
      */
     void scope(const Scope *s) {
-        mScope = s;
+        mImpl->mScope = s;
     }
 
     /**
      * @return a pointer to the scope containing this token.
      */
     const Scope *scope() const {
-        return mScope;
+        return mImpl->mScope;
     }
 
     /**
@@ -696,7 +760,7 @@ public:
      * @param f Function to be associated
      */
     void function(const Function *f) {
-        mFunction = f;
+        mImpl->mFunction = f;
         if (f)
             tokType(eFunction);
         else if (mTokType == eFunction)
@@ -707,7 +771,7 @@ public:
      * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return mTokType == eFunction ? mFunction : nullptr;
+        return mTokType == eFunction ? mImpl->mFunction : nullptr;
     }
 
     /**
@@ -715,8 +779,8 @@ public:
      * @param v Variable to be associated
      */
     void variable(const Variable *v) {
-        mVariable = v;
-        if (v || mVarId)
+        mImpl->mVariable = v;
+        if (v || mImpl->mVarId)
             tokType(eVariable);
         else if (mTokType == eVariable)
             tokType(eName);
@@ -726,7 +790,7 @@ public:
      * @return a pointer to the variable associated with this token.
      */
     const Variable *variable() const {
-        return mTokType == eVariable ? mVariable : nullptr;
+        return mTokType == eVariable ? mImpl->mVariable : nullptr;
     }
 
     /**
@@ -739,14 +803,14 @@ public:
     * @return a pointer to the type associated with this token.
     */
     const ::Type *type() const {
-        return mTokType == eType ? mType : nullptr;
+        return mTokType == eType ? mImpl->mType : nullptr;
     }
 
     /**
     * @return a pointer to the Enumerator associated with this token.
     */
     const Enumerator *enumerator() const {
-        return mTokType == eEnumerator ? mEnumerator : nullptr;
+        return mTokType == eEnumerator ? mImpl->mEnumerator : nullptr;
     }
 
     /**
@@ -754,7 +818,7 @@ public:
      * @param e Enumerator to be associated
      */
     void enumerator(const Enumerator *e) {
-        mEnumerator = e;
+        mImpl->mEnumerator = e;
         if (e)
             tokType(eEnumerator);
         else if (mTokType == eEnumerator)
@@ -785,7 +849,7 @@ public:
 
     /** Get progressValue */
     unsigned int progressValue() const {
-        return mProgressValue;
+        return mImpl->mProgressValue;
     }
 
     /** Calculate progress values for all tokens */
@@ -827,11 +891,11 @@ public:
      * @return the original name.
      */
     const std::string & originalName() const {
-        return mOriginalName ? *mOriginalName : emptyString;
+        return mImpl->mOriginalName ? *mImpl->mOriginalName : emptyString;
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return mValues ? *mValues : mEmptyValueList;
+        return mImpl->mValues ? *mImpl->mValues : mImpl->mEmptyValueList;
     }
 
     /**
@@ -839,24 +903,24 @@ public:
      */
     template<typename T>
     void originalName(T&& name) {
-        if (!mOriginalName)
-            mOriginalName = new std::string(name);
+        if (!mImpl->mOriginalName)
+            mImpl->mOriginalName = new std::string(name);
         else
-            *mOriginalName = name;
+            *mImpl->mOriginalName = name;
     }
 
     bool hasKnownIntValue() const {
-        return hasKnownValue() && std::any_of(mValues->begin(), mValues->end(), std::mem_fn(&ValueFlow::Value::isIntValue));
+        return hasKnownValue() && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isIntValue));
     }
 
     bool hasKnownValue() const {
-        return mValues && std::any_of(mValues->begin(), mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
+        return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
     }
 
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
-        if (!mValues)
+        if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mValues) {
+        for (const ValueFlow::Value &value : *mImpl->mValues) {
             if (value.isIntValue() && value.intvalue == val)
                 return &value;
         }
@@ -864,10 +928,10 @@ public:
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
-        if (!mValues)
+        if (!mImpl->mValues)
             return nullptr;
         const ValueFlow::Value *ret = nullptr;
-        for (const ValueFlow::Value &value : *mValues) {
+        for (const ValueFlow::Value &value : *mImpl->mValues) {
             if (!value.isIntValue())
                 continue;
             if ((!ret || value.intvalue > ret->intvalue) &&
@@ -878,9 +942,9 @@ public:
     }
 
     const ValueFlow::Value * getMovedValue() const {
-        if (!mValues)
+        if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mValues) {
+        for (const ValueFlow::Value &value : *mImpl->mValues) {
             if (value.isMovedValue() && value.moveKind != ValueFlow::Value::NonMovedVariable)
                 return &value;
         }
@@ -893,9 +957,9 @@ public:
     const ValueFlow::Value * getInvalidValue(const Token *ftok, unsigned int argnr, const Settings *settings) const;
 
     const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
-        if (!mValues)
+        if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mValues) {
+        for (const ValueFlow::Value &value : *mImpl->mValues) {
             if (value.isContainerSizeValue() && value.intvalue == val)
                 return &value;
         }
@@ -942,28 +1006,6 @@ private:
     Token *mPrevious;
     Token *mLink;
 
-    // symbol database information
-    const Scope *mScope;
-    union {
-        const Function *mFunction;
-        const Variable *mVariable;
-        const ::Type* mType;
-        const Enumerator *mEnumerator;
-    };
-
-    unsigned int mVarId;
-    unsigned int mFileIndex;
-    unsigned int mLineNumber;
-    unsigned int mColumn;
-
-    /**
-     * A value from 0-100 that provides a rough idea about where in the token
-     * list this token is located.
-     */
-    unsigned int mProgressValue;
-
-    Token::Type mTokType;
-
     enum {
         fIsUnsigned             = (1 << 0),
         fIsSigned               = (1 << 1),
@@ -989,11 +1031,14 @@ private:
         fIsLiteral              = (1 << 21),
         fIsTemplateArg          = (1 << 22),
         fIsAttributeNodiscard   = (1 << 23), // __attribute__ ((warn_unused_result)), [[nodiscard]]
-        fHasTemplateSimplifierPointer = (1 << 24), // used by template simplifier to indicate it has a pointer to this token
-        fAtAddress              = (1 << 25), // @ 0x4000
+        fAtAddress              = (1 << 24), // @ 0x4000
     };
 
     unsigned int mFlags;
+
+    Token::Type mTokType;
+
+    TokenImpl *mImpl;
 
     /**
      * Get specified flag state.
@@ -1020,41 +1065,23 @@ private:
     /** Update internal property cache about isStandardType() */
     void update_property_isStandardType();
 
-    /** Bitfield bit count. */
-    unsigned char mBits;
-
-    // AST..
-    Token *mAstOperand1;
-    Token *mAstOperand2;
-    Token *mAstParent;
-
-    // original name like size_t
-    std::string* mOriginalName;
-
-    // ValueType
-    ValueType *mValueType;
-
-    // ValueFlow
-    std::list<ValueFlow::Value>* mValues;
-    static const std::list<ValueFlow::Value> mEmptyValueList;
-
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
 
     const Token * astOperand1() const {
-        return mAstOperand1;
+        return mImpl->mAstOperand1;
     }
     const Token * astOperand2() const {
-        return mAstOperand2;
+        return mImpl->mAstOperand2;
     }
     const Token * astParent() const {
-        return mAstParent;
+        return mImpl->mAstParent;
     }
     const Token *astTop() const {
         const Token *ret = this;
-        while (ret->mAstParent)
-            ret = ret->mAstParent;
+        while (ret->mImpl->mAstParent)
+            ret = ret->mImpl->mAstParent;
         return ret;
     }
 
@@ -1070,20 +1097,20 @@ public:
     bool isCalculation() const;
 
     void clearAst() {
-        mAstOperand1 = mAstOperand2 = mAstParent = nullptr;
+        mImpl->mAstOperand1 = mImpl->mAstOperand2 = mImpl->mAstParent = nullptr;
     }
 
     void clearValueFlow() {
-        delete mValues;
-        mValues = nullptr;
+        delete mImpl->mValues;
+        mImpl->mValues = nullptr;
     }
 
     std::string astString(const char *sep = "") const {
         std::string ret;
-        if (mAstOperand1)
-            ret = mAstOperand1->astString(sep);
-        if (mAstOperand2)
-            ret += mAstOperand2->astString(sep);
+        if (mImpl->mAstOperand1)
+            ret = mImpl->mAstOperand1->astString(sep);
+        if (mImpl->mAstOperand2)
+            ret += mImpl->mAstOperand2->astString(sep);
         return ret + sep + mStr;
     }
 
