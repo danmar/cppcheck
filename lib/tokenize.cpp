@@ -9447,7 +9447,7 @@ void Tokenizer::simplifyBitfields()
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = (tok->next()->str() == "const") ? tok->tokAt(3) : tok->tokAt(2);
-            if (Token::Match(tok1, "%name% : %num% ;"))
+            if (tok1 && Token::Match(tok1, "%name% : %num% ;"))
                 tok1->setBits(MathLib::toLongNumber(tok1->strAt(2)));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||

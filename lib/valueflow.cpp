@@ -750,7 +750,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     (value1.varId == value2.varId && value1.varvalue == value2.varvalue)) {
                     ValueFlow::Value result(0);
                     result.condition = value1.condition ? value1.condition : value2.condition;
-                    result.setInconclusive(value1.isInconclusive() | value2.isInconclusive());
+                    result.setInconclusive(value1.isInconclusive() || value2.isInconclusive());
                     result.varId = (value1.varId != 0U) ? value1.varId : value2.varId;
                     result.varvalue = (result.varId == value1.varId) ? value1.intvalue : value2.intvalue;
                     if (value1.valueKind == value2.valueKind)
