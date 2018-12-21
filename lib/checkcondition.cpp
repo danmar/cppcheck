@@ -711,7 +711,7 @@ static std::string innerSmtString(const Token * tok)
 
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
-    if (diag(tok1) && diag(tok2))
+    if (diag(tok1) & diag(tok2))
         return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
@@ -726,7 +726,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 
 void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
-    if (diag(tok1) && diag(tok2))
+    if (diag(tok1) & diag(tok2))
         return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
@@ -741,7 +741,7 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
 {
-    if (diag(cond1) && diag(cond2))
+    if (diag(cond1) & diag(cond2))
         return;
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     errorPath.emplace_back(ErrorPathItem(cond1, "first condition"));
