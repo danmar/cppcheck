@@ -235,13 +235,11 @@ void Token::swapWithNext()
         std::swap(mTokType, mNext->mTokType);
         std::swap(mFlags, mNext->mFlags);
         std::swap(mImpl, mNext->mImpl);
-        for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers)
-        {
+        for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
             templateSimplifierPointer->token = this;
         }
 
-        for (auto templateSimplifierPointer : mNext->mImpl->mTemplateSimplifierPointers)
-        {
+        for (auto templateSimplifierPointer : mNext->mImpl->mTemplateSimplifierPointers) {
             templateSimplifierPointer->token = mNext;
         }
         if (mNext->mLink)
@@ -260,8 +258,7 @@ void Token::takeData(Token *fromToken)
     delete mImpl;
     mImpl = fromToken->mImpl;
     fromToken->mImpl = nullptr;
-    for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers)
-    {
+    for (auto templateSimplifierPointer : mImpl->mTemplateSimplifierPointers) {
         templateSimplifierPointer->token = this;
     }
     mLink = fromToken->mLink;
@@ -1710,8 +1707,7 @@ TokenImpl::~TokenImpl()
     delete mValueType;
     delete mValues;
 
-    for (auto templateSimplifierPointer : mTemplateSimplifierPointers)
-    {
+    for (auto templateSimplifierPointer : mTemplateSimplifierPointers) {
         templateSimplifierPointer->token = nullptr;
     }
 }

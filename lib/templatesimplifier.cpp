@@ -1484,8 +1484,7 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
 bool TemplateSimplifier::simplifyCalculations(Token* frontToken)
 {
     bool ret = false;
-    if (!frontToken)
-    {
+    if (!frontToken) {
         frontToken = mTokenList.front();
     }
     for (Token *tok = frontToken; tok; tok = tok->next()) {
@@ -2051,8 +2050,7 @@ void TemplateSimplifier::replaceTemplateUsage(
                 if (tok->isName() && !tok->templateSimplifierPointers().empty()) {
                     std::list<TokenAndName>::iterator ti;
                     for (ti = mTemplateInstantiations.begin(); ti != mTemplateInstantiations.end();) {
-                        if (ti->token == tok)
-                        {
+                        if (ti->token == tok) {
                             mTemplateInstantiations.erase(ti++);
                             break;
                         } else {
