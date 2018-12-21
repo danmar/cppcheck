@@ -297,7 +297,7 @@ static const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reason
 static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
 static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
 
-/*
+/**
  * \param[in] ptr address to be examined.
  * \return true if address is supposed to be on stack (contrary to heap). If ptr is 0 false will be returned.
  * If unknown better return false.

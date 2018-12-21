@@ -254,7 +254,7 @@ private:
 
     /**
      * Get the new token name.
-     * @param tok name token
+     * @param tok2 name token
      * @param &typeStringsUsedInTemplateInstantiation type strings use in template instantiation
      * @return new token name
      */

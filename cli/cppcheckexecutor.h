@@ -137,9 +137,9 @@ private:
      * Wrapper around check_internal
      *   - installs optional platform dependent signal handling
      *
-     * * @param cppcheck cppcheck instance
-    * @param argc from main()
-    * @param argv from main()
+     * @param cppcheck cppcheck instance
+     * @param argc from main()
+     * @param argv from main()
      **/
     int check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[]);
 
