@@ -208,7 +208,7 @@ public:
 
     /**
      * @brief Set list of undefines.
-     * @param defines List of undefines.
+     * @param undefines List of undefines.
      */
     void setUndefines(const QStringList &undefines);
 
