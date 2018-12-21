@@ -90,6 +90,7 @@ bool TestFixture::prepareTest(const char testname[])
     // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
         // Tests will be executed - prepare them
+        mTestname = testname;
         ++countTests;
         if (quiet_tests) {
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
@@ -100,6 +101,13 @@ bool TestFixture::prepareTest(const char testname[])
         return true;
     }
     return false;
+}
+
+std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
+{
+    std::ostringstream ret;
+    ret << filename << ':' << linenr << '(' << classname << "::" << mTestname << ')';
+    return ret.str();
 }
 
 static std::string writestr(const std::string &str, bool gccStyle = false)
@@ -130,7 +138,7 @@ void TestFixture::assert_(const char * const filename, const unsigned int linenr
 {
     if (!condition) {
         ++fails_counter;
-        errmsg << filename << ':' << linenr << ": Assertion failed." << std::endl << "_____" << std::endl;
+        errmsg << getLocationStr(filename, linenr) << ": Assertion failed." << std::endl << "_____" << std::endl;
     }
 }
 
@@ -138,7 +146,7 @@ void TestFixture::assertEquals(const char * const filename, const unsigned int l
 {
     if (expected != actual) {
         ++fails_counter;
-        errmsg << filename << ':' << linenr << ": Assertion failed. " << std::endl
+        errmsg << getLocationStr(filename, linenr) << ": Assertion failed. " << std::endl
                << "Expected: " <<  std::endl
                << writestr(expected)  << std::endl
                << "Actual: " << std::endl
@@ -219,7 +227,7 @@ void TestFixture::todoAssertEquals(const char * const filename, const unsigned i
                                    const std::string &actual) const
 {
     if (wanted == actual) {
-        errmsg << filename << ':' << linenr << ": Assertion succeeded unexpectedly. "
+        errmsg << getLocationStr(filename, linenr) << ": Assertion succeeded unexpectedly. "
                << "Result: " << writestr(wanted, true)  << std::endl << "_____" << std::endl;
 
         ++succeeded_todos_counter;
@@ -241,7 +249,7 @@ void TestFixture::todoAssertEquals(const char * const filename, const unsigned i
 void TestFixture::assertThrow(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
-    errmsg << filename << ':' << linenr << ": Assertion succeeded. "
+    errmsg << getLocationStr(filename, linenr) << ": Assertion succeeded. "
            << "The expected exception was thrown" << std::endl << "_____" << std::endl;
 
 }
@@ -249,7 +257,7 @@ void TestFixture::assertThrow(const char * const filename, const unsigned int li
 void TestFixture::assertThrowFail(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
-    errmsg << filename << ':' << linenr << ": Assertion failed. "
+    errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
            << "The expected exception was not thrown"  << std::endl << "_____" << std::endl;
 
 }
@@ -257,7 +265,7 @@ void TestFixture::assertThrowFail(const char * const filename, const unsigned in
 void TestFixture::assertNoThrowFail(const char * const filename, const unsigned int linenr) const
 {
     ++fails_counter;
-    errmsg << filename << ':' << linenr << ": Assertion failed. "
+    errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
            << "Unexpected exception was thrown"  << std::endl << "_____" << std::endl;
 
 }
