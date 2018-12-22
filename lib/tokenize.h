@@ -51,6 +51,8 @@ class CPPCHECKLIB Tokenizer {
     friend class TestSimplifyTypedef;
     friend class TestTokenizer;
     friend class SymbolDatabase;
+    friend class TestSimplifyTemplate;
+    friend class TemplateSimplifier;
 
     /** Class used in Tokenizer::setVarIdPass1 */
     class VariableMap {

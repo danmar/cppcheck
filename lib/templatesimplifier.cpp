@@ -73,8 +73,8 @@ TemplateSimplifier::TokenAndName::~TokenAndName()
         token->templateSimplifierPointers().erase(this);
 }
 
-TemplateSimplifier::TemplateSimplifier(TokenList &tokenlist, const Settings *settings, ErrorLogger *errorLogger)
-    : mTokenList(tokenlist), mSettings(settings), mErrorLogger(errorLogger)
+TemplateSimplifier::TemplateSimplifier(Tokenizer *tokenizer)
+    : mTokenizer(tokenizer), mTokenList(tokenizer->list), mSettings(tokenizer->mSettings), mErrorLogger(tokenizer->mErrorLogger)
 {
 }
 
@@ -884,25 +884,25 @@ bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::size
     return true;
 }
 
-// Utility function for TemplateSimplifier::getTemplateNamePosition, that works on template member functions,
-// hence this pattern: "> %type% [%type%] < ... > :: %type% ("
-static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos)
+// Utility function for TemplateSimplifier::getTemplateNamePosition, that works on template functions
+bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *tok, int &namepos)
 {
-    namepos = 2;
+    namepos = 1;
     while (tok && tok->next()) {
         if (Token::Match(tok->next(), ";|{"))
             return false;
         else if (Token::Match(tok->next(), "%type% <")) {
             const Token *closing = tok->tokAt(2)->findClosingBracket();
-            if (closing && Token::Match(closing->next(), ":: ~| %name% (")) {
-                if (closing->strAt(1) == "~")
-                    closing = closing->next();
-                while (tok && tok->next() != closing->next()) {
+            if (closing) {
+                if (closing->strAt(1) == "(" && mTokenizer->isFunctionHead(closing->tokAt(2), ";|{|:"))
+                    return true;
+                while (tok && tok->next() && tok->next() != closing) {
                     tok = tok->next();
                     namepos++;
                 }
-                return true;
             }
+        } else if (Token::Match(tok->next(), "%type% (") && mTokenizer->isFunctionHead(tok->tokAt(2), ";|{|:")) {
+            return true;
         }
         tok = tok->next();
         namepos++;
@@ -913,31 +913,12 @@ static bool getTemplateNamePositionTemplateMember(const Token *tok, int &namepos
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok, bool forward)
 {
     // get the position of the template name
-    int namepos = 0, starAmpPossiblePosition = 0;
+    int namepos = 0;
     if ((forward && Token::Match(tok, "> class|struct|union %type% :|<|;")) ||
         (!forward && Token::Match(tok, "> class|struct|union %type% {|:|<")))
         namepos = 2;
-    else if (Token::Match(tok, "> %type% *|&| %type% ("))
-        namepos = 2;
-    else if (Token::Match(tok, "> %type% %type% <") &&
-             Token::simpleMatch(tok->tokAt(3)->findClosingBracket(), "> ("))
-        namepos = 2;
-    else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
-        namepos = 3;
-    else if (getTemplateNamePositionTemplateMember(tok, namepos))
-        ;
-    else if (Token::Match(tok, "> %type% *|&| %type% :: %type% (")) {
-        namepos = 4;
-        starAmpPossiblePosition = 2;
-    } else if (Token::Match(tok, "> %type% %type% *|&| %type% :: %type% (")) {
-        namepos = 5;
-        starAmpPossiblePosition = 3;
-    } else {
-        // Name not found
-        return -1;
-    }
-    if (Token::Match(tok->tokAt(starAmpPossiblePosition ? starAmpPossiblePosition : namepos), "*|&"))
-        ++namepos;
+    else if (!getTemplateNamePositionTemplateFunction(tok, namepos))
+        return -1; // Name not found
 
     return namepos;
 }
