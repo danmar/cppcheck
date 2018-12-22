@@ -3527,7 +3527,7 @@ void uninitvar_snprintf(char *S, size_t N, char *Format, int Int)
     (void)snprintf(S,N,format,Int); // format is uninitialized
     // cppcheck-suppress uninitvar
     (void)snprintf(S,N,Format,i); // i is uninitialized
-    // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     (void)snprintf(s,N,Format,Int);
 
     // no warning is expected for
