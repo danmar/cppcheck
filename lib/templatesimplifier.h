@@ -104,7 +104,7 @@ public:
      * Get template name position
      * @param tok The ">" token e.g. before "class"
      * @param namepos return offset to name
-     * @return true is namepos founs, false if not
+     * @return true if name found, false if not
      * */
     bool getTemplateNamePositionTemplateFunction(const Token *tok, int &namepos);
 
