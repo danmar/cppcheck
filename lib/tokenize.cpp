@@ -175,7 +175,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     // make sure settings are specified
     assert(mSettings);
 
-    mTemplateSimplifier = new TemplateSimplifier(list, settings, errorLogger);
+    mTemplateSimplifier = new TemplateSimplifier(this);
 }
 
 Tokenizer::~Tokenizer()

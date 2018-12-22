@@ -43,7 +43,7 @@ class TokenList;
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class CPPCHECKLIB TemplateSimplifier {
 public:
-    TemplateSimplifier(TokenList &tokenlist, const Settings *settings, ErrorLogger *errorLogger);
+    TemplateSimplifier(Tokenizer *tokenizer);
     ~TemplateSimplifier();
 
     /**
@@ -98,7 +98,15 @@ public:
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    static int getTemplateNamePosition(const Token *tok, bool forward = false);
+    int getTemplateNamePosition(const Token *tok, bool forward = false);
+
+    /**
+     * Get template name position
+     * @param tok The ">" token e.g. before "class"
+     * @param namepos return offset to name
+     * @return true if name found, false if not
+     * */
+    bool getTemplateNamePositionTemplateFunction(const Token *tok, int &namepos);
 
     /**
      * Simplify templates
@@ -262,6 +270,7 @@ private:
         Token *tok2,
         std::list<std::string> &typeStringsUsedInTemplateInstantiation);
 
+    Tokenizer *mTokenizer;
     TokenList &mTokenList;
     const Settings *mSettings;
     ErrorLogger *mErrorLogger;
