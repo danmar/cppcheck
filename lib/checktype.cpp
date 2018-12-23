@@ -243,14 +243,17 @@ void CheckType::checkSignConversion()
 
 void CheckType::signConversionError(const Token *tok, const bool constvalue)
 {
-    const std::string varname(tok ? tok->str() : "var");
+    const std::string expr(tok ? tok->expressionString() : "var");
 
-    reportError(tok,
-                Severity::warning,
-                "signConversion",
-                (constvalue) ?
-                "$symbol:" + varname + "\nSuspicious code: sign conversion of $symbol in calculation because '$symbol' has a negative value" :
-                "$symbol:" + varname + "\nSuspicious code: sign conversion of $symbol in calculation, even though $symbol can have a negative value", CWE195, false);
+    std::ostringstream msg;
+    if (tok && tok->isName())
+        msg << "$symbol:" << expr << "\n";
+    if (constvalue)
+        msg << "Suspicious code: sign conversion of '" << expr << "' in calculation because '" << expr << "' has a negative value";
+    else
+        msg << "Suspicious code: sign conversion of '" << expr << "' in calculation, even though '" << expr << "' can have a negative value";
+
+    reportError(tok, Severity::warning, "signConversion", msg.str(), CWE195, false);
 }
 
 
