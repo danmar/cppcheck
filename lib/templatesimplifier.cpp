@@ -497,9 +497,6 @@ bool TemplateSimplifier::getTemplateDeclarations()
                 tok2 = tok2->link();
             else if (tok2->str() == ")")
                 break;
-            // skip decltype(...)
-            else if (Token::Match(tok2, "decltype ("))
-                tok2 = tok2->linkAt(1);
             // Declaration => add to mTemplateForwardDeclarations
             else if (tok2->str() == ";") {
                 const int namepos = getTemplateNamePosition(parmEnd, true);
@@ -894,14 +891,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
     while (tok && tok->next()) {
         if (Token::Match(tok->next(), ";|{"))
             return false;
-        // skip decltype(...)
-        else if (Token::Match(tok, "decltype (")) {
-            const Token * end = tok->linkAt(1);
-            while (tok && tok != end) {
-                tok = tok->next();
-                namepos++;
-            }
-        } else if (Token::Match(tok->next(), "%type% <")) {
+        else if (Token::Match(tok->next(), "%type% <")) {
             const Token *closing = tok->tokAt(2)->findClosingBracket();
             if (closing) {
                 if (closing->strAt(1) == "(" && mTokenizer->isFunctionHead(closing->tokAt(2), ";|{|:"))
@@ -994,19 +984,15 @@ void TemplateSimplifier::expandTemplate(
     const Token *endOfTemplateDefinition = nullptr;
     const Token * const templateDeclarationNameToken = templateDeclarationToken->tokAt(getTemplateNamePosition(templateDeclarationToken));
     const bool isClass = Token::Match(templateDeclarationToken->next(), "class|struct|union %name% <|{|:");
-    const bool isFunction = templateDeclarationNameToken->strAt(1) == "(" ||
-                            (templateDeclarationNameToken->strAt(1) == "<" && templateDeclarationNameToken->next()->findClosingBracket()->strAt(1) == "(");
-    const bool isSpecialization = Token::Match(templateDeclaration.token, "template < >");
+    const bool isFunction = templateDeclarationNameToken->strAt(1) == "(";
 
     // add forward declarations
     if (copy && isClass) {
         templateDeclaration.token->insertToken(templateDeclarationToken->strAt(1), "", true);
         templateDeclaration.token->insertToken(newName, "", true);
         templateDeclaration.token->insertToken(";", "", true);
-    } else if (isFunction && (copy || (!copy && isSpecialization))) {
+    } else if (copy && isFunction) {
         Token * dst = templateDeclaration.token;
-        bool isStatic = false;
-        std::string scope;
         Token * start;
         Token * end;
         auto it = mTemplateForwardDeclarationsMap.find(dst);
@@ -1017,21 +1003,8 @@ void TemplateSimplifier::expandTemplate(
             start = temp1->next();
             end = temp2->linkAt(1)->next();
         } else {
-            auto it2 = mTemplateUserSpecializationMap.find(dst);
-            if (it2 != mTemplateUserSpecializationMap.end()) {
-                dst = it2->second;
-                isStatic = dst->next()->findClosingBracket()->strAt(1) == "static";
-                const Token * temp = templateDeclarationNameToken;
-                while (Token::Match(temp->tokAt(-2), "%name% ::")) {
-                    scope.insert(0, temp->strAt(-2) + " :: ");
-                    temp = temp->tokAt(-2);
-                }
-            }
             start = templateDeclarationToken->next();
-            if (templateDeclarationNameToken->strAt(1) == "(")
-                end = templateDeclarationNameToken->linkAt(1)->next();
-            else
-                end = templateDeclarationNameToken->next()->findClosingBracket()->linkAt(1)->next();
+            end = templateDeclarationNameToken->linkAt(1)->next();
         }
         unsigned int typeindentlevel = 0;
         while (!(typeindentlevel == 0 && Token::Match(end, ";|{|:"))) {
@@ -1041,9 +1014,6 @@ void TemplateSimplifier::expandTemplate(
                 --typeindentlevel;
             end = end->next();
         }
-
-        if (isStatic)
-            dst->insertToken("static", "", true);
 
         std::map<const Token *, Token *> links;
         while (start && start != end) {
@@ -1071,11 +1041,7 @@ void TemplateSimplifier::expandTemplate(
                     dst->previous()->isLong(typetok->isLong());
                 }
             } else {
-                if (isSpecialization && !copy && !scope.empty() && Token::Match(start, (scope + templateDeclarationNameToken->str()).c_str())) {
-                    // skip scope
-                    while (start->strAt(1) != templateDeclarationNameToken->str())
-                        start = start->next();
-                } else if (start->str() == templateDeclarationNameToken->str()) {
+                if (start->str() == templateDeclarationNameToken->str()) {
                     dst->insertToken(newName, "", true);
                     if (start->strAt(1) == "<")
                         start = start->next()->findClosingBracket();
@@ -1167,8 +1133,6 @@ void TemplateSimplifier::expandTemplate(
         // Start of template..
         if (tok3 == templateDeclarationToken) {
             tok3 = tok3->next();
-            if (tok3->str() == "static")
-                tok3 = tok3->next();
         }
 
         // member function implemented outside class definition
@@ -1943,11 +1907,22 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             return false;
 
         // already simplified
-        if (!Token::Match(tok2, "%name% <"))
+        if (!Token::Match(startToken, "%name% <"))
             return false;
 
-        if (!matchSpecialization(tok->tokAt(namepos), tok2, specializations))
+        if (templateDeclaration.scope.empty()) {
+            if (startToken->str() != templateDeclaration.name)
+                return false;
+        } else {
+            std::string name = templateDeclaration.scope + " :: " + startToken->str();
+            if (name != templateDeclaration.name)
+                return false;
+        }
+
+        if (!matchSpecialization(tok->tokAt(namepos), startToken, specializations))
             return false;
+
+        tok2 = startToken;
 
         // New type..
         mTypesUsedInTemplateInstantiation.clear();
@@ -2076,61 +2051,6 @@ void TemplateSimplifier::replaceTemplateUsage(
     }
 }
 
-static std::string getPathName(const TemplateSimplifier::TokenAndName & decl)
-{
-    std::string name = decl.scope;
-    if (!name.empty())
-        name += " :: ";
-    if (decl.nameToken->strAt(-1) == "::") {
-        const Token * start = decl.nameToken;
-
-        while (Token::Match(start->tokAt(-2), "%name% ::"))
-            start = start->tokAt(-2);
-
-        while (start != decl.nameToken) {
-            name += (start->str() + " ");
-            start = start->next();
-        }
-    }
-    name += decl.name;
-    return name;
-}
-
-void TemplateSimplifier::getUserDefinedSpecializations()
-{
-    // try to locate a matching declaration for each user defined specialization
-    for (auto & spec : mTemplateDeclarations) {
-        if (Token::Match(spec.token, "template < >")) {
-            std::string specName = getPathName(spec);
-
-            bool found = false;
-            for (auto & decl : mTemplateDeclarations) {
-                if (Token::Match(decl.token, "template < >"))
-                    continue;
-                std::string declName = getPathName(decl);
-
-                // make sure the scopes and names match
-                if (specName == declName) {
-                    // @todo make sure function parameters also match
-                    mTemplateUserSpecializationMap[spec.token] = decl.token;
-                }
-            }
-
-            if (!found) {
-                for (auto & decl : mTemplateForwardDeclarations) {
-                    std::string declName = getPathName(decl);
-
-                    // make sure the scopes and names match
-                    if (specName == declName) {
-                        // @todo make sure function parameters also match
-                        mTemplateUserSpecializationMap[spec.token] = decl.token;
-                    }
-                }
-            }
-        }
-    }
-}
-
 void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
 {
     // try to locate a matching declaration for each forward declaration
@@ -2146,8 +2066,26 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
 
             // make sure the number of arguments match
             if (params1.size() == params2.size()) {
-                std::string declName = getPathName(decl);
-                std::string forwardDeclName = getPathName(forwardDecl);
+                std::string declName = decl.scope;
+                if (!declName.empty())
+                    declName += " :: ";
+                if (decl.nameToken->strAt(-1) == "::") {
+                    const Token * start = decl.nameToken;
+
+                    while (Token::Match(start->tokAt(-2), "%name% ::"))
+                        start = start->tokAt(-2);
+
+                    while (start != decl.nameToken) {
+                        declName += (start->str() + " ");
+                        start = start->next();
+                    }
+                }
+                declName += decl.name;
+
+                std::string forwardDeclName = forwardDecl.scope;
+                if (!forwardDeclName.empty())
+                    forwardDeclName += " :: ";
+                forwardDeclName += forwardDecl.name;
 
                 // make sure the scopes and names match
                 if (forwardDeclName == declName) {
@@ -2186,7 +2124,6 @@ void TemplateSimplifier::simplifyTemplates(
             mTemplateDeclarations.clear();
             mTemplateForwardDeclarations.clear();
             mTemplateForwardDeclarationsMap.clear();
-            mTemplateUserSpecializationMap.clear();
             mTemplateInstantiations.clear();
             mInstantiatedTemplates.clear();
             mExplicitInstantiationsToDelete.clear();
@@ -2219,9 +2156,6 @@ void TemplateSimplifier::simplifyTemplates(
 
         // Copy default argument values from forward declaration to declaration
         fixForwardDeclaredDefaultArgumentValues();
-
-        // Locate user defined specializations.
-        getUserDefinedSpecializations();
 
         // Locate possible instantiations of templates..
         getTemplateInstantiations();

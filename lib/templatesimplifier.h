@@ -157,12 +157,6 @@ private:
     void useDefaultArgumentValues();
 
     /**
-     * Try to locate a matching declaration for each user defined
-     * specialization.
-     */
-    void getUserDefinedSpecializations();
-
-    /**
      * simplify template aliases
      */
     void simplifyTemplateAliases();
@@ -284,7 +278,6 @@ private:
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;
     std::map<Token *, Token *> mTemplateForwardDeclarationsMap;
-    std::map<Token *, Token *> mTemplateUserSpecializationMap;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;

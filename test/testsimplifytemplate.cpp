@@ -125,9 +125,6 @@ private:
         TEST_CASE(template85); // #8902 crash
         TEST_CASE(template86); // crash
         TEST_CASE(template87);
-        TEST_CASE(template88); // #6183
-        TEST_CASE(template89); // #8917
-        TEST_CASE(template90); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -482,8 +479,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const char expected[] = "void foo<int*> ( ) ; "
-                                "void foo<int*> ( ) "
+        const char expected[] = "void foo<int*> ( ) "
                                 "{ x ( ) ; } "
                                 "int main ( ) "
                                 "{ foo<int*> ( ) ; }";
@@ -509,7 +505,6 @@ private:
         // The expected result..
         const char expected[] = "void a<2> ( ) ; "
                                 "void a<1> ( ) ; "
-                                "void a<0> ( ) ; "
                                 "void a<0> ( ) { } "
                                 "int main ( ) "
                                 "{ a<2> ( ) ; return 0 ; } "
@@ -1666,92 +1661,6 @@ private:
                            "const char & f1<constchar&> ( const char & t ) ; "
                            "const char * f1<constchar*> ( const char * t ) { return t ; } "
                            "const char & f1<constchar&> ( const char & t ) { return t ; }";
-        ASSERT_EQUALS(exp, tok(code));
-    }
-
-    void template88() { // #6183.cpp
-        const char code[] = "class CTest {\n"
-                            "public:\n"
-                            "    template <typename T>\n"
-                            "    static void Greeting(T val) {\n"
-                            "        std::cout << val << std::endl;\n"
-                            "    }\n"
-                            "private:\n"
-                            "    static void SayHello() {\n"
-                            "        std::cout << \"Hello World!\" << std::endl;\n"
-                            "    }\n"
-                            "};\n"
-                            "template<>\n"
-                            "void CTest::Greeting(bool) {\n"
-                            "	CTest::SayHello();\n"
-                            "}\n"
-                            "int main() {\n"
-                            "    CTest::Greeting<bool>(true);\n"
-                            "    return 0;\n"
-                            "}";
-        const char exp[] = "class CTest { "
-                           "public: "
-                           "static void Greeting<bool> ( bool ) ; "
-                           "template < typename T > "
-                           "static void Greeting ( T val ) { "
-                           "std :: cout << val << std :: endl ; "
-                           "} "
-                           "private: "
-                           "static void SayHello ( ) { "
-                           "std :: cout << \"Hello World!\" << std :: endl ; "
-                           "} "
-                           "} ; "
-                           "void CTest :: Greeting<bool> ( bool ) { "
-                           "CTest :: SayHello ( ) ; "
-                           "} "
-                           "int main ( ) { "
-                           "CTest :: Greeting<bool> ( true ) ; "
-                           "return 0 ; "
-                           "}";
-        ASSERT_EQUALS(exp, tok(code));
-    }
-
-    void template89() { // #8917
-        const char code[] = "struct Fred {\n"
-                            "    template <typename T> static void foo() { }\n"
-                            "};\n"
-                            "template void Fred::foo<char>();\n"
-                            "template void Fred::foo<float>();\n"
-                            "template <> void Fred::foo<bool>() { }\n"
-                            "template <> void Fred::foo<int>() { }";
-        const char exp[] = "struct Fred { "
-                           "static void foo<char> ( ) ; "
-                           "static void foo<float> ( ) ; "
-                           "static void foo<bool> ( ) ; "
-                           "static void foo<int> ( ) ; "
-                           "} ; "
-                           "void Fred :: foo<char> ( ) { } "
-                           "void Fred :: foo<float> ( ) { } "
-                           "void Fred :: foo<bool> ( ) { } "
-                           "void Fred :: foo<int> ( ) { }";
-        const char act[] = "struct Fred { "
-                           "static void foo<char> ( ) ; "
-                           "static void foo<float> ( ) ; "
-                           "} ; "
-                           "void Fred :: foo<bool> ( ) ; "
-                           "void Fred :: foo<bool> ( ) { } "
-                           "void Fred :: foo<int> ( ) ; "
-                           "void Fred :: foo<int> ( ) { } "
-                           "void Fred :: foo<char> ( ) { } "
-                           "void Fred :: foo<float> ( ) { }";
-        TODO_ASSERT_EQUALS(exp, act, tok(code));
-    }
-
-    void template90() { // crash
-        const char code[] = "template <typename T> struct S1 {};\n"
-                            "void f(S1<double>) {}\n"
-                            "template <typename T>\n"
-                            "decltype(S1<T>().~S1<T>()) fun1() {};";
-        const char exp[] = "struct S1<double> ; "
-                           "void f ( S1<double> ) { } "
-                           "template < typename T > "
-                           "decltype ( S1 < T > ( ) . ~ S1 < T > ( ) ) fun1 ( ) { } ; "
-                           "struct S1<double> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
