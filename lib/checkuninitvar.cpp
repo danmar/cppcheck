@@ -1378,18 +1378,17 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
 Check::FileInfo *CheckUninitVar::getFileInfo() const
 {
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
-    std::list<Scope>::const_iterator scope;
 
     MyFileInfo *fileInfo = new MyFileInfo;
 
     // Parse all functions in TU
-    for (scope = symbolDatabase->scopeList.begin(); scope != symbolDatabase->scopeList.end(); ++scope) {
-        if (!scope->isExecutable() || scope->type != Scope::eFunction || !scope->function)
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
             continue;
-        const Function *const function = scope->function;
+        const Function *const function = scope.function;
 
         // function calls where uninitialized data is passed by address
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const Token *tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
             if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand2())
                 continue;
             if (!tok->astOperand1()->function())
@@ -1424,18 +1423,18 @@ Check::FileInfo *CheckUninitVar::getFileInfo() const
         CheckNullPointer checkNullPointer(mTokenizer, mSettings, mErrorLogger);
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             const Token *tok;
-            if (isUnsafeFunction(&*scope, argnr, &tok))
-                fileInfo->readData.push_back(MyFileInfo::FunctionArg(mTokenizer, &*scope, argnr+1, tok));
-            if (checkNullPointer.isUnsafeFunction(&*scope, argnr, &tok))
-                fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(mTokenizer, &*scope, argnr+1, tok));
+            if (isUnsafeFunction(&scope, argnr, &tok))
+                fileInfo->readData.push_back(MyFileInfo::FunctionArg(mTokenizer, &scope, argnr+1, tok));
+            if (checkNullPointer.isUnsafeFunction(&scope, argnr, &tok))
+                fileInfo->dereferenced.push_back(MyFileInfo::FunctionArg(mTokenizer, &scope, argnr+1, tok));
         }
 
         // Nested function calls
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             const Token *tok;
-            int argnr2 = isCallFunction(&*scope, argnr, &tok);
+            int argnr2 = isCallFunction(&scope, argnr, &tok);
             if (argnr2 > 0) {
-                MyFileInfo::FunctionArg fa(mTokenizer, &*scope, argnr+1, tok);
+                MyFileInfo::FunctionArg fa(mTokenizer, &scope, argnr+1, tok);
                 fa.id  = FUNCTION_ID(function);
                 fa.id2 = FUNCTION_ID(tok->function());
                 fa.argnr2 = argnr2;

@@ -553,23 +553,23 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
     // call all "runChecks" in all registered Check classes
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+    for (Check *check : Check::instances()) {
         if (mSettings.terminated())
             return;
 
         if (tokenizer.isMaxTime())
             return;
 
-        Timer timerRunChecks((*it)->name() + "::runChecks", mSettings.showtime, &S_timerResults);
-        (*it)->runChecks(&tokenizer, &mSettings, this);
+        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &S_timerResults);
+        check->runChecks(&tokenizer, &mSettings, this);
     }
 
     // Analyse the tokens..
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-        Check::FileInfo *fi = (*it)->getFileInfo(&tokenizer, &mSettings);
+    for (const Check *check : Check::instances()) {
+        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
         if (fi != nullptr) {
             mFileInfo.push_back(fi);
-            mAnalyzerInformation.setFileInfo((*it)->name(), fi->toString());
+            mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
         }
     }
 
