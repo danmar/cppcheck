@@ -1134,7 +1134,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
             }
             // Do not warn about assignment with NULL
-            if (FwdAnalysis::isNullOperand(tok->astOperand2()))
+            if (FwdAnalysisAllPaths::isNullOperand(tok->astOperand2()))
                 continue;
 
             if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() != tok->astOperand1())
@@ -1153,7 +1153,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
             const Token *expr = varDecl ? varDecl : tok->astOperand1();
 
-            FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
+            FwdAnalysisAllPaths fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))
                 // warn
                 unreadVariableError(tok, expr->expressionString(), false);

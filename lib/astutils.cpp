@@ -1083,7 +1083,7 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
+struct FwdAnalysisAllPaths::Result FwdAnalysisAllPaths::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
 {
     // Parse the given tokens
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
@@ -1141,7 +1141,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
 
                 // check loop body again..
-                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local);
+                const struct FwdAnalysisAllPaths::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local);
                 if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
                     return result;
             }
@@ -1221,7 +1221,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
     return Result(Result::Type::NONE);
 }
 
-bool FwdAnalysis::isGlobalData(const Token *expr) const
+bool FwdAnalysisAllPaths::isGlobalData(const Token *expr) const
 {
     bool globalData = false;
     visitAstNodes(expr,
@@ -1289,7 +1289,7 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
     return globalData;
 }
 
-FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
+FwdAnalysisAllPaths::Result FwdAnalysisAllPaths::check(const Token *expr, const Token *startToken, const Token *endToken)
 {
     // all variable ids in expr.
     std::set<unsigned int> exprVarIds;
@@ -1314,12 +1314,12 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     // In unused values checking we do not want to check assignments to
     // global data.
     if (mWhat == What::UnusedValue && isGlobalData(expr))
-        return Result(FwdAnalysis::Result::Type::BAILOUT);
+        return Result(FwdAnalysisAllPaths::Result::Type::BAILOUT);
 
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
     // Break => continue checking in outer scope
-    while (result.type == FwdAnalysis::Result::Type::BREAK) {
+    while (result.type == FwdAnalysisAllPaths::Result::Type::BREAK) {
         const Scope *s = result.token->scope();
         while (s->type == Scope::eIf)
             s = s->nestedIn;
@@ -1331,7 +1331,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     return result;
 }
 
-bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
+bool FwdAnalysisAllPaths::hasOperand(const Token *tok, const Token *lhs) const
 {
     if (!tok)
         return false;
@@ -1340,21 +1340,21 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
     return hasOperand(tok->astOperand1(), lhs) || hasOperand(tok->astOperand2(), lhs);
 }
 
-const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, const Token *endToken)
+const Token *FwdAnalysisAllPaths::reassign(const Token *expr, const Token *startToken, const Token *endToken)
 {
     mWhat = What::Reassign;
     Result result = check(expr, startToken, endToken);
-    return result.type == FwdAnalysis::Result::Type::WRITE ? result.token : nullptr;
+    return result.type == FwdAnalysisAllPaths::Result::Type::WRITE ? result.token : nullptr;
 }
 
-bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
+bool FwdAnalysisAllPaths::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
 {
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
-    return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
+    return (result.type == FwdAnalysisAllPaths::Result::Type::NONE || result.type == FwdAnalysisAllPaths::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
 }
 
-bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
+bool FwdAnalysisAllPaths::possiblyAliased(const Token *expr, const Token *startToken) const
 {
     if (expr->isUnaryOp("*"))
         return true;
@@ -1384,7 +1384,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
     return false;
 }
 
-bool FwdAnalysis::isNullOperand(const Token *expr)
+bool FwdAnalysisAllPaths::isNullOperand(const Token *expr)
 {
     if (!expr)
         return false;
