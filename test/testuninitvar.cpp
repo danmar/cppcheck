@@ -4025,17 +4025,19 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
+
+        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         CheckUninitVar check(&tokenizer, &settings, this);
         fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
-        check.analyseWholeProgram(fileInfo, settings, *this);
+        check.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();
         }
+        delete ctu;
     }
 
     void ctu() {
@@ -4046,7 +4048,7 @@ private:
             "  int x;\n"
             "  f(&x);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) using argument p that points at uninitialized variable x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Using argument p that points at uninitialized variable x\n", errout.str());
 
         ctu("void use(int *p) { a = *p + 3; }\n"
             "void call(int x, int *p) { x++; use(p); }\n"
@@ -4054,7 +4056,7 @@ private:
             "  int x;\n"
             "  call(4,&x);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) using argument p that points at uninitialized variable x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) Using argument p that points at uninitialized variable x\n", errout.str());
 
         ctu("void dostuff(int *x, int *y) {\n"
             "  if (!var)\n"

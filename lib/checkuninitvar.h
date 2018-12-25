@@ -24,6 +24,7 @@
 
 #include "check.h"
 #include "config.h"
+#include "ctu.h"
 
 #include <set>
 #include <string>
@@ -91,45 +92,8 @@ public:
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
-        struct FunctionArg {
-            FunctionArg(const std::string &id_, const std::string &functionName_, unsigned int argnr_, const std::string &fileName, unsigned int linenr, const std::string &varname)
-                : id(id_),
-                  functionName(functionName_),
-                  argnr(argnr_),
-                  argnr2(0),
-                  variableName(varname) {
-                location.fileName = fileName;
-                location.linenr   = linenr;
-            }
-
-            FunctionArg(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok);
-
-            std::string id;
-            std::string id2;
-            std::string functionName;
-            unsigned int argnr;
-            unsigned int argnr2;
-            std::string variableName;
-            struct {
-                std::string fileName;
-                unsigned int linenr;
-            } location;
-        };
-
-        /** uninitialized function args */
-        std::list<FunctionArg> uninitialized;
-
         /** function arguments that data are unconditionally read */
-        std::list<FunctionArg> readData;
-
-        /** null pointer function args */
-        std::list<FunctionArg> nullPointer;
-
-        /** function arguments that are unconditionally dereferenced */
-        std::list<FunctionArg> dereferenced;
-
-        /** function calls other function */
-        std::list<FunctionArg> nestedCall;
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
         /** Convert MyFileInfo data into xml string */
         std::string toString() const;
@@ -141,7 +105,7 @@ public:
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);

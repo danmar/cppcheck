@@ -2679,17 +2679,19 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
+
+        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckUninitVar check(&tokenizer, &settings, this);
+        CheckNullPointer check(&tokenizer, &settings, this);
         fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
-        check.analyseWholeProgram(fileInfo, settings, *this);
+        check.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();
         }
+        delete ctu;
     }
 
     void ctu() {

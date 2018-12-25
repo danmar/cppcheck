@@ -591,6 +591,14 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
                 value && value->isInconclusive());
 }
 
+std::string CheckNullPointer::MyFileInfo::toString() const
+{
+    std::ostringstream ret;
+    for (const CTU::FileInfo::UnsafeUsage &u : unsafeUsage)
+        ret << u.toString();
+    return ret.str();
+}
+
 bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
 {
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
@@ -612,4 +620,97 @@ bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Tok
         return true;
     }
     return false;
+}
+
+Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+{
+    const CheckNullPointer checker(tokenizer, settings, nullptr);
+    return checker.getFileInfo();
+}
+
+Check::FileInfo *CheckNullPointer::getFileInfo() const
+{
+    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+
+    // Parse all functions in TU
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
+            continue;
+        const Function *const function = scope.function;
+
+        // "Unsafe" functions unconditionally reads data before it is written..
+        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+            const Token *tok;
+            if (isUnsafeFunction(&scope, argnr, &tok))
+                fileInfo->unsafeUsage.push_back(CTU::FileInfo::UnsafeUsage(CTU::getFunctionId(mTokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(mTokenizer,tok)));
+        }
+    }
+
+    return fileInfo;
+}
+
+Check::FileInfo * CheckNullPointer::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
+{
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::loadUnsafeUsageListFromXml(xmlElement);
+    if (unsafeUsage.empty())
+        return nullptr;
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+    fileInfo->unsafeUsage = unsafeUsage;
+    return fileInfo;
+}
+
+bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+{
+    if (!ctu)
+        return false;
+    bool foundErrors = false;
+    (void)settings; // This argument is unused
+
+    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> nestedCallsMap = ctu->getNestedCallsMap();
+
+    for (Check::FileInfo *fi1 : fileInfo) {
+        const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
+        if (!fi)
+            continue;
+        for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
+            for (const CTU::FileInfo::FunctionCall &functionCall : ctu->functionCalls) {
+                if (functionCall.valueType != ValueFlow::Value::ValueType::INT)
+                    continue;
+                if (functionCall.argvalue != 0)
+                    continue;
+
+                if (!findPath(functionCall, unsafeUsage, nestedCallsMap))
+                    continue;
+
+                ErrorLogger::ErrorMessage::FileLocation fileLoc1;
+                fileLoc1.setfile(functionCall.location.fileName);
+                fileLoc1.line = functionCall.location.linenr;
+                fileLoc1.setinfo("Calling function " + functionCall.functionName + ", " + MathLib::toString(functionCall.argnr) + getOrdinalText(functionCall.argnr) + " argument is null");
+
+                ErrorLogger::ErrorMessage::FileLocation fileLoc2;
+                fileLoc2.setfile(unsafeUsage.location.fileName);
+                fileLoc2.line = unsafeUsage.location.linenr;
+                fileLoc2.setinfo("Dereferencing argument " + unsafeUsage.argumentName + " that is null");
+
+                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                locationList.push_back(fileLoc1);
+                locationList.push_back(fileLoc2);
+
+                const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                       emptyString,
+                                                       Severity::error,
+                                                       "Null pointer dereference: " + unsafeUsage.argumentName,
+                                                       "ctunullpointer",
+                                                       CWE476, false);
+                errorLogger.reportErr(errmsg);
+
+                foundErrors = true;
+            }
+        }
+    }
+
+    return foundErrors;
 }
