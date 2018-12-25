@@ -2693,6 +2693,8 @@ private:
     }
 
     void ctu() {
+        setMultiline();
+
         ctu("void f(int *fp) {\n"
             "    a = *fp;\n"
             "}\n"
@@ -2700,14 +2702,18 @@ private:
             "  int *p = 0;\n"
             "  f(p);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Null pointer dereference: fp\n", errout.str());
+        ASSERT_EQUALS("test.cpp:2:error:Null pointer dereference: fp\n"
+                      "test.cpp:6:note:Calling function f, 1st argument is null\n"
+                      "test.cpp:2:note:Dereferencing argument fp that is null\n", errout.str());
 
         ctu("void use(int *p) { a = *p + 3; }\n"
             "void call(int x, int *p) { x++; use(p); }\n"
             "int main() {\n"
             "  call(4,0);\n"
             "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (error) Null pointer dereference: p\n", "", errout.str());
+        ASSERT_EQUALS("test.cpp:1:error:Null pointer dereference: p\n"
+                      "test.cpp:4:note:Calling function call, 2nd argument is null\n"
+                      "test.cpp:1:note:Dereferencing argument p that is null\n", errout.str());
 
         ctu("void dostuff(int *x, int *y) {\n"
             "  if (!var)\n"

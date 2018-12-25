@@ -1398,7 +1398,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo() const
                 const Token *argtok = args[argnr];
                 if (!argtok)
                     continue;
-                if (argtok->valueType() && argtok->valueType()->pointer > 0) {
+                {
                     // null pointer..
                     const ValueFlow::Value *value = argtok->getValue(0);
                     if (value && !value->isInconclusive())
