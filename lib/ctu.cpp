@@ -82,6 +82,14 @@ std::string CTU::FileInfo::UnsafeUsage::toString() const
     return out.str();
 }
 
+std::string CTU::toString(const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage)
+{
+    std::ostringstream ret;
+    for (const CTU::FileInfo::UnsafeUsage &u : unsafeUsage)
+        ret << u.toString();
+    return ret.str();
+}
+
 CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok)
     :
     id(getFunctionId(tokenizer, scope->function)),
@@ -331,34 +339,52 @@ static std::string replacestr(std::string s, const std::string &from, const std:
     return s;
 }
 
-std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(const CTU::FileInfo::FunctionCall &functionCall,
+std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueType invalidValue,
         const CTU::FileInfo::UnsafeUsage &unsafeUsage,
         const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCallsMap,
-        const char info[]) const
+        const char info[],
+        const FunctionCall * * const functionCallPtr) const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
 
-    if (!findPath(functionCall, unsafeUsage, nestedCallsMap))
+    for (const FunctionCall &functionCall : functionCalls) {
+
+        if (invalidValue == CTU::FileInfo::InvalidValueType::null &&
+            (functionCall.valueType != ValueFlow::Value::ValueType::INT || functionCall.argvalue != 0)) {
+            continue;
+        }
+        if (invalidValue == CTU::FileInfo::InvalidValueType::uninit &&
+            functionCall.valueType != ValueFlow::Value::ValueType::UNINIT) {
+            continue;
+        }
+
+        if (!findPath(functionCall, unsafeUsage, nestedCallsMap))
+            continue;
+
+        if (functionCallPtr)
+            *functionCallPtr = &functionCall;
+
+        std::string value1;
+        if (functionCall.valueType == ValueFlow::Value::ValueType::INT)
+            value1 = "null";
+        else if (functionCall.valueType == ValueFlow::Value::ValueType::UNINIT)
+            value1 = "uninitialized";
+
+        ErrorLogger::ErrorMessage::FileLocation fileLoc1;
+        fileLoc1.setfile(functionCall.location.fileName);
+        fileLoc1.line = functionCall.location.linenr;
+        fileLoc1.setinfo("Calling function " + functionCall.functionName + ", " + MathLib::toString(functionCall.argnr) + getOrdinalText(functionCall.argnr) + " argument is " + value1);
+
+        ErrorLogger::ErrorMessage::FileLocation fileLoc2;
+        fileLoc2.setfile(unsafeUsage.location.fileName);
+        fileLoc2.line = unsafeUsage.location.linenr;
+        fileLoc2.setinfo(replacestr(info, "ARG", unsafeUsage.argumentName));
+
+        locationList.push_back(fileLoc1);
+        locationList.push_back(fileLoc2);
+
         return locationList;
-
-    std::string value1;
-    if (functionCall.valueType == ValueFlow::Value::ValueType::INT)
-        value1 = "null";
-    else if (functionCall.valueType == ValueFlow::Value::ValueType::UNINIT)
-        value1 = "uninitialized";
-
-    ErrorLogger::ErrorMessage::FileLocation fileLoc1;
-    fileLoc1.setfile(functionCall.location.fileName);
-    fileLoc1.line = functionCall.location.linenr;
-    fileLoc1.setinfo("Calling function " + functionCall.functionName + ", " + MathLib::toString(functionCall.argnr) + getOrdinalText(functionCall.argnr) + " argument is " + value1);
-
-    ErrorLogger::ErrorMessage::FileLocation fileLoc2;
-    fileLoc2.setfile(unsafeUsage.location.fileName);
-    fileLoc2.line = unsafeUsage.location.linenr;
-    fileLoc2.setinfo(replacestr(info, "ARG", unsafeUsage.argumentName));
-
-    locationList.push_back(fileLoc1);
-    locationList.push_back(fileLoc2);
+    }
 
     return locationList;
 }

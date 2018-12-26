@@ -1281,10 +1281,7 @@ void CheckUninitVar::deadPointerError(const Token *pointer, const Token *alias)
 
 std::string CheckUninitVar::MyFileInfo::toString() const
 {
-    std::ostringstream ret;
-    for (const CTU::FileInfo::UnsafeUsage &u : unsafeUsage)
-        ret << u.toString();
-    return ret.str();
+    return CTU::toString(unsafeUsage);
 }
 
 bool CheckUninitVar::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
@@ -1330,7 +1327,6 @@ Check::FileInfo *CheckUninitVar::getFileInfo() const
         const Function *const function = scope.function;
 
         // "Unsafe" functions unconditionally reads data before it is written..
-        CheckNullPointer checkNullPointer(mTokenizer, mSettings, mErrorLogger);
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             const Token *tok;
             if (isUnsafeFunction(&scope, argnr, &tok))
@@ -1366,28 +1362,27 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
-            for (const CTU::FileInfo::FunctionCall &functionCall : ctu->functionCalls) {
-                if (functionCall.valueType != ValueFlow::Value::ValueType::UNINIT)
-                    continue;
+            const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
-                const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
-                    ctu->getErrorPath(functionCall,
-                                      unsafeUsage,
-                                      nestedCallsMap,
-                                      "Using argument ARG");
-                if (locationList.empty())
-                    continue;
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+                ctu->getErrorPath(CTU::FileInfo::InvalidValueType::uninit,
+                                  unsafeUsage,
+                                  nestedCallsMap,
+                                  "Using argument ARG",
+                                  &functionCall);
+            if (locationList.empty())
+                continue;
 
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       emptyString,
-                                                       Severity::error,
-                                                       "Using argument " + unsafeUsage.argumentName + " that points at uninitialized variable " + functionCall.argumentExpression,
-                                                       "ctuuninitvar",
-                                                       CWE908, false);
-                errorLogger.reportErr(errmsg);
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
+                                                   Severity::error,
+                                                   "Using argument " + unsafeUsage.argumentName + " that points at uninitialized variable " + functionCall->argumentExpression,
+                                                   "ctuuninitvar",
+                                                   CWE908, false);
+            errorLogger.reportErr(errmsg);
 
-                foundErrors = true;
-            }
+            foundErrors = true;
+            break;
         }
     }
     return foundErrors;

@@ -593,10 +593,7 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
 
 std::string CheckNullPointer::MyFileInfo::toString() const
 {
-    std::ostringstream ret;
-    for (const CTU::FileInfo::UnsafeUsage &u : unsafeUsage)
-        ret << u.toString();
-    return ret.str();
+    return CTU::toString(unsafeUsage);
 }
 
 bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
@@ -676,30 +673,25 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
-            for (const CTU::FileInfo::FunctionCall &functionCall : ctu->functionCalls) {
-                if (functionCall.valueType != ValueFlow::Value::ValueType::INT)
-                    continue;
-                if (functionCall.argvalue != 0)
-                    continue;
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+                ctu->getErrorPath(CTU::FileInfo::InvalidValueType::null,
+                                  unsafeUsage,
+                                  nestedCallsMap,
+                                  "Dereferencing argument ARG that is null",
+                                  nullptr);
+            if (locationList.empty())
+                continue;
 
-                const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
-                    ctu->getErrorPath(functionCall,
-                                      unsafeUsage,
-                                      nestedCallsMap,
-                                      "Dereferencing argument ARG that is null");
-                if (locationList.empty())
-                    continue;
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
+                                                   Severity::error,
+                                                   "Null pointer dereference: " + unsafeUsage.argumentName,
+                                                   "ctunullpointer",
+                                                   CWE476, false);
+            errorLogger.reportErr(errmsg);
 
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       emptyString,
-                                                       Severity::error,
-                                                       "Null pointer dereference: " + unsafeUsage.argumentName,
-                                                       "ctunullpointer",
-                                                       CWE476, false);
-                errorLogger.reportErr(errmsg);
-
-                foundErrors = true;
-            }
+            foundErrors = true;
+            break;
         }
     }
 
