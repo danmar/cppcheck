@@ -101,8 +101,6 @@ public:
     }
     void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
 
-    bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const;
-
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
@@ -114,7 +112,7 @@ public:
     };
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const;
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const;
 
@@ -122,8 +120,6 @@ public:
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger);
 
 private:
-    Check::FileInfo *getFileInfo() const;
-
     /** Get error messages. Used by --errorlist */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckNullPointer c(nullptr, settings, errorLogger);

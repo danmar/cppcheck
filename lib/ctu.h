@@ -107,6 +107,8 @@ namespace CTU {
     /** @brief Parse current TU and extract file info */
     FileInfo *getFileInfo(const Tokenizer *tokenizer);
 
+    std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok));
+
     std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }
 

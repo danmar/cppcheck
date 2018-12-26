@@ -295,6 +295,51 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
     return fileInfo;
 }
 
+static bool isUnsafeFunction(const Tokenizer *tokenizer, const Settings *settings, const Scope *scope, int argnr, const Token **tok, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok))
+{
+    const Variable * const argvar = scope->function->getArgumentVar(argnr);
+    if (!argvar->isPointer())
+        return false;
+    for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+        if (Token::simpleMatch(tok2, ") {")) {
+            tok2 = tok2->linkAt(1);
+            if (Token::findmatch(tok2->link(), "return|throw", tok2))
+                return false;
+            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, settings, tokenizer->isCPP()))
+                return false;
+        }
+        if (tok2->variable() != argvar)
+            continue;
+        if (!isUnsafeUsage(check, tok2))
+            return false;
+        *tok = tok2;
+        return true;
+    }
+    return false;
+}
+
+std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok))
+{
+    std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+
+    // Parse all functions in TU
+    const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
+
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
+            continue;
+        const Function *const function = scope.function;
+
+        // "Unsafe" functions unconditionally reads data before it is written..
+        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+            const Token *tok;
+            if (isUnsafeFunction(tokenizer, settings, &scope, argnr, &tok, check, isUnsafeUsage))
+                unsafeUsage.push_back(CTU::FileInfo::UnsafeUsage(CTU::getFunctionId(tokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(tokenizer,tok)));
+        }
+    }
+
+    return unsafeUsage;
+}
 
 static bool findPath(const CTU::FileInfo::FunctionCall &from,
                      const CTU::FileInfo::UnsafeUsage &to,

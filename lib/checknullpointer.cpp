@@ -596,55 +596,20 @@ std::string CheckNullPointer::MyFileInfo::toString() const
     return CTU::toString(unsafeUsage);
 }
 
-bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
+static bool isUnsafeUsage(const Check *check, const Token *vartok)
 {
-    const Variable * const argvar = scope->function->getArgumentVar(argnr);
-    if (!argvar->isPointer())
-        return false;
-    for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-        if (Token::simpleMatch(tok2, ") {")) {
-            tok2 = tok2->linkAt(1);
-            if (Token::findmatch(tok2->link(), "return|throw", tok2))
-                return false;
-            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, mSettings, mTokenizer->isCPP()))
-                return false;
-        }
-        if (tok2->variable() != argvar)
-            continue;
-        if (!Token::Match(tok2->astParent(), "*|["))
-            return false;
-        *tok = tok2;
-        return true;
-    }
-    return false;
+    (void)check;
+    return Token::Match(vartok->astParent(), "*|[");
 }
 
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const CheckNullPointer checker(tokenizer, settings, nullptr);
-    return checker.getFileInfo();
-}
-
-Check::FileInfo *CheckNullPointer::getFileInfo() const
-{
-    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, nullptr, ::isUnsafeUsage);
+    if (unsafeUsage.empty())
+        return nullptr;
 
     MyFileInfo *fileInfo = new MyFileInfo;
-
-    // Parse all functions in TU
-    for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
-            continue;
-        const Function *const function = scope.function;
-
-        // "Unsafe" functions unconditionally reads data before it is written..
-        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
-            const Token *tok;
-            if (isUnsafeFunction(&scope, argnr, &tok))
-                fileInfo->unsafeUsage.push_back(CTU::FileInfo::UnsafeUsage(CTU::getFunctionId(mTokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(mTokenizer,tok)));
-        }
-    }
-
+    fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
 
