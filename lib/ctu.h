@@ -90,6 +90,11 @@ namespace CTU {
 
         void loadFromXml(const tinyxml2::XMLElement *xmlElement);
         std::map<std::string, std::list<NestedCall>> getNestedCallsMap() const;
+
+        std::list<ErrorLogger::ErrorMessage::FileLocation> getErrorPath(const FunctionCall &functionCall,
+                const UnsafeUsage &unsafeUsage,
+                const std::map<std::string, std::list<NestedCall>> &nestedCallsMap,
+                const char info[]) const;
     };
 
     std::string getFunctionId(const Tokenizer *tokenizer, const Function *function);
@@ -98,11 +103,6 @@ namespace CTU {
     FileInfo *getFileInfo(const Tokenizer *tokenizer);
 
     std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
-
-    bool findPath(const FileInfo::FunctionCall &from,
-                  const FileInfo::UnsafeUsage &to,
-                  const std::map<std::string, std::list<FileInfo::NestedCall>> &nestedCalls);
-
 }
 
 /// @}

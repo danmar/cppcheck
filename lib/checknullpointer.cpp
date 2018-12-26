@@ -682,22 +682,13 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                 if (functionCall.argvalue != 0)
                     continue;
 
-                if (!findPath(functionCall, unsafeUsage, nestedCallsMap))
+                const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+                    ctu->getErrorPath(functionCall,
+                                      unsafeUsage,
+                                      nestedCallsMap,
+                                      "Dereferencing argument ARG that is null");
+                if (locationList.empty())
                     continue;
-
-                ErrorLogger::ErrorMessage::FileLocation fileLoc1;
-                fileLoc1.setfile(functionCall.location.fileName);
-                fileLoc1.line = functionCall.location.linenr;
-                fileLoc1.setinfo("Calling function " + functionCall.functionName + ", " + MathLib::toString(functionCall.argnr) + getOrdinalText(functionCall.argnr) + " argument is null");
-
-                ErrorLogger::ErrorMessage::FileLocation fileLoc2;
-                fileLoc2.setfile(unsafeUsage.location.fileName);
-                fileLoc2.line = unsafeUsage.location.linenr;
-                fileLoc2.setinfo("Dereferencing argument " + unsafeUsage.argumentName + " that is null");
-
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                locationList.push_back(fileLoc1);
-                locationList.push_back(fileLoc2);
 
                 const ErrorLogger::ErrorMessage errmsg(locationList,
                                                        emptyString,

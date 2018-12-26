@@ -29,27 +29,6 @@ std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *funct
     return tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr());
 }
 
-bool CTU::findPath(const CTU::FileInfo::FunctionCall &from,
-                   const CTU::FileInfo::UnsafeUsage &to,
-                   const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCalls)
-{
-    if (from.functionId == to.functionId && from.argnr == to.argnr)
-        return true;
-
-    const std::map<std::string, std::list<FileInfo::NestedCall>>::const_iterator nc = nestedCalls.find(from.functionId);
-    if (nc == nestedCalls.end())
-        return false;
-
-    for (std::list<FileInfo::NestedCall>::const_iterator it = nc->second.begin(); it != nc->second.end(); ++it) {
-        if (from.functionId == it->id && from.argnr == it->argnr && it->id2 == to.functionId && it->argnr2 == to.argnr)
-            return true;
-    }
-
-    return false;
-}
-
-
-
 CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)
 {
     fileName = tokenizer->list.file(tok);
@@ -306,4 +285,80 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
     }
 
     return fileInfo;
+}
+
+
+static bool findPath(const CTU::FileInfo::FunctionCall &from,
+                     const CTU::FileInfo::UnsafeUsage &to,
+                     const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCalls)
+{
+    if (from.functionId == to.functionId && from.argnr == to.argnr)
+        return true;
+
+    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>>::const_iterator nc = nestedCalls.find(from.functionId);
+    if (nc == nestedCalls.end())
+        return false;
+
+    for (const CTU::FileInfo::NestedCall &nestedCall : nc->second) {
+        if (from.functionId == nestedCall.id && from.argnr == nestedCall.argnr && nestedCall.id2 == to.functionId && nestedCall.argnr2 == to.argnr)
+            return true;
+    }
+
+    return false;
+}
+
+static std::string replacestr(std::string s, const std::string &from, const std::string &to)
+{
+    std::string::size_type pos1 = 0;
+    while (pos1 < s.size()) {
+        pos1 = s.find(from, pos1);
+        if (pos1 == std::string::npos)
+            return s;
+        if (pos1 > 0 && (s[pos1-1] == '_' || std::isalnum(s[pos1-1]))) {
+            pos1++;
+            continue;
+        }
+        const std::string::size_type pos2 = pos1 + from.size();
+        if (pos2 >= s.size())
+            return s.substr(0,pos1) + to;
+        if (s[pos2] == '_' || std::isalnum(s[pos2])) {
+            pos1++;
+            continue;
+        }
+        s = s.substr(0,pos1) + to + s.substr(pos2);
+        pos1 += to.size();
+    }
+    return s;
+}
+
+std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(const CTU::FileInfo::FunctionCall &functionCall,
+        const CTU::FileInfo::UnsafeUsage &unsafeUsage,
+        const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCallsMap,
+        const char info[]) const
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+
+    if (!findPath(functionCall, unsafeUsage, nestedCallsMap))
+        return locationList;
+
+    std::string value1;
+    if (functionCall.valueType == ValueFlow::Value::ValueType::INT)
+        value1 = "null";
+    else if (functionCall.valueType == ValueFlow::Value::ValueType::UNINIT)
+        value1 = "uninitialized";
+
+    ErrorLogger::ErrorMessage::FileLocation fileLoc1;
+    fileLoc1.setfile(functionCall.location.fileName);
+    fileLoc1.line = functionCall.location.linenr;
+    fileLoc1.setinfo("Calling function " + functionCall.functionName + ", " + MathLib::toString(functionCall.argnr) + getOrdinalText(functionCall.argnr) + " argument is " + value1);
+
+    ErrorLogger::ErrorMessage::FileLocation fileLoc2;
+    fileLoc2.setfile(unsafeUsage.location.fileName);
+    fileLoc2.line = unsafeUsage.location.linenr;
+    fileLoc2.setinfo(replacestr(info, "ARG", unsafeUsage.argumentName));
+
+    locationList.push_back(fileLoc1);
+    locationList.push_back(fileLoc2);
+
+    return locationList;
 }

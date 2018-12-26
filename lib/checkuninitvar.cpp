@@ -1370,22 +1370,13 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
                 if (functionCall.valueType != ValueFlow::Value::ValueType::UNINIT)
                     continue;
 
-                if (!findPath(functionCall, unsafeUsage, nestedCallsMap))
+                const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+                    ctu->getErrorPath(functionCall,
+                                      unsafeUsage,
+                                      nestedCallsMap,
+                                      "Using argument ARG");
+                if (locationList.empty())
                     continue;
-
-                ErrorLogger::ErrorMessage::FileLocation fileLoc1;
-                fileLoc1.setfile(functionCall.location.fileName);
-                fileLoc1.line = functionCall.location.linenr;
-                fileLoc1.setinfo("Calling function " + functionCall.functionName + ", variable " + functionCall.argumentExpression + " is uninitialized");
-
-                ErrorLogger::ErrorMessage::FileLocation fileLoc2;
-                fileLoc2.setfile(unsafeUsage.location.fileName);
-                fileLoc2.line = unsafeUsage.location.linenr;
-                fileLoc2.setinfo("Using argument " + unsafeUsage.argumentName);
-
-                std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                locationList.push_back(fileLoc1);
-                locationList.push_back(fileLoc2);
 
                 const ErrorLogger::ErrorMessage errmsg(locationList,
                                                        emptyString,
