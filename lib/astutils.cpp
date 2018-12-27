@@ -1191,9 +1191,11 @@ struct FwdAnalysisAllPaths::Result FwdAnalysisAllPaths::checkRecursive(const Tok
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
+            } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
+                continue;
             } else {
                 // TODO: this is a quick bailout
-                return Result(Result::Type::BAILOUT);
+                return Result(Result::Type::BAILOUT, parent->astParent());
             }
         }
 
