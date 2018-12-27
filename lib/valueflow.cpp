@@ -1315,7 +1315,7 @@ static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, Mat
     return false;
 }
 
-static void valueFlowRightShift(TokenList *tokenList)
+static void valueFlowRightShift(TokenList *tokenList, const Settings* settings)
 {
     for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
         if (tok->str() != ">>")
@@ -1345,7 +1345,19 @@ static void valueFlowRightShift(TokenList *tokenList)
             continue;
         if (lhsmax < 0)
             continue;
-        if ((1 << rhsvalue) <= lhsmax)
+        int lhsbits;
+        if ((tok->astOperand1()->valueType()->type == ValueType::Type::CHAR) ||
+            (tok->astOperand1()->valueType()->type == ValueType::Type::SHORT) ||
+            (tok->astOperand1()->valueType()->type == ValueType::Type::BOOL) ||
+            (tok->astOperand1()->valueType()->type == ValueType::Type::INT))
+            lhsbits = settings->int_bit;
+        else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONG)
+            lhsbits = settings->long_bit;
+        else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONGLONG)
+            lhsbits = settings->long_long_bit;
+        else
+            continue;
+        if (rhsvalue >= lhsbits || rhsvalue >= MathLib::bigint_bits || (1ULL << rhsvalue) <= lhsmax)
             continue;
 
         ValueFlow::Value val(0);
@@ -4764,7 +4776,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t values = 0;
     while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
-        valueFlowRightShift(tokenlist);
+        valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
         valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
