@@ -649,6 +649,16 @@ private:
               "  delete static_cast<SwFmtFld*>(&pTxtFld->GetAttr());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8910
+        check("void f() {\n"
+              "    char stack[512];\n"
+              "    RGNDATA *data;\n"
+              "    if (data_size > sizeof (stack)) data = malloc (data_size);\n"
+              "    else data = (RGNDATA *)stack;\n"
+              "    if ((char *)data != stack) free (data);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_C() {
