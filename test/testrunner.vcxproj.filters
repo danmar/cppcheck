@@ -211,9 +211,6 @@
     <ClCompile Include="..\lib\astutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\ctu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="options.h">
@@ -238,9 +235,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\ctu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

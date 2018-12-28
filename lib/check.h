@@ -93,7 +93,7 @@ public:
     static void reportError(const ErrorLogger::ErrorMessage &errmsg);
 
     /** Base class used for whole-program analysis */
-    class FileInfo {
+    class CPPCHECKLIB FileInfo {
     public:
         FileInfo() {}
         virtual ~FileInfo() {}

@@ -31,7 +31,7 @@
 
 /** @brief Whole program analysis (ctu=Cross Translation Unit) */
 namespace CTU {
-    class FileInfo : public Check::FileInfo {
+    class CPPCHECKLIB FileInfo : public Check::FileInfo {
     public:
         std::string toString() const override;
 
@@ -100,16 +100,16 @@ namespace CTU {
                 const FunctionCall * * const functionCallPtr) const;
     };
 
-    std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
+    CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
 
-    std::string getFunctionId(const Tokenizer *tokenizer, const Function *function);
+    CPPCHECKLIB std::string getFunctionId(const Tokenizer *tokenizer, const Function *function);
 
     /** @brief Parse current TU and extract file info */
-    FileInfo *getFileInfo(const Tokenizer *tokenizer);
+    CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer *tokenizer);
 
-    std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok));
 
-    std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }
 
 /// @}
