@@ -289,7 +289,7 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
             if (tok2->str() == ".")
                 return ChildrenToVisit::none;
             // A variable is seen..
-            if (tok2 != valuetok && tok2->variable() && (tok2->varId() == valuetok->varId() || !tok2->variable()->isArgument())) {
+            if (tok2 != valuetok && tok2->variable() && (tok2->varId() == valuetok->varId() || (!tok2->variable()->isArgument() && !tok2->hasKnownIntValue()))) {
                 // TODO: limit this bailout
                 bailout = true;
                 return ChildrenToVisit::done;

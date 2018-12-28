@@ -688,6 +688,19 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
+        code  = "bool f() {\n"
+                "    bool a = (4 == 3);\n"
+                "    bool b = (3 == 3);\n"
+                "    return a || b;\n"
+                "}\n";
+        values = tokenValues(code, "%oror%");
+        ASSERT_EQUALS(1, values.size());
+        if (!values.empty()) {
+            ASSERT_EQUALS(true, values.front().isIntValue());
+            ASSERT_EQUALS(true, values.front().isKnown());
+            ASSERT_EQUALS(1, values.front().intvalue);
+        }
+
         // function call => calculation
         code  = "void f(int x, int y) {\n"
                 "    a = x + y;\n"
