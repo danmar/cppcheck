@@ -545,7 +545,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                 if (value2.isTokValue() && (!parent->isComparisonOp() || value2.tokvalue->tokType() != Token::eString || value1.isTokValue()))
                     continue;
                 if (value1.isKnown() || value2.isKnown() || value1.varId == 0U || value2.varId == 0U ||
-                    (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() && value2.isIntValue())) {
+                    (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() &&
+                     value2.isIntValue())) {
                     ValueFlow::Value result(0);
                     combineValueProperties(value1, value2, &result);
                     const float floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
@@ -3119,8 +3120,20 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 
             if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isTokValue))) {
                 std::list<ValueFlow::Value> tokvalues;
-                std::copy_if(values.begin(), values.end(), std::back_inserter(tokvalues), std::mem_fn(&ValueFlow::Value::isTokValue));
-                valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, varid, tokvalues, constValue, false, tokenlist, errorLogger, settings);
+                std::copy_if(values.begin(),
+                             values.end(),
+                             std::back_inserter(tokvalues),
+                             std::mem_fn(&ValueFlow::Value::isTokValue));
+                valueFlowForward(const_cast<Token *>(nextExpression),
+                                 endOfVarScope,
+                                 var,
+                                 varid,
+                                 tokvalues,
+                                 constValue,
+                                 false,
+                                 tokenlist,
+                                 errorLogger,
+                                 settings);
                 values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
             }
             valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, varid, values, constValue, false, tokenlist, errorLogger, settings);
