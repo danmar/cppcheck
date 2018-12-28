@@ -128,6 +128,7 @@ private:
         TEST_CASE(template88); // #6183
         TEST_CASE(template89); // #8917
         TEST_CASE(template90); // crash
+        TEST_CASE(template91);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1753,6 +1754,69 @@ private:
                            "decltype ( S1 < T > ( ) . ~ S1 < T > ( ) ) fun1 ( ) { } ; "
                            "struct S1<double> { } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template91() {
+        {
+            const char code[] = "template<typename T> T foo(T t) { return t; }\n"
+                                "template<> char foo<char>(char a) { return a; }\n"
+                                "template<> int foo<int>(int a) { return a; }\n"
+                                "template float foo<float>(float);\n"
+                                "template double foo<double>(double);";
+            const char exp[] = "float foo<float> ( float t ) ; "
+                               "double foo<double> ( double t ) ; "
+                               "char foo<char> ( char a ) ; "
+                               "char foo<char> ( char a ) { return a ; } "
+                               "int foo<int> ( int a ) ; "
+                               "int foo<int> ( int a ) { return a ; } "
+                               "float foo<float> ( float t ) { return t ; } "
+                               "double foo<double> ( double t ) { return t ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "struct Fred {\n"
+                                "    template<typename T> T foo(T t) { return t; }\n"
+                                "    template<> char foo<char>(char a) { return a; }\n"
+                                "    template<> int foo<int>(int a) { return a; }\n"
+                                "};\n"
+                                "template float Fred::foo<float>(float);\n"
+                                "template double Fred::foo<double>(double);";
+            const char exp[] = "struct Fred { "
+                               "float foo<float> ( float t ) ; "
+                               "double foo<double> ( double t ) ; "
+                               "char foo<char> ( char a ) ; "
+                               "char foo<char> ( char a ) { return a ; } "
+                               "int foo<int> ( int a ) ; "
+                               "int foo<int> ( int a ) { return a ; } "
+                               "} ; "
+                               "float Fred :: foo<float> ( float t ) { return t ; } "
+                               "double Fred :: foo<double> ( double t ) { return t ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "namespace NS1 {\n"
+                                "    namespace NS2 {\n"
+                                "        template<typename T> T foo(T t) { return t; }\n"
+                                "        template<> char foo<char>(char a) { return a; }\n"
+                                "        template<> int foo<int>(int a) { return a; }\n"
+                                "    }\n"
+                                "    template float NS2::foo<float>(float);\n"
+                                "}\n"
+                                "template double NS1::NS2::foo<double>(double);";
+            const char exp[] = "namespace NS1 { "
+                               "namespace NS2 { "
+                               "float foo<float> ( float t ) ; "
+                               "double foo<double> ( double t ) ; "
+                               "char foo<char> ( char a ) ; "
+                               "char foo<char> ( char a ) { return a ; } "
+                               "int foo<int> ( int a ) ; "
+                               "int foo<int> ( int a ) { return a ; } "
+                               "} "
+                               "} "
+                               "float NS1 :: NS2 :: foo<float> ( float t ) { return t ; } "
+                               "double NS1 :: NS2 :: foo<double> ( double t ) { return t ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

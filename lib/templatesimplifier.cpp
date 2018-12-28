@@ -904,14 +904,14 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
         } else if (Token::Match(tok->next(), "%type% <")) {
             const Token *closing = tok->tokAt(2)->findClosingBracket();
             if (closing) {
-                if (closing->strAt(1) == "(" && mTokenizer->isFunctionHead(closing->tokAt(2), ";|{|:"))
+                if (closing->strAt(1) == "(" && Tokenizer::isFunctionHead(closing->next(), ";|{|:", true))
                     return true;
                 while (tok && tok->next() && tok->next() != closing) {
                     tok = tok->next();
                     namepos++;
                 }
             }
-        } else if (Token::Match(tok->next(), "%type% (") && mTokenizer->isFunctionHead(tok->tokAt(2), ";|{|:")) {
+        } else if (Token::Match(tok->next(), "%type% (") && Tokenizer::isFunctionHead(tok->tokAt(2), ";|{|:", true)) {
             return true;
         }
         tok = tok->next();
