@@ -178,16 +178,6 @@ ErrorLogger::ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errms
     }
 }
 
-static std::string replaceStr(std::string s, const std::string &from, const std::string &to)
-{
-    std::string::size_type pos = 0;
-    while (std::string::npos != (pos = s.find(from,pos))) {
-        s = s.substr(0, pos) + to + s.substr(pos + from.size());
-        pos += to.size();
-    }
-    return s;
-}
-
 void ErrorLogger::ErrorMessage::setmsg(const std::string &msg)
 {
     // If a message ends to a '\n' and contains only a one '\n'
@@ -760,3 +750,27 @@ std::string ErrorLogger::plistData(const ErrorLogger::ErrorMessage &msg)
     return plist.str();
 }
 
+
+std::string replaceStr(std::string s, const std::string &from, const std::string &to)
+{
+    std::string::size_type pos1 = 0;
+    while (pos1 < s.size()) {
+        pos1 = s.find(from, pos1);
+        if (pos1 == std::string::npos)
+            return s;
+        if (pos1 > 0 && (s[pos1-1] == '_' || std::isalnum(s[pos1-1]))) {
+            pos1++;
+            continue;
+        }
+        const std::string::size_type pos2 = pos1 + from.size();
+        if (pos2 >= s.size())
+            return s.substr(0,pos1) + to;
+        if (s[pos2] == '_' || std::isalnum(s[pos2])) {
+            pos1++;
+            continue;
+        }
+        s = s.substr(0,pos1) + to + s.substr(pos2);
+        pos1 += to.size();
+    }
+    return s;
+}

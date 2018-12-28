@@ -360,30 +360,6 @@ static bool findPath(const CTU::FileInfo::FunctionCall &from,
     return false;
 }
 
-static std::string replacestr(std::string s, const std::string &from, const std::string &to)
-{
-    std::string::size_type pos1 = 0;
-    while (pos1 < s.size()) {
-        pos1 = s.find(from, pos1);
-        if (pos1 == std::string::npos)
-            return s;
-        if (pos1 > 0 && (s[pos1-1] == '_' || std::isalnum(s[pos1-1]))) {
-            pos1++;
-            continue;
-        }
-        const std::string::size_type pos2 = pos1 + from.size();
-        if (pos2 >= s.size())
-            return s.substr(0,pos1) + to;
-        if (s[pos2] == '_' || std::isalnum(s[pos2])) {
-            pos1++;
-            continue;
-        }
-        s = s.substr(0,pos1) + to + s.substr(pos2);
-        pos1 += to.size();
-    }
-    return s;
-}
-
 std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueType invalidValue,
         const CTU::FileInfo::UnsafeUsage &unsafeUsage,
         const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCallsMap,
@@ -423,7 +399,7 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
         ErrorLogger::ErrorMessage::FileLocation fileLoc2;
         fileLoc2.setfile(unsafeUsage.location.fileName);
         fileLoc2.line = unsafeUsage.location.linenr;
-        fileLoc2.setinfo(replacestr(info, "ARG", unsafeUsage.argumentName));
+        fileLoc2.setinfo(replaceStr(info, "ARG", unsafeUsage.argumentName));
 
         locationList.push_back(fileLoc1);
         locationList.push_back(fileLoc2);

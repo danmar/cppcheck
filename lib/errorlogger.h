@@ -391,6 +391,9 @@ public:
     }
 };
 
+/** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */
+std::string replaceStr(std::string s, const std::string &from, const std::string &to);
+
 /// @}
 //---------------------------------------------------------------------------
 #endif // errorloggerH
