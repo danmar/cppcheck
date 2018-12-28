@@ -488,20 +488,6 @@ static bool ifvar(const Token *tok, unsigned int varid, const std::string &comp,
     return (vartok && vartok->varId() == varid);
 }
 
-static bool alwaysTrue(const Token *tok)
-{
-    if (!tok)
-        return false;
-    if (tok->hasKnownIntValue() &&
-        tok->values().front().intvalue != 0)
-        return true;
-    if (tok->str() == "||")
-        return alwaysTrue(tok->astOperand1()) || alwaysTrue(tok->astOperand2());
-    if (tok->str() == "true")
-        return true;
-    return false;
-}
-
 bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)
 {
     return ((call_func_white_list.find(funcname)!=call_func_white_list.end()) || settings->library.isLeakIgnore(funcname) || (cpp && funcname == "delete"));

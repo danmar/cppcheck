@@ -449,7 +449,7 @@ void CheckOther::checkRedundantAssignment()
                 }
 
                 // Do not warn about assignment with 0 / NULL
-                if (Token::simpleMatch(tok->astOperand2(), "0") || FwdAnalysis::isNullOperand(tok->astOperand2()))
+                if (Token::simpleMatch(tok->astOperand2(), "0") || FwdAnalysisAllPaths::isNullOperand(tok->astOperand2()))
                     continue;
 
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference())
@@ -474,7 +474,7 @@ void CheckOther::checkRedundantAssignment()
                 if (inconclusive && !mSettings->inconclusive)
                     continue;
 
-                FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
+                FwdAnalysisAllPaths fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
                 if (fwdAnalysis.hasOperand(tok->astOperand2(), tok->astOperand1()))
                     continue;
 

@@ -3380,7 +3380,7 @@ void CheckOther::assignmentInAssertError(const Token *tok, const std::string &va
 {
     reportError(tok, Severity::warning,
                 "assignmentInAssert", "Assert statement modifies '" + varname + "'.\n"
-                "Variable '" + varname + "' is modified insert assert statement. "
+                "Variable '" + varname + "' is modified inside assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not run. If the code is needed also in release "
                 "builds this is a bug.");

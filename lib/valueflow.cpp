@@ -372,6 +372,9 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
     result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
 }
 
+/** Set token value for cast */
+static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings);
+
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
@@ -438,28 +441,15 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         return;
     }
 
+    // cast..
     if (parent->str() == "(" && !parent->astOperand2() && Token::Match(parent,"( %name%")) {
         const ValueType &valueType = ValueType::parseDecl(parent->next(), settings);
-        if (valueType.pointer)
-            setTokenValue(parent,value,settings);
-        else if (valueType.type == ValueType::Type::CHAR)
-            setTokenValue(parent, castValue(value, valueType.sign, settings->char_bit), settings);
-        else if (valueType.type == ValueType::Type::SHORT)
-            setTokenValue(parent, castValue(value, valueType.sign, settings->short_bit), settings);
-        else if (valueType.type == ValueType::Type::INT)
-            setTokenValue(parent, castValue(value, valueType.sign, settings->int_bit), settings);
-        else if (valueType.type == ValueType::Type::LONG)
-            setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
-        else if (valueType.type == ValueType::Type::LONGLONG)
-            setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
-        else if (value.isIntValue()) {
-            const long long charMax = settings->signedCharMax();
-            const long long charMin = settings->signedCharMin();
-            if (charMin <= value.intvalue && value.intvalue <= charMax) {
-                // unknown type, but value is small so there should be no truncation etc
-                setTokenValue(parent,value,settings);
-            }
-        }
+        setTokenValueCast(parent, valueType, value, settings);
+    }
+
+    else if (parent->str() == "(" && parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <")) {
+        const ValueType &valueType = ValueType::parseDecl(parent->astOperand1()->tokAt(2), settings);
+        setTokenValueCast(parent, valueType, value, settings);
     }
 
     else if (parent->str() == ":") {
@@ -783,6 +773,30 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     }
                 }
             }
+        }
+    }
+}
+
+static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings)
+{
+    if (valueType.pointer)
+        setTokenValue(parent,value,settings);
+    else if (valueType.type == ValueType::Type::CHAR)
+        setTokenValue(parent, castValue(value, valueType.sign, settings->char_bit), settings);
+    else if (valueType.type == ValueType::Type::SHORT)
+        setTokenValue(parent, castValue(value, valueType.sign, settings->short_bit), settings);
+    else if (valueType.type == ValueType::Type::INT)
+        setTokenValue(parent, castValue(value, valueType.sign, settings->int_bit), settings);
+    else if (valueType.type == ValueType::Type::LONG)
+        setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
+    else if (valueType.type == ValueType::Type::LONGLONG)
+        setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
+    else if (value.isIntValue()) {
+        const long long charMax = settings->signedCharMax();
+        const long long charMin = settings->signedCharMin();
+        if (charMin <= value.intvalue && value.intvalue <= charMax) {
+            // unknown type, but value is small so there should be no truncation etc
+            setTokenValue(parent,value,settings);
         }
     }
 }
@@ -1145,7 +1159,7 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
         if (!val.isKnown())
             continue;
 
-        if (isSameExpression(tokenlist->isCPP(), false, tok->astOperand1(), tok->astOperand2(), tokenlist->getSettings()->library, true, &val.errorPath)) {
+        if (isSameExpression(tokenlist->isCPP(), false, tok->astOperand1(), tok->astOperand2(), tokenlist->getSettings()->library, true, true, &val.errorPath)) {
             setTokenValue(tok, val, tokenlist->getSettings());
         }
     }

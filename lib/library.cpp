@@ -81,6 +81,9 @@ Library::Error Library::load(const char exename[], const char path[])
     // open file..
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLError error = doc.LoadFile(path);
+    if (error == tinyxml2::XML_ERROR_FILE_READ_ERROR && Path::getFilenameExtension(path).empty())
+        // Reading file failed, try again...
+        error = tinyxml2::XML_ERROR_FILE_NOT_FOUND;
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
         // failed to open file.. is there no extension?
         std::string fullfilename(path);

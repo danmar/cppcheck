@@ -1034,9 +1034,9 @@ private:
         fAtAddress              = (1 << 24), // @ 0x4000
     };
 
-    unsigned int mFlags;
-
     Token::Type mTokType;
+
+    unsigned int mFlags;
 
     TokenImpl *mImpl;
 

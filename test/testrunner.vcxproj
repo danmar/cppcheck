@@ -29,6 +29,7 @@
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
     <ClCompile Include="..\lib\astutils.cpp" />
+    <ClCompile Include="..\lib\ctu.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testassert.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="..\cli\filelister.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
     <ClInclude Include="..\lib\config.h" />
+    <ClInclude Include="..\lib\ctu.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="redirect.h" />
     <ClInclude Include="testsuite.h" />

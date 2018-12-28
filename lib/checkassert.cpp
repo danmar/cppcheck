@@ -111,7 +111,7 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
                 "assignmentInAssert",
                 "$symbol:" + varname + "\n"
                 "Assert statement modifies '$symbol'.\n"
-                "Variable '$symbol' is modified insert assert statement. "
+                "Variable '$symbol' is modified inside assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
                 "builds, this is a bug.", CWE398, false);

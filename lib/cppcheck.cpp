@@ -19,6 +19,7 @@
 
 #include "check.h"
 #include "checkunusedfunctions.h"
+#include "ctu.h"
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
@@ -553,23 +554,30 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
     // call all "runChecks" in all registered Check classes
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+    for (Check *check : Check::instances()) {
         if (mSettings.terminated())
             return;
 
         if (tokenizer.isMaxTime())
             return;
 
-        Timer timerRunChecks((*it)->name() + "::runChecks", mSettings.showtime, &S_timerResults);
-        (*it)->runChecks(&tokenizer, &mSettings, this);
+        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &S_timerResults);
+        check->runChecks(&tokenizer, &mSettings, this);
     }
 
     // Analyse the tokens..
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-        Check::FileInfo *fi = (*it)->getFileInfo(&tokenizer, &mSettings);
+
+    CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
+    if (fi1) {
+        mFileInfo.push_back(fi1);
+        mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+    }
+
+    for (const Check *check : Check::instances()) {
+        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
         if (fi != nullptr) {
             mFileInfo.push_back(fi);
-            mAnalyzerInformation.setFileInfo((*it)->name(), fi->toString());
+            mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
         }
     }
 
@@ -1028,8 +1036,16 @@ bool CppCheck::analyseWholeProgram()
 {
     bool errors = false;
     // Analyse the tokens
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-        errors |= (*it)->analyseWholeProgram(mFileInfo, mSettings, *this);
+    CTU::FileInfo ctu;
+    for (const Check::FileInfo *fi : mFileInfo) {
+        const CTU::FileInfo *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
+        if (fi2) {
+            ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.begin(), fi2->functionCalls.end());
+            ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.begin(), fi2->nestedCalls.end());
+        }
+    }
+    for (Check *check : Check::instances())
+        errors |= check->analyseWholeProgram(&ctu, mFileInfo, mSettings, *this);  // TODO: ctu
     return errors && (mExitCode > 0);
 }
 
@@ -1041,6 +1057,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
     if (mSettings.isEnabled(Settings::UNUSED_FUNCTION))
         CheckUnusedFunctions::analyseWholeProgram(this, buildDir);
     std::list<Check::FileInfo*> fileInfoList;
+    CTU::FileInfo ctuFileInfo;
 
     // Load all analyzer info data..
     const std::string filesTxt(buildDir + "/files.txt");
@@ -1071,19 +1088,23 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
             const char *checkClassAttr = e->Attribute("check");
             if (!checkClassAttr)
                 continue;
-            for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-                if (checkClassAttr == (*it)->name())
-                    fileInfoList.push_back((*it)->loadFileInfoFromXml(e));
+            if (std::strcmp(checkClassAttr, "ctu") == 0) {
+                ctuFileInfo.loadFromXml(e);
+                continue;
+            }
+            for (Check *check : Check::instances()) {
+                if (checkClassAttr == check->name())
+                    fileInfoList.push_back(check->loadFileInfoFromXml(e));
             }
         }
     }
 
     // Analyse the tokens
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-        (*it)->analyseWholeProgram(fileInfoList, mSettings, *this);
+    for (Check *check : Check::instances())
+        check->analyseWholeProgram(&ctuFileInfo, fileInfoList, mSettings, *this);
 
-    for (std::list<Check::FileInfo*>::iterator fi = fileInfoList.begin(); fi != fileInfoList.end(); ++fi)
-        delete (*fi);
+    for (Check::FileInfo *fi : fileInfoList)
+        delete fi;
 }
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const

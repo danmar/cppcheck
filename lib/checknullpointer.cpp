@@ -591,25 +591,74 @@ void CheckNullPointer::arithmeticError(const Token *tok, const ValueFlow::Value 
                 value && value->isInconclusive());
 }
 
-bool CheckNullPointer::isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const
+std::string CheckNullPointer::MyFileInfo::toString() const
 {
-    const Variable * const argvar = scope->function->getArgumentVar(argnr);
-    if (!argvar->isPointer())
+    return CTU::toString(unsafeUsage);
+}
+
+static bool isUnsafeUsage(const Check *check, const Token *vartok)
+{
+    (void)check;
+    return Token::Match(vartok->astParent(), "*|[");
+}
+
+Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+{
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, nullptr, ::isUnsafeUsage);
+    if (unsafeUsage.empty())
+        return nullptr;
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+    fileInfo->unsafeUsage = unsafeUsage;
+    return fileInfo;
+}
+
+Check::FileInfo * CheckNullPointer::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
+{
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::loadUnsafeUsageListFromXml(xmlElement);
+    if (unsafeUsage.empty())
+        return nullptr;
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+    fileInfo->unsafeUsage = unsafeUsage;
+    return fileInfo;
+}
+
+bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+{
+    if (!ctu)
         return false;
-    for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-        if (Token::simpleMatch(tok2, ") {")) {
-            tok2 = tok2->linkAt(1);
-            if (Token::findmatch(tok2->link(), "return|throw", tok2))
-                return false;
-            if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, mSettings, mTokenizer->isCPP()))
-                return false;
-        }
-        if (tok2->variable() != argvar)
+    bool foundErrors = false;
+    (void)settings; // This argument is unused
+
+    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> nestedCallsMap = ctu->getNestedCallsMap();
+
+    for (Check::FileInfo *fi1 : fileInfo) {
+        const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
+        if (!fi)
             continue;
-        if (!Token::Match(tok2->astParent(), "*|["))
-            return false;
-        *tok = tok2;
-        return true;
+        for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+                ctu->getErrorPath(CTU::FileInfo::InvalidValueType::null,
+                                  unsafeUsage,
+                                  nestedCallsMap,
+                                  "Dereferencing argument ARG that is null",
+                                  nullptr);
+            if (locationList.empty())
+                continue;
+
+            const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                   emptyString,
+                                                   Severity::error,
+                                                   "Null pointer dereference: " + unsafeUsage.argumentName,
+                                                   "ctunullpointer",
+                                                   CWE476, false);
+            errorLogger.reportErr(errmsg);
+
+            foundErrors = true;
+            break;
+        }
     }
-    return false;
+
+    return foundErrors;
 }

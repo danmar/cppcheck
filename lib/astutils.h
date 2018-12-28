@@ -162,9 +162,14 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 
 bool isConstVarExpression(const Token *tok);
 
-class FwdAnalysis {
+/**
+ * Forward data flow analysis for checks that investigate ALL paths.
+ *  - unused value
+ *  - redundant assignment
+ */
+class FwdAnalysisAllPaths {
 public:
-    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mWhat(What::Reassign) {}
+    FwdAnalysisAllPaths(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mWhat(What::Reassign) {}
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 

@@ -33,6 +33,7 @@ HEADERS += $${PWD}/check.h \
            $${PWD}/checkunusedvar.h \
            $${PWD}/checkvaarg.h \
            $${PWD}/cppcheck.h \
+           $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
            $${PWD}/importproject.h \
            $${PWD}/library.h \
@@ -81,6 +82,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/checkunusedvar.cpp \
            $${PWD}/checkvaarg.cpp \
            $${PWD}/cppcheck.cpp \
+           $${PWD}/ctu.cpp \
            $${PWD}/errorlogger.cpp \
            $${PWD}/importproject.cpp \
            $${PWD}/library.cpp \
