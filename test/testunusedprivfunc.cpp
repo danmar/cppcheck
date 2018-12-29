@@ -80,6 +80,8 @@ private:
         TEST_CASE(hierarchie_loop); // ticket 5590
 
         TEST_CASE(staticVariable); //ticket #5566
+
+        TEST_CASE(templateSimplification); //ticket #6183
     }
 
 
@@ -793,6 +795,29 @@ private:
               "int Foo::i = sth();"
               "int i = F();");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unused private function: 'Foo::F'\n", errout.str());
+    }
+
+    void templateSimplification() { //ticket #6183
+        check("class CTest {\n"
+              "public:\n"
+              "    template <typename T>\n"
+              "    static void Greeting(T val) {\n"
+              "        std::cout << val << std::endl;\n"
+              "    }\n"
+              "private:\n"
+              "    static void SayHello() {\n"
+              "        std::cout << \"Hello World!\" << std::endl;\n"
+              "    }\n"
+              "};\n"
+              "template<>\n"
+              "void CTest::Greeting(bool) {\n"
+              "    CTest::SayHello();\n"
+              "}\n"
+              "int main() {\n"
+              "    CTest::Greeting<bool>(true);\n"
+              "    return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
