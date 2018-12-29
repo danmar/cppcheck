@@ -86,7 +86,9 @@ public:
      * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
      * @return true => there is a dereference
      */
-    static bool isPointerDeRef(const Token *tok, bool &unknown);
+    bool isPointerDeRef(const Token *tok, bool &unknown) const;
+
+    static bool isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings);
 
     /** @brief possible null pointer dereference */
     void nullPointer();

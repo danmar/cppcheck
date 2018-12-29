@@ -985,7 +985,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     bool unknown = false;
-    if (pointer && alloc == NO_ALLOC && CheckNullPointer::isPointerDeRef(vartok, unknown)) {
+    if (pointer && alloc == NO_ALLOC && CheckNullPointer::isPointerDeRef(vartok, unknown, mSettings)) {
         // function parameter?
         bool functionParameter = false;
         if (Token::Match(vartok->tokAt(-2), "%name% (") || vartok->previous()->str() == ",")

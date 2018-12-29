@@ -161,15 +161,37 @@ namespace {
  * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
  * @return true => there is a dereference
  */
-bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown)
+bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
+{
+    return isPointerDeRef(tok, unknown, mSettings);
+}
+
+bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
 {
     unknown = false;
+
+    // Is pointer used as function parameter?
+    if (Token::Match(tok->previous(), "[(,] %name% [,)]") && settings) {
+        const Token *ftok = tok->previous();
+        while (ftok && ftok->str() != "(") {
+            if (ftok->str() == ")")
+                ftok = ftok->link();
+            ftok = ftok->previous();
+        }
+        if (ftok && ftok->previous()) {
+            std::list<const Token *> varlist;
+            parseFunctionCall(*ftok->previous(), varlist, &settings->library);
+            if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
+                return true;
+            }
+        }
+    }
 
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
     if (parent->str() == "." && parent->astOperand2() == tok)
-        return isPointerDeRef(parent, unknown);
+        return isPointerDeRef(parent, unknown, settings);
     const bool firstOperand = parent->astOperand1() == tok;
     while (parent->str() == "(" && (parent->astOperand2() == nullptr && parent->strAt(1) != ")")) { // Skip over casts
         parent = parent->astParent();
@@ -338,24 +360,6 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
         if (!printInconclusive && value->isInconclusive())
             continue;
-
-        // Is pointer used as function parameter?
-        if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
-            const Token *ftok = tok->previous();
-            while (ftok && ftok->str() != "(") {
-                if (ftok->str() == ")")
-                    ftok = ftok->link();
-                ftok = ftok->previous();
-            }
-            if (!ftok || !ftok->previous())
-                continue;
-            std::list<const Token *> varlist;
-            parseFunctionCall(*ftok->previous(), varlist, &mSettings->library);
-            if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
-                nullPointerError(tok, tok->str(), value, value->isInconclusive());
-            }
-            continue;
-        }
 
         // Pointer dereference.
         bool unknown = false;
@@ -598,13 +602,15 @@ std::string CheckNullPointer::MyFileInfo::toString() const
 
 static bool isUnsafeUsage(const Check *check, const Token *vartok)
 {
-    (void)check;
-    return Token::Match(vartok->astParent(), "*|[");
+    const CheckNullPointer *checkNullPointer = dynamic_cast<const CheckNullPointer *>(check);
+    bool unknown = false;
+    return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);
 }
 
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, nullptr, ::isUnsafeUsage);
+    CheckNullPointer check(tokenizer, settings, nullptr);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, &check, ::isUnsafeUsage);
     if (unsafeUsage.empty())
         return nullptr;
 

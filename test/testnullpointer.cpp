@@ -2073,12 +2073,12 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:9]: (error) Null pointer dereference: p\n"
                       "[test.cpp:10]: (error) Null pointer dereference: p\n"
+                      "[test.cpp:11]: (error) Null pointer dereference: p\n"
+                      "[test.cpp:12]: (warning, inconclusive) Possible null pointer dereference: p\n"
                       "[test.cpp:3]: (error) Null pointer dereference\n"
                       "[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:7]: (error) Null pointer dereference\n"
                       "[test.cpp:8]: (error) Null pointer dereference\n"
-                      /*"[test.cpp:11]: (error) Possible null pointer dereference: p\n"
-                      "[test.cpp:12]: (error) Possible null pointer dereference: p\n"*/
                       , errout.str());
 
         check("void f(std::string s1) {\n"

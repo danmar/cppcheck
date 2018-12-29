@@ -962,7 +962,7 @@ void CheckStl::pushback()
                     // Using invalid pointer..
                     if (invalidPointer && tok2->varId() == pointerId) {
                         bool unknown = false;
-                        if (CheckNullPointer::isPointerDeRef(tok2, unknown))
+                        if (CheckNullPointer::isPointerDeRef(tok2, unknown, mSettings))
                             invalidPointerError(tok2, function->str(), tok2->str());
                         break;
                     }
