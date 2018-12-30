@@ -640,7 +640,7 @@ private:
     void simplifyCallingConvention();
 
     /**
-     * Remove __attribute__ ((?))
+     * Remove \__attribute\__ ((?))
      */
     void simplifyAttribute();
 
@@ -660,7 +660,7 @@ private:
     void simplifyAsm2();
 
     /**
-     * Simplify @..
+     * Simplify \@&hellip;  (compiler extension)
      */
     void simplifyAt();
 
