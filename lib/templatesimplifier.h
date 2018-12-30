@@ -276,7 +276,6 @@ private:
         Token *tok2,
         std::list<std::string> &typeStringsUsedInTemplateInstantiation);
 
-    Tokenizer *mTokenizer;
     TokenList &mTokenList;
     const Settings *mSettings;
     ErrorLogger *mErrorLogger;
