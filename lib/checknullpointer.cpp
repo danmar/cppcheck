@@ -575,7 +575,8 @@ static std::string arithmeticTypeString(const Token *tok)
         return "arithmetic";
 }
 
-void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive) {
+void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)
+{
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
     if (tok && tok->str()[0] == '-') {
@@ -592,7 +593,8 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
                 inconclusive);
 }
 
-void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive) {
+void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive)
+{
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
     if (tok && tok->str()[0] == '-') {
