@@ -283,6 +283,9 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
         if (prevIsLhs || !Token::Match(tok, "%oror%|&&|?|:"))
             continue;
 
+        if (tok->hasKnownIntValue())
+            return tok;
+
         // Is variable protected in LHS..
         bool bailout = false;
         visitAstNodes(tok->astOperand1(), [&](const Token *tok2) {
