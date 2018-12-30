@@ -307,7 +307,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                 for (const ValueFlow::Value &value : argtok->values()) {
                     if (!value.isIntValue() || value.intvalue != 0 || value.isInconclusive())
                         continue;
-                    struct FileInfo::FunctionCall functionCall;
+                    FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = ValueFlow::Value::INT;
                     functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
                     functionCall.callFunctionName = tok->astOperand1()->expressionString();
@@ -336,7 +336,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     continue;
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType == ValueFlow::Value::UNINIT && !v.isInconclusive()) {
-                    struct FileInfo::FunctionCall functionCall;
+                    FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = ValueFlow::Value::UNINIT;
                     functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
                     functionCall.callFunctionName = tok->astOperand1()->expressionString();
@@ -355,7 +355,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
         // Nested function calls
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             const Token *tok;
-            int argnr2 = isCallFunction(&scope, argnr, &tok);
+            const int argnr2 = isCallFunction(&scope, argnr, &tok);
             if (argnr2 > 0) {
                 FileInfo::NestedCall nestedCall(tokenizer, function, tok);
                 nestedCall.myArgNr = argnr + 1;
