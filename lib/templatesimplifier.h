@@ -69,17 +69,18 @@ public:
      * Token and its full scopename
      */
     struct TokenAndName {
-        TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt);
+        TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt, const Token *pe = nullptr);
         TokenAndName(const TokenAndName& otherTok);
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
-            return token == rhs.token && scope == rhs.scope && name == rhs.name && nameToken == rhs.nameToken;
+            return token == rhs.token && scope == rhs.scope && name == rhs.name && nameToken == rhs.nameToken && paramEnd == rhs.paramEnd;;
         }
         Token *token;
         std::string scope;
         std::string name;
         const Token *nameToken;
+        const Token *paramEnd;
     };
 
     /**
@@ -200,7 +201,6 @@ private:
     /**
      * Expand a template. Create "expanded" class/function at end of tokenlist.
      * @param templateDeclaration               Template declaration information
-     * @param templateDeclarationToken          Template declaration token
      * @param templateInstantiation             Full name of template
      * @param typeParametersInDeclaration       The type parameters of the template
      * @param newName                           New name of class/function.
@@ -208,7 +208,6 @@ private:
      */
     void expandTemplate(
         const TokenAndName &templateDeclaration,
-        const Token *templateDeclarationToken,
         const TokenAndName &templateInstantiation,
         const std::vector<const Token *> &typeParametersInDeclaration,
         const std::string &newName,
