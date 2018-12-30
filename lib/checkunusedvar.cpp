@@ -506,6 +506,8 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                     }
                 } else if (var1->mType == Variables::reference) {
                     variables.alias(varid1, varid2, true);
+                } else if (var1->mType == Variables::standard && addressOf) {
+                    variables.alias(varid1, varid2, true);
                 } else {
                     if ((var2->mType == Variables::pointer || var2->mType == Variables::pointerArray) && tok->strAt(1) == "[")
                         variables.readAliases(varid2, tok);
