@@ -74,7 +74,7 @@ TemplateSimplifier::TokenAndName::~TokenAndName()
 }
 
 TemplateSimplifier::TemplateSimplifier(Tokenizer *tokenizer)
-    : mTokenizer(tokenizer), mTokenList(tokenizer->list), mSettings(tokenizer->mSettings), mErrorLogger(tokenizer->mErrorLogger)
+    : mTokenList(tokenizer->list), mSettings(tokenizer->mSettings), mErrorLogger(tokenizer->mErrorLogger)
 {
 }
 
