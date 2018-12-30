@@ -2715,6 +2715,7 @@ private:
             "}");
         ASSERT_EQUALS("test.cpp:1:error:Null pointer dereference: p\n"
                       "test.cpp:4:note:Calling function call, 2nd argument is null\n"
+                      "test.cpp:2:note:Calling function use, 1st argument is null\n"
                       "test.cpp:1:note:Dereferencing argument p that is null\n", errout.str());
 
         ctu("void dostuff(int *x, int *y) {\n"

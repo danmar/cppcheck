@@ -33,6 +33,8 @@
 namespace CTU {
     class CPPCHECKLIB FileInfo : public Check::FileInfo {
     public:
+        enum InvalidValueType { null, uninit };
+
         std::string toString() const override;
 
         struct Location {
@@ -60,6 +62,7 @@ namespace CTU {
                 : callId(callId), callArgNr(callArgNr), callFunctionName(callFunctionName), location(loc)
             {}
             CallBase(const Tokenizer *tokenizer, const Token *callToken);
+            virtual ~CallBase() {}
             std::string callId;
             int callArgNr;
             std::string callFunctionName;
@@ -102,13 +105,11 @@ namespace CTU {
         std::list<NestedCall> nestedCalls;
 
         void loadFromXml(const tinyxml2::XMLElement *xmlElement);
-        std::map<std::string, std::list<NestedCall>> getNestedCallsMap() const;
-
-        enum InvalidValueType { null, uninit };
+        std::map<std::string, std::list<const CallBase *>> getCallsMap() const;
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
                 const UnsafeUsage &unsafeUsage,
-                const std::map<std::string, std::list<NestedCall>> &nestedCallsMap,
+                const std::map<std::string, std::list<const CallBase *>> &callsMap,
                 const char info[],
                 const FunctionCall * * const functionCallPtr) const;
     };

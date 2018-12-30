@@ -1325,7 +1325,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
     bool foundErrors = false;
     (void)settings; // This argument is unused
 
-    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> nestedCallsMap = ctu->getNestedCallsMap();
+    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (Check::FileInfo *fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
@@ -1337,7 +1337,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
             const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
                 ctu->getErrorPath(CTU::FileInfo::InvalidValueType::uninit,
                                   unsafeUsage,
-                                  nestedCallsMap,
+                                  callsMap,
                                   "Using argument ARG",
                                   &functionCall);
             if (locationList.empty())

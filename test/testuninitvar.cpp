@@ -4056,7 +4056,7 @@ private:
             "  int x;\n"
             "  call(4,&x);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) Using argument p that points at uninitialized variable x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2] -> [test.cpp:1]: (error) Using argument p that points at uninitialized variable x\n", errout.str());
 
         ctu("void dostuff(int *x, int *y) {\n"
             "  if (!var)\n"

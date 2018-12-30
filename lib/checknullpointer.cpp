@@ -653,7 +653,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     bool foundErrors = false;
     (void)settings; // This argument is unused
 
-    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> nestedCallsMap = ctu->getNestedCallsMap();
+    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (Check::FileInfo *fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
@@ -663,7 +663,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
             const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
                 ctu->getErrorPath(CTU::FileInfo::InvalidValueType::null,
                                   unsafeUsage,
-                                  nestedCallsMap,
+                                  callsMap,
                                   "Dereferencing argument ARG that is null",
                                   nullptr);
             if (locationList.empty())

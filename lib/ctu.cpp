@@ -198,11 +198,13 @@ void CTU::FileInfo::loadFromXml(const tinyxml2::XMLElement *xmlElement)
     }
 }
 
-std::map<std::string, std::list<CTU::FileInfo::NestedCall>> CTU::FileInfo::getNestedCallsMap() const
+std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> CTU::FileInfo::getCallsMap() const
 {
-    std::map<std::string, std::list<CTU::FileInfo::NestedCall>> ret;
+    std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> ret;
     for (const CTU::FileInfo::NestedCall &nc : nestedCalls)
-        ret[nc.myId].push_back(nc);
+        ret[nc.callId].push_back(&nc);
+    for (const CTU::FileInfo::FunctionCall &fc : functionCalls)
+        ret[fc.callId].push_back(&fc);
     return ret;
 }
 
@@ -378,20 +380,48 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *token
     return unsafeUsage;
 }
 
-static bool findPath(const CTU::FileInfo::FunctionCall &from,
-                     const CTU::FileInfo::UnsafeUsage &to,
-                     const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCalls)
+static bool findPath(const std::string &callId,
+                     unsigned int callArgNr,
+                     CTU::FileInfo::InvalidValueType invalidValue,
+                     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
+                     const CTU::FileInfo::CallBase *path[10],
+                     int index)
 {
-    if (from.callId == to.myId && from.callArgNr == to.myArgNr)
-        return true;
-
-    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>>::const_iterator nc = nestedCalls.find(from.callId);
-    if (nc == nestedCalls.end())
+    if (index >= 10)
         return false;
 
-    for (const CTU::FileInfo::NestedCall &nestedCall : nc->second) {
-        if (from.callId == nestedCall.myId && from.callArgNr == nestedCall.myArgNr && nestedCall.callId == to.myId && nestedCall.callArgNr == to.myArgNr)
+    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>>::const_iterator it = callsMap.find(callId);
+    if (it == callsMap.end())
+        return false;
+
+    for (const CTU::FileInfo::CallBase *c : it->second) {
+        if (c->callArgNr != callArgNr)
+            continue;
+
+        const CTU::FileInfo::FunctionCall *functionCall = dynamic_cast<const CTU::FileInfo::FunctionCall *>(c);
+        if (functionCall) {
+            switch (invalidValue) {
+            case CTU::FileInfo::InvalidValueType::null:
+                if (functionCall->callValueType != ValueFlow::Value::INT || functionCall->callArgValue != 0)
+                    continue;
+                break;
+            case CTU::FileInfo::InvalidValueType::uninit:
+                if (functionCall->callValueType != ValueFlow::Value::UNINIT)
+                    continue;
+                break;
+            };
+            path[index] = functionCall;
             return true;
+        }
+
+        const CTU::FileInfo::NestedCall *nestedCall = dynamic_cast<const CTU::FileInfo::NestedCall *>(c);
+        if (!nestedCall)
+            continue;
+
+        if (findPath(nestedCall->myId, nestedCall->myArgNr, invalidValue, callsMap, path, index + 1)) {
+            path[index] = nestedCall;
+            return true;
+        }
     }
 
     return false;
@@ -399,50 +429,38 @@ static bool findPath(const CTU::FileInfo::FunctionCall &from,
 
 std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueType invalidValue,
         const CTU::FileInfo::UnsafeUsage &unsafeUsage,
-        const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCallsMap,
+        const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
         const char info[],
         const FunctionCall * * const functionCallPtr) const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
 
-    for (const FunctionCall &functionCall : functionCalls) {
+    const CTU::FileInfo::CallBase *path[10] = {0};
 
-        if (invalidValue == CTU::FileInfo::InvalidValueType::null &&
-            (functionCall.callValueType != ValueFlow::Value::ValueType::INT || functionCall.callArgValue != 0)) {
-            continue;
-        }
-        if (invalidValue == CTU::FileInfo::InvalidValueType::uninit &&
-            functionCall.callValueType != ValueFlow::Value::ValueType::UNINIT) {
-            continue;
-        }
-
-        if (!findPath(functionCall, unsafeUsage, nestedCallsMap))
-            continue;
-
-        if (functionCallPtr)
-            *functionCallPtr = &functionCall;
-
-        std::string value1;
-        if (functionCall.callValueType == ValueFlow::Value::ValueType::INT)
-            value1 = "null";
-        else if (functionCall.callValueType == ValueFlow::Value::ValueType::UNINIT)
-            value1 = "uninitialized";
-
-        ErrorLogger::ErrorMessage::FileLocation fileLoc1;
-        fileLoc1.setfile(functionCall.location.fileName);
-        fileLoc1.line = functionCall.location.linenr;
-        fileLoc1.setinfo("Calling function " + functionCall.callFunctionName + ", " + MathLib::toString(functionCall.callArgNr) + getOrdinalText(functionCall.callArgNr) + " argument is " + value1);
-
-        ErrorLogger::ErrorMessage::FileLocation fileLoc2;
-        fileLoc2.setfile(unsafeUsage.location.fileName);
-        fileLoc2.line = unsafeUsage.location.linenr;
-        fileLoc2.setinfo(replaceStr(info, "ARG", unsafeUsage.myArgumentName));
-
-        locationList.push_back(fileLoc1);
-        locationList.push_back(fileLoc2);
-
+    if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, invalidValue, callsMap, path, 0))
         return locationList;
+
+    const std::string value1 = (invalidValue == InvalidValueType::null) ? "null" : "uninitialized";
+
+    for (int index = 9; index >= 0; index--) {
+        if (!path[index])
+            continue;
+
+        if (functionCallPtr && !*functionCallPtr)
+            *functionCallPtr = dynamic_cast<const CTU::FileInfo::FunctionCall *>(path[index]);
+
+        ErrorLogger::ErrorMessage::FileLocation fileLoc;
+        fileLoc.setfile(path[index]->location.fileName);
+        fileLoc.line = path[index]->location.linenr;
+        fileLoc.setinfo("Calling function " + path[index]->callFunctionName + ", " + MathLib::toString(path[index]->callArgNr) + getOrdinalText(path[index]->callArgNr) + " argument is " + value1);
+        locationList.push_back(fileLoc);
     }
+
+    ErrorLogger::ErrorMessage::FileLocation fileLoc2;
+    fileLoc2.setfile(unsafeUsage.location.fileName);
+    fileLoc2.line = unsafeUsage.location.linenr;
+    fileLoc2.setinfo(replaceStr(info, "ARG", unsafeUsage.myArgumentName));
+    locationList.push_back(fileLoc2);
 
     return locationList;
 }
