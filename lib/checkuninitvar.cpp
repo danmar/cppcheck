@@ -1346,7 +1346,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
             const ErrorLogger::ErrorMessage errmsg(locationList,
                                                    emptyString,
                                                    Severity::error,
-                                                   "Using argument " + unsafeUsage.argumentName + " that points at uninitialized variable " + functionCall->argumentExpression,
+                                                   "Using argument " + unsafeUsage.myArgumentName + " that points at uninitialized variable " + functionCall->callArgumentExpression,
                                                    "ctuuninitvar",
                                                    CWE908, false);
             errorLogger.reportErr(errmsg);

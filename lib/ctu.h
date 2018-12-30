@@ -45,44 +45,57 @@ namespace CTU {
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(const std::string &functionId, unsigned int argnr, const std::string &argumentName, const Location &location) : functionId(functionId), argnr(argnr), argumentName(argumentName), location(location) {}
-            std::string functionId;
-            unsigned int argnr;
-            std::string argumentName;
+            UnsafeUsage(const std::string &myId, unsigned int myArgNr, const std::string &myArgumentName, const Location &location) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location) {}
+            std::string myId;
+            unsigned int myArgNr;
+            std::string myArgumentName;
             Location location;
             std::string toString() const;
         };
 
-        struct FunctionCall {
-            std::string functionId;
-            std::string functionName;
-            std::string argumentExpression;
-            unsigned int argnr;
-            long long argvalue;
-            ValueFlow::Value::ValueType valueType;
+        class CallBase {
+        public:
+            CallBase() = default;
+            CallBase(const std::string &callId, int callArgNr, const std::string &callFunctionName, const Location &loc)
+                : callId(callId), callArgNr(callArgNr), callFunctionName(callFunctionName), location(loc)
+            {}
+            CallBase(const Tokenizer *tokenizer, const Token *callToken);
+            std::string callId;
+            int callArgNr;
+            std::string callFunctionName;
             Location location;
+        protected:
+            std::string toBaseXmlString() const;
+            bool loadBaseFromXml(const tinyxml2::XMLElement *xmlElement);
         };
 
-        struct NestedCall {
+        class FunctionCall : public CallBase {
+        public:
+            std::string callArgumentExpression;
+            long long callArgValue;
+            ValueFlow::Value::ValueType callValueType;
+
+            std::string toXmlString() const;
+            bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
+        };
+
+        class NestedCall : public CallBase {
+        public:
             NestedCall() = default;
 
-            NestedCall(const std::string &id_, const std::string &functionName_, unsigned int argnr_, const std::string &fileName, unsigned int linenr)
-                : id(id_),
-                  functionName(functionName_),
-                  argnr(argnr_),
-                  argnr2(0) {
-                location.fileName = fileName;
-                location.linenr   = linenr;
+            NestedCall(const std::string &myId, unsigned int myArgNr, const std::string &callId, unsigned int callArgnr, const std::string &callFunctionName, const Location &location)
+                : CallBase(callId, callArgnr, callFunctionName, location),
+                  myId(myId),
+                  myArgNr(myArgNr) {
             }
 
-            NestedCall(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok);
+            NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken);
 
-            std::string id;
-            std::string id2;
-            std::string functionName;
-            unsigned int argnr;
-            unsigned int argnr2;
-            Location location;
+            std::string toXmlString() const;
+            bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
+
+            std::string myId;
+            unsigned int myArgNr;
         };
 
         std::list<FunctionCall> functionCalls;

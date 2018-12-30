@@ -24,6 +24,19 @@
 #include <tinyxml2.h>
 //---------------------------------------------------------------------------
 
+static const char ATTR_CALL_ID[] = "call-id";
+static const char ATTR_CALL_FUNCNAME[] = "call-funcname";
+static const char ATTR_CALL_ARGNR[] = "call-argnr";
+static const char ATTR_CALL_ARGEXPR[] = "call-argexpr";
+static const char ATTR_CALL_ARGVALUETYPE[] = "call-argvaluetype";
+static const char ATTR_CALL_ARGVALUE[] = "call-argvalue";
+static const char ATTR_LOC_FILENAME[] = "loc-filename";
+static const char ATTR_LOC_LINENR[] = "loc-linenr";
+static const char ATTR_MY_ID[] = "my-id";
+static const char ATTR_MY_ARGNR[] = "my-argnr";
+static const char ATTR_MY_ARGNAME[] = "my-argname";
+
+
 std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *function)
 {
     return tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr());
@@ -41,31 +54,48 @@ std::string CTU::FileInfo::toString() const
 
     // Function calls..
     for (const CTU::FileInfo::FunctionCall &functionCall : functionCalls) {
-        out << "    <function-call"
-            << " id=\"" << functionCall.functionId << '\"'
-            << " functionName=\"" << functionCall.functionName << '\"'
-            << " argnr=\"" << functionCall.argnr << '\"'
-            << " argExpr=\"" << functionCall.argumentExpression << '\"'
-            << " argvalue=\"" << functionCall.argvalue << '\"'
-            << " valueType=\"" << functionCall.valueType << '\"'
-            << " fileName=\"" << functionCall.location.fileName << '\"'
-            << " linenr=\"" << functionCall.location.linenr << '\"'
-            << "/>\n";
+        out << functionCall.toXmlString();
     }
 
     // Nested calls..
     for (const CTU::FileInfo::NestedCall &nestedCall : nestedCalls) {
-        out << "    <nested-call"
-            << " id=\"" << nestedCall.id << '\"'
-            << " id2=\"" << nestedCall.id2 << '\"'
-            << " functionName=\"" << nestedCall.functionName << '\"'
-            << " argnr=\"" << nestedCall.argnr << '\"'
-            << " argnr2=\"" << nestedCall.argnr2 << '\"'
-            << " fileName=\"" << nestedCall.location.fileName << '\"'
-            << " linenr=\"" << nestedCall.location.linenr << '\"'
-            << "/>\n";
+        out << nestedCall.toXmlString() << "\n";
     }
 
+    return out.str();
+}
+
+std::string CTU::FileInfo::CallBase::toBaseXmlString() const
+{
+    std::ostringstream out;
+    out << " " << ATTR_CALL_ID << "=\"" << callId << "\""
+        << " " << ATTR_CALL_FUNCNAME << "=\"" << callFunctionName << "\""
+        << " " << ATTR_CALL_ARGNR << "=\"" << callArgNr << "\""
+        << " " << ATTR_LOC_FILENAME << "=\"" << location.fileName << "\""
+        << " " << ATTR_LOC_LINENR << "=\"" << location.linenr << "\"";
+    return out.str();
+}
+
+std::string CTU::FileInfo::FunctionCall::toXmlString() const
+{
+    std::ostringstream out;
+    out << "<function-call"
+        << toBaseXmlString()
+        << " " << ATTR_CALL_ARGEXPR << "=\"" << callArgumentExpression << "\""
+        << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << callValueType << "\""
+        << " " << ATTR_CALL_ARGVALUE << "=\"" << callArgValue << "\""
+        << "/>";
+    return out.str();
+}
+
+std::string CTU::FileInfo::NestedCall::toXmlString() const
+{
+    std::ostringstream out;
+    out << "<function-call"
+        << toBaseXmlString()
+        << " " << ATTR_MY_ID << "=\"" << myId << "\""
+        << " " << ATTR_MY_ARGNR << "=\"" << myArgNr << "\""
+        << "/>";
     return out.str();
 }
 
@@ -73,11 +103,11 @@ std::string CTU::FileInfo::UnsafeUsage::toString() const
 {
     std::ostringstream out;
     out << "    <unsafe-usage"
-        << " id=\"" << functionId << '\"'
-        << " argnr=\"" << argnr << '\"'
-        << " argname=\"" << argumentName << '\"'
-        << " fileName=\"" << location.fileName << '\"'
-        << " linenr=\"" << location.linenr << '\"'
+        << " " << ATTR_MY_ID << "=\"" << myId << '\"'
+        << " " << ATTR_MY_ARGNR << "=\"" << myArgNr << '\"'
+        << " " << ATTR_MY_ARGNAME << "=\"" << myArgumentName << '\"'
+        << " " << ATTR_LOC_FILENAME << "=\"" << location.fileName << '\"'
+        << " " << ATTR_LOC_LINENR << "=\"" << location.linenr << '\"'
         << "/>\n";
     return out.str();
 }
@@ -90,65 +120,80 @@ std::string CTU::toString(const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsa
     return ret.str();
 }
 
-CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Scope *scope, unsigned int argnr_, const Token *tok)
-    :
-    id(getFunctionId(tokenizer, scope->function)),
-    functionName(scope->className),
-    argnr(argnr_),
-    argnr2(0),
-    location(CTU::FileInfo::Location(tokenizer, tok))
+CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callToken)
+    : callId(getFunctionId(tokenizer, callToken->function()))
+    , callArgNr(0)
+    , callFunctionName(callToken->next()->astOperand1()->expressionString())
+    , location(CTU::FileInfo::Location(tokenizer, callToken))
 {
+}
+
+CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken)
+    : CallBase(tokenizer, callToken)
+    , myId(getFunctionId(tokenizer, myFunction))
+    , myArgNr(0)
+{
+}
+
+static std::string readAttrString(const tinyxml2::XMLElement *e, const char *attr, bool *error)
+{
+    const char *value = e->Attribute(attr);
+    if (!value && error)
+        *error = true;
+    return value ? value : "";
+}
+
+static long long readAttrInt(const tinyxml2::XMLElement *e, const char *attr, bool *error)
+{
+    const char *value = e->Attribute(attr);
+    if (!value && error)
+        *error = true;
+    return value ? std::atoi(value) : 0;
+}
+
+bool CTU::FileInfo::CallBase::loadBaseFromXml(const tinyxml2::XMLElement *e)
+{
+    bool error = false;
+    callId = readAttrString(e, ATTR_CALL_ID, &error);
+    callFunctionName = readAttrString(e, ATTR_CALL_FUNCNAME, &error);
+    callArgNr = readAttrInt(e, ATTR_CALL_ARGNR, &error);
+    location.fileName = readAttrString(e, ATTR_LOC_FILENAME, &error);
+    location.linenr = readAttrInt(e, ATTR_LOC_LINENR, &error);
+    return !error;
+}
+
+bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *e)
+{
+    if (!loadBaseFromXml(e))
+        return false;
+    bool error=false;
+    callArgumentExpression = readAttrString(e, ATTR_CALL_ARGEXPR, &error);
+    callValueType = (ValueFlow::Value::ValueType)readAttrInt(e, ATTR_CALL_ARGVALUETYPE, &error);
+    callArgValue = readAttrInt(e, ATTR_CALL_ARGVALUE, &error);
+    return !error;
+}
+
+bool CTU::FileInfo::NestedCall::loadFromXml(const tinyxml2::XMLElement *e)
+{
+    if (!loadBaseFromXml(e))
+        return false;
+    bool error = false;
+    myId = readAttrString(e, ATTR_MY_ID, &error);
+    myArgNr = readAttrInt(e, ATTR_MY_ARGNR, &error);
+    return !error;
 }
 
 void CTU::FileInfo::loadFromXml(const tinyxml2::XMLElement *xmlElement)
 {
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        const char *id = e->Attribute("id");
-        if (!id)
-            continue;
-        const char *functionName = e->Attribute("functionName");
-        if (!functionName)
-            continue;
-        const char *argnr = e->Attribute("argnr");
-        if (!argnr || !MathLib::isInt(argnr))
-            continue;
-        const char *fileName = e->Attribute("fileName");
-        if (!fileName)
-            continue;
-        const char *linenr = e->Attribute("linenr");
-        if (!linenr || !MathLib::isInt(linenr))
-            continue;
-
         if (std::strcmp(e->Name(), "function-call") == 0) {
             FunctionCall functionCall;
-            functionCall.functionId = id;
-            functionCall.functionName = functionName;
-            functionCall.argnr = std::atoi(argnr);
-            const char *argExpr = e->Attribute("argExpr");
-            if (!argExpr)
-                continue;
-            functionCall.argumentExpression =
-                functionCall.valueType = (ValueFlow::Value::ValueType)std::atoi(e->Attribute("valueType"));
-            functionCall.argvalue = MathLib::toLongNumber(e->Attribute("argvalue"));
-            functionCall.location.fileName = fileName;
-            functionCall.location.linenr = std::atoi(linenr);
-            functionCalls.push_back(functionCall);
+            if (functionCall.loadFromXml(e))
+                functionCalls.push_back(functionCall);
         } else if (std::strcmp(e->Name(), "nested-call") == 0) {
             NestedCall nestedCall;
-            nestedCall.functionName = functionName;
-            nestedCall.id = id;
-            const char *id2 = e->Attribute("id2");
-            if (!id2)
-                continue;
-            nestedCall.id2 = id2;
-            nestedCall.argnr = std::atoi(argnr);
-            const char *argnr2 = e->Attribute("argnr2");
-            if (!argnr2 || !MathLib::isInt(argnr2))
-                continue;
-            nestedCall.argnr2 = std::atoi(argnr2);
-            nestedCall.location.fileName = fileName;
-            nestedCall.location.linenr = std::atoi(linenr);
-            nestedCalls.push_back(nestedCall);
+            if (nestedCall.loadFromXml(e))
+                nestedCalls.push_back(nestedCall);
         }
     }
 }
@@ -157,7 +202,7 @@ std::map<std::string, std::list<CTU::FileInfo::NestedCall>> CTU::FileInfo::getNe
 {
     std::map<std::string, std::list<CTU::FileInfo::NestedCall>> ret;
     for (const CTU::FileInfo::NestedCall &nc : nestedCalls)
-        ret[nc.id].push_back(nc);
+        ret[nc.myId].push_back(nc);
     return ret;
 }
 
@@ -167,22 +212,15 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::loadUnsafeUsageListFromXml(const tiny
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "unsafe-usage") != 0)
             continue;
-        const char *id = e->Attribute("id");
-        if (!id)
-            continue;
-        const char *argnr = e->Attribute("argnr");
-        if (!argnr || !MathLib::isInt(argnr))
-            continue;
-        const char *argname = e->Attribute("argname");
-        if (!argname)
-            continue;
-        const char *fileName = e->Attribute("fileName");
-        if (!fileName)
-            continue;
-        const char *linenr = e->Attribute("linenr");
-        if (!linenr || !MathLib::isInt(linenr))
-            continue;
-        ret.push_back(FileInfo::UnsafeUsage(id, std::atoi(argnr), argname, FileInfo::Location(fileName, std::atoi(linenr))));
+        bool error = false;
+        FileInfo::UnsafeUsage unsafeUsage;
+        unsafeUsage.myId = readAttrString(e, ATTR_MY_ID, &error);
+        unsafeUsage.myArgNr = readAttrInt(e, ATTR_MY_ARGNR, &error);
+        unsafeUsage.myArgumentName = readAttrString(e, ATTR_MY_ARGNAME, &error);
+        unsafeUsage.location.fileName = readAttrString(e, ATTR_LOC_FILENAME, &error);
+        unsafeUsage.location.linenr = readAttrInt(e, ATTR_LOC_LINENR, &error);
+        if (!error)
+            ret.push_back(unsafeUsage);
     }
     return ret;
 }
@@ -242,14 +280,14 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     continue;
                 if (argtok->hasKnownIntValue()) {
                     struct FileInfo::FunctionCall functionCall;
-                    functionCall.valueType = ValueFlow::Value::INT;
-                    functionCall.functionId = getFunctionId(tokenizer, tok->astOperand1()->function());
-                    functionCall.functionName = tok->astOperand1()->expressionString();
+                    functionCall.callValueType = ValueFlow::Value::INT;
+                    functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
+                    functionCall.callFunctionName = tok->astOperand1()->expressionString();
                     functionCall.location.fileName = tokenizer->list.file(tok);
                     functionCall.location.linenr = tok->linenr();
-                    functionCall.argnr = argnr + 1;
-                    functionCall.argumentExpression = argtok->expressionString();
-                    functionCall.argvalue = argtok->values().front().intvalue;
+                    functionCall.callArgNr = argnr + 1;
+                    functionCall.callArgumentExpression = argtok->expressionString();
+                    functionCall.callArgValue = argtok->values().front().intvalue;
                     fileInfo->functionCalls.push_back(functionCall);
                     continue;
                 }
@@ -264,14 +302,14 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType == ValueFlow::Value::UNINIT && !v.isInconclusive()) {
                     struct FileInfo::FunctionCall functionCall;
-                    functionCall.valueType = ValueFlow::Value::UNINIT;
-                    functionCall.functionId = getFunctionId(tokenizer, tok->astOperand1()->function());
-                    functionCall.functionName = tok->astOperand1()->expressionString();
+                    functionCall.callValueType = ValueFlow::Value::UNINIT;
+                    functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
+                    functionCall.callFunctionName = tok->astOperand1()->expressionString();
                     functionCall.location.fileName = tokenizer->list.file(tok);
                     functionCall.location.linenr = tok->linenr();
-                    functionCall.argnr = argnr + 1;
-                    functionCall.argvalue = 0;
-                    functionCall.argumentExpression = argtok->expressionString();
+                    functionCall.callArgNr = argnr + 1;
+                    functionCall.callArgValue = 0;
+                    functionCall.callArgumentExpression = argtok->expressionString();
                     fileInfo->functionCalls.push_back(functionCall);
                     continue;
                 }
@@ -283,10 +321,9 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
             const Token *tok;
             int argnr2 = isCallFunction(&scope, argnr, &tok);
             if (argnr2 > 0) {
-                FileInfo::NestedCall nestedCall(tokenizer, &scope, argnr+1, tok);
-                nestedCall.id  = getFunctionId(tokenizer, function);
-                nestedCall.id2 = getFunctionId(tokenizer, tok->function());
-                nestedCall.argnr2 = argnr2;
+                FileInfo::NestedCall nestedCall(tokenizer, function, tok);
+                nestedCall.myArgNr = argnr + 1;
+                nestedCall.callArgNr = argnr2;
                 fileInfo->nestedCalls.push_back(nestedCall);
             }
         }
@@ -345,15 +382,15 @@ static bool findPath(const CTU::FileInfo::FunctionCall &from,
                      const CTU::FileInfo::UnsafeUsage &to,
                      const std::map<std::string, std::list<CTU::FileInfo::NestedCall>> &nestedCalls)
 {
-    if (from.functionId == to.functionId && from.argnr == to.argnr)
+    if (from.callId == to.myId && from.callArgNr == to.myArgNr)
         return true;
 
-    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>>::const_iterator nc = nestedCalls.find(from.functionId);
+    const std::map<std::string, std::list<CTU::FileInfo::NestedCall>>::const_iterator nc = nestedCalls.find(from.callId);
     if (nc == nestedCalls.end())
         return false;
 
     for (const CTU::FileInfo::NestedCall &nestedCall : nc->second) {
-        if (from.functionId == nestedCall.id && from.argnr == nestedCall.argnr && nestedCall.id2 == to.functionId && nestedCall.argnr2 == to.argnr)
+        if (from.callId == nestedCall.myId && from.callArgNr == nestedCall.myArgNr && nestedCall.callId == to.myId && nestedCall.callArgNr == to.myArgNr)
             return true;
     }
 
@@ -371,11 +408,11 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
     for (const FunctionCall &functionCall : functionCalls) {
 
         if (invalidValue == CTU::FileInfo::InvalidValueType::null &&
-            (functionCall.valueType != ValueFlow::Value::ValueType::INT || functionCall.argvalue != 0)) {
+            (functionCall.callValueType != ValueFlow::Value::ValueType::INT || functionCall.callArgValue != 0)) {
             continue;
         }
         if (invalidValue == CTU::FileInfo::InvalidValueType::uninit &&
-            functionCall.valueType != ValueFlow::Value::ValueType::UNINIT) {
+            functionCall.callValueType != ValueFlow::Value::ValueType::UNINIT) {
             continue;
         }
 
@@ -386,20 +423,20 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
             *functionCallPtr = &functionCall;
 
         std::string value1;
-        if (functionCall.valueType == ValueFlow::Value::ValueType::INT)
+        if (functionCall.callValueType == ValueFlow::Value::ValueType::INT)
             value1 = "null";
-        else if (functionCall.valueType == ValueFlow::Value::ValueType::UNINIT)
+        else if (functionCall.callValueType == ValueFlow::Value::ValueType::UNINIT)
             value1 = "uninitialized";
 
         ErrorLogger::ErrorMessage::FileLocation fileLoc1;
         fileLoc1.setfile(functionCall.location.fileName);
         fileLoc1.line = functionCall.location.linenr;
-        fileLoc1.setinfo("Calling function " + functionCall.functionName + ", " + MathLib::toString(functionCall.argnr) + getOrdinalText(functionCall.argnr) + " argument is " + value1);
+        fileLoc1.setinfo("Calling function " + functionCall.callFunctionName + ", " + MathLib::toString(functionCall.callArgNr) + getOrdinalText(functionCall.callArgNr) + " argument is " + value1);
 
         ErrorLogger::ErrorMessage::FileLocation fileLoc2;
         fileLoc2.setfile(unsafeUsage.location.fileName);
         fileLoc2.line = unsafeUsage.location.linenr;
-        fileLoc2.setinfo(replaceStr(info, "ARG", unsafeUsage.argumentName));
+        fileLoc2.setinfo(replaceStr(info, "ARG", unsafeUsage.myArgumentName));
 
         locationList.push_back(fileLoc1);
         locationList.push_back(fileLoc2);

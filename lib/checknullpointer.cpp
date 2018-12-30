@@ -670,7 +670,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
             const ErrorLogger::ErrorMessage errmsg(locationList,
                                                    emptyString,
                                                    Severity::error,
-                                                   "Null pointer dereference: " + unsafeUsage.argumentName,
+                                                   "Null pointer dereference: " + unsafeUsage.myArgumentName,
                                                    "ctunullpointer",
                                                    CWE476, false);
             errorLogger.reportErr(errmsg);
