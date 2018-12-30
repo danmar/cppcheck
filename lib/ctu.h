@@ -75,8 +75,10 @@ namespace CTU {
         class FunctionCall : public CallBase {
         public:
             std::string callArgumentExpression;
-            long long callArgValue;
+            MathLib::bigint callArgValue;
             ValueFlow::Value::ValueType callValueType;
+            std::vector<ErrorLogger::ErrorMessage::FileLocation> callValuePath;
+            bool warning;
 
             std::string toXmlString() const;
             bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
@@ -111,7 +113,8 @@ namespace CTU {
                 const UnsafeUsage &unsafeUsage,
                 const std::map<std::string, std::list<const CallBase *>> &callsMap,
                 const char info[],
-                const FunctionCall * * const functionCallPtr) const;
+                const FunctionCall * * const functionCallPtr,
+                bool warning) const;
     };
 
     CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);

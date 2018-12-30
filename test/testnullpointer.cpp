@@ -2705,6 +2705,7 @@ private:
             "  f(p);\n"
             "}");
         ASSERT_EQUALS("test.cpp:2:error:Null pointer dereference: fp\n"
+                      "test.cpp:5:note:Assignment 'p=0', assigned value is 0\n"
                       "test.cpp:6:note:Calling function f, 1st argument is null\n"
                       "test.cpp:2:note:Dereferencing argument fp that is null\n", errout.str());
 

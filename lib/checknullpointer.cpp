@@ -660,25 +660,33 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
-                ctu->getErrorPath(CTU::FileInfo::InvalidValueType::null,
-                                  unsafeUsage,
-                                  callsMap,
-                                  "Dereferencing argument ARG that is null",
-                                  nullptr);
-            if (locationList.empty())
-                continue;
+            for (int warning = 0; warning <= 1; warning++) {
+                if (warning == 1 && !settings.isEnabled(Settings::WARNING))
+                    break;
 
-            const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                   emptyString,
-                                                   Severity::error,
-                                                   "Null pointer dereference: " + unsafeUsage.myArgumentName,
-                                                   "ctunullpointer",
-                                                   CWE476, false);
-            errorLogger.reportErr(errmsg);
+                const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+                    ctu->getErrorPath(CTU::FileInfo::InvalidValueType::null,
+                                      unsafeUsage,
+                                      callsMap,
+                                      "Dereferencing argument ARG that is null",
+                                      nullptr,
+                                      warning);
+                if (locationList.empty())
+                    continue;
 
-            foundErrors = true;
-            break;
+                const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                       emptyString,
+                                                       warning ? Severity::warning : Severity::error,
+                                                       "Null pointer dereference: " + unsafeUsage.myArgumentName,
+                                                       "ctunullpointer",
+                                                       CWE476, false);
+                errorLogger.reportErr(errmsg);
+
+                foundErrors = true;
+                break;
+            }
+            if (foundErrors)
+                break;
         }
     }
 

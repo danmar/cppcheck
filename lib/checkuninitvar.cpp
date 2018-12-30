@@ -1339,7 +1339,8 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
                                   unsafeUsage,
                                   callsMap,
                                   "Using argument ARG",
-                                  &functionCall);
+                                  &functionCall,
+                                  false);
             if (locationList.empty())
                 continue;
 
