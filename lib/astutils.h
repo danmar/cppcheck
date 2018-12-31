@@ -191,6 +191,8 @@ public:
      */
     bool unusedValue(const Token *expr, const Token *startToken, const Token *endToken);
 
+    std::vector<const Token *> valueFlow(const Token *expr, const Token *startToken, const Token *endToken);
+
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
@@ -213,7 +215,8 @@ private:
 
     const bool mCpp;
     const Library &mLibrary;
-    enum class What { Reassign, UnusedValue } mWhat;
+    enum class What { Reassign, UnusedValue, ValueFlow } mWhat;
+    std::vector<const Token *> mValueFlow;
 };
 
 #endif // astutilsH

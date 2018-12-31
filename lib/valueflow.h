@@ -151,7 +151,7 @@ namespace ValueFlow {
         }
 
         /** How known is this value */
-        enum ValueKind {
+        enum class ValueKind {
             /** This value is possible, other unlisted values may also be possible */
             Possible,
             /** Only listed values are possible */

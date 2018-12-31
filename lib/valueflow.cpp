@@ -4654,6 +4654,33 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
     handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
 }
 
+static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *settings)
+{
+    for (const Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->str() != "=" || !tok->astOperand1() || !tok->astOperand2())
+            continue;
+        if (!tok->scope()->isExecutable())
+            continue;
+        if (!tok->astOperand2()->hasKnownIntValue())
+            continue;
+        ValueFlow::Value v(tok->astOperand2()->values().front());
+        v.errorPath.emplace_back(tok, tok->astOperand1()->expressionString() + " is assigned value " + MathLib::toString(v.intvalue));
+        FwdAnalysisAllPaths fwdAnalysis(tokenlist->isCPP(), settings->library);
+        const Token *startToken = tok->findExpressionStartEndTokens().second->next();
+        const Scope *functionScope = tok->scope();
+        while (functionScope->nestedIn && functionScope->nestedIn->isExecutable())
+            functionScope = functionScope->nestedIn;
+        const Token *endToken = functionScope->bodyEnd;
+        for (const Token *tok2 : fwdAnalysis.valueFlow(tok->astOperand1(), startToken, endToken)) {
+            const Scope *s = tok2->scope();
+            while (s && s != tok->scope())
+                s = s->nestedIn;
+            v.valueKind = s ? ValueFlow::Value::ValueKind::Known : ValueFlow::Value::ValueKind::Possible;
+            setTokenValue(const_cast<Token *>(tok2), v, settings);
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token *c, long long val)
     : valueType(INT),
       intvalue(val),
@@ -4724,6 +4751,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowFunctionReturn(tokenlist, errorLogger);
     valueFlowBitAnd(tokenlist);
     valueFlowSameExpressions(tokenlist);
+    valueFlowFwdAnalysis(tokenlist, settings);
 
     // Temporary hack.. run valueflow until there is nothing to update or timeout expires
     const std::time_t timeout = std::time(0) + TIMEOUT;

@@ -87,6 +87,8 @@ private:
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
 
+        TEST_CASE(valueFlowFwdAnalysis);
+
         TEST_CASE(valueFlowSwitchVariable);
 
         TEST_CASE(valueFlowForLoop);
@@ -2351,6 +2353,22 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+    }
+
+    void valueFlowFwdAnalysis() {
+        const char *code;
+        std::list<ValueFlow::Value> values;
+
+        code = "void f() {\n"
+               "  struct Foo foo;\n"
+               "  foo.x = 1;\n"
+               "  x = 0 + foo.x;\n" // <- foo.x is 1
+               "}";
+        values = tokenValues(code, "+");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(true, values.front().isKnown());
+        ASSERT_EQUALS(true, values.front().isIntValue());
+        ASSERT_EQUALS(1, values.front().intvalue);
     }
 
     void valueFlowSwitchVariable() {

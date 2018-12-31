@@ -1165,11 +1165,14 @@ struct FwdAnalysisAllPaths::Result FwdAnalysisAllPaths::checkRecursive(const Tok
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;
             bool other = false;
-            bool same = false;
+            bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, false, false, nullptr);
             while (Token::Match(parent->astParent(), "*|.|::|[")) {
                 parent = parent->astParent();
-                if (parent && isSameExpression(mCpp, false, expr, parent->astOperand1(), mLibrary, false, false, nullptr))
+                if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr)) {
                     same = true;
+                    if (mWhat == What::ValueFlow)
+                        mValueFlow.push_back(parent);
+                }
                 if (!same && Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
                     other = true;
                     break;
@@ -1354,6 +1357,13 @@ bool FwdAnalysisAllPaths::unusedValue(const Token *expr, const Token *startToken
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysisAllPaths::Result::Type::NONE || result.type == FwdAnalysisAllPaths::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
+}
+
+std::vector<const Token *> FwdAnalysisAllPaths::valueFlow(const Token *expr, const Token *startToken, const Token *endToken)
+{
+    mWhat = What::ValueFlow;
+    check(expr, startToken, endToken);
+    return mValueFlow;
 }
 
 bool FwdAnalysisAllPaths::possiblyAliased(const Token *expr, const Token *startToken) const
