@@ -4657,14 +4657,20 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
 static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *settings)
 {
     for (const Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (tok->str() != "=" || !tok->astOperand1() || !tok->astOperand2())
+        if (!Token::Match(tok, "=|==") || !tok->astOperand1() || !tok->astOperand2())
             continue;
         if (!tok->scope()->isExecutable())
             continue;
         if (!tok->astOperand2()->hasKnownIntValue())
             continue;
+        const bool assign = tok->isAssignmentOp();
         ValueFlow::Value v(tok->astOperand2()->values().front());
-        v.errorPath.emplace_back(tok, tok->astOperand1()->expressionString() + " is assigned value " + MathLib::toString(v.intvalue));
+        if (assign)
+            v.errorPath.emplace_back(tok, tok->astOperand1()->expressionString() + " is assigned value " + MathLib::toString(v.intvalue));
+        else {
+            v.errorPath.emplace_back(tok, "Assuming that " + tok->astOperand1()->expressionString() + " has the value " + MathLib::toString(v.intvalue));
+            v.condition = tok;
+        }
         FwdAnalysisAllPaths fwdAnalysis(tokenlist->isCPP(), settings->library);
         const Token *startToken = tok->findExpressionStartEndTokens().second->next();
         const Scope *functionScope = tok->scope();
@@ -4675,7 +4681,7 @@ static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *set
             const Scope *s = tok2->scope();
             while (s && s != tok->scope())
                 s = s->nestedIn;
-            v.valueKind = s ? ValueFlow::Value::ValueKind::Known : ValueFlow::Value::ValueKind::Possible;
+            v.valueKind = assign && s ? ValueFlow::Value::ValueKind::Known : ValueFlow::Value::ValueKind::Possible;
             setTokenValue(const_cast<Token *>(tok2), v, settings);
         }
     }

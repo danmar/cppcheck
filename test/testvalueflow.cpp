@@ -2369,6 +2369,16 @@ private:
         ASSERT_EQUALS(true, values.front().isKnown());
         ASSERT_EQUALS(true, values.front().isIntValue());
         ASSERT_EQUALS(1, values.front().intvalue);
+
+        code = "void f(const Foo foo) {\n"
+               "  if (foo.x == 2) {}\n"
+               "  x = 0 + foo.x;\n" // <- foo.x might be 2
+               "}";
+        values = tokenValues(code, "+");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(false, values.front().isKnown());
+        ASSERT_EQUALS(true, values.front().isIntValue());
+        ASSERT_EQUALS(2, values.front().intvalue);
     }
 
     void valueFlowSwitchVariable() {
