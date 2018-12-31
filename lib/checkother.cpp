@@ -2058,16 +2058,16 @@ void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &
     if (inconclusive) {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "$symbol:" + varname + "\n"
-                    "Checking if unsigned variable '$symbol' is less than zero. This might be a false warning.\n"
-                    "Checking if unsigned variable '$symbol' is less than zero. An unsigned "
+                    "Checking if unsigned expression '$symbol' is less than zero. This might be a false warning.\n"
+                    "Checking if unsigned expression '$symbol' is less than zero. An unsigned "
                     "variable will never be negative so it is either pointless or an error to check if it is. "
                     "It's not known if the used constant is a template parameter or not and therefore "
                     "this message might be a false warning.", CWE570, true);
     } else {
         reportError(tok, Severity::style, "unsignedLessThanZero",
                     "$symbol:" + varname + "\n"
-                    "Checking if unsigned variable '$symbol' is less than zero.\n"
-                    "The unsigned variable '$symbol' will never be negative so it "
+                    "Checking if unsigned expression '$symbol' is less than zero.\n"
+                    "The unsigned expression '$symbol' will never be negative so it "
                     "is either pointless or an error to check if it is.", CWE570, false);
     }
 }

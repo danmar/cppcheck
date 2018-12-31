@@ -4779,7 +4779,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x) {\n"
@@ -4795,7 +4795,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x) {\n"
@@ -4828,7 +4828,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4844,7 +4844,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4877,7 +4877,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4893,7 +4893,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4926,7 +4926,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4942,7 +4942,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned variable 'x' is less than zero.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4978,7 +4978,7 @@ private:
             check(code, nullptr, false, false);
             ASSERT_EQUALS("", errout.str());
             check(code, nullptr, false, true);
-            ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Checking if unsigned variable 'x' is less than zero. This might be a false warning.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Checking if unsigned expression 'x' is less than zero. This might be a false warning.\n", errout.str());
         }
     }
 
@@ -7238,8 +7238,8 @@ private:
               "    return;\n"
               "  }\n"
               "}", "test.c");
-        ASSERT_EQUALS("[test.c:8]: (style) Checking if unsigned variable 'd.n' is less than zero.\n"
-                      "[test.c:12]: (style) Checking if unsigned variable 'd.n' is less than zero.\n",
+        ASSERT_EQUALS("[test.c:8]: (style) Checking if unsigned expression 'd.n' is less than zero.\n"
+                      "[test.c:12]: (style) Checking if unsigned expression 'd.n' is less than zero.\n",
                       errout.str());
     }
 
