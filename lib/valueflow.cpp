@@ -4671,7 +4671,7 @@ static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *set
             v.errorPath.emplace_back(tok, "Assuming that " + tok->astOperand1()->expressionString() + " has the value " + MathLib::toString(v.intvalue));
             v.condition = tok;
         }
-        FwdAnalysisAllPaths fwdAnalysis(tokenlist->isCPP(), settings->library);
+        FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
         const Token *startToken = tok->findExpressionStartEndTokens().second->next();
         const Scope *functionScope = tok->scope();
         while (functionScope->nestedIn && functionScope->nestedIn->isExecutable())
