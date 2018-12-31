@@ -129,6 +129,7 @@ private:
         TEST_CASE(template89); // #8917
         TEST_CASE(template90); // crash
         TEST_CASE(template91);
+        TEST_CASE(template92);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1807,6 +1808,29 @@ private:
                                "double NS1 :: NS2 :: foo<double> ( double t ) { return t ; }";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template92() {
+        const char code[] = "template<class T> void foo(T const& t) { }\n"
+                            "template<> void foo<double>(double const& d) { }\n"
+                            "template void foo<float>(float const& f);\n"
+                            "int main() {\n"
+                            "    foo<int>(2);\n"
+                            "    foo<double>(3.14);\n"
+                            "    foo<float>(3.14f);\n"
+                            "}";
+        const char exp[] = "void foo<double> ( const double & d ) ; "
+                           "void foo<float> ( const float & t ) ; "
+                           "void foo<int> ( const int & t ) ; "
+                           "void foo<double> ( const double & d ) { } "
+                           "int main ( ) { "
+                           "foo<int> ( 2 ) ; "
+                           "foo<double> ( 3.14 ) ; "
+                           "foo<float> ( 3.14f ) ; "
+                           "} "
+                           "void foo<float> ( const float & t ) { } "
+                           "void foo<int> ( const int & t ) { }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
