@@ -1353,7 +1353,6 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
             errorLogger.reportErr(errmsg);
 
             foundErrors = true;
-            break;
         }
     }
     return foundErrors;
