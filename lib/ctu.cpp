@@ -316,7 +316,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
                     functionCall.callArgValue = value.intvalue;
-                    functionCall.warning = (value.condition != nullptr);
+                    functionCall.warning = !value.errorSeverity();
                     for (const ErrorPathItem &i : value.errorPath) {
                         ErrorLogger::ErrorMessage::FileLocation loc;
                         loc.setfile(tokenizer->list.file(i.first));
