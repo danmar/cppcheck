@@ -1733,7 +1733,8 @@ bool TemplateSimplifier::matchSpecialization(
     }
 
     // No specialization matches. Return true if the declaration is not a specialization.
-    return Token::Match(templateDeclarationNameToken, "%name% !!<");
+    return Token::Match(templateDeclarationNameToken, "%name% !!<") &&
+           (templateDeclarationNameToken->str().find('<') == std::string::npos);
 }
 
 std::string TemplateSimplifier::getNewName(
