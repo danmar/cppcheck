@@ -415,6 +415,59 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
     return false;
 }
 
+void CheckCondition::duplicateCondtion()
+{
+    if (!mSettings->isEnabled(Settings::STYLE))
+        return;
+
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eIf)
+            continue;
+
+        const Token * cond1 = scope.classDef->next()->astOperand2();
+        if(cond1->hasKnownIntValue())
+            continue;
+
+        const Token * tok2 = scope.classDef->next();
+        if(!tok2)
+            continue;
+        tok2 = tok2->link();
+        if (!Token::simpleMatch(tok2, ") {"))
+            continue;
+        tok2 = tok2->linkAt(1);
+        if (!Token::simpleMatch(tok2, "} if ("))
+            continue;
+        const Token * cond2 = tok2->tokAt(2)->astOperand2();
+        if(!cond2)
+            continue;
+
+        bool modified = false;
+        visitAstNodes(cond1, [&](const Token* tok3) {
+            if(tok3->varId() > 0 && isVariableChanged(scope.classDef->next(), cond2, tok3->varId(), false, mSettings, mTokenizer->isCPP())) {
+                modified = true;
+                return ChildrenToVisit::done;
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
+        ErrorPath errorPath;
+        if (!modified && isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, true, true, &errorPath))
+            duplicateCondtionError(cond1, cond2, errorPath);
+    }
+}
+
+void CheckCondition::duplicateCondtionError(const Token *tok1, const Token *tok2, ErrorPath errorPath)
+{
+    if (diag(tok1) & diag(tok2))
+        return;
+    errorPath.emplace_back(tok1, "First condition");
+    errorPath.emplace_back(tok2, "Second condition");
+
+    std::string msg = "The if condition is the same as the previous if condition";
+
+    reportError(errorPath, Severity::style, "duplicateCondtion", msg, CWE398, false);
+}
 
 void CheckCondition::multiCondition()
 {
