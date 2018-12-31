@@ -2740,6 +2740,16 @@ private:
             "  dostuff(a, 0);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // ?, &&, ||
+        ctu("void dostuff(int mask, int *p) {\n"
+            "  x = (mask & 1) ? *p : 0;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  dostuff(0, 0);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

@@ -381,6 +381,10 @@ static bool isUnsafeFunction(const Tokenizer *tokenizer, const Settings *setting
             if (isVariableChanged(tok2->link(), tok2, argvar->declarationId(), false, settings, tokenizer->isCPP()))
                 return false;
         }
+        if (Token::Match(tok2, "%oror%|&&|?")) {
+            tok2 = tok2->findExpressionStartEndTokens().second;
+            continue;
+        }
         if (tok2->variable() != argvar)
             continue;
         if (!isUnsafeUsage(check, tok2))
