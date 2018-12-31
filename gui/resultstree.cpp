@@ -18,7 +18,6 @@
 
 #include <QApplication>
 #include <QWidget>
-#include <QStandardItem>
 #include <QDebug>
 #include <QString>
 #include <QStringList>
