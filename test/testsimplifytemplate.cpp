@@ -508,9 +508,9 @@ private:
                             "}\n";
 
         // The expected result..
-        const char expected[] = "void a<2> ( ) ; "
+        const char expected[] = "void a<0> ( ) ; "
+                                "void a<2> ( ) ; "
                                 "void a<1> ( ) ; "
-                                "void a<0> ( ) ; "
                                 "void a<0> ( ) { } "
                                 "int main ( ) "
                                 "{ a<2> ( ) ; return 0 ; } "
@@ -1721,26 +1721,16 @@ private:
                             "template <> void Fred::foo<bool>() { }\n"
                             "template <> void Fred::foo<int>() { }";
         const char exp[] = "struct Fred { "
-                           "static void foo<char> ( ) ; "
-                           "static void foo<float> ( ) ; "
-                           "static void foo<bool> ( ) ; "
                            "static void foo<int> ( ) ; "
-                           "} ; "
-                           "void Fred :: foo<char> ( ) { } "
-                           "void Fred :: foo<float> ( ) { } "
-                           "void Fred :: foo<bool> ( ) { } "
-                           "void Fred :: foo<int> ( ) { }";
-        const char act[] = "struct Fred { "
+                           "static void foo<bool> ( ) ; "
                            "static void foo<char> ( ) ; "
                            "static void foo<float> ( ) ; "
                            "} ; "
-                           "void Fred :: foo<bool> ( ) ; "
                            "void Fred :: foo<bool> ( ) { } "
-                           "void Fred :: foo<int> ( ) ; "
                            "void Fred :: foo<int> ( ) { } "
                            "void Fred :: foo<char> ( ) { } "
                            "void Fred :: foo<float> ( ) { }";
-        TODO_ASSERT_EQUALS(exp, act, tok(code));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template90() { // crash
@@ -1763,11 +1753,11 @@ private:
                                 "template<> int foo<int>(int a) { return a; }\n"
                                 "template float foo<float>(float);\n"
                                 "template double foo<double>(double);";
-            const char exp[] = "float foo<float> ( float t ) ; "
-                               "double foo<double> ( double t ) ; "
+            const char exp[] = "int foo<int> ( int a ) ; "
                                "char foo<char> ( char a ) ; "
+                               "float foo<float> ( float t ) ; "
+                               "double foo<double> ( double t ) ; "
                                "char foo<char> ( char a ) { return a ; } "
-                               "int foo<int> ( int a ) ; "
                                "int foo<int> ( int a ) { return a ; } "
                                "float foo<float> ( float t ) { return t ; } "
                                "double foo<double> ( double t ) { return t ; }";
@@ -1782,11 +1772,11 @@ private:
                                 "template float Fred::foo<float>(float);\n"
                                 "template double Fred::foo<double>(double);";
             const char exp[] = "struct Fred { "
+                               "int foo<int> ( int a ) ; "
+                               "char foo<char> ( char a ) ; "
                                "float foo<float> ( float t ) ; "
                                "double foo<double> ( double t ) ; "
-                               "char foo<char> ( char a ) ; "
                                "char foo<char> ( char a ) { return a ; } "
-                               "int foo<int> ( int a ) ; "
                                "int foo<int> ( int a ) { return a ; } "
                                "} ; "
                                "float Fred :: foo<float> ( float t ) { return t ; } "
@@ -1805,11 +1795,11 @@ private:
                                 "template double NS1::NS2::foo<double>(double);";
             const char exp[] = "namespace NS1 { "
                                "namespace NS2 { "
+                               "int foo<int> ( int a ) ; "
+                               "char foo<char> ( char a ) ; "
                                "float foo<float> ( float t ) ; "
                                "double foo<double> ( double t ) ; "
-                               "char foo<char> ( char a ) ; "
                                "char foo<char> ( char a ) { return a ; } "
-                               "int foo<int> ( int a ) ; "
                                "int foo<int> ( int a ) { return a ; } "
                                "} "
                                "} "
