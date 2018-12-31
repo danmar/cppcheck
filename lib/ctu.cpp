@@ -41,7 +41,7 @@ static const char ATTR_MY_ARGNAME[] = "my-argname";
 
 std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *function)
 {
-    return tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr());
+    return tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr()) + ':' + MathLib::toString(function->tokenDef->col());
 }
 
 CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)
