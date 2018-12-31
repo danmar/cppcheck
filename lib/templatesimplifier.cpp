@@ -1810,7 +1810,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     std::string::size_type numberOfTemplateInstantiations = mTemplateInstantiations.size();
     unsigned int recursiveCount = 0;
 
-    bool instantiated = false;
+    unsigned int instantiated = 0;
 
     for (const TokenAndName &instantiation : mTemplateInstantiations) {
         if (numberOfTemplateInstantiations != mTemplateInstantiations.size()) {
@@ -1883,7 +1883,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
             expandTemplate(templateDeclaration, instantiation, typeParametersInDeclaration, newName, !specialized);
-            instantiated = true;
+            instantiated++;
         }
 
         // Replace all these template usages..
@@ -1891,12 +1891,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     }
 
     // process uninstantiated templates
-    const std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
-            mTemplateInstantiations.end(),
-            FindName(templateDeclaration.name));
-
     // TODO: remove the specialized check and handle all uninstantiated templates someday.
-    if (it == mTemplateInstantiations.end() && specialized) {
+    if (instantiated == 0 && specialized) {
         simplifyCalculations(templateDeclaration.token);
 
         Token * tok2 = const_cast<Token *>(templateDeclaration.nameToken);
@@ -1953,7 +1949,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (expandedtemplates.find(newName) == expandedtemplates.end()) {
             expandedtemplates.insert(newName);
             expandTemplate(templateDeclaration, templateDeclaration, typeParametersInDeclaration, newName, false);
-            instantiated = true;
+            instantiated++;
         }
 
         // Replace all these template usages..
