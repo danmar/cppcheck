@@ -374,7 +374,7 @@ static bool isUnsafeFunction(const Tokenizer *tokenizer, const Settings *setting
     if (!argvar->isPointer())
         return false;
     for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-        if (Token::simpleMatch(tok2, ") {")) {
+        if (Token::Match(tok2, ")|else {")) {
             tok2 = tok2->linkAt(1);
             if (Token::findmatch(tok2->link(), "return|throw", tok2))
                 return false;

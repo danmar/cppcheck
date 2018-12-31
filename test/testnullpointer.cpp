@@ -2741,6 +2741,17 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
+        // else
+        ctu("void dostuff(int mask, int *p) {\n"
+            "  if (mask == 13) ;\n"
+            "  else *p = 45;\n"
+            "}\n"
+            "\n"
+            "void f() {\n"
+            "  dostuff(0, 0);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
         // ?, &&, ||
         ctu("void dostuff(int mask, int *p) {\n"
             "  x = (mask & 1) ? *p : 0;\n"
