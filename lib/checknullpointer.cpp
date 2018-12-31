@@ -685,8 +685,6 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                 foundErrors = true;
                 break;
             }
-            if (foundErrors)
-                break;
         }
     }
 
