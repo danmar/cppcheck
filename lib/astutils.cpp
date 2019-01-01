@@ -1121,6 +1121,10 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         }
 
         if (tok->str() == "}") {
+            // Known value => possible value
+            if (tok->scope() == expr->scope())
+                mValueFlowKnown = false;
+
             Scope::ScopeType scopeType = tok->scope()->type;
             if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo) {
                 // check condition
@@ -1173,8 +1177,12 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 parent = parent->astParent();
                 if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr)) {
                     same = true;
-                    if (mWhat == What::ValueFlow)
-                        mValueFlow.push_back(parent);
+                    if (mWhat == What::ValueFlow) {
+                        KnownAndToken v;
+                        v.known = mValueFlowKnown;
+                        v.token = parent;
+                        mValueFlow.push_back(v);
+                    }
                 }
                 if (!same && Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
                     other = true;
@@ -1212,9 +1220,13 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local);
             if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
                 return result1;
+            if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
+                mValueFlowKnown = false;
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
                 const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local);
+                if (mWhat == What::ValueFlow && result2.type == Result::Type::WRITE)
+                    mValueFlowKnown = false;
                 if (result2.type == Result::Type::READ || result2.type == Result::Type::BAILOUT)
                     return result2;
                 if (result1.type == Result::Type::WRITE && result2.type == Result::Type::WRITE)
@@ -1362,9 +1374,10 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
 }
 
-std::vector<const Token *> FwdAnalysis::valueFlow(const Token *expr, const Token *startToken, const Token *endToken)
+std::vector<FwdAnalysis::KnownAndToken> FwdAnalysis::valueFlow(const Token *expr, const Token *startToken, const Token *endToken)
 {
     mWhat = What::ValueFlow;
+    mValueFlowKnown = true;
     check(expr, startToken, endToken);
     return mValueFlow;
 }

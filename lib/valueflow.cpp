@@ -4683,12 +4683,9 @@ static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *set
         while (functionScope->nestedIn && functionScope->nestedIn->isExecutable())
             functionScope = functionScope->nestedIn;
         const Token *endToken = functionScope->bodyEnd;
-        for (const Token *tok2 : fwdAnalysis.valueFlow(tok->astOperand1(), startToken, endToken)) {
-            const Scope *s = tok2->scope();
-            while (s && s != tok->scope())
-                s = s->nestedIn;
-            v.valueKind = s ? ValueFlow::Value::ValueKind::Known : ValueFlow::Value::ValueKind::Possible;
-            setTokenValue(const_cast<Token *>(tok2), v, settings);
+        for (const FwdAnalysis::KnownAndToken read : fwdAnalysis.valueFlow(tok->astOperand1(), startToken, endToken)) {
+            v.valueKind = read.known ? ValueFlow::Value::ValueKind::Known : ValueFlow::Value::ValueKind::Possible;
+            setTokenValue(const_cast<Token *>(read.token), v, settings);
         }
     }
 }

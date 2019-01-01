@@ -2436,6 +2436,16 @@ private:
         ASSERT_EQUALS(true, values.front().isKnown());
         ASSERT_EQUALS(true, values.front().isIntValue());
         ASSERT_EQUALS(1, values.front().intvalue);
+
+        code = "void f() {\n"
+               "  Hints hints;\n"
+               "  hints.x = 1;\n"
+               "  if (foo)\n"
+               "    hints.x = 2;\n"
+               "  x = 0 + foo.x;\n" // <- foo.x is possible 1, possible 2
+               "}";
+        values = tokenValues(code, "+");
+        TODO_ASSERT_EQUALS(2U, 0U, values.size()); // should be 2
     }
 
     void valueFlowSwitchVariable() {
