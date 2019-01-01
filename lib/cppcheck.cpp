@@ -441,6 +441,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 ErrorLogger::ErrorMessage::FileLocation loc;
                 if (e.token) {
                     loc.line = e.token->linenr();
+                    loc.col = e.token->col();
                     const std::string fixedpath = Path::toNativeSeparators(mTokenizer.list.file(e.token));
                     loc.setfile(fixedpath);
                 } else {

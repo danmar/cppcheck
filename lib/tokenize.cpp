@@ -3817,11 +3817,12 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // When the assembly code has been cleaned up, no @ is allowed
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "(") {
+            const Token *tok1 = tok;
             tok = tok->link();
             if (!tok)
-                syntaxError(nullptr);
+                syntaxError(tok1);
         } else if (tok->str() == "@") {
-            syntaxError(nullptr);
+            syntaxError(tok);
         }
     }
 
@@ -9406,6 +9407,12 @@ void Tokenizer::simplifyAt()
             var.insert(tok->str());
             tok->isAtAddress(true);
             Token::eraseTokens(tok,tok->tokAt(5));
+        }
+
+        // array declaration
+        if (Token::Match(tok, "] @ %num% ;")) {
+            tok->isAtAddress(true);
+            Token::eraseTokens(tok,tok->tokAt(3));
         }
 
         // keywords in compiler from cosmic software for STM8
