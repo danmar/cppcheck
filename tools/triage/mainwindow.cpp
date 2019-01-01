@@ -38,15 +38,17 @@ void MainWindow::loadFile()
     QString errorMessage;
     QStringList allErrors;
     while (true) {
-        const QString line = textStream.readLine();
+        QString line = textStream.readLine();
         if (line.isNull())
             break;
         if (line.startsWith("ftp://")) {
-            if (!url.isEmpty() && !errorMessage.isEmpty())
-                allErrors << (url + "\n" + errorMessage);
             url = line;
+            if (!errorMessage.isEmpty())
+                allErrors << errorMessage;
             errorMessage.clear();
         } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
+            if (QRegExp("^(head|1.[0-9][0-9]) .*").exactMatch(line))
+                line = line.mid(5);
             if (line.indexOf(": note:") > 0)
                 errorMessage += '\n' + line;
             else if (errorMessage.isEmpty()) {
@@ -55,8 +57,6 @@ void MainWindow::loadFile()
                 allErrors << errorMessage;
                 errorMessage = url + '\n' + line;
             }
-        } else if (!url.isEmpty() && QRegExp("^(head|1.[0-9][0-9]) .*:[0-9]+:.*\\]").exactMatch(line)) {
-            allErrors << (url + '\n' + line);
         }
     }
     if (!errorMessage.isEmpty())
