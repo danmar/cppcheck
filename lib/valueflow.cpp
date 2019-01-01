@@ -4140,7 +4140,7 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
         setTokenValues(tok, results, settings);
 }
 
-static void valueFlowSubFunction(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowSubFunction(TokenList *tokenlist, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
@@ -4785,7 +4785,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowSubFunction(tokenlist, errorLogger, settings);
+        valueFlowSubFunction(tokenlist, settings);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
         if (tokenlist->isCPP()) {
