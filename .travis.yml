@@ -144,7 +144,11 @@ script:
   - ${CPPCHECK} --dump namingng_test.c
   - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
   - cd ../..
-
+# try CMake
+  - mkdir cmake.output
+  - cd cmake.output
+  - cmake -G "Unix Makefiles" ..
+  - cd ..
 
 notifications:
   irc:
