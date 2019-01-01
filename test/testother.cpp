@@ -7599,6 +7599,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g(Foo *);\n"
+              "void f() {\n"
+              "    g(reinterpret_cast<Foo*>(0));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void g(int);\n"
               "void f(int x) {\n"
               "    x = 0;\n"

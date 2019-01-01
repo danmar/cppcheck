@@ -1050,6 +1050,9 @@ bool isConstVarExpression(const Token *tok)
         std::vector<const Token *> args = getArguments(tok);
         return std::all_of(args.begin(), args.end(), &isConstVarExpression);
     }
+    if (Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1()->str().find("_cast") != std::string::npos) {
+        return isConstVarExpression(tok->astOperand2());
+    }
     if (Token::Match(tok, "( %type%"))
         return isConstVarExpression(tok->astOperand1());
     if (Token::Match(tok, "%cop%")) {
