@@ -2341,6 +2341,11 @@ private:
 
     void valueFlowRightShift() {
         const char *code;
+        /* Set some temporary fixed values to simplify testing */
+        const Settings settingsTmp = settings;
+        settings.int_bit = 32;
+        settings.long_bit = 64;
+        settings.long_long_bit = MathLib::bigint_bits * 2;
 
         code = "int f(int a) {\n"
                "  int x = (a & 0xff) >> 16;\n"
@@ -2353,6 +2358,68 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+
+        code = "int f(int y) {\n"
+               "  int x = (y & 0xFFFFFFF) >> 31;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
+
+        code = "int f(int y) {\n"
+               "  int x = (y & 0xFFFFFFF) >> 32;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+
+        code = "int f(short y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 31;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
+
+        code = "int f(short y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 32;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+
+        code = "int f(long y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 63;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
+
+        code = "int f(long y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 64;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+
+        code = "int f(long long y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 63;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
+
+        code = "int f(long long y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 64;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+
+        code = "int f(long long y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 121;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+
+        code = "int f(long long y) {\n"
+               "  int x = (y & 0xFFFFFF) >> 128;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+
+        settings = settingsTmp;
     }
 
     void valueFlowFwdAnalysis() {
