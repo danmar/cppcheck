@@ -2683,12 +2683,6 @@ private:
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Label 'label' is not used.\n", errout.str());
 
-        check("void foo() {\n"
-              "    wxCHECK2(state < 3 && state >= 0, return);\n"
-              "    _checkboxState = state;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
         check("struct A {\n"
               "    virtual void foo  (P & Val) throw ();\n"
               "    virtual void foo1 (P & Val) throw ();\n"

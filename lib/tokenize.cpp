@@ -8463,6 +8463,12 @@ void Tokenizer::findGarbageCode() const
         }
     }
 
+    // UNKNOWN_MACRO(return)
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
+            unknownMacroError(tok->linkAt(1)->previous());
+    }
+
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,"))

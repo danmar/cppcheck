@@ -232,6 +232,7 @@ private:
         TEST_CASE(garbageCode199); // #8752
         TEST_CASE(garbageCode200); // #8757
         TEST_CASE(garbageCode201); // #8873
+        TEST_CASE(garbageCode202); // #8907
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1555,6 +1556,12 @@ private:
     // #8873
     void garbageCode201() {
         ASSERT_THROW(checkCode("void f() { std::string s=\"abc\"; return s + }"), InternalError);
+    }
+
+    // #8907
+    void garbageCode202() {
+        ASSERT_THROW(checkCode("void f() { UNKNOWN_MACRO(return); }"), InternalError);
+        ASSERT_THROW(checkCode("void f() { UNKNOWN_MACRO(throw); }"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
