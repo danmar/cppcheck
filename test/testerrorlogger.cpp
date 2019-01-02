@@ -197,6 +197,7 @@ private:
 
     void ToXmlV2Locations() const {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
+        locs.back().setinfo("ä");
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "    <cppcheck version=\"";
@@ -206,7 +207,7 @@ private:
         ASSERT_EQUALS("    </errors>\n</results>", ErrorLogger::ErrorMessage::getXMLFooter());
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
-        message += "            <location file=\"bar.cpp\" line=\"8\"/>\n";
+        message += "            <location file=\"bar.cpp\" line=\"8\" info=\"\\303\\244\"/>\n";
         message += "            <location file=\"foo.cpp\" line=\"5\"/>\n        </error>";
         ASSERT_EQUALS(message, msg.toXML());
     }

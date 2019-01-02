@@ -396,7 +396,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
         printer.PushAttribute("file", (*it).getfile().c_str());
         printer.PushAttribute("line", std::max((*it).line,0));
         if (!it->getinfo().empty())
-            printer.PushAttribute("info", it->getinfo().c_str());
+            printer.PushAttribute("info", fixInvalidChars(it->getinfo()).c_str());
         printer.CloseElement(false);
     }
     for (std::string::size_type pos = 0; pos < mSymbolNames.size();) {
