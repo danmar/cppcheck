@@ -1160,6 +1160,11 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::simpleMatch(tok, "asm ("))
             return Result(Result::Type::BAILOUT);
 
+        if (mWhat == What::ValueFlow && Token::Match(tok, "while|for (")) {
+            // TODO: only bailout if expr is reassigned in loop
+            return Result(Result::Type::BAILOUT);
+        }
+
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // TODO: this is a quick bailout
             return Result(Result::Type::BAILOUT);
