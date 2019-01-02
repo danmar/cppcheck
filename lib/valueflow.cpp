@@ -1019,7 +1019,9 @@ static void valueFlowArray(TokenList *tokenlist)
                 !tok->variable()->isStlType()) {
                 ValueFlow::Value value{1};
                 value.setKnown();
-                setTokenValue(tok, value, tokenlist->getSettings());
+                // TODO : this leads to too many false positives so it is commented out.  
+                // See for instance https://github.com/danmar/cppcheck/commit/025881cf35fdde1299d16a09059e7305f8c9bd13
+                // setTokenValue(tok, value, tokenlist->getSettings());
             }
             const std::map<unsigned int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
             if (it != constantArrays.end()) {
