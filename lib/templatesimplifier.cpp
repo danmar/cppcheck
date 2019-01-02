@@ -466,7 +466,8 @@ static void setScopeInfo(const Token *tok, std::list<ScopeInfo2> *scopeInfo)
     }
     tok = tok->next();
     if (tok && tok->str() == ":") {
-        // ...
+        while (tok && !Token::Match(tok, ";|{"))
+            tok = tok->next();
     }
     if (tok && tok->str() == "{") {
         scopeInfo->emplace_back(classname,tok->link());
