@@ -130,6 +130,7 @@ private:
         TEST_CASE(template90); // crash
         TEST_CASE(template91);
         TEST_CASE(template92);
+        TEST_CASE(template93); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1830,6 +1831,38 @@ private:
                            "} "
                            "void foo<float> ( const float & t ) { } "
                            "void foo<int> ( const int & t ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template93() { // crash
+        const char code[] = "template <typename Iterator>\n"
+                            "void ForEach() { }\n"
+                            "template <typename Type>\n"
+                            "class Vector2 : public Vector {\n"
+                            "    template <typename Iterator>\n"
+                            "    void ForEach();\n"
+                            "public:\n"
+                            "    void process();\n"
+                            "};\n"
+                            "template <typename Type>\n"
+                            "void Vector2<Type>::process() {\n"
+                            "    ForEach<iterator>();\n"
+                            "}\n"
+                            "Vector2<string> c;";
+        const char exp[] = "void ForEach<iterator> ( ) ; "
+                           "class Vector2<string> ; "
+                           "Vector2<string> c ; "
+                           "class Vector2<string> : public Vector { "
+                           "template < typename Iterator > "
+                           "void ForEach ( ) ; "
+                           "public: "
+                           "void process ( ) ; "
+                           "} ; "
+                           "void Vector2<string> :: process ( ) { "
+                           "ForEach<iterator> ( ) ; "
+                           "} "
+                           "void ForEach<iterator> ( ) { "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
