@@ -109,6 +109,7 @@ private:
         TEST_CASE(localvar53); // continue
         TEST_CASE(localvar54); // ast, {}
         TEST_CASE(localvar55);
+        TEST_CASE(localvar56);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -2141,6 +2142,15 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n"
                       "[test.cpp:6]: (style) Variable 'x' is assigned a value that is never used.\n",
                       errout.str());
+    }
+
+    void localvar56() {
+        functionVariableUsage("void f()\n"
+                              "{\n"
+                              "    int x = 31;\n"
+                              "    mask[x] |= 123;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarloops() {
