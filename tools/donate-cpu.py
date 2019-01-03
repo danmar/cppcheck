@@ -2,11 +2,12 @@
 #
 # A script a user can run to donate CPU to cppcheck project
 #
-# Syntax: donate-cpu.py [-jN] [--package=url] [--stop-time=HH:MM] [--work-path=path]
+# Syntax: donate-cpu.py [-jN] [--package=url] [--stop-time=HH:MM] [--work-path=path] [--test]
 #  -jN                  Use N threads in compilation/analysis. Default is 1.
 #  --package=url        Check a specific package and then stop. Can be useful if you want to reproduce some warning/crash/exception/etc..
 #  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
 #  --work-path=path     Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
+#  --test               Connect to a donate-cpu-server that is running locally on port 8001 for testing.
 #
 # What this script does:
 # 1. Check requirements
@@ -87,10 +88,9 @@ def compile(cppcheckPath, jobs):
     return True
 
 
-def getCppcheckVersions():
+def getCppcheckVersions(server_address):
     print('Connecting to server to get Cppcheck versions..')
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('cppcheck.osuosl.org', 8000)
     try:
         sock.connect(server_address)
         sock.send(b'GetCppcheckVersions\n')
@@ -101,11 +101,10 @@ def getCppcheckVersions():
     return versions.decode('utf-8').split()
 
 
-def getPackage():
+def getPackage(server_address):
     print('Connecting to server to get assigned work..')
     package = None
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('cppcheck.osuosl.org', 8000)
     try:
         sock.connect(server_address)
         sock.send(b'get\n')
@@ -298,12 +297,11 @@ def sendAll(connection, data):
             bytes = None
 
 
-def uploadResults(package, results):
+def uploadResults(package, results, server_address):
     print('Uploading results..')
     for retry in range(4):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server_address = ('cppcheck.osuosl.org', 8000)
             sock.connect(server_address)
             sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
             sock.close()
@@ -318,6 +316,7 @@ jobs = '-j1'
 stopTime = None
 workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 packageUrl = None
+server_address = ('cppcheck.osuosl.org', 8000)
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -335,6 +334,8 @@ for arg in sys.argv[1:]:
         if not os.path.exists(workpath):
             print('work path does not exist!')
             sys.exit(1)
+    elif arg == '--test':
+        server_address = ('localhost', 8001)
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -366,7 +367,7 @@ while True:
     if not getCppcheck(cppcheckPath):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
-    cppcheckVersions = getCppcheckVersions()
+    cppcheckVersions = getCppcheckVersions(server_address)
     if cppcheckVersions is None:
         print('Failed to communicate with server, retry later')
         sys.exit(1)
@@ -381,11 +382,11 @@ while True:
     if packageUrl:
         package = packageUrl
     else:
-        package = getPackage()
+        package = getPackage(server_address)
     while len(package) == 0:
         print("network or server might be temporarily down.. will try again in 30 seconds..")
         time.sleep(30)
-        package = getPackage()
+        package = getPackage(server_address)
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
     crash = False
@@ -420,7 +421,7 @@ while True:
         print(output)
         print('=========================================================')
         break
-    uploadResults(package, output)
+    uploadResults(package, output, server_address)
     print('Results have been uploaded')
     print('Sleep 5 seconds..')
     time.sleep(5)
