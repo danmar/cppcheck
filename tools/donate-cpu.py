@@ -334,7 +334,7 @@ for arg in sys.argv[1:]:
         if not os.path.exists(workpath):
             print('work path does not exist!')
             sys.exit(1)
-    elif arg.startswith('--test'):
+    elif arg == '--test':
         server_address = ('localhost', 8001)
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
