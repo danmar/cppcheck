@@ -411,10 +411,10 @@ while True:
     output = 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
-    if 'head' in cppcheckVersions:
-        output += 'head results:\n' + resultsToDiff[cppcheckVersions.index('head')]
     if not crash:
         output += 'diff:\n' + diffResults(workpath, cppcheckVersions[0], resultsToDiff[0], cppcheckVersions[1], resultsToDiff[1]) + '\n'
+    if 'head' in cppcheckVersions:
+        output += 'head results:\n' + resultsToDiff[cppcheckVersions.index('head')]
     if packageUrl:
         print('=========================================================')
         print(output)
