@@ -255,8 +255,11 @@ def diffMessageIdTodayReport(resultPath, messageId):
 
 def timeReport(resultPath):
     text = 'Time report\n\n'
+    text += 'Great difference between versions:\n'
     text += 'Package ' + OLD_VERSION + ' Head\n'
 
+    textLongRunning = ''
+    longRunningThreshold = 60.0 * 30.0
     totalTime184 = 0.0
     totalTimeHead = 0.0
     for filename in glob.glob(resultPath + '/*'):
@@ -272,7 +275,14 @@ def timeReport(resultPath):
                 text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
             elif thead>1 and thead*2 < t184:
                 text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
+            if t184 > longRunningThreshold or thead > longRunningThreshold:
+                textLongRunning += filename[filename.rfind('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
             break
+
+    text += '\n'
+    text += 'Long running checks:\n'
+    text += 'Package ' + OLD_VERSION + ' Head\n'
+    text += textLongRunning
 
     text += '\nTotal time: ' + str(totalTime184) + ' ' + str(totalTimeHead)
     return text
