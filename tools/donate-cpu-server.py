@@ -218,6 +218,8 @@ def diffMessageIdReport(resultPath, messageId):
                 diff = True
             elif not diff:
                 continue
+            elif diff and line.startswith('head results:'):
+                break
             elif line.endswith(e):
                 if url:
                     text += url
@@ -245,6 +247,8 @@ def diffMessageIdTodayReport(resultPath, messageId):
                 diff = True
             elif not diff:
                 continue
+            elif diff and line.startswith('head results:'):
+                break
             elif line.endswith(e):
                 if url:
                     text += url
