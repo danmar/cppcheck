@@ -38,7 +38,7 @@ matrix:
 before_install:
 # install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common util-linux xmlstarlet
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
