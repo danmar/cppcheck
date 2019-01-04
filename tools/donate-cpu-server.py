@@ -67,7 +67,8 @@ def latestReport(latestResults):
         added = 0
         for line in open(filename,'rt'):
             line = line.strip()
-            if line.startswith('2018-'):
+            current_year = datetime.date.today().year
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             #elif line.startswith('cppcheck:'):
             #    cppcheck = line[9:]
