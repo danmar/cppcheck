@@ -967,7 +967,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
         }
     }
 
-    else if (printPortability && astParent && astParent->str() == "-") {
+    else if (printPortability && astIsPointer(astParent) && astParent->str() == "-") {
         const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
         const Variable *var = symbolDatabase->getVariableFromVarId(arrayInfo.declarationId());
         if (var && var->isArray()) {
