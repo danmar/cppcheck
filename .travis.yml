@@ -38,18 +38,17 @@ matrix:
 before_install:
 # install needed deps
  - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common util-linux xmlstarlet
+ - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
   - set -e
-# Determine CPU count
+# Determine CPU count. As of January 2019 it seems to be 2 - so use this for job count in suitable calls to make or cppcheck
   - cat /proc/cpuinfo
-  - lcspu  
 # download clang git, compile cppcheck, run cppcheck on clang code to look for crashes in cppcheck. if this is done, terminate build
-  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & make -j 4 & wait; unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/clang.cppcheck; cd ../ ; echo "CLANG" ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
+  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & make -j 2 & wait; unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/clang.cppcheck; cd ../ ; echo "CLANG" ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
 # check llvm as well
-  - if [[  "$CHECK_LLVM" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & make -j 4 & wait; unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null;  touch /tmp/llvm.cppcheck;  cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6 ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/llvm.cppcheck; cd ../ ; echo "LLVM"  ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck; exit; fi
+  - if [[  "$CHECK_LLVM" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & make -j 2 & wait; unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null;  touch /tmp/llvm.cppcheck;  cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6 ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/llvm.cppcheck; cd ../ ; echo "LLVM"  ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck; exit; fi
 # check if dmake needs to be rerun but if yes, don't fail the build but notify us.
 # to update dmake: "make dmake; ./dmake; and commit
   - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
@@ -57,16 +56,16 @@ script:
 # check with TEST_MATHLIB_VALUE enabled
   - touch lib/mathlib.cpp test/testmathlib.cpp
   - echo $CXXFLAGS
-  - make -s test -j4 CPPFLAGS=-DTEST_MATHLIB_VALUE
+  - make -s test -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
 # compile cppcheck, default build
   - echo $CXXFLAGS
-  - make -s test -j4
+  - make -s test -j2
 # compile gui
   - cd gui
   - qmake
   - echo $CXXFLAGS
-  - make -s -j4
+  - make -s -j2
 # building gui generates some more files that cppcheck can check, so check the repo *after* building gui
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
@@ -95,7 +94,7 @@ script:
 # can't set this as env flags, so try again with HAVE_RULES=yes
   - qmake HAVE_RULES=yes
   - echo $CXXFLAGS
-  - make -s -j4
+  - make -s -j2
   - cd ../
 # note: trusty on travis has python pygments disabled so disable these tests on travis
 ## check htmlreport stuff
@@ -111,7 +110,7 @@ script:
   - git clean -dfx
 # check what happens if we want to install it to some other dir,
   - echo $CXXFLAGS
-  - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 4
+  - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 2
   - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
   - sudo mkdir -p /usr/share/cppcheck/cfg
   - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
@@ -119,7 +118,7 @@ script:
   - /usr/bin/cppcheck ./cli
 # check if reduce tool compiles
   - echo $CXXFLAGS
-  - make -s reduce -j 4
+  - make -s reduce -j 2
 # check if showtime=top5 works
   - ./tools/test_showtimetop5.sh
 # check matchcompiler
