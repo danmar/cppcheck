@@ -373,7 +373,7 @@ int main(int argc, char **argv)
     fout << "\t./testrunner\n\n";
     fout << "check:\tall\n";
     fout << "\t./testrunner -q\n\n";
-    fout << "checkcfg:\tcppcheck validateCFG validatePlatforms\n";
+    fout << "checkcfg:\tcppcheck validateCFG\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
     fout << "dmake:\ttools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";

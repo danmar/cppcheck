@@ -77,15 +77,13 @@ script:
   - find lib gui -maxdepth 1 -name "*.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
 # run extra tests
   - tools/generate_and_run_more_tests.sh
-# Validate XML
-#  - make validateXML doesn't work in this context unfortunately
-  - ${CPPCHECK} --errorlist >/tmp/errorlist.xml
-  - xmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml
 # check for missing CWE entries
   - make checkCWEEntries
-# check test/cfg
+# check cfg files
   - make checkcfg
+# Validate Result XML
   - make validateXML
+# Build gui
   - cd ./gui
 # clean rebuild
   - git clean -dfx .
@@ -119,8 +117,6 @@ script:
   - make -s reduce -j 4
 # check if showtime=top5 works
   - ./tools/test_showtimetop5.sh
-# check the files in cgf dir with xmllint
-  - xmllint --noout cfg/*
 # check matchcompiler
   - ./tools/test_matchcompiler.py
 # check --dump
