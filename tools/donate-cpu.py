@@ -188,6 +188,16 @@ def unpackPackage(workPath, tgz):
     os.chdir(workPath)
 
 
+def getCodeSize(workPath):
+    total_size = 0
+    tempPath = workPath + '/temp'
+    for dirpath, dirnames, filenames in os.walk(tempPath):
+        for fn in filenames:
+            fp = os.path.join(dirpath, fn)
+            total_size += os.path.getsize(fp)
+    return total_size
+
+
 def hasInclude(path, inc):
     for root, _, files in os.walk(path):
         for name in files:
@@ -389,6 +399,7 @@ while True:
         package = getPackage(server_address)
     tgz = downloadPackage(workpath, package)
     unpackPackage(workpath, tgz)
+    totalCodeSize = getCodeSize(workpath)
     crash = False
     count = ''
     elapsedTime = ''
@@ -412,6 +423,7 @@ while True:
     output = 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
+    output += 'code-size-bytes: ' + str(totalCodeSize) + '\n'
     if 'head' in cppcheckVersions:
         output += 'head results:\n' + resultsToDiff[cppcheckVersions.index('head')]
     if not crash:

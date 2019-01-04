@@ -253,29 +253,43 @@ def diffMessageIdTodayReport(resultPath, messageId):
     return text
 
 
+LONG_RUNNING_THRESHOLD_MIN = 60.0 * 30.0
 def timeReport(resultPath):
     text = 'Time report\n\n'
     text += 'Great difference between versions:\n'
     text += 'Package ' + OLD_VERSION + ' Head\n'
 
     textLongRunning = ''
-    longRunningThreshold = 60.0 * 30.0
-    totalTime184 = 0.0
+    longRunningThreshold = LONG_RUNNING_THRESHOLD_MIN * 2
+    totalTimePrev = 0.0
     totalTimeHead = 0.0
     for filename in glob.glob(resultPath + '/*'):
+        for line in open(filename,'rt'):
+            if line.startswith('code-size-bytes:'):
+                splitline = line.strip().split()
+                if(len(splitline) > 1):
+                    try:
+                        codesize = float(splitline[1])
+                    except ValueError:
+                        codesize = 1.0
+                    # calculate threshold: one hour per MB
+                    longRunningThreshold = (codesize / (1024.0 * 1024.0)) * (60.0 * 60.0)
+                    if(longRunningThreshold < LONG_RUNNING_THRESHOLD_MIN):
+                        longRunningThreshold = LONG_RUNNING_THRESHOLD_MIN
+                break
         for line in open(filename,'rt'):
             if not line.startswith('elapsed-time:'):
                 continue
             splitline = line.strip().split()
-            t184 = float(splitline[2])
+            tprev = float(splitline[2])
             thead = float(splitline[1])
-            totalTime184 += t184
+            totalTimePrev += tprev
             totalTimeHead += thead
-            if t184>1 and t184*2 < thead:
+            if tprev>1 and tprev*2 < thead:
                 text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
-            elif thead>1 and thead*2 < t184:
+            elif thead>1 and thead*2 < tprev:
                 text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
-            if t184 > longRunningThreshold or thead > longRunningThreshold:
+            if tprev > longRunningThreshold or thead > longRunningThreshold:
                 textLongRunning += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
             break
 
@@ -284,7 +298,7 @@ def timeReport(resultPath):
     text += 'Package ' + OLD_VERSION + ' Head\n'
     text += textLongRunning
 
-    text += '\nTotal time: ' + str(totalTime184) + ' ' + str(totalTimeHead)
+    text += '\nTotal time: ' + str(totalTimePrev) + ' ' + str(totalTimeHead)
     return text
 
 def sendAll(connection, data):
