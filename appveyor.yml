@@ -50,7 +50,7 @@ build_script:
   - 'echo %QTDIR%'
   - 'cd gui' 
   - 'IF "%platform%" == "x64" %QTDIR%\bin\qmake'
-  - 'cd ..''
+  - 'cd ..'
 
 test_script:
   - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
