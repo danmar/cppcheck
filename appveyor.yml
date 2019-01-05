@@ -44,7 +44,7 @@ build_script:
   - IF "%PlatformToolset%" == "v120" set QTDIR=C:\Qt\5.10.1\msvc2013_%QTDIR_EXT%
   - IF "%PlatformToolset%" == "v140" set QTDIR=C:\Qt\5.10.1\msvc2015_%QTDIR_EXT%
   - cd gui 
-  - %QTDIR%\bin\qmake
+  - '%QTDIR%\bin\qmake'
   - cd ..
 
 test_script:
