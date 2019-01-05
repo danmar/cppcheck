@@ -131,6 +131,7 @@ private:
         TEST_CASE(template91);
         TEST_CASE(template92);
         TEST_CASE(template93); // crash
+        TEST_CASE(template94); // #8927 crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -927,7 +928,7 @@ private:
                             "  template<typename T> struct X { T t; };"
                             "};"
                             "template<> struct A::X<int> { int *t; };";
-        ASSERT_EQUALS("struct A { template < typename T > struct X { T t ; } ; } ;", tok(code));
+        ASSERT_EQUALS("struct A { struct X<int> ; } ; struct A :: X<int> { int t ; } ;", tok(code));
     }
 
     void template41() { // #4710 - const in template instantiation not handled perfectly
@@ -1044,12 +1045,16 @@ private:
         const char code[] = "template <class T> class Fred { void f(); };\n"
                             "template <class T> void Fred<T>::f() { }\n"
                             "template<> void Fred<float>::f() { }\n"
-                            "template<> void Fred<int>::g() { }\n";
+                            "template<> void Fred<int>::f() { }\n";
 
-        const char expected[] = "template < class T > class Fred { void f ( ) ; } ; "
-                                "template < class T > void Fred < T > :: f ( ) { } "
-                                "template < > void Fred < float > :: f ( ) { } "
-                                "template < > void Fred < int > :: g ( ) { }";
+        const char expected[] = "class Fred<float> ; "
+                                "class Fred<int> ; "
+                                "template < > void Fred<float> :: f ( ) { } "
+                                "template < > void Fred<int> :: f ( ) { } "
+                                "class Fred<float> { void f ( ) ; } ; "
+                                "void Fred<float> :: f ( ) { } "
+                                "class Fred<int> { void f ( ) ; } ; "
+                                "void Fred<int> :: f ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -1866,6 +1871,40 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template94() { // #8927 crash
+        const char code[] = "template <typename T>\n"
+                            "class Array { };\n"
+                            "template<typename T>\n"
+                            "Array<T> foo() {};\n"
+                            "template <> Array<double> foo<double>() { }\n"
+                            "template <> Array<std::complex<float>> foo<std::complex<float>>() { }\n"
+                            "template <> Array<float> foo<float>() { }\n"
+                            "template < typename T >\n"
+                            "Array<T> matmul() {\n"
+                            "    return foo<T>( );\n"
+                            "}\n"
+                            "template Array<std::complex<float>> matmul<std::complex<float>>();";
+        const char exp[] = "class Array<double> ; "
+                           "class Array<std::complex<float>> ; "
+                           "class Array<float> ; "
+                           "Array<float> foo<float> ( ) ; "
+                           "Array<std::complex<float>> foo<std::complex<float>> ( ) ; "
+                           "Array<double> foo<double> ( ) ; "
+                           "template < typename T > "
+                           "Array < T > foo ( ) { } ; "
+                           "Array<double> foo<double> ( ) { } "
+                           "Array<std::complex<float>> foo<std::complex<float>> ( ) { } "
+                           "Array<float> foo<float> ( ) { } "
+                           "Array<std::complex<float>> matmul<std::complex<float>> ( ) ; "
+                           "Array<std::complex<float>> matmul<std::complex<float>> ( ) { "
+                           "return foo<std::complex<float>> ( ) ; "
+                           "} "
+                           "class Array<double> { } ; "
+                           "class Array<std::complex<float>> { } ; "
+                           "class Array<float> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -2571,9 +2610,7 @@ private:
                           "template<class T, class U> class A { unsigned foo(); }; "
                           "template<class T, class U> unsigned A<T, U>::foo() { return 0; }", 25));
         ASSERT_EQUALS(12, templateNamePositionHelper(
-                          "template<class T> class v {}; "
-                          "template<class T, class U> class A { unsigned foo(); }; "
-                          "template<> unsigned A<int, v<char> >::foo() { return 0; }", 30));
+                          "template<> unsigned A<int, v<char> >::foo() { return 0; }", 2));
     }
 
     void expandSpecialized1() {

@@ -524,6 +524,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
 void TemplateSimplifier::getTemplateInstantiations()
 {
     std::list<ScopeInfo2> scopeList;
+    const Token *skip = nullptr;
 
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "}|namespace|class|struct|union")) {
@@ -535,12 +536,21 @@ void TemplateSimplifier::getTemplateInstantiations()
             tok = tok->next()->findClosingBracket();
             if (!tok)
                 break;
-            // #7914
-            // Ignore template instantiations within template definitions: they will only be
-            // handled if the definition is actually instantiated
-            const Token *tok2 = Token::findmatch(tok, "{|;");
-            if (tok2 && tok2->str() == "{")
-                tok = tok2->link();
+            if (tok->strAt(-1) == "<") {
+                // Don't ignore user specialization but don't consider it an instantiation.
+                // Instantiations in return type, function parameters, and executable code
+                // are not ignored.
+                unsigned int pos = getTemplateNamePosition(tok);
+                if (pos > 0)
+                    skip = tok->tokAt(pos);
+            } else {
+                // #7914
+                // Ignore template instantiations within template definitions: they will only be
+                // handled if the definition is actually instantiated
+                const Token *tok2 = Token::findmatch(tok, "{|;");
+                if (tok2 && tok2->str() == "{")
+                    tok = tok2->link();
+            }
         } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|& %name% ::|<") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
@@ -552,6 +562,11 @@ void TemplateSimplifier::getTemplateInstantiations()
             }
             if (!Token::Match(tok, "%name% <"))
                 continue;
+
+            if (tok == skip) {
+                skip = nullptr;
+                continue;
+            }
 
             // Add inner template instantiations first => go to the ">"
             // and then parse backwards, adding all seen instantiations
