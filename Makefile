@@ -264,7 +264,7 @@ test:	all
 check:	all
 	./testrunner -q
 
-checkcfg:	cppcheck validateCFG validatePlatforms
+checkcfg:	cppcheck validateCFG
 	./test/cfg/runtests.sh
 
 dmake:	tools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o
