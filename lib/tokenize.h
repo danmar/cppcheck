@@ -594,8 +594,8 @@ public:
     /** Syntax error */
     void syntaxError(const Token *tok) const;
 
-    /** Syntax error. Example: invalid number of ')' */
-    void syntaxError(const Token *tok, char c) const;
+    /** Syntax error. Unmatched character. */
+    void unmatchedToken(const Token *tok) const;
 
     /** Syntax error. C++ code in C file. */
     void syntaxErrorC(const Token *tok, const std::string &what) const;

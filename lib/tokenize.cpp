@@ -3188,10 +3188,10 @@ static void linkBrackets(const Tokenizer * const tokenizer, std::stack<const Tok
     } else if (token->str()[0] == close) {
         if (links.empty()) {
             // Error, { and } don't match.
-            tokenizer->syntaxError(token, open);
+            tokenizer->unmatchedToken(token);
         }
         if (type.top()->str()[0] != open) {
-            tokenizer->syntaxError(type.top(), type.top()->str()[0]);
+            tokenizer->unmatchedToken(type.top());
         }
         type.pop();
 
@@ -3220,17 +3220,17 @@ void Tokenizer::createLinks()
 
     if (!links1.empty()) {
         // Error, { and } don't match.
-        syntaxError(links1.top(), '{');
+        unmatchedToken(links1.top());
     }
 
     if (!links2.empty()) {
         // Error, ( and ) don't match.
-        syntaxError(links2.top(), '(');
+        unmatchedToken(links2.top());
     }
 
     if (!links3.empty()) {
         // Error, [ and ] don't match.
-        syntaxError(links3.top(), '[');
+        unmatchedToken(links3.top());
     }
 }
 
@@ -7930,17 +7930,12 @@ void Tokenizer::syntaxError(const Token *tok) const
     throw InternalError(tok, "syntax error", InternalError::SYNTAX);
 }
 
-void Tokenizer::syntaxError(const Token *tok, char c) const
+void Tokenizer::unmatchedToken(const Token *tok) const
 {
     printDebugOutput(0);
-    if (mConfiguration.empty())
-        throw InternalError(tok,
-                            std::string("Invalid number of character '") + c + "' when no macros are defined.",
-                            InternalError::SYNTAX);
-    else
-        throw InternalError(tok,
-                            std::string("Invalid number of character '") + c + "' when these macros are defined: '" + mConfiguration + "'.",
-                            InternalError::SYNTAX);
+    throw InternalError(tok,
+                        "Unmatched '" + tok->str() + "'. Configuration: '" + mConfiguration + "'.",
+                        InternalError::SYNTAX);
 }
 
 void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
