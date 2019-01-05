@@ -5,40 +5,38 @@ clone_depth: 10
 environment:
   matrix:
     - VisualStudioVersion: 12.0
-      platform: "Win32"
-      configuration: "Debug"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v120"
+      platform: Win32
+      configuration: Debug
+      vcvarsall_platform: x86
+      PlatformToolset: v120
     - VisualStudioVersion: 12.0
-      platform: "Win32"
-      configuration: "Release"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v120"
+      platform: Win32
+      configuration: Release
+      vcvarsall_platform: x86
+      PlatformToolset: v120
     - VisualStudioVersion: 12.0
-      platform: "x64"
-      configuration: "Debug"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v120"
+      platform: x64
+      configuration: Debug
+      vcvarsall_platform: x64
+      PlatformToolset: v120
     - VisualStudioVersion: 12.0
-      platform: "x64"
-      configuration: "Release"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v120"
+      platform: x64
+      configuration: Release
+      vcvarsall_platform: x64
+      PlatformToolset: v120
     - VisualStudioVersion: 14.0
-      platform: "Win32"
-      configuration: "Debug"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v140"
+      platform: Win32
+      configuration: Debug
+      vcvarsall_platform: x86
+      PlatformToolset: v140
     - VisualStudioVersion: 14.0
-      platform: "x64"
-      configuration: "Debug"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v140"
+      platform: x64
+      configuration: Debug
+      vcvarsall_platform: x64
+      PlatformToolset: v140
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
-  - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
-  - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - ECHO ON
   - 'IF "%platform%" == "Win32" set QTDIR_EXT='
   - 'echo %QTDIR_EXT%'
@@ -51,6 +49,8 @@ build_script:
   - 'cd gui' 
   - 'IF "%platform%" == "x64" %QTDIR%\bin\qmake'
   - 'cd ..'
+  - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
+  - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test_script:
   - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
