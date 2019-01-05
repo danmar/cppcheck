@@ -40,6 +40,7 @@ build_script:
   - 'IF "%VisualStudioVersion%" == "10.0" IF "%platform%" == "x64" CALL "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%vcvarsall_platform% /%configuration%'
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - 'IF "%VisualStudioVersion%" == "14.0" IF "%platform%" == "x64" pushd gui && C:\Qt\5.10.1\msvc2015_64\bin\qmake && popd
 
 test_script:
   - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
