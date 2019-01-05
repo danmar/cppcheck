@@ -26,6 +26,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <sstream>
 
 #ifndef _WIN32
@@ -241,4 +242,10 @@ std::string Path::stripDirectoryPart(const std::string &file)
         return file.substr(p + 1);
     }
     return file;
+}
+
+bool Path::fileExists(const std::string &file)
+{
+    std::ifstream f(file.c_str());
+    return f.is_open();
 }

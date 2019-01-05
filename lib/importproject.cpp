@@ -265,7 +265,15 @@ void ImportProject::importCompileCommands(std::istream &istr)
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
         struct FileSettings fs;
-        fs.filename = file;
+        if (Path::isAbsolute(file) || Path::fileExists(file))
+            fs.filename = file;
+        else {
+            std::string path = directory;
+            if (!path.empty() && !endsWith(path,'/'))
+                path += '/';
+            path += file;
+            fs.filename = Path::simplifyPath(path);
+        }
         fs.parseCommand(command); // read settings; -D, -I, -U, -std
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);

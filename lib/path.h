@@ -172,6 +172,8 @@ public:
      * @return filename without directory path part.
      */
     static std::string stripDirectoryPart(const std::string &file);
+
+    static bool fileExists(const std::string &file);
 };
 
 /// @}
