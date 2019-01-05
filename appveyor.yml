@@ -9,45 +9,42 @@ environment:
       configuration: Debug
       vcvarsall_platform: x86
       PlatformToolset: v120
+	  QTDIR: C:\Qt\5.6\msvc2013
     - VisualStudioVersion: 12.0
       platform: Win32
       configuration: Release
       vcvarsall_platform: x86
       PlatformToolset: v120
+	  QTDIR: C:\Qt\5.6\msvc2013
     - VisualStudioVersion: 12.0
       platform: x64
       configuration: Debug
       vcvarsall_platform: x64
       PlatformToolset: v120
+	  QTDIR: C:\Qt\5.6\msvc2013
     - VisualStudioVersion: 12.0
       platform: x64
       configuration: Release
       vcvarsall_platform: x64
       PlatformToolset: v120
+	  QTDIR: C:\Qt\5.6\msvc2013
     - VisualStudioVersion: 14.0
       platform: Win32
       configuration: Debug
       vcvarsall_platform: x86
       PlatformToolset: v140
+	  QTDIR: C:\Qt\5.11\msvc2015_64
     - VisualStudioVersion: 14.0
       platform: x64
       configuration: Debug
       vcvarsall_platform: x64
       PlatformToolset: v140
+	  QTDIR: C:\Qt\5.11\msvc2015_64
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
   - ECHO ON
-  - 'IF "%platform%" == "Win32" set QTDIR_EXT='
-  - 'echo %QTDIR_EXT%'
-  - 'IF "%platform%" == "x64"   set QTDIR_EXT=_64'
-  - 'echo %QTDIR_EXT%'
-  - 'IF "%PlatformToolset%" == "v120" set QTDIR=C:\Qt\5.8\msvc2013%QTDIR_EXT%'
-  - 'echo %QTDIR%'
-  - 'IF "%PlatformToolset%" == "v140" set QTDIR=C:\Qt\5.8\msvc2015%QTDIR_EXT%'
-  - 'echo %QTDIR%'
-  - 'cd gui' 
   - '%QTDIR%\bin\qmake'
   - 'cd ..'
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
