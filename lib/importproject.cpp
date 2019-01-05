@@ -25,6 +25,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "../externals/picojson.h"
 
 #include <cstring>
 #include <fstream>
@@ -192,101 +193,83 @@ ImportProject::Type ImportProject::import(const std::string &filename)
     return UNKNOWN;
 }
 
+static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[])
+{
+    std::string ret;
+    bool str = false;
+    while (*pos < command.size() && (str || !std::strchr(until, command[*pos]))) {
+        if (command[*pos] == '\\')
+            ++*pos;
+        if (*pos < command.size())
+            ret += command[(*pos)++];
+        if (endsWith(ret, '\"'))
+            str = !str;
+    }
+    return ret;
+}
+
+void ImportProject::FileSettings::parseCommand(const std::string &command)
+{
+    std::string defs;
+
+    // Parse command..
+    std::string::size_type pos = 0;
+    while (std::string::npos != (pos = command.find(' ',pos))) {
+        while (pos < command.size() && command[pos] == ' ')
+            pos++;
+        if (pos >= command.size())
+            break;
+        if (command[pos] != '/' && command[pos] != '-')
+            continue;
+        pos++;
+        if (pos >= command.size())
+            break;
+        const char F = command[pos++];
+        if (std::strchr("DUI", F)) {
+            while (pos < command.size() && command[pos] == ' ')
+                ++pos;
+        }
+        const std::string fval = readUntil(command, &pos, " =");
+        if (F=='D') {
+            const std::string defval = readUntil(command, &pos, " ");
+            defs += fval;
+            if (!defval.empty())
+                defs += defval;
+            defs += ';';
+        } else if (F=='U')
+            undefs.insert(fval);
+        else if (F=='I')
+            includePaths.push_back(fval);
+        else if (F=='s' && fval.compare(0,3,"td=") == 0)
+            standard = fval.substr(3);
+        else if (F == 'i' && fval == "system") {
+            ++pos;
+            const std::string isystem = readUntil(command, &pos, " ");
+            systemIncludePaths.push_back(isystem);
+        }
+    }
+    setDefines(defs);
+}
+
 void ImportProject::importCompileCommands(std::istream &istr)
 {
-    std::map<std::string, std::string> values;
+    picojson::value v;
+    istr >> v;
+    if (!v.is<picojson::array>())
+        return;
 
-    // TODO: Use a JSON parser
+    for (const picojson::value &fileInfo : v.get<picojson::array>()) {
+        picojson::object obj = fileInfo.get<picojson::object>();
+        const std::string directory = Path::fromNativeSeparators(obj["directory"].get<std::string>());
+        const std::string command = obj["command"].get<std::string>();
+        const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
-    Settings settings;
-    TokenList tokenList(&settings);
-    tokenList.createTokens(istr);
-    for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% : %str% [,}]")) {
-            const std::string& key = tok->str();
-            const std::string& value = tok->strAt(2);
-            values[key.substr(1, key.size() - 2U)] = value.substr(1, value.size() - 2U);
-        }
-
-        else if (Token::Match(tok, "%str% : [ %str%") && tok->str() == "\"arguments\"") {
-            std::string cmd;
-            tok = tok->tokAt(2);
-            while (Token::Match(tok, ",|[ %str%")) {
-                const std::string &s = tok->next()->str();
-                cmd += ' ' + s.substr(1, s.size() - 2);
-                tok = tok->tokAt(2);
-            }
-            values["command"] = cmd.substr(1);
-        }
-
-        else if (tok->str() == "}") {
-            if (!values["file"].empty() && !values["command"].empty()) {
-                struct FileSettings fs;
-                fs.filename = Path::fromNativeSeparators(values["file"]);
-                const std::string& command = values["command"];
-                const std::string directory = Path::fromNativeSeparators(values["directory"]);
-                std::string::size_type pos = 0;
-                while (std::string::npos != (pos = command.find(' ',pos))) {
-                    pos++;
-                    if (pos >= command.size())
-                        break;
-                    if (command[pos] != '/' && command[pos] != '-')
-                        continue;
-                    pos++;
-                    if (pos >= command.size())
-                        break;
-                    const char F = command[pos++];
-                    if (std::strchr("DUI", F)) {
-                        while (pos < command.size() && command[pos] == ' ')
-                            ++pos;
-                    }
-                    std::string fval;
-                    while (pos < command.size() && command[pos] != ' ' && command[pos] != '=') {
-                        if (command[pos] != '\\')
-                            fval += command[pos];
-                        pos++;
-                    }
-                    if (F=='D') {
-                        std::string defval;
-                        bool str = false;
-                        while (pos < command.size() && (str || command[pos] != ' ')) {
-                            if (command.compare(pos, 4, "\\\\\\\"") == 0) {
-                                defval += '\"';
-                                str = !str;
-                                pos += 4;
-                            } else {
-                                defval += command[pos];
-                                pos++;
-                            }
-                        }
-                        fs.defines += fval;
-                        if (!defval.empty())
-                            fs.defines += defval;
-                        fs.defines += ';';
-                    } else if (F=='U')
-                        fs.undefs.insert(fval);
-                    else if (F=='I')
-                        fs.includePaths.push_back(fval);
-                    else if (F=='s' && fval.compare(0,3,"td=") == 0)
-                        fs.standard = fval.substr(3);
-                    else if (F == 'i' && fval == "system") {
-                        ++pos;
-                        std::string isystem;
-                        while (pos < command.size() && command[pos] != ' ') {
-                            if (command[pos] != '\\')
-                                isystem += command[pos];
-                            pos++;
-                        }
-                        fs.systemIncludePaths.push_back(isystem);
-                    }
-                }
-                std::map<std::string, std::string, cppcheck::stricmp> variables;
-                fs.setIncludePaths(directory, fs.includePaths, variables);
-                fs.setDefines(fs.defines);
-                fileSettings.push_back(fs);
-            }
-            values.clear();
-        }
+        struct FileSettings fs;
+        fs.filename = file;
+        fs.parseCommand(command); // read settings; -D, -I, -U, -std
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
+        fs.setIncludePaths(directory, fs.includePaths, variables);
+        fileSettings.push_back(fs);
     }
 }
 
