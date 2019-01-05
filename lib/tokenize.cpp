@@ -1523,8 +1523,8 @@ void Tokenizer::simplifyTypedef()
                             if (tok2->str() == "const")
                                 tok2 = tok2->next();
 
-                            // reference to array?
-                            if (tok2->str() == "&") {
+                            // reference or pointer to array?
+                            if (tok2->str() == "&" || tok2->str() == "*") {
                                 tok2 = tok2->previous();
                                 tok2->insertToken("(");
                                 Token *tok3 = tok2->next();
