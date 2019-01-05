@@ -529,7 +529,7 @@ public:
         return mImpl->mTemplateSimplifierPointers;
     }
     void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
-        mImpl->mTemplateSimplifierPointers.emplace(tokenAndName);
+        mImpl->mTemplateSimplifierPointers.insert(tokenAndName);
     }
     void setBits(const unsigned char b) {
         mImpl->mBits = b;
