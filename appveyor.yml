@@ -47,7 +47,7 @@ build_script:
   - ECHO ON
   - cd gui
   - '%QTDIR%\bin\qmake'
-  - mingw32-make.exe
+  - 'C:\Qt\Tools\mingw530_32\bin\mingw32-make.exe'
   - 'cd ..'
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
