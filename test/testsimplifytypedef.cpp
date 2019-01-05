@@ -163,6 +163,7 @@ private:
         TEST_CASE(simplifyTypedef123); // ticket #7406
         TEST_CASE(simplifyTypedef124); // ticket #7792
         TEST_CASE(simplifyTypedef125); // #8749 - typedef char A[10]; p = new A[1];
+        TEST_CASE(simplifyTypedef126); // ticket #5953
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2529,6 +2530,13 @@ private:
         const char code[] = "typedef char A[3];\n"
                             "char (*p)[3] = new A[4];";
         const char exp [] = "char ( * p ) [ 3 ] = new char [ 4 ] [ 3 ] ;";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef126() { // #5953
+        const char code[] = "typedef char automap_data_t[100];\n"
+                            "void write_array(automap_data_t *data) {}";
+        const char exp [] = "void write_array ( char ( * data ) [ 100 ] ) { }";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
