@@ -1824,7 +1824,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     getTemplateParametersInDeclaration(templateDeclaration.token->tokAt(2), typeParametersInDeclaration);
     const bool printDebug = mSettings->debugwarnings;
     const bool specialized = templateDeclaration.isSpecialized();
-    bool isfunc = templateDeclaration.isFunction();
+    const bool isfunc = templateDeclaration.isFunction();
 
     // locate template usage..
     std::string::size_type numberOfTemplateInstantiations = mTemplateInstantiations.size();
