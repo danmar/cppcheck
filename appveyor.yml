@@ -60,7 +60,7 @@ build_script:
   - ECHO MYQTDIR=%MYQTDIR%
   - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
   - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
-  - 'IF defined nmake'
+  - 'IF defined MYQTDIR nmake'
   - 'cd ..'
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
