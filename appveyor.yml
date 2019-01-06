@@ -28,7 +28,7 @@ environment:
       configuration: Release
       vcvarsall_platform: x64
       PlatformToolset: v120
-	  MYQTDIR: C:\Qt\5.6\msvc2013_64
+      MYQTDIR: C:\Qt\5.6\msvc2013_64
     - VisualStudioVersion: 14.0
       platform: Win32
       configuration: Debug
