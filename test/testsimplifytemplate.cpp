@@ -1313,34 +1313,34 @@ private:
     }
 
     void template67() { // ticket #8122
-        const char code[] = "template <class T> struct Containter {\n"
-                            "  Containter();\n"
-                            "  Containter(const Containter &);\n"
-                            "  Containter & operator = (const Containter &);\n"
-                            "  ~Containter();\n"
+        const char code[] = "template <class T> struct Container {\n"
+                            "  Container();\n"
+                            "  Container(const Container &);\n"
+                            "  Container & operator = (const Container &);\n"
+                            "  ~Container();\n"
                             "  T* mElements;\n"
-                            "  const Containter * c;\n"
+                            "  const Container * c;\n"
                             "};\n"
-                            "template <class T> Containter<T>::Containter() : mElements(nullptr), c(nullptr) {}\n"
-                            "template <class T> Containter<T>::Containter(const Containter & x) { nElements = x.nElements; c = x.c; }\n"
-                            "template <class T> Containter<T> & Containter<T>::operator = (const Containter & x) { mElements = x.mElements; c = x.c; return *this; }\n"
-                            "template <class T> Containter<T>::~Containter() {}\n"
-                            "Containter<int> intContainer;";
+                            "template <class T> Container<T>::Container() : mElements(nullptr), c(nullptr) {}\n"
+                            "template <class T> Container<T>::Container(const Container & x) { nElements = x.nElements; c = x.c; }\n"
+                            "template <class T> Container<T> & Container<T>::operator = (const Container & x) { mElements = x.mElements; c = x.c; return *this; }\n"
+                            "template <class T> Container<T>::~Container() {}\n"
+                            "Container<int> intContainer;";
 
-        const char expected[] = "struct Containter<int> ; "
-                                "Containter<int> intContainer ; "
-                                "struct Containter<int> { "
-                                "Containter<int> ( ) ; "
-                                "Containter<int> ( const Containter<int> & ) ; "
-                                "Containter<int> & operator= ( const Containter<int> & ) ; "
-                                "~ Containter<int> ( ) ; "
+        const char expected[] = "struct Container<int> ; "
+                                "Container<int> intContainer ; "
+                                "struct Container<int> { "
+                                "Container<int> ( ) ; "
+                                "Container<int> ( const Container<int> & ) ; "
+                                "Container<int> & operator= ( const Container<int> & ) ; "
+                                "~ Container<int> ( ) ; "
                                 "int * mElements ; "
-                                "const Containter<int> * c ; "
+                                "const Container<int> * c ; "
                                 "} ; "
-                                "Containter<int> :: Containter<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
-                                "Containter<int> :: Containter<int> ( const Containter<int> & x ) { nElements = x . nElements ; c = x . c ; } "
-                                "Containter<int> & Containter<int> :: operator= ( const Containter<int> & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
-                                "Containter<int> :: ~ Containter<int> ( ) { }";
+                                "Container<int> :: Container<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
+                                "Container<int> :: Container<int> ( const Container<int> & x ) { nElements = x . nElements ; c = x . c ; } "
+                                "Container<int> & Container<int> :: operator= ( const Container<int> & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
+                                "Container<int> :: ~ Container<int> ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }

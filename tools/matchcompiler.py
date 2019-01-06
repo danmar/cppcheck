@@ -659,7 +659,7 @@ def main():
     parser.add_argument('--line', action='store_true', default=False,
                         help='add line directive to input files into build files')
     parser.add_argument('file', nargs='*',
-                        help='file to complile')
+                        help='file to compile')
     args = parser.parse_args()
     lib_dir = args.read_dir
     build_dir = args.write_dir

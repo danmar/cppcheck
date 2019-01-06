@@ -3484,12 +3484,12 @@ private:
     }
 
     void templateConstructor() { // ticket #7942
-        check("template <class T> struct Containter {\n"
-              "  Containter();\n"
+        check("template <class T> struct Container {\n"
+              "  Container();\n"
               "  T* mElements;\n"
               "};\n"
-              "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
-              "Containter<int> intContainer;");
+              "template <class T> Container<T>::Container() : mElements(nullptr) {}\n"
+              "Container<int> intContainer;");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -19,7 +19,7 @@
 #                          "uint32_t": "ui32"}
 # }
 #
-# RE_VARNAME, RE_PRIVATE_MEMBER_VARIABE and RE_FUNCTIONNAME are regular expressions to cover hte basic names
+# RE_VARNAME, RE_PRIVATE_MEMBER_VARIABE and RE_FUNCTIONNAME are regular expressions to cover the basic names
 # In var_prefixes and function_prefixes there are the variable-type/prefix pairs
 
 import cppcheckdata

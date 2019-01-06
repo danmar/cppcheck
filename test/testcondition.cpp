@@ -2158,7 +2158,7 @@ private:
               "  X(do);\n"
               "  if (x > 100) {}\n"
               "}");
-        // TODO: we should probably throw unknownMacro InternalError. Complain that the macro X must be defined. We cant check the code well without the definition.
+        // TODO: we should probably throw unknownMacro InternalError. Complain that the macro X must be defined. We can't check the code well without the definition.
         TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x>100' is always false\n", "", errout.str());
 
         check("void f(const int *i) {\n"
