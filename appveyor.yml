@@ -1,4 +1,4 @@
-version: 1.86.{build}
+version: {build}
 
 clone_depth: 10
 
@@ -54,7 +54,8 @@ build_script:
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
   - ECHO ON
   - cd gui
-  - 'IF defined MYQTDIR set QTDIR %MYQTDIR%'
+  - ECHO MYQTDIR=%MYQTDIR%
+  - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
   - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
   - 'nmake'
   - 'cd ..'
