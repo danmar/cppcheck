@@ -1,45 +1,67 @@
-version: 1.73.{build}
+version: '{build}'
 
 clone_depth: 10
+
+matrix:
+  fast_finish: true
 
 environment:
   matrix:
     - VisualStudioVersion: 12.0
-      platform: "Win32"
-      configuration: "Debug"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v120"
+      platform: Win32
+      configuration: Debug
+      vcvarsall_platform: x86
+      PlatformToolset: v120
     - VisualStudioVersion: 12.0
-      platform: "Win32"
-      configuration: "Release"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v120"
+      platform: Win32
+      configuration: Release
+      vcvarsall_platform: x86
+      PlatformToolset: v120
+      MYQTDIR: C:\Qt\5.6\msvc2013
     - VisualStudioVersion: 12.0
-      platform: "x64"
-      configuration: "Debug"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v120"
+      platform: x64
+      configuration: Debug
+      vcvarsall_platform: x64
+      PlatformToolset: v120
     - VisualStudioVersion: 12.0
-      platform: "x64"
-      configuration: "Release"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v120"
+      platform: x64
+      configuration: Release
+      vcvarsall_platform: x64
+      PlatformToolset: v120
+      MYQTDIR: C:\Qt\5.6\msvc2013_64
     - VisualStudioVersion: 14.0
-      platform: "Win32"
-      configuration: "Debug"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v140"
+      platform: Win32
+      configuration: Debug
+      vcvarsall_platform: x86
+      PlatformToolset: v140
     - VisualStudioVersion: 14.0
-      platform: "x64"
-      configuration: "Debug"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v140"
+      platform: Win32
+      configuration: Release
+      vcvarsall_platform: x86
+      PlatformToolset: v140
+      MYQTDIR: C:\Qt\5.11\msvc2015
+    - VisualStudioVersion: 14.0
+      platform: x64
+      configuration: Debug
+      vcvarsall_platform: x64
+      PlatformToolset: v140
+    - VisualStudioVersion: 14.0
+      platform: x64
+      configuration: Release
+      vcvarsall_platform: x64
+      PlatformToolset: v140
+      MYQTDIR: C:\Qt\5.11\msvc2015_64
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
-  - 'IF "%VisualStudioVersion%" == "10.0" IF "%platform%" == "x64" CALL "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%vcvarsall_platform% /%configuration%'
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - ECHO MYQTDIR=%MYQTDIR%
+  - 'IF defined MYQTDIR cd gui'
+  - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
+  - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
+  - 'IF defined MYQTDIR nmake'
+  - 'IF defined MYQTDIR cd ..'
 
 test_script:
   - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
@@ -48,4 +70,7 @@ test_script:
 artifacts:
   - path: bin
     name: CLI binaries
+    type: zip
+  - path: Build\gui
+    name: GUI binaries
     type: zip
