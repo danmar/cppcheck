@@ -28,6 +28,7 @@ environment:
       configuration: Release
       vcvarsall_platform: x64
       PlatformToolset: v120
+	  MYQTDIR: C:\Qt\5.6\msvc2013_64
     - VisualStudioVersion: 14.0
       platform: Win32
       configuration: Debug
@@ -55,13 +56,12 @@ environment:
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
-  - ECHO ON
-  - cd gui
   - ECHO MYQTDIR=%MYQTDIR%
+  - 'IF defined MYQTDIR cd gui'
   - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
   - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
   - 'IF defined MYQTDIR nmake'
-  - 'cd ..'
+  - 'IF defined MYQTDIR cd ..'
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 test_script:
