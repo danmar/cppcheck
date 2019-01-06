@@ -524,7 +524,7 @@ def generateTable():
 def remove_file_prefix(file_path, prefix):
     """
     Remove a file path prefix from a give path.  leftover
-    directory seperators at the beginning of a file
+    directory separators at the beginning of a file
     after the removal are also stripped.
 
     Example:
@@ -537,7 +537,7 @@ def remove_file_prefix(file_path, prefix):
     result = None
     if file_path.startswith(prefix):
         result = file_path[len(prefix):]
-        # Remove any leftover directory seperators at the
+        # Remove any leftover directory separators at the
         # beginning
         result = result.lstrip('\\/')
     else:
@@ -565,7 +565,7 @@ class MisraChecker:
         # Dictionary of dictionaries for rules to suppress
         # Dict1 is keyed by rule number in the hundreds format of
         # Major *  100 + minor. ie Rule 5.2 = (5*100) + 2
-        # Dict 2 is keyed by filename.  An entry of None means suppress globaly.
+        # Dict 2 is keyed by filename.  An entry of None means suppress globally.
         # Each file name entry contails a list of tuples of (lineNumber, symbolName)
         # or an item of None which indicates suppress rule for the entire file.
         # The line and symbol name tuple may have None as either of its elements but
@@ -1882,7 +1882,7 @@ class MisraChecker:
     def setFilePrefix(self, prefix):
         """
         Set the file prefix to ignnore from files when matching
-        supression files
+        suppression files
         """
         self.filePrefix = prefix
 
@@ -2179,7 +2179,7 @@ else:
                         print('Not expected: ' + actual)
                         exitCode = 1
 
-                # Exisitng behavior of verify mode is to exit
+                # Existing behavior of verify mode is to exit
                 # on the first un-expected output.
                 # TODO: Is this required? or can it be moved to after
                 # all input files have been processed

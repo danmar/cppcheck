@@ -824,7 +824,7 @@ private:
 
     void garbageCode98() { // #6838
         ASSERT_THROW(checkCode("for (cocon To::ta@Taaaaaforconst oken aaaaaaaaaaaa5Dl()\n"
-                               "const unsiged in;\n"
+                               "const unsigned in;\n"
                                "fon *tok = f);.s(Token i = d-)L;"), InternalError);
     }
 

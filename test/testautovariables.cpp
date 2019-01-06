@@ -1571,14 +1571,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // Dont decay std::array
+        // Don't decay std::array
         check("std::array<char, 1> f() {\n"
               "    std::array<char, 1> x;\n"
               "    return x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // Make sure we dont hang
+        // Make sure we don't hang
         check("struct A;\n"
               "void f() {\n"
               "    using T = A[3];\n"
@@ -1586,7 +1586,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // Make sure we dont hang
+        // Make sure we don't hang
         check("struct A;\n"
               "void f() {\n"
               "    using T = A[3];\n"
@@ -1594,7 +1594,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // Make sure we dont hang
+        // Make sure we don't hang
         check("struct A;\n"
               "void f() {\n"
               "    using T = A[3];\n"
@@ -1602,7 +1602,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // Make sure we dont hang
+        // Make sure we don't hang
         check("struct A;\n"
               "void f() {\n"
               "    using T = A[3];\n"

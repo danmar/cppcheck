@@ -1971,7 +1971,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token *lambdaEndToken = const_cast<Token *>(findLambdaEndToken(tok2));
             if (isVariableChanged(lambdaEndToken->link(), lambdaEndToken, varid, var->isGlobal(), settings, tokenlist->isCPP()))
                 return false;
-            // Dont skip lambdas for lifetime values
+            // Don't skip lambdas for lifetime values
             if (!std::all_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 tok2 = lambdaEndToken;
                 continue;
@@ -2682,7 +2682,7 @@ struct LifetimeStore {
         value.tokvalue = var->nameToken();
         value.errorPath = errorPath;
         value.lifetimeKind = type;
-        // Dont add the value a second time
+        // Don't add the value a second time
         if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
             return;
         setTokenValue(tok, value, tokenlist->getSettings());
@@ -2714,7 +2714,7 @@ struct LifetimeStore {
             value.tokvalue = var->nameToken();
             value.errorPath = errorPath;
             value.lifetimeKind = type;
-            // Dont add the value a second time
+            // Don't add the value a second time
             if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                 continue;
             setTokenValue(tok, value, tokenlist->getSettings());
@@ -4190,7 +4190,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, const Settings *settings)
             // passing value(s) to function
             std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
 
-            // Dont forward lifetime values
+            // Don't forward lifetime values
             argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
 
             if (argvalues.empty())

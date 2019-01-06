@@ -822,36 +822,36 @@ private:
 
     void tokenize34() { // #8031
         {
-            const char code[] = "struct Containter {\n"
-                                "  Containter();\n"
+            const char code[] = "struct Container {\n"
+                                "  Container();\n"
                                 "  int* mElements;\n"
                                 "};\n"
-                                "Containter::Containter() : mElements(nullptr) {}\n"
-                                "Containter intContainer;";
-            const char exp [] = "1: struct Containter {\n"
-                                "2: Containter ( ) ;\n"
+                                "Container::Container() : mElements(nullptr) {}\n"
+                                "Container intContainer;";
+            const char exp [] = "1: struct Container {\n"
+                                "2: Container ( ) ;\n"
                                 "3: int * mElements@1 ;\n"
                                 "4: } ;\n"
-                                "5: Containter :: Containter ( ) : mElements@1 ( nullptr ) { }\n"
-                                "6: Containter intContainer@2 ;\n";
+                                "5: Container :: Container ( ) : mElements@1 ( nullptr ) { }\n"
+                                "6: Container intContainer@2 ;\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
         }
         {
-            const char code[] = "template<class T> struct Containter {\n"
-                                "  Containter();\n"
+            const char code[] = "template<class T> struct Container {\n"
+                                "  Container();\n"
                                 "  int* mElements;\n"
                                 "};\n"
-                                "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
-                                "Containter<int> intContainer;";
-            const char exp [] = "1: struct Containter<int> ;\n"
+                                "template <class T> Container<T>::Container() : mElements(nullptr) {}\n"
+                                "Container<int> intContainer;";
+            const char exp [] = "1: struct Container<int> ;\n"
                                 "2:\n"
                                 "|\n"
                                 "5:\n"
-                                "6: Containter<int> intContainer@1 ; struct Containter<int> {\n"
-                                "2: Containter<int> ( ) ;\n"
+                                "6: Container<int> intContainer@1 ; struct Container<int> {\n"
+                                "2: Container<int> ( ) ;\n"
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"
-                                "5: Containter<int> :: Containter<int> ( ) : mElements@2 ( nullptr ) { }\n";
+                                "5: Container<int> :: Container<int> ( ) : mElements@2 ( nullptr ) { }\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code, /*simplify=*/true));
         }
     }
