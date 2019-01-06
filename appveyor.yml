@@ -2,9 +2,11 @@ version: '{build}'
 
 clone_depth: 10
 
+matrix:
+  fast_finish: true
+
 environment:
   matrix:
-    fast_finish: true
     - VisualStudioVersion: 12.0
       platform: Win32
       configuration: Debug
