@@ -442,7 +442,7 @@ $(SRCDIR)/ctu.o: lib/ctu.cpp lib/ctu.h lib/check.h lib/config.h lib/errorlogger.
 $(SRCDIR)/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/config.h lib/suppressions.h lib/cppcheck.h lib/analyzerinfo.h lib/importproject.h lib/platform.h lib/utils.h lib/check.h lib/settings.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/errorlogger.o $(SRCDIR)/errorlogger.cpp
 
-$(SRCDIR)/importproject.o: lib/importproject.cpp lib/importproject.h lib/config.h lib/platform.h lib/utils.h lib/path.h lib/settings.h lib/errorlogger.h lib/suppressions.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h
+$(SRCDIR)/importproject.o: lib/importproject.cpp lib/importproject.h lib/config.h lib/platform.h lib/utils.h lib/path.h lib/settings.h lib/errorlogger.h lib/suppressions.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h externals/picojson.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/importproject.o $(SRCDIR)/importproject.cpp
 
 $(SRCDIR)/library.o: lib/library.cpp lib/library.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/standards.h lib/astutils.h lib/path.h lib/symboldatabase.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenlist.h lib/utils.h
