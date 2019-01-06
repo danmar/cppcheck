@@ -376,6 +376,19 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
     result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
 }
 
+
+static const Token *getCastTypeStartToken(const Token *parent)
+{
+    // TODO: This might be a generic utility function?
+    if (!parent || parent->str() != "(")
+        return nullptr;
+    if (!parent->astOperand2() && Token::Match(parent,"( %name%"))
+        return parent->next();
+    if (parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
+        return parent->astOperand1()->tokAt(2);
+    return nullptr;
+}
+
 /** Set token value for cast */
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings);
 
@@ -446,13 +459,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     // cast..
-    if (parent->str() == "(" && !parent->astOperand2() && Token::Match(parent,"( %name%")) {
-        const ValueType &valueType = ValueType::parseDecl(parent->next(), settings);
-        setTokenValueCast(parent, valueType, value, settings);
-    }
-
-    else if (parent->str() == "(" && parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <")) {
-        const ValueType &valueType = ValueType::parseDecl(parent->astOperand1()->tokAt(2), settings);
+    if (const Token *castType = getCastTypeStartToken(parent)) {
+        const ValueType &valueType = ValueType::parseDecl(castType, settings);
         setTokenValueCast(parent, valueType, value, settings);
     }
 
@@ -4644,6 +4652,12 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             // TODO: Handle .size()
             if (!isContainerEmpty(vartok))
                 return cond;
+            const Token *parent = tok->astParent();
+            while (parent) {
+                if (Token::Match(parent, "%comp%|!"))
+                    return cond;
+                parent = parent->astParent();
+            }
             ValueFlow::Value value(tok, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.emplace_back(value);

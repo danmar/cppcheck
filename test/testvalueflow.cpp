@@ -3629,6 +3629,13 @@ private:
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
+        // condition
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (!static_cast<bool>(ints.empty()))\n"
+               "    ints.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
+
         // valueFlowContainerReverse
         code = "void f(const std::list<int> &ints) {\n"
                "  ints.front();\n" // <- container can be empty
