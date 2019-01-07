@@ -270,9 +270,9 @@ def timeReport(resultPath):
             totalTime184 += t184
             totalTimeHead += thead
             if t184>1 and t184*2 < thead:
-                text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
+                text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
             elif thead>1 and thead*2 < t184:
-                text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
+                text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
             break
 
     text += '\nTotal time: ' + str(totalTime184) + ' ' + str(totalTimeHead)
