@@ -7,11 +7,10 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-class QString {
-public:
-    int size();
-    char &operator[](int pos);
-};
+#include <QObject>
+#include <QString>
+#include <QtPlugin>
+
 
 void QString1(QString s)
 {
@@ -27,3 +26,13 @@ int QString2()
     // cppcheck-suppress reademptycontainer
     return s.size();
 }
+
+// Verify that Qt macros do not result in syntax errors, false positives or other issues.
+class MacroTest1: public QObject {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.foo.bar" FILE "test.json")
+
+public:
+    explicit MacroTest1(QObject *parent = 0);
+    ~MacroTest1();
+};
