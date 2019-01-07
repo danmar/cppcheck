@@ -59,7 +59,7 @@ public:
         checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkInvalidTestForOverflow();
         checkCondition.alwaysTrueFalse();
-        checkCondition.duplicateCondtion();
+        checkCondition.duplicateCondition();
         checkCondition.checkPointerAdditionResultNotNull();
     }
 
@@ -89,7 +89,7 @@ public:
     /** mismatching lhs and rhs in comparison */
     void comparison();
 
-    void duplicateCondtion();
+    void duplicateCondition();
 
     /** match 'if' and 'else if' conditions */
     void multiCondition();
@@ -135,7 +135,7 @@ private:
                          const std::string &op,
                          MathLib::bigint value2,
                          bool result);
-    void duplicateCondtionError(const Token *tok1, const Token *tok2, ErrorPath errorPath);
+    void duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath);
     void multiConditionError(const Token *tok, unsigned int line1);
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
@@ -164,7 +164,7 @@ private:
         c.assignIfError(nullptr, nullptr, emptyString, false);
         c.badBitmaskCheckError(nullptr);
         c.comparisonError(nullptr, "&", 6, "==", 1, false);
-        c.duplicateCondtionError(nullptr, nullptr, errorPath);
+        c.duplicateConditionError(nullptr, nullptr, errorPath);
         c.multiConditionError(nullptr,1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
         c.oppositeInnerConditionError(nullptr, nullptr, errorPath);

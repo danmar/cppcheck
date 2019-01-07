@@ -415,7 +415,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
     return false;
 }
 
-void CheckCondition::duplicateCondtion()
+void CheckCondition::duplicateCondition()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
@@ -427,6 +427,8 @@ void CheckCondition::duplicateCondtion()
             continue;
 
         const Token *cond1 = scope.classDef->next()->astOperand2();
+        if (!cond1)
+            continue;
         if (cond1->hasKnownIntValue())
             continue;
 
@@ -455,11 +457,11 @@ void CheckCondition::duplicateCondtion()
         ErrorPath errorPath;
         if (!modified &&
             isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, true, true, &errorPath))
-            duplicateCondtionError(cond1, cond2, errorPath);
+            duplicateConditionError(cond1, cond2, errorPath);
     }
 }
 
-void CheckCondition::duplicateCondtionError(const Token *tok1, const Token *tok2, ErrorPath errorPath)
+void CheckCondition::duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath)
 {
     if (diag(tok1) & diag(tok2))
         return;
@@ -468,7 +470,7 @@ void CheckCondition::duplicateCondtionError(const Token *tok1, const Token *tok2
 
     std::string msg = "The if condition is the same as the previous if condition";
 
-    reportError(errorPath, Severity::style, "duplicateCondtion", msg, CWE398, false);
+    reportError(errorPath, Severity::style, "duplicateCondition", msg, CWE398, false);
 }
 
 void CheckCondition::multiCondition()
