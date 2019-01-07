@@ -30,8 +30,31 @@ ${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
 
 # qt.cpp
-${CXX} ${CXX_OPT} ${DIR}qt.cpp
-${CPPCHECK} --enable=style --enable=information --inconclusive --inline-suppr --error-exitcode=1 --library=qt ${DIR}qt.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve Qt configuration is not available, skipping syntax check."
+else
+    set +e
+    QTCONFIG=$(pkg-config --cflags Qt5Core)
+    QTCONFIG_RETURNCODE=$?
+    set -e
+    if [ $QTCONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <QString>" | ${CXX} ${CXX_OPT} ${QTCONFIG} -x c++ -
+        QTCHECK_RETURNCODE=$?
+        set -e
+        if [ $QTCHECK_RETURNCODE -ne 0 ]; then
+            echo "Qt not completely present or not working, skipping syntax check with ${CXX}."
+        else
+            echo "Qt found and working, checking syntax with ${CXX} now."
+            ${CXX} ${CXX_OPT} ${QTCONFIG} ${DIR}qt.cpp
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=qt ${DIR}qt.cpp
 
 # bsd.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=bsd ${DIR}bsd.c
@@ -51,7 +74,7 @@ ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  ${DIR}windows.cpp
 
 # wxwidgets.cpp
 set +e
-WXCONFIG=`wx-config --cxxflags`
+WXCONFIG=$(wx-config --cxxflags)
 WXCONFIG_RETURNCODE=$?
 set -e
 if [ $WXCONFIG_RETURNCODE -ne 0 ]; then
