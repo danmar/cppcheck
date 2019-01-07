@@ -6625,6 +6625,16 @@ private:
                                      "    Foo(int a, const std::string& b) : Foo(a, bar(b)) {}\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkInitializationListUsage("class Fred {\n" // #8111
+                                     "    std::string a;\n"
+                                     "    Fred() {\n"
+                                     "        std::ostringstream ostr;\n"
+                                     "        ostr << x;\n"
+                                     "        a = ostr.str();\n"
+                                     "    }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

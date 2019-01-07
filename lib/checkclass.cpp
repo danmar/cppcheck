@@ -930,37 +930,51 @@ void CheckClass::initializationListUsage()
                 break;
             if (Token::Match(tok, "try|do {"))
                 break;
-            if (Token::Match(tok, "%var% =") && tok->strAt(-1) != "*") {
-                const Variable* var = tok->variable();
-                if (var && var->scope() == owner && !var->isStatic()) {
-                    if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
-                        continue;
+            if (!Token::Match(tok, "%var% =") || tok->strAt(-1) == "*")
+                continue;
 
-                    bool allowed = true;
-                    for (const Token* tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
-                        const Variable* var2 = tok2->variable();
-                        if (var2) {
-                            if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
-                                allowed = false;
-                                break;
-                            } else if (var2->isArray() && var2->isLocal()) { // Can't initialize with a local array
-                                allowed = false;
-                                break;
-                            }
-                        } else if (tok2->str() == "this") { // 'this' instance is not completely constructed in initialization list
-                            allowed = false;
-                            break;
-                        } else if (Token::Match(tok2, "%name% (") && tok2->strAt(-1) != "." && isMemberFunc(owner, tok2)) { // Member function called?
-                            allowed = false;
-                            break;
-                        }
+            const Variable* var = tok->variable();
+            if (!var || var->scope() != owner || var->isStatic())
+                continue;
+            if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
+                continue;
+
+            // Access local var member in rhs => do not warn
+            bool localmember = false;
+            visitAstNodes(tok->next()->astOperand2(),
+            [&](const Token *rhs) {
+                if (rhs->str() == "." && rhs->astOperand1() && rhs->astOperand1()->variable() && rhs->astOperand1()->variable()->isLocal())
+                    localmember = true;
+                return ChildrenToVisit::op1_and_op2;
+            });
+            if (localmember)
+                continue;
+
+            bool allowed = true;
+            visitAstNodes(tok->next()->astOperand2(),
+            [&](const Token *tok2) {
+                const Variable* var2 = tok2->variable();
+                if (var2) {
+                    if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
+                        allowed = false;
+                        return ChildrenToVisit::done;
+                    } else if (var2->isArray() && var2->isLocal()) { // Can't initialize with a local array
+                        allowed = false;
+                        return ChildrenToVisit::done;
                     }
-                    if (!allowed)
-                        continue;
-
-                    suggestInitializationList(tok, tok->str());
+                } else if (tok2->str() == "this") { // 'this' instance is not completely constructed in initialization list
+                    allowed = false;
+                    return ChildrenToVisit::done;
+                } else if (Token::Match(tok2, "%name% (") && tok2->strAt(-1) != "." && isMemberFunc(owner, tok2)) { // Member function called?
+                    allowed = false;
+                    return ChildrenToVisit::done;
                 }
-            }
+                return ChildrenToVisit::op1_and_op2;
+            });
+            if (!allowed)
+                continue;
+
+            suggestInitializationList(tok, tok->str());
         }
     }
 }
