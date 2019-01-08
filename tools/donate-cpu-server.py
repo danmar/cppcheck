@@ -28,32 +28,18 @@ def overviewReport():
     html += '</body></html>'
     return html
 
-def fmt(a,b,c,d,e):
-    ret = a + ' '
-    while len(ret)<10:
-        ret += ' '
-    if len(ret) == 10:
-        ret += b[:10] + ' '
-    while len(ret)<21:
-        ret += ' '
-    ret += b[-5:] + ' '
-    while len(ret) < 32-len(c):
-        ret += ' '
-    ret += c + ' '
-    while len(ret) < 37-len(d):
-        ret += ' '
-    ret += d
-    ret += ' ' + e
-    if a != 'Package':
-        pos = ret.find(' ')
-        ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
-    return ret
-
 
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Date       Time ',OLD_VERSION,'Head','Diff') + '</b>\n'
+    html += '<style>\n'
+    html += ' table, th, td { border: 2px solid #eeeeee; border-collapse: collapse; font-family: arial; font-size: small }\n'
+    html += ' th, td { padding: 5px; }\n'
+    html += ' th { text-align: left; }\n'
+    html += ' tr:nth-child(even) { background-color: #eeeeee; }\n'
+    html += '</style>\n'
+    html += '<table>\n'
+    html += '<tr><th>Package</th><th>Date / Time</th><th>' + OLD_VERSION + '</th><th>Head</th><th>Diff</th></tr>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -83,9 +69,15 @@ def latestReport(latestResults):
             diff += '-' + str(lost)
         if added > 0:
             diff += '+' + str(added)
-        html += fmt(package, datestr, count[1], count[0], diff) + '\n'
+        html += '<tr>'
+        html += '<td><a href="' + package + '">' + package + '</a></td>'
+        html += '<td>' + datestr + '</td>'
+        html += '<td style="text-align:right">' + count[1] + '</td>'
+        html += '<td style="text-align:right">' + count[0] + '</td>'
+        html += '<td style="text-align:right">' + diff + '</td>'
+        html += '</tr>\n'
 
-    html += '</pre></body></html>\n'
+    html += '</table></body></html>\n'
     return html
 
 
