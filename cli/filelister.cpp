@@ -204,7 +204,7 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
 
 		
 
-#ifdef _DIRENT_HAVE_D_TYPE 
+#if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE) 
 		bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
 #else
 		bool path_is_directory = FileLister::isDirectory(new_path);
