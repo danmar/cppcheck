@@ -18,6 +18,7 @@
 
 #include "checkvaarg.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -107,6 +108,10 @@ void CheckVaarg::va_list_usage()
 
         const Token* tok = var->nameToken()->next();
         for (;  tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
+            // Skip lambdas
+            const Token* tok2 = findLambdaEndToken(tok);
+            if (tok2)
+                tok = tok2;
             if (Token::Match(tok, "va_start ( %varid%", var->declarationId())) {
                 if (open)
                     va_start_subsequentCallsError(tok, var->name());
