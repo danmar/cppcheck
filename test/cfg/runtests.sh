@@ -126,6 +126,19 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
 
+# boost.cpp
+set +e
+echo -e "#include <boost/config.hpp>" | ${CXX} ${CXX_OPT} -x c++ -
+BOOSTCHECK_RETURNCODE=$?
+set -e
+if [ ${BOOSTCHECK_RETURNCODE} -ne 0 ]; then
+    echo "Boost not completely present or not working, skipping syntax check with ${CXX}."
+else
+    echo "Boost found and working, checking syntax with ${CXX} now."
+    ${CXX} ${CXX_OPT} ${DIR}boost.cpp
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=boost ${DIR}boost.cpp
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version
