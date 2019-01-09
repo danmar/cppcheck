@@ -311,6 +311,9 @@ def headReport(resultsPath):
                 continue
             if not line.endswith(']'):
                 continue
+            if ': note: ' in line:
+                # notes normally do not contain message ids but can end with ']'
+                continue
             messageId = line[line.rfind('[')+1:len(line)-1]
 
             if messageId not in out:
