@@ -222,7 +222,8 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=zlib'
     if hasInclude('temp', '<gtk/gtk.h>'):
         libraries += ' --library=gtk'
-    cmd = 'nice ' + cppcheck + ' ' + jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
+    cmd = 'nice ' + cppcheck + ' ' + options
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -244,7 +245,7 @@ def scanPackage(workPath, cppcheck, jobs):
         if re.match(r'.*:[0-9]+:.*\]$', line):
             count += 1
     print('Number of issues: ' + str(count))
-    return count, stderr, elapsedTime
+    return count, stderr, elapsedTime, options
 
 
 def splitResults(results):
@@ -396,12 +397,13 @@ while True:
     count = ''
     elapsedTime = ''
     resultsToDiff = []
+    cppcheck_options = ''
     for ver in cppcheckVersions:
         if ver == 'head':
             cppcheck = 'cppcheck/cppcheck'
         else:
             cppcheck = ver + '/cppcheck'
-        c, errout, t = scanPackage(workpath, cppcheck, jobs)
+        c, errout, t, cppcheck_options = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
             count += ' Crash!'
@@ -412,7 +414,8 @@ while True:
     if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         print('No results')
         continue
-    output = 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
+    output = 'cppcheck-options: ' + cppcheck_options + '\n'
+    output += 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
     if 'head' in cppcheckVersions:
