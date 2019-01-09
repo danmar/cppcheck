@@ -50,7 +50,7 @@ environment:
       configuration: Release
       vcvarsall_platform: x64
       PlatformToolset: v140
-      MYQTDIR: C:\Qt\5.11\msvc2015_64
+#      MYQTDIR: C:\Qt\5.11\msvc2015_64
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
