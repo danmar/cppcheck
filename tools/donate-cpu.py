@@ -213,7 +213,7 @@ def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix'
-    if hasInclude('temp', '<wx/string.h>'):
+    if hasInclude('temp', '<wx/') or hasInclude('temp', '"wx/'):
         libraries += ' --library=wxwidgets'
     if hasInclude('temp', '<QString>'):
         libraries += ' --library=qt'
