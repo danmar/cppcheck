@@ -29,6 +29,7 @@ import time
 import re
 import tarfile
 
+
 def checkRequirements():
     result = True
     for app in ['g++', 'git', 'make', 'wget']:
@@ -38,6 +39,7 @@ def checkRequirements():
             print(app + ' is required')
             result = False
     return result
+
 
 def getCppcheck(cppcheckPath):
     print('Get Cppcheck..')
@@ -113,7 +115,6 @@ def getPackage(server_address):
         package = ''
     sock.close()
     return package.decode('utf-8')
-
 
 
 def handleRemoveReadonly(func, path, exc):
@@ -260,6 +261,7 @@ def splitResults(results):
         ret.append(w.strip())
     return ret
 
+
 def diffResults(workPath, ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
@@ -311,6 +313,7 @@ def uploadResults(package, results, server_address):
             time.sleep(30)
             pass
     return False
+
 
 jobs = '-j1'
 stopTime = None
@@ -373,10 +376,10 @@ while True:
         sys.exit(1)
     for ver in cppcheckVersions:
         if ver == 'head':
-            if compile(cppcheckPath, jobs) == False:
+            if not compile(cppcheckPath, jobs):
                 print('Failed to compile Cppcheck, retry later')
                 sys.exit(1)
-        elif compile_version(workpath, jobs, ver) == False:
+        elif not compile_version(workpath, jobs, ver):
             print('Failed to compile Cppcheck-{}, retry later'.format(ver))
             sys.exit(1)
     if packageUrl:
@@ -398,7 +401,7 @@ while True:
             cppcheck = 'cppcheck/cppcheck'
         else:
             cppcheck = ver + '/cppcheck'
-        c,errout,t = scanPackage(workpath, cppcheck, jobs)
+        c, errout, t = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
             count += ' Crash!'
