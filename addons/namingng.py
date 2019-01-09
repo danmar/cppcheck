@@ -36,7 +36,7 @@ class dataStruct:
         self.str = string
 
 def reportError(filename, linenr, severity, msg):
-    message = "[{filename}:{linenr}] ( {severity} ) naming.py: {msg} ]\n".format(
+    message = "[{filename}:{linenr}] ( {severity} ) naming.py: {msg}\n".format(
         filename=filename,
         linenr=linenr,
         severity=severity,
@@ -63,16 +63,16 @@ def checkFalseRegex(data, expr, msg, errors):
 def evalExpr(conf, exp, mockToken, msgType, errors):
     if isinstance(conf, dict):
         if (conf[exp][0]):
-            msg = '[ ' + msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
+            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
             checkTrueRegex(mockToken, exp, msg, errors)
         elif (~conf[exp][0]):
-            msg = '[ ' + msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
+            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][1]
             checkFalseRegex(mockToken, exp, msg, errors)
         else:
-            msg = '[ ' + msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][0]
+            msg = msgType + ' ' + mockToken.str + ' violates naming convention : ' + conf[exp][0]
             checkFalseRegex(mockToken, exp, msg, errors)
     else:
-        msg = '[ ' + msgType + ' ' + mockToken.str + ' violates naming convention'
+        msg = msgType + ' ' + mockToken.str + ' violates naming convention'
         checkFalseRegex(mockToken, exp, msg, errors)
 
 def process(dumpfiles, configfile, debugprint=False):
