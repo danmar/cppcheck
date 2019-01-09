@@ -23,6 +23,7 @@ def overviewReport():
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash">Crash report</a><br>\n'
     html += '<a href="diff">Diff report</a><br>\n'
+    html += '<a href="head">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time">Time report</a><br>\n'
     html += '</body></html>'
@@ -254,6 +255,137 @@ def diffMessageIdTodayReport(resultPath, messageId):
     return text
 
 
+def headReportFromDict(out, today):
+    html = '<pre>\n'
+    html += '<b>MessageID                                  Count</b>\n'
+    sumTotal = 0
+    for messageId in sorted(out.keys()):
+        line = messageId + ' '
+        counts = out[messageId]
+        sumTotal += counts
+        if counts > 0:
+            c = str(counts)
+            while len(line) < 48 - len(c):
+                line += ' '
+            line += c + ' '
+        line = '<a href="head' + today + '-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
+        html += line + '\n'
+
+    # Sum
+    html += '================================================\n'
+    line = ''
+    while len(line) < 48 - len(str(sumTotal)):
+        line += ' '
+    line += str(sumTotal) + ' '
+    html += line + '\n'
+    html += '</pre>\n'
+
+    return html
+
+
+def headReport(resultsPath):
+    out = {}
+    outToday = {}
+    today = strDateTime()[:10]
+
+    for filename in sorted(glob.glob(resultsPath + '/*')):
+        if not os.path.isfile(filename):
+            continue
+        uploadedToday = False
+        firstLine = True
+        headResults = False
+        for line in open(filename, 'rt'):
+            if firstLine:
+                if line.startswith(today):
+                    uploadedToday = True
+                firstLine = False
+                continue
+            line = line.strip()
+            if line.startswith('head results:'):
+                headResults = True
+                continue
+            if line.startswith('diff:'):
+                if headResults:
+                    break
+            if not headResults:
+                continue
+            if not line.endswith(']'):
+                continue
+            if ': note: ' in line:
+                # notes normally do not contain message ids but can end with ']'
+                continue
+            messageId = line[line.rfind('[')+1:len(line)-1]
+
+            if messageId not in out:
+                out[messageId] = 0
+            out[messageId] += 1
+            if uploadedToday:
+                if messageId not in outToday:
+                    outToday[messageId] = 0
+                outToday[messageId] += 1
+
+    html = '<html><head><title>HEAD report</title></head><body>\n'
+    html += '<h1>HEAD report</h1>\n'
+    html += '<h2>Uploaded today</h2>'
+    html += headReportFromDict(outToday, 'today')
+    html += '<h2>All</h2>'
+    html += headReportFromDict(out, '')
+
+    return html
+
+
+def headMessageIdReport(resultPath, messageId):
+    text = messageId + '\n'
+    e = '[' + messageId + ']\n'
+    for filename in sorted(glob.glob(resultPath + '/*')):
+        url = None
+        headResults = False
+        for line in open(filename,'rt'):
+            if line.startswith('ftp://'):
+                url = line
+            elif line.startswith('head results:'):
+                headResults = True
+            elif not headResults:
+                continue
+            elif headResults and line.startswith('diff:'):
+                break
+            elif line.endswith(e):
+                if url:
+                    text += url
+                    url = None
+                text += line
+    return text
+
+
+def headMessageIdTodayReport(resultPath, messageId):
+    text = messageId + '\n'
+    e = '[' + messageId + ']\n'
+    today = strDateTime()[:10]
+    for filename in sorted(glob.glob(resultPath + '/*')):
+        url = None
+        headResults = False
+        firstLine = True
+        for line in open(filename,'rt'):
+            if firstLine:
+                firstLine = False
+                if not line.startswith(today):
+                    break
+            if line.startswith('ftp://'):
+                url = line
+            elif line.startswith('head results:'):
+                headResults = True
+            elif not headResults:
+                continue
+            elif headResults and line.startswith('diff:'):
+                break
+            elif line.endswith(e):
+                if url:
+                    text += url
+                    url = None
+                text += line
+    return text
+
+
 def timeReport(resultPath):
     text = 'Time report\n\n'
     text += 'Package ' + OLD_VERSION + ' Head\n'
@@ -332,6 +464,17 @@ class HttpClientThread(Thread):
             elif url.startswith('diff-'):
                 messageId = url[5:]
                 text = diffMessageIdReport(self.resultPath, messageId)
+                httpGetResponse(self.connection, text, 'text/plain')
+            elif url == 'head':
+                html = headReport(self.resultPath)
+                httpGetResponse(self.connection, html, 'text/html')
+            elif url.startswith('headtoday-'):
+                messageId = url[10:]
+                text = headMessageIdTodayReport(self.resultPath, messageId)
+                httpGetResponse(self.connection, text, 'text/plain')
+            elif url.startswith('head-'):
+                messageId = url[5:]
+                text = headMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url == 'time':
                 text = timeReport(self.resultPath)
