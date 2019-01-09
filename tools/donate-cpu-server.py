@@ -8,15 +8,16 @@ import re
 import datetime
 import time
 from threading import Thread
-import subprocess
 import sys
 
 OLD_VERSION = '1.86'
+
 
 def strDateTime():
     d = datetime.date.strftime(datetime.datetime.now().date(), '%Y-%m-%d')
     t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
     return d + ' ' + t
+
 
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
@@ -29,13 +30,14 @@ def overviewReport():
     html += '</body></html>'
     return html
 
-def fmt(a,b,c,d,e):
+
+def fmt(a, b, c, d, e):
     ret = a + ' '
-    while len(ret)<10:
+    while len(ret) < 10:
         ret += ' '
     if len(ret) == 10:
         ret += b[:10] + ' '
-    while len(ret)<21:
+    while len(ret) < 21:
         ret += ' '
     ret += b[-5:] + ' '
     while len(ret) < 32-len(c):
@@ -54,7 +56,7 @@ def fmt(a,b,c,d,e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Date       Time ',OLD_VERSION,'Head','Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package', 'Date       Time ', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -63,10 +65,10 @@ def latestReport(latestResults):
         package = filename[filename.rfind('/')+1:]
 
         datestr = ''
-        count = ['0','0']
+        count = ['0', '0']
         lost = 0
         added = 0
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             line = line.strip()
             current_year = datetime.date.today().year
             if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
@@ -189,12 +191,12 @@ def diffReport(resultsPath):
                 continue
             messageId = line[line.rfind('[')+1:len(line)-1]
 
-            if not messageId in out:
-                out[messageId] = [0,0]
+            if messageId not in out:
+                out[messageId] = [0, 0]
             out[messageId][index] += 1
             if uploadedToday:
-                if not messageId in outToday:
-                    outToday[messageId] = [0,0]
+                if messageId not in outToday:
+                    outToday[messageId] = [0, 0]
                 outToday[messageId][index] += 1
 
     html = '<html><head><title>Diff report</title></head><body>\n'
@@ -213,7 +215,7 @@ def diffMessageIdReport(resultPath, messageId):
     for filename in sorted(glob.glob(resultPath + '/*')):
         url = None
         diff = False
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if line.startswith('ftp://'):
                 url = line
             elif line == 'diff:\n':
@@ -236,7 +238,7 @@ def diffMessageIdTodayReport(resultPath, messageId):
         url = None
         diff = False
         firstLine = True
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if firstLine:
                 firstLine = False
                 if not line.startswith(today):
@@ -340,7 +342,7 @@ def headMessageIdReport(resultPath, messageId):
     for filename in sorted(glob.glob(resultPath + '/*')):
         url = None
         headResults = False
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if line.startswith('ftp://'):
                 url = line
             elif line.startswith('head results:'):
@@ -365,7 +367,7 @@ def headMessageIdTodayReport(resultPath, messageId):
         url = None
         headResults = False
         firstLine = True
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if firstLine:
                 firstLine = False
                 if not line.startswith(today):
@@ -393,7 +395,7 @@ def timeReport(resultPath):
     totalTime184 = 0.0
     totalTimeHead = 0.0
     for filename in glob.glob(resultPath + '/*'):
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if not line.startswith('elapsed-time:'):
                 continue
             splitline = line.strip().split()
@@ -401,14 +403,15 @@ def timeReport(resultPath):
             thead = float(splitline[1])
             totalTime184 += t184
             totalTimeHead += thead
-            if t184>1 and t184*2 < thead:
+            if t184 > 1 and t184*2 < thead:
                 text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
-            elif thead>1 and thead*2 < t184:
+            elif thead > 1 and thead*2 < t184:
                 text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
             break
 
     text += '\nTotal time: ' + str(totalTime184) + ' ' + str(totalTimeHead)
     return text
+
 
 def sendAll(connection, data):
     while data:
@@ -485,7 +488,7 @@ class HttpClientThread(Thread):
                     print('HTTP/1.1 404 Not Found')
                     self.connection.send('HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
-                    f = open(filename,'rt')
+                    f = open(filename, 'rt')
                     data = f.read()
                     f.close()
                     httpGetResponse(self.connection, data, 'text/plain')
@@ -520,18 +523,18 @@ def server(server_address_port, packages, packageIndex, resultPath):
         if cmd.find('\n') < 1:
             continue
         firstLine = cmd[:cmd.find('\n')]
-        if re.match('[a-zA-Z0-9./ ]+',firstLine) is None:
+        if re.match('[a-zA-Z0-9./ ]+', firstLine) is None:
             connection.close()
-            continue;
+            continue
         if cmd.startswith('GET /'):
             newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
             newThread.start()
-        elif cmd=='GetCppcheckVersions\n':
+        elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
             print('[' + strDateTime() + '] GetCppcheckVersions: ' + reply)
             connection.send(reply)
             connection.close()
-        elif cmd=='get\n':
+        elif cmd == 'get\n':
             pkg = packages[packageIndex].strip()
             packages[packageIndex] = pkg
             packageIndex += 1
@@ -569,7 +572,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -591,6 +594,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
+
 
 if __name__ == "__main__":
     workPath = os.path.expanduser('~/daca@home')
