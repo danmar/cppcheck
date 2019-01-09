@@ -22,6 +22,75 @@ matrix:
     - name: "rerun dmake?"
       compiler: clang
   include:
+# check a lot of stuff that only needs to be checked in a single configuration
+    - name: "misc"
+      compiler: clang
+      script:
+        - make -j 2
+# run extra tests
+        - tools/generate_and_run_more_tests.sh
+# check for missing CWE entries
+        - make checkCWEEntries
+# check cfg files
+        - make checkcfg
+# check platform files
+        - make validatePlatforms
+# Validate Result XML
+        - make validateXML
+# note: trusty on travis has python pygments disabled so disable these tests on travis
+## check htmlreport stuff
+#  - ./htmlreport/test_htmlreport.py
+#  - cd htmlreport
+#  - ./check.sh
+#  - cd ../
+# check if DESTDIR works  TODO: actually execute this
+        - mkdir install_test
+        - echo $CXXFLAGS
+        - make -s DESTDIR=install_test install
+# rm everything
+        - git clean -dfx
+# check what happens if we want to install it to some other dir,
+        - echo $CXXFLAGS
+        - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 2
+        - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
+        - sudo mkdir -p /usr/share/cppcheck/cfg
+        - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
+# check if it actually works:
+        - /usr/bin/cppcheck ./cli
+# check if reduce tool compiles
+        - echo $CXXFLAGS
+        - make -s reduce -j 2
+# check if showtime=top5 works
+        - ./tools/test_showtimetop5.sh
+# check matchcompiler
+        - ./tools/test_matchcompiler.py
+# check --dump
+        - ${CPPCHECK} test/testpreprocessor.cpp --dump
+        - xmllint --noout test/testpreprocessor.cpp.dump
+# check addons/misra.py
+        - cd addons/test
+        - ${CPPCHECK} --dump misc-test.cpp
+        - python3 ../misc.py -verify misc-test.cpp.dump
+        - ${CPPCHECK} --dump cert-test.c
+        - python3 ../cert.py -verify cert-test.c.dump
+        - ${CPPCHECK} --dump cert-test.cpp
+        - python3 ../cert.py -verify cert-test.cpp.dump
+        - ${CPPCHECK} --dump misra-test.c
+        - python3 ../misra.py -verify misra-test.c.dump
+        - ${CPPCHECK} --dump misra-test.cpp
+        - python3 ../misra.py -verify misra-test.cpp.dump
+        - cd ../../
+# check addons/namingng.py
+        - cd addons/test
+        - ${CPPCHECK} --dump namingng_test.c
+        - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
+        - cd ../..
+# try CMake
+        - mkdir cmake.output
+        - cd cmake.output
+        - cmake -G "Unix Makefiles" ..
+        - cd ..
+
 # check clang sources with cppcheck and look for crashes
     - name: "check clang sources with cppcheck"
       compiler: clang
@@ -90,16 +159,6 @@ script:
 # check naming conventions
   - ${CPPCHECK} -i gui/test -j 2 --dump -q gui lib
   - find lib gui -maxdepth 1 -name "*.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
-# run extra tests
-  - tools/generate_and_run_more_tests.sh
-# check for missing CWE entries
-  - make checkCWEEntries
-# check cfg files
-  - make checkcfg
-# check platform files
-  - make validatePlatforms
-# Validate Result XML
-  - make validateXML
 # Build gui
   - cd ./gui
 # clean rebuild
@@ -109,59 +168,6 @@ script:
   - echo $CXXFLAGS
   - make -s -j2
   - cd ../
-# note: trusty on travis has python pygments disabled so disable these tests on travis
-## check htmlreport stuff
-#  - ./htmlreport/test_htmlreport.py
-#  - cd htmlreport
-#  - ./check.sh
-#  - cd ../
-# check if DESTDIR works  TODO: actually execute this
-  - mkdir install_test
-  - echo $CXXFLAGS
-  - make -s DESTDIR=install_test install
-# rm everything
-  - git clean -dfx
-# check what happens if we want to install it to some other dir,
-  - echo $CXXFLAGS
-  - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 2
-  - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
-  - sudo mkdir -p /usr/share/cppcheck/cfg
-  - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
-# check if it actually works:
-  - /usr/bin/cppcheck ./cli
-# check if reduce tool compiles
-  - echo $CXXFLAGS
-  - make -s reduce -j 2
-# check if showtime=top5 works
-  - ./tools/test_showtimetop5.sh
-# check matchcompiler
-  - ./tools/test_matchcompiler.py
-# check --dump
-  - ${CPPCHECK} test/testpreprocessor.cpp --dump
-  - xmllint --noout test/testpreprocessor.cpp.dump
-# check addons/misra.py
-  - cd addons/test
-  - ${CPPCHECK} --dump misc-test.cpp
-  - python3 ../misc.py -verify misc-test.cpp.dump
-  - ${CPPCHECK} --dump cert-test.c
-  - python3 ../cert.py -verify cert-test.c.dump
-  - ${CPPCHECK} --dump cert-test.cpp
-  - python3 ../cert.py -verify cert-test.cpp.dump
-  - ${CPPCHECK} --dump misra-test.c
-  - python3 ../misra.py -verify misra-test.c.dump
-  - ${CPPCHECK} --dump misra-test.cpp
-  - python3 ../misra.py -verify misra-test.cpp.dump
-  - cd ../../
-# check addons/namingng.py
-  - cd addons/test
-  - ${CPPCHECK} --dump namingng_test.c
-  - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
-  - cd ../..
-# try CMake
-  - mkdir cmake.output
-  - cd cmake.output
-  - cmake -G "Unix Makefiles" ..
-  - cd ..
 
 notifications:
   irc:
