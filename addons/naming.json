@@ -1,7 +1,7 @@
 {
-    "RE_VARNAME": "[a-z]*[a-zA-Z0-9_]*\\Z",
+    "RE_VARNAME": ["[a-z]*[a-zA-Z0-9_]*\\Z"],
     "RE_PRIVATE_MEMBER_VARIABLE": null,
-    "RE_FUNCTIONNAME": "[a-z0-9A-Z]*\\Z",
+    "RE_FUNCTIONNAME": ["[a-z0-9A-Z]*\\Z"],
     "var_prefixes": {"uint32_t": "ui32",
                      "int*": "intp"},
     "function_prefixes": {"uint16_t": "ui16",

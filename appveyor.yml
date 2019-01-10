@@ -45,12 +45,13 @@ environment:
       configuration: Debug
       vcvarsall_platform: x64
       PlatformToolset: v140
-    - VisualStudioVersion: 14.0
-      platform: x64
-      configuration: Release
-      vcvarsall_platform: x64
-      PlatformToolset: v140
-      MYQTDIR: C:\Qt\5.11\msvc2015_64
+# That platform causes frequent errors on appveyor due to an unknown infrastructure failure
+#    - VisualStudioVersion: 14.0
+#      platform: x64
+#      configuration: Release
+#      vcvarsall_platform: x64
+#      PlatformToolset: v140
+#      MYQTDIR: C:\Qt\5.11\msvc2015_64
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset

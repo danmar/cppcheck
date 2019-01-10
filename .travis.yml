@@ -7,34 +7,124 @@ compiler:
 
 env:
   global:
+    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
 #   unfortunately we need this to stay within 50min timelimit given by travis.
-#   this also turns off the debug/warning cxxflags
-    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
   matrix:
-#    special CXXFLAGS for maximum speed, overrides global CXXFLAGS, CHECK_CLANG is the var that controls if we download and check clang in that travis job
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
-    - SRCDIR=build CHECK_CLANG=yes VERIFY=1
-    - SRCDIR=build CHECK_LLVM=yes VERIFY=1
-    - CHECK_MAKEFILE_REGEN=true
 
 matrix:
 # do notify immediately about it when a job of a build fails.
   fast_finish: true
-# exclude clang checking with clang binary, not needed
-  exclude:
-    - compiler: gcc
-      env: SRCDIR=build CHECK_CLANG=yes VERIFY=1
-    - compiler: gcc
-      env: SRCDIR=build CHECK_LLVM=yes VERIFY=1
-    - compiler: gcc
-      env: CHECK_MAKEFILE_REGEN=true
   allow_failures:
-    - compiler: clang
-      env: CHECK_MAKEFILE_REGEN=true
+    - name: "rerun dmake?"
+      compiler: clang
+  include:
+# check a lot of stuff that only needs to be checked in a single configuration
+    - name: "misc"
+      compiler: clang
+      script:
+        - make -j 2
+# run extra tests
+        - tools/generate_and_run_more_tests.sh
+# check for missing CWE entries
+        - make checkCWEEntries
+# check cfg files
+        - make checkcfg
+# check platform files
+        - make validatePlatforms
+# Validate Result XML
+        - make validateXML
+# note: trusty on travis has python pygments disabled so disable these tests on travis
+## check htmlreport stuff
+#  - ./htmlreport/test_htmlreport.py
+#  - cd htmlreport
+#  - ./check.sh
+#  - cd ../
+# check if DESTDIR works  TODO: actually execute this
+        - mkdir install_test
+        - echo $CXXFLAGS
+        - make -s DESTDIR=install_test install
+# rm everything
+        - git clean -dfx
+# check what happens if we want to install it to some other dir,
+        - echo $CXXFLAGS
+        - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 2
+        - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
+        - sudo mkdir -p /usr/share/cppcheck/cfg
+        - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
+# check if it actually works:
+        - /usr/bin/cppcheck ./cli
+# check if reduce tool compiles
+        - echo $CXXFLAGS
+        - make -s reduce -j 2
+# check if showtime=top5 works
+        - ./tools/test_showtimetop5.sh
+# check matchcompiler
+        - ./tools/test_matchcompiler.py
+# check --dump
+        - ${CPPCHECK} test/testpreprocessor.cpp --dump
+        - xmllint --noout test/testpreprocessor.cpp.dump
+# check addons/misra.py
+        - cd addons/test
+        - ${CPPCHECK} --dump misc-test.cpp
+        - python3 ../misc.py -verify misc-test.cpp.dump
+        - ${CPPCHECK} --dump cert-test.c
+        - python3 ../cert.py -verify cert-test.c.dump
+        - ${CPPCHECK} --dump cert-test.cpp
+        - python3 ../cert.py -verify cert-test.cpp.dump
+        - ${CPPCHECK} --dump misra-test.c
+        - python3 ../misra.py -verify misra-test.c.dump
+        - ${CPPCHECK} --dump misra-test.cpp
+        - python3 ../misra.py -verify misra-test.cpp.dump
+        - cd ../../
+# check addons/namingng.py
+        - cd addons/test
+        - ${CPPCHECK} --dump namingng_test.c
+        - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
+        - cd ../..
+# try CMake
+        - mkdir cmake.output
+        - cd cmake.output
+        - cmake -G "Unix Makefiles" ..
+        - cd ..
 
+# check clang sources with cppcheck and look for crashes
+    - name: "check clang sources with cppcheck"
+      compiler: clang
+      script:
+        - wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & SRCDIR=build VERIFY=1 make -j 2 & wait
+        - unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null
+        - touch /tmp/clang.cppcheck
+        - cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa
+        - ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/clang.cppcheck
+        - cd ../
+        - echo "CLANG"
+        - grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck || true
+        - grep -qv "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck
+# check llvm sources with cppcheck and look for crashes
+    - name: "check llvm sources with cppcheck"
+      compiler: clang
+      script:
+        - wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & SRCDIR=build VERIFY=1 make -j 2 & wait
+        - unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null
+        - touch /tmp/llvm.cppcheck
+        - cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6
+        - ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/llvm.cppcheck
+        - cd ../
+        - echo "LLVM"
+        - grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck || true
+        - grep -qv "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck
+# check if dmake needs to be rerun (this job may fail)
+    - name: "rerun dmake?"
+      compiler: clang
+      script:
+        - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
+        - make -s dmake
+        - make -s run-dmake
+        - git diff --exit-code
 before_install:
 # install needed deps
  - sudo apt-get update -qq
@@ -45,14 +135,6 @@ script:
   - set -e
 # Determine CPU count. As of January 2019 it seems to be 2 - so use this for job count in suitable calls to make or cppcheck
   - cat /proc/cpuinfo
-# download clang git, compile cppcheck, run cppcheck on clang code to look for crashes in cppcheck. if this is done, terminate build
-  - if [[ "$CHECK_CLANG" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & make -j 2 & wait; unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null; touch /tmp/clang.cppcheck; cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" -iINPUTS -itest/Driver/Inputs/gen-response.c -itest/Index/index-many-logical-ops.c -itest/Sema/many-logical-ops.c --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/clang.cppcheck; cd ../ ; echo "CLANG" ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/clang.cppcheck; exit; fi
-# check llvm as well
-  - if [[  "$CHECK_LLVM" == "yes" ]] && [[ "$CC" == "clang" ]]; then wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & make -j 2 & wait; unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null;  touch /tmp/llvm.cppcheck;  cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6 ; ${CPPCHECK} . --max-configs=1 --enable=all --inconclusive --exception-handling --template="{callstack} ({severity}) {message} [{id}]" --suppressions-list=../.travis_llvmcheck_suppressions -j 2 |& grep -v ".* files checked.*done" |& tee /tmp/llvm.cppcheck; cd ../ ; echo "LLVM"  ; ! grep "process crashed with signal\|Internal error\. compiled" /tmp/llvm.cppcheck; exit; fi
-# check if dmake needs to be rerun but if yes, don't fail the build but notify us.
-# to update dmake: "make dmake; ./dmake; and commit
-  - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
-  - if [[ "$CHECK_MAKEFILE_REGEN" == "true" ]]; then make -s dmake; make -s run-dmake ; git diff --exit-code; exit; fi
 # check with TEST_MATHLIB_VALUE enabled
   - touch lib/mathlib.cpp test/testmathlib.cpp
   - echo $CXXFLAGS
@@ -77,16 +159,6 @@ script:
 # check naming conventions
   - ${CPPCHECK} -i gui/test -j 2 --dump -q gui lib
   - find lib gui -maxdepth 1 -name "*.dump" | xargs -n 1 -P 4 python addons/naming.py --private-member-variable='m[A-Z].*'
-# run extra tests
-  - tools/generate_and_run_more_tests.sh
-# check for missing CWE entries
-  - make checkCWEEntries
-# check cfg files
-  - make checkcfg
-# check platform files
-  - make validatePlatforms
-# Validate Result XML
-  - make validateXML
 # Build gui
   - cd ./gui
 # clean rebuild
@@ -96,59 +168,6 @@ script:
   - echo $CXXFLAGS
   - make -s -j2
   - cd ../
-# note: trusty on travis has python pygments disabled so disable these tests on travis
-## check htmlreport stuff
-#  - ./htmlreport/test_htmlreport.py
-#  - cd htmlreport
-#  - ./check.sh
-#  - cd ../
-# check if DESTDIR works  TODO: actually execute this
-  - mkdir install_test
-  - echo $CXXFLAGS
-  - make -s DESTDIR=install_test install
-# rm everything
-  - git clean -dfx
-# check what happens if we want to install it to some other dir,
-  - echo $CXXFLAGS
-  - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 2
-  - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
-  - sudo mkdir -p /usr/share/cppcheck/cfg
-  - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
-# check if it actually works:
-  - /usr/bin/cppcheck ./cli
-# check if reduce tool compiles
-  - echo $CXXFLAGS
-  - make -s reduce -j 2
-# check if showtime=top5 works
-  - ./tools/test_showtimetop5.sh
-# check matchcompiler
-  - ./tools/test_matchcompiler.py
-# check --dump
-  - ${CPPCHECK} test/testpreprocessor.cpp --dump
-  - xmllint --noout test/testpreprocessor.cpp.dump
-# check addons/misra.py
-  - cd addons/test
-  - ${CPPCHECK} --dump misc-test.cpp
-  - python3 ../misc.py -verify misc-test.cpp.dump
-  - ${CPPCHECK} --dump cert-test.c
-  - python3 ../cert.py -verify cert-test.c.dump
-  - ${CPPCHECK} --dump cert-test.cpp
-  - python3 ../cert.py -verify cert-test.cpp.dump
-  - ${CPPCHECK} --dump misra-test.c
-  - python3 ../misra.py -verify misra-test.c.dump
-  - ${CPPCHECK} --dump misra-test.cpp
-  - python3 ../misra.py -verify misra-test.cpp.dump
-  - cd ../../
-# check addons/namingng.py
-  - cd addons/test
-  - ${CPPCHECK} --dump namingng_test.c
-  - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
-  - cd ../..
-# try CMake
-  - mkdir cmake.output
-  - cd cmake.output
-  - cmake -G "Unix Makefiles" ..
-  - cd ..
 
 notifications:
   irc:

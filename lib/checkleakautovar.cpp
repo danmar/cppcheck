@@ -364,7 +364,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             for (const Token *innerTok = tok->tokAt(2); innerTok && innerTok != closingParenthesis; innerTok = innerTok->next()) {
                 // TODO: replace with checkTokenInsideExpression()
 
-                if (Token::Match(innerTok, "%var% =")) {
+                if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next()) {
                     // allocation?
                     if (Token::Match(innerTok->tokAt(2), "%type% (")) {
                         const Library::AllocFunc* f = mSettings->library.alloc(innerTok->tokAt(2));

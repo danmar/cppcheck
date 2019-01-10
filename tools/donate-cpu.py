@@ -29,6 +29,7 @@ import time
 import re
 import tarfile
 
+
 def checkRequirements():
     result = True
     for app in ['g++', 'git', 'make', 'wget']:
@@ -38,6 +39,7 @@ def checkRequirements():
             print(app + ' is required')
             result = False
     return result
+
 
 def getCppcheck(cppcheckPath):
     print('Get Cppcheck..')
@@ -113,7 +115,6 @@ def getPackage(server_address):
         package = ''
     sock.close()
     return package.decode('utf-8')
-
 
 
 def handleRemoveReadonly(func, path, exc):
@@ -213,7 +214,7 @@ def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix'
-    if hasInclude('temp', '<wx/string.h>'):
+    if hasInclude('temp', '<wx/') or hasInclude('temp', '"wx/'):
         libraries += ' --library=wxwidgets'
     if hasInclude('temp', '<QString>'):
         libraries += ' --library=qt'
@@ -221,7 +222,8 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=zlib'
     if hasInclude('temp', '<gtk/gtk.h>'):
         libraries += ' --library=gtk'
-    cmd = 'nice ' + cppcheck + ' ' + jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
+    cmd = 'nice ' + cppcheck + ' ' + options
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -243,7 +245,7 @@ def scanPackage(workPath, cppcheck, jobs):
         if re.match(r'.*:[0-9]+:.*\]$', line):
             count += 1
     print('Number of issues: ' + str(count))
-    return count, stderr, elapsedTime
+    return count, stderr, elapsedTime, options
 
 
 def splitResults(results):
@@ -259,6 +261,7 @@ def splitResults(results):
     if w is not None:
         ret.append(w.strip())
     return ret
+
 
 def diffResults(workPath, ver1, results1, ver2, results2):
     print('Diff results..')
@@ -311,6 +314,7 @@ def uploadResults(package, results, server_address):
             time.sleep(30)
             pass
     return False
+
 
 jobs = '-j1'
 stopTime = None
@@ -373,10 +377,10 @@ while True:
         sys.exit(1)
     for ver in cppcheckVersions:
         if ver == 'head':
-            if compile(cppcheckPath, jobs) == False:
+            if not compile(cppcheckPath, jobs):
                 print('Failed to compile Cppcheck, retry later')
                 sys.exit(1)
-        elif compile_version(workpath, jobs, ver) == False:
+        elif not compile_version(workpath, jobs, ver):
             print('Failed to compile Cppcheck-{}, retry later'.format(ver))
             sys.exit(1)
     if packageUrl:
@@ -393,12 +397,13 @@ while True:
     count = ''
     elapsedTime = ''
     resultsToDiff = []
+    cppcheck_options = ''
     for ver in cppcheckVersions:
         if ver == 'head':
             cppcheck = 'cppcheck/cppcheck'
         else:
             cppcheck = ver + '/cppcheck'
-        c,errout,t = scanPackage(workpath, cppcheck, jobs)
+        c, errout, t, cppcheck_options = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
             count += ' Crash!'
@@ -409,7 +414,8 @@ while True:
     if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         print('No results')
         continue
-    output = 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
+    output = 'cppcheck-options: ' + cppcheck_options + '\n'
+    output += 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
     if 'head' in cppcheckVersions:

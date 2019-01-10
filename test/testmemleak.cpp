@@ -4769,6 +4769,9 @@ private:
         // local struct variable
         TEST_CASE(localvars);
 
+        // struct variable is a reference variable
+        TEST_CASE(refvar);
+
         // Segmentation fault in CheckMemoryLeakStructMember
         TEST_CASE(trac5030);
 
@@ -5101,6 +5104,20 @@ private:
                              "}";
 
         check(code4, true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void refvar() { // #8116
+        check("struct Test\n"
+              "{\n"
+              "  int* data;\n"
+              "};\n"
+              "\n"
+              "void foo(Test* x)\n"
+              "{\n"
+              "  Test& y = *x;\n"
+              "  y.data = malloc(10);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
