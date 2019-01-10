@@ -178,7 +178,7 @@ def unpackPackage(workPath, tgz):
             if member.name.startswith(('/', '..')):
                 # Skip dangerous file names
                 continue
-            elif member.name.lower().endswith(('.c', '.cl', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
+            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
                 try:
                     tf.extract(member.name)
                 except OSError:
