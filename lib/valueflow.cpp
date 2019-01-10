@@ -1070,9 +1070,10 @@ static void valueFlowArrayBool(TokenList *tokenlist)
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
-        const Variable * var = nullptr;
+        const Variable *var = nullptr;
         bool known = false;
-        std::list<ValueFlow::Value>::const_iterator val = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
+        std::list<ValueFlow::Value>::const_iterator val =
+            std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
         if (val == tok->values().end()) {
             var = tok->variable();
             known = true;
@@ -1085,13 +1086,15 @@ static void valueFlowArrayBool(TokenList *tokenlist)
         if (!var->isArray() || var->isArgument() || var->isStlType())
             continue;
         // TODO: Check for function argument
-        if (!(tok->valueType() && tok->valueType()->isIntegral()) && !Token::Match(tok->astParent(), "&|&&|%or%|%oror%|%comp%") && !Token::Match(tok->astParent()->previous(), "if|while|for ("))
+        if (!(tok->valueType() && tok->valueType()->isIntegral()) &&
+            !Token::Match(tok->astParent(), "&|&&|%or%|%oror%|%comp%") &&
+            !Token::Match(tok->astParent()->previous(), "if|while|for ("))
             continue;
         ValueFlow::Value value{1};
-        if (known) value.setKnown();
+        if (known)
+            value.setKnown();
         setTokenValue(tok, value, tokenlist->getSettings());
     }
-
 }
 
 static void valueFlowPointerAlias(TokenList *tokenlist)
