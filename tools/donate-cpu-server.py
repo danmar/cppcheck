@@ -420,7 +420,7 @@ def timeReport(resultPath):
                 text += filename[len(resultPath)+1:].ljust(column_widths[0]) + ' ' + \
                         split_line[2].rjust(column_widths[1]) + ' ' + \
                         split_line[1].rjust(column_widths[2]) + ' ' + \
-                        '{:.1f}'.format(time_factor).rjust(column_widths[3]) + '\n'
+                        '{:.2f}'.format(time_factor).rjust(column_widths[3]) + '\n'
             break
 
     text += '\n'
