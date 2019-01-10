@@ -155,6 +155,32 @@ private:
               "    va_end(arg_ptr);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) va_list 'arg_ptr' was opened but not closed by va_end().\n", errout.str());
+
+        // #8124
+        check("void f(int n, ...)\n"
+              "{\n"
+              "    va_list ap;\n"
+              "    va_start(ap, n);\n"
+              "    std::vector<std::string> v(n);\n"
+              "    std::generate_n(v.begin(), n, [&ap]()\n"
+              "    {\n"
+              "        return va_arg(ap, const char*);\n"
+              "    });\n"
+              "    va_end(ap);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int n, ...)\n"
+              "{\n"
+              "    va_list ap;\n"
+              "    va_start(ap, n);\n"
+              "    std::vector<std::string> v(n);\n"
+              "    std::generate_n(v.begin(), n, [&ap]()\n"
+              "    {\n"
+              "        return va_arg(ap, const char*);\n"
+              "    });\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) va_list 'ap' was opened but not closed by va_end().\n", errout.str());
     }
 
     void va_list_usedBeforeStarted() {
