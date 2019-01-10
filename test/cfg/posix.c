@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
+#include <dlfcn.h>
 #include <fcntl.h>
 // unavailable on some linux systems #include <ndbm.h>
 #include <netdb.h>
@@ -330,4 +331,20 @@ void timet_h(struct timespec* ptp1)
     char buf[26];
     // cppcheck-suppress ctime_rCalled
     ctime_r(&clock, buf);
+}
+
+void dl(const char* libname, const char* func)
+{
+    void* lib = dlopen(libname, RTLD_NOW);
+    // cppcheck-suppress resourceLeak
+    // cppcheck-suppress redundantAssignment
+    lib = dlopen(libname, RTLD_LAZY);
+    const char* funcname;
+    // cppcheck-suppress uninitvar
+    // cppcheck-suppress unreadVariable
+    void* sym = dlsym(lib, funcname);
+    void* uninit;
+    // cppcheck-suppress uninitvar
+    dlclose(uninit);
+    // cppcheck-suppress resourceLeak
 }
