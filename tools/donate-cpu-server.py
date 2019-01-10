@@ -390,26 +390,43 @@ def headMessageIdTodayReport(resultPath, messageId):
 
 def timeReport(resultPath):
     text = 'Time report\n\n'
-    text += 'Package ' + OLD_VERSION + ' Head\n'
+    column_widths = [25, 10, 10, 10]
+    text += 'Package '.ljust(column_widths[0]) + ' ' + \
+            OLD_VERSION.rjust(column_widths[1]) + ' ' + \
+            'Head'.rjust(column_widths[2]) + ' ' + \
+            'Factor'.rjust(column_widths[3]) + '\n'
 
-    totalTime184 = 0.0
-    totalTimeHead = 0.0
+    total_time_base = 0.0
+    total_time_head = 0.0
     for filename in glob.glob(resultPath + '/*'):
         for line in open(filename, 'rt'):
             if not line.startswith('elapsed-time:'):
                 continue
-            splitline = line.strip().split()
-            t184 = float(splitline[2])
-            thead = float(splitline[1])
-            totalTime184 += t184
-            totalTimeHead += thead
-            if t184 > 1 and t184*2 < thead:
-                text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
-            elif thead > 1 and thead*2 < t184:
-                text += filename[len(resultPath)+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
+            split_line = line.strip().split()
+            time_base = float(split_line[2])
+            time_head = float(split_line[1])
+            total_time_base += time_base
+            total_time_head += time_head
+            suspicious_time_difference = False
+            if time_base > 1 and time_base*2 < time_head:
+                suspicious_time_difference = True
+            elif time_head > 1 and time_head*2 < time_base:
+                suspicious_time_difference = True
+            if suspicious_time_difference:
+                if time_base > 0.0:
+                    time_factor = time_head / time_base
+                else:
+                    time_factor = 0.0
+                text += filename[len(resultPath)+1:].ljust(column_widths[0]) + ' ' + \
+                        split_line[2].rjust(column_widths[1]) + ' ' + \
+                        split_line[1].rjust(column_widths[2]) + ' ' + \
+                        '{:.2f}'.format(time_factor).rjust(column_widths[3]) + '\n'
             break
 
-    text += '\nTotal time: ' + str(totalTime184) + ' ' + str(totalTimeHead)
+    text += '\n'
+    text += 'Total time: '.ljust(column_widths[0]) + ' ' + \
+            str(total_time_base).rjust(column_widths[1]) + ' ' + \
+            str(total_time_head).rjust(column_widths[2])
     return text
 
 
