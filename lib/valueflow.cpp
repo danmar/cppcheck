@@ -1086,14 +1086,14 @@ static void valueFlowArrayBool(TokenList *tokenlist)
         if (!var->isArray() || var->isArgument() || var->isStlType())
             continue;
         // TODO: Check for function argument
-        if (!(tok->valueType() && tok->valueType()->isIntegral()) &&
-            !Token::Match(tok->astParent(), "&|&&|%or%|%oror%|%comp%") &&
-            !Token::Match(tok->astParent()->previous(), "if|while|for ("))
-            continue;
-        ValueFlow::Value value{1};
-        if (known)
-            value.setKnown();
-        setTokenValue(tok, value, tokenlist->getSettings());
+        if ((tok->valueType() && tok->valueType()->isIntegral()) ||
+            Token::Match(tok->astParent(), "&|&&|%or%|%oror%|%comp%") ||
+            (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|for ("))) {
+            ValueFlow::Value value{1};
+            if (known)
+                value.setKnown();
+            setTokenValue(tok, value, tokenlist->getSettings());
+        }
     }
 }
 
