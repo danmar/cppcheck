@@ -2580,7 +2580,7 @@ private:
               "   int buf[42];\n"
               "   if( buf != 0) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'buf!=0' is always true\n", "", errout.str()); // #8924
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'buf!=0' is always true\n", errout.str()); // #8924
 
         // Avoid FP when condition comes from macro
         check("#define NOT !\n"
