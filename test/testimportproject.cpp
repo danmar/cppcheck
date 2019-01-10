@@ -43,7 +43,8 @@ private:
         TEST_CASE(setIncludePaths1);
         TEST_CASE(setIncludePaths2);
         TEST_CASE(setIncludePaths3); // macro names are case insensitive
-        TEST_CASE(importCompileCommands);
+        TEST_CASE(importCompileCommands1);
+        TEST_CASE(importCompileCommands2); // #8563
     }
 
     void setDefines() const {
@@ -91,8 +92,7 @@ private:
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
 
-    void importCompileCommands() const {
-
+    void importCompileCommands1() const {
         const char json[] = "[ { \"directory\": \"/tmp\","
                             "\"command\": \"gcc -I/tmp -DCFGDIR=\\\\\\\"/usr/local/share/Cppcheck\\\\\\\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c\","
                             "\"file\": \"/tmp/src.c\" } ]";
@@ -101,6 +101,17 @@ private:
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("CFGDIR=\"/usr/local/share/Cppcheck\";TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
+    }
+
+    void importCompileCommands2() const {
+        const char json[] = "[ { \"directory\": \"/tmp\","
+                            "\"command\": \"gcc -c src.c\","
+                            "\"file\": \"src.c\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
 };
 

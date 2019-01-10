@@ -283,13 +283,17 @@ static const Token * skipValueInConditionalExpression(const Token * const valuet
         if (prevIsLhs || !Token::Match(tok, "%oror%|&&|?|:"))
             continue;
 
+        if (tok->hasKnownIntValue())
+            return tok;
+
         // Is variable protected in LHS..
         bool bailout = false;
         visitAstNodes(tok->astOperand1(), [&](const Token *tok2) {
             if (tok2->str() == ".")
                 return ChildrenToVisit::none;
             // A variable is seen..
-            if (tok2 != valuetok && tok2->variable() && (tok2->varId() == valuetok->varId() || !tok2->variable()->isArgument())) {
+            if (tok2 != valuetok && tok2->variable() &&
+                (tok2->varId() == valuetok->varId() || (!tok2->variable()->isArgument() && !tok2->hasKnownIntValue()))) {
                 // TODO: limit this bailout
                 bailout = true;
                 return ChildrenToVisit::done;
@@ -372,6 +376,19 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
     result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
 }
 
+
+static const Token *getCastTypeStartToken(const Token *parent)
+{
+    // TODO: This might be a generic utility function?
+    if (!parent || parent->str() != "(")
+        return nullptr;
+    if (!parent->astOperand2() && Token::Match(parent,"( %name%"))
+        return parent->next();
+    if (parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
+        return parent->astOperand1()->tokAt(2);
+    return nullptr;
+}
+
 /** Set token value for cast */
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings);
 
@@ -442,13 +459,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     }
 
     // cast..
-    if (parent->str() == "(" && !parent->astOperand2() && Token::Match(parent,"( %name%")) {
-        const ValueType &valueType = ValueType::parseDecl(parent->next(), settings);
-        setTokenValueCast(parent, valueType, value, settings);
-    }
-
-    else if (parent->str() == "(" && parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <")) {
-        const ValueType &valueType = ValueType::parseDecl(parent->astOperand1()->tokAt(2), settings);
+    if (const Token *castType = getCastTypeStartToken(parent)) {
+        const ValueType &valueType = ValueType::parseDecl(castType, settings);
         setTokenValueCast(parent, valueType, value, settings);
     }
 
@@ -1191,6 +1203,10 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
 
 static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, const Settings *settings)
 {
+    (void)tokenlist;
+    (void)symboldatabase;
+    (void)settings;
+    /* TODO : this is commented out until #8924 is fixed (There is a test case with the comment #8924)
     const bool cpp = symboldatabase->isCPP();
     typedef std::pair<const Token*, const Scope*> Condition;
     for (const Scope * scope : symboldatabase->functionScopes) {
@@ -1287,6 +1303,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             }
         }
     }
+    */
 }
 
 static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
@@ -1978,7 +1995,7 @@ static bool valueFlowForward(Token * const               startToken,
             Token *lambdaEndToken = const_cast<Token *>(findLambdaEndToken(tok2));
             if (isVariableChanged(lambdaEndToken->link(), lambdaEndToken, varid, var->isGlobal(), settings, tokenlist->isCPP()))
                 return false;
-            // Dont skip lambdas for lifetime values
+            // Don't skip lambdas for lifetime values
             if (!std::all_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 tok2 = lambdaEndToken;
                 continue;
@@ -2689,7 +2706,7 @@ struct LifetimeStore {
         value.tokvalue = var->nameToken();
         value.errorPath = errorPath;
         value.lifetimeKind = type;
-        // Dont add the value a second time
+        // Don't add the value a second time
         if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
             return;
         setTokenValue(tok, value, tokenlist->getSettings());
@@ -2721,7 +2738,7 @@ struct LifetimeStore {
             value.tokvalue = var->nameToken();
             value.errorPath = errorPath;
             value.lifetimeKind = type;
-            // Dont add the value a second time
+            // Don't add the value a second time
             if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                 continue;
             setTokenValue(tok, value, tokenlist->getSettings());
@@ -4197,7 +4214,7 @@ static void valueFlowSubFunction(TokenList *tokenlist, const Settings *settings)
             // passing value(s) to function
             std::list<ValueFlow::Value> argvalues(getFunctionArgumentValues(argtok));
 
-            // Dont forward lifetime values
+            // Don't forward lifetime values
             argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
 
             if (argvalues.empty())
@@ -4659,6 +4676,12 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             // TODO: Handle .size()
             if (!isContainerEmpty(vartok))
                 return cond;
+            const Token *parent = tok->astParent();
+            while (parent) {
+                if (Token::Match(parent, "%comp%|!"))
+                    return cond;
+                parent = parent->astParent();
+            }
             ValueFlow::Value value(tok, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.emplace_back(value);

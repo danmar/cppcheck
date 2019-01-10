@@ -1796,6 +1796,9 @@ Checking const.c...
     <section>
       <title>podtype</title>
 
+      <para>Use this for integer/float/bool/pointer types. Not for
+      structs/unions.</para>
+
       <para>Lots of code relies on typedefs providing platform independent
       types. "podtype"-tags can be used to provide necessary information to
       cppcheck to support them. Without further information, cppcheck does not

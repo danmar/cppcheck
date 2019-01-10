@@ -284,6 +284,19 @@ private:
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
     }
 
+    std::string getSyntaxError(const char code[]) {
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        try {
+            tokenizer.tokenize(istr, "test.cpp");
+        } catch (InternalError& e) {
+            if (e.id != "syntaxError")
+                return "";
+            return "[test.cpp:" + MathLib::toString(e.token->linenr()) + "] " + e.errorMessage;
+        }
+        return "";
+    }
+
     void wrong_syntax1() {
         {
             const char code[] ="TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))";
@@ -811,7 +824,7 @@ private:
 
     void garbageCode98() { // #6838
         ASSERT_THROW(checkCode("for (cocon To::ta@Taaaaaforconst oken aaaaaaaaaaaa5Dl()\n"
-                               "const unsiged in;\n"
+                               "const unsigned in;\n"
                                "fon *tok = f);.s(Token i = d-)L;"), InternalError);
     }
 
@@ -1007,23 +1020,34 @@ private:
                                "}\n"), InternalError);
 
         {
-            errout.str("");
             const char code[] = "{\n"
-                                "   a(\n"
+                                "   a(\n" // <- error
                                 "}\n"
                                 "{\n"
                                 "   b());\n"
                                 "}\n";
-            Tokenizer tokenizer(&settings, this);
-            std::istringstream istr(code);
-            try {
-                tokenizer.tokenize(istr, "test.cpp");
-                assertThrowFail(__FILE__, __LINE__);
-            } catch (InternalError& e) {
-                ASSERT_EQUALS("Invalid number of character '(' when no macros are defined.", e.errorMessage);
-                ASSERT_EQUALS("syntaxError", e.id);
-                ASSERT_EQUALS(2, e.token->linenr());
-            }
+            ASSERT_EQUALS("[test.cpp:2] Unmatched '('. Configuration: ''.", getSyntaxError(code));
+        }
+
+        {
+            const char code[] = "void f() {\n"
+                                "   int x = 3) + 0;\n" // <- error: unmatched )
+                                "}\n";
+            ASSERT_EQUALS("[test.cpp:2] Unmatched ')'. Configuration: ''.", getSyntaxError(code));
+        }
+
+        {
+            const char code[] = "void f() {\n"
+                                "   int x = (3] + 0;\n" // <- error: unmatched ]
+                                "}\n";
+            ASSERT_EQUALS("[test.cpp:2] Unmatched ']'. Configuration: ''.", getSyntaxError(code));
+        }
+
+        {
+            const char code[] = "void f() {\n" // <- error: unmatched {
+                                "   {\n"
+                                "}\n";
+            ASSERT_EQUALS("[test.cpp:1] Unmatched '{'. Configuration: ''.", getSyntaxError(code));
         }
     }
 

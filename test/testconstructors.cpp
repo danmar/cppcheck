@@ -96,6 +96,7 @@ private:
         TEST_CASE(initvar_staticvar);
         TEST_CASE(initvar_union);
         TEST_CASE(initvar_delegate);       // ticket #4302
+        TEST_CASE(initvar_delegate2);
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
@@ -1138,6 +1139,29 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void initvar_delegate2() {
+        check("class Foo {\n"
+              "public:\n"
+              "    explicit Foo(const Bar bar);\n"
+              "    Foo(const std::string& id);\n"
+              "    virtual ~RtpSession() { }\n"
+              "protected:\n"
+              "    bool a;\n"
+              "    uint16_t b;\n"
+              "};\n"
+              "\n"
+              "Foo::Foo(const Bar var)\n"
+              "    : Foo(bar->getId())\n"
+              "{\n"
+              "}\n"
+              "\n"
+              "Foo::Foo(const std::string& id)\n"
+              "    : a(true)\n"
+              "    , b(0)\n"
+              "{\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void initvar_private_constructor() {
         settings.standards.cpp = Standards::CPP11;
@@ -3484,12 +3508,12 @@ private:
     }
 
     void templateConstructor() { // ticket #7942
-        check("template <class T> struct Containter {\n"
-              "  Containter();\n"
+        check("template <class T> struct Container {\n"
+              "  Container();\n"
               "  T* mElements;\n"
               "};\n"
-              "template <class T> Containter<T>::Containter() : mElements(nullptr) {}\n"
-              "Containter<int> intContainer;");
+              "template <class T> Container<T>::Container() : mElements(nullptr) {}\n"
+              "Container<int> intContainer;");
         ASSERT_EQUALS("", errout.str());
     }
 

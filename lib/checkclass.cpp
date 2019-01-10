@@ -598,28 +598,31 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     initVar(ftok->varId(), scope, usage);
                 } else { // c++11 delegate constructor
                     const Function *member = ftok->function();
-                    // member function found
-                    if (member) {
-                        // recursive call
-                        // assume that all variables are initialized
-                        if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
-                            /** @todo false negative: just bail */
-                            assignAllVar(usage);
-                            return;
-                        }
+                    // member function not found => assume it initializes all members
+                    if (!member) {
+                        assignAllVar(usage);
+                        return;
+                    }
 
-                        // member function has implementation
-                        if (member->hasBody()) {
-                            // initialize variable use list using member function
-                            callstack.push_back(member);
-                            initializeVarList(*member, callstack, scope, usage);
-                            callstack.pop_back();
-                        }
+                    // recursive call
+                    // assume that all variables are initialized
+                    if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                        /** @todo false negative: just bail */
+                        assignAllVar(usage);
+                        return;
+                    }
 
-                        // there is a called member function, but it has no implementation, so we assume it initializes everything
-                        else {
-                            assignAllVar(usage);
-                        }
+                    // member function has implementation
+                    if (member->hasBody()) {
+                        // initialize variable use list using member function
+                        callstack.push_back(member);
+                        initializeVarList(*member, callstack, scope, usage);
+                        callstack.pop_back();
+                    }
+
+                    // there is a called member function, but it has no implementation, so we assume it initializes everything
+                    else {
+                        assignAllVar(usage);
                     }
                 }
             } else if (level != 0 && Token::Match(ftok, "%name% =")) // assignment in the initializer: var(value = x)
@@ -930,37 +933,51 @@ void CheckClass::initializationListUsage()
                 break;
             if (Token::Match(tok, "try|do {"))
                 break;
-            if (Token::Match(tok, "%var% =") && tok->strAt(-1) != "*") {
-                const Variable* var = tok->variable();
-                if (var && var->scope() == owner && !var->isStatic()) {
-                    if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
-                        continue;
+            if (!Token::Match(tok, "%var% =") || tok->strAt(-1) == "*")
+                continue;
 
-                    bool allowed = true;
-                    for (const Token* tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next()) {
-                        const Variable* var2 = tok2->variable();
-                        if (var2) {
-                            if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
-                                allowed = false;
-                                break;
-                            } else if (var2->isArray() && var2->isLocal()) { // Can't initialize with a local array
-                                allowed = false;
-                                break;
-                            }
-                        } else if (tok2->str() == "this") { // 'this' instance is not completely constructed in initialization list
-                            allowed = false;
-                            break;
-                        } else if (Token::Match(tok2, "%name% (") && tok2->strAt(-1) != "." && isMemberFunc(owner, tok2)) { // Member function called?
-                            allowed = false;
-                            break;
-                        }
+            const Variable* var = tok->variable();
+            if (!var || var->scope() != owner || var->isStatic())
+                continue;
+            if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
+                continue;
+
+            // Access local var member in rhs => do not warn
+            bool localmember = false;
+            visitAstNodes(tok->next()->astOperand2(),
+            [&](const Token *rhs) {
+                if (rhs->str() == "." && rhs->astOperand1() && rhs->astOperand1()->variable() && rhs->astOperand1()->variable()->isLocal())
+                    localmember = true;
+                return ChildrenToVisit::op1_and_op2;
+            });
+            if (localmember)
+                continue;
+
+            bool allowed = true;
+            visitAstNodes(tok->next()->astOperand2(),
+            [&](const Token *tok2) {
+                const Variable* var2 = tok2->variable();
+                if (var2) {
+                    if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
+                        allowed = false;
+                        return ChildrenToVisit::done;
+                    } else if (var2->isArray() && var2->isLocal()) { // Can't initialize with a local array
+                        allowed = false;
+                        return ChildrenToVisit::done;
                     }
-                    if (!allowed)
-                        continue;
-
-                    suggestInitializationList(tok, tok->str());
+                } else if (tok2->str() == "this") { // 'this' instance is not completely constructed in initialization list
+                    allowed = false;
+                    return ChildrenToVisit::done;
+                } else if (Token::Match(tok2, "%name% (") && tok2->strAt(-1) != "." && isMemberFunc(owner, tok2)) { // Member function called?
+                    allowed = false;
+                    return ChildrenToVisit::done;
                 }
-            }
+                return ChildrenToVisit::op1_and_op2;
+            });
+            if (!allowed)
+                continue;
+
+            suggestInitializationList(tok, tok->str());
         }
     }
 }

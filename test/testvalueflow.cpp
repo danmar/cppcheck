@@ -690,6 +690,19 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
+        code = "bool f() {\n"
+               "    bool a = (4 == 3);\n"
+               "    bool b = (3 == 3);\n"
+               "    return a || b;\n"
+               "}\n";
+        values = tokenValues(code, "%oror%");
+        ASSERT_EQUALS(1, values.size());
+        if (!values.empty()) {
+            ASSERT_EQUALS(true, values.front().isIntValue());
+            ASSERT_EQUALS(true, values.front().isKnown());
+            ASSERT_EQUALS(1, values.front().intvalue);
+        }
+
         // function call => calculation
         code  = "void f(int x, int y) {\n"
                 "    a = x + y;\n"
@@ -3515,7 +3528,7 @@ private:
                "    if (i == j) return;\n"
                "    if(i != j) {}\n"
                "}\n";
-        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+        TODO_ASSERT_EQUALS(true, false, valueOfTok(code, "!=").intvalue == 1);
 
         code = "void f(int i, int j) {\n"
                "    if (i == j) return;\n"
@@ -3544,7 +3557,7 @@ private:
                "    bool x = (i != j);\n"
                "    bool b = x;\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfXKnown(code, 4U, 0));
 
         code = "void f(int i, int j) {\n"
                "    if (i != j) return;\n"
@@ -3575,6 +3588,16 @@ private:
                "    if(i != j) {}\n"
                "}\n";
         ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void foo()\n" // #8924
+               "{\n"
+               "    if ( this->FileIndex >= 0 )\n"
+               "        return;\n"
+               "\n"
+               "    this->FileIndex = 1 ;\n"
+               "    if ( this->FileIndex < 0 ) {}\n"
+               "}";
+        ASSERT_EQUALS(false, valueOfTok(code, "<").intvalue == 1);
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
@@ -3605,6 +3628,13 @@ private:
         const char *code;
 
         LOAD_LIB_2(settings.library, "std.cfg");
+
+        // condition
+        code = "void f(const std::list<int> &ints) {\n"
+               "  if (!static_cast<bool>(ints.empty()))\n"
+               "    ints.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "ints . front").empty());
 
         // valueFlowContainerReverse
         code = "void f(const std::list<int> &ints) {\n"

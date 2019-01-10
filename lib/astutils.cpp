@@ -167,7 +167,9 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     }
     while (ret && ret->str() == ".")
         ret = ret->astOperand2();
-    if (ret && ret->varId() == 0U)
+    if (ret && ret->str() == "=" && ret->astOperand1() && ret->astOperand1()->varId())
+        ret = ret->astOperand1();
+    else if (ret && ret->varId() == 0U)
         ret = nullptr;
     if (vartok)
         *vartok = ret;
@@ -1178,7 +1180,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Token *parent = tok;
             bool other = false;
             bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, false, false, nullptr);
-            while (Token::Match(parent->astParent(), "*|.|::|[")) {
+            while (!same && Token::Match(parent->astParent(), "*|.|::|[")) {
                 parent = parent->astParent();
                 if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr)) {
                     same = true;
@@ -1189,10 +1191,13 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                         mValueFlow.push_back(v);
                     }
                 }
-                if (!same && Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
+                if (Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
                     other = true;
                     break;
                 }
+            }
+            if (mWhat != What::ValueFlow && same && Token::simpleMatch(parent->astParent(), "[") && parent == parent->astParent()->astOperand2()) {
+                return Result(Result::Type::READ);
             }
             if (other)
                 continue;

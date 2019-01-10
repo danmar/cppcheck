@@ -840,7 +840,7 @@ USE_HTAGS              = NO
 VERBATIM_HEADERS       = YES
 
 # If CLANG_ASSISTED_PARSING is set to YES, then doxygen will use the clang parser
-# for more acurate parsing at the cost of reduced performance. This can be
+# for more accurate parsing at the cost of reduced performance. This can be
 # particularly helpful with template rich C++ code for which doxygen's built-in
 # parser lacks the necessary type information.
 
@@ -929,7 +929,7 @@ HTML_STYLESHEET        =
 # user-defined cascading style sheet that is included after the standard
 # style sheets created by doxygen. Using this option one can overrule
 # certain style aspects. This is preferred over using HTML_STYLESHEET
-# since it does not replace the standard style sheet and is therefor more
+# since it does not replace the standard style sheet and is therefore more
 # robust against future updates. Doxygen will copy the style sheet file to
 # the output directory.
 

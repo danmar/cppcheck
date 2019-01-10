@@ -107,6 +107,7 @@ private:
 
         TEST_CASE(alwaysTrue);
         TEST_CASE(multiConditionAlwaysTrue);
+        TEST_CASE(duplicateCondition);
 
         TEST_CASE(checkInvalidTestForOverflow);
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
@@ -1792,53 +1793,83 @@ private:
               "  if (x<4) {\n"
               "    if (x==5) {}\n" // <- Warning
               "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
               "    if (x!=5) {}\n" // <- TODO
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
               "    if (x>5) {}\n" // <- Warning
               "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
               "    if (x>=5) {}\n" // <- Warning
               "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
               "    if (x<5) {}\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
               "    if (x<=5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      "[test.cpp:11] -> [test.cpp:12]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      , errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
               "    if (x==4) {}\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
               "    if (x!=4) {}\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
               "    if (x>4) {}\n" // <- TODO
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
               "    if (x>=4) {}\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
               "    if (x<4) {}\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x<5) {\n"
               "    if (x<=4) {}\n"
@@ -1852,18 +1883,30 @@ private:
               "  if (x>4) {\n"
               "    if (x==5) {}\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
               "    if (x>5) {}\n"
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
               "    if (x>=5) {}\n" // <- TODO
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
               "    if (x<5) {}\n" // <- TODO
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>4) {\n"
               "    if (x<=5) {}\n"
@@ -1876,27 +1919,39 @@ private:
               "  if (x>5) {\n"
               "    if (x==4) {}\n" // <- Warning
               "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
               "    if (x>4) {}\n" // <- TODO
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
               "    if (x>=4) {}\n" // <- TODO
               "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
               "    if (x<4) {}\n" // <- Warning
               "  }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
+        check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
               "    if (x<=4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      "[test.cpp:15] -> [test.cpp:16]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      "[test.cpp:19] -> [test.cpp:20]: (warning) Opposite inner 'if' condition leads to a dead code block.\n"
-                      , errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "  if (x < 4) {\n"
@@ -2158,7 +2213,8 @@ private:
               "  X(do);\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x>100' is always false\n", errout.str());
+        // TODO: we should probably throw unknownMacro InternalError. Complain that the macro X must be defined. We can't check the code well without the definition.
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x>100' is always false\n", "", errout.str());
 
         check("void f(const int *i) {\n"
               "  if (!i) return;\n"
@@ -2524,7 +2580,7 @@ private:
               "   int buf[42];\n"
               "   if( buf != 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'buf!=0' is always true\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'buf!=0' is always true\n", "", errout.str()); // #8924
 
         // Avoid FP when condition comes from macro
         check("#define NOT !\n"
@@ -2752,6 +2808,47 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'activate' is always false\n"
                       "[test.cpp:5]: (style) Condition 'foo' is always false\n", errout.str());
+    }
+
+    void duplicateCondition() {
+        check("void f(bool x) {\n"
+              "    if(x) {}\n"
+              "    if(x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The if condition is the same as the previous if condition\n",
+                      errout.str());
+
+        check("void f(int x) {\n"
+              "    if(x == 1) {}\n"
+              "    if(x == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The if condition is the same as the previous if condition\n",
+                      errout.str());
+
+        check("void f(int x) {\n"
+              "    if(x == 1) {}\n"
+              "    if(x == 2) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if(x == 1) {}\n"
+              "    if(x != 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool x) {\n"
+              "    if(x) {}\n"
+              "    g();\n"
+              "    if(x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if(x == 1) { x++; }\n"
+              "    if(x == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {

@@ -8,33 +8,36 @@ import re
 import datetime
 import time
 from threading import Thread
-import subprocess
 import sys
 
 OLD_VERSION = '1.86'
+
 
 def strDateTime():
     d = datetime.date.strftime(datetime.datetime.now().date(), '%Y-%m-%d')
     t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
     return d + ' ' + t
 
+
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash">Crash report</a><br>\n'
     html += '<a href="diff">Diff report</a><br>\n'
+    html += '<a href="head">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time">Time report</a><br>\n'
     html += '</body></html>'
     return html
 
-def fmt(a,b,c,d,e):
+
+def fmt(a, b, c, d, e):
     ret = a + ' '
-    while len(ret)<10:
+    while len(ret) < 10:
         ret += ' '
     if len(ret) == 10:
         ret += b[:10] + ' '
-    while len(ret)<21:
+    while len(ret) < 21:
         ret += ' '
     ret += b[-5:] + ' '
     while len(ret) < 32-len(c):
@@ -53,7 +56,7 @@ def fmt(a,b,c,d,e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>'
-    html += '<pre>\n<b>' + fmt('Package','Date       Time ',OLD_VERSION,'Head','Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package', 'Date       Time ', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
@@ -62,12 +65,13 @@ def latestReport(latestResults):
         package = filename[filename.rfind('/')+1:]
 
         datestr = ''
-        count = ['0','0']
+        count = ['0', '0']
         lost = 0
         added = 0
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             line = line.strip()
-            if line.startswith('2018-'):
+            current_year = datetime.date.today().year
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             #elif line.startswith('cppcheck:'):
             #    cppcheck = line[9:]
@@ -187,12 +191,12 @@ def diffReport(resultsPath):
                 continue
             messageId = line[line.rfind('[')+1:len(line)-1]
 
-            if not messageId in out:
-                out[messageId] = [0,0]
+            if messageId not in out:
+                out[messageId] = [0, 0]
             out[messageId][index] += 1
             if uploadedToday:
-                if not messageId in outToday:
-                    outToday[messageId] = [0,0]
+                if messageId not in outToday:
+                    outToday[messageId] = [0, 0]
                 outToday[messageId][index] += 1
 
     html = '<html><head><title>Diff report</title></head><body>\n'
@@ -211,7 +215,7 @@ def diffMessageIdReport(resultPath, messageId):
     for filename in sorted(glob.glob(resultPath + '/*')):
         url = None
         diff = False
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if line.startswith('ftp://'):
                 url = line
             elif line == 'diff:\n':
@@ -234,7 +238,7 @@ def diffMessageIdTodayReport(resultPath, messageId):
         url = None
         diff = False
         firstLine = True
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if firstLine:
                 firstLine = False
                 if not line.startswith(today):
@@ -253,29 +257,178 @@ def diffMessageIdTodayReport(resultPath, messageId):
     return text
 
 
+def headReportFromDict(out, today):
+    html = '<pre>\n'
+    html += '<b>MessageID                                  Count</b>\n'
+    sumTotal = 0
+    for messageId in sorted(out.keys()):
+        line = messageId + ' '
+        counts = out[messageId]
+        sumTotal += counts
+        if counts > 0:
+            c = str(counts)
+            while len(line) < 48 - len(c):
+                line += ' '
+            line += c + ' '
+        line = '<a href="head' + today + '-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
+        html += line + '\n'
+
+    # Sum
+    html += '================================================\n'
+    line = ''
+    while len(line) < 48 - len(str(sumTotal)):
+        line += ' '
+    line += str(sumTotal) + ' '
+    html += line + '\n'
+    html += '</pre>\n'
+
+    return html
+
+
+def headReport(resultsPath):
+    out = {}
+    outToday = {}
+    today = strDateTime()[:10]
+
+    for filename in sorted(glob.glob(resultsPath + '/*')):
+        if not os.path.isfile(filename):
+            continue
+        uploadedToday = False
+        firstLine = True
+        headResults = False
+        for line in open(filename, 'rt'):
+            if firstLine:
+                if line.startswith(today):
+                    uploadedToday = True
+                firstLine = False
+                continue
+            line = line.strip()
+            if line.startswith('head results:'):
+                headResults = True
+                continue
+            if line.startswith('diff:'):
+                if headResults:
+                    break
+            if not headResults:
+                continue
+            if not line.endswith(']'):
+                continue
+            if ': note: ' in line:
+                # notes normally do not contain message ids but can end with ']'
+                continue
+            messageId = line[line.rfind('[')+1:len(line)-1]
+
+            if messageId not in out:
+                out[messageId] = 0
+            out[messageId] += 1
+            if uploadedToday:
+                if messageId not in outToday:
+                    outToday[messageId] = 0
+                outToday[messageId] += 1
+
+    html = '<html><head><title>HEAD report</title></head><body>\n'
+    html += '<h1>HEAD report</h1>\n'
+    html += '<h2>Uploaded today</h2>'
+    html += headReportFromDict(outToday, 'today')
+    html += '<h2>All</h2>'
+    html += headReportFromDict(out, '')
+
+    return html
+
+
+def headMessageIdReport(resultPath, messageId):
+    text = messageId + '\n'
+    e = '[' + messageId + ']\n'
+    for filename in sorted(glob.glob(resultPath + '/*')):
+        url = None
+        headResults = False
+        for line in open(filename, 'rt'):
+            if line.startswith('ftp://'):
+                url = line
+            elif line.startswith('head results:'):
+                headResults = True
+            elif not headResults:
+                continue
+            elif headResults and line.startswith('diff:'):
+                break
+            elif line.endswith(e):
+                if url:
+                    text += url
+                    url = None
+                text += line
+    return text
+
+
+def headMessageIdTodayReport(resultPath, messageId):
+    text = messageId + '\n'
+    e = '[' + messageId + ']\n'
+    today = strDateTime()[:10]
+    for filename in sorted(glob.glob(resultPath + '/*')):
+        url = None
+        headResults = False
+        firstLine = True
+        for line in open(filename, 'rt'):
+            if firstLine:
+                firstLine = False
+                if not line.startswith(today):
+                    break
+            if line.startswith('ftp://'):
+                url = line
+            elif line.startswith('head results:'):
+                headResults = True
+            elif not headResults:
+                continue
+            elif headResults and line.startswith('diff:'):
+                break
+            elif line.endswith(e):
+                if url:
+                    text += url
+                    url = None
+                text += line
+    return text
+
+
 def timeReport(resultPath):
     text = 'Time report\n\n'
-    text += 'Package ' + OLD_VERSION + ' Head\n'
+    column_widths = [25, 10, 10, 10]
+    text += 'Package '.ljust(column_widths[0]) + ' ' + \
+            OLD_VERSION.rjust(column_widths[1]) + ' ' + \
+            'Head'.rjust(column_widths[2]) + ' ' + \
+            'Factor'.rjust(column_widths[3]) + '\n'
 
-    totalTime184 = 0.0
-    totalTimeHead = 0.0
+    total_time_base = 0.0
+    total_time_head = 0.0
     for filename in glob.glob(resultPath + '/*'):
-        for line in open(filename,'rt'):
+        for line in open(filename, 'rt'):
             if not line.startswith('elapsed-time:'):
                 continue
-            splitline = line.strip().split()
-            t184 = float(splitline[2])
-            thead = float(splitline[1])
-            totalTime184 += t184
-            totalTimeHead += thead
-            if t184>1 and t184*2 < thead:
-                text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
-            elif thead>1 and thead*2 < t184:
-                text += filename[filename.find('/')+1:] + ' ' + splitline[2] + ' ' + splitline[1] + '\n'
+            split_line = line.strip().split()
+            time_base = float(split_line[2])
+            time_head = float(split_line[1])
+            total_time_base += time_base
+            total_time_head += time_head
+            suspicious_time_difference = False
+            if time_base > 1 and time_base*2 < time_head:
+                suspicious_time_difference = True
+            elif time_head > 1 and time_head*2 < time_base:
+                suspicious_time_difference = True
+            if suspicious_time_difference:
+                if time_base > 0.0:
+                    time_factor = time_head / time_base
+                else:
+                    time_factor = 0.0
+                text += filename[len(resultPath)+1:].ljust(column_widths[0]) + ' ' + \
+                        split_line[2].rjust(column_widths[1]) + ' ' + \
+                        split_line[1].rjust(column_widths[2]) + ' ' + \
+                        '{:.2f}'.format(time_factor).rjust(column_widths[3]) + '\n'
             break
 
-    text += '\nTotal time: ' + str(totalTime184) + ' ' + str(totalTimeHead)
+    text += '\n'
+    text += 'Total time: '.ljust(column_widths[0]) + ' ' + \
+            str(total_time_base).rjust(column_widths[1]) + ' ' + \
+            str(total_time_head).rjust(column_widths[2])
     return text
+
 
 def sendAll(connection, data):
     while data:
@@ -332,6 +485,17 @@ class HttpClientThread(Thread):
                 messageId = url[5:]
                 text = diffMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
+            elif url == 'head':
+                html = headReport(self.resultPath)
+                httpGetResponse(self.connection, html, 'text/html')
+            elif url.startswith('headtoday-'):
+                messageId = url[10:]
+                text = headMessageIdTodayReport(self.resultPath, messageId)
+                httpGetResponse(self.connection, text, 'text/plain')
+            elif url.startswith('head-'):
+                messageId = url[5:]
+                text = headMessageIdReport(self.resultPath, messageId)
+                httpGetResponse(self.connection, text, 'text/plain')
             elif url == 'time':
                 text = timeReport(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/plain')
@@ -341,7 +505,7 @@ class HttpClientThread(Thread):
                     print('HTTP/1.1 404 Not Found')
                     self.connection.send('HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
-                    f = open(filename,'rt')
+                    f = open(filename, 'rt')
                     data = f.read()
                     f.close()
                     httpGetResponse(self.connection, data, 'text/plain')
@@ -376,18 +540,18 @@ def server(server_address_port, packages, packageIndex, resultPath):
         if cmd.find('\n') < 1:
             continue
         firstLine = cmd[:cmd.find('\n')]
-        if re.match('[a-zA-Z0-9./ ]+',firstLine) is None:
+        if re.match('[a-zA-Z0-9./ ]+', firstLine) is None:
             connection.close()
-            continue;
+            continue
         if cmd.startswith('GET /'):
             newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
             newThread.start()
-        elif cmd=='GetCppcheckVersions\n':
+        elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
             print('[' + strDateTime() + '] GetCppcheckVersions: ' + reply)
             connection.send(reply)
             connection.close()
-        elif cmd=='get\n':
+        elif cmd == 'get\n':
             pkg = packages[packageIndex].strip()
             packages[packageIndex] = pkg
             packageIndex += 1
@@ -425,7 +589,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz',url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -447,6 +611,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
+
 
 if __name__ == "__main__":
     workPath = os.path.expanduser('~/daca@home')

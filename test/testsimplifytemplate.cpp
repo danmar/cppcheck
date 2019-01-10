@@ -131,6 +131,7 @@ private:
         TEST_CASE(template91);
         TEST_CASE(template92);
         TEST_CASE(template93); // crash
+        TEST_CASE(template94); // #8927 crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -927,7 +928,7 @@ private:
                             "  template<typename T> struct X { T t; };"
                             "};"
                             "template<> struct A::X<int> { int *t; };";
-        ASSERT_EQUALS("struct A { template < typename T > struct X { T t ; } ; } ;", tok(code));
+        ASSERT_EQUALS("struct A { struct X<int> ; } ; struct A :: X<int> { int t ; } ;", tok(code));
     }
 
     void template41() { // #4710 - const in template instantiation not handled perfectly
@@ -1044,12 +1045,16 @@ private:
         const char code[] = "template <class T> class Fred { void f(); };\n"
                             "template <class T> void Fred<T>::f() { }\n"
                             "template<> void Fred<float>::f() { }\n"
-                            "template<> void Fred<int>::g() { }\n";
+                            "template<> void Fred<int>::f() { }\n";
 
-        const char expected[] = "template < class T > class Fred { void f ( ) ; } ; "
-                                "template < class T > void Fred < T > :: f ( ) { } "
-                                "template < > void Fred < float > :: f ( ) { } "
-                                "template < > void Fred < int > :: g ( ) { }";
+        const char expected[] = "class Fred<float> ; "
+                                "class Fred<int> ; "
+                                "template < > void Fred<float> :: f ( ) { } "
+                                "template < > void Fred<int> :: f ( ) { } "
+                                "class Fred<float> { void f ( ) ; } ; "
+                                "void Fred<float> :: f ( ) { } "
+                                "class Fred<int> { void f ( ) ; } ; "
+                                "void Fred<int> :: f ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -1308,34 +1313,34 @@ private:
     }
 
     void template67() { // ticket #8122
-        const char code[] = "template <class T> struct Containter {\n"
-                            "  Containter();\n"
-                            "  Containter(const Containter &);\n"
-                            "  Containter & operator = (const Containter &);\n"
-                            "  ~Containter();\n"
+        const char code[] = "template <class T> struct Container {\n"
+                            "  Container();\n"
+                            "  Container(const Container &);\n"
+                            "  Container & operator = (const Container &);\n"
+                            "  ~Container();\n"
                             "  T* mElements;\n"
-                            "  const Containter * c;\n"
+                            "  const Container * c;\n"
                             "};\n"
-                            "template <class T> Containter<T>::Containter() : mElements(nullptr), c(nullptr) {}\n"
-                            "template <class T> Containter<T>::Containter(const Containter & x) { nElements = x.nElements; c = x.c; }\n"
-                            "template <class T> Containter<T> & Containter<T>::operator = (const Containter & x) { mElements = x.mElements; c = x.c; return *this; }\n"
-                            "template <class T> Containter<T>::~Containter() {}\n"
-                            "Containter<int> intContainer;";
+                            "template <class T> Container<T>::Container() : mElements(nullptr), c(nullptr) {}\n"
+                            "template <class T> Container<T>::Container(const Container & x) { nElements = x.nElements; c = x.c; }\n"
+                            "template <class T> Container<T> & Container<T>::operator = (const Container & x) { mElements = x.mElements; c = x.c; return *this; }\n"
+                            "template <class T> Container<T>::~Container() {}\n"
+                            "Container<int> intContainer;";
 
-        const char expected[] = "struct Containter<int> ; "
-                                "Containter<int> intContainer ; "
-                                "struct Containter<int> { "
-                                "Containter<int> ( ) ; "
-                                "Containter<int> ( const Containter<int> & ) ; "
-                                "Containter<int> & operator= ( const Containter<int> & ) ; "
-                                "~ Containter<int> ( ) ; "
+        const char expected[] = "struct Container<int> ; "
+                                "Container<int> intContainer ; "
+                                "struct Container<int> { "
+                                "Container<int> ( ) ; "
+                                "Container<int> ( const Container<int> & ) ; "
+                                "Container<int> & operator= ( const Container<int> & ) ; "
+                                "~ Container<int> ( ) ; "
                                 "int * mElements ; "
-                                "const Containter<int> * c ; "
+                                "const Container<int> * c ; "
                                 "} ; "
-                                "Containter<int> :: Containter<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
-                                "Containter<int> :: Containter<int> ( const Containter<int> & x ) { nElements = x . nElements ; c = x . c ; } "
-                                "Containter<int> & Containter<int> :: operator= ( const Containter<int> & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
-                                "Containter<int> :: ~ Containter<int> ( ) { }";
+                                "Container<int> :: Container<int> ( ) : mElements ( nullptr ) , c ( nullptr ) { } "
+                                "Container<int> :: Container<int> ( const Container<int> & x ) { nElements = x . nElements ; c = x . c ; } "
+                                "Container<int> & Container<int> :: operator= ( const Container<int> & x ) { mElements = x . mElements ; c = x . c ; return * this ; } "
+                                "Container<int> :: ~ Container<int> ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -1863,6 +1868,40 @@ private:
                            "} "
                            "void ForEach<iterator> ( ) { "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template94() { // #8927 crash
+        const char code[] = "template <typename T>\n"
+                            "class Array { };\n"
+                            "template<typename T>\n"
+                            "Array<T> foo() {};\n"
+                            "template <> Array<double> foo<double>() { }\n"
+                            "template <> Array<std::complex<float>> foo<std::complex<float>>() { }\n"
+                            "template <> Array<float> foo<float>() { }\n"
+                            "template < typename T >\n"
+                            "Array<T> matmul() {\n"
+                            "    return foo<T>( );\n"
+                            "}\n"
+                            "template Array<std::complex<float>> matmul<std::complex<float>>();";
+        const char exp[] = "class Array<double> ; "
+                           "class Array<std::complex<float>> ; "
+                           "class Array<float> ; "
+                           "Array<float> foo<float> ( ) ; "
+                           "Array<std::complex<float>> foo<std::complex<float>> ( ) ; "
+                           "Array<double> foo<double> ( ) ; "
+                           "template < typename T > "
+                           "Array < T > foo ( ) { } ; "
+                           "Array<double> foo<double> ( ) { } "
+                           "Array<std::complex<float>> foo<std::complex<float>> ( ) { } "
+                           "Array<float> foo<float> ( ) { } "
+                           "Array<std::complex<float>> matmul<std::complex<float>> ( ) ; "
+                           "Array<std::complex<float>> matmul<std::complex<float>> ( ) { "
+                           "return foo<std::complex<float>> ( ) ; "
+                           "} "
+                           "class Array<double> { } ; "
+                           "class Array<std::complex<float>> { } ; "
+                           "class Array<float> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -2571,9 +2610,7 @@ private:
                           "template<class T, class U> class A { unsigned foo(); }; "
                           "template<class T, class U> unsigned A<T, U>::foo() { return 0; }", 25));
         ASSERT_EQUALS(12, templateNamePositionHelper(
-                          "template<class T> class v {}; "
-                          "template<class T, class U> class A { unsigned foo(); }; "
-                          "template<> unsigned A<int, v<char> >::foo() { return 0; }", 30));
+                          "template<> unsigned A<int, v<char> >::foo() { return 0; }", 2));
     }
 
     void expandSpecialized1() {

@@ -73,6 +73,7 @@ public:
         bool msc;
         bool useMfc;
 
+        void parseCommand(const std::string &command);
         void setDefines(std::string defs);
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };

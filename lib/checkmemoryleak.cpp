@@ -749,7 +749,7 @@ void CheckMemoryLeakStructMember::check()
 {
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isLocal() || var->isStatic())
+        if (!var || !var->isLocal() || var->isStatic() || var->isReference())
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;

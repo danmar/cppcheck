@@ -858,3 +858,14 @@ error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const c
     // no warning shall be shown for
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
 }
+
+class MyClass :public CObject {
+    DECLARE_DYNAMIC(MyClass)
+    DECLARE_DYNCREATE(MyClass)
+    DECLARE_SERIAL(MyClass)
+public:
+    MyClass() {}
+};
+IMPLEMENT_DYNAMIC(MyClass, CObject)
+IMPLEMENT_DYNCREATE(MyClass, CObject)
+IMPLEMENT_SERIAL(MyClass,CObject, 42)

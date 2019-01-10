@@ -43,7 +43,7 @@ class TokenList;
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class CPPCHECKLIB TemplateSimplifier {
 public:
-    TemplateSimplifier(Tokenizer *tokenizer);
+    explicit TemplateSimplifier(Tokenizer *tokenizer);
     ~TemplateSimplifier();
 
     /**
@@ -74,13 +74,76 @@ public:
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
-            return token == rhs.token && scope == rhs.scope && name == rhs.name && nameToken == rhs.nameToken && paramEnd == rhs.paramEnd;;
+            return token == rhs.token && scope == rhs.scope && name == rhs.name &&
+                   nameToken == rhs.nameToken && paramEnd == rhs.paramEnd && flags == rhs.flags;
         }
         Token *token;
         std::string scope;
         std::string name;
         const Token *nameToken;
         const Token *paramEnd;
+        unsigned int flags;
+
+        enum {
+            fIsClass       = (1 << 0), // class template
+            fIsFunction    = (1 << 1), // function template
+            fIsVariable    = (1 << 2), // variable template
+            fIsAlias       = (1 << 3), // alias template
+            fIsSpecialized = (1 << 4), // user specialized template
+        };
+
+        bool isClass() const {
+            return getFlag(fIsClass);
+        }
+        void isClass(bool state) {
+            setFlag(fIsClass, state);
+        }
+
+        bool isFunction() const {
+            return getFlag(fIsFunction);
+        }
+        void isFunction(bool state) {
+            setFlag(fIsFunction, state);
+        }
+
+        bool isVariable() const {
+            return getFlag(fIsVariable);
+        }
+        void isVariable(bool state) {
+            setFlag(fIsVariable, state);
+        }
+
+        bool isAlias() const {
+            return getFlag(fIsAlias);
+        }
+        void isAlias(bool state) {
+            setFlag(fIsAlias, state);
+        }
+
+        bool isSpecialized() const {
+            return getFlag(fIsSpecialized);
+        }
+        void isSpecialized(bool state) {
+            setFlag(fIsSpecialized, state);
+        }
+
+        /**
+         * Get specified flag state.
+         * @param flag flag to get state of
+         * @return true if flag set or false in flag not set
+         */
+        bool getFlag(unsigned int flag) const {
+            return ((flags & flag) != 0);
+        }
+
+        /**
+         * Set specified flag state.
+         * @param flag flag to set state
+         * @param state new state of flag
+         */
+        void setFlag(unsigned int flag, bool state) {
+            flags = state ? flags | flag : flags & ~flag;
+        }
     };
 
     /**
@@ -99,7 +162,7 @@ public:
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    int getTemplateNamePosition(const Token *tok, bool forward = false);
+    static int getTemplateNamePosition(const Token *tok, bool forward = false);
 
     /**
      * Get template name position
@@ -107,7 +170,7 @@ public:
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */
-    bool getTemplateNamePositionTemplateFunction(const Token *tok, int &namepos);
+    static bool getTemplateNamePositionTemplateFunction(const Token *tok, int &namepos);
 
     /**
      * Simplify templates
@@ -132,7 +195,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* tok = nullptr);
+    bool simplifyCalculations(Token* frontToken = nullptr);
 
 private:
     /**
@@ -196,7 +259,7 @@ private:
      * @param tok place to start looking for namespace
      * @return true if namespace already present
      */
-    bool alreadyHasNamespace(const TokenAndName &templateDeclaration, const Token *tok) const;
+    static bool alreadyHasNamespace(const TokenAndName &templateDeclaration, const Token *tok);
 
     /**
      * Expand a template. Create "expanded" class/function at end of tokenlist.
@@ -241,7 +304,7 @@ private:
     /**
      * Remove a specific "template < ..." template class/function
      */
-    bool removeTemplate(Token *tok);
+    static bool removeTemplate(Token *tok);
 
     /** Syntax error */
     static void syntaxError(const Token *tok);
@@ -256,7 +319,7 @@ private:
      * @param begin Tokens after this will be erased.
      * @param end Tokens before this will be erased.
      */
-    void eraseTokens(Token *begin, const Token *end);
+    static void eraseTokens(Token *begin, const Token *end);
 
     /**
      * Delete specified token without invalidating pointer to following token.
