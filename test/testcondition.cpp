@@ -2774,6 +2774,17 @@ private:
 
         check("void f(const int a[]){ if (a == 0){} }");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "  bool operator<(const S&);\n"
+              "};\n"
+              "int main() {\n"
+              "  S s;\n"
+              "  bool c = s<s;\n"
+              "  if (c) return 0;\n"
+              "  else return 42;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {
