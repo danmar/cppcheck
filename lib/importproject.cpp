@@ -260,7 +260,14 @@ void ImportProject::importCompileCommands(std::istream &istr)
 
     for (const picojson::value &fileInfo : v.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();
-        const std::string directory = Path::fromNativeSeparators(obj["directory"].get<std::string>());
+        std::string dirpath = obj["directory"].get<std::string>();
+
+        /* CMAKE produces the directory without trailing / so add it if not
+         * there - it is needed by setIncludePaths() */
+        if(!endsWith(dirpath, '/'))
+            dirpath += '/';
+
+        const std::string directory = Path::fromNativeSeparators(dirpath);
         const std::string command = obj["command"].get<std::string>();
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
