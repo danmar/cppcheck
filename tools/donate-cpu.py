@@ -28,6 +28,7 @@ import socket
 import time
 import re
 import tarfile
+import platform
 
 
 def checkRequirements():
@@ -415,6 +416,8 @@ while True:
         print('No results')
         continue
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
+    output += 'platform: ' + platform.platform() + '\n'
+    output += 'python: ' + platform.python_version() + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
