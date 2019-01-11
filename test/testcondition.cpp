@@ -673,6 +673,18 @@ private:
               "   else if( !!(b) && !!(a+b)){}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8168
+        check("enum MaskValues\n"
+              "{\n"
+              "    Value1 = 0x00000001,\n"
+              "    Value2 = 0x00000002\n"
+              "};\n"
+              "void TestFunction(int value) {\n"
+              "    if ( value & (int)Value1 ) {}\n"
+              "    else if ( value & (int)Value2 ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkBadBitmaskCheck() {
