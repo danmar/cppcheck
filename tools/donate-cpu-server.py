@@ -26,7 +26,7 @@ def overviewReport():
     html += '<a href="diff">Diff report</a><br>\n'
     html += '<a href="head">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
-    html += '<a href="time">Time report</a><br>\n'
+    html += '<a href="time.html">Time report</a><br>\n'
     html += '</body></html>'
     return html
 
@@ -389,12 +389,16 @@ def headMessageIdTodayReport(resultPath, messageId):
 
 
 def timeReport(resultPath):
-    text = 'Time report\n\n'
+    html = '<html><head><title>Time report</title></head><body>\n'
+    html += '<h1>Time report</h1>\n'
+    html += '<pre>\n'
     column_widths = [25, 10, 10, 10]
-    text += 'Package '.ljust(column_widths[0]) + ' ' + \
+    html += '<b>'
+    html += 'Package '.ljust(column_widths[0]) + ' ' + \
             OLD_VERSION.rjust(column_widths[1]) + ' ' + \
             'Head'.rjust(column_widths[2]) + ' ' + \
-            'Factor'.rjust(column_widths[3]) + '\n'
+            'Factor'.rjust(column_widths[3])
+    html += '</b>\n'
 
     total_time_base = 0.0
     total_time_head = 0.0
@@ -417,17 +421,27 @@ def timeReport(resultPath):
                     time_factor = time_head / time_base
                 else:
                     time_factor = 0.0
-                text += filename[len(resultPath)+1:].ljust(column_widths[0]) + ' ' + \
-                        split_line[2].rjust(column_widths[1]) + ' ' + \
-                        split_line[1].rjust(column_widths[2]) + ' ' + \
-                        '{:.2f}'.format(time_factor).rjust(column_widths[3]) + '\n'
+                html += filename[len(resultPath)+1:].ljust(column_widths[0]) + ' ' + \
+                    split_line[2].rjust(column_widths[1]) + ' ' + \
+                    split_line[1].rjust(column_widths[2]) + ' ' + \
+                    '{:.2f}'.format(time_factor).rjust(column_widths[3]) + '\n'
             break
 
-    text += '\n'
-    text += 'Total time: '.ljust(column_widths[0]) + ' ' + \
+    html += '\n'
+    if total_time_base > 0.0:
+        total_time_factor = total_time_head / total_time_base
+    else:
+        total_time_factor = 0.0
+    html += 'Total time: '.ljust(column_widths[0]) + ' ' + \
             str(total_time_base).rjust(column_widths[1]) + ' ' + \
-            str(total_time_head).rjust(column_widths[2])
-    return text
+            str(total_time_head).rjust(column_widths[2]) + ' ' + \
+            '{:.2f}'.format(total_time_factor).rjust(column_widths[3])
+
+    html += '\n'
+    html += '</pre>\n'
+    html += '</body></html>\n'
+
+    return html
 
 
 def sendAll(connection, data):
@@ -496,9 +510,9 @@ class HttpClientThread(Thread):
                 messageId = url[5:]
                 text = headMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'time':
+            elif url == 'time.html':
                 text = timeReport(self.resultPath)
-                httpGetResponse(self.connection, text, 'text/plain')
+                httpGetResponse(self.connection, text, 'text/html')
             else:
                 filename = resultPath + '/' + url
                 if not os.path.isfile(filename):
