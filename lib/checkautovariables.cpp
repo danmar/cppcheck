@@ -657,10 +657,10 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         }
         if (tok->str() == "{" && tok->scope()) {
             // Check functions in local classes
-            if (tok->scope()->type == Scope::eClass || 
-                tok->scope()->type == Scope::eStruct || 
+            if (tok->scope()->type == Scope::eClass ||
+                tok->scope()->type == Scope::eStruct ||
                 tok->scope()->type == Scope::eUnion) {
-                for(const Function& f:tok->scope()->functionList) {
+                for (const Function& f:tok->scope()->functionList) {
                     if (f.functionScope)
                         checkVarLifetimeScope(f.functionScope->bodyStart, f.functionScope->bodyEnd);
                 }
