@@ -45,6 +45,7 @@ private:
         TEST_CASE(setIncludePaths3); // macro names are case insensitive
         TEST_CASE(importCompileCommands1);
         TEST_CASE(importCompileCommands2); // #8563
+        TEST_CASE(importCompileCommands3); // check with existing trailing / in directory
     }
 
     void setDefines() const {
@@ -105,6 +106,17 @@ private:
 
     void importCompileCommands2() const {
         const char json[] = "[ { \"directory\": \"/tmp\","
+                            "\"command\": \"gcc -c src.c\","
+                            "\"file\": \"src.c\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
+    }
+
+    void importCompileCommands3() const {
+        const char json[] = "[ { \"directory\": \"/tmp/\","
                             "\"command\": \"gcc -c src.c\","
                             "\"file\": \"src.c\" } ]";
         std::istringstream istr(json);

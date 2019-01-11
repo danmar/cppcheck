@@ -264,9 +264,8 @@ void ImportProject::importCompileCommands(std::istream &istr)
 
         /* CMAKE produces the directory without trailing / so add it if not
          * there - it is needed by setIncludePaths() */
-        if(dirpath[dirpath.length()-1] != '/') {
-            dirpath.back() = '/';
-        }
+        if(!endsWith(dirpath, '/'))
+            dirpath += '/';
 
         const std::string directory = Path::fromNativeSeparators(dirpath);
         const std::string command = obj["command"].get<std::string>();
@@ -285,6 +284,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
         fs.parseCommand(command); // read settings; -D, -I, -U, -std
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);
+
         fileSettings.push_back(fs);
     }
 }
