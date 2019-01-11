@@ -21,6 +21,7 @@ matrix:
   allow_failures:
     - name: "rerun dmake?"
       compiler: clang
+# defined extra jobs that run besides what is configured in the build matrix
   include:
 # check a lot of stuff that only needs to be checked in a single configuration
     - name: "misc"
@@ -120,9 +121,12 @@ matrix:
 # check if dmake needs to be rerun (this job may fail)
     - name: "rerun dmake?"
       compiler: clang
+# we don't need to install any deps for dmake so skip it explicitly
+      before_install:
+      - true
       script:
         - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
-        - make -s dmake
+        - make -s dmake -j2
         - make -s run-dmake
         - git diff --exit-code
 before_install:
