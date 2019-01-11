@@ -264,7 +264,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
 
         /* CMAKE produces the directory without trailing / so add it if not
          * there - it is needed by setIncludePaths() */
-        if(!endsWith(dirpath, '/'))
+        if (!endsWith(dirpath, '/'))
             dirpath += '/';
 
         const std::string directory = Path::fromNativeSeparators(dirpath);
