@@ -1153,7 +1153,7 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
         if (tok->astOperand1()->isLiteral() || tok->astOperand2()->isLiteral())
             continue;
 
-        if (astIsFloat(tok->astOperand1(), true) || astIsFloat(tok->astOperand2(), true))
+        if (!astIsIntegral(tok->astOperand1(), false) && !astIsIntegral(tok->astOperand2(), false))
             continue;
 
         ValueFlow::Value val;
