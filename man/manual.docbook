@@ -1070,16 +1070,20 @@ uninitvar</programlisting>
 
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;suppressions&gt;
-  &lt;suppression&gt;
+  &lt;suppress&gt;
     &lt;id&gt;uninitvar&lt;/id&gt;
     &lt;fileName&gt;src/file1.c&lt;/fileName&gt;
     &lt;lineNumber&gt;10&lt;/lineNumber&gt;
     &lt;symbolName&gt;var&lt;/symbolName&gt;
-  &lt;/suppression&gt;
+  &lt;/suppress&gt;
 &lt;/suppressions&gt;</programlisting>
 
       <para>The xml format is extensible and may be extended with further
       attributes in the future.</para>
+
+      <para>You can use the suppressions file like this:</para>
+
+      <programlisting>cppcheck --suppress-xml=suppressions.xml src/</programlisting>      
     </section>
 
     <section>
