@@ -284,7 +284,6 @@ void ImportProject::importCompileCommands(std::istream &istr)
         fs.parseCommand(command); // read settings; -D, -I, -U, -std
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);
-
         fileSettings.push_back(fs);
     }
 }
