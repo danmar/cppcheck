@@ -1643,6 +1643,14 @@ private:
               "    return d;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    struct a {\n"
+              "        std::vector<int> v;\n"
+              "        auto g() { return v.end(); }\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
