@@ -64,7 +64,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
         isVariable(Token::Match(nameToken->next(), "=|;") ||
                    (nameToken->strAt(1) == "<" && Token::Match(nameToken->next()->findClosingBracket()->next(), "=|;")));
         isAlias(paramEnd->strAt(1) == "using");
-        isSpecialized(Token::Match(token, "template < >"));
+        isSpecialized(Token::simpleMatch(token, "template < >"));
     }
 
     if (token)
@@ -511,7 +511,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
             else if (tok2->str() == ")")
                 break;
             // skip decltype(...)
-            else if (Token::Match(tok2, "decltype ("))
+            else if (Token::simpleMatch(tok2, "decltype ("))
                 tok2 = tok2->linkAt(1);
             // Declaration => add to mTemplateForwardDeclarations
             else if (tok2->str() == ";") {
@@ -926,7 +926,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
         if (Token::Match(tok->next(), ";|{"))
             return false;
         // skip decltype(...)
-        else if (Token::Match(tok, "decltype (")) {
+        else if (Token::simpleMatch(tok, "decltype (")) {
             const Token * end = tok->linkAt(1);
             while (tok && tok != end) {
                 tok = tok->next();
