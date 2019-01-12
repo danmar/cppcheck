@@ -15,6 +15,7 @@ knownConditionTrueFalse:build/checkcondition.cpp
 *:test/test.cxx
 *:test/cfg/*
 
+*:externals/*
 *:externals/*/*
 *:htmlreport/*
 *:samples/*/bad.c*
