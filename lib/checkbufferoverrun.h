@@ -73,7 +73,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.checkGlobalAndLocalVariable();
         if (tokenizer && tokenizer->isMaxTime())
@@ -85,7 +85,7 @@ public:
         checkBufferOverrun.negativeArraySize();
     }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.bufferOverrun();
         checkBufferOverrun.checkStringArgument();
@@ -222,7 +222,7 @@ public:
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
-        std::string toString() const override;
+        std::string toString() const OVERRIDE;
 
         struct ArrayUsage {
             MathLib::bigint   index;
@@ -238,12 +238,12 @@ public:
     };
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
 
-    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
 
     /**
      * Calculates sizeof value for given type.
@@ -275,7 +275,7 @@ private:
     void valueFlowCheckArrayIndex(const Token * const tok, const ArrayInfo &arrayInfo);
 
 public:
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
         const std::vector<MathLib::bigint> indexes(2, 1);
         c.arrayIndexOutOfBoundsError(nullptr, ArrayInfo(0, "array", 1, 2), indexes);
@@ -301,7 +301,7 @@ private:
         return "Bounds checking";
     }
 
-    std::string classInfo() const override {
+    std::string classInfo() const OVERRIDE {
         return "Out of bounds checking:\n"
                "- Array index out of bounds detection by value flow analysis\n"
                "- Dangerous usage of strncat()\n"

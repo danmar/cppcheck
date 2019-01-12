@@ -54,7 +54,7 @@ public:
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -86,7 +86,7 @@ public:
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -273,7 +273,7 @@ private:
     void shadowError(const Token *var, const Token *shadowed, bool shadowVar);
     void constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);
 
         ErrorPath errorPath;
@@ -346,7 +346,7 @@ private:
         return "Other";
     }
 
-    std::string classInfo() const override {
+    std::string classInfo() const OVERRIDE {
         return "Other checks\n"
 
                // error

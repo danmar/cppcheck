@@ -19,6 +19,13 @@
 #  include <crtdbg.h>
 #endif
 
+// C++11 override
+#if defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC >= 5))
+#  define OVERRIDE override
+#else
+#  define OVERRIDE
+#endif
+
 #include <string>
 static const std::string emptyString;
 

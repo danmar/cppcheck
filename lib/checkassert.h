@@ -49,7 +49,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckAssert check(tokenizer, settings, errorLogger);
         check.assertWithSideEffects();
     }
@@ -64,7 +64,7 @@ private:
     void sideEffectInAssertError(const Token *tok, const std::string& functionName);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckAssert c(nullptr, settings, errorLogger);
         c.sideEffectInAssertError(nullptr, "function");
         c.assignmentInAssertError(nullptr, "var");
@@ -74,7 +74,7 @@ private:
         return "Assert";
     }
 
-    std::string classInfo() const override {
+    std::string classInfo() const OVERRIDE {
         return "Warn if there are side effects in assert statements (since this cause different behaviour in debug/release builds).\n";
     }
 };

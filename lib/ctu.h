@@ -35,7 +35,7 @@ namespace CTU {
     public:
         enum InvalidValueType { null, uninit };
 
-        std::string toString() const override;
+        std::string toString() const OVERRIDE;
 
         struct Location {
             Location() = default;

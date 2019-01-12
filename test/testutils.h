@@ -50,10 +50,10 @@ public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
         : _settings(settings), _next(next) {
     }
-    virtual void reportOut(const std::string &outmsg) override {
+    virtual void reportOut(const std::string &outmsg) OVERRIDE {
         _next->reportOut(outmsg);
     }
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override {
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE {
         if (!msg._callStack.empty() && !_settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
             _next->reportErr(msg);
     }

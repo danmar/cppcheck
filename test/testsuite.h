@@ -82,8 +82,8 @@ protected:
 
     void processOptions(const options& args);
 public:
-    virtual void reportOut(const std::string &outmsg) override;
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
+    virtual void reportOut(const std::string &outmsg) OVERRIDE;
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
     void run(const std::string &str);
     const std::string classname;
 

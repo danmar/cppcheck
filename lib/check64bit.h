@@ -52,13 +52,13 @@ public:
     }
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         Check64BitPortability check64BitPortability(tokenizer, settings, errorLogger);
         check64BitPortability.pointerassignment();
     }
 
     /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         (void)tokenizer;
         (void)settings;
         (void)errorLogger;
@@ -74,7 +74,7 @@ private:
     void returnIntegerError(const Token *tok);
     void returnPointerError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         Check64BitPortability c(nullptr, settings, errorLogger);
         c.assignmentAddressToIntegerError(nullptr);
         c.assignmentIntegerToAddressError(nullptr);
@@ -86,7 +86,7 @@ private:
         return "64-bit portability";
     }
 
-    std::string classInfo() const override {
+    std::string classInfo() const OVERRIDE {
         return "Check if there is 64-bit portability issues:\n"
                "- assign address to/from int/long\n"
                "- casting address from/to integer when returning from function\n";
