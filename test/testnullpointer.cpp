@@ -43,12 +43,12 @@ private:
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                                   "<def>\n"
-                                   "  <function name=\"strcpy\">\n"
-                                   "    <arg nr=\"1\"><not-null/></arg>\n"
-                                   "    <arg nr=\"2\"><not-null/></arg>\n"
-                                   "  </function>\n"
-                                   "</def>";
+            "<def>\n"
+            "  <function name=\"strcpy\">\n"
+            "    <arg nr=\"1\"><not-null/></arg>\n"
+            "    <arg nr=\"2\"><not-null/></arg>\n"
+            "  </function>\n"
+            "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
             settings.library.load(doc);

@@ -41,12 +41,12 @@ private:
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                                   "<def>\n"
-                                   "  <memory>\n"
-                                   "    <alloc init=\"false\">malloc</alloc>\n"
-                                   "    <dealloc>free</dealloc>\n"
-                                   "  </memory>\n"
-                                   "</def>";
+            "<def>\n"
+            "  <memory>\n"
+            "    <alloc init=\"false\">malloc</alloc>\n"
+            "    <dealloc>free</dealloc>\n"
+            "  </memory>\n"
+            "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
             settings0.library.load(doc);
