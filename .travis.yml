@@ -145,6 +145,15 @@ matrix:
         - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
         - make clean
         - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+# check if cppcheck builds on osx
+    - name: "make osx"
+      os: osx
+      before_install:
+        - true
+      script:
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}"  make cppcheck testrunner -j 2
+        - make clean
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
