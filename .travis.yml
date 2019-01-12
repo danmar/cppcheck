@@ -168,6 +168,12 @@ script:
   - echo $CXXFLAGS
   - make -s -j2
   - cd ../
+# Build triage
+  - cd ./tools/triage
+  - git clean -dfx .
+  - qmake
+  - make -s -j2
+  - cd ../../
 
 notifications:
   irc:

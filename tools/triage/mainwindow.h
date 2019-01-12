@@ -12,7 +12,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = Q_NULLPTR);
     MainWindow(const MainWindow &) = delete;
     ~MainWindow();
     MainWindow &operator=(const MainWindow &) = delete;
@@ -23,6 +23,10 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
+
+    bool runProcess(const QString &programName, const QStringList & arguments);
+    bool wget(const QString url);
+    bool unpackArchive(const QString archiveName);
 };
 
 #endif // MAINWINDOW_H
