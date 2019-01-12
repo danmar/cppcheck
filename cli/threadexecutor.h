@@ -49,9 +49,9 @@ public:
     virtual ~ThreadExecutor();
     unsigned int check();
 
-    virtual void reportOut(const std::string &outmsg) override;
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) override;
+    virtual void reportOut(const std::string &outmsg) OVERRIDE;
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
+    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) OVERRIDE;
 
     /**
      * @brief Add content to a file, to be used in unit testing.
