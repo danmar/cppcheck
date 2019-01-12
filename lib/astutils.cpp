@@ -1046,7 +1046,7 @@ bool isConstVarExpression(const Token *tok)
 {
     if (!tok)
         return false;
-    if (Token::Match(tok->previous(), "sizeof ("))
+    if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
     if (Token::Match(tok->previous(), "%name% (")) {
         std::vector<const Token *> args = getArguments(tok);
@@ -1223,7 +1223,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             }
         }
 
-        if (Token::Match(tok, ") {")) {
+        if (Token::simpleMatch(tok, ") {")) {
             if (Token::simpleMatch(tok->link()->previous(), "switch ("))
                 // TODO: parse switch
                 return Result(Result::Type::BAILOUT);

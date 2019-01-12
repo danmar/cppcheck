@@ -45,9 +45,9 @@ std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *funct
 }
 
 CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)
+    : fileName(tokenizer->list.file(tok))
+    , linenr(tok->linenr())
 {
-    fileName = tokenizer->list.file(tok);
-    linenr = tok->linenr();
 }
 
 std::string CTU::FileInfo::toString() const
