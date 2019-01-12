@@ -21,5 +21,5 @@ install(TARGETS cppcheck
     COMPONENT applications)
 
 install(FILES ${cfgs}
-   DESTINATION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/${PROJECT_NAME}/
+   DESTINATION ${CFGDIR}/
    COMPONENT headers)
