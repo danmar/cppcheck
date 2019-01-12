@@ -822,7 +822,8 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
 {
     Settings settings2(*settings);
     Preprocessor preprocessor(settings2, errorLogger);
-    settings2.checkConfiguration=true;
+    // cppcheck-suppress unreadVariable // FP
+    settings2.checkConfiguration = true;
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
     preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
     preprocessor.validateCfgError(emptyString, 1, "X", "X");

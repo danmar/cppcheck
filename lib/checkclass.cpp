@@ -2413,6 +2413,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     for (const Token *tok : tokStack)
         errorPath.emplace_back(tok, "Calling " + tok->str());
     if (!errorPath.empty())
+        // cppcheck-suppress unreadVariable // FP
         errorPath.back().second = purefuncname + " is a pure virtual method without body";
 
     reportError(tokStack, Severity::warning, "pureVirtualCall",
