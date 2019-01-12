@@ -1854,9 +1854,6 @@ private:
 
         const std::string actual = tokenize(code, false, "test.cpp");
 
-        const std::string line5 = getLine(actual, 5);
-        const std::string line11 = getLine(actual, 11);
-
         ASSERT_EQUALS("5: int type@2 ;", getLine(actual,5));
         ASSERT_EQUALS("11: type@2 = 0 ;", getLine(actual,11));
     }
