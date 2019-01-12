@@ -1409,7 +1409,6 @@ void MainWindow::openOnlineHelp()
 
 void MainWindow::openProjectFile()
 {
-    const QString lastPath = mSettings->value(SETTINGS_LAST_PROJECT_PATH, QString()).toString();
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     const QString filepath = QFileDialog::getOpenFileName(this,
                              tr("Select Project File"),
