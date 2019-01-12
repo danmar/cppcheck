@@ -48,6 +48,7 @@ private:
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
         TEST_CASE(suppressionsLine0);
+        TEST_CASE(suppressionsFileComment);
 
         TEST_CASE(inlinesuppress);
         TEST_CASE(inlinesuppress_symbolname);
@@ -409,6 +410,18 @@ private:
         Suppressions suppressions;
         suppressions.addSuppressionLine("syntaxError:*:0");
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("syntaxError", "test.cpp", 0)));
+    }
+
+    void suppressionsFileComment() {
+        std::istringstream file1("# comment\nabc");
+        Suppressions suppressions1;
+        suppressions1.parseFile(file1);
+        ASSERT_EQUALS(true, suppressions1.isSuppressed(errorMessage("abc", "test.cpp", 123)));
+
+        std::istringstream file2("// comment\nabc");
+        Suppressions suppressions2;
+        suppressions2.parseFile(file2);
+        ASSERT_EQUALS(true, suppressions2.isSuppressed(errorMessage("abc", "test.cpp", 123)));
     }
 
     void inlinesuppress() {

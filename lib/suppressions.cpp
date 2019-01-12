@@ -74,6 +74,8 @@ std::string Suppressions::parseFile(std::istream &istr)
             continue;
 
         // Skip comments
+        if (line.length() > 1 && line[0] == '#')
+            continue;
         if (line.length() >= 2 && line[0] == '/' && line[1] == '/')
             continue;
 
