@@ -15,6 +15,11 @@ env:
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
 
+before_install:
+# install needed deps
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+
 matrix:
 # do notify immediately about it when a job of a build fails.
   fast_finish: true
@@ -129,10 +134,17 @@ matrix:
         - make -s dmake -j2
         - make -s run-dmake
         - git diff --exit-code
-before_install:
-# install needed deps
- - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+# check if cppcheck builds on precise
+    - name: "make ubuntu 12.04 precise"
+      compiler: gcc
+      dist: precise
+      before_install:
+        - sudo apt-get update -qq
+        - sudo apt-get install libxml2-utils libpcre3
+      script:
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+        - make clean
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
