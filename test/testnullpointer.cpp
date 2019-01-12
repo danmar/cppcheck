@@ -39,7 +39,7 @@ public:
 private:
     Settings settings;
 
-    void run() override {
+    void run() OVERRIDE {
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"

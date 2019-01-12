@@ -32,7 +32,7 @@ public:
 
 private:
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(findLambdaEndToken);
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);

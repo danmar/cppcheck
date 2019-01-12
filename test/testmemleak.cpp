@@ -42,7 +42,7 @@ public:
 private:
     Settings settings;
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(testFunctionReturnType);
         TEST_CASE(open);
     }
@@ -152,7 +152,7 @@ private:
     }
 
 
-    void run() override {
+    void run() OVERRIDE {
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "posix.cfg");
         LOAD_LIB_2(settings2.library, "std.cfg");
@@ -3556,7 +3556,7 @@ private:
         checkMemoryLeak.check();
     }
 
-    void run() override {
+    void run() OVERRIDE {
         settings.addEnabled("warning");
         settings.addEnabled("style");
 
@@ -4730,7 +4730,7 @@ private:
         checkMemoryLeakStructMember.check();
     }
 
-    void run() override {
+    void run() OVERRIDE {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
 
@@ -5195,7 +5195,7 @@ private:
         checkMemoryLeakNoVar.check();
     }
 
-    void run() override {
+    void run() OVERRIDE {
         settings.inconclusive = true;
         settings.standards.posix = true;
         settings.addEnabled("warning");
@@ -5539,7 +5539,7 @@ private:
         checkMemoryLeak4.check();
     }
 
-    void run() override {
+    void run() OVERRIDE {
         LOAD_LIB_2(settings.library, "gtk.cfg");
         settings.addEnabled("all");
         return;
@@ -5653,7 +5653,7 @@ private:
         checkMemoryLeak.checkReallocUsage();
     }
 
-    void run() override {
+    void run() OVERRIDE {
         LOAD_LIB_2(settings.library, "windows.cfg");
         return;
         TEST_CASE(openfileNoLeak);

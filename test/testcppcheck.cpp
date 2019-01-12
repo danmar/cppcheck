@@ -45,7 +45,7 @@ private:
         }
     };
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(instancesSorted);
         TEST_CASE(classInfoFormat);
         TEST_CASE(getErrorMessages);

@@ -48,7 +48,7 @@ private:
         checkClass.constructors();
     }
 
-    void run() override {
+    void run() OVERRIDE {
         settings.addEnabled("style");
         settings.addEnabled("warning");
 

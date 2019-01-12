@@ -44,7 +44,7 @@ private:
         checkVaarg.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() override {
+    void run() OVERRIDE {
         settings.addEnabled("warning");
 
         TEST_CASE(wrongParameterTo_va_start);

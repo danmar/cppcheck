@@ -28,7 +28,7 @@ public:
     TestPlatform() : TestFixture("TestPlatform") { }
 
 private:
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(empty);
         TEST_CASE(valid_config_native_1);
         TEST_CASE(valid_config_native_2);

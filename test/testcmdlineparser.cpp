@@ -42,7 +42,7 @@ private:
     Settings settings;
     CmdLineParser defParser;
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
         TEST_CASE(helplong);

@@ -61,7 +61,7 @@ private:
         ASSERT_EQUALS(result, executor.check());
     }
 
-    void run() override {
+    void run() OVERRIDE {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(deadlock_with_many_errors);

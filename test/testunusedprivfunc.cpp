@@ -34,7 +34,7 @@ public:
 private:
     Settings settings;
 
-    void run() override {
+    void run() OVERRIDE {
         settings.addEnabled("style");
 
         TEST_CASE(test1);

@@ -69,7 +69,7 @@ private:
     Settings settings0;
     Preprocessor preprocessor0;
 
-    void run() override {
+    void run() OVERRIDE {
 
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);

@@ -34,7 +34,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() override {
+    void run() OVERRIDE {
         settings0.addEnabled("style");
         settings1.addEnabled("warning");
 

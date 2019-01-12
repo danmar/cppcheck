@@ -55,7 +55,7 @@ private:
         }
     }
 
-    void run() override {
+    void run() OVERRIDE {
         settings.addEnabled("warning");
         settings.addEnabled("style");
         LOAD_LIB_2(settings.library, "std.cfg");

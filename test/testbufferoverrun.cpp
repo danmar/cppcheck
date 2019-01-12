@@ -73,7 +73,7 @@ private:
         checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
-    void run() override {
+    void run() OVERRIDE {
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.addEnabled("warning");

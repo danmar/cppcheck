@@ -37,7 +37,7 @@ public:
     }
 
 private:
-    void run() override {
+    void run() OVERRIDE {
         // bail out if the tests are not executed from the base folder
         {
             std::ifstream fin("test/testfilelister.cpp");

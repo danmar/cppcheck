@@ -31,7 +31,7 @@ public:
 private:
     Settings settings;
 
-    void run() override {
+    void run() OVERRIDE {
         settings.addEnabled("style");
 
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
