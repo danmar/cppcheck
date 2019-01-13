@@ -579,11 +579,11 @@ namespace {
             return;
         const HANDLE hProcess   = GetCurrentProcess();
         const HANDLE hThread    = GetCurrentThread();
-        BOOL result = pSymInitialize(
-                          hProcess,
-                          nullptr,
-                          TRUE
-                      );
+        pSymInitialize(
+            hProcess,
+            nullptr,
+            TRUE
+        );
         CONTEXT             context = *(ex->ContextRecord);
         STACKFRAME64        stack= {0};
 #ifdef _M_IX86
@@ -607,22 +607,22 @@ namespace {
         DWORD64 displacement   = 0;
         int beyond_main=-1; // emergency exit, see below
         for (ULONG frame = 0; ; frame++) {
-            result = pStackWalk64
-                     (
+            BOOL result = pStackWalk64
+                          (
 #ifdef _M_IX86
-                         IMAGE_FILE_MACHINE_I386,
+                              IMAGE_FILE_MACHINE_I386,
 #else
-                         IMAGE_FILE_MACHINE_AMD64,
+                              IMAGE_FILE_MACHINE_AMD64,
 #endif
-                         hProcess,
-                         hThread,
-                         &stack,
-                         &context,
-                         nullptr,
-                         pSymFunctionTableAccess64,
-                         pSymGetModuleBase64,
-                         nullptr
-                     );
+                              hProcess,
+                              hThread,
+                              &stack,
+                              &context,
+                              nullptr,
+                              pSymFunctionTableAccess64,
+                              pSymGetModuleBase64,
+                              nullptr
+                          );
             if (!result)  // official end...
                 break;
             pSymGetSymFromAddr64(hProcess, (ULONG64)stack.AddrPC.Offset, &displacement, &symbol);
