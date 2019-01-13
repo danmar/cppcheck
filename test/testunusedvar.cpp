@@ -2161,14 +2161,25 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
 
-        functionVariableUsage("void fun() {\n"
+        functionVariableUsage("void dostuff(int x);\n"
+                              "void fun() {\n"
                               "  int x = 1;\n"
                               "  while (c) {\n"
                               "    dostuff(x);\n"
                               "    if (y) { x=10; break; }\n"
                               "  }\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void dostuff(int &x);\n"
+                              "void fun() {\n"
+                              "  int x = 1;\n"
+                              "  while (c) {\n"
+                              "    dostuff(x);\n"
+                              "    if (y) { x=10; break; }\n"
+                              "  }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str()); // TODO : in this special case we can ignore that x is aliased. x is local and there are no function calls after the assignment
 
         functionVariableUsage("void fun() {\n"
                               "  int x = 0;\n"
@@ -3170,11 +3181,25 @@ private:
     }
 
     void localvaralias14() { // #5619
+        functionVariableUsage("char * dostuff(char *p);\n"
+                              "void f() {\n"
+                              "    char a[4], *p=a;\n"
+                              "    p = dostuff(p);\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'p' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("char * dostuff(char *&p);\n"
+                              "void f() {\n"
+                              "    char a[4], *p=a;\n"
+                              "    p = dostuff(p);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str()); // TODO: we can warn in this special case; variable is local and there are no function calls after the assignment
+
         functionVariableUsage("void f() {\n"
                               "    char a[4], *p=a;\n"
                               "    p = dostuff(p);\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'p' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("", errout.str()); // TODO: we can warn in this special case; variable is local and there are no function calls after the assignment
     }
 
     void localvaralias15() { // #6315

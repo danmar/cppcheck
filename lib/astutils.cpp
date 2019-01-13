@@ -1404,6 +1404,22 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         if (tok->str() == "{" && tok->scope()->type == Scope::eFunction)
             break;
 
+        if (Token::Match(tok, "%name% (") && !Token::Match(tok, "if|while|for")) {
+            // Is argument passed by reference?
+            const std::vector<const Token*> args = getArguments(tok);
+            for (unsigned int argnr = 0; argnr < args.size(); ++argnr) {
+                if (!Token::Match(args[argnr], "%name%|.|::"))
+                    continue;
+                if (tok->function() && tok->function()->getArgumentVar(argnr) && !tok->function()->getArgumentVar(argnr)->isReference() && !tok->function()->isConst())
+                    continue;
+                for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
+                    if (isSameExpression(mCpp, macro, subexpr, args[argnr], mLibrary, pure, followVar))
+                        return true;
+                }
+            }
+            continue;
+        }
+
         const Token *addrOf = nullptr;
         if (Token::Match(tok, "& %name% ="))
             addrOf = tok->tokAt(2)->astOperand2();
