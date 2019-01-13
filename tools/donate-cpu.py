@@ -223,8 +223,8 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=zlib'
     if hasInclude('temp', '<gtk/gtk.h>'):
         libraries += ' --library=gtk'
-    if hasInclude('temp', '<boost/'):
-        libraries += ' --library=boost'
+#    if hasInclude('temp', '<boost/'):
+#        libraries += ' --library=boost'
     options = jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheck + ' ' + options
     print(cmd)
