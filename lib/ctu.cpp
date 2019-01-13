@@ -213,7 +213,6 @@ void CTU::FileInfo::loadFromXml(const tinyxml2::XMLElement *xmlElement)
         if (std::strcmp(e->Name(), "function-call") == 0) {
             FunctionCall functionCall;
             if (functionCall.loadFromXml(e))
-                // cppcheck-suppress uninitStructMember // FP
                 functionCalls.push_back(functionCall);
         } else if (std::strcmp(e->Name(), "nested-call") == 0) {
             NestedCall nestedCall;

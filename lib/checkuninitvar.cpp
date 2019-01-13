@@ -360,6 +360,14 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             bool alwaysTrue = false;
             bool alwaysFalse = false;
 
+            // Is variable assigned in condition?
+            if (!membervar.empty()) {
+                for (const Token *cond = tok->linkAt(1); cond != tok; cond = cond->previous()) {
+                    if (cond->varId() == var.declarationId() && isMemberVariableAssignment(cond, membervar))
+                        return true;
+                }
+            }
+
             conditionAlwaysTrueOrFalse(tok->next()->astOperand2(), variableValue, &alwaysTrue, &alwaysFalse);
 
             // initialization / usage in condition..
