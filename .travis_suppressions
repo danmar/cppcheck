@@ -1,8 +1,6 @@
 unusedPrivateFunction:test/testcmdlineparser.cpp
 redundantNextPrevious:test/testtoken.cpp
 simplePatternError:test/testtoken.cpp
-nullPointer:lib/checkother.cpp
-nullPointer:build/checkother.cpp
 missingOverride
 noValidConfiguration
 useStlAlgorithm
