@@ -497,6 +497,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             break;
         }
         fprintf(output, " (%sat 0x%lx).%s\n",
+                // cppcheck-suppress knownConditionTrueFalse ; FP
                 (type==-1)? "" :
                 (type==0) ? "reading " : "writing ",
                 (unsigned long)info->si_addr,
