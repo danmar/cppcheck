@@ -5,6 +5,9 @@ noValidConfiguration
 useStlAlgorithm
 shadowFunction
 
+# temporarily suppress missingOverride
+missingOverride
+
 *:gui/test/*
 *:test/test.cxx
 *:test/cfg/*
