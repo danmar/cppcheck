@@ -177,7 +177,7 @@ script:
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
-  - ${CPPCHECK} --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - ${CPPCHECK} -D__CPPCHECK__ -f --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
 # check gui with qt settings
   - ${CPPCHECK} --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test |& tee --append /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"

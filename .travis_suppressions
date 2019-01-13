@@ -1,7 +1,6 @@
 unusedPrivateFunction:test/testcmdlineparser.cpp
 redundantNextPrevious:test/testtoken.cpp
 simplePatternError:test/testtoken.cpp
-missingOverride
 noValidConfiguration
 useStlAlgorithm
 shadowFunction
