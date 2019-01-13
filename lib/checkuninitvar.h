@@ -96,7 +96,7 @@ public:
         std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
         /** Convert MyFileInfo data into xml string */
-        std::string toString() const;
+        std::string toString() const OVERRIDE;
     };
 
     /** @brief Parse current TU and extract file info */

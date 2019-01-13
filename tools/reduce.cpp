@@ -63,14 +63,14 @@ public:
         return foundLine;
     }
 
-    void reportOut(const std::string &/*outmsg*/) { }
-    void reportErr(const ErrorLogger::ErrorMessage &msg) {
+    void reportOut(const std::string &/*outmsg*/) override { }
+    void reportErr(const ErrorLogger::ErrorMessage &msg) override {
         if (!pattern.empty() && msg.toString(false).find(pattern) != std::string::npos) {
             foundLine = true;
             cppcheck.terminate();
         }
     }
-    void reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) {
+    void reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) override {
         if (std::time(0) > stopTime) {
             if (pattern.empty())
                 foundLine = true;
