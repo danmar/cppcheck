@@ -4,9 +4,6 @@ simplePatternError:test/testtoken.cpp
 noValidConfiguration
 useStlAlgorithm
 shadowFunction
-# false positive
-knownConditionTrueFalse:lib/checkcondition.cpp
-knownConditionTrueFalse:build/checkcondition.cpp
 
 *:gui/test/*
 *:test/test.cxx
