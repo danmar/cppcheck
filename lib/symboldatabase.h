@@ -724,7 +724,7 @@ public:
     bool isImplicitlyVirtual(bool defaultVal = false) const;
 
     /** @brief get function in base class that is overridden */
-    const Function *getOverridenFunction(bool *foundAllBaseClasses = nullptr) const;
+    const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
 
     bool isConstructor() const {
         return type==eConstructor ||
@@ -852,8 +852,8 @@ public:
     const Token * constructorMemberInitialization() const;
 
 private:
-    /** Recursively determine if this function overrides a virtual method in a base class */
-    const Function * getOverridenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
+    /** Recursively determine if this function overrides a virtual function in a base class */
+    const Function * getOverriddenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
 
     unsigned int mFlags;
 
