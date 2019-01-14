@@ -69,7 +69,20 @@ public:
      * Token and its full scopename
      */
     struct TokenAndName {
-        TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt, const Token *pe = nullptr);
+        /**
+         * Constructor used for instantiations.
+         * \param tok template instantiation name token "name<...>"
+         * \param scope full qualification of template
+         */
+        TokenAndName(Token *tok, const std::string &s);
+        /**
+         * Constructor used for declarations.
+         * \param tok template declaration token "template < ... >"
+         * \param scope full qualification of template
+         * \param nt template name token "template < ... > class name"
+         * \param pe template parameter end token ">"
+         */
+        TokenAndName(Token *tok, const std::string &s, const Token *nt, const Token *pe);
         TokenAndName(const TokenAndName& otherTok);
         ~TokenAndName();
 
@@ -279,13 +292,11 @@ private:
 
     /**
      * Replace all matching template usages  'Foo < int >' => 'Foo<int>'
-     * @param instantiationToken Template instantiation token
-     * @param templateName full template name with scope info
+     * @param instantiation Template instantiation information.
      * @param typeStringsUsedInTemplateInstantiation template parameters. list of token strings.
      * @param newName The new type name
      */
-    void replaceTemplateUsage(Token *const instantiationToken,
-                              const std::string &templateName,
+    void replaceTemplateUsage(const TokenAndName &instantiation,
                               const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
                               const std::string &newName);
 
