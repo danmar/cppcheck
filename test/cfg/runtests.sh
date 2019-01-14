@@ -42,6 +42,8 @@ else
     QTCONFIG_RETURNCODE=$?
     set -e
     if [ $QTCONFIG_RETURNCODE -eq 0 ]; then
+        QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core)
+        [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
         set +e
         echo -e "#include <QString>" | ${CXX} ${CXX_OPT} ${QTCONFIG} -x c++ -
         QTCHECK_RETURNCODE=$?
