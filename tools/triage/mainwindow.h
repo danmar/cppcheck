@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include <QString>
+#include <QTextStream>
 
 namespace Ui {
     class MainWindow;
@@ -19,11 +21,13 @@ public:
 
 public slots:
     void loadFile();
+    void loadFromClipboard();
     void showResult(QListWidgetItem *item);
 
 private:
     Ui::MainWindow *ui;
 
+    void load(QTextStream &textStream);
     bool runProcess(const QString &programName, const QStringList & arguments);
     bool wget(const QString url);
     bool unpackArchive(const QString archiveName);

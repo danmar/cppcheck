@@ -35,13 +35,26 @@ void MainWindow::loadFile()
     const QString fileName = QFileDialog::getOpenFileName(this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt);;All (*.*)"));
     if (fileName.isEmpty())
         return;
-    ui->results->clear();
     QFile file(fileName);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream textStream(&file);
+    load(textStream);
+}
+
+void MainWindow::loadFromClipboard()
+{
+    ui->statusBar->clearMessage();
+    QString clipboardContent = QApplication::clipboard()->text();
+    QTextStream textStream(&clipboardContent);
+    load(textStream);
+}
+
+void MainWindow::load(QTextStream &textStream)
+{
     QString url;
     QString errorMessage;
     QStringList allErrors;
+    ui->results->clear();
     while (true) {
         QString line = textStream.readLine();
         if (line.isNull())

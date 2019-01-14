@@ -9,10 +9,12 @@ On Windows something like Cygwin is necessary and the directory containing the e
 in the PATH environment variable (for example "C:\cygwin\bin").
 
 Usage:
-After triage has been started you have to load a daca results file via the "Load" button.
-The file must contain the package URL line beginning with "ftp://" and the Cppcheck messages.
-When the results file has been parsed successfully you can see a list of Cppcheck messages directly
-beneath the "Load" button. Double-click any entry to let the tool show the source code and jump to
-and mark the corresponding line. If the package is not found it is downloaded and extracted
+After triage has been started you have to load daca results from a file via the "Load from file"
+button or from the clipboard via the "Load from clipboard" button.
+The file or clipboard text must contain the package URL line beginning with "ftp://" and the
+Cppcheck messages.
+When the results data has been parsed successfully you can see a list of Cppcheck messages directly
+beneath the "Load ..." buttons. Double-click any entry to let the tool show the source code and jump
+to and mark the corresponding line. If the package is not found it is downloaded and extracted
 automatically. So after the first double-click it is normal that it takes some time until the
 source code is shown.
