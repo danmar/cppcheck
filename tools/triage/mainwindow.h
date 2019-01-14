@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include <QString>
+#include <QTextStream>
 
 namespace Ui {
     class MainWindow;
