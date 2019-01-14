@@ -51,10 +51,20 @@ namespace {
     private:
         const std::string mName;
     };
+
+    class FindFullName {
+    public:
+        explicit FindFullName(const std::string &fullName) : mFullName(fullName) {}
+        bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
+            return tokenAndName.fullName == mFullName;
+        }
+    private:
+        const std::string mFullName;
+    };
 }
 
 TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s, const std::string &n, const Token *nt, const Token *pe) :
-    token(tok), scope(s), name(n), nameToken(nt), paramEnd(pe), flags(0)
+    token(tok), scope(s), name(n), fullName(s.empty() ? n : (s + " :: " + name)), nameToken(nt), paramEnd(pe), flags(0)
 {
     // only set flags for declaration
     if (token && nameToken && paramEnd) {
@@ -72,7 +82,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
 }
 
 TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName& otherTok) :
-    token(otherTok.token), scope(otherTok.scope), name(otherTok.name),
+    token(otherTok.token), scope(otherTok.scope), name(otherTok.name), fullName(otherTok.fullName),
     nameToken(otherTok.nameToken), paramEnd(otherTok.paramEnd), flags(otherTok.flags)
 {
     if (token)
@@ -2175,6 +2185,80 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
     }
 }
 
+void TemplateSimplifier::printOut(const TokenAndName &tokenAndName, const std::string &indent) const
+{
+    std::cout << indent << "token: ";
+    if (tokenAndName.token)
+        std::cout << "\"" << tokenAndName.token->str() << "\" " << mTokenList.fileLine(tokenAndName.token);
+    else
+        std::cout << "nullptr";
+    std::cout << std::endl;
+    std::cout << indent << "scope: \"" << tokenAndName.scope << "\"" << std::endl;
+    std::cout << indent << "name: \"" << tokenAndName.name << "\"" << std::endl;
+    std::cout << indent << "fullName: \"" << tokenAndName.fullName << "\"" << std::endl;
+    std::cout << indent << "nameToken: ";
+    if (tokenAndName.nameToken)
+        std::cout << "\"" << tokenAndName.nameToken->str() << "\" " << mTokenList.fileLine(tokenAndName.nameToken);
+    else
+        std::cout << "nullptr";
+    std::cout << std::endl;
+    std::cout << indent << "paramEnd: ";
+    if (tokenAndName.paramEnd)
+        std::cout << "\"" << tokenAndName.paramEnd->str() << "\" " << mTokenList.fileLine(tokenAndName.paramEnd);
+    else
+        std::cout << "nullptr";
+    std::cout << std::endl;
+    std::cout << indent << "flags: ";
+    if (tokenAndName.isClass())
+        std::cout << " isClass";
+    if (tokenAndName.isFunction())
+        std::cout << " isFunction";
+    if (tokenAndName.isVariable())
+        std::cout << " isVariable";
+    if (tokenAndName.isAlias())
+        std::cout << " isAlias";
+    if (tokenAndName.isSpecialized())
+        std::cout << " isSpecialized";
+    std::cout << std::endl;
+    if (tokenAndName.token && !tokenAndName.paramEnd && tokenAndName.token->strAt(1) == "<") {
+        const Token *end = tokenAndName.token->next()->findClosingBracket();
+        if (end) {
+            const Token *start = tokenAndName.token->next();
+            std::cout << indent << "type: ";
+            while (start && start != end) {
+                std::cout << start->str();
+                start = start->next();
+            }
+            std::cout << end->str() << std::endl;
+        }
+    }
+}
+
+void TemplateSimplifier::printOut(const std::string & text) const
+{
+    std::cout << std::endl;
+    std::cout << text << std::endl;
+    std::cout << std::endl;
+    std::cout << "mTemplateDeclarations: " << mTemplateDeclarations.size() << std::endl;
+    int count = 0;
+    for (const auto & decl : mTemplateDeclarations) {
+        std::cout << "mTemplateDeclarations[" << count++ << "]:" << std::endl;
+        printOut(decl);
+    }
+    std::cout << "mTemplateForwardDeclarations: " << mTemplateForwardDeclarations.size() << std::endl;
+    count = 0;
+    for (const auto & decl : mTemplateForwardDeclarations) {
+        std::cout << "mTemplateForwardDeclarations[" << count++ << "]:" << std::endl;
+        printOut(decl);
+    }
+    std::cout << "mTemplateInstantiations: " << mTemplateInstantiations.size() << std::endl;
+    count = 0;
+    for (const auto & decl : mTemplateInstantiations) {
+        std::cout << "mTemplateInstantiations[" << count++ << "]:" << std::endl;
+        printOut(decl);
+    }
+}
+
 void TemplateSimplifier::simplifyTemplates(
     const std::time_t maxtime,
     bool &codeWithTemplates)
@@ -2235,6 +2319,9 @@ void TemplateSimplifier::simplifyTemplates(
         useDefaultArgumentValues();
 
         simplifyTemplateAliases();
+
+        if (mSettings->debugtemplate)
+            printOut("### Template Simplifier pass " + std::to_string(i + 1) + " ###");
 
         std::set<std::string> expandedtemplates;
 

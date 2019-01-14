@@ -74,12 +74,13 @@ public:
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
-            return token == rhs.token && scope == rhs.scope && name == rhs.name &&
+            return token == rhs.token && scope == rhs.scope && name == rhs.name && fullName == rhs.fullName &&
                    nameToken == rhs.nameToken && paramEnd == rhs.paramEnd && flags == rhs.flags;
         }
         Token *token;
         std::string scope;
         std::string name;
+        std::string fullName;
         const Token *nameToken;
         const Token *paramEnd;
         unsigned int flags;
@@ -337,6 +338,11 @@ private:
     std::string getNewName(
         Token *tok2,
         std::list<std::string> &typeStringsUsedInTemplateInstantiation);
+
+    void printOut(
+        const TokenAndName &tokenAndName,
+        const std::string &indent = "    ") const;
+    void printOut(const std::string &text = "") const;
 
     TokenList &mTokenList;
     const Settings *mSettings;

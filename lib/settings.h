@@ -82,6 +82,9 @@ public:
     /** @brief Is --debug-warnings given? */
     bool debugwarnings;
 
+    /** @brief Is --debug-template given? */
+    bool debugtemplate;
+
     /** @brief Is --dump given? */
     bool dump;
     std::string dumpFile;
