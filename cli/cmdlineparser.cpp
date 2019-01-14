@@ -147,6 +147,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug-warnings") == 0)
                 mSettings->debugwarnings = true;
 
+            // Show template information
+            else if (std::strcmp(argv[i], "--debug-template") == 0)
+                mSettings->debugtemplate = true;
+
             // dump cppcheck data
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings->dump = true;
