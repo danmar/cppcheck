@@ -22,7 +22,14 @@
         <item>
          <widget class="QPushButton" name="loadFile">
           <property name="text">
-           <string>Load</string>
+           <string>Load from file</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="loadFromClipboard">
+          <property name="text">
+           <string>Load from clipboard</string>
           </property>
          </widget>
         </item>
@@ -89,7 +96,7 @@
      <x>0</x>
      <y>0</y>
      <width>1057</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -113,22 +120,6 @@
  </customwidgets>
  <resources/>
  <connections>
-  <connection>
-   <sender>loadFile</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>pasteResults()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>86</x>
-     <y>68</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>135</x>
-     <y>68</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>results</sender>
    <signal>itemDoubleClicked(QListWidgetItem*)</signal>
@@ -161,9 +152,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>loadFromClipboard</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>loadFromClipboard()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>142</x>
+     <y>55</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>528</x>
+     <y>268</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>loadFile()</slot>
   <slot>showResult(QListWidgetItem*)</slot>
+  <slot>loadFromClipboard()</slot>
  </slots>
 </ui>
