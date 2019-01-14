@@ -2798,7 +2798,7 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual method.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual function.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -2809,7 +2809,7 @@ private:
                       "    static Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual method.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual function.\n", errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -2824,7 +2824,7 @@ private:
                       "    Pebbles pebbles;\n"
                       "    memset(&pebbles, 0, sizeof(pebbles));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual method.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual function.\n", errout.str());
 
         // Fred not defined in scope
         checkNoMemset("namespace n1 {\n"
@@ -3240,7 +3240,7 @@ private:
                       "void foo(C*& p) {\n"
                       "    p = malloc(sizeof(C));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a virtual method.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a virtual function.\n", errout.str());
 
         checkNoMemset("struct C { std::string s; };\n"
                       "void foo(C*& p) {\n"
