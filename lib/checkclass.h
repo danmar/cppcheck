@@ -157,7 +157,7 @@ public:
     /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
     void checkUnsafeClassDivZero(bool test=false);
 
-    /** @brief Check that the override keyword is used when overriding virtual methods */
+    /** @brief Check that the override keyword is used when overriding virtual functions */
     void checkOverride();
 
 private:
@@ -262,7 +262,7 @@ private:
                "- Duplicated inherited data members\n"
                // disabled for now "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
                "- Check that arbitrary usage of public interface does not result in division by zero\n"
-               "- Check that the 'override' keyword is used when overriding virtual methods\n";
+               "- Check that the 'override' keyword is used when overriding virtual functions\n";
     }
 
     // operatorEqRetRefThis helper functions

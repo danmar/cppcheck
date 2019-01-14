@@ -1212,9 +1212,9 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     for (const Function &func : type->functionList) {
         if (func.isVirtual()) {
             if (allocation)
-                mallocOnClassError(tok, tok->str(), type->classDef, "virtual method");
+                mallocOnClassError(tok, tok->str(), type->classDef, "virtual function");
             else
-                memsetError(tok, tok->str(), "virtual method", type->classDef->str());
+                memsetError(tok, tok->str(), "virtual function", type->classDef->str());
         }
     }
 
@@ -1791,7 +1791,7 @@ void CheckClass::checkConst()
             // does the function have a body?
             if (func.type != Function::eFunction || !func.hasBody())
                 continue;
-            // don't warn for friend/static/virtual methods
+            // don't warn for friend/static/virtual functions
             if (func.isFriend() || func.isStatic() || func.isVirtual())
                 continue;
             // get last token of return type
@@ -2381,7 +2381,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
         errorPath.emplace_back(tok, "Calling " + tok->str());
     if (!errorPath.empty()) {
         lineNumber = errorPath.front().first->linenr();
-        errorPath.back().second = funcname + " is a virtual method";
+        errorPath.back().second = funcname + " is a virtual function";
     }
 
     std::string constructorName;
@@ -2413,7 +2413,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     for (const Token *tok : tokStack)
         errorPath.emplace_back(tok, "Calling " + tok->str());
     if (!errorPath.empty())
-        errorPath.back().second = purefuncname + " is a pure virtual method without body";
+        errorPath.back().second = purefuncname + " is a pure virtual function without body";
 
     reportError(errorPath, Severity::warning, "pureVirtualCall",
                 "$symbol:" + purefuncname +"\n"
