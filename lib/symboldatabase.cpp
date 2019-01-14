@@ -3149,23 +3149,23 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
     if (isVirtual())
         return true;
     bool foundAllBaseClasses = true;
-    if (getOverridenFunction(&foundAllBaseClasses))
+    if (getOverriddenFunction(&foundAllBaseClasses))
         return true;
     if (foundAllBaseClasses)
         return false;
     return defaultVal;
 }
 
-const Function *Function::getOverridenFunction(bool *foundAllBaseClasses) const
+const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
 {
     if (foundAllBaseClasses)
         *foundAllBaseClasses = true;
     if (!nestedIn->isClassOrStruct())
         return nullptr;
-    return getOverridenFunctionRecursive(nestedIn->definedType, foundAllBaseClasses);
+    return getOverriddenFunctionRecursive(nestedIn->definedType, foundAllBaseClasses);
 }
 
-const Function * Function::getOverridenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const
+const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const
 {
     // check each base class
     for (std::size_t i = 0; i < baseType->derivedFrom.size(); ++i) {
@@ -3220,7 +3220,7 @@ const Function * Function::getOverridenFunctionRecursive(const ::Type* baseType,
         if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies()) {
             // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
             // #5590 with a loop within the class hierarchy.
-            const Function *func = getOverridenFunctionRecursive(derivedFromType, foundAllBaseClasses);
+            const Function *func = getOverriddenFunctionRecursive(derivedFromType, foundAllBaseClasses);
             if (func)  {
                 return func;
             }

@@ -2602,7 +2602,7 @@ void CheckClass::checkOverride()
         for (const Function &func : classScope->functionList) {
             if (func.hasOverrideSpecifier() || func.hasFinalSpecifier())
                 continue;
-            const Function *baseFunc = func.getOverridenFunction();
+            const Function *baseFunc = func.getOverriddenFunction();
             if (baseFunc)
                 overrideError(baseFunc, &func);
         }
