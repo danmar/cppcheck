@@ -132,6 +132,8 @@ private:
         TEST_CASE(template92);
         TEST_CASE(template93); // crash
         TEST_CASE(template94); // #8927 crash
+        TEST_CASE(template95); // #7417
+        TEST_CASE(template96); // #7854
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1903,6 +1905,49 @@ private:
                            "class Array<std::complex<float>> { } ; "
                            "class Array<float> { } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template95() { // #7417
+        const char code[] = "template <typename T>\n"
+                            "T Value = 123;\n"
+                            "template<>\n"
+                            "int Value<int> = 456;\n"
+                            "float f = Value<float>;\n"
+                            "int i = Value<int>;";
+        const char exp[] = "float Value<float> ; Value<float> = 123 ; "
+                           "int Value<int> ; Value<int> = 456 ; "
+                           "float f ; f = Value<float> ; "
+                           "int i ; i = Value<int> ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template96() { // #7854
+        const char code[] = "template<unsigned int n>\n"
+                            "  constexpr long fib = fib<n-1> + fib<n-2>;\n"
+                            "template<>\n"
+                            "  constexpr long fib<0> = 0;\n"
+                            "template<>\n"
+                            "  constexpr long fib<1> = 1;\n"
+                            "long f0 = fib<0>;\n"
+                            "long f1 = fib<1>;\n"
+                            "long f2 = fib<2>;\n"
+                            "long f3 = fib<3>;";
+        const char act[] = "const long fib<2> = fib < 1 > + fib < 0 > ; "
+                           "const long fib<0> = 0 ; "
+                           "const long fib<1> = 1 ; "
+                           "long f0 ; f0 = fib<0> ; "
+                           "long f1 ; f1 = fib<1> ; "
+                           "long f2 ; f2 = fib<2> ; "
+                           "long f3 ; f3 = fib < 3 > ;";
+        const char exp[] = "const long fib<3> = fib<2> + fib<1> ; "
+                           "const long fib<2> = fib<1> + fib<0> ; "
+                           "const long fib<0> = 0 ; "
+                           "const long fib<1> = 1 ; "
+                           "long f0 ; f0 = fib<0> ; "
+                           "long f1 ; f1 = fib<1> ; "
+                           "long f2 ; f2 = fib<2> ; "
+                           "long f3 ; f3 = fib<3> ;";
+        TODO_ASSERT_EQUALS(exp, act, tok(code, false));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
