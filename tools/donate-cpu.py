@@ -8,7 +8,7 @@
 #  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
 #  --work-path=path     Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
 #  --test               Connect to a donate-cpu-server that is running locally on port 8001 for testing.
-#  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same as wget uses.
+#  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.
 #                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second
 #                                 --bandwidth-limit=2m => max. 2 megabytes per second
 #
@@ -353,11 +353,11 @@ for arg in sys.argv[1:]:
     elif arg.startswith('--bandwidth-limit='):
         bandwidth_limit = arg[arg.find('=')+1:]
         if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck.osuosl.org']) is 2:
-            print('Error: Could not parse bandwidth limit value. Using unlimited bandwidth!')
+            bandwidth_limit = '250k'
+            print('Error: Could not parse bandwidth limit value. '
+                  'Using default bandwidth limit (' + bandwidth_limit + ')!')
             time.sleep(4)
-            bandwidth_limit = None
-        else:
-            print('Bandwidth-limit: ' + bandwidth_limit)
+        print('Bandwidth-limit: ' + bandwidth_limit)
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -367,7 +367,7 @@ for arg in sys.argv[1:]:
         print('                       some warning/crash/exception/etc..')
         print('  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.')
         print('  --work-path=path     Work folder path. Default path is ' + workpath)
-        print('  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same as wget uses.')
+        print('  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.')
         print('                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second')
         print('                                 --bandwidth-limit=2m => max. 2 megabytes per second')
         print('')
