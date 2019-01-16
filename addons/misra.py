@@ -20,6 +20,7 @@ import sys
 import re
 import os
 import argparse
+import codecs
 
 
 typeBits = {
@@ -1942,7 +1943,30 @@ class MisraChecker:
         Choice_pattern = re.compile(r'^[ ]*(Advisory|Required|Mandatory)$')
         xA_Z_pattern = re.compile(r'^[#A-Z].*')
         a_z_pattern = re.compile(r'^[a-z].*')
-        for line in open(filename, 'rt'):
+        # Try to detect the file encoding
+        file_stream = None
+        encodings = ['ascii', 'utf-8', 'windows-1250', 'windows-1252']
+        for e in encodings:
+            try:
+                file_stream = codecs.open(filename, 'r', encoding=e)
+                file_stream.readlines()
+                file_stream.seek(0)
+            except UnicodeDecodeError:
+                file_stream = None
+                pass
+            else:
+                break
+        if not file_stream:
+            print('Could not find a suitable codec for "' + filename + '".')
+            print('If you know the codec please report it to the developers so the list can be enhanced.')
+            print('Trying with default codec now and ignoring errors if possible ...')
+            try:
+                file_stream = open(filename, 'rt', errors='ignore')
+            except TypeError:
+                # Python 2 does not support the errors parameter
+                file_stream = open(filename, 'rt')
+        # Parse the rule texts
+        for line in file_stream:
             line = line.replace('\r', '').replace('\n', '')
             if len(line) == 0:
                 if ruleText:
