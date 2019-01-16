@@ -352,12 +352,6 @@ for arg in sys.argv[1:]:
         server_address = ('localhost', 8001)
     elif arg.startswith('--bandwidth-limit='):
         bandwidth_limit = arg[arg.find('=')+1:]
-        if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck.osuosl.org']) is 2:
-            bandwidth_limit = '250k'
-            print('Error: Could not parse bandwidth limit value. '
-                  'Using default bandwidth limit (' + bandwidth_limit + ')!')
-            time.sleep(4)
-        print('Bandwidth-limit: ' + bandwidth_limit)
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -380,6 +374,11 @@ for arg in sys.argv[1:]:
 print('Thank you!')
 if not checkRequirements():
     sys.exit(1)
+if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck.osuosl.org']) is 2:
+    print('Error: Bandwidth limit value "' + bandwidth_limit + '" is invalid.')
+    sys.exit(1)
+else:
+    print('Bandwidth-limit: ' + bandwidth_limit)
 if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
