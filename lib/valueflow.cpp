@@ -1071,6 +1071,24 @@ static void valueFlowArray(TokenList *tokenlist)
     }
 }
 
+static bool isNonNullPointer(const Token * tok)
+{
+    return astIsPointer(tok) && (!tok->hasKnownIntValue() || tok->values().front().intvalue != 0);
+}
+
+static bool withNonNullPointer(const Token* tok)
+{
+    if(!tok)
+        return false;
+    if(!tok->astParent())
+        return false;
+    if(tok->astParent()->astOperand1() != tok && isNonNullPointer(tok->astParent()->astOperand1()))
+        return true;
+    if(tok->astParent()->astOperand2() != tok && isNonNullPointer(tok->astParent()->astOperand2()))
+        return true;
+    return false;
+}
+
 static void valueFlowArrayBool(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -1091,9 +1109,12 @@ static void valueFlowArrayBool(TokenList *tokenlist)
             continue;
         if (!var->isArray() || var->isArgument() || var->isStlType())
             continue;
+        if(withNonNullPointer(tok))
+            continue;
         // TODO: Check for function argument
-        if ((tok->valueType() && tok->valueType()->isIntegral()) ||
-            Token::Match(tok->astParent(), "&|&&|%or%|%oror%|%comp%") ||
+        if (astIsIntegral(tok, false) ||
+            Token::Match(tok->astParent(), "&&|%or%|%oror%|%comp%") ||
+            (astIsIntegral(tok->astParent(), false) && !Token::Match(tok->astParent(), "(|%name%")) ||
             (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|for ("))) {
             ValueFlow::Value value{1};
             if (known)
@@ -4803,7 +4824,6 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
-    valueFlowArrayBool(tokenlist);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
@@ -4817,6 +4837,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t values = 0;
     while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
+        valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
         valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);

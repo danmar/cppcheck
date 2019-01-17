@@ -2582,6 +2582,46 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'buf!=0' is always true\n", errout.str()); // #8924
 
+        check("void f() {\n"
+              "   int buf[42];\n"
+              "   if( !buf ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!buf' is always false\n", errout.str());
+
+        check("void f() {\n"
+              "   int buf[42];\n"
+              "   bool b = buf;\n"
+              "   if( b ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'b' is always true\n", errout.str());
+
+        check("void f() {\n"
+              "   int buf[42];\n"
+              "   bool b = buf;\n"
+              "   if( !b ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition '!b' is always false\n", errout.str());
+
+        check("void f() {\n"
+              "   int buf[42];\n"
+              "   int * p = nullptr;\n"
+              "   if( buf == p ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'buf==p' is always false\n", errout.str());
+
+        check("void f(int * p) {\n"
+              "   int buf[42];\n"
+              "   if( buf == p ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   int buf[42];\n"
+              "   int p[42];\n"
+              "   if( buf == p ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Avoid FP when condition comes from macro
         check("#define NOT !\n"
               "void f() {\n"
