@@ -32,21 +32,19 @@ def overviewReport():
 
 
 def fmt(a, b, c, d, e):
-    ret = a + ' '
-    while len(ret) < 10:
+    column_width = [15, 10, 5, 6, 6, 8]
+    ret = a
+    while len(ret) < column_width[0]:
         ret += ' '
-    if len(ret) == 10:
-        ret += b[:10] + ' '
-    while len(ret) < 21:
+    if len(ret) == column_width[0]:
+        ret += ' ' + b[:10]
+    while len(ret) < (column_width[0] + 1 + column_width[1]):
         ret += ' '
-    ret += b[-5:] + ' '
-    while len(ret) < 32-len(c):
-        ret += ' '
-    ret += c + ' '
-    while len(ret) < 37-len(d):
-        ret += ' '
-    ret += d
-    ret += ' ' + e
+    ret += ' '
+    ret += b[-5:].rjust(column_width[2]) + ' '
+    ret += c.rjust(column_width[3]) + ' '
+    ret += d.rjust(column_width[4]) + ' '
+    ret += e.rjust(column_width[5])
     if a != 'Package':
         pos = ret.find(' ')
         ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
@@ -55,7 +53,7 @@ def fmt(a, b, c, d, e):
 
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
-    html += '<h1>Latest daca@home results</h1>'
+    html += '<h1>Latest daca@home results</h1>\n'
     html += '<pre>\n<b>' + fmt('Package', 'Date       Time ', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
 
     # Write report for latest results

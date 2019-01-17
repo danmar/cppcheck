@@ -243,11 +243,11 @@ def scanPackage(workPath, cppcheck, jobs):
     if p.returncode != 0 and 'cppcheck: error: could not find or open any of the paths given.' not in stdout:
         # Crash!
         print('Crash!')
-        return -1, '', -1
+        return -1, '', -1, options
     if stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
         # Crash!
         print('Crash!')
-        return -1, '', -1
+        return -1, '', -1, options
     elapsedTime = stopTime - startTime
     count = 0
     for line in stderr.split('\n'):
