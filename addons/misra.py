@@ -1953,7 +1953,6 @@ class MisraChecker:
                 file_stream.seek(0)
             except UnicodeDecodeError:
                 file_stream = None
-                pass
             else:
                 break
         if not file_stream:
