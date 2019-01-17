@@ -1071,20 +1071,20 @@ static void valueFlowArray(TokenList *tokenlist)
     }
 }
 
-static bool isNonNullPointer(const Token * tok)
+static bool isNonNullPointer(const Token *tok)
 {
     return astIsPointer(tok) && (!tok->hasKnownIntValue() || tok->values().front().intvalue != 0);
 }
 
-static bool withNonNullPointer(const Token* tok)
+static bool withNonNullPointer(const Token *tok)
 {
-    if(!tok)
+    if (!tok)
         return false;
-    if(!tok->astParent())
+    if (!tok->astParent())
         return false;
-    if(tok->astParent()->astOperand1() != tok && isNonNullPointer(tok->astParent()->astOperand1()))
+    if (tok->astParent()->astOperand1() != tok && isNonNullPointer(tok->astParent()->astOperand1()))
         return true;
-    if(tok->astParent()->astOperand2() != tok && isNonNullPointer(tok->astParent()->astOperand2()))
+    if (tok->astParent()->astOperand2() != tok && isNonNullPointer(tok->astParent()->astOperand2()))
         return true;
     return false;
 }
@@ -1109,11 +1109,10 @@ static void valueFlowArrayBool(TokenList *tokenlist)
             continue;
         if (!var->isArray() || var->isArgument() || var->isStlType())
             continue;
-        if(withNonNullPointer(tok))
+        if (withNonNullPointer(tok))
             continue;
         // TODO: Check for function argument
-        if (astIsIntegral(tok, false) ||
-            Token::Match(tok->astParent(), "&&|%or%|%oror%|%comp%") ||
+        if (astIsIntegral(tok, false) || Token::Match(tok->astParent(), "&&|%or%|%oror%|%comp%") ||
             (astIsIntegral(tok->astParent(), false) && !Token::Match(tok->astParent(), "(|%name%")) ||
             (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|for ("))) {
             ValueFlow::Value value{1};
