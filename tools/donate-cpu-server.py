@@ -9,6 +9,7 @@ import datetime
 import time
 from threading import Thread
 import sys
+import urllib
 
 OLD_VERSION = '1.86'
 
@@ -27,6 +28,8 @@ def overviewReport():
     html += '<a href="head">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time.html">Time report</a><br>\n'
+    html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
+    html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '</body></html>'
     return html
 
@@ -442,6 +445,84 @@ def timeReport(resultPath):
     return html
 
 
+def check_library_report(result_path, message_id):
+    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction'):
+        error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
+        print(error_message)
+        return error_message
+    html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
+    html += '<h1>' + message_id + ' report</h1>\n'
+    html += '<pre>\n'
+    column_widths = [10, 100]
+    html += '<b>'
+    html += 'Count'.rjust(column_widths[0]) + ' ' + \
+            'Function'
+    html += '</b>\n'
+
+    function_counts = dict()
+    for filename in glob.glob(result_path + '/*'):
+        if not os.path.isfile(filename):
+            continue
+        info_messages = False
+        package = os.path.basename(filename)
+        for line in open(filename, 'rt'):
+            if line == 'info messages:\n':
+                info_messages = True
+            if not info_messages:
+                continue
+            if line.endswith('[' + message_id + ']\n'):
+                if message_id is 'checkLibraryNoReturn':
+                    function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
+                else:
+                    function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
+                function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
+
+    for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
+        if count < 10:
+            break
+        html += str(count).rjust(column_widths[0]) + ' ' + \
+                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n'
+
+    html += '\n'
+    html += '</pre>\n'
+    html += '</body></html>\n'
+
+    return html
+
+
+# Lists all checkLibrary* messages regarding the given function name
+def check_library_function_name(result_path, function_name):
+    print('check_library_function_name')
+    text = ''
+    function_name = urllib.unquote_plus(function_name)
+    for filename in glob.glob(result_path + '/*'):
+        if not os.path.isfile(filename):
+            continue
+        info_messages = False
+        url = None
+        cppcheck_options = None
+        for line in open(filename, 'rt'):
+            if line.startswith('ftp://'):
+                url = line
+            elif line.startswith('cppcheck-options:'):
+                cppcheck_options = line
+            elif line == 'info messages:\n':
+                info_messages = True
+            if not info_messages:
+                continue
+            if '[checkLibrary' in line:
+                if (' ' + function_name) in line:
+                    if url:
+                        text += url
+                        url = None
+                    if cppcheck_options:
+                        text += cppcheck_options
+                        cppcheck_options = None
+                    text += line
+
+    return text
+
+
 def sendAll(connection, data):
     while data:
         num = connection.send(data)
@@ -472,7 +553,7 @@ class HttpClientThread(Thread):
         try:
             cmd = self.cmd
             print('[' + strDateTime() + '] ' + cmd)
-            res = re.match(r'GET /([a-zA-Z0-9_\-\.\+]*) HTTP', cmd)
+            res = re.match(r'GET /([a-zA-Z0-9_\-\.\+%]*) HTTP', cmd)
             if res is None:
                 self.connection.close()
                 return
@@ -511,6 +592,17 @@ class HttpClientThread(Thread):
             elif url == 'time.html':
                 text = timeReport(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'check_library_function_report.html':
+                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'check_library_noreturn_report.html':
+                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryNoReturn')
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url.startswith('check_library-'):
+                print('check library function !')
+                function_name = url[len('check_library-'):]
+                text = check_library_function_name(self.resultPath + '/' + 'info_output', function_name)
+                httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + '/' + url
                 if not os.path.isfile(filename):
