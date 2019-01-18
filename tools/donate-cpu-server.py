@@ -621,6 +621,47 @@ def server(server_address_port, packages, packageIndex, resultPath):
             latestResults.append(filename)
             with open('latest.txt', 'wt') as f:
                 f.write(' '.join(latestResults))
+        elif cmd.startswith('write_info\nftp://'):
+            # read data
+            data = cmd[11:]
+            try:
+                t = 0
+                max_data_size = 1024 * 1024
+                while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
+                    d = connection.recv(1024)
+                    if d:
+                        t = 0
+                        data += d
+                    else:
+                        time.sleep(0.2)
+                        t += 0.2
+                connection.close()
+            except socket.error as e:
+                pass
+
+            pos = data.find('\n')
+            if pos < 10:
+                continue
+            url = data[:pos]
+            print('[' + strDateTime() + '] write_info:' + url)
+
+            # save data
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz', url)
+            if res is None:
+                print('info output not written. res is None.')
+                continue
+            if url not in packages:
+                url2 = url + '\n'
+                if url2 not in packages:
+                    print('info output not written. url is not in packages.')
+                    continue
+            print('adding info output for package ' + res.group(1))
+            info_path = resultPath + '/' + 'info_output'
+            if not os.path.exists(info_path):
+                os.mkdir(info_path)
+            filename = info_path + '/' + res.group(1)
+            with open(filename, 'wt') as f:
+                f.write(strDateTime() + '\n' + data)
         else:
             print('[' + strDateTime() + '] invalid command: ' + firstLine)
             connection.close()
