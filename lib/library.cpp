@@ -127,7 +127,12 @@ Library::Error Library::load(const char exename[], const char path[])
         return Error(OK); // ignore duplicates
     }
 
-    return Error(error == tinyxml2::XML_ERROR_FILE_NOT_FOUND ? FILE_NOT_FOUND : BAD_XML);
+    if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+        return Error(FILE_NOT_FOUND);
+    else {
+        doc.PrintError();
+        return Error(BAD_XML);
+    }
 }
 
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
@@ -140,8 +145,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
 
-    if (rootnode == nullptr)
+    if (rootnode == nullptr) {
+        doc.PrintError();
         return Error(BAD_XML);
+    }
 
     if (strcmp(rootnode->Name(),"def") != 0)
         return Error(UNSUPPORTED_FORMAT, rootnode->Name());
