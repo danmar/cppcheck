@@ -99,11 +99,12 @@ public:
         unsigned int flags;
 
         enum {
-            fIsClass       = (1 << 0), // class template
-            fIsFunction    = (1 << 1), // function template
-            fIsVariable    = (1 << 2), // variable template
-            fIsAlias       = (1 << 3), // alias template
-            fIsSpecialized = (1 << 4), // user specialized template
+            fIsClass              = (1 << 0), // class template
+            fIsFunction           = (1 << 1), // function template
+            fIsVariable           = (1 << 2), // variable template
+            fIsAlias              = (1 << 3), // alias template
+            fIsSpecialized        = (1 << 4), // user specialized template
+            fIsForwardDeclaration = (1 << 5), // forward declaration
         };
 
         bool isClass() const {
@@ -141,6 +142,13 @@ public:
             setFlag(fIsSpecialized, state);
         }
 
+        bool isForwardDeclaration() const {
+            return getFlag(fIsForwardDeclaration);
+        }
+        void isForwardDeclaration(bool state) {
+            setFlag(fIsForwardDeclaration, state);
+        }
+
         /**
          * Get specified flag state.
          * @param flag flag to get state of
@@ -172,19 +180,26 @@ public:
     /**
      * Match template declaration/instantiation
      * @param tok The ">" token e.g. before "class"
-     * @param forward declaration or forward declaration
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    static int getTemplateNamePosition(const Token *tok, bool forward = false);
+    static int getTemplateNamePosition(const Token *tok);
 
     /**
-     * Get template name position
+     * Get function template name position
      * @param tok The ">" token e.g. before "class"
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */
     static bool getTemplateNamePositionTemplateFunction(const Token *tok, int &namepos);
+
+    /**
+     * Get variable template name position
+     * @param tok The ">" token
+     * @param namepos return offset to name
+     * @return true if name found, false if not
+     * */
+    static bool getTemplateNamePositionTemplateVariable(const Token *tok, int &namepos);
 
     /**
      * Simplify templates
@@ -209,7 +224,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* frontToken = nullptr);
+    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr);
 
 private:
     /**
