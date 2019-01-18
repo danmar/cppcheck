@@ -85,6 +85,12 @@ matrix:
         - python3 ../misra.py -verify misra-test.c.dump
         - ${CPPCHECK} --dump misra-test.cpp
         - python3 ../misra.py -verify misra-test.cpp.dump
+        - python ../misra.py --rule-texts=misra2012_rules_dummy_ascii.txt -verify misra-test.cpp.dump
+        - python3 ../misra.py --rule-texts=misra2012_rules_dummy_ascii.txt -verify misra-test.cpp.dump
+        - python ../misra.py --rule-texts=misra2012_rules_dummy_utf8.txt -verify misra-test.cpp.dump
+        - python3 ../misra.py --rule-texts=misra2012_rules_dummy_utf8.txt -verify misra-test.cpp.dump
+        - python ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
+        - python3 ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
         - cd ../../
 # check addons/namingng.py
         - cd addons/test
