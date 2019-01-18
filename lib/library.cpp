@@ -127,10 +127,12 @@ Library::Error Library::load(const char exename[], const char path[])
         return Error(OK); // ignore duplicates
     }
 
-    if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+    if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+        return Error(FILE_NOT_FOUND);
+    else {
         doc.PrintError();
-
-    return Error(error == tinyxml2::XML_ERROR_FILE_NOT_FOUND ? FILE_NOT_FOUND : BAD_XML);
+        return Error(BAD_XML);
+    }
 }
 
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
