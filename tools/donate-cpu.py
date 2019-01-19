@@ -374,11 +374,12 @@ for arg in sys.argv[1:]:
 print('Thank you!')
 if not checkRequirements():
     sys.exit(1)
-if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck.osuosl.org']) is 2:
-    print('Error: Bandwidth limit value "' + bandwidth_limit + '" is invalid.')
-    sys.exit(1)
-else:
-    print('Bandwidth-limit: ' + bandwidth_limit)
+if bandwidth_limit and isinstance(bandwidth_limit, str):
+    if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck.osuosl.org']) is 2:
+        print('Error: Bandwidth limit value "' + bandwidth_limit + '" is invalid.')
+        sys.exit(1)
+    else:
+        print('Bandwidth-limit: ' + bandwidth_limit)
 if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
