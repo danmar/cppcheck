@@ -464,7 +464,6 @@ def check_library_report(result_path, message_id):
         if not os.path.isfile(filename):
             continue
         info_messages = False
-        package = os.path.basename(filename)
         for line in open(filename, 'rt'):
             if line == 'info messages:\n':
                 info_messages = True
