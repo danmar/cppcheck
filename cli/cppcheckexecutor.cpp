@@ -915,6 +915,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         if (settings.jointSuppressionReport) {
             for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
                 reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
+                if (returnValue == 0)
+                    returnValue = settings.exitCode;
             }
         }
 
