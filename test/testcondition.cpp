@@ -2609,6 +2609,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'buf==p' is always false\n", errout.str());
 
+        check("void f(bool x) {\n"
+              "   int buf[42];\n"
+              "   if( buf || x ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'buf' is always true\n", errout.str());
+
         check("void f(int * p) {\n"
               "   int buf[42];\n"
               "   if( buf == p ) {}\n"
@@ -2619,6 +2625,12 @@ private:
               "   int buf[42];\n"
               "   int p[42];\n"
               "   if( buf == p ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   int buf[42];\n"
+              "   if( buf == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
