@@ -1112,7 +1112,7 @@ static void valueFlowArrayBool(TokenList *tokenlist)
         if (withNonZeroOp(tok) && Token::Match(tok->astParent(), "%comp%"))
             continue;
         // TODO: Check for function argument
-        if (astIsIntegral(tok, false) || Token::Match(tok->astParent(), "&&|%or%|%oror%|%comp%") ||
+        if (astIsIntegral(tok, false) || Token::Match(tok->astParent(), "&&|%oror%|%comp%") ||
             (astIsIntegral(tok->astParent(), false) && !Token::Match(tok->astParent(), "(|%name%")) ||
             (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|for ("))) {
             ValueFlow::Value value{1};
