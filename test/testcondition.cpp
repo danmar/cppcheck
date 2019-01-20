@@ -2831,6 +2831,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'activate' is always false\n"
                       "[test.cpp:5]: (style) Condition 'foo' is always false\n", errout.str());
+
+        // #6904
+        check("void f() {\n"
+              "  const int b[2] = { 1,0 };\n"
+              "  if(b[1] == 2) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'b[1]==2' is always false\n", errout.str());
     }
 
     void duplicateCondition() {
