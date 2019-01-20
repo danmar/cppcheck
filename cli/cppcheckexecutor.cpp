@@ -912,7 +912,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     if (settings.isEnabled(Settings::INFORMATION) || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
 
-        if (settings.jointSuppressionReport) {
+        if (settings.jointSuppressionReport && !settings.checkLibrary) {
             for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
                 reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
                 if (returnValue == 0)
