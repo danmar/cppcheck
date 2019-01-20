@@ -18,6 +18,7 @@
 
 #include "token.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -1173,20 +1174,32 @@ static const Token* goToRightParenthesis(const Token* start, const Token* end)
 std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() const
 {
     const Token * const top = this;
+
+    // find start node in AST tree
     const Token *start = top;
     while (start->astOperand1() &&
            (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )") || start->str() == "{"))
         start = start->astOperand1();
+
+    // find end node in AST tree
     const Token *end = top;
     while (end->astOperand1() && (end->astOperand2() || end->isUnaryPreOp())) {
-        if (Token::Match(end,"(|[") &&
-            !(Token::Match(end, "( %type%") && !end->astOperand2())) {
+        // lambda..
+        if (end->str() == "[") {
+            const Token *lambdaEnd = findLambdaEndToken(end);
+            if (lambdaEnd) {
+                end = lambdaEnd;
+                break;
+            }
+        } else if (Token::Match(end,"(|[") &&
+                   !(Token::Match(end, "( %type%") && !end->astOperand2())) {
             end = end->link();
             break;
         }
         end = end->astOperand2() ? end->astOperand2() : end->astOperand1();
     }
 
+    // skip parentheses
     start = goToLeftParenthesis(start, end);
     end = goToRightParenthesis(start, end);
     if (Token::simpleMatch(end, "{"))
