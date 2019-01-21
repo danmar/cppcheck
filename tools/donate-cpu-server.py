@@ -214,6 +214,8 @@ def diffMessageIdReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
+        if not os.path.isfile(filename):
+            continue
         url = None
         diff = False
         for line in open(filename, 'rt'):
@@ -236,6 +238,8 @@ def diffMessageIdTodayReport(resultPath, messageId):
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
     for filename in sorted(glob.glob(resultPath + '/*')):
+        if not os.path.isfile(filename):
+            continue
         url = None
         diff = False
         firstLine = True
@@ -341,6 +345,8 @@ def headMessageIdReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
+        if not os.path.isfile(filename):
+            continue
         url = None
         headResults = False
         for line in open(filename, 'rt'):
@@ -365,6 +371,8 @@ def headMessageIdTodayReport(resultPath, messageId):
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
     for filename in sorted(glob.glob(resultPath + '/*')):
+        if not os.path.isfile(filename):
+            continue
         url = None
         headResults = False
         firstLine = True
@@ -404,6 +412,8 @@ def timeReport(resultPath):
     total_time_base = 0.0
     total_time_head = 0.0
     for filename in glob.glob(resultPath + '/*'):
+        if not os.path.isfile(filename):
+            continue
         for line in open(filename, 'rt'):
             if not line.startswith('elapsed-time:'):
                 continue
