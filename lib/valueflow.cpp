@@ -1076,7 +1076,7 @@ static bool isNonZero(const Token *tok)
     return tok && (!tok->hasKnownIntValue() || tok->values().front().intvalue != 0);
 }
 
-static const Token * getOtherOperand(const Token * tok)
+static const Token *getOtherOperand(const Token *tok)
 {
     if (!tok)
         return nullptr;
