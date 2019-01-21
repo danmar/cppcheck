@@ -368,10 +368,11 @@ public:
     }
 
     /**
-     * Report list of unmatched suppressions
+     * Report unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
+     * @return true is returned if errors are reported
      */
-    void reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched);
+    bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 

@@ -536,7 +536,7 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     return result;
 }
 
-void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
+bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
 {
     // Report unmatched suppressions
     for (const Suppressions::Suppression &s : unmatched) {

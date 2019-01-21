@@ -914,13 +914,15 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
         if (settings.jointSuppressionReport && !settings.checkLibrary) {
             for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-                reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
-                if (returnValue == 0)
+                const bool err = reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
+                if (err && returnValue == 0)
                     returnValue = settings.exitCode;
             }
         }
 
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(enableUnusedFunctionCheck));
+        const bool err = reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(enableUnusedFunctionCheck));
+        if (err && returnValue == 0)
+            returnValue = settings.exitCode;
     }
 
     if (!settings.checkConfiguration) {
