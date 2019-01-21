@@ -1076,17 +1076,17 @@ static bool isNonZero(const Token *tok)
     return tok && (!tok->hasKnownIntValue() || tok->values().front().intvalue != 0);
 }
 
-static bool withNonZeroOp(const Token *tok)
+static const Token * getOtherOperand(const Token * tok)
 {
     if (!tok)
-        return false;
+        return nullptr;
     if (!tok->astParent())
-        return false;
-    if (tok->astParent()->astOperand1() != tok && isNonZero(tok->astParent()->astOperand1()))
-        return true;
-    if (tok->astParent()->astOperand2() != tok && isNonZero(tok->astParent()->astOperand2()))
-        return true;
-    return false;
+        return nullptr;
+    if (tok->astParent()->astOperand1() != tok)
+        return tok->astParent()->astOperand1();
+    if (tok->astParent()->astOperand2() != tok)
+        return tok->astParent()->astOperand2();
+    return nullptr;
 }
 
 static void valueFlowArrayBool(TokenList *tokenlist)
@@ -1109,11 +1109,10 @@ static void valueFlowArrayBool(TokenList *tokenlist)
             continue;
         if (!var->isArray() || var->isArgument() || var->isStlType())
             continue;
-        if (withNonZeroOp(tok) && Token::Match(tok->astParent(), "%comp%"))
+        if (isNonZero(getOtherOperand(tok)) && Token::Match(tok->astParent(), "%comp%"))
             continue;
         // TODO: Check for function argument
-        if (astIsBool(tok) || Token::Match(tok->astParent(), "&&|%oror%|%comp%") ||
-            (astIsBool(tok->astParent()) && !Token::Match(tok->astParent(), "(|%name%")) ||
+        if ((astIsBool(tok->astParent()) && !Token::Match(tok->astParent(), "(|%name%")) ||
             (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|for ("))) {
             ValueFlow::Value value{1};
             if (known)
