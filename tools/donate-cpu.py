@@ -2,12 +2,15 @@
 #
 # A script a user can run to donate CPU to cppcheck project
 #
-# Syntax: donate-cpu.py [-jN] [--package=url] [--stop-time=HH:MM] [--work-path=path] [--test]
+# Syntax: donate-cpu.py [-jN] [--package=url] [--stop-time=HH:MM] [--work-path=path] [--test] [--bandwidth-limit=limit]
 #  -jN                  Use N threads in compilation/analysis. Default is 1.
 #  --package=url        Check a specific package and then stop. Can be useful if you want to reproduce some warning/crash/exception/etc..
 #  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
 #  --work-path=path     Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
 #  --test               Connect to a donate-cpu-server that is running locally on port 8001 for testing.
+#  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.
+#                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second
+#                                 --bandwidth-limit=2m => max. 2 megabytes per second
 #
 # What this script does:
 # 1. Check requirements
@@ -142,15 +145,18 @@ def removeTree(folderName):
                 sys.exit(1)
 
 
-def wget(url, destfile):
+def wget(url, destfile, bandwidth_limit):
     if os.path.exists(destfile):
         if os.path.isfile(destfile):
             os.remove(destfile)
         else:
             print('Error: ' + destfile + ' exists but it is not a file! Please check the path and delete it manually.')
             sys.exit(1)
+    limit_rate_option = ''
+    if bandwidth_limit and isinstance(bandwidth_limit, str):
+        limit_rate_option = '--limit-rate=' + bandwidth_limit
     subprocess.call(
-            ['wget', '--tries=10', '--timeout=300', '-O', destfile, url])
+            ['wget', '--tries=10', '--timeout=300', limit_rate_option, '-O', destfile, url])
     if os.path.isfile(destfile):
         return True
     print('Sleep for 10 seconds..')
@@ -158,11 +164,11 @@ def wget(url, destfile):
     return False
 
 
-def downloadPackage(workPath, package):
+def downloadPackage(workPath, package, bandwidth_limit):
     print('Download package ' + package)
     destfile = workPath + '/temp.tgz'
-    if not wget(package, destfile):
-        if not wget(package, destfile):
+    if not wget(package, destfile, bandwidth_limit):
+        if not wget(package, destfile, bandwidth_limit):
             return None
     return destfile
 
@@ -348,6 +354,7 @@ stopTime = None
 workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 packageUrl = None
 server_address = ('cppcheck.osuosl.org', 8000)
+bandwidth_limit = None
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -367,6 +374,8 @@ for arg in sys.argv[1:]:
             sys.exit(1)
     elif arg == '--test':
         server_address = ('localhost', 8001)
+    elif arg.startswith('--bandwidth-limit='):
+        bandwidth_limit = arg[arg.find('=')+1:]
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -376,6 +385,9 @@ for arg in sys.argv[1:]:
         print('                       some warning/crash/exception/etc..')
         print('  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.')
         print('  --work-path=path     Work folder path. Default path is ' + workpath)
+        print('  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.')
+        print('                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second')
+        print('                                 --bandwidth-limit=2m => max. 2 megabytes per second')
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
@@ -386,6 +398,12 @@ for arg in sys.argv[1:]:
 print('Thank you!')
 if not checkRequirements():
     sys.exit(1)
+if bandwidth_limit and isinstance(bandwidth_limit, str):
+    if subprocess.call(['wget', '--limit-rate=' + bandwidth_limit, '-q', '--spider', 'cppcheck.osuosl.org']) is 2:
+        print('Error: Bandwidth limit value "' + bandwidth_limit + '" is invalid.')
+        sys.exit(1)
+    else:
+        print('Bandwidth-limit: ' + bandwidth_limit)
 if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
@@ -418,7 +436,7 @@ while True:
         print("network or server might be temporarily down.. will try again in 30 seconds..")
         time.sleep(30)
         package = getPackage(server_address)
-    tgz = downloadPackage(workpath, package)
+    tgz = downloadPackage(workpath, package, bandwidth_limit)
     unpackPackage(workpath, tgz)
     crash = False
     count = ''

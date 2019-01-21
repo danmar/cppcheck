@@ -253,23 +253,27 @@ void ImportProject::FileSettings::parseCommand(const std::string &command)
 
 void ImportProject::importCompileCommands(std::istream &istr)
 {
-    picojson::value v;
-    istr >> v;
-    if (!v.is<picojson::array>())
+    picojson::value compileCommands;
+    istr >> compileCommands;
+    if (!compileCommands.is<picojson::array>())
         return;
 
-    for (const picojson::value &fileInfo : v.get<picojson::array>()) {
+    for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();
-        std::string dirpath = obj["directory"].get<std::string>();
+        std::string dirpath = Path::fromNativeSeparators(obj["directory"].get<std::string>());
 
         /* CMAKE produces the directory without trailing / so add it if not
          * there - it is needed by setIncludePaths() */
         if (!endsWith(dirpath, '/'))
             dirpath += '/';
 
-        const std::string directory = Path::fromNativeSeparators(dirpath);
+        const std::string directory = dirpath;
         const std::string command = obj["command"].get<std::string>();
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
+
+        // Accept file?
+        if (!Path::acceptFile(file))
+            continue;
 
         struct FileSettings fs;
         if (Path::isAbsolute(file) || Path::fileExists(file))

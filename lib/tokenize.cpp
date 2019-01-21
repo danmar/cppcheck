@@ -1838,6 +1838,8 @@ void Tokenizer::combineOperators()
 
             // combine +-*/ and =
             if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1))) {
+                if (cpp && Token::Match(tok->tokAt(-2), "< %any% >"))
+                    continue;
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
                 continue;
@@ -1927,7 +1929,7 @@ void Tokenizer::concatenateNegativeNumberAndAnyPositive()
         if (!Token::Match(tok, "?|:|,|(|[|{|return|case|sizeof|%op% +|-") || tok->tokType() == Token::eIncDecOp)
             continue;
 
-        while (tok->next() && tok->next()->str() == "+")
+        while (tok->str() != ">" && tok->next() && tok->next()->str() == "+")
             tok->deleteNext();
 
         if (Token::Match(tok->next(), "- %num%")) {
