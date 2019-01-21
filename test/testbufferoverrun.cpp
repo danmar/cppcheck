@@ -2804,6 +2804,13 @@ private:
               "  p = (unsigned char *) buf + sizeof (buf);\n"
               "}", false, "6350.c");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    const char   d[] = \"0123456789\";\n"
+              "    char *cp = d + 3;\n"
+              "    return cp - d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointer_out_of_bounds_2() {

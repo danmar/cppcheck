@@ -1027,14 +1027,6 @@ static void valueFlowArray(TokenList *tokenlist)
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->varId() > 0U) {
             // array
-            if (tok->variable() && tok->variable()->isArray() && !tok->variable()->isArgument() &&
-                !tok->variable()->isStlType()) {
-                ValueFlow::Value value{1};
-                value.setKnown();
-                // TODO : this leads to too many false positives so it is commented out.
-                // See for instance https://github.com/danmar/cppcheck/commit/025881cf35fdde1299d16a09059e7305f8c9bd13
-                // setTokenValue(tok, value, tokenlist->getSettings());
-            }
             const std::map<unsigned int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
             if (it != constantArrays.end()) {
                 ValueFlow::Value value;
@@ -1075,6 +1067,57 @@ static void valueFlowArray(TokenList *tokenlist)
             constantArrays[vartok->varId()] = strtok;
             tok = strtok->next();
             continue;
+        }
+    }
+}
+
+static bool isNonZero(const Token *tok)
+{
+    return tok && (!tok->hasKnownIntValue() || tok->values().front().intvalue != 0);
+}
+
+static const Token *getOtherOperand(const Token *tok)
+{
+    if (!tok)
+        return nullptr;
+    if (!tok->astParent())
+        return nullptr;
+    if (tok->astParent()->astOperand1() != tok)
+        return tok->astParent()->astOperand1();
+    if (tok->astParent()->astOperand2() != tok)
+        return tok->astParent()->astOperand2();
+    return nullptr;
+}
+
+static void valueFlowArrayBool(TokenList *tokenlist)
+{
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->hasKnownIntValue())
+            continue;
+        const Variable *var = nullptr;
+        bool known = false;
+        std::list<ValueFlow::Value>::const_iterator val =
+            std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
+        if (val == tok->values().end()) {
+            var = tok->variable();
+            known = true;
+        } else {
+            var = val->tokvalue->variable();
+            known = val->isKnown();
+        }
+        if (!var)
+            continue;
+        if (!var->isArray() || var->isArgument() || var->isStlType())
+            continue;
+        if (isNonZero(getOtherOperand(tok)) && Token::Match(tok->astParent(), "%comp%"))
+            continue;
+        // TODO: Check for function argument
+        if ((astIsBool(tok->astParent()) && !Token::Match(tok->astParent(), "(|%name%")) ||
+            (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|for ("))) {
+            ValueFlow::Value value{1};
+            if (known)
+                value.setKnown();
+            setTokenValue(tok, value, tokenlist->getSettings());
         }
     }
 }
@@ -4792,6 +4835,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t values = 0;
     while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
+        valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
         valueFlowTerminatingCondition(tokenlist, symboldatabase, settings);
