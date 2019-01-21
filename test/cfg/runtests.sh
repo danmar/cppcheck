@@ -21,6 +21,16 @@ CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security'
 CC=gcc
 CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 
+# Verify that unmatchedSuppression messages result in an error code
+set +e
+${CPPCHECK} ${CPPCHECK_OPT} ${DIR}unmatchedSuppressionTest.c
+CPPCHECK_RETURNCODE=$?
+set -e
+if [ ${CPPCHECK_RETURNCODE} -eq 0 ]; then
+    echo "Error: unmatchedSuppression must result in an exit code signaling an error!"
+    exit 1
+fi
+
 # posix.c
 ${CC} ${CC_OPT} ${DIR}posix.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=posix  ${DIR}posix.c
