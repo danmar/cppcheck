@@ -483,6 +483,7 @@ namespace {
         ScopeInfo2(const std::string &name_, const Token *bodyEnd_) : name(name_), bodyEnd(bodyEnd_) {}
         const std::string name;
         const Token * const bodyEnd;
+        std::set<std::string> usingNamespaces;
     };
 }
 static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
@@ -498,8 +499,20 @@ static void setScopeInfo(Token *tok, std::list<ScopeInfo2> *scopeInfo)
     while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
         scopeInfo->pop_back();
     if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::")) {
+        // check for using namespace
+        if (Token::Match(tok, "using namespace %name% ;|::")) {
+            const Token * tok1 = tok->tokAt(2);
+            std::string nameSpace;
+            while (tok1 && tok1->str() != ";") {
+                if (!nameSpace.empty())
+                    nameSpace += " ";
+                nameSpace += tok1->str();
+                tok1 = tok1->next();
+            }
+            scopeInfo->back().usingNamespaces.insert(nameSpace);
+        }
         // check for member function
-        if (tok->str() == "{") {
+        else if (tok->str() == "{") {
             Token *tok1 = tok;
             while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                 tok1 = tok1->previous();
@@ -600,8 +613,11 @@ void TemplateSimplifier::getTemplateInstantiations()
     std::list<ScopeInfo2> scopeList;
     const Token *skip = nullptr;
 
+    scopeList.emplace_back("", nullptr);
+
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "{|}|namespace|class|struct|union")) {
+        if (Token::Match(tok, "{|}|namespace|class|struct|union") ||
+            Token::Match(tok, "using namespace %name% ;|::")) {
             setScopeInfo(tok, &scopeList);
             continue;
         }
@@ -632,8 +648,12 @@ void TemplateSimplifier::getTemplateInstantiations()
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
             std::string scopeName = getScopeName(scopeList);
+            std::string qualification;
+            Token * qualificationTok = tok;
             while (Token::Match(tok, "%name% :: %name%")) {
-                scopeName += (scopeName.empty() ? "" : " :: ") + tok->str();
+                // ignore redundant namespaces
+                if (scopeName.find(tok->str()) == std::string::npos)
+                    qualification += (qualification.empty() ? "" : " :: ") + tok->str();
                 tok = tok->tokAt(2);
             }
             if (!Token::Match(tok, "%name% <") ||
@@ -663,12 +683,39 @@ void TemplateSimplifier::getTemplateInstantiations()
             if (templateParameters(tok->next())) {
                 const std::string scopeName1(scopeName);
                 while (true) {
-                    const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") + tok->str();
+                    const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") +
+                                                 qualification + (qualification.empty()?"":" :: ") + tok->str();
                     const std::list<TokenAndName>::const_iterator it = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), FindFullName(fullName));
                     if (it != mTemplateDeclarations.end()) {
-                        mTemplateInstantiations.emplace_back(tok, scopeName);
+                        // full name matches
+                        mTemplateInstantiations.emplace_back(tok, it->scope);
                         break;
                     } else {
+                        // full name doesn't match so try with using namespaces if available
+                        bool found = false;
+                        for (const auto & nameSpace : scopeList.back().usingNamespaces) {
+                            std::string fullNameSpace = scopeName + (scopeName.empty()?"":" :: ") +
+                                                        nameSpace + (qualification.empty()?"":" :: ") + qualification;
+                            std::string newFullName = fullNameSpace + " :: " + tok->str();
+                            const std::list<TokenAndName>::const_iterator it1 = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), FindFullName(newFullName));
+                            if (it1 != mTemplateDeclarations.end()) {
+                                // insert using namespace into token stream
+                                std::string::size_type offset = 0;
+                                std::string::size_type pos = 0;
+                                while ((pos = nameSpace.substr(offset).find(' ')) != std::string::npos) {
+                                    qualificationTok->insertToken(nameSpace.substr(offset, pos), "", true);
+                                    offset = offset + pos + 1;
+                                }
+                                qualificationTok->insertToken(nameSpace.substr(offset), "", true);
+                                qualificationTok->insertToken("::", "", true);
+                                mTemplateInstantiations.emplace_back(tok, it1->scope);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found)
+                            break;
+
                         if (scopeName.empty()) {
                             mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList));
                             break;
