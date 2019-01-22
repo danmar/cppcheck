@@ -731,11 +731,12 @@ class MisraChecker:
                             self.reportError(scope.bodyStart, 5, 3)
 
                 for e in enum:
-                    if scope.className and innerVar.nameToken.str[:31] == e[:31]:
-                        if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
-                            self.reportError(innerVar.nameToken, 5, 3)
-                        else:
-                            self.reportError(innerScope.bodyStart, 5, 3)
+                    for scope in data.scopes:
+                        if scope.className and innerVar.nameToken.str[:31] == e[:31]:
+                            if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
+                                self.reportError(innerVar.nameToken, 5, 3)
+                            else:
+                                self.reportError(innerScope.bodyStart, 5, 3)
         for e in enum:
             for scope in data.scopes:
                 if scope.className and scope.className[:31] == e[:31]:

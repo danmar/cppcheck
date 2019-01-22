@@ -13,7 +13,8 @@ else # assume we are in repo root
 fi
 
 # Cppcheck options
-CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+CPPCHECK_OPT='--enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+CPPCHECK_OPT_CHECK_LIB=${CPPCHECK_OPT}' --check-library'
 
 # Compiler settings
 CXX=g++
@@ -21,12 +22,24 @@ CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security'
 CC=gcc
 CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 
+# Verify that unmatchedSuppression messages result in an error code
+set +e
+${CPPCHECK} ${CPPCHECK_OPT} ${DIR}unmatchedSuppressionTest.c
+CPPCHECK_RETURNCODE=$?
+set -e
+if [ ${CPPCHECK_RETURNCODE} -eq 0 ]; then
+    echo "Error: unmatchedSuppression must result in an exit code signaling an error!"
+    exit 1
+fi
+
 # posix.c
 ${CC} ${CC_OPT} ${DIR}posix.c
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --library=posix  ${DIR}posix.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=posix  ${DIR}posix.c
 
 # gnu.c
 ${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --library=gnu ${DIR}gnu.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
 
 # qt.cpp
@@ -56,22 +69,29 @@ else
         fi
     fi
 fi
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=qt ${DIR}qt.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=qt ${DIR}qt.cpp
 
 # bsd.c
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --library=bsd ${DIR}bsd.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=bsd ${DIR}bsd.c
 
 # std.c
 ${CC} ${CC_OPT} ${DIR}std.c
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} ${DIR}std.c
 ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
 ${CXX} ${CXX_OPT} ${DIR}std.cpp
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} ${DIR}std.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
 
 # windows.cpp
 # Syntax check via g++ does not work because it can not find a valid windows.h
 #${CXX} ${CXX_OPT} ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --platform=win32A  ${DIR}windows.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --platform=win32W  ${DIR}windows.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --platform=win64  ${DIR}windows.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  ${DIR}windows.cpp
 
 # wxwidgets.cpp
@@ -93,6 +113,7 @@ else
         ${CXX} ${CXX_OPT} ${WXCONFIG} -Wno-deprecated-declarations ${DIR}wxwidgets.cpp
     fi
 fi
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
 
 # gtk.c
@@ -126,6 +147,7 @@ else
         fi
     fi
 fi
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=gtk -f ${DIR}gtk.c
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
 
 # boost.cpp
@@ -139,6 +161,7 @@ else
     echo "Boost found and working, checking syntax with ${CXX} now."
     ${CXX} ${CXX_OPT} ${DIR}boost.cpp
 fi
+${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=boost ${DIR}boost.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=boost ${DIR}boost.cpp
 
 # Check the syntax of the defines in the configuration files
