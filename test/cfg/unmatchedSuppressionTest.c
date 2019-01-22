@@ -1,3 +1,6 @@
 #include <stdio.h>
 
-//cppcheck-suppress bufferAccessOutOfBounds
+void f()
+{
+    //cppcheck-suppress bufferAccessOutOfBounds
+}
