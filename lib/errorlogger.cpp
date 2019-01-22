@@ -536,8 +536,9 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
     return result;
 }
 
-void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
+bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
 {
+    bool err = false;
     // Report unmatched suppressions
     for (const Suppressions::Suppression &s : unmatched) {
         // don't report "unmatchedSuppression" as unmatched
@@ -563,7 +564,9 @@ void ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         if (!s.fileName.empty())
             callStack.emplace_back(s.fileName, s.lineNumber);
         reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", false));
+        err = true;
     }
+    return err;
 }
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
