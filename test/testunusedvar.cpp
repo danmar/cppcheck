@@ -181,7 +181,7 @@ private:
         TEST_CASE(localvarFuncPtr); // #7194
         TEST_CASE(localvarAddr); // #7477
         TEST_CASE(localvarDelete);
-        TEST_CASE(localvarReturnCallLambda); // #8941
+        TEST_CASE(localvarLambda); // #8941
 
         TEST_CASE(localvarCppInitialization);
         TEST_CASE(localvarCpp11Initialization);
@@ -4233,10 +4233,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvarReturnCallLambda() {
+    void localvarLambda() {
         functionVariableUsage("int foo() {\n"
                               "    auto f = []{return 1};\n"
                               "    return f();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    auto f = []{return 1};\n"
+                              "    auto g = []{return 1};\n"
+                              "    return f() + g();\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

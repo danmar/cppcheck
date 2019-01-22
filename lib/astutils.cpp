@@ -1108,6 +1108,13 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             // TODO
             return Result(Result::Type::BAILOUT);
 
+        if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
+            tok = lambdaEndToken;
+            const Result lambdaResult = checkRecursive(expr, lambdaEndToken->link()->next(), lambdaEndToken, exprVarIds, local);
+            if (lambdaResult.type == Result::Type::READ || lambdaResult.type == Result::Type::BAILOUT)
+                return lambdaResult;
+        }
+
         if (Token::Match(tok, "return|throw")) {
             // TODO: Handle these better
             // Is expr variable used in expression?
