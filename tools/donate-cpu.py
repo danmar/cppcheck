@@ -256,9 +256,10 @@ def scanPackage(workPath, cppcheck, jobs):
         if ': information: ' in line:
             information_messages += line + '\n'
         else:
-            issue_messages += line + '\n'
-            if re.match(r'.*:[0-9]+:.*\]$', line):
-                count += 1
+            if len(line) > 0:
+                issue_messages += line + '\n'
+                if re.match(r'.*:[0-9]+:.*\]$', line):
+                    count += 1
     print('Number of issues: ' + str(count))
     return count, issue_messages, information_messages, elapsedTime, options
 
@@ -334,7 +335,7 @@ def uploadResults(package, results, server_address):
 
 def uploadInfo(package, info_output, server_address):
     print('Uploading information output..')
-    for retry in range(4):
+    for retry in range(3):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(server_address)
@@ -459,7 +460,13 @@ while True:
         resultsToDiff.append(errout)
         if ver == 'head':
             head_info_msg = info
-    if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
+    results_exist = True
+    if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
+        results_exist = False
+    info_exists = True
+    if len(head_info_msg) == 0:
+        info_exists = False
+    if not crash and not results_exist and not info_exists:
         print('No results')
         continue
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
@@ -479,7 +486,9 @@ while True:
         print(output)
         print('=========================================================')
         break
-    uploadResults(package, output, server_address)
-    uploadInfo(package, info_output, server_address)
+    if results_exist:
+        uploadResults(package, output, server_address)
+    if info_exists:
+        uploadInfo(package, info_output, server_address)
     print('Sleep 5 seconds..')
     time.sleep(5)
