@@ -231,7 +231,7 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=gtk'
 #    if hasInclude('temp', '<boost/'):
 #        libraries += ' --library=boost'
-    options = jobs + libraries + ' -D__GCC__ --inconclusive --enable=style --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libraries + ' -D__GCC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheck + ' ' + options
     print(cmd)
     startTime = time.time()
@@ -243,18 +243,25 @@ def scanPackage(workPath, cppcheck, jobs):
     if p.returncode != 0 and 'cppcheck: error: could not find or open any of the paths given.' not in stdout:
         # Crash!
         print('Crash!')
-        return -1, '', -1, options
+        return -1, '', '', -1, options
     if stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
         # Crash!
         print('Crash!')
-        return -1, '', -1, options
+        return -1, '', '', -1, options
     elapsedTime = stopTime - startTime
+    information_messages = ''
+    issue_messages = ''
     count = 0
     for line in stderr.split('\n'):
-        if re.match(r'.*:[0-9]+:.*\]$', line):
-            count += 1
+        if ': information: ' in line:
+            information_messages += line + '\n'
+        else:
+            if len(line) > 0:
+                issue_messages += line + '\n'
+                if re.match(r'.*:[0-9]+:.*\]$', line):
+                    count += 1
     print('Number of issues: ' + str(count))
-    return count, stderr, elapsedTime, options
+    return count, issue_messages, information_messages, elapsedTime, options
 
 
 def splitResults(results):
@@ -317,11 +324,29 @@ def uploadResults(package, results, server_address):
             sock.connect(server_address)
             sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
             sock.close()
+            print('Results have been successfully uploaded.')
             return True
         except socket.error:
-            print('Upload failed, retry in 60 seconds')
+            print('Upload failed, retry in 30 seconds')
             time.sleep(30)
-            pass
+    print('Upload permanently failed!')
+    return False
+
+
+def uploadInfo(package, info_output, server_address):
+    print('Uploading information output..')
+    for retry in range(3):
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect(server_address)
+            sendAll(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
+            sock.close()
+            print('Information output has been successfully uploaded.')
+            return True
+        except socket.error:
+            print('Upload failed, retry in 30 seconds')
+            time.sleep(30)
+    print('Upload permanently failed!')
     return False
 
 
@@ -419,12 +444,13 @@ while True:
     elapsedTime = ''
     resultsToDiff = []
     cppcheck_options = ''
+    head_info_msg = ''
     for ver in cppcheckVersions:
         if ver == 'head':
             cppcheck = 'cppcheck/cppcheck'
         else:
             cppcheck = ver + '/cppcheck'
-        c, errout, t, cppcheck_options = scanPackage(workpath, cppcheck, jobs)
+        c, errout, info, t, cppcheck_options = scanPackage(workpath, cppcheck, jobs)
         if c < 0:
             crash = True
             count += ' Crash!'
@@ -432,7 +458,15 @@ while True:
             count += ' ' + str(c)
         elapsedTime += " {:.1f}".format(t)
         resultsToDiff.append(errout)
-    if not crash and len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
+        if ver == 'head':
+            head_info_msg = info
+    results_exist = True
+    if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
+        results_exist = False
+    info_exists = True
+    if len(head_info_msg) == 0:
+        info_exists = False
+    if not crash and not results_exist and not info_exists:
         print('No results')
         continue
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
@@ -441,6 +475,8 @@ while True:
     output += 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
+    info_output = output
+    info_output += 'info messages:\n' + head_info_msg
     if 'head' in cppcheckVersions:
         output += 'head results:\n' + resultsToDiff[cppcheckVersions.index('head')]
     if not crash:
@@ -450,7 +486,9 @@ while True:
         print(output)
         print('=========================================================')
         break
-    uploadResults(package, output, server_address)
-    print('Results have been uploaded')
+    if results_exist:
+        uploadResults(package, output, server_address)
+    if info_exists:
+        uploadInfo(package, info_output, server_address)
     print('Sleep 5 seconds..')
     time.sleep(5)
