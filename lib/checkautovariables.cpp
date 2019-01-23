@@ -527,30 +527,8 @@ void CheckAutoVariables::returnReference()
                 if (tok2->str() != "return")
                     continue;
 
-                // return..
-                if (Token::Match(tok2, "return %var% ;")) {
-                    // is the returned variable a local variable?
-                    if (isAutoVar(tok2->next())) {
-                        const Variable *var1 = tok2->next()->variable();
-                        // If reference variable is used, check what it references
-                        if (Token::Match(var1->nameToken(), "%var% [=(]")) {
-                            const Token *tok3 = var1->nameToken()->tokAt(2);
-                            if (!Token::Match(tok3, "%var% [);.]"))
-                                continue;
-
-                            // Only report error if variable that is referenced is
-                            // a auto variable
-                            if (!isAutoVar(tok3))
-                                continue;
-                        }
-
-                        // report error..
-                        errorReturnReference(tok2);
-                    }
-                }
-
                 // return reference to temporary..
-                else if (Token::Match(tok2, "return %name% (") &&
+                if (Token::Match(tok2, "return %name% (") &&
                          Token::simpleMatch(tok2->linkAt(2), ") ;")) {
                     if (returnTemporary(tok2->next())) {
                         // report error..
@@ -623,7 +601,14 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     // If the scope is not set correctly then skip checking it
     if (scope->bodyStart != start)
         return;
+    bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
+            ErrorPath errorPath;
+            const Variable * var = getLifetimeVariable(tok, errorPath);
+            if (var && var->isLocal() && !var->isArgument() && isInScope(var->nameToken(), tok->scope()))
+                errorReturnReference(tok, errorPath);
+        }
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLifetimeValue())
                 continue;
@@ -756,9 +741,10 @@ void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow:
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
 }
 
-void CheckAutoVariables::errorReturnReference(const Token *tok)
+void CheckAutoVariables::errorReturnReference(const Token *tok, ErrorPath errorPath)
 {
-    reportError(tok, Severity::error, "returnReference", "Reference to auto variable returned.", CWE562, false);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnTempReference(const Token *tok)

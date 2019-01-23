@@ -837,19 +837,27 @@ private:
     }
 
     void returnReference1() {
+        check("int &foo()\n"
+              "{\n"
+              "    int s = 0;\n"
+              "    int& x = s;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) Reference to local variable returned.\n", errout.str());
+        
         check("std::string &foo()\n"
               "{\n"
               "    std::string s;\n"
               "    return s;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
               "    std::vector<int> v;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
@@ -942,7 +950,7 @@ private:
               "    std::string s;\n"
               "    return s;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to local variable returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::vector<int> &foo();\n"
@@ -952,7 +960,7 @@ private:
               "    std::vector<int> v;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to local variable returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::vector<int> &foo();\n"

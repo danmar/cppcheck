@@ -91,7 +91,7 @@ private:
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
-    void errorReturnReference(const Token *tok);
+    void errorReturnReference(const Token *tok, ErrorPath errorPath);
     void errorReturnTempReference(const Token *tok);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
     void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
@@ -99,12 +99,13 @@ private:
     void errorUselessAssignmentPtrArg(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+        ErrorPath errorPath;
         CheckAutoVariables c(nullptr,settings,errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
         c.errorReturnAddressToAutoVariable(nullptr);
         c.errorAssignAddressOfLocalArrayToGlobalPointer(nullptr, nullptr);
         c.errorReturnPointerToLocalArray(nullptr);
-        c.errorReturnReference(nullptr);
+        c.errorReturnReference(nullptr, errorPath);
         c.errorReturnTempReference(nullptr);
         c.errorInvalidDeallocation(nullptr, nullptr);
         c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");

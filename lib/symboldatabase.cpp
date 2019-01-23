@@ -2049,6 +2049,15 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     return false;
 }
 
+bool Function::returnsReference(const Function *function) 
+{
+    if (!function)
+        return false;
+    if (function->type != Function::eFunction)
+        return false;
+    return function->tokenDef->strAt(-1) == "&";
+}
+
 const Token * Function::constructorMemberInitialization() const
 {
     if (!isConstructor() || !functionScope || !functionScope->bodyStart)
