@@ -496,6 +496,13 @@ private:
                           "    else if (bar() >1 && b) {}\n"
                           "}");
         ASSERT_EQUALS("[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n", errout.str());
+
+        // 7284
+        check("void foo() {\n"
+              "    if (a) {}\n"
+              "    else if (!!a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
     void checkPureFunction(const char code[]) {

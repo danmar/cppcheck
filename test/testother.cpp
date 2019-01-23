@@ -4082,6 +4082,19 @@ private:
               "    return a && b && c;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '&&' because 'a' and 'c' represent the same value.\n", errout.str());
+
+        // 6906
+        check("void f(const bool b) {\n"
+              "   const bool b1 = !b;\n"
+              "   if(!b && b1){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '&&' because '!b' and 'b1' represent the same value.\n", errout.str());
+
+        // 7482
+        check("void f(void) {\n"
+              "   if (a || !!a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'a' and '!!a' represent the same value.\n", errout.str());
     }
 
     void duplicateExpression8() {
