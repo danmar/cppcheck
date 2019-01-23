@@ -844,7 +844,7 @@ private:
               "    return x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) Reference to local variable returned.\n", errout.str());
-        
+
         check("std::string &foo()\n"
               "{\n"
               "    std::string s;\n"

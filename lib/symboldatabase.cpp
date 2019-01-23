@@ -2049,7 +2049,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     return false;
 }
 
-bool Function::returnsReference(const Function *function) 
+bool Function::returnsReference(const Function *function)
 {
     if (!function)
         return false;

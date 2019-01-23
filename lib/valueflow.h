@@ -203,7 +203,6 @@ namespace ValueFlow {
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
-    
 }
 
 const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath);

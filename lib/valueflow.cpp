@@ -2614,7 +2614,7 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
         if (!var->declEndToken())
             return nullptr;
         errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
-        const Token * vartok = var->declEndToken()->astOperand2();
+        const Token *vartok = var->declEndToken()->astOperand2();
         return getLifetimeVariable(vartok, errorPath);
     }
     return var;

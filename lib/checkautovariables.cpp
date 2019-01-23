@@ -528,8 +528,7 @@ void CheckAutoVariables::returnReference()
                     continue;
 
                 // return reference to temporary..
-                if (Token::Match(tok2, "return %name% (") &&
-                         Token::simpleMatch(tok2->linkAt(2), ") ;")) {
+                if (Token::Match(tok2, "return %name% (") && Token::simpleMatch(tok2->linkAt(2), ") ;")) {
                     if (returnTemporary(tok2->next())) {
                         // report error..
                         errorReturnTempReference(tok2);
@@ -537,7 +536,8 @@ void CheckAutoVariables::returnReference()
                 }
 
                 // Return reference to a literal or the result of a calculation
-                else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral()) && astHasAutoResult(tok2->astOperand1())) {
+                else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral()) &&
+                         astHasAutoResult(tok2->astOperand1())) {
                     errorReturnTempReference(tok2);
                 }
             }
@@ -605,7 +605,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             ErrorPath errorPath;
-            const Variable * var = getLifetimeVariable(tok, errorPath);
+            const Variable *var = getLifetimeVariable(tok, errorPath);
             if (var && var->isLocal() && !var->isArgument() && isInScope(var->nameToken(), tok->scope()))
                 errorReturnReference(tok, errorPath);
         }
