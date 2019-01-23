@@ -111,6 +111,8 @@ private:
         TEST_CASE(returnReferenceCalculation);
         TEST_CASE(returnReferenceLambda);
         TEST_CASE(returnReferenceInnerScope);
+        
+        TEST_CASE(danglingReference);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -1193,6 +1195,22 @@ private:
               "    };\n"
               "    return _make(_Wrapper::call, pmf);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingReference() {
+        check("int &f( int k )\n"
+              "{\n"
+              "    static int &r = k;\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Non-local reference variable 'r' to local variable 'k'\n", errout.str());
+
+        check("int &f( int & k )\n"
+              "{\n"
+              "    static int &r = k;\n"
+              "    return r;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

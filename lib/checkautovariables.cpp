@@ -606,9 +606,21 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
-            if (var && var->isLocal() && !var->isArgument() && isInScope(var->nameToken(), tok->scope()))
+            if (var && var->isLocal() && !var->isArgument() && isInScope(var->nameToken(), tok->scope())) {
                 errorReturnReference(tok, errorPath);
-        }
+                continue;
+            }
+        } else if (Token::Match(tok->astParent(), "&|&&") && 
+                    Token::simpleMatch(tok->astParent()->astParent(), "=") && 
+                    tok->variable() && tok->variable()->declarationId() == tok->varId() &&
+                       tok->variable()->isStatic() && !tok->variable()->isArgument()) {
+                ErrorPath errorPath;
+                const Variable *var = getLifetimeVariable(tok, errorPath);
+                if (var && isInScope(var->nameToken(), tok->scope())) {
+                    errorDanglingReference(tok, var, errorPath);
+                    continue;
+                }
+            }
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLifetimeValue())
                 continue;
@@ -745,6 +757,15 @@ void CheckAutoVariables::errorReturnReference(const Token *tok, ErrorPath errorP
 {
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, false);
+}
+
+void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable* var, ErrorPath errorPath)
+{
+    std::string tokName = tok ? tok->str() : "x";
+    std::string varName = var ? var->name() : "y";
+    std::string msg = "Non-local reference variable '" + tokName + "' to local variable '" + varName + "'";
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "danglingReference", msg, CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnTempReference(const Token *tok)
