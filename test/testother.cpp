@@ -4090,7 +4090,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '&&' because '!b' and 'b1' represent the same value.\n", errout.str());
 
-        // 7482
+        // 7284
         check("void f(void) {\n"
               "   if (a || !!a) {}\n"
               "}\n");
