@@ -4095,6 +4095,17 @@ private:
               "   if (a || !!a) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'a' and '!!a' represent the same value.\n", errout.str());
+
+        // 8205
+        check("void f(int x) {\n"
+              "   int Diag = 0;\n"
+              "   switch (x) {\n"
+              "   case 12:\n"
+              "       if (Diag==0) {}\n"
+              "       break;\n"
+              "   }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The expression 'Diag == 0' is always true.\n", errout.str());
     }
 
     void duplicateExpression8() {
