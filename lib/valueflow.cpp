@@ -2603,23 +2603,21 @@ static bool valueFlowForward(Token * const               startToken,
     return true;
 }
 
-static const Variable *getLifetimeVariable(const Token *tok, ErrorPath &errorPath)
+const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath)
 {
+    if (!tok)
+        return nullptr;
     const Variable *var = tok->variable();
     if (!var)
         return nullptr;
     if (var->isReference() || var->isRValueReference()) {
-        for (const ValueFlow::Value &v : tok->values()) {
-            if (!v.isLifetimeValue())
-                continue;
-            if (v.tokvalue == tok)
-                continue;
-            errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
-            const Variable *var2 = getLifetimeVariable(v.tokvalue, errorPath);
-            if (var2)
-                return var2;
-        }
-        return nullptr;
+        if (!var->declEndToken())
+            return nullptr;
+        errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
+        const Token *vartok = var->declEndToken()->astOperand2();
+        if (vartok == tok)
+            return nullptr;
+        return getLifetimeVariable(vartok, errorPath);
     }
     return var;
 }

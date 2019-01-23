@@ -527,31 +527,8 @@ void CheckAutoVariables::returnReference()
                 if (tok2->str() != "return")
                     continue;
 
-                // return..
-                if (Token::Match(tok2, "return %var% ;")) {
-                    // is the returned variable a local variable?
-                    if (isAutoVar(tok2->next())) {
-                        const Variable *var1 = tok2->next()->variable();
-                        // If reference variable is used, check what it references
-                        if (Token::Match(var1->nameToken(), "%var% [=(]")) {
-                            const Token *tok3 = var1->nameToken()->tokAt(2);
-                            if (!Token::Match(tok3, "%var% [);.]"))
-                                continue;
-
-                            // Only report error if variable that is referenced is
-                            // a auto variable
-                            if (!isAutoVar(tok3))
-                                continue;
-                        }
-
-                        // report error..
-                        errorReturnReference(tok2);
-                    }
-                }
-
                 // return reference to temporary..
-                else if (Token::Match(tok2, "return %name% (") &&
-                         Token::simpleMatch(tok2->linkAt(2), ") ;")) {
+                if (Token::Match(tok2, "return %name% (") && Token::simpleMatch(tok2->linkAt(2), ") ;")) {
                     if (returnTemporary(tok2->next())) {
                         // report error..
                         errorReturnTempReference(tok2);
@@ -559,7 +536,8 @@ void CheckAutoVariables::returnReference()
                 }
 
                 // Return reference to a literal or the result of a calculation
-                else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral()) && astHasAutoResult(tok2->astOperand1())) {
+                else if (tok2->astOperand1() && (tok2->astOperand1()->isCalculation() || tok2->next()->isLiteral()) &&
+                         astHasAutoResult(tok2->astOperand1())) {
                     errorReturnTempReference(tok2);
                 }
             }
@@ -623,7 +601,25 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     // If the scope is not set correctly then skip checking it
     if (scope->bodyStart != start)
         return;
+    bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
+            ErrorPath errorPath;
+            const Variable *var = getLifetimeVariable(tok, errorPath);
+            if (var && var->isLocal() && !var->isArgument() && isInScope(var->nameToken(), tok->scope())) {
+                errorReturnReference(tok, errorPath);
+                continue;
+            }
+        } else if (Token::Match(tok->astParent(), "&|&&") && Token::simpleMatch(tok->astParent()->astParent(), "=") &&
+                   tok->variable() && tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
+                   !tok->variable()->isArgument()) {
+            ErrorPath errorPath;
+            const Variable *var = getLifetimeVariable(tok, errorPath);
+            if (var && isInScope(var->nameToken(), tok->scope())) {
+                errorDanglingReference(tok, var, errorPath);
+                continue;
+            }
+        }
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLifetimeValue())
                 continue;
@@ -756,9 +752,19 @@ void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow:
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
 }
 
-void CheckAutoVariables::errorReturnReference(const Token *tok)
+void CheckAutoVariables::errorReturnReference(const Token *tok, ErrorPath errorPath)
 {
-    reportError(tok, Severity::error, "returnReference", "Reference to auto variable returned.", CWE562, false);
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "returnReference", "Reference to local variable returned.", CWE562, false);
+}
+
+void CheckAutoVariables::errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath)
+{
+    std::string tokName = tok ? tok->str() : "x";
+    std::string varName = var ? var->name() : "y";
+    std::string msg = "Non-local reference variable '" + tokName + "' to local variable '" + varName + "'";
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "danglingReference", msg, CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnTempReference(const Token *tok)

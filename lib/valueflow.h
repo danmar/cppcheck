@@ -32,6 +32,7 @@ class Settings;
 class SymbolDatabase;
 class Token;
 class TokenList;
+class Variable;
 
 namespace ValueFlow {
     class CPPCHECKLIB Value {
@@ -203,5 +204,7 @@ namespace ValueFlow {
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
 }
+
+const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath);
 
 #endif // valueflowH

@@ -112,6 +112,8 @@ private:
         TEST_CASE(returnReferenceLambda);
         TEST_CASE(returnReferenceInnerScope);
 
+        TEST_CASE(danglingReference);
+
         // global namespace
         TEST_CASE(testglobalnamespace);
 
@@ -837,19 +839,27 @@ private:
     }
 
     void returnReference1() {
+        check("int &foo()\n"
+              "{\n"
+              "    int s = 0;\n"
+              "    int& x = s;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) Reference to local variable returned.\n", errout.str());
+
         check("std::string &foo()\n"
               "{\n"
               "    std::string s;\n"
               "    return s;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
               "    std::vector<int> v;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
 
         check("std::vector<int> &foo()\n"
               "{\n"
@@ -942,7 +952,7 @@ private:
               "    std::string s;\n"
               "    return s;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to local variable returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::vector<int> &foo();\n"
@@ -952,7 +962,7 @@ private:
               "    std::vector<int> v;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to auto variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Reference to local variable returned.\n", errout.str());
 
         check("class Fred {\n"
               "    std::vector<int> &foo();\n"
@@ -1185,6 +1195,23 @@ private:
               "    };\n"
               "    return _make(_Wrapper::call, pmf);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingReference() {
+        check("int &f( int k )\n"
+              "{\n"
+              "    static int &r = k;\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Non-local reference variable 'r' to local variable 'k'\n",
+                      errout.str());
+
+        check("int &f( int & k )\n"
+              "{\n"
+              "    static int &r = k;\n"
+              "    return r;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
