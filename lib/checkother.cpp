@@ -2012,10 +2012,6 @@ void CheckOther::checkSignOfUnsignedVariable()
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
-    const bool inconclusive = mTokenizer->codeWithTemplates();
-    if (inconclusive && !mSettings->inconclusive)
-        return;
-
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -2024,80 +2020,64 @@ void CheckOther::checkSignOfUnsignedVariable()
             if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
                 continue;
 
-            if (Token::Match(tok, "<|<= 0") && tok->next() == tok->astOperand2()) {
+            const ValueFlow::Value *v1 = tok->astOperand1()->getValue(0);
+            const ValueFlow::Value *v2 = tok->astOperand2()->getValue(0);
+
+            if (Token::Match(tok, "<|<=") && v2 && v2->isKnown()) {
                 const ValueType* vt = tok->astOperand1()->valueType();
                 if (vt && vt->pointer)
-                    pointerLessThanZeroError(tok, inconclusive);
+                    pointerLessThanZeroError(tok, v2);
                 if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedLessThanZeroError(tok, tok->astOperand1()->expressionString(), inconclusive);
-            } else if (Token::Match(tok->previous(), "0 >|>=") && tok->previous() == tok->astOperand1()) {
+                    unsignedLessThanZeroError(tok, v2, tok->astOperand1()->expressionString());
+            } else if (Token::Match(tok, ">|>=") && v1 && v1->isKnown()) {
                 const ValueType* vt = tok->astOperand2()->valueType();
                 if (vt && vt->pointer)
-                    pointerLessThanZeroError(tok, inconclusive);
+                    pointerLessThanZeroError(tok, v1);
                 if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedLessThanZeroError(tok, tok->astOperand2()->expressionString(), inconclusive);
-            } else if (Token::simpleMatch(tok, ">= 0") && tok->next() == tok->astOperand2()) {
+                    unsignedLessThanZeroError(tok, v1, tok->astOperand2()->expressionString());
+            } else if (Token::simpleMatch(tok, ">=") && v2 && v2->isKnown()) {
                 const ValueType* vt = tok->astOperand1()->valueType();
                 if (vt && vt->pointer)
-                    pointerPositiveError(tok, inconclusive);
+                    pointerPositiveError(tok, v2);
                 if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedPositiveError(tok, tok->astOperand1()->str(), inconclusive);
-            } else if (Token::simpleMatch(tok->previous(), "0 <=") && tok->previous() == tok->astOperand1()) {
+                    unsignedPositiveError(tok, v2, tok->astOperand1()->expressionString());
+            } else if (Token::simpleMatch(tok, "<=") && v1 && v1->isKnown()) {
                 const ValueType* vt = tok->astOperand2()->valueType();
                 if (vt && vt->pointer)
-                    pointerPositiveError(tok, inconclusive);
+                    pointerPositiveError(tok, v1);
                 if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedPositiveError(tok, tok->astOperand2()->str(), inconclusive);
+                    unsignedPositiveError(tok, v1, tok->astOperand2()->expressionString());
             }
         }
     }
 }
 
-void CheckOther::unsignedLessThanZeroError(const Token *tok, const std::string &varname, bool inconclusive)
+void CheckOther::unsignedLessThanZeroError(const Token *tok, const ValueFlow::Value * v, const std::string &varname)
 {
-    if (inconclusive) {
-        reportError(tok, Severity::style, "unsignedLessThanZero",
-                    "$symbol:" + varname + "\n"
-                    "Checking if unsigned expression '$symbol' is less than zero. This might be a false warning.\n"
-                    "Checking if unsigned expression '$symbol' is less than zero. An unsigned "
-                    "variable will never be negative so it is either pointless or an error to check if it is. "
-                    "It's not known if the used constant is a template parameter or not and therefore "
-                    "this message might be a false warning.", CWE570, true);
-    } else {
-        reportError(tok, Severity::style, "unsignedLessThanZero",
-                    "$symbol:" + varname + "\n"
-                    "Checking if unsigned expression '$symbol' is less than zero.\n"
-                    "The unsigned expression '$symbol' will never be negative so it "
-                    "is either pointless or an error to check if it is.", CWE570, false);
-    }
+    reportError(getErrorPath(tok, v, "Unsigned less than zero"), Severity::style, "unsignedLessThanZero",
+                "$symbol:" + varname + "\n"
+                "Checking if unsigned expression '$symbol' is less than zero.\n"
+                "The unsigned expression '$symbol' will never be negative so it "
+                "is either pointless or an error to check if it is.", CWE570, false);
 }
 
-void CheckOther::pointerLessThanZeroError(const Token *tok, bool inconclusive)
+void CheckOther::pointerLessThanZeroError(const Token *tok, const ValueFlow::Value *v)
 {
-    reportError(tok, Severity::style, "pointerLessThanZero",
-                "A pointer can not be negative so it is either pointless or an error to check if it is.", CWE570, inconclusive);
+    reportError(getErrorPath(tok, v, "Pointer less than zero"), Severity::style, "pointerLessThanZero",
+                "A pointer can not be negative so it is either pointless or an error to check if it is.", CWE570, false);
 }
 
-void CheckOther::unsignedPositiveError(const Token *tok, const std::string &varname, bool inconclusive)
+void CheckOther::unsignedPositiveError(const Token *tok, const ValueFlow::Value * v, const std::string &varname)
 {
-    if (inconclusive) {
-        reportError(tok, Severity::style, "unsignedPositive",
-                    "$symbol:" + varname + "\n"
-                    "Unsigned variable '$symbol' can't be negative so it is unnecessary to test it.\n"
-                    "The unsigned variable '$symbol' can't be negative so it is unnecessary to test it. "
-                    "It's not known if the used constant is a "
-                    "template parameter or not and therefore this message might be a false warning", CWE570, true);
-    } else {
-        reportError(tok, Severity::style, "unsignedPositive",
-                    "$symbol:" + varname + "\n"
-                    "Unsigned variable '$symbol' can't be negative so it is unnecessary to test it.", CWE570, false);
-    }
+    reportError(getErrorPath(tok, v, "Unsigned positive"), Severity::style, "unsignedPositive",
+                "$symbol:" + varname + "\n"
+                "Unsigned expression '$symbol' can't be negative so it is unnecessary to test it.", CWE570, false);
 }
 
-void CheckOther::pointerPositiveError(const Token *tok, bool inconclusive)
+void CheckOther::pointerPositiveError(const Token *tok, const ValueFlow::Value * v)
 {
-    reportError(tok, Severity::style, "pointerPositive",
-                "A pointer can not be negative so it is either pointless or an error to check if it is not.", CWE570, inconclusive);
+    reportError(getErrorPath(tok, v, "Pointer positive"), Severity::style, "pointerPositive",
+                "A pointer can not be negative so it is either pointless or an error to check if it is not.", CWE570, false);
 }
 
 /* check if a constructor in given class scope takes a reference */

@@ -224,7 +224,7 @@ private:
         TEST_CASE(constArgument);
     }
 
-    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, Settings* settings = 0) {
+    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = 0) {
         // Clear the error buffer..
         errout.str("");
 
@@ -239,6 +239,7 @@ private:
         settings->standards.cpp = Standards::CPPLatest;
         settings->inconclusive = inconclusive;
         settings->experimental = experimental;
+        settings->verbose = verbose;
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
@@ -256,7 +257,7 @@ private:
     }
 
     void check(const char code[], Settings *s) {
-        check(code,"test.cpp",false,true,true,s);
+        check(code,"test.cpp",false,true,true,false,s);
     }
 
     void checkP(const char code[], const char *filename = "test.cpp") {
@@ -305,6 +306,7 @@ private:
               false,   // experimental
               false,   // inconclusive
               true,    // runSimpleChecks
+              false,   // verbose
               &settings);
     }
 
@@ -312,7 +314,7 @@ private:
         static Settings settings;
         settings.platformType = Settings::Win32A;
 
-        check(code, nullptr, false, false, true, &settings);
+        check(code, nullptr, false, false, true, false, &settings);
     }
 
     void emptyBrackets() {
@@ -2512,7 +2514,7 @@ private:
         check("void foo() {\n"
               "    exit(0);\n"
               "    break;\n"
-              "}", nullptr, false, false, false, &settings);
+              "}", nullptr, false, false, false, false, &settings);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("class NeonSession {\n"
@@ -2521,16 +2523,16 @@ private:
               "void NeonSession::exit()\n"
               "{\n"
               "    SAL_INFO(\"ucb.ucp.webdav\", \"neon commands cannot be aborted\");\n"
-              "}", nullptr, false, false, false, &settings);
+              "}", nullptr, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void NeonSession::exit()\n"
               "{\n"
               "    SAL_INFO(\"ucb.ucp.webdav\", \"neon commands cannot be aborted\");\n"
-              "}", nullptr, false, false, false, &settings);
+              "}", nullptr, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() { xResAccess->exit(); }", nullptr, false, false, false, &settings);
+        check("void foo() { xResAccess->exit(); }", nullptr, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int a)\n"
@@ -2773,20 +2775,20 @@ private:
         check("void foo() {\n"
               "    (beat < 100) ? (void)0 : exit(0);\n"
               "    bar();\n"
-              "}", nullptr, false, false, false, &settings);
+              "}", nullptr, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
               "    (beat < 100) ? exit(0) : (void)0;\n"
               "    bar();\n"
-              "}", nullptr, false, false, false, &settings);
+              "}", nullptr, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
 
         // #8261
         check("void foo() {\n"
               "    (beat < 100) ? (void)0 : throw(0);\n"
               "    bar();\n"
-              "}", nullptr, false, false, false, &settings);
+              "}", nullptr, false, false, false, false, &settings);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3696,6 +3698,7 @@ private:
               false, // experimental
               false, // inconclusive
               false, // runSimpleChecks
+              false, // verbose
               nullptr   // settings
              );
         ASSERT_EQUALS("", errout.str());
@@ -3885,7 +3888,7 @@ private:
 
         check("void foo() {\n"
               "    if ((mystrcmp(a, b) == 0) || (mystrcmp(a, b) == 0)) {}\n"
-              "}", "test.cpp", false, false, true, &settings);
+              "}", "test.cpp", false, false, true, false, &settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
 
         check("void GetValue() { return rand(); }\n"
@@ -4782,18 +4785,31 @@ private:
             "  for(unsigned char i = 10; i >= 0; i--)"
             "    printf(\"%u\", i);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned variable 'i' can't be negative so it is unnecessary to test it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'i' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check(
             "void foo(bool b) {\n"
             "  for(unsigned int i = 10; b || i >= 0; i--)"
             "    printf(\"%u\", i);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned variable 'i' can't be negative so it is unnecessary to test it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'i' can't be negative so it is unnecessary to test it.\n", errout.str());
+
+        {
+            const char code[] =
+                "bool foo(unsigned int x) {\n"
+                "  if (x < 0)"
+                "    return true;\n"
+                "  return false;\n"
+                "}";
+            check(code, nullptr, false, false, true, false);
+            ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+            check(code, nullptr, false, false, true, true);
+            ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+        }
 
         check(
             "bool foo(unsigned int x) {\n"
-            "  if (x < 0)"
+            "  if (x < 0u)"
             "    return true;\n"
             "  return false;\n"
             "}");
@@ -4807,9 +4823,41 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
+        {
+            const char code[] =
+                "bool foo(unsigned x) {\n"
+                "  int y = 0;\n"
+                "  if (x < y)"
+                "    return true;\n"
+                "  return false;\n"
+                "}";
+            check(code, nullptr, false, false, true, false);
+            ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+            check(code, nullptr, false, false, true, true);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+        }
+        check(
+            "bool foo(unsigned x) {\n"
+            "  int y = 0;\n"
+            "  if (b)\n"
+            "    y = 1;\n"
+            "  if (x < y)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
         check(
             "bool foo(unsigned int x) {\n"
             "  if (0 > x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+
+        check(
+            "bool foo(unsigned int x) {\n"
+            "  if (0UL > x)"
             "    return true;\n"
             "  return false;\n"
             "}");
@@ -4829,7 +4877,23 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
+
+        check(
+            "bool foo(unsigned int x, unsigned y) {\n"
+            "  if (x - y >= 0)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x-y' can't be negative so it is unnecessary to test it.\n", errout.str());
+
+        check(
+            "bool foo(unsigned int x) {\n"
+            "  if (x >= 0ull)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check(
             "bool foo(int x) {\n"
@@ -4839,6 +4903,29 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
+        check(
+            "bool foo(unsigned int x) {\n"
+            "  if (0 <= x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
+
+        check(
+            "bool foo(unsigned int x) {\n"
+            "  if (0ll <= x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
+
+        check(
+            "bool foo(int x) {\n"
+            "  if (0 <= x)"
+            "    return true;\n"
+            "  return false;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
 
         check(
             "bool foo(unsigned int x, bool y) {\n"
@@ -4878,7 +4965,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4927,7 +5014,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4976,7 +5063,7 @@ private:
             "    return true;\n"
             "  return false;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned variable 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unsigned expression 'x' can't be negative so it is unnecessary to test it.\n", errout.str());
 
         check(
             "bool foo(int x, bool y) {\n"
@@ -4996,8 +5083,25 @@ private:
             check(code, nullptr, false, false);
             ASSERT_EQUALS("", errout.str());
             check(code, nullptr, false, true);
-            ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Checking if unsigned expression 'x' is less than zero. This might be a false warning.\n", errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
+
+        check(
+            "template<int n> void foo(unsigned int x) {\n"
+            "if (x <= 0);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+
+        // #8836
+        check(
+            "uint32_t value = 0xFUL;\n"
+            "void f() {\n"
+            "  if (value < 0u)\n"
+            "  {\n"
+            "    value = 0u;\n"
+            "  }\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
     }
 
     void checkSignOfPointer() {
@@ -5008,6 +5112,18 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
 
+        {
+            const char code[] =
+                "bool foo(int* x) {\n"
+                "  int y = 0;\n"
+                "  if (x >= y)"
+                "    bar();\n"
+                "}";
+            check(code, nullptr, false, false, true, false);
+            ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+            check(code, nullptr, false, false, true, true);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+        }
         check(
             "bool foo(int* x) {\n"
             "  if (*x >= 0)"
@@ -5021,6 +5137,20 @@ private:
             "    bar();\n"
             "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+
+        {
+            const char code[] =
+                "bool foo(int* x) {\n"
+                "  unsigned y = 0u;\n"
+                "  if (x < y)"
+                "    bar();\n"
+                "}";
+
+            check(code, nullptr, false, false, true, false);
+            ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+            check(code, nullptr, false, false, true, true);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+        }
 
         check(
             "bool foo(int* x) {\n"
