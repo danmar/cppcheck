@@ -24,8 +24,8 @@ def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash.html">Crash report</a><br>\n'
-    html += '<a href="diff">Diff report</a><br>\n'
-    html += '<a href="head">HEAD report</a><br>\n'
+    html += '<a href="diff.html">Diff report</a><br>\n'
+    html += '<a href="head.html">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time.html">Time report</a><br>\n'
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
@@ -576,7 +576,7 @@ class HttpClientThread(Thread):
             elif url == 'crash.html':
                 html = crashReport()
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'diff':
+            elif url == 'diff.html':
                 html = diffReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url.startswith('difftoday-'):
@@ -587,7 +587,7 @@ class HttpClientThread(Thread):
                 messageId = url[5:]
                 text = diffMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'head':
+            elif url == 'head.html':
                 html = headReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url.startswith('headtoday-'):
