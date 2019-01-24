@@ -231,7 +231,7 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=gtk'
 #    if hasInclude('temp', '<boost/'):
 #        libraries += ' --library=boost'
-    options = jobs + libraries + ' -D__GCC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libraries + ' --library=gnu -D__GCC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheck + ' ' + options
     print(cmd)
     startTime = time.time()
