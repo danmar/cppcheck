@@ -23,7 +23,7 @@ def strDateTime():
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
-    html += '<a href="crash">Crash report</a><br>\n'
+    html += '<a href="crash.html">Crash report</a><br>\n'
     html += '<a href="diff">Diff report</a><br>\n'
     html += '<a href="head">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
@@ -573,7 +573,7 @@ class HttpClientThread(Thread):
             elif url == 'latest.html':
                 html = latestReport(self.latestResults)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'crash':
+            elif url == 'crash.html':
                 html = crashReport()
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff':
