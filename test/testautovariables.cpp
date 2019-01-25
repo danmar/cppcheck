@@ -1134,6 +1134,13 @@ private:
               "    return f(x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "int& f(int& x, T y) {\n"
+              "    x += y;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceLiteral() {

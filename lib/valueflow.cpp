@@ -2630,19 +2630,22 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
     if (!tok)
         return nullptr;
     const Variable *var = tok->variable();
-    if (var) {
-        if ((var->isReference() || var->isRValueReference())) {
+    if (var && var->declarationId() == tok->varId()) {
+        if (var->isReference() || var->isRValueReference()) {
             if (!var->declEndToken())
                 return nullptr;
-            if (var->isArgument())
+            if (var->isArgument()) 
+            {
                 errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
-            else
+                return var;
+            } else {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
-            const Token *vartok = var->declEndToken()->astOperand2();
-            if (vartok == tok)
-                return nullptr;
-            if (vartok)
-                return getLifetimeVariable(vartok, errorPath);
+                const Token *vartok = var->declEndToken()->astOperand2();
+                if (vartok == tok)
+                    return nullptr;
+                if (vartok)
+                    return getLifetimeVariable(vartok, errorPath);
+            }
         }
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
