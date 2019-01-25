@@ -107,6 +107,7 @@ private:
         TEST_CASE(returnReference5);
         TEST_CASE(returnReference6);
         TEST_CASE(returnReference7);
+        TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceLiteral);
         TEST_CASE(returnReferenceCalculation);
         TEST_CASE(returnReferenceLambda);
@@ -1094,6 +1095,44 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void returnReferenceFunction() {
+        check("int& f(int& a) {\n"
+              "    return a;\n"
+              "}\n"
+              "int& hello() {\n"
+              "    int x = 0;\n"
+              "    return f(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:6]: (error) Reference to local variable returned.\n", errout.str());
+
+        check("int f(int& a) {\n"
+              "    return a;\n"
+              "}\n"
+              "int& hello() {\n"
+              "    int x = 0;\n"
+              "    return f(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& f(int a) {\n"
+              "    return a;\n"
+              "}\n"
+              "int& hello() {\n"
+              "    int x = 0;\n"
+              "    return f(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Reference to local variable returned.\n", errout.str());
+
+        check("int f(int a) {\n"
+              "    return a;\n"
+              "}\n"
+              "int& hello() {\n"
+              "    int x = 0;\n"
+              "    return f(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void returnReferenceLiteral() {
         check("const std::string &a() {\n"
               "    return \"foo\";\n"
@@ -1199,7 +1238,7 @@ private:
     }
 
     void danglingReference() {
-        check("int &f( int k )\n"
+        check("int f( int k )\n"
               "{\n"
               "    static int &r = k;\n"
               "    return r;\n"
