@@ -533,7 +533,7 @@ void invalidFunctionArg()
     // cppcheck-suppress invalidFunctionArg
     void *pMem = _malloca(-1);
     _freea(pMem);
-    // cppcheck-suppress unreadVariable
+    // FIXME cppcheck-suppress unreadVariable
     // cppcheck-suppress invalidFunctionArg
     pMem = _alloca(-5);
 }
