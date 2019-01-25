@@ -2603,14 +2603,15 @@ static bool valueFlowForward(Token * const               startToken,
     return true;
 }
 
-static const Token * findSimpleReturn(const Function* f)
+static const Token *findSimpleReturn(const Function *f)
 {
-    const Scope * scope = f->functionScope;
+    const Scope *scope = f->functionScope;
     if (!scope)
         return nullptr;
-    const Token * returnTok = nullptr;
+    const Token *returnTok = nullptr;
     for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
-        if (tok->str() == "{" && tok->scope() && (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {
+        if (tok->str() == "{" && tok->scope() &&
+            (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {
             tok = tok->link();
             continue;
         }
@@ -2644,25 +2645,25 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
                 return getLifetimeVariable(vartok, errorPath);
         }
     } else if (Token::Match(tok->previous(), "%name% (")) {
-        const Function * f = tok->previous()->function();
+        const Function *f = tok->previous()->function();
         if (!f)
             return nullptr;
         if (!Function::returnsReference(f))
             return nullptr;
-        const Token * returnTok = findSimpleReturn(f);
+        const Token *returnTok = findSimpleReturn(f);
         if (!returnTok)
             return nullptr;
-        const Variable * argvar = getLifetimeVariable(returnTok, errorPath);
+        const Variable *argvar = getLifetimeVariable(returnTok, errorPath);
         if (!argvar)
             return nullptr;
         if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-            auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable& v) {
+            auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
                 return v.nameToken() == argvar->nameToken();
             });
             if (arg_it == f->argumentList.end())
                 return nullptr;
             std::size_t n = std::distance(f->argumentList.begin(), arg_it);
-            const Token * argTok = getArguments(tok->previous()).at(n);
+            const Token *argTok = getArguments(tok->previous()).at(n);
             errorPath.emplace_back(returnTok, "Return reference.");
             errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
             return getLifetimeVariable(argTok, errorPath);

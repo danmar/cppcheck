@@ -1095,7 +1095,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReferenceFunction() {
+    void returnReferenceFunction()
+    {
         check("int& f(int& a) {\n"
               "    return a;\n"
               "}\n"
@@ -1103,7 +1104,9 @@ private:
               "    int x = 0;\n"
               "    return f(x);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:6]: (error) Reference to local variable returned.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:6]: (error) Reference to local variable returned.\n",
+            errout.str());
 
         check("int f(int& a) {\n"
               "    return a;\n"

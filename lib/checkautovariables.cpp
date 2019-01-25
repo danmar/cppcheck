@@ -606,10 +606,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
-            if (var && 
-                !var->isGlobal() && 
-                !var->isStatic() && 
-                !var->isReference() && !var->isRValueReference() && isInScope(var->nameToken(), tok->scope())) {
+            if (var && !var->isGlobal() && !var->isStatic() && !var->isReference() && !var->isRValueReference() &&
+                isInScope(var->nameToken(), tok->scope())) {
                 errorReturnReference(tok, errorPath);
                 continue;
             }
