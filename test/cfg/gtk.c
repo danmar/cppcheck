@@ -19,4 +19,8 @@ void validCode(int argInt)
     if G_LIKELY(argInt == 0) {
     } else if (G_LIKELY(argInt == -1)) {
     }
+
+    printf("%s", _("test"));
+    printf("%s", Q_("a|test"));
+    printf("%s", N_("test"));
 }
