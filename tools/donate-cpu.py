@@ -196,7 +196,7 @@ def unpackPackage(workPath, tgz):
     os.chdir(workPath)
 
 
-def hasInclude(path, inc):
+def hasInclude(path, includes):
     for root, _, files in os.walk(path):
         for name in files:
             filename = os.path.join(root, name)
@@ -210,8 +210,9 @@ def hasInclude(path, inc):
                     # Python3 directly reads the data into a string object that has no decode()
                     pass
                 f.close()
-                if filedata.find('\n#include ' + inc) >= 0:
-                    return True
+                for inc in includes:
+                    if filedata.find('\n#include ' + inc) >= 0:
+                        return True
             except IOError:
                 pass
     return False
@@ -221,15 +222,15 @@ def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix'
-    if hasInclude('temp', '<wx/') or hasInclude('temp', '"wx/'):
+    if hasInclude('temp', ['<wx/', '"wx/']):
         libraries += ' --library=wxwidgets'
-    if hasInclude('temp', '<QString>'):
+    if hasInclude('temp', ['<QString>', '<QtWidgets>', '<QtGui/']):
         libraries += ' --library=qt'
-    if hasInclude('temp', '<zlib.h>'):
+    if hasInclude('temp', ['<zlib.h>']):
         libraries += ' --library=zlib'
-    if hasInclude('temp', '<gtk/gtk.h>'):
+    if hasInclude('temp', ['<gtk/gtk.h>', '<glib.h>', '<glib/']):
         libraries += ' --library=gtk'
-#    if hasInclude('temp', '<boost/'):
+#    if hasInclude('temp', ['<boost/']):
 #        libraries += ' --library=boost'
     options = jobs + libraries + ' --library=gnu -D__GCC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheck + ' ' + options
