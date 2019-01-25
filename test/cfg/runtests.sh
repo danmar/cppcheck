@@ -13,8 +13,7 @@ else # assume we are in repo root
 fi
 
 # Cppcheck options
-CPPCHECK_OPT='--enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
-CPPCHECK_OPT_CHECK_LIB=${CPPCHECK_OPT}' --check-library'
+CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
 CXX=g++
@@ -34,14 +33,11 @@ fi
 
 # posix.c
 ${CC} ${CC_OPT} ${DIR}posix.c
-${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --library=posix  ${DIR}posix.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=posix  ${DIR}posix.c
 
 # gnu.c
-# FIXME: This is temporarily commented out to make Travis happy
-#${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
-#${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --library=gnu ${DIR}gnu.c
-#${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
+${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
+${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
 
 # qt.cpp
 set +e
@@ -70,33 +66,23 @@ else
         fi
     fi
 fi
-# FIXME: This is temporarily commented out to make Travis happy
-#${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=qt ${DIR}qt.cpp
-#${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=qt ${DIR}qt.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=qt ${DIR}qt.cpp
 
 # bsd.c
-${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --library=bsd ${DIR}bsd.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=bsd ${DIR}bsd.c
 
 # std.c
-# FIXME: This is temporarily commented out to make Travis happy
-#${CC} ${CC_OPT} ${DIR}std.c
-#${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} ${DIR}std.c
-#${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
-#${CXX} ${CXX_OPT} ${DIR}std.cpp
-#${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} ${DIR}std.cpp
-#${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
+${CC} ${CC_OPT} ${DIR}std.c
+${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.c
+${CXX} ${CXX_OPT} ${DIR}std.cpp
+${CPPCHECK} ${CPPCHECK_OPT} ${DIR}std.cpp
 
 # windows.cpp
 # Syntax check via g++ does not work because it can not find a valid windows.h
 #${CXX} ${CXX_OPT} ${DIR}windows.cpp
-# FIXME: This is temporarily commented out to make Travis happy
-#${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --platform=win32A  ${DIR}windows.cpp
-#${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A  ${DIR}windows.cpp
-#${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --platform=win32W  ${DIR}windows.cpp
-#${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W  ${DIR}windows.cpp
-#${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --platform=win64  ${DIR}windows.cpp
-#${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  ${DIR}windows.cpp
 
 # wxwidgets.cpp
 set +e
@@ -117,7 +103,6 @@ else
         ${CXX} ${CXX_OPT} ${WXCONFIG} -Wno-deprecated-declarations ${DIR}wxwidgets.cpp
     fi
 fi
-${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
 
 # gtk.c
@@ -151,7 +136,6 @@ else
         fi
     fi
 fi
-${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=gtk -f ${DIR}gtk.c
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
 
 # boost.cpp
@@ -165,7 +149,6 @@ else
     echo "Boost found and working, checking syntax with ${CXX} now."
     ${CXX} ${CXX_OPT} ${DIR}boost.cpp
 fi
-${CPPCHECK} ${CPPCHECK_OPT_CHECK_LIB} --inconclusive --library=boost ${DIR}boost.cpp
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=boost ${DIR}boost.cpp
 
 # Check the syntax of the defines in the configuration files

@@ -60,7 +60,7 @@ void leakReturnValNotUsed()
     // cppcheck-suppress nullPointer
     strcasestr("test", NULL);
 
-    // cppcheck-suppress knownConditionTrueFalse
+    // FIXME cppcheck-suppress knownConditionTrueFalse
     // cppcheck-suppress duplicateExpression
     if (42 == __builtin_expect(42, 0))
         return;
