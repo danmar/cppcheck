@@ -73,6 +73,7 @@ private:
         TEST_CASE(incorrectLogicOperator10); // enum
         TEST_CASE(incorrectLogicOperator11);
         TEST_CASE(incorrectLogicOperator12);
+        TEST_CASE(incorrectLogicOperator13);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1298,6 +1299,21 @@ private:
               "    return;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+    }
+
+    void incorrectLogicOperator13() {
+        // 8780
+        check("void f(const int &v) {\n"
+              "    const int x=v;\n"
+              "    if ((v == 1) && (x == 2)) {;}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Logical conjunction always evaluates to false: v == 1 && x == 2.\n", errout.str());
+
+        check("void f2(const int *v) {\n"
+              "    const int *x=v;\n"
+              "    if ((*v == 1) && (*x == 2)) {;}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Logical conjunction always evaluates to false: *(v) == 1 && *(x) == 2.\n", errout.str());
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
