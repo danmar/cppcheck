@@ -1369,8 +1369,12 @@ void TemplateSimplifier::expandTemplate(
             continue;
         }
         if (inTemplateDefinition) {
-            if (!endOfTemplateDefinition && tok3->str() == "{")
-                endOfTemplateDefinition = tok3->link();
+            if (!endOfTemplateDefinition) {
+                if (isVariable)
+                    endOfTemplateDefinition = Token::findsimplematch(tok3, ";");
+                else if (tok3->str() == "{")
+                    endOfTemplateDefinition = tok3->link();
+            }
             if (tok3 == endOfTemplateDefinition) {
                 inTemplateDefinition = false;
                 startOfTemplateDeclaration = nullptr;
@@ -1532,7 +1536,7 @@ void TemplateSimplifier::expandTemplate(
                             addNamespace(templateDeclaration, tok3);
                         }
                         mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
-                    } else if (!Token::Match(tok3->next(), ":|{"))
+                    } else if (!Token::Match(tok3->next(), ":|{|="))
                         tok3->str(newName);
                     continue;
                 }

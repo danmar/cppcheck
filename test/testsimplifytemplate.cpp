@@ -1934,14 +1934,15 @@ private:
                             "long f2 = fib<2>;\n"
                             "long f3 = fib<3>;";
         const char act[] = "const long fib<2> = fib < 1 > + fib < 0 > ; "
+                           "const long fib<3> = fib < 2 > + fib < 1 > ; "
                            "const long fib<0> = 0 ; "
                            "const long fib<1> = 1 ; "
                            "long f0 ; f0 = fib<0> ; "
                            "long f1 ; f1 = fib<1> ; "
                            "long f2 ; f2 = fib<2> ; "
-                           "long f3 ; f3 = fib < 3 > ;";
-        const char exp[] = "const long fib<3> = fib<2> + fib<1> ; "
-                           "const long fib<2> = fib<1> + fib<0> ; "
+                           "long f3 ; f3 = fib<3> ;";
+        const char exp[] = "const long fib<2> = fib<1> + fib<0> ; "
+                           "const long fib<3> = fib<2> + fib<1> ; "
                            "const long fib<0> = 0 ; "
                            "const long fib<1> = 1 ; "
                            "long f0 ; f0 = fib<0> ; "
