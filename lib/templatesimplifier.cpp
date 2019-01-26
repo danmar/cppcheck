@@ -2454,6 +2454,28 @@ void TemplateSimplifier::printOut(const std::string & text) const
         std::cout << "mTemplateForwardDeclarations[" << count++ << "]:" << std::endl;
         printOut(decl);
     }
+    std::cout << "mTemplateForwardDeclarationsMap: " << mTemplateForwardDeclarationsMap.size() << std::endl;
+    unsigned int mapIndex = 0;
+    for (const auto & mapItem : mTemplateForwardDeclarationsMap) {
+        unsigned int declIndex = 0;
+        for (const auto & decl : mTemplateDeclarations) {
+            if (mapItem.first == decl.token) {
+                unsigned int forwardIndex = 0;
+                for (const auto & forwardDecl : mTemplateForwardDeclarations) {
+                    if (mapItem.second == forwardDecl.token) {
+                        std::cout << "mTemplateForwardDeclarationsMap[" << mapIndex << "]:" << std::endl;
+                        std::cout << "    mTemplateDeclarations[" << declIndex
+                                  << "] => mTemplateForwardDeclarations[" << forwardIndex << "]" << std::endl;
+                        break;
+                    }
+                    forwardIndex++;
+                }
+                break;
+            }
+            declIndex++;
+        }
+        mapIndex++;
+    }
     std::cout << "mTemplateInstantiations: " << mTemplateInstantiations.size() << std::endl;
     count = 0;
     for (const auto & decl : mTemplateInstantiations) {
