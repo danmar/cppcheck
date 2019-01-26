@@ -77,7 +77,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
 {
     // only set flags for declaration
     if (token && nameToken && paramEnd) {
-        isSpecialized(Token::simpleMatch(token, "template < >"));
+        isSpecialization(Token::simpleMatch(token, "template < >"));
+        isPartialSpecialization(!isSpecialization() && nameToken->strAt(1) == "<");
         isAlias(paramEnd->strAt(1) == "using");
         isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;"));
         const Token *tok1 = nameToken->next();
@@ -1201,7 +1202,7 @@ void TemplateSimplifier::expandTemplate(
     const Token * const templateDeclarationToken = templateDeclaration.paramEnd;
     const bool isClass = templateDeclaration.isClass();
     const bool isFunction = templateDeclaration.isFunction();
-    const bool isSpecialization = templateDeclaration.isSpecialized();
+    const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
 
     // add forward declarations
@@ -2035,7 +2036,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     std::vector<const Token *> typeParametersInDeclaration;
     getTemplateParametersInDeclaration(templateDeclaration.token->tokAt(2), typeParametersInDeclaration);
     const bool printDebug = mSettings->debugwarnings;
-    const bool specialized = templateDeclaration.isSpecialized();
+    const bool specialized = templateDeclaration.isSpecialization();
     const bool isfunc = templateDeclaration.isFunction();
     const bool isVar = templateDeclaration.isVariable();
 
@@ -2320,10 +2321,10 @@ void TemplateSimplifier::getUserDefinedSpecializations()
 {
     // try to locate a matching declaration for each user defined specialization
     for (auto & spec : mTemplateDeclarations) {
-        if (spec.isSpecialized()) {
+        if (spec.isSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (decl.isSpecialized())
+                if (decl.isSpecialization())
                     continue;
 
                 // make sure the scopes and names match
@@ -2418,8 +2419,10 @@ void TemplateSimplifier::printOut(const TokenAndName &tokenAndName, const std::s
         std::cout << " isVariable";
     if (tokenAndName.isAlias())
         std::cout << " isAlias";
-    if (tokenAndName.isSpecialized())
-        std::cout << " isSpecialized";
+    if (tokenAndName.isSpecialization())
+        std::cout << " isSpecialization";
+    if (tokenAndName.isPartialSpecialization())
+        std::cout << " isPartialSpecialization";
     if (tokenAndName.isForwardDeclaration())
         std::cout << " isForwardDeclaration";
     std::cout << std::endl;
@@ -2574,7 +2577,7 @@ void TemplateSimplifier::simplifyTemplates(
                     break;
             }
             if (decl != mTemplateDeclarations.end()) {
-                if (it->isSpecialized()) {
+                if (it->isSpecialization()) {
                     // delete the "template < >"
                     Token * tok = it->token;
                     tok->deleteNext(2);
