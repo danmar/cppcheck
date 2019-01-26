@@ -2634,17 +2634,18 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
         if (var->isReference() || var->isRValueReference()) {
             if (!var->declEndToken())
                 return nullptr;
-            if (var->isArgument()) 
-            {
+            if (var->isArgument()) {
                 errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
                 return var;
-            } else {
+            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
                 if (vartok == tok)
                     return nullptr;
                 if (vartok)
                     return getLifetimeVariable(vartok, errorPath);
+            } else {
+                return nullptr;
             }
         }
     } else if (Token::Match(tok->previous(), "%name% (")) {

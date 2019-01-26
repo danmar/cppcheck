@@ -1727,6 +1727,13 @@ private:
               "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int * f(std::vector<int>& v) {\n"
+              "    for(int & x : v)\n"
+              "        return &x;\n"
+              "    return nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
