@@ -181,7 +181,7 @@ private:
         TEST_CASE(localvarFuncPtr); // #7194
         TEST_CASE(localvarAddr); // #7477
         TEST_CASE(localvarDelete);
-        TEST_CASE(localvarLambda); // #8941
+        TEST_CASE(localvarLambda); // #8941, #8948
 
         TEST_CASE(localvarCppInitialization);
         TEST_CASE(localvarCpp11Initialization);
@@ -4244,6 +4244,16 @@ private:
                               "    auto f = []{return 1};\n"
                               "    auto g = []{return 1};\n"
                               "    return f() + g();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo(std::vector<int>& v) {\n"
+                              "    int n = 0;\n"
+                              "    std::generate(v.begin(), v.end(), [&n] {\n"
+                              "        int r = n;\n"
+                              "        n += 2;\n"
+                              "        return r;\n"
+                              "    });\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

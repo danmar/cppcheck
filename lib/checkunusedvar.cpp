@@ -1102,7 +1102,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             continue;
 
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "] ("))
+            if (findLambdaEndToken(tok))
                 // todo: handle lambdas
                 break;
             if (Token::simpleMatch(tok, "try {"))
