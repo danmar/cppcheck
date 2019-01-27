@@ -77,7 +77,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
 {
     // only set flags for declaration
     if (token && nameToken && paramEnd) {
-        isSpecialized(Token::simpleMatch(token, "template < >"));
+        isSpecialization(Token::simpleMatch(token, "template < >"));
+        isPartialSpecialization(!isSpecialization() && nameToken->strAt(1) == "<");
         isAlias(paramEnd->strAt(1) == "using");
         isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;"));
         const Token *tok1 = nameToken->next();
@@ -1201,7 +1202,7 @@ void TemplateSimplifier::expandTemplate(
     const Token * const templateDeclarationToken = templateDeclaration.paramEnd;
     const bool isClass = templateDeclaration.isClass();
     const bool isFunction = templateDeclaration.isFunction();
-    const bool isSpecialization = templateDeclaration.isSpecialized();
+    const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
 
     // add forward declarations
@@ -1225,8 +1226,8 @@ void TemplateSimplifier::expandTemplate(
             start = temp1->next();
             end = temp2->linkAt(1)->next();
         } else {
-            auto it2 = mTemplateUserSpecializationMap.find(dst);
-            if (it2 != mTemplateUserSpecializationMap.end()) {
+            auto it2 = mTemplateSpecializationMap.find(dst);
+            if (it2 != mTemplateSpecializationMap.end()) {
                 dst = it2->second;
                 dstStart = dst->previous();
                 isStatic = dst->next()->findClosingBracket()->strAt(1) == "static";
@@ -2035,7 +2036,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     std::vector<const Token *> typeParametersInDeclaration;
     getTemplateParametersInDeclaration(templateDeclaration.token->tokAt(2), typeParametersInDeclaration);
     const bool printDebug = mSettings->debugwarnings;
-    const bool specialized = templateDeclaration.isSpecialized();
+    const bool specialized = templateDeclaration.isSpecialization();
     const bool isfunc = templateDeclaration.isFunction();
     const bool isVar = templateDeclaration.isVariable();
 
@@ -2316,20 +2317,20 @@ void TemplateSimplifier::replaceTemplateUsage(
     }
 }
 
-void TemplateSimplifier::getUserDefinedSpecializations()
+void TemplateSimplifier::getSpecializations()
 {
     // try to locate a matching declaration for each user defined specialization
     for (auto & spec : mTemplateDeclarations) {
-        if (spec.isSpecialized()) {
+        if (spec.isSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (decl.isSpecialized())
+                if (decl.isSpecialization())
                     continue;
 
                 // make sure the scopes and names match
                 if (spec.fullName == decl.fullName) {
                     // @todo make sure function parameters also match
-                    mTemplateUserSpecializationMap[spec.token] = decl.token;
+                    mTemplateSpecializationMap[spec.token] = decl.token;
                     found = true;
                 }
             }
@@ -2339,7 +2340,38 @@ void TemplateSimplifier::getUserDefinedSpecializations()
                     // make sure the scopes and names match
                     if (spec.fullName == decl.fullName) {
                         // @todo make sure function parameters also match
-                        mTemplateUserSpecializationMap[spec.token] = decl.token;
+                        mTemplateSpecializationMap[spec.token] = decl.token;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void TemplateSimplifier::getPartialSpecializations()
+{
+    // try to locate a matching declaration for each user defined partial specialization
+    for (auto & spec : mTemplateDeclarations) {
+        if (spec.isPartialSpecialization()) {
+            bool found = false;
+            for (auto & decl : mTemplateDeclarations) {
+                if (decl.isPartialSpecialization())
+                    continue;
+
+                // make sure the scopes and names match
+                if (spec.fullName == decl.fullName) {
+                    // @todo make sure function parameters also match
+                    mTemplatePartialSpecializationMap[spec.token] = decl.token;
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                for (auto & decl : mTemplateForwardDeclarations) {
+                    // make sure the scopes and names match
+                    if (spec.fullName == decl.fullName) {
+                        // @todo make sure function parameters also match
+                        mTemplatePartialSpecializationMap[spec.token] = decl.token;
                     }
                 }
             }
@@ -2418,8 +2450,10 @@ void TemplateSimplifier::printOut(const TokenAndName &tokenAndName, const std::s
         std::cout << " isVariable";
     if (tokenAndName.isAlias())
         std::cout << " isAlias";
-    if (tokenAndName.isSpecialized())
-        std::cout << " isSpecialized";
+    if (tokenAndName.isSpecialization())
+        std::cout << " isSpecialization";
+    if (tokenAndName.isPartialSpecialization())
+        std::cout << " isPartialSpecialization";
     if (tokenAndName.isForwardDeclaration())
         std::cout << " isForwardDeclaration";
     std::cout << std::endl;
@@ -2454,6 +2488,98 @@ void TemplateSimplifier::printOut(const std::string & text) const
         std::cout << "mTemplateForwardDeclarations[" << count++ << "]:" << std::endl;
         printOut(decl);
     }
+    std::cout << "mTemplateForwardDeclarationsMap: " << mTemplateForwardDeclarationsMap.size() << std::endl;
+    unsigned int mapIndex = 0;
+    for (const auto & mapItem : mTemplateForwardDeclarationsMap) {
+        unsigned int declIndex = 0;
+        for (const auto & decl : mTemplateDeclarations) {
+            if (mapItem.first == decl.token) {
+                unsigned int forwardIndex = 0;
+                for (const auto & forwardDecl : mTemplateForwardDeclarations) {
+                    if (mapItem.second == forwardDecl.token) {
+                        std::cout << "mTemplateForwardDeclarationsMap[" << mapIndex << "]:" << std::endl;
+                        std::cout << "    mTemplateDeclarations[" << declIndex
+                                  << "] => mTemplateForwardDeclarations[" << forwardIndex << "]" << std::endl;
+                        break;
+                    }
+                    forwardIndex++;
+                }
+                break;
+            }
+            declIndex++;
+        }
+        mapIndex++;
+    }
+    std::cout << "mTemplateSpecializationMap: " << mTemplateSpecializationMap.size() << std::endl;
+    for (const auto & mapItem : mTemplateSpecializationMap) {
+        unsigned int decl1Index = 0;
+        for (const auto & decl1 : mTemplateDeclarations) {
+            if (decl1.isSpecialization() && mapItem.first == decl1.token) {
+                bool found = 0;
+                unsigned int decl2Index = 0;
+                for (const auto & decl2 : mTemplateDeclarations) {
+                    if (mapItem.second == decl2.token) {
+                        std::cout << "mTemplateSpecializationMap[" << mapIndex << "]:" << std::endl;
+                        std::cout << "    mTemplateDeclarations[" << decl1Index
+                                  << "] => mTemplateDeclarations[" << decl2Index << "]" << std::endl;
+                        found = true;
+                        break;
+                    }
+                    decl2Index++;
+                }
+                if (!found) {
+                    decl2Index = 0;
+                    for (const auto & decl2 : mTemplateForwardDeclarations) {
+                        if (mapItem.second == decl2.token) {
+                            std::cout << "mTemplateSpecializationMap[" << mapIndex << "]:" << std::endl;
+                            std::cout << "    mTemplateDeclarations[" << decl1Index
+                                      << "] => mTemplateForwardDeclarations[" << decl2Index << "]" << std::endl;
+                            break;
+                        }
+                        decl2Index++;
+                    }
+                }
+                break;
+            }
+            decl1Index++;
+        }
+        mapIndex++;
+    }
+    std::cout << "mTemplatePartialSpecializationMap: " << mTemplatePartialSpecializationMap.size() << std::endl;
+    for (const auto & mapItem : mTemplatePartialSpecializationMap) {
+        unsigned int decl1Index = 0;
+        for (const auto & decl1 : mTemplateDeclarations) {
+            if (mapItem.first == decl1.token) {
+                bool found = 0;
+                unsigned int decl2Index = 0;
+                for (const auto & decl2 : mTemplateDeclarations) {
+                    if (mapItem.second == decl2.token) {
+                        std::cout << "mTemplatePartialSpecializationMap[" << mapIndex << "]:" << std::endl;
+                        std::cout << "    mTemplateDeclarations[" << decl1Index
+                                  << "] => mTemplateDeclarations[" << decl2Index << "]" << std::endl;
+                        found = true;
+                        break;
+                    }
+                    decl2Index++;
+                }
+                if (!found) {
+                    decl2Index = 0;
+                    for (const auto & decl2 : mTemplateForwardDeclarations) {
+                        if (mapItem.second == decl2.token) {
+                            std::cout << "mTemplatePartialSpecializationMap[" << mapIndex << "]:" << std::endl;
+                            std::cout << "    mTemplateDeclarations[" << decl1Index
+                                      << "] => mTemplateForwardDeclarations[" << decl2Index << "]" << std::endl;
+                            break;
+                        }
+                        decl2Index++;
+                    }
+                }
+                break;
+            }
+            decl1Index++;
+        }
+        mapIndex++;
+    }
     std::cout << "mTemplateInstantiations: " << mTemplateInstantiations.size() << std::endl;
     count = 0;
     for (const auto & decl : mTemplateInstantiations) {
@@ -2478,7 +2604,8 @@ void TemplateSimplifier::simplifyTemplates(
             mTemplateDeclarations.clear();
             mTemplateForwardDeclarations.clear();
             mTemplateForwardDeclarationsMap.clear();
-            mTemplateUserSpecializationMap.clear();
+            mTemplateSpecializationMap.clear();
+            mTemplatePartialSpecializationMap.clear();
             mTemplateInstantiations.clear();
             mInstantiatedTemplates.clear();
             mExplicitInstantiationsToDelete.clear();
@@ -2513,7 +2640,10 @@ void TemplateSimplifier::simplifyTemplates(
         fixForwardDeclaredDefaultArgumentValues();
 
         // Locate user defined specializations.
-        getUserDefinedSpecializations();
+        getSpecializations();
+
+        // Locate user defined partial specializations.
+        getPartialSpecializations();
 
         // Locate possible instantiations of templates..
         getTemplateInstantiations();
@@ -2552,7 +2682,7 @@ void TemplateSimplifier::simplifyTemplates(
                     break;
             }
             if (decl != mTemplateDeclarations.end()) {
-                if (it->isSpecialized()) {
+                if (it->isSpecialization()) {
                     // delete the "template < >"
                     Token * tok = it->token;
                     tok->deleteNext(2);

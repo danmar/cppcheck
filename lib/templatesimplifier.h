@@ -99,12 +99,13 @@ public:
         unsigned int flags;
 
         enum {
-            fIsClass              = (1 << 0), // class template
-            fIsFunction           = (1 << 1), // function template
-            fIsVariable           = (1 << 2), // variable template
-            fIsAlias              = (1 << 3), // alias template
-            fIsSpecialized        = (1 << 4), // user specialized template
-            fIsForwardDeclaration = (1 << 5), // forward declaration
+            fIsClass                 = (1 << 0), // class template
+            fIsFunction              = (1 << 1), // function template
+            fIsVariable              = (1 << 2), // variable template
+            fIsAlias                 = (1 << 3), // alias template
+            fIsSpecialization        = (1 << 4), // user specialized template
+            fIsPartialSpecialization = (1 << 5), // user partial specialized template
+            fIsForwardDeclaration    = (1 << 6), // forward declaration
         };
 
         bool isClass() const {
@@ -135,11 +136,18 @@ public:
             setFlag(fIsAlias, state);
         }
 
-        bool isSpecialized() const {
-            return getFlag(fIsSpecialized);
+        bool isSpecialization() const {
+            return getFlag(fIsSpecialization);
         }
-        void isSpecialized(bool state) {
-            setFlag(fIsSpecialized, state);
+        void isSpecialization(bool state) {
+            setFlag(fIsSpecialization, state);
+        }
+
+        bool isPartialSpecialization() const {
+            return getFlag(fIsPartialSpecialization);
+        }
+        void isPartialSpecialization(bool state) {
+            setFlag(fIsPartialSpecialization, state);
         }
 
         bool isForwardDeclaration() const {
@@ -253,7 +261,13 @@ private:
      * Try to locate a matching declaration for each user defined
      * specialization.
      */
-    void getUserDefinedSpecializations();
+    void getSpecializations();
+
+    /**
+     * Try to locate a matching declaration for each user defined
+     * partial specialization.
+     */
+    void getPartialSpecializations();
 
     /**
      * simplify template aliases
@@ -377,7 +391,8 @@ private:
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;
     std::map<Token *, Token *> mTemplateForwardDeclarationsMap;
-    std::map<Token *, Token *> mTemplateUserSpecializationMap;
+    std::map<Token *, Token *> mTemplateSpecializationMap;
+    std::map<Token *, Token *> mTemplatePartialSpecializationMap;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
