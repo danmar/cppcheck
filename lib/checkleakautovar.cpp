@@ -404,7 +404,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     tokens.pop();
                     if (!tok3)
                         continue;
-                    if (tok3->str() == "&&") {
+                    if (tok3->str() == "&&" || tok3->str() == "||") {
+                        // FIXME: handle && ! || better
                         tokens.push(tok3->astOperand1());
                         tokens.push(tok3->astOperand2());
                         continue;

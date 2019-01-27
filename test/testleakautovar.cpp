@@ -101,6 +101,7 @@ private:
         TEST_CASE(ifelse10); // #8794 - if (!(x!=NULL))
         TEST_CASE(ifelse11); // #8365 - if (NULL == (p = malloc(4)))
         TEST_CASE(ifelse12); // #8340 - if ((*p = malloc(4)) == NULL)
+        TEST_CASE(ifelse13); // #8392
 
         // switch
         TEST_CASE(switch1);
@@ -1179,6 +1180,26 @@ private:
               "        return;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse13() { // #8392
+        check("int f(int fd, const char *mode) {\n"
+              "    char *path;\n"
+              "    if (fd == -1 || (path = (char *)malloc(10)) == NULL)\n"
+              "        return 1;\n"
+              "    free(path);\n"
+              "    return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int fd, const char *mode) {\n"
+              "    char *path;\n"
+              "    if ((path = (char *)malloc(10)) == NULL || fd == -1)\n"
+              "        return 1;\n" // <- memory leak
+              "    free(path);\n"
+              "    return 0;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4] memory leak", "", errout.str());
     }
 
     void switch1() {
