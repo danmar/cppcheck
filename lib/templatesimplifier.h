@@ -261,7 +261,13 @@ private:
      * Try to locate a matching declaration for each user defined
      * specialization.
      */
-    void getUserDefinedSpecializations();
+    void getSpecializations();
+
+    /**
+     * Try to locate a matching declaration for each user defined
+     * partial specialization.
+     */
+    void getPartialSpecializations();
 
     /**
      * simplify template aliases
@@ -385,7 +391,8 @@ private:
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;
     std::map<Token *, Token *> mTemplateForwardDeclarationsMap;
-    std::map<Token *, Token *> mTemplateUserSpecializationMap;
+    std::map<Token *, Token *> mTemplateSpecializationMap;
+    std::map<Token *, Token *> mTemplatePartialSpecializationMap;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
