@@ -2657,6 +2657,8 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
         const Token *returnTok = findSimpleReturn(f);
         if (!returnTok)
             return nullptr;
+        if (returnTok == tok)
+            return var;
         const Variable *argvar = getLifetimeVariable(returnTok, errorPath);
         if (!argvar)
             return nullptr;
