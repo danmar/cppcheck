@@ -1752,6 +1752,16 @@ private:
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n",
             errout.str());
 
+        check("template<class T>\n"
+              "auto by_value(T x) {\n"
+              "    return [=] { return x; };\n"
+              "}\n"
+              "auto g() {\n"
+              "    std::vector<int> v;\n"
+              "    return by_value(v.begin());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n", errout.str());
+
         check("auto f(int x) {\n"
               "    int a;\n"
               "    std::tie(a) = x;\n"

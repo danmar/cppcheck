@@ -4921,6 +4921,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       conditional(false),
       defaultArg(false),
       lifetimeKind(Object),
+      lifetimeScope(Local),
       valueKind(ValueKind::Possible)
 {
     errorPath.emplace_back(c, "Assuming that condition '" + c->expressionString() + "' is not redundant");
