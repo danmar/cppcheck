@@ -2962,7 +2962,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         if (!returnTok)
             return;
         for (const ValueFlow::Value &v : returnTok->values()) {
-            if (!v.isArgumentLifetimeValue())
+            if (!v.isLifetimeValue())
                 continue;
             if (!v.tokvalue)
                 continue;
@@ -2980,7 +2980,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
             if (var->isReference() || var->isRValueReference()) {
                 ls.byRef(tok->next(), tokenlist, errorLogger, settings);
-            } else {
+            } else if (v.isArgumentLifetimeValue()) {
                 ls.byVal(tok->next(), tokenlist, errorLogger, settings);
             }
 

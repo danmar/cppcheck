@@ -1762,6 +1762,15 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n", errout.str());
 
+        check("auto by_ref(int& x) {\n"
+              "    return [&] { return x; };\n"
+              "}\n"
+              "auto f() {\n"
+              "    int i = 0;\n"
+              "    return by_ref(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
+
         check("auto f(int x) {\n"
               "    int a;\n"
               "    std::tie(a) = x;\n"
