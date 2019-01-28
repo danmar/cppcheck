@@ -23,4 +23,19 @@ void validCode(int argInt)
     printf("%s", _("test"));
     printf("%s", Q_("a|test"));
     printf("%s", N_("test"));
+
+    gpointer gpt = g_malloc(4);
+    printf("%p", gpt);
+    g_free(gpt);
+}
+
+void g_malloc_test()
+{
+    // cppcheck-suppress leakReturnValNotUsed
+    g_malloc(8);
+
+    gpointer gpt = g_malloc(1);
+    printf("%p", gpt);
+
+    // cppcheck-suppress memleak
 }
