@@ -2630,17 +2630,17 @@ static const Token *findSimpleReturn(const Function *f)
     return returnTok;
 }
 
-static int getArgumentPos(const Variable * var, const Function* f)
+static int getArgumentPos(const Variable *var, const Function *f)
 {
     auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
-                return v.nameToken() == var->nameToken();
+        return v.nameToken() == var->nameToken();
     });
     if (arg_it == f->argumentList.end())
         return -1;
     return std::distance(f->argumentList.begin(), arg_it);
 }
 
-std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
+std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
     if (!val)
@@ -2797,8 +2797,10 @@ struct LifetimeStore {
     ValueFlow::Value::LifetimeKind type;
     ErrorPath errorPath;
 
-    LifetimeStore(const Token *argtok, const std::string& message, ValueFlow::Value::LifetimeKind type = ValueFlow::Value::Object)
-    : argtok(argtok), message(message), type(type), errorPath()
+    LifetimeStore(const Token *argtok,
+                  const std::string &message,
+                  ValueFlow::Value::LifetimeKind type = ValueFlow::Value::Object)
+        : argtok(argtok), message(message), type(type), errorPath()
     {}
 
     template <class Predicate>
@@ -2835,7 +2837,7 @@ struct LifetimeStore {
         if (argtok->values().empty()) {
             ErrorPath er;
             er.emplace_back(argtok, message);
-            const Variable * var = getLifetimeVariable(argtok, er);
+            const Variable *var = getLifetimeVariable(argtok, er);
             if (var && var->isArgument()) {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::LIFETIME;
@@ -2966,7 +2968,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                 continue;
             if (!v.tokvalue)
                 continue;
-            const Variable * var = v.tokvalue->variable();
+            const Variable *var = v.tokvalue->variable();
             if (!var)
                 continue;
             if (!var->isArgument())
@@ -2974,7 +2976,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             int n = getArgumentPos(var, f);
             if (n < 0)
                 continue;
-            const Token * argtok = getArguments(tok).at(n);
+            const Token *argtok = getArguments(tok).at(n);
             LifetimeStore ls{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object};
             ls.errorPath = v.errorPath;
             ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
@@ -2983,7 +2985,6 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             } else if (v.isArgumentLifetimeValue()) {
                 ls.byVal(tok->next(), tokenlist, errorLogger, settings);
             }
-
         }
     }
 }
