@@ -622,7 +622,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             }
         }
         for (const ValueFlow::Value& val:tok->values()) {
-            if (!val.isLifetimeValue())
+            if (!val.isLocalLifetimeValue())
                 continue;
             // Skip temporaries for now
             if (val.tokvalue == tok)
@@ -675,28 +675,6 @@ void CheckAutoVariables::checkVarLifetime()
             continue;
         checkVarLifetimeScope(scope->bodyStart, scope->bodyEnd);
     }
-}
-
-static std::string lifetimeType(const Token *tok, const ValueFlow::Value* val)
-{
-    std::string result;
-    if (!val)
-        return "object";
-    switch (val->lifetimeKind) {
-    case ValueFlow::Value::Lambda:
-        result = "lambda";
-        break;
-    case ValueFlow::Value::Iterator:
-        result = "iterator";
-        break;
-    case ValueFlow::Value::Object:
-        if (astIsPointer(tok))
-            result = "pointer";
-        else
-            result = "object";
-        break;
-    }
-    return result;
 }
 
 static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
