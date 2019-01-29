@@ -40,7 +40,21 @@ namespace ValueFlow {
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
 
-        explicit Value(long long val = 0) : valueType(INT), intvalue(val), tokvalue(nullptr), floatValue(0.0), moveKind(NonMovedVariable), varvalue(val), condition(nullptr), varId(0U), conditional(false), defaultArg(false), lifetimeKind(Object), valueKind(ValueKind::Possible) {}
+        explicit Value(long long val = 0)
+            : valueType(INT),
+              intvalue(val),
+              tokvalue(nullptr),
+              floatValue(0.0),
+              moveKind(NonMovedVariable),
+              varvalue(val),
+              condition(nullptr),
+              varId(0U),
+              conditional(false),
+              defaultArg(false),
+              lifetimeKind(Object),
+              lifetimeScope(Local),
+              valueKind(ValueKind::Possible)
+        {}
         Value(const Token *c, long long val);
 
         bool operator==(const Value &rhs) const {
@@ -108,6 +122,10 @@ namespace ValueFlow {
             return valueType == LIFETIME;
         }
 
+        bool isLocalLifetimeValue() const { return valueType == LIFETIME && lifetimeScope == Local; }
+
+        bool isArgumentLifetimeValue() const { return valueType == LIFETIME && lifetimeScope == Argument; }
+
         /** int value */
         long long intvalue;
 
@@ -138,6 +156,8 @@ namespace ValueFlow {
         bool defaultArg;
 
         enum LifetimeKind {Object, Lambda, Iterator} lifetimeKind;
+
+        enum LifetimeScope { Local, Argument } lifetimeScope;
 
         static const char * toString(MoveKind moveKind) {
             switch (moveKind) {
@@ -206,5 +226,7 @@ namespace ValueFlow {
 }
 
 const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath);
+
+std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 #endif // valueflowH
