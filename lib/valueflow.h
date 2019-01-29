@@ -122,9 +122,13 @@ namespace ValueFlow {
             return valueType == LIFETIME;
         }
 
-        bool isLocalLifetimeValue() const { return valueType == LIFETIME && lifetimeScope == Local; }
+        bool isLocalLifetimeValue() const {
+            return valueType == LIFETIME && lifetimeScope == Local;
+        }
 
-        bool isArgumentLifetimeValue() const { return valueType == LIFETIME && lifetimeScope == Argument; }
+        bool isArgumentLifetimeValue() const {
+            return valueType == LIFETIME && lifetimeScope == Argument;
+        }
 
         /** int value */
         long long intvalue;
