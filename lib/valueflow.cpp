@@ -2662,11 +2662,13 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     return result;
 }
 
-const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath)
+const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth)
 {
     if (!tok)
         return nullptr;
     const Variable *var = tok->variable();
+    if (depth < 0)
+        return var;
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
             if (!var->declEndToken())
@@ -2680,7 +2682,7 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
                 if (vartok == tok)
                     return nullptr;
                 if (vartok)
-                    return getLifetimeVariable(vartok, errorPath);
+                    return getLifetimeVariable(vartok, errorPath, depth-1);
             } else {
                 return nullptr;
             }
@@ -2696,7 +2698,7 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
             return nullptr;
         if (returnTok == tok)
             return var;
-        const Variable *argvar = getLifetimeVariable(returnTok, errorPath);
+        const Variable *argvar = getLifetimeVariable(returnTok, errorPath, depth-1);
         if (!argvar)
             return nullptr;
         if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
@@ -2706,7 +2708,7 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
             const Token *argTok = getArguments(tok->previous()).at(n);
             errorPath.emplace_back(returnTok, "Return reference.");
             errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
-            return getLifetimeVariable(argTok, errorPath);
+            return getLifetimeVariable(argTok, errorPath, depth-1);
         }
     }
     return var;

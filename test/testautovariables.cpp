@@ -1250,6 +1250,10 @@ private:
     void returnReferenceRecursive() {
         check("int& f() { return f(); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("int& g(int& i) { return i; }\n"
+              "int& f() { return g(f()); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingReference() {
