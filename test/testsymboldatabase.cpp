@@ -6906,7 +6906,7 @@ private:
         settings1.standards.cpp = original_std;
         settings1.debugwarnings = false;
 
-        const Token *vartok = Token::findsimplematch(tokenizer.tokens(), "value");
+        vartok = Token::findsimplematch(tokenizer.tokens(), "value");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
             ASSERT_EQUALS(0, vartok->valueType()->constness);
