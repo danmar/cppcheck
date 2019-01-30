@@ -386,6 +386,8 @@ private:
         TEST_CASE(using1);
         TEST_CASE(using2); // #8331 (segmentation fault)
         TEST_CASE(using3); // #8343 (segmentation fault)
+        TEST_CASE(using4); // #8952 (unknown type)
+        TEST_CASE(using5); // #8950 (couldn't resolve all user defined types)
     }
 
     void array() {
@@ -6889,6 +6891,52 @@ private:
 
         ASSERT(db != nullptr);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void using4() { // #8952 (unknown type)
+        const Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+        settings1.debugwarnings = true;
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "    enum Type { Null };\n"
+                      "};\n"
+                      "using V = A;\n"
+                      "V::Type value;");
+        settings1.standards.cpp = original_std;
+        settings1.debugwarnings = false;
+
+        const Token *vartok = Token::findsimplematch(tokenizer.tokens(), "value");
+        ASSERT(db && vartok && vartok->valueType());
+        if (db && vartok && vartok->valueType()) {
+            ASSERT_EQUALS(0, vartok->valueType()->constness);
+            ASSERT_EQUALS(0, vartok->valueType()->pointer);
+            ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
+            ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
+            const Variable *var = vartok->variable();
+            ASSERT(var && var->type() && var->type()->isEnumType());
+        }
+    }
+
+    void using5() { // #8950 (couldn't resolve all user defined types)
+        const Standards::cppstd_t original_std = settings1.standards.cpp;
+        settings1.standards.cpp = Standards::CPP11;
+        settings1.debugwarnings = true;
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "    using MapType = std::map<std::string, std::string>;\n"
+                      "private:\n"
+                      "    MapType m;\n"
+                      "};");
+        settings1.standards.cpp = original_std;
+        settings1.debugwarnings = false;
+
+        ASSERT_EQUALS("", errout.str());
+        ASSERT(db && db->scopeList.size() == 2); // global + class
+        if (db && db->scopeList.size() == 2) {
+            const Scope *scope = &db->scopeList.back();
+            ASSERT(scope->type == Scope::eClass && scope->definedType && scope->definedType->needInitialization == Type::False);
+        }
     }
 };
 

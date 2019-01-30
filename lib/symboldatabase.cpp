@@ -863,8 +863,10 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                                     // does this type need initialization?
                                     if (var->type()->needInitialization == Type::True)
                                         needInitialization = true;
-                                    else if (var->type()->needInitialization == Type::Unknown)
-                                        unknown = true;
+                                    else if (var->type()->needInitialization == Type::Unknown) {
+                                        if (!(var->valueType() && var->valueType()->type == ValueType::CONTAINER))
+                                            unknown = true;
+                                    }
                                 }
                             } else if (!var->hasDefault())
                                 needInitialization = true;
@@ -4482,8 +4484,13 @@ const Scope *Scope::findRecordInNestedList(const std::string & name) const
 
     const Type * nested_type = findType(name);
 
-    if (nested_type)
-        return nested_type->classScope;
+    if (nested_type) {
+        if (nested_type->isTypeAlias()) {
+            if (nested_type->typeStart == nested_type->typeEnd)
+                return findRecordInNestedList(nested_type->typeStart->str());
+        } else
+            return nested_type->classScope;
+    }
 
     return nullptr;
 }

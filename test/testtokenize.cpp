@@ -483,6 +483,8 @@ private:
 
         // --check-config
         TEST_CASE(checkConfiguration);
+
+        TEST_CASE(unknownType); // #8952
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8759,6 +8761,29 @@ private:
     void checkConfiguration() {
         checkConfig("void f() { DEBUG(x();y()); }");
         ASSERT_EQUALS("[test.cpp:1]: (information) Ensure that 'DEBUG' is defined either using -I, --include or -D.\n", errout.str());
+    }
+
+    void unknownType() { // #8952
+        // Clear the error log
+        errout.str("");
+        Settings settings;
+        settings.debugwarnings = true;
+
+        char code[] = "class A {\n"
+                      "public:\n"
+                      "    enum Type { Null };\n"
+                      "};\n"
+                      "using V = A;\n"
+                      "V::Type value;";
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.printUnknownTypes();
+
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
