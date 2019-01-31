@@ -135,6 +135,7 @@ private:
         TEST_CASE(template95); // #7417
         TEST_CASE(template96); // #7854
         TEST_CASE(template97);
+        TEST_CASE(template98); // #8959
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2049,6 +2050,25 @@ private:
                            "public: "
                            "Fred<double> ( ) : t ( nullptr ) { } "
                            "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template98() { // #8959
+        const char code[] = "template <typename T>\n"
+                            "using unique_ptr_with_deleter = std::unique_ptr<T, std::function<void(T*)>>;\n"
+                            "class A {};\n"
+                            "static void func() {\n"
+                            "    unique_ptr_with_deleter<A> tmp(new A(), [](A* a) {\n"
+                            "        delete a;\n"
+                            "    });\n"
+                            "}";
+        const char exp[] = "; "
+                           "class A { } ; "
+                           "static void func ( ) { "
+                           "std :: unique_ptr < A , std :: function < void ( A * ) > > tmp ( new A ( ) , [ ] ( A * a ) { "
+                           "delete a ; "
+                           "} ) ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 

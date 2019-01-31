@@ -932,12 +932,16 @@ void TemplateSimplifier::simplifyTemplateAliases()
         startToken = startToken->tokAt(-5);
         while (Token::Match(startToken, "%name%|<|>|>>|,"))
             startToken = startToken->previous();
-        if (!Token::Match(startToken, "[;{}] template <"))
+        // handle case where 'template' is first token
+        if (!startToken) {
+            if (!Token::Match(mTokenList.front(), "template <"))
+                continue;
+        } else if (!Token::Match(startToken, "[;{}] template <"))
             continue;
 
         // alias parameters..
         std::vector<const Token *> aliasParameters;
-        getTemplateParametersInDeclaration(startToken->tokAt(3), aliasParameters);
+        getTemplateParametersInDeclaration(startToken ? startToken->tokAt(3) : mTokenList.front()->tokAt(2), aliasParameters);
         std::map<std::string, unsigned int> aliasParameterNames;
         for (unsigned int argnr = 0; argnr < aliasParameters.size(); ++argnr)
             aliasParameterNames[aliasParameters[argnr]->str()] = argnr;
@@ -1016,7 +1020,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
         }
         if (endToken) {
             // Remove all template instantiations in template alias
-            for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
+            for (const Token *tok = startToken ? startToken : mTokenList.front(); tok != endToken; tok = tok->next()) {
                 if (!Token::Match(tok, "%name% <"))
                     continue;
                 std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
@@ -1031,7 +1035,21 @@ void TemplateSimplifier::simplifyTemplateAliases()
                 mTemplateInstantiations.erase(it,next);
             }
 
-            Token::eraseTokens(startToken, endToken);
+            // find declaration
+            const std::list<TokenAndName>::iterator it2 = std::find_if(mTemplateDeclarations.begin(),
+                    mTemplateDeclarations.end(),
+                    FindToken(startToken ? startToken : mTokenList.front()));
+
+            if (startToken)
+                eraseTokens(startToken, endToken);
+            else {
+                eraseTokens(mTokenList.front(), endToken);
+                deleteToken(mTokenList.front());
+            }
+
+            // remove declaration
+            if (it2 != mTemplateDeclarations.end())
+                mTemplateDeclarations.erase(it2);
         }
     }
 }
@@ -1124,6 +1142,8 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
     // get the position of the template name
     int namepos = 0;
     if (Token::Match(tok, "> class|struct|union %type% :|<|;|{"))
+        namepos = 2;
+    else if (Token::Match(tok, "> using %name% ="))
         namepos = 2;
     else if (getTemplateNamePositionTemplateVariable(tok, namepos))
         ;
