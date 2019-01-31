@@ -899,11 +899,16 @@ static const char ToolsElementName[] = "tools";
 static const char TagsElementName[] = "tags";
 static const char TagElementName[] = "tag";
 
+static std::string istream_to_string(std::istream &istr)
+{
+    std::istreambuf_iterator<char> eos;
+    return std::string(std::istreambuf_iterator<char>(istr), eos);
+}
 
 bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
 {
     tinyxml2::XMLDocument doc;
-    const std::string xmldata(std::istreambuf_iterator<char>(istr), {});
+    const std::string xmldata = istream_to_string(istr);
     if (doc.Parse(xmldata.data(), xmldata.size()) != tinyxml2::XML_SUCCESS)
         return false;
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
