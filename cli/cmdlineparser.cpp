@@ -520,19 +520,53 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 const std::string projectFile = argv[i]+10;
-                const ImportProject::Type projType = mSettings->project.import(projectFile);
-                if (projType == ImportProject::VS_SLN || projType == ImportProject::VS_VCXPROJ) {
+                ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
+                if (projType == ImportProject::Type::CPPCHECK_GUI) {
+                    mPathNames = mSettings->project.guiProject.pathNames;
+                    for (const std::string &lib : mSettings->project.guiProject.libraries) {
+                        if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], lib.c_str()))
+                            return false;
+                    }
+
+                    const std::string platform(mSettings->project.guiProject.platform);
+
+                    if (platform == "win32A")
+                        mSettings->platform(Settings::Win32A);
+                    else if (platform == "win32W")
+                        mSettings->platform(Settings::Win32W);
+                    else if (platform == "win64")
+                        mSettings->platform(Settings::Win64);
+                    else if (platform == "unix32")
+                        mSettings->platform(Settings::Unix32);
+                    else if (platform == "unix64")
+                        mSettings->platform(Settings::Unix64);
+                    else if (platform == "native")
+                        mSettings->platform(Settings::Native);
+                    else if (platform == "unspecified")
+                        mSettings->platform(Settings::Unspecified);
+                    else if (!mSettings->loadPlatformFile(argv[0], platform)) {
+                        std::string message("cppcheck: error: unrecognized platform: \"");
+                        message += platform;
+                        message += "\".";
+                        printMessage(message);
+                        return false;
+                    }
+
+                    if (!mSettings->project.guiProject.projectFile.empty())
+                        projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
+                }
+                if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
                         return false;
                     }
                 }
-                if (projType == ImportProject::MISSING) {
+                if (projType == ImportProject::Type::MISSING) {
                     printMessage("cppcheck: Failed to open project '" + projectFile + "'.");
                     return false;
                 }
-                if (projType == ImportProject::UNKNOWN) {
+                if (projType == ImportProject::Type::UNKNOWN) {
                     printMessage("cppcheck: Failed to load project '" + projectFile + "'. The format is unknown.");
                     return false;
                 }

@@ -168,29 +168,31 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
     includePaths.swap(I);
 }
 
-ImportProject::Type ImportProject::import(const std::string &filename)
+ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings)
 {
     std::ifstream fin(filename);
     if (!fin.is_open())
-        return MISSING;
+        return ImportProject::Type::MISSING;
     if (endsWith(filename, ".json", 5)) {
         importCompileCommands(fin);
-        return COMPILE_DB;
+        return ImportProject::Type::COMPILE_DB;
     } else if (endsWith(filename, ".sln", 4)) {
         std::string path(Path::getPathFromFilename(Path::fromNativeSeparators(filename)));
         if (!path.empty() && !endsWith(path,'/'))
             path += '/';
         importSln(fin,path);
-        return VS_SLN;
+        return ImportProject::Type::VS_SLN;
     } else if (endsWith(filename, ".vcxproj", 8)) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString);
-        return VS_VCXPROJ;
+        return ImportProject::Type::VS_VCXPROJ;
     } else if (endsWith(filename, ".bpr", 4)) {
         importBcb6Prj(filename);
-        return BORLAND;
+        return ImportProject::Type::BORLAND;
+    } else if (endsWith(filename, ".cppcheck", 9)) {
+        return importCppcheckGuiProject(fin, settings) ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
     }
-    return UNKNOWN;
+    return ImportProject::Type::UNKNOWN;
 }
 
 static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[])
@@ -835,4 +837,132 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
         fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c);
         fileSettings.push_back(fs);
     }
+}
+
+static std::list<std::string> readXmlStringList(const tinyxml2::XMLElement *node, const char name[], const char attribute[])
+{
+    std::list<std::string> ret;
+    for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+        if (strcmp(child->Name(), name) != 0)
+            continue;
+        const char *attr = attribute ? child->Attribute(attribute) : child->GetText();
+        if (attr)
+            ret.push_back(attr);
+    }
+    return ret;
+}
+
+static std::string join(const std::list<std::string> &strlist, const char *sep)
+{
+    std::string ret;
+    for (const std::string &s : strlist) {
+        ret += (ret.empty() ? "" : sep) + s;
+    }
+    return ret;
+}
+
+// These constants are copy/pasted from gui/projectfile.cpp
+static const char ProjectElementName[] = "project";
+static const char ProjectVersionAttrib[] = "version";
+static const char ProjectFileVersion[] = "1";
+static const char BuildDirElementName[] = "builddir";
+static const char ImportProjectElementName[] = "importproject";
+static const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+static const char IncludeDirElementName[] = "includedir";
+static const char DirElementName[] = "dir";
+static const char DirNameAttrib[] = "name";
+static const char DefinesElementName[] = "defines";
+static const char DefineName[] = "define";
+static const char DefineNameAttrib[] = "name";
+static const char UndefinesElementName[] = "undefines";
+static const char UndefineName[] = "undefine";
+static const char PathsElementName[] = "paths";
+static const char PathName[] = "dir";
+static const char PathNameAttrib[] = "name";
+static const char RootPathName[] = "root";
+static const char RootPathNameAttrib[] = "name";
+static const char IgnoreElementName[] = "ignore";
+static const char IgnorePathName[] = "path";
+static const char IgnorePathNameAttrib[] = "name";
+static const char ExcludeElementName[] = "exclude";
+static const char ExcludePathName[] = "path";
+static const char ExcludePathNameAttrib[] = "name";
+static const char LibrariesElementName[] = "libraries";
+static const char LibraryElementName[] = "library";
+static const char PlatformElementName[] = "platform";
+static const char SuppressionsElementName[] = "suppressions";
+static const char SuppressionElementName[] = "suppression";
+static const char AddonElementName[] = "addon";
+static const char AddonsElementName[] = "addons";
+static const char ToolElementName[] = "tool";
+static const char ToolsElementName[] = "tools";
+static const char TagsElementName[] = "tags";
+static const char TagElementName[] = "tag";
+
+
+bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
+{
+    tinyxml2::XMLDocument doc;
+    const std::string xmldata(std::istreambuf_iterator<char>(istr), {});
+    if (doc.Parse(xmldata.data(), xmldata.size()) != tinyxml2::XML_SUCCESS)
+        return false;
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    if (rootnode == nullptr || strcmp(rootnode->Name(), ProjectElementName) != 0)
+        return false;
+
+    (void)ProjectFileVersion;
+    (void)ProjectVersionAttrib;
+
+    std::list<std::string> paths;
+    std::list<std::string> excludePaths;
+    Settings temp;
+
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib))
+            temp.basePaths.push_back(node->Attribute(RootPathNameAttrib));
+        else if (strcmp(node->Name(), BuildDirElementName) == 0)
+            temp.buildDir = node->GetText() ? node->GetText() : "";
+        else if (strcmp(node->Name(), IncludeDirElementName) == 0)
+            temp.includePaths = readXmlStringList(node, DirElementName, DirNameAttrib);
+        else if (strcmp(node->Name(), DefinesElementName) == 0)
+            temp.userDefines = join(readXmlStringList(node, DefineName, DefineNameAttrib), ";");
+        else if (strcmp(node->Name(), UndefinesElementName) == 0) {
+            for (const std::string &u : readXmlStringList(node, UndefineName, nullptr))
+                temp.userUndefs.insert(u);
+        } else if (strcmp(node->Name(), ImportProjectElementName) == 0)
+            guiProject.projectFile = node->GetText() ? node->GetText() : "";
+        else if (strcmp(node->Name(), PathsElementName) == 0)
+            paths = readXmlStringList(node, PathName, PathNameAttrib);
+        else if (strcmp(node->Name(), ExcludeElementName) == 0)
+            excludePaths = readXmlStringList(node, ExcludePathName, ExcludePathNameAttrib);
+        else if (strcmp(node->Name(), IgnoreElementName) == 0)
+            excludePaths = readXmlStringList(node, IgnorePathName, IgnorePathNameAttrib);
+        else if (strcmp(node->Name(), LibrariesElementName) == 0)
+            guiProject.libraries = readXmlStringList(node, LibraryElementName, nullptr);
+        else if (strcmp(node->Name(), SuppressionsElementName) == 0) {
+            for (const std::string &s : readXmlStringList(node, SuppressionElementName, nullptr)) {
+                temp.nomsg.addSuppressionLine(s);
+            }
+        } else if (strcmp(node->Name(), PlatformElementName) == 0)
+            guiProject.platform = node->GetText();
+        else if (strcmp(node->Name(), AnalyzeAllVsConfigsElementName) == 0)
+            ; // FIXME: Write some warning
+        else if (strcmp(node->Name(), AddonsElementName) == 0)
+            node->Attribute(AddonElementName); // FIXME: Handle addons
+        else if (strcmp(node->Name(), TagsElementName) == 0)
+            node->Attribute(TagElementName); // FIXME: Write some warning
+        else if (strcmp(node->Name(), ToolsElementName) == 0)
+            node->Attribute(ToolElementName); // FIXME: Write some warning
+        else
+            return false;
+    }
+    settings->basePaths = temp.basePaths;
+    settings->buildDir = temp.buildDir;
+    settings->includePaths = temp.includePaths;
+    settings->userDefines = temp.userDefines;
+    settings->userUndefs = temp.userUndefs;
+    for (const std::string &path : paths)
+        guiProject.pathNames.push_back(path);
+    settings->project.ignorePaths(std::vector<std::string>(excludePaths.begin(), excludePaths.end()));
+    return true;
 }

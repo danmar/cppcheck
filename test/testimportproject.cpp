@@ -17,6 +17,7 @@
  */
 
 #include "importproject.h"
+#include "settings.h"
 #include "testsuite.h"
 
 #include <list>
@@ -25,9 +26,8 @@
 
 class TestImporter : public ImportProject {
 public:
-    void importCompileCommands(std::istream &istr) {
-        ImportProject::importCompileCommands(istr);
-    }
+    using ImportProject::importCompileCommands;
+    using ImportProject::importCppcheckGuiProject;
 };
 
 
@@ -47,6 +47,7 @@ private:
         TEST_CASE(importCompileCommands2); // #8563
         TEST_CASE(importCompileCommands3); // check with existing trailing / in directory
         TEST_CASE(importCompileCommands4); // only accept certain file types
+        TEST_CASE(importCppcheckGuiProject);
     }
 
     void setDefines() const {
@@ -135,6 +136,33 @@ private:
         TestImporter importer;
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(0, importer.fileSettings.size());
+    }
+
+    void importCppcheckGuiProject() const {
+        const char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                           "<project version=\"1\">\n"
+                           "    <root name=\".\"/>\n"
+                           "    <builddir>out1</builddir>\n"
+                           "    <analyze-all-vs-configs>true</analyze-all-vs-configs>\n"
+                           "    <includedir>\n"
+                           "        <dir name=\"lib/\"/>\n"
+                           "    </includedir>\n"
+                           "    <paths>\n"
+                           "        <dir name=\"cli/\"/>\n"
+                           "    </paths>\n"
+                           "    <exclude>\n"
+                           "        <path name=\"gui/temp/\"/>\n"
+                           "    </exclude>\n"
+                           "</project>\n";
+        std::istringstream istr(xml);
+        Settings s;
+        TestImporter project;
+        std::vector<std::string> pathNames;
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, &s));
+        ASSERT_EQUALS(1, project.guiProject.pathNames.size());
+        ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
+        ASSERT_EQUALS(1, s.includePaths.size());
+        ASSERT_EQUALS("lib/", s.includePaths.front());
     }
 };
 

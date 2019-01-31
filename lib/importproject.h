@@ -42,18 +42,21 @@ namespace cppcheck {
     };
 }
 
+class Settings;
+
 /**
  * @brief Importing project settings.
  */
 class CPPCHECKLIB ImportProject {
 public:
-    enum Type {
+    enum class Type {
         UNKNOWN,
         MISSING,
         COMPILE_DB,
         VS_SLN,
         VS_VCXPROJ,
-        BORLAND
+        BORLAND,
+        CPPCHECK_GUI
     };
 
     /** File settings. Multiple configurations for a file is allowed. */
@@ -79,13 +82,22 @@ public:
     };
     std::list<FileSettings> fileSettings;
 
+    // Cppcheck GUI output
+    struct {
+        std::vector<std::string> pathNames;
+        std::list<std::string> libraries;
+        std::string projectFile;
+        std::string platform;
+    } guiProject;
+
     void ignorePaths(const std::vector<std::string> &ipaths);
     void ignoreOtherConfigs(const std::string &cfg);
     void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 
-    Type import(const std::string &filename);
+    Type import(const std::string &filename, Settings *settings);
 protected:
     void importCompileCommands(std::istream &istr);
+    bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
 private:
     void importSln(std::istream &istr, const std::string &path);
     void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories);
