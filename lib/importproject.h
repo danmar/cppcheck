@@ -94,7 +94,7 @@ public:
     void ignoreOtherConfigs(const std::string &cfg);
     void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 
-    Type import(const std::string &filename, Settings *settings);
+    Type import(const std::string &filename, Settings *settings=nullptr);
 protected:
     void importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings *settings);

@@ -189,7 +189,7 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     } else if (endsWith(filename, ".bpr", 4)) {
         importBcb6Prj(filename);
         return ImportProject::Type::BORLAND;
-    } else if (endsWith(filename, ".cppcheck", 9)) {
+    } else if (settings && endsWith(filename, ".cppcheck", 9)) {
         return importCppcheckGuiProject(fin, settings) ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
     }
     return ImportProject::Type::UNKNOWN;
