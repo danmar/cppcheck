@@ -2144,10 +2144,9 @@ private:
     void varid_templateUsing() { // #5781 #7273
         const char code[] = "template<class T> using X = Y<T,4>;\n"
                             "X<int> x;";
-        TODO_ASSERT_EQUALS("\nY<int,4> x@1;\n",
-                           "1: template < class T > using X = Y < T , 4 > ;\n"
-                           "2: X < int > x@1 ;\n",
-                           tokenize(code));
+        ASSERT_EQUALS("1: ;\n"
+                      "2: Y < int , 4 > x@1 ;\n",
+                      tokenize(code));
     }
 
     void varid_not_template_in_condition() {
