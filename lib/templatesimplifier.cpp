@@ -934,7 +934,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
             startToken = startToken->previous();
         // handle case where 'template' is first token
         if (!startToken) {
-            if (!Token::Match(mTokenList.front(), "template <"))
+            if (!Token::simpleMatch(mTokenList.front(), "template <"))
                 continue;
         } else if (!Token::Match(startToken, "[;{}] template <"))
             continue;
