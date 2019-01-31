@@ -562,7 +562,7 @@ test/testfunctions.o: test/testfunctions.cpp lib/checkfunctions.h lib/check.h li
 test/testgarbage.o: test/testgarbage.cpp lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testgarbage.o test/testgarbage.cpp
 
-test/testimportproject.o: test/testimportproject.cpp lib/importproject.h lib/config.h lib/platform.h lib/utils.h test/testsuite.h lib/errorlogger.h lib/suppressions.h
+test/testimportproject.o: test/testimportproject.cpp lib/importproject.h lib/config.h lib/platform.h lib/utils.h lib/settings.h lib/errorlogger.h lib/suppressions.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testimportproject.o test/testimportproject.cpp
 
 test/testincompletestatement.o: test/testincompletestatement.cpp lib/checkother.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h test/testsuite.h
