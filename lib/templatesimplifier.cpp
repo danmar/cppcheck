@@ -1038,7 +1038,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
             // find declaration
             const std::list<TokenAndName>::iterator it2 = std::find_if(mTemplateDeclarations.begin(),
                     mTemplateDeclarations.end(),
-                    FindToken(startToken ? startToken : mTokenList.front()));
+                    FindToken(startToken ? startToken->next() : mTokenList.front()));
 
             if (startToken)
                 eraseTokens(startToken, endToken);
