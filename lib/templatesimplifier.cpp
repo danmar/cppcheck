@@ -1036,9 +1036,9 @@ void TemplateSimplifier::simplifyTemplateAliases()
             }
 
             // find declaration
-            const std::list<TokenAndName>::iterator it2 = std::find_if(mTemplateDeclarations.begin(),
+            const std::list<TokenAndName>::iterator it3 = std::find_if(mTemplateDeclarations.begin(),
                     mTemplateDeclarations.end(),
-                    FindToken(startToken ? startToken : mTokenList.front()));
+                    FindToken(startToken ? startToken->next() : mTokenList.front()));
 
             if (startToken)
                 eraseTokens(startToken, endToken);
@@ -1048,8 +1048,8 @@ void TemplateSimplifier::simplifyTemplateAliases()
             }
 
             // remove declaration
-            if (it2 != mTemplateDeclarations.end())
-                mTemplateDeclarations.erase(it2);
+            if (it3 != mTemplateDeclarations.end())
+                mTemplateDeclarations.erase(it3);
         }
     }
 }

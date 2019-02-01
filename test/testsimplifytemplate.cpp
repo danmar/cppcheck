@@ -1282,7 +1282,7 @@ private:
         tok(code); // don't crash
     }
 
-    void template65() { // #8321
+    void template65() { // #8321 (crash)
         const char code[] = "namespace bpp\n"
                             "{\n"
                             "template<class N, class E, class DAGraphImpl>\n"
@@ -1298,7 +1298,18 @@ private:
                             "  AssociationDAGlobalGraphObserver<string,unsigned int> grObs;\n"
                             " return 1;\n"
                             "}";
-        tok(code); // don't crash
+        const char exp [] = "namespace bpp "
+                            "{ "
+                            "class AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> ; "
+                            "} "
+                            "using namespace bpp ; "
+                            "int main ( ) { "
+                            "bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> grObs ; "
+                            "return 1 ; "
+                            "} class bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> : "
+                            "public AssociationGraphImplObserver < std :: string , int , DAGlobalGraph > "
+                            "{ } ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template66() { // #8725
