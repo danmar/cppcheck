@@ -3872,7 +3872,12 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     if (!isC()) {
         // Handle templates..
-        simplifyTemplates();
+        if (mTimerResults) {
+            Timer t("Tokenizer::tokenize::simplifyTemplates", mSettings->showtime, mTimerResults);
+            simplifyTemplates();
+        } else {
+            simplifyTemplates();
+        }
 
         // The simplifyTemplates have inner loops
         if (mSettings->terminated())
