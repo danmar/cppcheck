@@ -585,6 +585,12 @@ private:
 
         check("class Fred { int x=0; };");
         ASSERT_EQUALS("", errout.str());
+
+        check("class Fred { int x[1]={0}; };"); // #8850
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred { int x[1]{0}; };");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
