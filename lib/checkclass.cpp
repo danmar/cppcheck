@@ -110,6 +110,7 @@ void CheckClass::constructors()
             // If there is a private variable, there should be a constructor..
             for (const Variable &var : scope->varlist) {
                 if (var.isPrivate() && !var.isStatic() && !Token::Match(var.nameToken(), "%varid% ; %varid% =", var.declarationId()) &&
+                    !Token::Match(var.nameToken(), "%var% {|=") &&
                     (!var.isClass() || (var.type() && var.type()->needInitialization == Type::True))) {
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                     break;
