@@ -142,6 +142,14 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
                 return No;
             if (tok2->astOperand1() && (tok2->astOperand1()->str() == "[" || (tok2->astOperand1()->astOperand1() && tok2->astOperand1()->astOperand1()->str() == "[")))
                 return NewArray;
+            const Token *typeTok = tok2->next();
+            while (Token::Match(typeTok, "%name% :: %name%"))
+                typeTok = typeTok->tokAt(2);
+            if (typeTok->type() && typeTok->type()->isClassType()) {
+                const Scope *classScope = typeTok->type()->classScope;
+                if (classScope && classScope->numConstructors > 0)
+                    return No;
+            }
             return New;
         }
 
