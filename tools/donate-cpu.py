@@ -236,7 +236,9 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=zlib'
 #    if hasInclude('temp', ['<boost/']):
 #        libraries += ' --library=boost'
-    options = jobs + libraries + ' --library=gnu -D__GCC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
+
+# Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+    options = jobs + libraries + ' --library=gnu -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheck + ' ' + options
     print(cmd)
     startTime = time.time()
