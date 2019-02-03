@@ -226,7 +226,7 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=gtk'
     if hasInclude('temp', ['<X11/', '<Xm/']):
         libraries += ' --library=motif'
-    if hasInclude('temp', ['<P<ython.h>']):
+    if hasInclude('temp', ['<Python.h>']):
         libraries += ' --library=python'
     if hasInclude('temp', ['<QString>', '<QtWidgets>', '<QtGui/']):
         libraries += ' --library=qt'
