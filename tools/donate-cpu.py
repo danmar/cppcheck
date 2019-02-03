@@ -222,16 +222,18 @@ def scanPackage(workPath, cppcheck, jobs):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix'
-    if hasInclude('temp', ['<wx/', '"wx/']):
-        libraries += ' --library=wxwidgets'
-    if hasInclude('temp', ['<QString>', '<QtWidgets>', '<QtGui/']):
-        libraries += ' --library=qt'
-    if hasInclude('temp', ['<zlib.h>']):
-        libraries += ' --library=zlib'
     if hasInclude('temp', ['<gtk/gtk.h>', '<glib.h>', '<glib/']):
         libraries += ' --library=gtk'
     if hasInclude('temp', ['<X11/', '<Xm/']):
         libraries += ' --library=motif'
+    if hasInclude('temp', ['<P<ython.h>']):
+        libraries += ' --library=python'
+    if hasInclude('temp', ['<QString>', '<QtWidgets>', '<QtGui/']):
+        libraries += ' --library=qt'
+    if hasInclude('temp', ['<wx/', '"wx/']):
+        libraries += ' --library=wxwidgets'
+    if hasInclude('temp', ['<zlib.h>']):
+        libraries += ' --library=zlib'
 #    if hasInclude('temp', ['<boost/']):
 #        libraries += ' --library=boost'
     options = jobs + libraries + ' --library=gnu -D__GCC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
