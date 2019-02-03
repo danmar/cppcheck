@@ -18,44 +18,54 @@ fi
 
 RCFILE=.astylerc
 
-"$ASTYLE" --options=$RCFILE cli/*.cpp
-"$ASTYLE" --options=$RCFILE cli/*.h
-"$ASTYLE" --options=$RCFILE democlient/*.cpp
-"$ASTYLE" --options=$RCFILE gui/*.cpp
-"$ASTYLE" --options=$RCFILE gui/*.h
-"$ASTYLE" --options=$RCFILE --recursive "gui/test/*.cpp"
-"$ASTYLE" --options=$RCFILE --recursive "gui/test/*.h"
-"$ASTYLE" --options=$RCFILE lib/*.cpp
-"$ASTYLE" --options=$RCFILE lib/*.h
-"$ASTYLE" --options=$RCFILE test/*.cpp
-"$ASTYLE" --options=$RCFILE test/cfg/*.c
-"$ASTYLE" --options=$RCFILE test/cfg/*.cpp
-"$ASTYLE" --options=$RCFILE test/*.h
+function formatCplusplus {
+	"$ASTYLE" --options=$RCFILE "$1"
+}
+function formatCplusplusRecursive {
+	RCFILE=.astylerc
+	"$ASTYLE" --options=$RCFILE --recursive "$1"
+}
 
-"$ASTYLE" --options=$RCFILE --recursive "tools/*.cpp"
-"$ASTYLE" --options=$RCFILE --recursive "tools/*.h"
-
-"$ASTYLE" --options=$RCFILE --recursive "samples/*.c"
-"$ASTYLE" --options=$RCFILE --recursive "samples/*.cpp"
+formatCplusplus cli/*.cpp
+formatCplusplus cli/*.h
+formatCplusplus democlient/*.cpp
+formatCplusplus gui/*.cpp
+formatCplusplus gui/*.h
+formatCplusplusRecursive "gui/test/*.cpp"
+formatCplusplusRecursive "gui/test/*.h"
+formatCplusplus lib/*.cpp
+formatCplusplus lib/*.h
+formatCplusplus test/*.cpp
+formatCplusplus test/cfg/*.c
+formatCplusplus test/cfg/*.cpp
+formatCplusplus test/*.h
+formatCplusplus tools/*.cpp
+formatCplusplusRecursive "tools/*.h"
+formatCplusplusRecursive "samples/*.c"
+formatCplusplusRecursive "samples/*.cpp"
 
 # Convert tabs to spaces.. even in strings
 # sed -i "s/\t/ /g" test/test*.cpp
+
+function formatXML {
+    xmllint --format -o "$1_" "$1"
+    if cmp -s "$1_" "$1"; then
+        rm -f "$1_"
+    else
+        mv -f "$1_" "$1"
+    fi
+}
 
 # format config files
 # TODO: use other tool than xmllint? use tabs instead of spaces?
 for CFGFILE in cfg/*.cfg
 do
-   xmllint --format -o "${CFGFILE}_" "$CFGFILE"
-   mv -f "${CFGFILE}_" "$CFGFILE"
+    formatXML "$CFGFILE"
 done
 for PLATFORMFILE in platforms/*.xml
 do
-   xmllint --format -o "${PLATFORMFILE}_" "$PLATFORMFILE"
-   mv -f "${PLATFORMFILE}_" "$PLATFORMFILE"
+   formatXML "$PLATFORMFILE"
 done
 
-xmllint --format -o man/cppcheck.1.xml_ man/cppcheck.1.xml 
-mv -f man/cppcheck.1.xml_ man/cppcheck.1.xml
-
-xmllint --format -o cppcheck-errors_.rng cppcheck-errors.rng
-mv cppcheck-errors_.rng cppcheck-errors.rng
+formatXML man/cppcheck.1.xml
+formatXML cppcheck-errors.rng
