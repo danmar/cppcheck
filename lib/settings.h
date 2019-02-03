@@ -85,6 +85,9 @@ public:
     /** @brief Is --debug-template given? */
     bool debugtemplate;
 
+    /** @brief --max-ctu-depth */
+    int maxCtuDepth;
+
     /** @brief Is --dump given? */
     bool dump;
     std::string dumpFile;

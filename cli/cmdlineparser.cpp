@@ -155,6 +155,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings->dump = true;
 
+            // max ctu depth
+            else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
+                mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
+
             // (Experimental) exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0)
                 mSettings->exceptionHandling = true;
@@ -1013,6 +1017,9 @@ void CmdLineParser::printHelp()
               "                         distributed with Cppcheck is loaded automatically.\n"
               "                         For more information about library files, read the\n"
               "                         manual.\n"
+              "    --max-ctu-depth=N    Max depth in whole program analysis. The default value\n"
+              "                         is 2. A larger value will mean more errors can be found\n"
+              "                         but also means the analysis will be slower.\n"
               "    --output-file=<file> Write results to file, rather than standard error.\n"
               "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
               "                         Studio Solution (*.sln), Visual Studio Project\n"

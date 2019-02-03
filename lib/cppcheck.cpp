@@ -1036,6 +1036,8 @@ void CppCheck::getErrorMessages()
 bool CppCheck::analyseWholeProgram()
 {
     bool errors = false;
+    // Init CTU
+    CTU::maxCtuDepth = mSettings.maxCtuDepth;
     // Analyse the tokens
     CTU::FileInfo ctu;
     for (const Check::FileInfo *fi : mFileInfo) {
@@ -1099,6 +1101,9 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
             }
         }
     }
+
+    // Set CTU max depth
+    CTU::maxCtuDepth = mSettings.maxCtuDepth;
 
     // Analyse the tokens
     for (Check *check : Check::instances())

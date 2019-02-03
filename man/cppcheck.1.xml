@@ -166,6 +166,9 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--max-configs=&lt;limit&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>--max-ctu-depth=&lt;limit&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--platform=&lt;type&gt;</option>
       </arg>
       <arg choice="opt">
@@ -455,6 +458,14 @@ There are false positives with this option. Each result must be carefully invest
         <listitem>
           <para>Maximum number of configurations to check in a file before skipping it. Default is 12. If used together with --force, the last option is
           the one that is effective.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--max-ctu-depths=&lt;limit&gt;</option>
+        </term>
+        <listitem>
+          <para>Maximum depth in whole program analysis. Default is 2.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

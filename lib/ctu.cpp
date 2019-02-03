@@ -38,6 +38,7 @@ static const char ATTR_MY_ID[] = "my-id";
 static const char ATTR_MY_ARGNR[] = "my-argnr";
 static const char ATTR_MY_ARGNAME[] = "my-argname";
 
+int CTU::maxCtuDepth = 2;
 
 std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *function)
 {
@@ -426,7 +427,7 @@ static bool findPath(const std::string &callId,
                      int index,
                      bool warning)
 {
-    if (index >= 10)
+    if (index >= CTU::maxCtuDepth || index >= 10)
         return false;
 
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>>::const_iterator it = callsMap.find(callId);

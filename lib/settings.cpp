@@ -32,6 +32,7 @@ Settings::Settings()
       exceptionHandling(false),
       inconclusive(false),
       jointSuppressionReport(false),
+      maxCtuDepth(2),
       experimental(false),
       quiet(false),
       inlineSuppressions(false),

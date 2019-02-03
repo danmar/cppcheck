@@ -117,6 +117,8 @@ namespace CTU {
                 bool warning) const;
     };
 
+    extern int maxCtuDepth;
+
     CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
 
     CPPCHECKLIB std::string getFunctionId(const Tokenizer *tokenizer, const Function *function);
