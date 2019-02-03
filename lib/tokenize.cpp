@@ -2663,7 +2663,11 @@ void Tokenizer::setVarIdPass1()
 
                 if (tok->str() == "{") {
                     bool isExecutable;
-                    if (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%") ||
+                    const Token *prev = tok->previous();
+                    while (Token::Match(prev, "%name%|."))
+                        prev = prev->previous();
+                    const bool isLambda = prev && prev->str() == ")" && Token::simpleMatch(prev->link()->previous(), "] (");
+                    if ((!isLambda && (tok->strAt(-1) == ")" || Token::Match(tok->tokAt(-2), ") %type%"))) ||
                         (initlist && tok->strAt(-1) == "}")) {
                         isExecutable = true;
                     } else {

@@ -160,6 +160,7 @@ private:
         TEST_CASE(varid_structinit); // #6406
         TEST_CASE(varid_arrayinit); // #7579
         TEST_CASE(varid_lambda_arg);
+        TEST_CASE(varid_lambda_mutable);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2460,6 +2461,19 @@ private:
                             "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
                             "3: }\n";
         ASSERT_EQUALS(exp2, tokenize(code2));
+    }
+
+    void varid_lambda_mutable() {
+        // #8957
+        const char code1[] = "static void func() {\n"
+                             "    auto x = []() mutable {};\n"
+                             "    dostuff(x);\n"
+                             "}";
+        const char exp1[] = "1: static void func ( ) {\n"
+                            "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
+                            "3: dostuff ( x@1 ) ;\n"
+                            "4: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
     }
 
     void varidclass1() {
