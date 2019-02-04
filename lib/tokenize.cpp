@@ -1754,10 +1754,21 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (!simplifyTokenList1(list.getFiles().front().c_str()))
         return false;
 
-    list.createAst();
-    list.validateAst();
+    if (mTimerResults) {
+        Timer t("Tokenizer::simplifyTokens1::createAst", mSettings->showtime, mTimerResults);
+        list.createAst();
+        list.validateAst();
+    } else {
+        list.createAst();
+        list.validateAst();
+    }
 
-    createSymbolDatabase();
+    if (mTimerResults) {
+        Timer t("Tokenizer::simplifyTokens1::createSymbolDatabase", mSettings->showtime, mTimerResults);
+        createSymbolDatabase();
+    } else {
+        createSymbolDatabase();
+    }
 
     // Use symbol database to identify rvalue references. Split && to & &. This is safe, since it doesn't delete any tokens (which might be referenced by symbol database)
     for (const Variable* var : mSymbolDatabase->variableList()) {
@@ -1771,8 +1782,19 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
-    mSymbolDatabase->setValueTypeInTokenList();
-    ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+    if (mTimerResults) {
+        Timer t("Tokenizer::simplifyTokens1::setValueType", mSettings->showtime, mTimerResults);
+        mSymbolDatabase->setValueTypeInTokenList();
+    } else {
+        mSymbolDatabase->setValueTypeInTokenList();
+    }
+
+    if (mTimerResults) {
+        Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
+        ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+    } else {
+        ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+    }
 
     printDebugOutput(1);
 
