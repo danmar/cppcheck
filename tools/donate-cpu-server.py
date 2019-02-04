@@ -443,6 +443,7 @@ def timeReport(resultPath):
         total_time_factor = total_time_head / total_time_base
     else:
         total_time_factor = 0.0
+    html += 'Time for all packages (not just the ones listed above):\n'
     html += 'Total time: '.ljust(column_widths[0]) + ' ' + \
             str(total_time_base).rjust(column_widths[1]) + ' ' + \
             str(total_time_head).rjust(column_widths[2]) + ' ' + \
