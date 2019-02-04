@@ -882,6 +882,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("std::vector<int> &foo()\n"
+              "{\n"
+              "    thread_local std::vector<int> v;\n"
+              "    return v;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("std::string hello()\n"
               "{\n"
               "     return \"hello\";\n"
