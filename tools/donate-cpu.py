@@ -218,7 +218,7 @@ def hasInclude(path, includes):
     return False
 
 
-def scanPackage(workPath, cppcheck, jobs):
+def scanPackage(workPath, cppcheckPath, jobs):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix'
@@ -234,12 +234,13 @@ def scanPackage(workPath, cppcheck, jobs):
         libraries += ' --library=wxwidgets'
     if hasInclude('temp', ['<zlib.h>']):
         libraries += ' --library=zlib'
-#    if hasInclude('temp', ['<boost/']):
+# TODO: enable boost library configuration detection after release of Cppcheck 1.87
+#    if os.path.exists(cppcheckPath + '/cfg/boost.cfg') and hasInclude('temp', ['<boost/']):
 #        libraries += ' --library=boost'
 
 # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' --library=gnu -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
-    cmd = 'nice ' + cppcheck + ' ' + options
+    cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
     print(cmd)
     startTime = time.time()
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -454,10 +455,10 @@ while True:
     head_info_msg = ''
     for ver in cppcheckVersions:
         if ver == 'head':
-            cppcheck = 'cppcheck/cppcheck'
+            current_cppcheck_dir = 'cppcheck'
         else:
-            cppcheck = ver + '/cppcheck'
-        c, errout, info, t, cppcheck_options = scanPackage(workpath, cppcheck, jobs)
+            current_cppcheck_dir = ver
+        c, errout, info, t, cppcheck_options = scanPackage(workpath, current_cppcheck_dir, jobs)
         if c < 0:
             crash = True
             count += ' Crash!'
