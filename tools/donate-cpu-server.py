@@ -30,6 +30,7 @@ def overviewReport():
     html += '<a href="time.html">Time report</a><br>\n'
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
+    html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
     html += '</body></html>'
     return html
 
@@ -457,7 +458,7 @@ def timeReport(resultPath):
 
 
 def check_library_report(result_path, message_id):
-    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction'):
+    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print(error_message)
         return error_message
@@ -481,10 +482,10 @@ def check_library_report(result_path, message_id):
             if not info_messages:
                 continue
             if line.endswith('[' + message_id + ']\n'):
-                if message_id is 'checkLibraryNoReturn':
-                    function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
-                else:
+                if message_id is 'checkLibraryFunction':
                     function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
+                else:
+                    function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
     for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
@@ -607,6 +608,9 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_noreturn_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryNoReturn')
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'check_library_use_ignore_report.html':
+                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('check_library-'):
                 print('check library function !')
