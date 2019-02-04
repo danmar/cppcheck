@@ -263,11 +263,10 @@ def scanPackage(workPath, cppcheckPath, jobs):
     for line in stderr.split('\n'):
         if ': information: ' in line:
             information_messages += line + '\n'
-        else:
-            if len(line) > 0:
-                issue_messages += line + '\n'
-                if re.match(r'.*:[0-9]+:.*\]$', line):
-                    count += 1
+        elif line:
+            issue_messages += line + '\n'
+            if re.match(r'.*:[0-9]+:.*\]$', line):
+                count += 1
     print('Number of issues: ' + str(count))
     return count, issue_messages, information_messages, elapsedTime, options
 
