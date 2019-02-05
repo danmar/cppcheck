@@ -6635,6 +6635,17 @@ private:
                                      "    }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
+
+        // bailout: multi line lambda in rhs => do not warn
+        checkInitializationListUsage("class Fred {\n"
+                                     "    std::function f;\n"
+                                     "    Fred() {\n"
+                                     "        f = [](){\n"
+                                     "            return 1;\n"
+                                     "        };\n"
+                                     "    }\n"
+                                     "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -946,6 +946,10 @@ void CheckClass::initializationListUsage()
             if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
                 continue;
 
+            // bailout: multi line lambda in rhs => do not warn
+            if (findLambdaEndToken(tok->tokAt(2)) && tok->tokAt(2)->findExpressionStartEndTokens().second->linenr() > tok->tokAt(2)->linenr())
+                continue;
+
             // Access local var member in rhs => do not warn
             bool localmember = false;
             visitAstNodes(tok->next()->astOperand2(),
