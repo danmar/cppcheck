@@ -462,8 +462,11 @@ def check_library_report(result_path, message_id):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print(error_message)
         return error_message
+
+    functions_shown_max = 50000
     html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
     html += '<h1>' + message_id + ' report</h1>\n'
+    html += 'Top ' + str(functions_shown_max) + ' functions are shown.'
     html += '<pre>\n'
     column_widths = [10, 100]
     html += '<b>'
@@ -488,11 +491,13 @@ def check_library_report(result_path, message_id):
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
+    functions_shown = 0
     for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
-        if count < 10:
+        if functions_shown >= functions_shown_max:
             break
         html += str(count).rjust(column_widths[0]) + ' ' + \
                 '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n'
+        functions_shown += 1
 
     html += '\n'
     html += '</pre>\n'
