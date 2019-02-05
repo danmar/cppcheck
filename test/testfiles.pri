@@ -42,6 +42,7 @@ SOURCES += $${BASEPATH}/test64bit.cpp \
            $${BASEPATH}/testsimplifytemplate.cpp \
            $${BASEPATH}/testsimplifytokens.cpp \
            $${BASEPATH}/testsimplifytypedef.cpp \
+           $${BASEPATH}/testsimplifyusing.cpp \
            $${BASEPATH}/testsizeof.cpp \
            $${BASEPATH}/teststl.cpp \
            $${BASEPATH}/teststring.cpp \

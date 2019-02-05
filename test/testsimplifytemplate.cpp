@@ -136,6 +136,7 @@ private:
         TEST_CASE(template96); // #7854
         TEST_CASE(template97);
         TEST_CASE(template98); // #8959
+        TEST_CASE(template99); // #8960
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2080,6 +2081,23 @@ private:
                            "delete a ; "
                            "} ) ; "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template99() { // #8960
+        const char code[] = "template <typename T>\n"
+                            "class Base {\n"
+                            "public:\n"
+                            "    using ArrayType = std::vector<Base<T>>;\n"
+                            "};\n"
+                            "using A = Base<int>;\n"
+                            "static A::ArrayType array;\n";
+        const char exp[] = "class Base<int> ; "
+                           "static std :: vector < Base<int> > array ; "
+                           "class Base<int> { "
+                           "public: "
+                           "} ;";
+
         ASSERT_EQUALS(exp, tok(code));
     }
 

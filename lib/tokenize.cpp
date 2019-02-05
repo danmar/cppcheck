@@ -8839,7 +8839,9 @@ void Tokenizer::simplifyStructDecl()
             }
         }
         // check for anonymous enum
-        else if ((Token::simpleMatch(tok, "enum {") && Token::Match(tok->next()->link(), "} %type%| ,|;|[|(|{")) ||
+        else if ((Token::simpleMatch(tok, "enum {") &&
+                  !Token::Match(tok->tokAt(-3), "using %name% = ") &&
+                  Token::Match(tok->next()->link(), "} %type%| ,|;|[|(|{")) ||
                  (Token::Match(tok, "enum : %type% {") && Token::Match(tok->linkAt(3), "} %type%| ,|;|[|(|{"))) {
             tok->insertToken("Anonymous" + MathLib::toString(count++));
         }
@@ -8949,7 +8951,7 @@ void Tokenizer::simplifyStructDecl()
                 }
 
                 // don't remove unnamed anonymous unions from a class, struct or union
-                if (!(!inFunction && tok1->str() == "union")) {
+                if (!(!inFunction && tok1->str() == "union") && !Token::Match(tok1->tokAt(-3), "using %name% =")) {
                     skip.pop();
                     tok1->deleteThis();
                     if (tok1->next() == tok) {
