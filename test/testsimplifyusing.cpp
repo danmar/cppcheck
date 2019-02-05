@@ -77,19 +77,6 @@ private:
         return tokenizer.tokens()->stringifyList(0, !simplify);
     }
 
-    std::string simplifyUsing(const char code[]) {
-        errout.str("");
-
-        Tokenizer tokenizer(&settings1, this);
-
-        std::istringstream istr(code);
-        tokenizer.list.createTokens(istr);
-        tokenizer.createLinks();
-        tokenizer.simplifyTemplates();
-
-        return tokenizer.tokens()->stringifyList(0, false);
-    }
-
     void simplifyUsing1() {
         const char code[] = "class A\n"
                             "{\n"
