@@ -49,6 +49,7 @@ class CPPCHECKLIB Tokenizer {
 
     friend class TestSimplifyTokens;
     friend class TestSimplifyTypedef;
+    friend class TestSimplifyUsing;
     friend class TestTokenizer;
     friend class SymbolDatabase;
     friend class TestSimplifyTemplate;
