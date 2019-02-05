@@ -238,6 +238,8 @@ def scanPackage(workPath, cppcheckPath, jobs):
 # TODO: enable boost library configuration detection after release of Cppcheck 1.87
 #    if os.path.exists(cppcheckPath + '/cfg/boost.cfg') and hasInclude('temp', ['<boost/']):
 #        libraries += ' --library=boost'
+    if hasInclude('temp', ['<SDL.h>']):
+        libraries += ' --library=sdl'
 
 # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' --library=gnu -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
