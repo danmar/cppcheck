@@ -10,6 +10,7 @@
 #include <QObject>
 #include <QString>
 #include <QtPlugin>
+#include <QFile>
 
 
 void QString1(QString s)
@@ -36,3 +37,18 @@ public:
     explicit MacroTest1(QObject *parent = 0);
     ~MacroTest1();
 };
+
+void validCode()
+{
+    if (QFile::exists("test"))
+    {}
+}
+
+void ignoredReturnValue()
+{
+    // cppcheck-suppress ignoredReturnValue
+    QFile::exists("test");
+    QFile file1("test");
+    // cppcheck-suppress ignoredReturnValue
+    file1.exists();
+}
