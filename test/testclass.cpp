@@ -172,6 +172,7 @@ private:
         TEST_CASE(const63); // ticket #5983
         TEST_CASE(const64); // ticket #6268
         TEST_CASE(const65); // ticket #8693
+        TEST_CASE(const66); // ticket #7714
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -5629,6 +5630,16 @@ private:
                    "    TemplateClass<float> b;\n"
                    "    return 0;\n"
                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const66() {
+        checkConst("struct C {\n"
+                   "    C() : n(0) {}\n"
+                   "    void f(int v) { g((char *) &v); }\n"
+                   "    void g(char *) { n++; }\n"
+                   "    int n;\n"
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
