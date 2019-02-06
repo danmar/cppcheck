@@ -473,12 +473,15 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         TokenString currentToken;
 
         if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#' && (lastLine() == "# error" || lastLine() == "# warning")) {
-            while (istr.good() && ch != '\r' && ch != '\n') {
+            char prev = ' ';
+            while (istr.good() && (prev == '\\' || (ch != '\r' && ch != '\n'))) {
                 currentToken += ch;
+                prev = ch;
                 ch = readChar(istr, bom);
             }
             istr.unget();
             push_back(new Token(currentToken, location));
+            location.adjust(currentToken);
             continue;
         }
 
@@ -1136,7 +1139,7 @@ namespace simplecpp {
             std::istringstream istr(def);
             tokenListDefine.readfile(istr);
             if (!parseDefine(tokenListDefine.cfront()))
-                throw std::runtime_error("bad macro syntax");
+                throw std::runtime_error("bad macro syntax. macroname=" + name + " value=" + value);
         }
 
         Macro(const Macro &macro) : nameTokDef(NULL), files(macro.files), tokenListDefine(macro.files), valueDefinedInCode_(macro.valueDefinedInCode_) {
@@ -1505,7 +1508,7 @@ namespace simplecpp {
             for (const Token *tok = valueToken; tok != endToken;) {
                 if (tok->op != '#') {
                     // A##B => AB
-                    if (tok->next && tok->next->op == '#' && tok->next->next && tok->next->next->op == '#') {
+                    if (sameline(tok, tok->next) && tok->next && tok->next->op == '#' && tok->next->next && tok->next->next->op == '#') {
                         if (!sameline(tok, tok->next->next->next))
                             throw invalidHashHash(tok->location, name());
                         output->push_back(newMacroToken(expandArgStr(tok, parametertokens2), loc, isReplaced(expandedmacros)));
@@ -1836,6 +1839,72 @@ namespace simplecpp {
 }
 
 #ifdef SIMPLECPP_WINDOWS
+
+class ScopedLock
+{
+public:
+    explicit ScopedLock(HANDLE mutex)
+        : m_mutex(mutex)
+    {
+        if (WaitForSingleObject(m_mutex, INFINITE) == WAIT_FAILED)
+            throw std::runtime_error("cannot lock the mutex");
+    }
+
+    ~ScopedLock()
+    {
+        ReleaseMutex(m_mutex);
+    }
+
+private:
+    ScopedLock& operator=(const ScopedLock&);
+    ScopedLock(const ScopedLock&);
+
+    HANDLE m_mutex;
+};
+
+class RealFileNameMap
+{
+public:
+    RealFileNameMap()
+    {
+        m_mutex = CreateMutex(NULL, FALSE, NULL);
+
+        if (!m_mutex)
+        {
+            throw std::runtime_error("cannot create the mutex handle");
+        }
+    }
+
+    ~RealFileNameMap()
+    {
+        CloseHandle(m_mutex);
+    }
+
+    bool getRealPathFromCache(const std::string& path, std::string* returnPath)
+    {
+        ScopedLock lock(m_mutex);
+
+        std::map<std::string, std::string>::iterator it = m_fileMap.find(path);
+        if (it != m_fileMap.end())
+        {
+            *returnPath = it->second;
+            return true;
+        }
+        return false;
+    }
+
+    void addToCache(const std::string& path, const std::string& actualPath)
+    {
+        ScopedLock lock(m_mutex);
+        m_fileMap[path] = actualPath;
+    }
+
+    std::map<std::string, std::string> m_fileMap;
+    HANDLE m_mutex;
+};
+
+static RealFileNameMap realFileNameMap;
+
 static bool realFileName(const std::string &f, std::string *result)
 {
     // are there alpha characters in last subpath?
@@ -1855,13 +1924,17 @@ static bool realFileName(const std::string &f, std::string *result)
         return false;
 
     // Lookup filename or foldername on file system
-    WIN32_FIND_DATAA FindFileData;
-    HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
+    if (!realFileNameMap.getRealPathFromCache(f, result))
+    {
+        WIN32_FIND_DATAA FindFileData;
+        HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
 
-    if (INVALID_HANDLE_VALUE == hFind)
-        return false;
-    *result = FindFileData.cFileName;
-    FindClose(hFind);
+        if (INVALID_HANDLE_VALUE == hFind)
+            return false;
+        *result = FindFileData.cFileName;
+        realFileNameMap.addToCache(f, *result);
+        FindClose(hFind);
+    }
     return true;
 }
 
