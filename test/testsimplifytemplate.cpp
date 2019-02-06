@@ -137,6 +137,7 @@ private:
         TEST_CASE(template97);
         TEST_CASE(template98); // #8959
         TEST_CASE(template99); // #8960
+        TEST_CASE(template100); // #8967
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2097,6 +2098,21 @@ private:
                            "class Base<int> { "
                            "public: "
                            "} ;";
+
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template100() { // #8967
+        const char code[] = "enum class Device { I2C0, I2C1 };\n"
+                            "template <Device D>\n"
+                            "const char* deviceFile;\n"
+                            "template <>\n"
+                            "const char* deviceFile<Device::I2C0> = \"/tmp/i2c-0\";\n";
+
+        const char exp[] = "enum class Device { I2C0 , I2C1 } ; "
+                           "template < Device D > "
+                           "const char * deviceFile ; "
+                           "const char * deviceFile<Device::I2C0> ; deviceFile<Device::I2C0> = \"/tmp/i2c-0\" ;";
 
         ASSERT_EQUALS(exp, tok(code));
     }
