@@ -38,10 +38,14 @@ public:
     ~MacroTest1();
 };
 
-void validCode()
+void validCode(int * pIntPtr)
 {
-    if (QFile::exists("test"))
-    {}
+    if (QFile::exists("test")) {
+    }
+
+    if (pIntPtr != Q_NULLPTR) {
+        *pIntPtr = 5;
+    }
 }
 
 void ignoredReturnValue()
@@ -51,4 +55,18 @@ void ignoredReturnValue()
     QFile file1("test");
     // cppcheck-suppress ignoredReturnValue
     file1.exists();
+}
+
+void nullPointer(int * pIntPtr)
+{
+    int * pNullPtr = Q_NULLPTR;
+    // cppcheck-suppress nullPointer
+    *pNullPtr = 1;
+
+    if (pIntPtr != Q_NULLPTR) {
+        *pIntPtr = 2;
+    } else {
+        // cppcheck-suppress nullPointerRedundantCheck
+        *pIntPtr = 3;
+    }
 }
