@@ -7554,6 +7554,13 @@ private:
               "    g(x + 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void g(int);\n"
+              "void f() {\n"
+              "    char i = 1;\n"
+              "    g(static_cast<int>(i));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

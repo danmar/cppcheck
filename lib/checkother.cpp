@@ -2798,11 +2798,14 @@ void CheckOther::checkConstArgument()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (Token::Match(tok, "%var%"))
-                continue;
             if (Token::Match(tok, "++|--"))
                 continue;
             if (isConstVarExpression(tok))
+                continue;
+            const Token * tok2 = tok;
+            if (isCPPCast(tok2))
+                tok2 = tok2->astOperand2();
+            if (Token::Match(tok2, "%var%"))
                 continue;
             constArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
         }

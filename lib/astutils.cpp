@@ -1042,6 +1042,11 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     return (!parent->astOperand1()->valueType() || !parent->astOperand1()->valueType()->isIntegral());
 }
 
+bool isCPPCast(const Token* tok)
+{
+    return tok && Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1() && tok->astOperand1()->str().find("_cast") != std::string::npos;
+}
+
 bool isConstVarExpression(const Token *tok)
 {
     if (!tok)
@@ -1052,7 +1057,7 @@ bool isConstVarExpression(const Token *tok)
         std::vector<const Token *> args = getArguments(tok);
         return std::all_of(args.begin(), args.end(), &isConstVarExpression);
     }
-    if (Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1()->str().find("_cast") != std::string::npos) {
+    if (isCPPCast(tok)) {
         return isConstVarExpression(tok->astOperand2());
     }
     if (Token::Match(tok, "( %type%"))

@@ -160,6 +160,8 @@ const Token *findLambdaEndToken(const Token *first);
  */
 bool isLikelyStreamRead(bool cpp, const Token *op);
 
+bool isCPPCast(const Token* tok);
+
 bool isConstVarExpression(const Token *tok);
 
 /**
