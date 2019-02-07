@@ -18,12 +18,29 @@ fi
 
 RCFILE=.astylerc
 
+#
+# Functions to format C/C++ source code
+#
 function formatCplusplus {
   "$ASTYLE" --options=$RCFILE "$1"
 }
 function formatCplusplusRecursive {
   RCFILE=.astylerc
   "$ASTYLE" --options=$RCFILE --recursive "$1"
+}
+
+#
+# Function to format XML files
+#
+function formatXML {
+  xmllint --format -o "$1_" "$1"
+  if cmp -s "$1_" "$1"; then
+    rm -f "$1_"
+    echo Unchanged $1
+  else
+    mv -f "$1_" "$1"
+    echo Formatted $1
+  fi
 }
 
 formatCplusplus "cli/*.cpp"
@@ -43,18 +60,6 @@ formatCplusplus "tools/*.cpp"
 formatCplusplusRecursive "tools/*.h"
 formatCplusplusRecursive "samples/*.c"
 formatCplusplusRecursive "samples/*.cpp"
-
-# Convert tabs to spaces.. even in strings
-# sed -i "s/\t/ /g" test/test*.cpp
-
-function formatXML {
-  xmllint --format -o "$1_" "$1"
-  if cmp -s "$1_" "$1"; then
-    rm -f "$1_"
-  else
-    mv -f "$1_" "$1"
-  fi
-}
 
 # format config files
 # TODO: use other tool than xmllint? use tabs instead of spaces?
