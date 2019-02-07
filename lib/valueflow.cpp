@@ -2980,7 +2980,10 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             int n = getArgumentPos(var, f);
             if (n < 0)
                 continue;
-            const Token *argtok = getArguments(tok).at(n);
+            std::vector<const Token *> args = getArguments(tok);
+            if (n >= args.size())
+                continue;
+            const Token *argtok = args[n];
             LifetimeStore ls{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object};
             ls.errorPath = v.errorPath;
             ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
