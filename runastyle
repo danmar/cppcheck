@@ -26,20 +26,20 @@ function formatCplusplusRecursive {
 	"$ASTYLE" --options=$RCFILE --recursive "$1"
 }
 
-formatCplusplus cli/*.cpp
-formatCplusplus cli/*.h
-formatCplusplus democlient/*.cpp
-formatCplusplus gui/*.cpp
-formatCplusplus gui/*.h
+formatCplusplus "cli/*.cpp"
+formatCplusplus "cli/*.h"
+formatCplusplus "democlient/*.cpp"
+formatCplusplus "gui/*.cpp"
+formatCplusplus "gui/*.h"
 formatCplusplusRecursive "gui/test/*.cpp"
 formatCplusplusRecursive "gui/test/*.h"
-formatCplusplus lib/*.cpp
-formatCplusplus lib/*.h
-formatCplusplus test/*.cpp
-formatCplusplus test/cfg/*.c
-formatCplusplus test/cfg/*.cpp
-formatCplusplus test/*.h
-formatCplusplus tools/*.cpp
+formatCplusplus "lib/*.cpp"
+formatCplusplus "lib/*.h"
+formatCplusplus "test/*.cpp"
+formatCplusplus "test/cfg/*.c"
+formatCplusplus "test/cfg/*.cpp"
+formatCplusplus "test/*.h"
+formatCplusplus "tools/*.cpp"
 formatCplusplusRecursive "tools/*.h"
 formatCplusplusRecursive "samples/*.c"
 formatCplusplusRecursive "samples/*.cpp"
