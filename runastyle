@@ -11,19 +11,19 @@ ASTYLE="${ASTYLE-astyle}"
 
 DETECTED_VERSION=$("$ASTYLE" --version 2>&1 | awk '{ print $NF; }')
 if [ "$DETECTED_VERSION" != "${ASTYLE_VERSION}" ]; then
-    echo "You should use version: ${ASTYLE_VERSION}"
-    echo "Detected version: ${DETECTED_VERSION}"
-    exit 1
+  echo "You should use version: ${ASTYLE_VERSION}"
+  echo "Detected version: ${DETECTED_VERSION}"
+  exit 1
 fi
 
 RCFILE=.astylerc
 
 function formatCplusplus {
-	"$ASTYLE" --options=$RCFILE "$1"
+  "$ASTYLE" --options=$RCFILE "$1"
 }
 function formatCplusplusRecursive {
-	RCFILE=.astylerc
-	"$ASTYLE" --options=$RCFILE --recursive "$1"
+  RCFILE=.astylerc
+  "$ASTYLE" --options=$RCFILE --recursive "$1"
 }
 
 formatCplusplus "cli/*.cpp"
@@ -48,23 +48,23 @@ formatCplusplusRecursive "samples/*.cpp"
 # sed -i "s/\t/ /g" test/test*.cpp
 
 function formatXML {
-    xmllint --format -o "$1_" "$1"
-    if cmp -s "$1_" "$1"; then
-        rm -f "$1_"
-    else
-        mv -f "$1_" "$1"
-    fi
+  xmllint --format -o "$1_" "$1"
+  if cmp -s "$1_" "$1"; then
+    rm -f "$1_"
+  else
+    mv -f "$1_" "$1"
+  fi
 }
 
 # format config files
 # TODO: use other tool than xmllint? use tabs instead of spaces?
 for CFGFILE in cfg/*.cfg
 do
-    formatXML "$CFGFILE"
+  formatXML "$CFGFILE"
 done
 for PLATFORMFILE in platforms/*.xml
 do
-   formatXML "$PLATFORMFILE"
+  formatXML "$PLATFORMFILE"
 done
 
 formatXML man/cppcheck.1.xml
