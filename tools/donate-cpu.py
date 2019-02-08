@@ -221,7 +221,7 @@ def hasInclude(path, includes):
 def scanPackage(workPath, cppcheckPath, jobs):
     print('Analyze..')
     os.chdir(workPath)
-    libraries = ' --library=posix'
+    libraries = ' --library=posix --library=gnu'
     if hasInclude('temp', ['<gtk/gtk.h>', '<glib.h>', '<glib/']):
         libraries += ' --library=gtk'
     if hasInclude('temp', ['<X11/', '<Xm/']):
@@ -242,7 +242,7 @@ def scanPackage(workPath, cppcheckPath, jobs):
         libraries += ' --library=sdl'
 
 # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = jobs + libraries + ' --library=gnu -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
+    options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
     print(cmd)
     startTime = time.time()
