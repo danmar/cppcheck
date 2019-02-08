@@ -2983,7 +2983,12 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             std::vector<const Token *> args = getArguments(tok);
             if (n >= args.size()) {
                 if (tokenlist->getSettings()->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "Argument mismatch: Function '" + tok->str() + "' returning lifetime from argument index " + std::to_string(n) + " but only " + std::to_string(args.size()) + " arguments are available.");
+                    bailout(tokenlist,
+                            errorLogger,
+                            tok,
+                            "Argument mismatch: Function '" + tok->str() + "' returning lifetime from argument index " +
+                                std::to_string(n) + " but only " + std::to_string(args.size()) +
+                                " arguments are available.");
                 continue;
             }
             const Token *argtok = args[n];
