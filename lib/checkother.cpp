@@ -1389,58 +1389,62 @@ void CheckOther::charBitOpError(const Token *tok)
 //---------------------------------------------------------------------------
 // Incomplete statement..
 //---------------------------------------------------------------------------
+
+static bool isConstStatement(const Token * tok)
+{
+    if (!tok)
+        return false;
+    if (tok->isExpandedMacro())
+        return false;
+    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+        return true;
+    if (Token::Match(tok->astOperand1(), "%type%") || Token::Match(tok->astOperand2(), "%type%"))
+        return false;
+    if (Token::Match(tok, "<<|>>"))
+        return false;
+    if (Token::Match(tok, "%cop%") && (tok->astOperand1() || tok->astOperand2()))
+        return true;
+    if (Token::simpleMatch(tok->previous(), "sizeof ("))
+        return true;
+    if (isCPPCast(tok))
+        return isConstStatement(tok->astOperand2());
+    if (Token::Match(tok, "( %type%"))
+        return isConstStatement(tok->astOperand1());
+    if (Token::simpleMatch(tok, ","))
+        return isConstStatement(tok->astOperand2());
+    return false;
+}
+
+static bool isVoidCast(const Token * tok)
+{
+    const Token * tok2 = tok;
+    while(tok2->astOperand1())
+        tok2 = tok2->astOperand1();
+    if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->previous()->link(), "( void"))
+        return true;
+    if (Token::simpleMatch(tok2, "( void"))
+        return true;
+    return false;
+}
+
 void CheckOther::checkIncompleteStatement()
 {
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "(|["))
-            tok = tok->link();
-
-        else if (tok->str() == "{" && tok->astParent())
-            tok = tok->link();
-
-        // C++11 struct/array/etc initialization in initializer list
-        else if (Token::Match(tok->previous(), "%var%|] {"))
-            tok = tok->link();
-
-        if (!Token::Match(tok, "[;{}] %str%|%num%"))
+        if (tok != tok->astTop())
             continue;
-
-        // No warning if numeric constant is followed by a "." or ","
-        if (Token::Match(tok->next(), "%num% [,.]"))
+        if (!Token::simpleMatch(nextAfterAstRightmostLeaf(tok), ";") && !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
-
-        // No warning for [;{}] (void *) 0 ;
-        if (Token::Match(tok, "[;{}] 0 ;") && (tok->next()->isCast() || tok->next()->isExpandedMacro()))
+        const Scope * scope = tok->scope();
+        if (scope && !scope->isExecutable())
             continue;
-
-        // bailout if there is a "? :" in this statement
-        bool bailout = false;
-        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "?") {
-                bailout = true;
-                break;
-            } else if (tok2->str() == ";")
-                break;
-        }
-        if (bailout)
+        if (!isConstStatement(tok))
             continue;
-
-        // no warning if this is the last statement in a ({})
-        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(")
-                tok2 = tok2->link();
-            else if (Token::Match(tok2, "[;{}]")) {
-                bailout = Token::simpleMatch(tok2, "; } )");
-                break;
-            }
-        }
-        if (bailout)
+        if (isVoidCast(tok))
             continue;
-
-        constStatementError(tok->next(), tok->next()->isNumber() ? "numeric" : "string");
+        constStatementError(tok, tok->isNumber() ? "numeric" : "string");
     }
 }
 

@@ -83,6 +83,7 @@ public:
         checkOther.checkFuncArgNamesDifferent();
         checkOther.checkShadowVariables();
         checkOther.checkConstArgument();
+        checkOther.checkIncompleteStatement();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -93,7 +94,6 @@ public:
         checkOther.clarifyCalculation();
         checkOther.clarifyStatement();
         checkOther.checkPassByReference();
-        checkOther.checkIncompleteStatement();
         checkOther.checkCastIntToCharAndBack();
 
         checkOther.checkMisusedScopedObject();

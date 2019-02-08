@@ -2732,7 +2732,7 @@ private:
 
         // #4711 lambda functions
         check("int f() {\n"
-              "    return g([](int x){x+1; return x;});\n"
+              "    return g([](int x){(void)x+1; return x;});\n"
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("", errout.str());
 
