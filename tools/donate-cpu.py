@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.0.0"
+CLIENT_VERSION = "1.1.0"
 
 
 def checkRequirements():
@@ -232,18 +232,16 @@ def scanPackage(workPath, cppcheckPath, jobs):
         libraries += ' --library=gtk'
     if hasInclude('temp', ['<X11/', '<Xm/']):
         libraries += ' --library=motif'
-# TODO: enable after release 1.87
-#    if hasInclude('temp', ['<Python.h>']):
-#        libraries += ' --library=python'
+    if os.path.exists(cppcheckPath + '/cfg/python.cfg') and hasInclude('temp', ['<Python.h>']):
+        libraries += ' --library=python'
     if hasInclude('temp', ['<QString>', '<QtWidgets>', '<QtGui/']):
         libraries += ' --library=qt'
     if hasInclude('temp', ['<wx/', '"wx/']):
         libraries += ' --library=wxwidgets'
     if hasInclude('temp', ['<zlib.h>']):
         libraries += ' --library=zlib'
-# TODO: enable boost library configuration detection after release of Cppcheck 1.87
-#    if os.path.exists(cppcheckPath + '/cfg/boost.cfg') and hasInclude('temp', ['<boost/']):
-#        libraries += ' --library=boost'
+    if os.path.exists(cppcheckPath + '/cfg/boost.cfg') and hasInclude('temp', ['<boost/']):
+        libraries += ' --library=boost'
     if hasInclude('temp', ['<SDL.h>']):
         libraries += ' --library=sdl'
 
