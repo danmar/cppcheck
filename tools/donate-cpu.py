@@ -34,6 +34,12 @@ import tarfile
 import platform
 
 
+# Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
+# Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
+# changes)
+CLIENT_VERSION = "1.0.0"
+
+
 def checkRequirements():
     result = True
     for app in ['g++', 'git', 'make', 'wget']:
@@ -482,6 +488,7 @@ while True:
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
+    output += 'client-version: ' + CLIENT_VERSION + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheckVersions) + '\n'
     output += 'count:' + count + '\n'
     output += 'elapsed-time:' + elapsedTime + '\n'
