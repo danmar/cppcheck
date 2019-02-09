@@ -2334,6 +2334,25 @@ private:
                                "{ int ar [ 3 ] ; } ;";
             ASSERT_EQUALS(exp, tok(code));
         }
+        {
+            const char code[] = "template<typename Lhs, int TriangularPart = (int(Lhs::Flags) & LowerTriangularBit)>\n"
+                                "struct ei_solve_triangular_selector;\n"
+                                "template<typename Lhs, int UpLo>\n"
+                                "struct ei_solve_triangular_selector<Lhs,UpLo> {\n"
+                                "};\n"
+                                "template<typename Lhs, int TriangularPart>\n"
+                                "struct ei_solve_triangular_selector { };";
+
+            const char exp[] = "template < typename Lhs , int TriangularPart = ( int ( Lhs :: Flags ) & LowerTriangularBit ) > "
+                               "struct ei_solve_triangular_selector ; "
+                               "template < typename Lhs , int UpLo > "
+                               "struct ei_solve_triangular_selector < Lhs , UpLo > { "
+                               "} ; "
+                               "template < typename Lhs , int TriangularPart = ( int ( Lhs :: Flags ) & LowerTriangularBit ) > "
+                               "struct ei_solve_triangular_selector { } ;";
+
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_default_type() {

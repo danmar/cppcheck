@@ -2415,6 +2415,10 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
         getTemplateParametersInDeclaration(forwardDecl.token->tokAt(2), params1);
 
         for (auto & decl : mTemplateDeclarations) {
+            // skip partializations
+            if (decl.isPartialSpecialization())
+                continue;
+
             std::vector<const Token *> params2;
 
             getTemplateParametersInDeclaration(decl.token->tokAt(2), params2);
@@ -2432,8 +2436,18 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
                     for (size_t k = 0; k < params1.size(); k++) {
                         // copy default value to declaration if not present
                         if (params1[k]->strAt(1) == "=" && params2[k]->strAt(1) != "=") {
-                            const_cast<Token *>(params2[k])->insertToken(params1[k]->strAt(2));
-                            const_cast<Token *>(params2[k])->insertToken(params1[k]->strAt(1));
+                            int level = 0;
+                            const Token *end = params1[k]->next();
+                            while (end && !(level == 0 && Token::Match(end, ",|>"))) {
+                                if (Token::Match(end, "{|(|<"))
+                                    level++;
+                                else if (Token::Match(end, "}|)|>"))
+                                    level--;
+                                end = end->next();
+                            }
+                            if (end)
+                                TokenList::copyTokens(const_cast<Token *>(params2[k]), params1[k]->next(), end->previous());
+                            break;
                         }
                     }
 
