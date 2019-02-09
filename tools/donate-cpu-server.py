@@ -718,9 +718,10 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] get:' + pkg)
             connection.send(pkg)
             connection.close()
-        elif cmd.startswith('write\nftp://'):
+        elif cmd.startswith('write\nftp://') or cmd.startswith('write-fast\nftp://'):
+            writeFast = cmd.startswith('write-fast')
             # read data
-            data = cmd[6:]
+            data = cmd[cmd.find('ftp'):]
             try:
                 t = 0
                 max_data_size = 2 * 1024 * 1024
@@ -753,15 +754,19 @@ def server(server_address_port, packages, packageIndex, resultPath):
                     print('results not written. url is not in packages.')
                     continue
             print('results added for package ' + res.group(1))
-            filename = resultPath + '/' + res.group(1)
+            if writeFast:
+                filename = resultPath + '-fast/' + res.group(1)
+            else:
+                filename = resultPath + '/' + res.group(1)
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
             # track latest added results..
-            if len(latestResults) >= 20:
-                latestResults = latestResults[1:]
-            latestResults.append(filename)
-            with open('latest.txt', 'wt') as f:
-                f.write(' '.join(latestResults))
+            if not writeFast:
+                if len(latestResults) >= 20:
+                    latestResults = latestResults[1:]
+                latestResults.append(filename)
+                with open('latest.txt', 'wt') as f:
+                    f.write(' '.join(latestResults))
         elif cmd.startswith('write_info\nftp://'):
             # read data
             data = cmd[11:]

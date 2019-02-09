@@ -224,7 +224,7 @@ def hasInclude(path, includes):
     return False
 
 
-def scanPackage(workPath, cppcheckPath, jobs):
+def scanPackage(workPath, cppcheckPath, jobs, fast):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix --library=gnu'
@@ -247,6 +247,8 @@ def scanPackage(workPath, cppcheckPath, jobs):
 
 # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
+    if fast:
+        options = '--experimental-fast ' + options
     cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
     print(cmd)
     startTime = time.time()
@@ -336,7 +338,11 @@ def uploadResults(package, results, server_address):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(server_address)
-            sendAll(sock, 'write\n' + package + '\n' + results + '\nDONE')
+            if results.startswith('FAST'):
+                cmd = 'write-fast\n'
+            else:
+                cmd = 'write\n'
+            sendAll(sock, cmd + package + '\n' + results + '\nDONE')
             sock.close()
             print('Results have been successfully uploaded.')
             return True
@@ -464,7 +470,7 @@ while True:
             current_cppcheck_dir = 'cppcheck'
         else:
             current_cppcheck_dir = ver
-        c, errout, info, t, cppcheck_options = scanPackage(workpath, current_cppcheck_dir, jobs)
+        c, errout, info, t, cppcheck_options = scanPackage(workpath, current_cppcheck_dir, jobs, False)
         if c < 0:
             crash = True
             count += ' Crash!'
@@ -474,6 +480,16 @@ while True:
         resultsToDiff.append(errout)
         if ver == 'head':
             head_info_msg = info
+
+            # Fast results
+            fast_c, fast_errout, fast_info, fast_t, fast_cppcheck_options = scanPackage(workpath, current_cppcheck_dir, jobs, True)
+            if c > 0 and errout and fast_errout:
+                output = 'FAST\n'
+                output += 'elapsed-time: %.1f %.1f' % (t, fast_t)
+                output += '\ndiff:\n'
+                output += diffResults(workpath, 'head', errout, 'fast', fast_errout)
+                uploadResults(package, output, server_address)
+
     results_exist = True
     if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
         results_exist = False
