@@ -1494,8 +1494,9 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
 
                             if (openParenthesis) {
-                                // skip over name
-                                tok2 = tok2->next();
+                                // Skip over name, if any
+                                if (Token::Match(tok2->next(), "%name%"))
+                                    tok2 = tok2->next();
 
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();

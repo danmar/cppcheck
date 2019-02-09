@@ -164,6 +164,7 @@ private:
         TEST_CASE(simplifyTypedef124); // ticket #7792
         TEST_CASE(simplifyTypedef125); // #8749 - typedef char A[10]; p = new A[1];
         TEST_CASE(simplifyTypedef126); // ticket #5953
+        TEST_CASE(simplifyTypedef127); // ticket #8878
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2537,6 +2538,16 @@ private:
         const char code[] = "typedef char automap_data_t[100];\n"
                             "void write_array(automap_data_t *data) {}";
         const char exp [] = "void write_array ( char ( * data ) [ 100 ] ) { }";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef127() { // #8878
+        const char code[] = "class a; typedef int (a::*b); "
+                            "template <long, class> struct c; "
+                            "template <int g> struct d { enum { e = c<g, b>::f }; };";
+        const char exp [] = "class a ; "
+                            "template < long , class > struct c ; "
+                            "template < int g > struct d { enum Anonymous0 { e = c < g , int ( a :: * ) > :: f } ; } ;";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
