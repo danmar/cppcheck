@@ -10,8 +10,38 @@ import time
 from threading import Thread
 import sys
 import urllib
+import logging
+import logging.handlers
 
 OLD_VERSION = '1.86'
+
+
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+# Logging to console
+handler_stream = logging.StreamHandler()
+logger.addHandler(handler_stream)
+# Log errors to a rotating file
+logfile = sys.path[0]
+if logfile:
+    logfile += '/'
+logfile += 'donate-cpu-server.log'
+handler_file = logging.handlers.RotatingFileHandler(filename=logfile, maxBytes=100*1024, backupCount=1)
+handler_file.setLevel(logging.ERROR)
+logger.addHandler(handler_file)
+
+
+# Set up an exception hook for all uncaught exceptions so they can be logged
+def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
+sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime():
