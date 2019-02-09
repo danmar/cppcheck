@@ -9,7 +9,7 @@
 #   lupdate gui.pro
 #
 # Update copyright year
-# git diff 1.86 | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-2019/Copyright (C) 2007-2019/'
+# git diff 1.86 | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-201./Copyright (C) 2007-2019/'
 # git diff | grep '^diff --git a/'
 #
 # Make sure "cppcheck --errorlist" works. For example with:
