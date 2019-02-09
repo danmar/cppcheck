@@ -138,6 +138,7 @@ private:
         TEST_CASE(template98); // #8959
         TEST_CASE(template99); // #8960
         TEST_CASE(template100); // #8967
+        TEST_CASE(template101); // #8968
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2115,6 +2116,24 @@ private:
                            "const char * deviceFile<Device::I2C0> ; deviceFile<Device::I2C0> = \"/tmp/i2c-0\" ;";
 
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template101() { // #8968
+        const char code[] = "class A {\n"
+                            "public:\n"
+                            "    using ArrayType = std::vector<int>;\n"
+                            "    void func(typename ArrayType::size_type i) {\n"
+                            "    }\n"
+                            "};";
+
+        const char exp[] = "class A { "
+                           "public: "
+                           "void func ( std :: vector < int > :: size_type i ) { "
+                           "} "
+                           "} ;";
+
+        ASSERT_EQUALS(exp, tok(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

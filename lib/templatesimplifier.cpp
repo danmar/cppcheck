@@ -3042,6 +3042,19 @@ void TemplateSimplifier::simplifyTemplates(
     const std::time_t maxtime,
     bool &codeWithTemplates)
 {
+    // Remove "typename" unless used in template arguments..
+    for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "typename %name%"))
+            tok->deleteThis();
+
+        if (Token::simpleMatch(tok, "template <")) {
+            while (tok && tok->str() != ">")
+                tok = tok->next();
+            if (!tok)
+                break;
+        }
+    }
+
     // TODO: 2 is not the ideal number of loops.
     // We should loop until the number of declarations is 0 but we can't
     // do that until we instantiate unintstantiated templates with their symbolic types.
@@ -3068,24 +3081,8 @@ void TemplateSimplifier::simplifyTemplates(
 
         bool hasTemplates = getTemplateDeclarations();
 
-        if (i == 0) {
+        if (i == 0)
             codeWithTemplates = hasTemplates;
-            if (hasTemplates) {
-                // There are templates..
-                // Remove "typename" unless used in template arguments..
-                for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-                    if (tok->str() == "typename")
-                        tok->deleteThis();
-
-                    if (Token::simpleMatch(tok, "template <")) {
-                        while (tok && tok->str() != ">")
-                            tok = tok->next();
-                        if (!tok)
-                            break;
-                    }
-                }
-            }
-        }
 
         // Make sure there is something to simplify.
         if (mTemplateDeclarations.empty())
