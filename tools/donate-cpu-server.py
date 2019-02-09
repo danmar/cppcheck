@@ -13,7 +13,7 @@ import urllib
 import logging
 import logging.handlers
 
-OLD_VERSION = '1.86'
+OLD_VERSION = '1.87'
 
 
 # Set up logging
