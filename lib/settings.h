@@ -111,6 +111,11 @@ public:
      */
     bool experimental;
 
+    /** Experimental "fast" checking. We skip slow simplifications. The
+     * goal is that there will not be significant effect on the results
+     * and that we can remove the slow simplifications. */
+    bool experimentalFast;
+
     /** @brief Is --quiet given? */
     bool quiet;
 

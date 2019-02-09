@@ -436,12 +436,14 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // simplify more if required, skip rest of iteration if failed
                 if (mSimplify) {
-                    // if further simplification fails then skip rest of iteration
-                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
-                    result = mTokenizer.simplifyTokenList2();
-                    timer3.Stop();
-                    if (!result)
-                        continue;
+                    if (!mSettings.experimentalFast) {
+                        // if further simplification fails then skip rest of iteration
+                        Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
+                        result = mTokenizer.simplifyTokenList2();
+                        timer3.Stop();
+                        if (!result)
+                            continue;
+                    }
 
                     // Check simplified tokens
                     checkSimplifiedTokens(mTokenizer);

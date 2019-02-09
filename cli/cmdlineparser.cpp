@@ -159,6 +159,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
 
+            else if (std::strcmp(argv[i], "--experimental-fast") == 0)
+                // Skip slow simplifications and see how that affect the results, the
+                // goal is to remove the simplifications.
+                mSettings->experimentalFast = true;
+
             // (Experimental) exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0)
                 mSettings->exceptionHandling = true;

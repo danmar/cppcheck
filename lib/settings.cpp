@@ -34,6 +34,7 @@ Settings::Settings()
       jointSuppressionReport(false),
       maxCtuDepth(2),
       experimental(false),
+      experimentalFast(false),
       quiet(false),
       inlineSuppressions(false),
       verbose(false),
