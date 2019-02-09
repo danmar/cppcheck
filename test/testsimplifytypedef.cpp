@@ -2307,25 +2307,25 @@ private:
         const char code1[] = "typedef typename A B;\n"
                              "typedef typename B C;\n"
                              "typename C c;\n";
-        const char expected1[] = "typename A c ;";
+        const char expected1[] = "A c ;";
         ASSERT_EQUALS(expected1, tok(code1));
 
         const char code2[] = "typedef typename A B;\n"
                              "typedef typename B C;\n"
                              "C c;\n";
-        const char expected2[] = "typename A c ;";
+        const char expected2[] = "A c ;";
         ASSERT_EQUALS(expected2, tok(code2));
 
         const char code3[] = "typedef typename A B;\n"
                              "typedef B C;\n"
                              "C c;\n";
-        const char expected3[] = "typename A c ;";
+        const char expected3[] = "A c ;";
         ASSERT_EQUALS(expected3, tok(code3));
 
         const char code4[] = "typedef A B;\n"
                              "typedef typename B C;\n"
                              "C c;\n";
-        const char expected4[] = "typename A c ;";
+        const char expected4[] = "A c ;";
         ASSERT_EQUALS(expected4, tok(code4));
 
         const char code5[] = "typedef A B;\n"

@@ -2187,7 +2187,7 @@ private:
 
         ASSERT_EQUALS("1: template < int d , typename A , typename B > struct S { } ;\n", tokenize("template<int d, typename A, typename B> struct S {};"));
 
-        ASSERT_EQUALS("1: typename A a@1 ;\n", tokenize("typename A a;"));
+        ASSERT_EQUALS("1: A a@1 ;\n", tokenize("typename A a;"));
     }
 
     void varid_rvalueref() {

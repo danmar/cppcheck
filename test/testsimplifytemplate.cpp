@@ -138,6 +138,7 @@ private:
         TEST_CASE(template98); // #8959
         TEST_CASE(template99); // #8960
         TEST_CASE(template100); // #8967
+        TEST_CASE(template101); // #8968
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2117,6 +2118,24 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template101() { // #8968
+        const char code[] = "class A {\n"
+                            "public:\n"
+                            "    using ArrayType = std::vector<int>;\n"
+                            "    void func(typename ArrayType::size_type i) {\n"
+                            "    }\n"
+                            "};";
+
+        const char exp[] = "class A { "
+                           "public: "
+                           "void func ( std :: vector < int > :: size_type i ) { "
+                           "} "
+                           "} ;";
+
+        ASSERT_EQUALS(exp, tok(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -2332,6 +2351,25 @@ private:
                                "{ int ar [ 2 ] ; } ; "
                                "class A<int,3> "
                                "{ int ar [ 3 ] ; } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template<typename Lhs, int TriangularPart = (int(Lhs::Flags) & LowerTriangularBit)>\n"
+                                "struct ei_solve_triangular_selector;\n"
+                                "template<typename Lhs, int UpLo>\n"
+                                "struct ei_solve_triangular_selector<Lhs,UpLo> {\n"
+                                "};\n"
+                                "template<typename Lhs, int TriangularPart>\n"
+                                "struct ei_solve_triangular_selector { };";
+
+            const char exp[] = "template < typename Lhs , int TriangularPart = ( int ( Lhs :: Flags ) & LowerTriangularBit ) > "
+                               "struct ei_solve_triangular_selector ; "
+                               "template < typename Lhs , int UpLo > "
+                               "struct ei_solve_triangular_selector < Lhs , UpLo > { "
+                               "} ; "
+                               "template < typename Lhs , int TriangularPart = ( int ( Lhs :: Flags ) & LowerTriangularBit ) > "
+                               "struct ei_solve_triangular_selector { } ;";
+
             ASSERT_EQUALS(exp, tok(code));
         }
     }
