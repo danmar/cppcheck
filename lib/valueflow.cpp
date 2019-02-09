@@ -2980,7 +2980,18 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             int n = getArgumentPos(var, f);
             if (n < 0)
                 continue;
-            const Token *argtok = getArguments(tok).at(n);
+            std::vector<const Token *> args = getArguments(tok);
+            if (n >= args.size()) {
+                if (tokenlist->getSettings()->debugwarnings)
+                    bailout(tokenlist,
+                            errorLogger,
+                            tok,
+                            "Argument mismatch: Function '" + tok->str() + "' returning lifetime from argument index " +
+                                std::to_string(n) + " but only " + std::to_string(args.size()) +
+                                " arguments are available.");
+                continue;
+            }
+            const Token *argtok = args[n];
             LifetimeStore ls{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::Object};
             ls.errorPath = v.errorPath;
             ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
