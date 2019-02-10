@@ -1390,7 +1390,7 @@ void CheckOther::charBitOpError(const Token *tok)
 // Incomplete statement..
 //---------------------------------------------------------------------------
 
-static bool isConstStatement(const Token * tok)
+static bool isConstStatement(const Token *tok)
 {
     if (!tok)
         return false;
@@ -1398,7 +1398,9 @@ static bool isConstStatement(const Token * tok)
         return false;
     if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
         return true;
-    if (Token::Match(tok, "*|&|&&") && (Token::Match(tok->previous(), "::|.") || Token::Match(tok->astOperand1(), "%type%") || Token::Match(tok->astOperand2(), "%type%")))
+    if (Token::Match(tok, "*|&|&&") &&
+        (Token::Match(tok->previous(), "::|.") || Token::Match(tok->astOperand1(), "%type%") ||
+         Token::Match(tok->astOperand2(), "%type%")))
         return false;
     if (Token::Match(tok, "<<|>>"))
         return false;
@@ -1415,10 +1417,10 @@ static bool isConstStatement(const Token * tok)
     return false;
 }
 
-static bool isVoidStmt(const Token * tok)
+static bool isVoidStmt(const Token *tok)
 {
-    const Token * tok2 = tok;
-    while(tok2->astOperand1())
+    const Token *tok2 = tok;
+    while (tok2->astOperand1())
         tok2 = tok2->astOperand1();
     if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->previous()->link(), "( void"))
         return true;
@@ -1427,13 +1429,14 @@ static bool isVoidStmt(const Token * tok)
     return Token::Match(tok2->previous(), "delete|throw|return");
 }
 
-static bool isConstTop(const Token* tok)
+static bool isConstTop(const Token *tok)
 {
     if (!tok)
         return false;
     if (tok == tok->astTop())
         return true;
-    if (Token::simpleMatch(tok->astParent(), ";") && tok->astTop() && Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
+    if (Token::simpleMatch(tok->astParent(), ";") && tok->astTop() &&
+        Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
         if (Token::simpleMatch(tok->astParent()->astParent(), ";"))
             return tok->astParent()->astOperand2() == tok;
         else
@@ -1448,13 +1451,14 @@ void CheckOther::checkIncompleteStatement()
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        const Scope * scope = tok->scope();
+        const Scope *scope = tok->scope();
         if (scope && !scope->isExecutable())
             continue;
         if (!isConstTop(tok))
             continue;
-        const Token * rtok = nextAfterAstRightmostLeaf(tok);
-        if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") && !Token::Match(tok->previous(), ";|}|{ %any% ;"))
+        const Token *rtok = nextAfterAstRightmostLeaf(tok);
+        if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
+            !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
         // Skipe statement expressions
         if (Token::Match(rtok, "; } )"))
