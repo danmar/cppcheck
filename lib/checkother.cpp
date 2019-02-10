@@ -1398,7 +1398,7 @@ static bool isConstStatement(const Token * tok)
         return false;
     if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
         return true;
-    if (Token::Match(tok->astOperand1(), "%type%") || Token::Match(tok->astOperand2(), "%type%"))
+    if (Token::Match(tok, "*|&|&&") && (Token::Match(tok->previous(), "::|.") || Token::Match(tok->astOperand1(), "%type%") || Token::Match(tok->astOperand2(), "%type%")))
         return false;
     if (Token::Match(tok, "<<|>>"))
         return false;
@@ -1415,7 +1415,7 @@ static bool isConstStatement(const Token * tok)
     return false;
 }
 
-static bool isVoidCast(const Token * tok)
+static bool isVoidStmt(const Token * tok)
 {
     const Token * tok2 = tok;
     while(tok2->astOperand1())
@@ -1424,6 +1424,21 @@ static bool isVoidCast(const Token * tok)
         return true;
     if (Token::simpleMatch(tok2, "( void"))
         return true;
+    return Token::Match(tok2->previous(), "delete|throw|return");
+}
+
+static bool isConstTop(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (tok == tok->astTop())
+        return true;
+    if (Token::simpleMatch(tok->astParent(), ";") && tok->astTop() && Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
+        if (Token::simpleMatch(tok->astParent()->astParent(), ";"))
+            return tok->astParent()->astOperand2() == tok;
+        else
+            return tok->astParent()->astOperand1() == tok;
+    }
     return false;
 }
 
@@ -1433,24 +1448,35 @@ void CheckOther::checkIncompleteStatement()
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok != tok->astTop())
-            continue;
-        if (!Token::simpleMatch(nextAfterAstRightmostLeaf(tok), ";") && !Token::Match(tok->previous(), ";|}|{ %any% ;"))
-            continue;
         const Scope * scope = tok->scope();
         if (scope && !scope->isExecutable())
             continue;
+        if (!isConstTop(tok))
+            continue;
+        const Token * rtok = nextAfterAstRightmostLeaf(tok);
+        if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") && !Token::Match(tok->previous(), ";|}|{ %any% ;"))
+            continue;
+        // Skipe statement expressions
+        if (Token::Match(rtok, "; } )"))
+            continue;
         if (!isConstStatement(tok))
             continue;
-        if (isVoidCast(tok))
+        if (isVoidStmt(tok))
             continue;
-        constStatementError(tok, tok->isNumber() ? "numeric" : "string");
+        bool inconclusive = Token::Match(tok, "%cop%");
+        if (mSettings->inconclusive || !inconclusive)
+            constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
 }
 
-void CheckOther::constStatementError(const Token *tok, const std::string &type)
+void CheckOther::constStatementError(const Token *tok, const std::string &type, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant.", CWE398, false);
+    std::string msg;
+    if (Token::simpleMatch(tok, "=="))
+        msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
+    else
+        msg = "Redundant code: Found a statement that begins with " + type + " constant.";
+    reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive);
 }
 
 //---------------------------------------------------------------------------

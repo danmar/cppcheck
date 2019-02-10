@@ -101,7 +101,7 @@ public:
 
         checkOther.checkInvalidFree();
         checkOther.checkRedundantCopy();
-        checkOther.checkSuspiciousEqualityComparison();
+        // checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkAccessOfMovedVariable();
     }
@@ -228,7 +228,7 @@ private:
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
-    void constStatementError(const Token *tok, const std::string &type);
+    void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
     void unknownSignCharArrayIndexError(const Token *tok);
     void charBitOpError(const Token *tok);
@@ -298,7 +298,7 @@ private:
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
         c.passedByValueError(nullptr, "parametername", false);
-        c.constStatementError(nullptr,  "type");
+        c.constStatementError(nullptr,  "type", false);
         c.signedCharArrayIndexError(nullptr);
         c.unknownSignCharArrayIndexError(nullptr);
         c.charBitOpError(nullptr);
