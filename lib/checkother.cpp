@@ -1478,6 +1478,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
     std::string msg;
     if (Token::simpleMatch(tok, "=="))
         msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
+    else if (Token::Match(tok, ",|%cop%"))
+        msg = "Found suspicious operator '" + tok->str() + "'";
     else
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
     reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive);
