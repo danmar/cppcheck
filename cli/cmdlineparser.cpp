@@ -1157,5 +1157,11 @@ void CmdLineParser::printHelp()
               "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
               "\n"
               "For more information:\n"
-              "    http://cppcheck.net/manual.pdf\n";
+              "    http://cppcheck.net/manual.pdf\n"
+              "\n"
+              "Many thanks to the 3rd party libraries we use:\n"
+              " * tinyxml2 -- loading project/library/ctu files.\n"
+              " * picojson -- loading compile database.\n"
+              " * pcre -- rules.\n"
+              " * qt -- used in GUI\n";
 }
