@@ -657,12 +657,15 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         // variable is seen..
         if (tok->varId() == var.declarationId()) {
             // calling function that returns uninit data through pointer..
-            if (var.isPointer() &&
-                Token::Match(tok->next(), "= %name% (") &&
-                Token::simpleMatch(tok->linkAt(3), ") ;") &&
-                mSettings->library.returnuninitdata.count(tok->strAt(2)) > 0U) {
-                *alloc = NO_CTOR_CALL;
-                continue;
+            if (var.isPointer() && Token::simpleMatch(tok->next(), "=")) {
+                const Token *rhs = tok->next()->astOperand2();
+                while (rhs && rhs->isCast())
+                    rhs = rhs->astOperand1();
+                if (rhs && Token::Match(rhs->previous(), "%name% (") &&
+                    mSettings->library.returnuninitdata.count(rhs->previous()->str()) > 0U) {
+                    *alloc = NO_CTOR_CALL;
+                    continue;
+                }
             }
             if (var.isPointer() && (var.typeStartToken()->isStandardType() || var.typeStartToken()->isEnumType() || (var.type() && var.type()->needInitialization == Type::True)) && Token::simpleMatch(tok->next(), "= new")) {
                 *alloc = CTOR_CALL;
@@ -983,7 +986,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         }
     }
 
-    if (alloc == NO_ALLOC && Token::Match(vartok->previous(), "= %name% ;|%cop%")) {
+    if (alloc == NO_ALLOC && Token::Match(vartok->previous(), "%assign% %name% %cop%|;|)")) {
         // taking reference?
         const Token *prev = vartok->tokAt(-2);
         while (Token::Match(prev, "%name%|*"))
@@ -1029,6 +1032,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     if (alloc == NO_ALLOC && vartok->next() && vartok->next()->isOp() && !vartok->next()->isAssignmentOp())
+        return true;
+
+    if (alloc == NO_ALLOC && vartok->next()->isAssignmentOp() && vartok->next()->str() != "=")
         return true;
 
     if (vartok->strAt(1) == "]")

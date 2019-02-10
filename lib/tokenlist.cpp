@@ -765,6 +765,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             compileUnaryOp(tok, state, compilePrecedence3);
         } else if (tok->str() == "(" && iscast(tok)) {
             Token* castTok = tok;
+            castTok->isCast(true);
             tok = tok->link()->next();
             compilePrecedence3(tok, state);
             compileUnaryOp(castTok, state, nullptr);

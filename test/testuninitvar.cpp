@@ -100,8 +100,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, fname);
 
-        tokenizer.simplifyTokenList2();
-
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
         checkuninitvar.check();
@@ -320,13 +318,13 @@ private:
                        "    int b = 1;\n"
                        "    (b += a) = 1;\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n","", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
         checkUninitVar("int f() {\n"
                        "    int a,b,c;\n"
                        "    a = b = c;\n"
                        "}", "test.cpp", /*verify=*/ false);
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", errout.str());
 
         checkUninitVar("static void foo()\n"
                        "{\n"
@@ -2672,13 +2670,12 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void getLibraryContainer() {\n"
+        checkUninitVar("void foo() {\n"
                        "    void* x;\n"
-                       "    Reference< XStorageBasedLibraryContainer >(*Factory)(const Reference< XComponentContext >&, const Reference< XStorageBasedDocument >&)\n"
-                       "        = x;\n"
-                       "    rxContainer.set((*Factory)(m_aContext, xDocument));\n"
-                       "}", "test.cpp", false);
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+                       "    int (*f)(int, int) = x;\n"
+                       "    dostuff((*f)(a,b));\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
         checkUninitVar("void getLibraryContainer() {\n"
                        "    Reference< XStorageBasedLibraryContainer >(*Factory)(const Reference< XComponentContext >&, const Reference< XStorageBasedDocument >&);\n"
@@ -3867,7 +3864,7 @@ private:
                        "  dp=(char *)d; \n"
                        "  init(dp); \n"
                        "}", "test.c");
-        TODO_ASSERT_EQUALS("", "[test.c:4]: (error) Uninitialized variable: d\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
