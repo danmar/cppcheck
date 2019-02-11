@@ -61,6 +61,7 @@ private:
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
+        TEST_CASE(simplifyUsing8976);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -450,6 +451,14 @@ private:
                                 "} ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing8976() {
+        const char code[] = "using mystring = std::string;";
+
+        const char exp[] = ";";
+
+        ASSERT_EQUALS(exp, tok(code));
     }
 
 };

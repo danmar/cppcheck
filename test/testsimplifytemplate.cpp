@@ -139,7 +139,6 @@ private:
         TEST_CASE(template99); // #8960
         TEST_CASE(template100); // #8967
         TEST_CASE(template101); // #8968
-        TEST_CASE(template102); // #8976
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2135,14 +2134,6 @@ private:
 
         ASSERT_EQUALS(exp, tok(code));
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void template102() { // #8976
-        const char code[] = "using mystring = std::string;";
-
-        const char exp[] = ";";
-
-        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
