@@ -3332,6 +3332,9 @@ void stdstring()
     std::string s;
     // cppcheck-suppress ignoredReturnValue
     s.size();
+
+    // valid
+    s.assign("a");
 }
 
 void stdvector()
