@@ -60,12 +60,19 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    /** @brief Run checks against the normal token list */
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
         checkUninitVar.check();
         checkUninitVar.deadPointer();
         checkUninitVar.valueFlowUninit();
+    }
+
+    /** @brief Run checks against the simplified token list */
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+        (void)tokenizer;
+        (void)settings;
+        (void)errorLogger;
     }
 
     /** Check for uninitialized variables */
