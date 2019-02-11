@@ -46,6 +46,14 @@ void validCode(int * pIntPtr)
     if (pIntPtr != Q_NULLPTR) {
         *pIntPtr = 5;
     }
+
+    if (pIntPtr && *pIntPtr == 1) {
+        forever {
+        }
+    } else if (pIntPtr && *pIntPtr == 2) {
+        Q_FOREVER {
+        }
+    }
 }
 
 void ignoredReturnValue()
