@@ -101,6 +101,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
 
             while (Token::Match(start->tokAt(-2), "%name% ::") ||
                    (Token::simpleMatch(start->tokAt(-2), "> ::") &&
+                    start->tokAt(-2)->findOpeningBracket() &&
                     Token::Match(start->tokAt(-2)->findOpeningBracket()->previous(), "%name% <"))) {
                 if (start->strAt(-2) == ">")
                     start = start->tokAt(-2)->findOpeningBracket()->previous();
@@ -550,7 +551,7 @@ static void setScopeInfo(Token *tok, std::list<ScopeInfo2> *scopeInfo, bool all 
             Token *tok1 = tok;
             while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                 tok1 = tok1->previous();
-            if (tok1->strAt(-1) == ")") {
+            if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
                 tok1 = tok1->linkAt(-1);
                 if (Token::Match(tok1->previous(), "throw|noexcept")) {
                     tok1 = tok1->previous();
@@ -565,7 +566,7 @@ static void setScopeInfo(Token *tok, std::list<ScopeInfo2> *scopeInfo, bool all 
                 }
                 if (tok1->strAt(-1) == ">")
                     tok1 = tok1->previous()->findOpeningBracket();
-                if (Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
+                if (tok1 && Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
                     tok1 = tok1->tokAt(-2);
                     std::string scope = tok1->strAt(-1);
                     while (Token::Match(tok1->tokAt(-2), ":: %name%")) {
@@ -619,7 +620,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
         codeWithTemplates = true;
         const Token * const parmEnd = tok->next()->findClosingBracket();
         for (const Token *tok2 = parmEnd; tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(")
+            if (tok2->str() == "(" && tok2->link())
                 tok2 = tok2->link();
             else if (tok2->str() == ")")
                 break;
