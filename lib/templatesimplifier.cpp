@@ -3029,9 +3029,9 @@ bool TemplateSimplifier::simplifyUsing()
                 Token::eraseTokens(usingStart, usingEnd->next());
                 usingStart->deleteThis();
             } else {
+                // this is the only code being checked so leave ';'
                 Token::eraseTokens(usingStart, usingEnd);
                 usingStart->deleteThis();
-                usingEnd->deleteThis();
             }
         }
     }
