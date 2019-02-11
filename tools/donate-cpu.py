@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.1"
+CLIENT_VERSION = "1.1.2"
 
 
 def checkRequirements():
@@ -234,7 +234,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
         libraries += ' --library=motif'
     if os.path.exists(cppcheckPath + '/cfg/python.cfg') and hasInclude('temp', ['<Python.h>']):
         libraries += ' --library=python'
-    if hasInclude('temp', ['<QString>', '<QtWidgets>', '<QtGui/']):
+    if hasInclude('temp', ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui']):
         libraries += ' --library=qt'
     if hasInclude('temp', ['<wx/', '"wx/']):
         libraries += ' --library=wxwidgets'
