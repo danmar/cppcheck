@@ -521,15 +521,14 @@ def check_library_report(result_path, message_id):
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
-    functions_shown = 0
+    function_details_list = list()
     for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
-        if functions_shown >= functions_shown_max:
+        if len(function_details_list) >= functions_shown_max:
             break
-        html += str(count).rjust(column_widths[0]) + ' ' + \
-                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n'
-        functions_shown += 1
+        function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +
+                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n')
 
-    html += '\n'
+    html += ''.join(function_details_list)
     html += '</pre>\n'
     html += '</body></html>\n'
 
@@ -539,8 +538,8 @@ def check_library_report(result_path, message_id):
 # Lists all checkLibrary* messages regarding the given function name
 def check_library_function_name(result_path, function_name):
     print('check_library_function_name')
-    text = ''
     function_name = urllib.unquote_plus(function_name)
+    output_lines_list = list()
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename):
             continue
@@ -559,14 +558,14 @@ def check_library_function_name(result_path, function_name):
             if '[checkLibrary' in line:
                 if (' ' + function_name) in line:
                     if url:
-                        text += url
+                        output_lines_list.append(url)
                         url = None
                     if cppcheck_options:
-                        text += cppcheck_options
+                        output_lines_list.append(cppcheck_options)
                         cppcheck_options = None
-                    text += line
+                    output_lines_list.append(line)
 
-    return text
+    return ''.join(output_lines_list)
 
 
 def sendAll(connection, data):
