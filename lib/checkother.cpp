@@ -735,57 +735,6 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
 }
 
 //---------------------------------------------------------------------------
-//    if (x == 1)
-//        x == 0;       // <- suspicious equality comparison.
-//---------------------------------------------------------------------------
-void CheckOther::checkSuspiciousEqualityComparison()
-{
-    if (!mSettings->isEnabled(Settings::WARNING) || !mSettings->inconclusive)
-        return;
-
-    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "for (")) {
-                const Token* const openParen = tok->next();
-                const Token* const closeParen = tok->linkAt(1);
-
-                // Search for any suspicious equality comparison in the initialization
-                // or increment-decrement parts of the for() loop.
-                // For example:
-                //    for (i == 2; i < 10; i++)
-                // or
-                //    for (i = 0; i < 10; i == a)
-                if (Token::Match(openParen->next(), "%name% =="))
-                    suspiciousEqualityComparisonError(openParen->tokAt(2));
-                if (closeParen->strAt(-2) == "==")
-                    suspiciousEqualityComparisonError(closeParen->tokAt(-2));
-
-                // Skip over for() loop conditions because "for (;running==1;)"
-                // is a bit strange, but not necessarily incorrect.
-                tok = closeParen;
-            } else if (Token::Match(tok, "[;{}] *| %name% == %any% ;")) {
-
-                // Exclude compound statements surrounded by parentheses, such as
-                //    printf("%i\n", ({x==0;}));
-                // because they may appear as an expression in GNU C/C++.
-                // See http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
-                const Token* afterStatement = tok->strAt(1) == "*" ? tok->tokAt(6) : tok->tokAt(5);
-                if (!Token::simpleMatch(afterStatement, "} )"))
-                    suspiciousEqualityComparisonError(tok->next());
-            }
-        }
-    }
-}
-
-void CheckOther::suspiciousEqualityComparisonError(const Token* tok)
-{
-    reportError(tok, Severity::warning, "suspiciousEqualityComparison",
-                "Found suspicious equality comparison. Did you intend to assign a value instead?", CWE482, true);
-}
-
-
-//---------------------------------------------------------------------------
 //    Find consecutive return, break, continue, goto or throw statements. e.g.:
 //        break; break;
 //    Detect dead code, that follows such a statement. e.g.:

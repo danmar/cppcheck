@@ -101,7 +101,6 @@ public:
 
         checkOther.checkInvalidFree();
         checkOther.checkRedundantCopy();
-        // checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkAccessOfMovedVariable();
     }
@@ -148,9 +147,6 @@ public:
 
     /** @brief %Check for code like 'case A||B:'*/
     void checkSuspiciousCaseInSwitch();
-
-    /** @brief %Check for code like 'case A||B:'*/
-    void checkSuspiciousEqualityComparison();
 
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
@@ -241,7 +237,6 @@ private:
     void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
-    void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
@@ -306,7 +301,6 @@ private:
         c.redundantAssignmentInSwitchError(nullptr, nullptr, "var");
         c.redundantCopyInSwitchError(nullptr, nullptr, "var");
         c.suspiciousCaseInSwitchError(nullptr,  "||");
-        c.suspiciousEqualityComparisonError(nullptr);
         c.selfAssignmentError(nullptr,  "varname");
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);
