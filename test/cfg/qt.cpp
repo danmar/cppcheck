@@ -54,6 +54,9 @@ void validCode(int * pIntPtr)
         Q_FOREVER {
         }
     }
+
+    if (Q_LIKELY(pIntPtr)) {}
+    if (Q_UNLIKELY(!pIntPtr)) {}
 }
 
 void ignoredReturnValue()
