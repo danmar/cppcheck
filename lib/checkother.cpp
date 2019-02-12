@@ -1398,13 +1398,15 @@ static bool isConstStatement(const Token *tok)
         return false;
     if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
         return true;
+    if (Token::Match(tok, "%var%"))
+        return true;
     if (Token::Match(tok, "*|&|&&") &&
         (Token::Match(tok->previous(), "::|.") || Token::Match(tok->astOperand1(), "%type%") ||
          Token::Match(tok->astOperand2(), "%type%")))
         return false;
-    if (Token::Match(tok, "<<|>>"))
+    if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
         return false;
-    if (Token::Match(tok, "%cop%") && (tok->astOperand1() || tok->astOperand2()))
+    if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
@@ -1419,6 +1421,8 @@ static bool isConstStatement(const Token *tok)
 
 static bool isVoidStmt(const Token *tok)
 {
+    if (Token::simpleMatch(tok, "( void"))
+        return true;
     const Token *tok2 = tok;
     while (tok2->astOperand1())
         tok2 = tok2->astOperand1();
@@ -1478,8 +1482,10 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
     std::string msg;
     if (Token::simpleMatch(tok, "=="))
         msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
-    else if (Token::Match(tok, ",|%cop%"))
+    else if (Token::Match(tok, ",|!|~|%cop%"))
         msg = "Found suspicious operator '" + tok->str() + "'";
+    else if (Token::Match(tok, "%var%"))
+        msg = "Unused variable value '" + tok->str() + "'";
     else
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
     reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive);
