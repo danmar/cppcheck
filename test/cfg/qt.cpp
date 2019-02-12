@@ -11,6 +11,7 @@
 #include <QString>
 #include <QtPlugin>
 #include <QFile>
+#include <cstdio>
 
 
 void QString1(QString s)
@@ -57,6 +58,8 @@ void validCode(int * pIntPtr)
 
     if (Q_LIKELY(pIntPtr)) {}
     if (Q_UNLIKELY(!pIntPtr)) {}
+
+    printf(QT_TR_NOOP("Hi"));
 }
 
 void ignoredReturnValue()
