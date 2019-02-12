@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.2"
+CLIENT_VERSION = "1.1.3"
 
 
 def checkRequirements():
@@ -266,8 +266,8 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
         print('Crash!')
         return -1, '', '', -1, options
     elapsedTime = stopTime - startTime
-    information_messages_list = list()
-    issue_messages_list = list()
+    information_messages_list = []
+    issue_messages_list = []
     count = 0
     for line in stderr.split('\n'):
         if ': information: ' in line:

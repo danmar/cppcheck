@@ -504,7 +504,7 @@ def check_library_report(result_path, message_id):
             'Function'
     html += '</b>\n'
 
-    function_counts = dict()
+    function_counts = {}
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename):
             continue
@@ -521,7 +521,7 @@ def check_library_report(result_path, message_id):
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
-    function_details_list = list()
+    function_details_list = []
     for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
         if len(function_details_list) >= functions_shown_max:
             break
@@ -539,7 +539,7 @@ def check_library_report(result_path, message_id):
 def check_library_function_name(result_path, function_name):
     print('check_library_function_name')
     function_name = urllib.unquote_plus(function_name)
-    output_lines_list = list()
+    output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename):
             continue
