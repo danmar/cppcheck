@@ -27,6 +27,11 @@ void validCode(int argInt)
     gpointer gpt = g_malloc(4);
     printf("%p", gpt);
     g_free(gpt);
+    g_assert(gpt);
+    if (!gpt) {
+        // cppcheck-suppress checkLibraryNoReturn
+        g_assert_not_reached();
+    }
 }
 
 void g_malloc_test()
@@ -38,4 +43,12 @@ void g_malloc_test()
     printf("%p", gpt);
 
     // cppcheck-suppress memleak
+}
+
+void g_assert_test()
+{
+    int a;
+    // cppcheck-suppress checkLibraryNoReturn
+    // cppcheck-suppress assignmentInAssert
+    g_assert(a = 5);
 }
