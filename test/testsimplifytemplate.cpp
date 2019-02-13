@@ -181,6 +181,7 @@ private:
         TEST_CASE(templateParameterWithoutName); // #8602 Template default parameter without name yields syntax error
 
         TEST_CASE(templateTypeDeduction1); // #8962
+        TEST_CASE(templateTypeDeduction2);
     }
 
     std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -3191,6 +3192,32 @@ private:
 
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void templateTypeDeduction2() {
+        const char code[] = "template<typename T, typename U>\n"
+                            "void f(T t, U u) { }\n"
+                            "static void func() {\n"
+                            "    f(0, 0.0);\n"
+                            "    f(0.0, 0);\n"
+                            "}";
+
+        const char expected[] = "void f<int,double> ( int t , double u ) ; "
+                                "void f<double,int> ( double t , int u ) ; "
+                                "static void func ( ) { "
+                                "f<int,double> ( 0 , 0.0 ) ; "
+                                "f<double,int> ( 0.0, 0 ) ; "
+                                "void f<int,double> ( int t , double u ) { } "
+                                "void f<double,int> ( double t , int u ) { } ";
+
+        const char actual[] = "template < typename T , typename U > "
+                              "void f ( T t , U u ) { } "
+                              "static void func ( ) { "
+                              "f ( 0 , 0.0 ) ; "
+                              "f ( 0.0 , 0 ) ; "
+                              "}";
+
+        TODO_ASSERT_EQUALS(expected, actual, tok(code, false));
     }
 
 };
