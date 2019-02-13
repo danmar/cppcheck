@@ -215,7 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--configfile", type=str, default="naming.json",
                         help="Naming check config file")
     parser.add_argument("--verify", action="store_true", default=False,
-                        help="verify this script. Bust be executed in test folder !")
+                        help="verify this script. Must be executed in test folder !")
 
     args = parser.parse_args()
     errors = process(args.dumpfiles, args.configfile, args.debugprint)
@@ -226,12 +226,12 @@ if __name__ == "__main__":
             print("Not enough errors found")
             sys.exit(1)
         target = [
-         '[namingng_test.c:8] ( style ) naming.py: Variable badui32 violates naming convention\n',
-         '[namingng_test.c:11] ( style ) naming.py: Variable a violates naming convention\n',
-         '[namingng_test.c:29] ( style ) naming.py: Variable badui32 violates naming convention\n',
-         '[namingng_test.c:20] ( style ) naming.py: Function ui16bad_underscore violates naming convention\n',
-         '[namingng_test.c:25] ( style ) naming.py: Function u32Bad violates naming convention\n',
-         '[namingng_test.c:37] ( style ) naming.py: Function Badui16 violates naming convention\n']
+         '[namingng_test.c:8]: (style) Naming: Variable badui32 violates naming convention\n',
+         '[namingng_test.c:11]: (style) Naming: Variable a violates naming convention\n',
+         '[namingng_test.c:29]: (style) Naming: Variable badui32 violates naming convention\n',
+         '[namingng_test.c:20]: (style) Naming: Function ui16bad_underscore violates naming convention\n',
+         '[namingng_test.c:25]: (style) Naming: Function u32Bad violates naming convention\n',
+         '[namingng_test.c:37]: (style) Naming: Function Badui16 violates naming convention\n']
         diff = set(errors) - set(target)
         if len(diff):
             print("Not the right errors found {}".format(str(diff)))
