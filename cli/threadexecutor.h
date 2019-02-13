@@ -27,7 +27,7 @@
 #include <map>
 #include <string>
 
-#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
