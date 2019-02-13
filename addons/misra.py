@@ -1924,8 +1924,8 @@ class MisraChecker:
                 return
             formattedMsg = cppcheckdata.reportError(args.template,
                                                     callstack=[(location.file, location.linenr)],
-                                                    severity='style',
-                                                    message = errmsg,
+                                                    severity= 'style',
+                                                    message = 'MISRA: ' + errmsg,
                                                     errorId = id,
                                                     suppressions = self.dumpfileSuppressions)
             if formattedMsg:

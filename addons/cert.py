@@ -22,7 +22,7 @@ def reportError(token, severity, msg, id):
         VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
         sys.stderr.write(
-            '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
+            '[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') CERT: ' + msg + ' [' + id + ']\n')
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):

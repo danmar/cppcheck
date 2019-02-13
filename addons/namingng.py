@@ -36,7 +36,7 @@ class dataStruct:
         self.str = string
 
 def reportError(filename, linenr, severity, msg):
-    message = "[{filename}:{linenr}] ( {severity} ) naming.py: {msg}\n".format(
+    message = "[{filename}:{linenr}]: ({severity}) Naming: {msg}\n".format(
         filename=filename,
         linenr=linenr,
         severity=severity,
