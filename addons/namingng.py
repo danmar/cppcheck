@@ -117,9 +117,12 @@ def process(dumpfiles, configfile, debugprint=False):
 
                         if debugprint:
                             print("Variable Name: " + str(var.nameToken.str))
-                            print("original Type Name: " + str(var.nameToken.valueType.originalTypeName))
-                            print("Type Name: " + var.nameToken.valueType.type)
-                            print("Sign: " + str(var.nameToken.valueType.sign))
+                            if var.nameToken.valueType is not None:
+                                print("original Type Name: " + str(var.nameToken.valueType.originalTypeName))
+                                print("Type Name: " + var.nameToken.valueType.type)
+                                print("Sign: " + str(var.nameToken.valueType.sign))
+                            else:
+                                print("valueType: None")
                             print("variable type: " + varType)
                             print("\n")
                             print("\t-- {} {}".format(varType, str(var.nameToken.str)))
