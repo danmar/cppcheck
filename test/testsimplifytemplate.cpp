@@ -179,6 +179,8 @@ private:
         // Test TemplateSimplifier::instantiateMatch
         TEST_CASE(instantiateMatch);
         TEST_CASE(templateParameterWithoutName); // #8602 Template default parameter without name yields syntax error
+
+        TEST_CASE(templateTypeDeduction1); // #8962
     }
 
     std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -3106,6 +3108,91 @@ private:
                                              "    void g();\n"
                                              "};n"));
     }
+
+    void templateTypeDeduction1() { // #8962
+        const char code[] = "template<typename T>\n"
+                            "void f(T n) { (void)n; }\n"
+                            "static void func() {\n"
+                            "    f(0);\n"
+                            "    f(0u);\n"
+                            "    f(0U);\n"
+                            "    f(0l);\n"
+                            "    f(0L);\n"
+                            "    f(0ul);\n"
+                            "    f(0UL);\n"
+                            "    f(0ll);\n"
+                            "    f(0LL);\n"
+                            "    f(0ull);\n"
+                            "    f(0ULL);\n"
+                            "    f(0.0);\n"
+                            "    f(0.0f);\n"
+                            "    f(0.0F);\n"
+                            "    f(0.0l);\n"
+                            "    f(0.0L);\n"
+                            "    f('c');\n"
+                            "    f(L'c');\n"
+                            "    f(\"string\");\n"
+                            "    f(L\"string\");\n"
+                            "    f(true);\n"
+                            "    f(false);\n"
+                            "}";
+        const char expected[] = "void f<int> ( int n ) ; "
+                                "void f<unsignedint> ( unsigned int n ) ; "
+                                "void f<long> ( long n ) ; "
+                                "void f<unsignedlong> ( unsigned long n ) ; "
+                                "void f<longlong> ( long long n ) ; "
+                                "void f<unsignedlonglong> ( unsigned long long n ) ; "
+                                "void f<double> ( double n ) ; "
+                                "void f<float> ( float n ) ; "
+                                "void f<longdouble> ( long double n ) ; "
+                                "void f<char> ( char n ) ; "
+                                "void f<wchar_t> ( wchar_t n ) ; "
+                                "void f<constchar*> ( const char * n ) ; "
+                                "void f<constwchar_t*> ( const wchar_t * n ) ; "
+                                "void f<bool> ( bool n ) ; "
+                                "static void func ( ) { "
+                                "f<int> ( 0 ) ; "
+                                "f<unsignedint> ( 0u ) ; "
+                                "f<unsignedint> ( 0U ) ; "
+                                "f<long> ( 0l ) ; "
+                                "f<long> ( 0L ) ; "
+                                "f<unsignedlong> ( 0ul ) ; "
+                                "f<unsignedlong> ( 0UL ) ; "
+                                "f<longlong> ( 0ll ) ; "
+                                "f<longlong> ( 0LL ) ; "
+                                "f<unsignedlonglong> ( 0ull ) ; "
+                                "f<unsignedlonglong> ( 0ULL ) ; "
+                                "f<double> ( 0.0 ) ; "
+                                "f<float> ( 0.0f ) ; "
+                                "f<float> ( 0.0F ) ; "
+                                "f<longdouble> ( 0.0l ) ; "
+                                "f<longdouble> ( 0.0L ) ; "
+                                "f<char> ( 'c' ) ; "
+                                "f<wchar_t> ( L'c' ) ; "
+                                "f<constchar*> ( \"string\" ) ; "
+                                "f<constwchar_t*> ( L\"string\" ) ; "
+                                "f<bool> ( true ) ; "
+                                "f<bool> ( false ) ; "
+                                "} "
+                                "void f<int> ( int n ) { ( void ) n ; } "
+                                "void f<unsignedint> ( unsigned int n ) { ( void ) n ; } "
+                                "void f<long> ( long n ) { ( void ) n ; } "
+                                "void f<unsignedlong> ( unsigned long n ) { ( void ) n ; } "
+                                "void f<longlong> ( long long n ) { ( void ) n ; } "
+                                "void f<unsignedlonglong> ( unsigned long long n ) { ( void ) n ; } "
+                                "void f<double> ( double n ) { ( void ) n ; } "
+                                "void f<float> ( float n ) { ( void ) n ; } "
+                                "void f<longdouble> ( long double n ) { ( void ) n ; } "
+                                "void f<char> ( char n ) { ( void ) n ; } "
+                                "void f<wchar_t> ( wchar_t n ) { ( void ) n ; } "
+                                "void f<constchar*> ( const char * n ) { ( void ) n ; } "
+                                "void f<constwchar_t*> ( const wchar_t * n ) { ( void ) n ; } "
+                                "void f<bool> ( bool n ) { ( void ) n ; }";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestSimplifyTemplate)
