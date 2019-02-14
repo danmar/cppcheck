@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <map>
 #include <stack>
 #include <utility>
 
@@ -649,6 +650,18 @@ bool TemplateSimplifier::getTemplateDeclarations()
 
 void TemplateSimplifier::getTemplateInstantiations()
 {
+    std::multimap<std::string, const TokenAndName *> functionNameMap;
+
+    for (const auto & decl : mTemplateDeclarations) {
+        if (decl.isFunction())
+            functionNameMap.insert(std::make_pair(decl.name, &decl));
+    }
+
+    for (const auto & decl : mTemplateForwardDeclarations) {
+        if (decl.isFunction())
+            functionNameMap.insert(std::make_pair(decl.name, &decl));
+    }
+
     std::list<ScopeInfo2> scopeList;
     const Token *skip = nullptr;
 
@@ -683,7 +696,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                 else if (!isUsing && tok2 && tok2->str() == ";")
                     tok = const_cast<Token *>(tok2);
             }
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|& %name% ::|<") ||
+        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|& %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
             std::string scopeName = getScopeName(scopeList);
@@ -695,6 +708,75 @@ void TemplateSimplifier::getTemplateInstantiations()
                     qualification += (qualification.empty() ? "" : " :: ") + tok->str();
                 tok = tok->tokAt(2);
             }
+
+            // look for function instantiation with type deduction
+            // fixme: only single argument functions supported
+            if (tok->strAt(1) == "(") {
+                std::string fullName = qualification + (qualification.empty() ? "" : " :: ") + tok->str();
+                // get all declarations with this name
+                for (auto pos = functionNameMap.lower_bound(tok->str());
+                     pos != functionNameMap.upper_bound(tok->str()); ++pos) {
+                    // look for declaration with same qualification
+                    if (pos->second->fullName == fullName) {
+                        // make sure it is a single argument function
+                        if (Token::Match(pos->second->token->tokAt(2), "typename|class %name% >") &&
+                            Token::Match(pos->second->nameToken->tokAt(2), "const| %type% &| %name%| )") &&
+                            Token::Match(tok->tokAt(2), "%num%|%str%|%char%|%bool% )")) {
+                            tok->insertToken(">");
+                            switch (tok->tokAt(3)->tokType()) {
+                            case Token::eBoolean:
+                                tok->insertToken("bool");
+                                break;
+                            case Token::eChar:
+                                if (tok->tokAt(3)->isLong())
+                                    tok->insertToken("wchar_t");
+                                else
+                                    tok->insertToken("char");
+                                break;
+                            case Token::eString:
+                                tok->insertToken("*");
+                                if (tok->tokAt(4)->isLong())
+                                    tok->insertToken("wchar_t");
+                                else
+                                    tok->insertToken("char");
+                                tok->insertToken("const");
+                                break;
+                            case Token::eNumber: {
+                                MathLib::value num(tok->strAt(3));
+                                if (num.isFloat()) {
+                                    // MathLib::getSuffix doesn't work for floating point numbers
+                                    char suffix = tok->strAt(3).back();
+                                    if (suffix == 'f' || suffix == 'F')
+                                        tok->insertToken("float");
+                                    else if (suffix == 'l' || suffix == 'L') {
+                                        tok->insertToken("double");
+                                        tok->insertToken("long");
+                                    } else
+                                        tok->insertToken("double");
+                                } else if (num.isInt()) {
+                                    std::string suffix = MathLib::getSuffix(tok->strAt(3));
+                                    if (suffix.find("LL") != std::string::npos) {
+                                        tok->insertToken("long");
+                                        tok->insertToken("long");
+                                    } else if (suffix.find('L') != std::string::npos)
+                                        tok->insertToken("long");
+                                    else
+                                        tok->insertToken("int");
+                                    if (suffix.find('U') != std::string::npos)
+                                        tok->insertToken("unsigned");
+                                }
+                                break;
+                            }
+                            default:
+                                break;
+                            }
+                            tok->insertToken("<");
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (!Token::Match(tok, "%name% <") ||
                 Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast"))
                 continue;
