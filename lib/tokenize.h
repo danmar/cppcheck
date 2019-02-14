@@ -286,13 +286,6 @@ public:
     Token * initVar(Token * tok);
 
     /**
-     * Convert platform dependent types to standard types.
-     * 32 bits: size_t -> unsigned long
-     * 64 bits: size_t -> unsigned long long
-     */
-    void simplifyPlatformTypes();
-
-    /**
      * Simplify easy constant '?:' operation
      * Example: 0 ? (2/0) : 0 => 0
      * @return true if something is modified

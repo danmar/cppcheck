@@ -2867,10 +2867,10 @@ private:
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
               "}\n", false, true, Settings::Win32A);
-        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long}'.\n", errout.str());
 
         check("std::vector<int> v;\n"
               "std::string s;\n"
@@ -2878,10 +2878,10 @@ private:
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
               "}\n", false, true, Settings::Win64);
-        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long long}'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long long}'.\n", errout.str());
 
         check("std::vector<int> v;\n"
               "std::string s;\n"
@@ -2889,10 +2889,10 @@ private:
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
               "}\n", false, true, Settings::Unix32);
-        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long}'.\n", errout.str());
 
         check("std::vector<int> v;\n"
               "std::string s;\n"
@@ -2900,10 +2900,10 @@ private:
               "    printf(\"%zu %Iu %d %f\", v.size(), v.size(), v.size(), v.size());\n"
               "    printf(\"%zu %Iu %d %f\", s.size(), s.size(), s.size(), s.size());\n"
               "}\n", false, true, Settings::Unix64);
-        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long}'.\n", errout.str());
 
         check("class Fred : public std::vector<int> {} v;\n"
               "std::string s;\n"
@@ -2913,8 +2913,8 @@ private:
               "}\n", false, true, Settings::Unix64);
         ASSERT_EQUALS("[test.cpp:4]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
                       "[test.cpp:4]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+                      "[test.cpp:5]: (portability) %d in format string (no. 3) requires 'int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
+                      "[test.cpp:5]: (portability) %f in format string (no. 4) requires 'double' but the argument type is 'std::size_t {aka unsigned long}'.\n", errout.str());
 
         check("class Fred : public std::vector<int> {} v;\n"
               "void foo() {\n"
@@ -2946,11 +2946,11 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'char *'.\n"
                       "[test.cpp:8]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'char *'.\n"
                       "[test.cpp:8]: (warning) %u in format string (no. 3) requires 'unsigned int' but the argument type is 'char *'.\n"
-                      "[test.cpp:9]: (portability) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:9]: (portability) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'std::size_t {aka unsigned long}'.\n"
                       "[test.cpp:9]: (portability) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:10]: (portability) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:10]: (portability) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'std::size_t {aka unsigned long}'.\n"
                       "[test.cpp:10]: (portability) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:11]: (portability) %llu in format string (no. 1) requires 'unsigned long long' but the argument type is 'size_t {aka unsigned long}'.\n"
+                      "[test.cpp:11]: (portability) %llu in format string (no. 1) requires 'unsigned long long' but the argument type is 'std::size_t {aka unsigned long}'.\n"
                       "[test.cpp:11]: (portability) %llu in format string (no. 2) requires 'unsigned long long' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
 
         check("bool b; bool bf();\n"
@@ -4686,6 +4686,12 @@ private:
               "   printf(\"%ld%lld\", atol(s), atoll(s));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // 8141
+        check("void f(int i) {\n"
+              "   printf(\"%f\", imaxabs(i));\n"
+              "}\n", false, true, Settings::Unix64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %f in format string (no. 1) requires 'double' but the argument type is 'intmax_t {aka signed long}'.\n", errout.str());
     }
 
     void testPrintfTypeAlias1() {
