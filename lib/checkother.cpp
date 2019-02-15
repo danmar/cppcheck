@@ -1414,7 +1414,7 @@ void CheckOther::checkIncompleteStatement()
             !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
         // Skipe statement expressions
-        if (Token::Match(rtok, "; } )"))
+        if (Token::simpleMatch(rtok, "; } )"))
             continue;
         if (!isConstStatement(tok))
             continue;
