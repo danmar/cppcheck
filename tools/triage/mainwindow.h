@@ -29,8 +29,8 @@ private:
 
     void load(QTextStream &textStream);
     bool runProcess(const QString &programName, const QStringList & arguments);
-    bool wget(const QString url);
-    bool unpackArchive(const QString archiveName);
+    bool wget(const QString &url);
+    bool unpackArchive(const QString &archiveName);
 };
 
 #endif // MAINWINDOW_H
