@@ -32,6 +32,10 @@ void validCode(int argInt)
         // cppcheck-suppress checkLibraryNoReturn
         g_assert_not_reached();
     }
+    gpointer p = GINT_TO_POINTER(1);
+    int i = GPOINTER_TO_INT(p);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (i == 1) {}
 }
 
 void g_malloc_test()
