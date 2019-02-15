@@ -55,6 +55,7 @@ private:
         TEST_CASE(zeroDiv9);
         TEST_CASE(zeroDiv10);
         TEST_CASE(zeroDiv11);
+        TEST_CASE(zeroDiv12);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -529,6 +530,14 @@ private:
               "  int res = (a*2)/0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv12() {
+        // #8141
+        check("intmax_t f() {\n"
+              "  return 1 / imaxabs(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
