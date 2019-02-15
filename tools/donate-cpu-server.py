@@ -752,6 +752,24 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 if url2 not in packages:
                     print('results not written. url is not in packages.')
                     continue
+            if not writeFast:
+                # Verify that head was compared to correct OLD_VERSION
+                versions_found = False
+                old_version_wrong = False
+                for line in data.split('\n', 20):
+                    if line.startswith('cppcheck: '):
+                        versions_found = True
+                        if OLD_VERSION not in line.split():
+                            print('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
+                                  line)
+                            print('Ignoring data.')
+                            old_version_wrong = True
+                            break
+                if not versions_found:
+                    print('Cppcheck versions missing in result data. Ignoring data.')
+                    continue
+                if old_version_wrong:
+                    continue
             print('results added for package ' + res.group(1))
             if writeFast:
                 filename = resultPath + '-fast/' + res.group(1)
