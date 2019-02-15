@@ -158,6 +158,8 @@ private:
         TEST_CASE(loopAlgoIncrement);
         TEST_CASE(loopAlgoConditional);
         TEST_CASE(loopAlgoMinMax);
+        
+        TEST_CASE(invalidContainer);
     }
 
     void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
@@ -4031,6 +4033,16 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+    }
+
+    void invalidContainer() {
+        check("void f(std::vector<int> &v) {\n"
+              "    auto v0 = v.begin();\n"
+              "    v.push_back(123);\n"
+              "    std::cout << *v0 << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator to local container 'v' that is invalid.\n", errout.str());
     }
 };
 

@@ -754,6 +754,90 @@ void CheckStl::mismatchingContainers()
     }
 }
 
+static bool isInvalidMethod(const Token * tok)
+{
+    if (Token::Match(tok->next(), ". assign|clear"))
+        return true;
+    if (Token::Match(tok->next(), "%assign%"))
+        return true;
+    const Variable *var = tok->variable();
+    const Token *decltok = var ? var->typeStartToken() : nullptr;
+    if (Token::Match(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back"))
+        return true;
+    return false;
+}
+
+void CheckStl::invalidContainer()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%var%"))
+                continue;
+            if (tok->varId() == 0)
+                continue;
+            if (!astIsContainer(tok))
+                continue;
+            if (!isInvalidMethod(tok))
+                continue;
+            const Token * endToken = Token::findmatch(tok->next(), "%varid%", scope->bodyEnd, tok->varId());
+            if (!endToken)
+                endToken = scope->bodyEnd;
+            for (const Token * tok2 = tok->next();tok2 != endToken;tok2 = tok2->next()) {
+                for (const ValueFlow::Value& val:tok2->values()) {
+                    if (!val.isLocalLifetimeValue())
+                        continue;
+                    // Skip temporaries for now
+                    if (val.tokvalue == tok2)
+                        continue;
+                    if (!val.tokvalue->variable())
+                        continue;
+                    if (val.tokvalue->varId() == tok->varId())
+                        invalidContainerError(tok2, tok, &val);
+                }
+            }
+        }
+    }
+}
+
+// TODO: Move to common header
+static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
+{
+    const Token *vartok = val ? val->tokvalue : nullptr;
+    std::string type = lifetimeType(tok, val);
+    std::string msg = type;
+    if (vartok) {
+        errorPath.emplace_back(vartok, "Variable created here.");
+        const Variable * var = vartok->variable();
+        if (var) {
+            switch (val->lifetimeKind) {
+            case ValueFlow::Value::Object:
+                if (type == "pointer")
+                    msg += " to local variable";
+                else
+                    msg += " that points to local variable";
+                break;
+            case ValueFlow::Value::Lambda:
+                msg += " that captures local variable";
+                break;
+            case ValueFlow::Value::Iterator:
+                msg += " to local container";
+                break;
+            }
+            msg += " '" + var->name() + "'";
+        }
+    }
+    return msg;
+}
+
+void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val)
+{
+    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
+    std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
+    errorPath.emplace_back(contTok, "Container modified here.");
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "invalidContainer", msg + " that is invalid.", CWE664, false);
+}
 
 void CheckStl::stlOutOfBounds()
 {

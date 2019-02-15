@@ -75,6 +75,7 @@ public:
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
         checkStl.iterators();
+        checkStl.invalidContainer();
         checkStl.mismatchingContainers();
         checkStl.erase();
         checkStl.pushback();
@@ -114,6 +115,8 @@ public:
      * for (it = foo.begin(); it != bar.end(); ++it)
      */
     void iterators();
+
+    void invalidContainer();
 
     /**
      * Mismatching containers:
@@ -217,6 +220,7 @@ private:
     void if_findError(const Token* tok, bool str);
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
+    void invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val);
 
     void autoPointerError(const Token* tok);
     void autoPointerContainerError(const Token* tok);
@@ -246,6 +250,7 @@ private:
         c.iteratorsError(nullptr, nullptr, "container");
         c.iteratorsCmpError(nullptr, nullptr, nullptr, "container1", "container2");
         c.iteratorsCmpError(nullptr, nullptr, nullptr, "container");
+        c.invalidContainerError(nullptr, nullptr, nullptr);
         c.mismatchingContainersError(nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);
         c.sameIteratorExpressionError(nullptr);
