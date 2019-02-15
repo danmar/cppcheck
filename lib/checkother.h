@@ -83,6 +83,7 @@ public:
         checkOther.checkFuncArgNamesDifferent();
         checkOther.checkShadowVariables();
         checkOther.checkConstArgument();
+        checkOther.checkIncompleteStatement();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -93,7 +94,6 @@ public:
         checkOther.clarifyCalculation();
         checkOther.clarifyStatement();
         checkOther.checkPassByReference();
-        checkOther.checkIncompleteStatement();
         checkOther.checkCastIntToCharAndBack();
 
         checkOther.checkMisusedScopedObject();
@@ -101,7 +101,6 @@ public:
 
         checkOther.checkInvalidFree();
         checkOther.checkRedundantCopy();
-        checkOther.checkSuspiciousEqualityComparison();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkAccessOfMovedVariable();
     }
@@ -148,9 +147,6 @@ public:
 
     /** @brief %Check for code like 'case A||B:'*/
     void checkSuspiciousCaseInSwitch();
-
-    /** @brief %Check for code like 'case A||B:'*/
-    void checkSuspiciousEqualityComparison();
 
     /** @brief %Check for objects that are destroyed immediately */
     void checkMisusedScopedObject();
@@ -228,7 +224,7 @@ private:
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
-    void constStatementError(const Token *tok, const std::string &type);
+    void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
     void unknownSignCharArrayIndexError(const Token *tok);
     void charBitOpError(const Token *tok);
@@ -241,7 +237,6 @@ private:
     void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
-    void suspiciousEqualityComparisonError(const Token* tok);
     void selfAssignmentError(const Token *tok, const std::string &varname);
     void misusedScopeObjectError(const Token *tok, const std::string &varname);
     void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
@@ -298,7 +293,7 @@ private:
         c.checkCastIntToCharAndBackError(nullptr, "func_name");
         c.cstyleCastError(nullptr);
         c.passedByValueError(nullptr, "parametername", false);
-        c.constStatementError(nullptr,  "type");
+        c.constStatementError(nullptr, "type", false);
         c.signedCharArrayIndexError(nullptr);
         c.unknownSignCharArrayIndexError(nullptr);
         c.charBitOpError(nullptr);
@@ -306,7 +301,6 @@ private:
         c.redundantAssignmentInSwitchError(nullptr, nullptr, "var");
         c.redundantCopyInSwitchError(nullptr, nullptr, "var");
         c.suspiciousCaseInSwitchError(nullptr,  "||");
-        c.suspiciousEqualityComparisonError(nullptr);
         c.selfAssignmentError(nullptr,  "varname");
         c.clarifyCalculationError(nullptr,  "+");
         c.clarifyStatementError(nullptr);

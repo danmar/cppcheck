@@ -735,57 +735,6 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
 }
 
 //---------------------------------------------------------------------------
-//    if (x == 1)
-//        x == 0;       // <- suspicious equality comparison.
-//---------------------------------------------------------------------------
-void CheckOther::checkSuspiciousEqualityComparison()
-{
-    if (!mSettings->isEnabled(Settings::WARNING) || !mSettings->inconclusive)
-        return;
-
-    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "for (")) {
-                const Token* const openParen = tok->next();
-                const Token* const closeParen = tok->linkAt(1);
-
-                // Search for any suspicious equality comparison in the initialization
-                // or increment-decrement parts of the for() loop.
-                // For example:
-                //    for (i == 2; i < 10; i++)
-                // or
-                //    for (i = 0; i < 10; i == a)
-                if (Token::Match(openParen->next(), "%name% =="))
-                    suspiciousEqualityComparisonError(openParen->tokAt(2));
-                if (closeParen->strAt(-2) == "==")
-                    suspiciousEqualityComparisonError(closeParen->tokAt(-2));
-
-                // Skip over for() loop conditions because "for (;running==1;)"
-                // is a bit strange, but not necessarily incorrect.
-                tok = closeParen;
-            } else if (Token::Match(tok, "[;{}] *| %name% == %any% ;")) {
-
-                // Exclude compound statements surrounded by parentheses, such as
-                //    printf("%i\n", ({x==0;}));
-                // because they may appear as an expression in GNU C/C++.
-                // See http://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
-                const Token* afterStatement = tok->strAt(1) == "*" ? tok->tokAt(6) : tok->tokAt(5);
-                if (!Token::simpleMatch(afterStatement, "} )"))
-                    suspiciousEqualityComparisonError(tok->next());
-            }
-        }
-    }
-}
-
-void CheckOther::suspiciousEqualityComparisonError(const Token* tok)
-{
-    reportError(tok, Severity::warning, "suspiciousEqualityComparison",
-                "Found suspicious equality comparison. Did you intend to assign a value instead?", CWE482, true);
-}
-
-
-//---------------------------------------------------------------------------
 //    Find consecutive return, break, continue, goto or throw statements. e.g.:
 //        break; break;
 //    Detect dead code, that follows such a statement. e.g.:
@@ -1389,64 +1338,106 @@ void CheckOther::charBitOpError(const Token *tok)
 //---------------------------------------------------------------------------
 // Incomplete statement..
 //---------------------------------------------------------------------------
+
+static bool isConstStatement(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok->isExpandedMacro())
+        return false;
+    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+        return true;
+    if (Token::Match(tok, "%var%"))
+        return true;
+    if (Token::Match(tok, "*|&|&&") &&
+        (Token::Match(tok->previous(), "::|.") || Token::Match(tok->astOperand1(), "%type%") ||
+         Token::Match(tok->astOperand2(), "%type%")))
+        return false;
+    if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
+        return false;
+    if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
+        return true;
+    if (Token::simpleMatch(tok->previous(), "sizeof ("))
+        return true;
+    if (isCPPCast(tok))
+        return isConstStatement(tok->astOperand2());
+    if (Token::Match(tok, "( %type%"))
+        return isConstStatement(tok->astOperand1());
+    if (Token::simpleMatch(tok, ","))
+        return isConstStatement(tok->astOperand2());
+    return false;
+}
+
+static bool isVoidStmt(const Token *tok)
+{
+    if (Token::simpleMatch(tok, "( void"))
+        return true;
+    const Token *tok2 = tok;
+    while (tok2->astOperand1())
+        tok2 = tok2->astOperand1();
+    if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->previous()->link(), "( void"))
+        return true;
+    if (Token::simpleMatch(tok2, "( void"))
+        return true;
+    return Token::Match(tok2->previous(), "delete|throw|return");
+}
+
+static bool isConstTop(const Token *tok)
+{
+    if (!tok)
+        return false;
+    if (tok == tok->astTop())
+        return true;
+    if (Token::simpleMatch(tok->astParent(), ";") && tok->astTop() &&
+        Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
+        if (Token::simpleMatch(tok->astParent()->astParent(), ";"))
+            return tok->astParent()->astOperand2() == tok;
+        else
+            return tok->astParent()->astOperand1() == tok;
+    }
+    return false;
+}
+
 void CheckOther::checkIncompleteStatement()
 {
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "(|["))
-            tok = tok->link();
-
-        else if (tok->str() == "{" && tok->astParent())
-            tok = tok->link();
-
-        // C++11 struct/array/etc initialization in initializer list
-        else if (Token::Match(tok->previous(), "%var%|] {"))
-            tok = tok->link();
-
-        if (!Token::Match(tok, "[;{}] %str%|%num%"))
+        const Scope *scope = tok->scope();
+        if (scope && !scope->isExecutable())
             continue;
-
-        // No warning if numeric constant is followed by a "." or ","
-        if (Token::Match(tok->next(), "%num% [,.]"))
+        if (!isConstTop(tok))
             continue;
-
-        // No warning for [;{}] (void *) 0 ;
-        if (Token::Match(tok, "[;{}] 0 ;") && (tok->next()->isCast() || tok->next()->isExpandedMacro()))
+        const Token *rtok = nextAfterAstRightmostLeaf(tok);
+        if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
+            !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
-
-        // bailout if there is a "? :" in this statement
-        bool bailout = false;
-        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "?") {
-                bailout = true;
-                break;
-            } else if (tok2->str() == ";")
-                break;
-        }
-        if (bailout)
+        // Skipe statement expressions
+        if (Token::simpleMatch(rtok, "; } )"))
             continue;
-
-        // no warning if this is the last statement in a ({})
-        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-            if (tok2->str() == "(")
-                tok2 = tok2->link();
-            else if (Token::Match(tok2, "[;{}]")) {
-                bailout = Token::simpleMatch(tok2, "; } )");
-                break;
-            }
-        }
-        if (bailout)
+        if (!isConstStatement(tok))
             continue;
-
-        constStatementError(tok->next(), tok->next()->isNumber() ? "numeric" : "string");
+        if (isVoidStmt(tok))
+            continue;
+        bool inconclusive = Token::Match(tok, "%cop%");
+        if (mSettings->inconclusive || !inconclusive)
+            constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
 }
 
-void CheckOther::constStatementError(const Token *tok, const std::string &type)
+void CheckOther::constStatementError(const Token *tok, const std::string &type, bool inconclusive)
 {
-    reportError(tok, Severity::warning, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant.", CWE398, false);
+    std::string msg;
+    if (Token::simpleMatch(tok, "=="))
+        msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
+    else if (Token::Match(tok, ",|!|~|%cop%"))
+        msg = "Found suspicious operator '" + tok->str() + "'";
+    else if (Token::Match(tok, "%var%"))
+        msg = "Unused variable value '" + tok->str() + "'";
+    else
+        msg = "Redundant code: Found a statement that begins with " + type + " constant.";
+    reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive);
 }
 
 //---------------------------------------------------------------------------

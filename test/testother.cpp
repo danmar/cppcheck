@@ -1988,7 +1988,7 @@ private:
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
-              "        y;\n"
+              "        (void)y;\n"
               "    case 3:\n"
               "        ++y;\n"
               "    }\n"
@@ -2042,7 +2042,7 @@ private:
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
-              "        y;\n"
+              "        (void)y;\n"
               "    case 3:\n"
               "        --y;\n"
               "    }\n"
@@ -2741,8 +2741,12 @@ private:
 
         // #4711 lambda functions
         check("int f() {\n"
-              "    return g([](int x){x+1; return x;});\n"
-              "}", nullptr, false, false, false);
+              "    return g([](int x){(void)x+1; return x;});\n"
+              "}",
+              nullptr,
+              false,
+              false,
+              false);
         ASSERT_EQUALS("", errout.str());
 
         // #4756
@@ -2754,7 +2758,7 @@ private:
               "             __v = ((unsigned short int) ((((__x) >> 8) & 0xff) | (((__x) & 0xff) << 8)));\n"
               "         else\n"
               "             __asm__ (\"rorw $8, %w0\" : \"=r\" (__v) : \"0\" (__x) : \"cc\");\n"
-              "         __v;\n"
+              "         (void)__v;\n"
               "     }));\n"
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("", errout.str());
@@ -5468,13 +5472,13 @@ private:
         check("void foo()\n"
               "{\n"
               "   int a; a = 123;\n"
-              "   a << -1;\n"
+              "   (void)(a << -1);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"
               "{\n"
               "   int a; a = 123;\n"
-              "   a >> -1;\n"
+              "   (void)(a >> -1);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"

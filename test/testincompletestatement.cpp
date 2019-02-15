@@ -33,10 +33,11 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
+        settings.inconclusive = inconclusive;
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -52,7 +53,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(&tokens2);
         tokenizer.simplifyTokens1("");
-        tokenizer.simplifyTokenList2();
 
         // Check for incomplete statements..
         CheckOther checkOther(&tokenizer, &settings, this);
@@ -82,6 +82,8 @@ private:
         TEST_CASE(cpp11init2);          // #8449
         TEST_CASE(block);               // ({ do_something(); 0; })
         TEST_CASE(mapindex);
+        TEST_CASE(commaoperator);
+        TEST_CASE(redundantstmts);
     }
 
     void test1() {
@@ -298,6 +300,40 @@ private:
               "  map[{\"1\",\"2\"}]=0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // #8827
+    void commaoperator() {
+        check("void foo(int,const char*,int);\n"
+              "void f(int value) {\n"
+              "    foo(42,\"test\",42),(value&42);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ','\n", errout.str());
+    }
+
+    // #8451
+    void redundantstmts() {
+        check("void f1(int x) {\n"
+              "    1;\n"
+              "    (1);\n"
+              "    (char)1;\n"
+              "    ((char)1);\n"
+              "    !x;\n"
+              "    (!x);\n"
+              "    (unsigned int)!x;\n"
+              "    ~x;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with string constant.\n"
+                      "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with string constant.\n"
+                      "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
+
+        check("void f1(int x) { x; }", true);
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
+
     }
 };
 
