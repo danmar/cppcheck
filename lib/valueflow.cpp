@@ -3134,7 +3134,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.lifetimeScope = ValueFlow::Value::Local;
-            value.tokvalue = var->nameToken();
+            value.tokvalue = tok;
             value.errorPath = errorPath;
             value.lifetimeKind = isIterator ? ValueFlow::Value::Iterator : ValueFlow::Value::Object;
             setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());
