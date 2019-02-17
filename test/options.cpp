@@ -18,12 +18,15 @@
 
 #include <iterator>
 
-options::options(int argc, const char* argv[])
+options::options(int argc, const char* const argv[])
     :_options(argv + 1, argv + argc)
     ,_which_test("")
     ,_quiet(_options.count("-q") != 0)
+    ,_help(_options.count("-h") != 0 || _options.count("--help"))
 {
     _options.erase("-q");
+    _options.erase("-h");
+    _options.erase("--help");
     if (! _options.empty()) {
         _which_test = *_options.rbegin();
     }
@@ -32,6 +35,11 @@ options::options(int argc, const char* argv[])
 bool options::quiet() const
 {
     return _quiet;
+}
+
+bool options::help() const
+{
+    return _help;
 }
 
 const std::string& options::which_test() const

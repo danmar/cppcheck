@@ -275,6 +275,24 @@ void TestFixture::complainMissingLib(const char * const libname) const
     missingLibs.insert(libname);
 }
 
+void TestFixture::printHelp()
+{
+    std::cout << "Testrunner - run Cppcheck tests\n"
+              "\n"
+              "Syntax:\n"
+              "    testrunner [OPTIONS] [TestClass::TestCase]\n"
+              "    run all test cases:\n"
+              "        testrunner\n"
+              "    run all test cases in TestClass:\n"
+              "        testrunner TestClass\n"
+              "    run TestClass::TestCase:\n"
+              "        testrunner TestClass::TestCase\n"
+              "\n"
+              "Options:\n"
+              "    -q                   Do not print the test cases that have run.\n"
+              "    -h, --help           Print this help.\n";
+}
+
 void TestFixture::run(const std::string &str)
 {
     testToRun = str;
@@ -305,10 +323,10 @@ std::size_t TestFixture::runTests(const options& args)
 
     const TestSet &tests = TestRegistry::theInstance().tests();
 
-    for (TestSet::const_iterator it = tests.begin(); it != tests.end(); ++it) {
-        if (classname.empty() || (*it)->classname == classname) {
-            (*it)->processOptions(args);
-            (*it)->run(testname);
+    for (TestFixture * test : tests) {
+        if (classname.empty() || test->classname == classname) {
+            test->processOptions(args);
+            test->run(testname);
         }
     }
 
