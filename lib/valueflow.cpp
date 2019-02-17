@@ -3114,10 +3114,11 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             if (!vartok)
                 continue;
-            const Variable * var = getLifetimeVariable(vartok, errorPath);
-            if (!var)
+            const Token * lifeTok = getLifetimeToken(vartok, errorPath);
+            if (!lifeTok)
                 continue;
-            if (var->isPointer() && Token::Match(vartok->astParent(), "[|*"))
+            const Variable * var = lifeTok->variable();
+            if (var && var->isPointer() && Token::Match(vartok->astParent(), "[|*"))
                 continue;
 
             errorPath.emplace_back(tok, "Address of variable taken here.");
@@ -3125,7 +3126,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.lifetimeScope = ValueFlow::Value::Local;
-            value.tokvalue = var->nameToken();
+            value.tokvalue = lifeTok;
             value.errorPath = errorPath;
             setTokenValue(tok, value, tokenlist->getSettings());
 
