@@ -603,6 +603,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         return;
     bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+        // Return reference form function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
@@ -611,6 +612,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 errorReturnReference(tok, errorPath);
                 continue;
             }
+        // Assign reference to non-local variable
         } else if (Token::Match(tok->astParent(), "&|&&") && Token::simpleMatch(tok->astParent()->astParent(), "=") &&
                    tok->variable() && tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
                    !tok->variable()->isArgument()) {
@@ -623,9 +625,6 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         }
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue())
-                continue;
-            // Skip temporaries for now
-            if (val.tokvalue == tok)
                 continue;
             if (!val.tokvalue->variable())
                 continue;
