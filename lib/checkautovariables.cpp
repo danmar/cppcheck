@@ -627,6 +627,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             // Skip temporaries for now
             if (val.tokvalue == tok)
                 continue;
+            if (!val.tokvalue->variable())
+                continue;
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
                     continue;
@@ -637,7 +639,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
-            } else if (isDeadScope(val.tokvalue, tok->scope())) {
+            } else if (isDeadScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
             } else if (tok->variable() && tok->variable()->declarationId() == tok->varId() &&
@@ -679,7 +681,9 @@ void CheckAutoVariables::checkVarLifetime()
 
 static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
 {
-    const Token *vartok = val ? val->tokvalue : nullptr;
+    const Token *tokvalue = val ? val->tokvalue : nullptr;
+    const Variable *var = tokvalue ? tokvalue->variable() : nullptr;
+    const Token *vartok = var ? var->nameToken() : nullptr;
     std::string type = lifetimeType(tok, val);
     std::string msg = type;
     if (vartok) {

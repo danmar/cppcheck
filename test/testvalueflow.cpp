@@ -356,7 +356,7 @@ private:
                 "    auto x = [&]() { return a + 1; };\n"
                 "    auto b = x;\n"
                 "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "a ;", ValueFlow::Value::LIFETIME));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "a + 1", ValueFlow::Value::LIFETIME));
 
         code  = "void f() {\n"
                 "    int a = 1;\n"

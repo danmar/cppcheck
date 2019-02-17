@@ -229,7 +229,7 @@ namespace ValueFlow {
     std::string eitherTheConditionIsRedundant(const Token *condition);
 }
 
-const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth=20);
+const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath);
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
