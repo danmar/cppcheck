@@ -635,7 +635,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 if (tok->astParent()->str() == "return" && !astIsContainer(tok) && scope->function &&
                     mSettings->library.detectContainer(scope->function->retDef))
                     continue;
-                if (isInScope(val.tokvalue, scope)) {
+                if (isInScope(val.tokvalue->variable()->nameToken(), scope)) {
                     errorReturnDanglingLifetime(tok, &val);
                     break;
                 }
