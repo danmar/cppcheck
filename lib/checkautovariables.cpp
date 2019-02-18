@@ -179,7 +179,7 @@ static bool isAddressOfLocalVariableRecursive(const Token *expr)
         const Token *op = expr->astOperand1();
         bool deref = false;
         while (Token::Match(op, ".|[")) {
-            if (op->str() == "[")
+            if (op->str() == "[" || op->originalName() == "->")
                 deref = true;
             op = op->astOperand1();
         }

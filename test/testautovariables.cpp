@@ -1315,6 +1315,16 @@ private:
               "}");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("struct s { void *p; };\n"
+              "extern struct s* f(void);\n"
+              "void g(void **q)\n"
+              "{\n"
+              "    struct s *r = f();\n"
+              "    *q = &r->p;\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testconstructor() { // Ticket #5478 - crash while checking a constructor
