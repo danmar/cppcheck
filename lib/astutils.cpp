@@ -1115,11 +1115,17 @@ PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, c
         if (Token::simpleMatch(tok, "asm ("))
             return Progress::Break;
         if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
-            const Token * condTok = getCondTok(tok->link()->linkAt(-1));
+            const Token * blockStart = tok->link()->linkAt(-1);
+            const Token * condTok = getCondTok(blockStart);
             if (!condTok)
                 continue;
-            info.known = false;
             info.errorPath.emplace_back(condTok, "Assuming condition is true.");
+            info.known = false;
+            if (Token::Match(blockStart, "for|while")) {
+                Progress result = ForwardRecursive(tok->link(), tok, info, f);
+                if (result == Progress::Break)
+                    return Progress::Break;
+            }
         }
         if (Token::Match(tok, "if|while|for (") && Token::Match(tok->next()->link(), ") {")) {
             const Token * endCond = tok->next()->link();
@@ -1132,8 +1138,8 @@ PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, c
             Info i = info;
             i.known = false;
             i.errorPath.emplace_back(condTok, "Assuming condition is true.");
-            Progress result1 = ForwardRecursive(endCond->next(), endBlock, i, f);
-            if (result1 == Progress::Break)
+            Progress result = ForwardRecursive(endCond->next(), endBlock, i, f);
+            if (result == Progress::Break)
                 return Progress::Break;
             if (Token::Match(endBlock, "} else {")) {
                 i.errorPath.back().second = "Assuming condition is false.";
