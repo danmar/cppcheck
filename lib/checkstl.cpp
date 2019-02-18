@@ -762,7 +762,7 @@ static bool isInvalidMethod(const Token * tok)
         return true;
     const Variable *var = tok->variable();
     const Token *decltok = var ? var->typeStartToken() : nullptr;
-    if (Token::Match(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back"))
+    if (Token::Match(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back ("))
         return true;
     return false;
 }
@@ -780,32 +780,21 @@ void CheckStl::invalidContainer()
                 continue;
             if (!isInvalidMethod(tok))
                 continue;
-            PathAnalysis{tok->next()}.ForwardAll([&](const PathAnalysis::Info& info) {
+            const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
+            if (!endToken)
+                endToken = tok->next();
+            PathAnalysis{endToken}.ForwardAll([&](const PathAnalysis::Info& info) {
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
                     if (!val.tokvalue->variable())
                         continue;
-                    if (val.tokvalue->varId() == tok->varId())
+                    if (val.tokvalue->varId() != tok->varId())
+                        continue;
+                    if (precedes(val.tokvalue, tok))
                         invalidContainerError(info.tok, tok, &val, info.errorPath);
                 }
             });
-            // const Token * endToken = Token::findmatch(tok->next(), "%varid%", scope->bodyEnd, tok->varId());
-            // if (!endToken)
-            //     endToken = scope->bodyEnd;
-            // for (const Token * tok2 = tok->next();tok2 != endToken;tok2 = tok2->next()) {
-            //     for (const ValueFlow::Value& val:tok2->values()) {
-            //         if (!val.isLocalLifetimeValue())
-            //             continue;
-            //         // Skip temporaries for now
-            //         if (val.tokvalue == tok2)
-            //             continue;
-            //         if (!val.tokvalue->variable())
-            //             continue;
-            //         if (val.tokvalue->varId() == tok->varId())
-            //             invalidContainerError(tok2, tok, &val);
-            //     }
-            // }
         }
     }
 }
