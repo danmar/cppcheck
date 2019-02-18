@@ -780,22 +780,32 @@ void CheckStl::invalidContainer()
                 continue;
             if (!isInvalidMethod(tok))
                 continue;
-            const Token * endToken = Token::findmatch(tok->next(), "%varid%", scope->bodyEnd, tok->varId());
-            if (!endToken)
-                endToken = scope->bodyEnd;
-            for (const Token * tok2 = tok->next();tok2 != endToken;tok2 = tok2->next()) {
-                for (const ValueFlow::Value& val:tok2->values()) {
+            PathAnalysis{tok->next()}.ForwardAll([&](const PathAnalysis::Info& info) {
+                for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
-                        continue;
-                    // Skip temporaries for now
-                    if (val.tokvalue == tok2)
                         continue;
                     if (!val.tokvalue->variable())
                         continue;
                     if (val.tokvalue->varId() == tok->varId())
-                        invalidContainerError(tok2, tok, &val);
+                        invalidContainerError(info.tok, tok, &val, info.errorPath);
                 }
-            }
+            });
+            // const Token * endToken = Token::findmatch(tok->next(), "%varid%", scope->bodyEnd, tok->varId());
+            // if (!endToken)
+            //     endToken = scope->bodyEnd;
+            // for (const Token * tok2 = tok->next();tok2 != endToken;tok2 = tok2->next()) {
+            //     for (const ValueFlow::Value& val:tok2->values()) {
+            //         if (!val.isLocalLifetimeValue())
+            //             continue;
+            //         // Skip temporaries for now
+            //         if (val.tokvalue == tok2)
+            //             continue;
+            //         if (!val.tokvalue->variable())
+            //             continue;
+            //         if (val.tokvalue->varId() == tok->varId())
+            //             invalidContainerError(tok2, tok, &val);
+            //     }
+            // }
         }
     }
 }
@@ -830,11 +840,13 @@ static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val
     return msg;
 }
 
-void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val)
+void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
 {
-    ErrorPath errorPath = val ? val->errorPath : ErrorPath();
-    std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(contTok, "Container modified here.");
+    if (val)
+        errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
+    // ErrorPath errorPath = val ? val->errorPath : ErrorPath();
+    std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidContainer", msg + " that is invalid.", CWE664, false);
 }

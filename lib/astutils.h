@@ -30,6 +30,7 @@
 
 class Library;
 class Settings;
+class Scope;
 class Token;
 class Variable;
 
@@ -163,6 +164,41 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token *tok);
+
+struct PathAnalysis
+{
+    enum Progress {
+        Continue,
+        Break
+    };
+    PathAnalysis(const Token* start)
+    : start(start)
+    {}
+    const Token * start;
+
+    struct Info
+    {
+        const Token* tok;
+        ErrorPath errorPath;
+        bool known;
+    };
+
+    void Forward(const std::function<Progress(const Info&)>& f) const;
+    template<class F>
+    void ForwardAll(F f)
+    {
+        Forward([&](const Info& info) {
+            f(info);
+            return Progress::Continue;
+        });
+    }
+
+private:
+
+    Progress ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
+
+    static const Scope* findOuterScope(const Scope * scope);
+};
 
 /**
  * Forward data flow analysis for checks

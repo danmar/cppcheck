@@ -220,7 +220,7 @@ private:
     void if_findError(const Token* tok, bool str);
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
-    void invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val);
+    void invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath);
 
     void autoPointerError(const Token* tok);
     void autoPointerContainerError(const Token* tok);
@@ -242,6 +242,7 @@ private:
     bool compareIteratorAgainstDifferentContainer(const Token* tok, const Token* containerToken, const unsigned int iteratorId, const std::map<unsigned int, const Token*>& iteratorScopeBeginInfo);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
+        ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
         c.outOfBoundsError(nullptr, nullptr, nullptr);
         c.invalidIteratorError(nullptr, "iterator");
@@ -250,7 +251,7 @@ private:
         c.iteratorsError(nullptr, nullptr, "container");
         c.iteratorsCmpError(nullptr, nullptr, nullptr, "container1", "container2");
         c.iteratorsCmpError(nullptr, nullptr, nullptr, "container");
-        c.invalidContainerError(nullptr, nullptr, nullptr);
+        c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
         c.mismatchingContainersError(nullptr);
         c.mismatchingContainerExpressionError(nullptr, nullptr);
         c.sameIteratorExpressionError(nullptr);

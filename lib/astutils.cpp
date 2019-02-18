@@ -1093,6 +1093,79 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
+const Scope* PathAnalysis::findOuterScope(const Scope * scope)
+{
+    if (!scope)
+        return nullptr;
+    if (scope->isLocal() && scope->type != Scope::eSwitch)
+        return findOuterScope(scope->nestedIn);
+    return scope;
+}
+
+static const Token* getCondTok(const Token* tok)
+{
+    if (Token::simpleMatch(tok, "for") && tok->next()->astOperand2() && tok->next()->astOperand2()->astOperand2())
+        return tok->next()->astOperand2()->astOperand2()->astOperand1();
+    return tok->next()->astOperand2();
+}
+
+PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+{
+    for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "asm ("))
+            return Progress::Break;
+        if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
+            const Token * condTok = getCondTok(tok->link()->linkAt(-1));
+            if (!condTok)
+                continue;
+            info.known = false;
+            info.errorPath.emplace_back(condTok, "Assuming condition is true.");
+        }
+        if (Token::Match(tok, "if|while|for (") && Token::Match(tok->next()->link(), ") {")) {
+            const Token * endCond = tok->next()->link();
+            const Token * endBlock = endCond->next()->link();
+            // TODO: Traverse condition
+            // TODO: Process as known if condition is true
+            const Token * condTok = getCondTok(tok);
+            if (!condTok)
+                continue;
+            Info i = info;
+            i.known = false;
+            i.errorPath.emplace_back(condTok, "Assuming condition is true.");
+            Progress result1 = ForwardRecursive(endCond->next(), endBlock, i, f);
+            if (result1 == Progress::Break)
+                return Progress::Break;
+            if (Token::Match(endBlock, "} else {")) {
+                i.errorPath.back().second = "Assuming condition is false.";
+                Progress result2 = ForwardRecursive(endCond->next(), endBlock, i, f);
+                if (result2 == Progress::Break)
+                    return Progress::Break;
+                tok = endBlock->linkAt(2);
+            } else {
+                tok = endBlock;
+            }
+        } else if (Token::Match(tok, "} else {")) {
+            tok = tok->linkAt(2);
+        } else {
+            info.tok = tok;
+            Progress result = f(info);
+            if (result == Progress::Break)
+                return Progress::Break;
+        }
+    }
+    return Progress::Continue;
+}
+
+void PathAnalysis::Forward(const std::function<Progress(const Info&)>& f) const
+{
+    const Scope * endScope = findOuterScope(start->scope());
+    if (!endScope)
+        return;
+    const Token * endToken = endScope->bodyEnd;
+    Info info{start, ErrorPath{}, true};
+    ForwardRecursive(start, endToken, info, f);
+}
+
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
 {
     // Parse the given tokens
