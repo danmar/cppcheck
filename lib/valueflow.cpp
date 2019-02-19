@@ -2662,6 +2662,37 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     return result;
 }
 
+std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
+{
+    const Token *tokvalue = val ? val->tokvalue : nullptr;
+    const Variable *var = tokvalue ? tokvalue->variable() : nullptr;
+    const Token *vartok = var ? var->nameToken() : nullptr;
+    std::string type = lifetimeType(tok, val);
+    std::string msg = type;
+    if (vartok) {
+        errorPath.emplace_back(vartok, "Variable created here.");
+        const Variable * var = vartok->variable();
+        if (var) {
+            switch (val->lifetimeKind) {
+            case ValueFlow::Value::Object:
+                if (type == "pointer")
+                    msg += " to local variable";
+                else
+                    msg += " that points to local variable";
+                break;
+            case ValueFlow::Value::Lambda:
+                msg += " that captures local variable";
+                break;
+            case ValueFlow::Value::Iterator:
+                msg += " to local container";
+                break;
+            }
+            msg += " '" + var->name() + "'";
+        }
+    }
+    return msg;
+}
+
 const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth=20)
 {
     if (!tok)

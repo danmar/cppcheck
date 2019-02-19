@@ -799,45 +799,16 @@ void CheckStl::invalidContainer()
     }
 }
 
-// TODO: Move to common header
-static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
-{
-    const Token *vartok = val ? val->tokvalue : nullptr;
-    std::string type = lifetimeType(tok, val);
-    std::string msg = type;
-    if (vartok) {
-        errorPath.emplace_back(vartok, "Variable created here.");
-        const Variable * var = vartok->variable();
-        if (var) {
-            switch (val->lifetimeKind) {
-            case ValueFlow::Value::Object:
-                if (type == "pointer")
-                    msg += " to local variable";
-                else
-                    msg += " that points to local variable";
-                break;
-            case ValueFlow::Value::Lambda:
-                msg += " that captures local variable";
-                break;
-            case ValueFlow::Value::Iterator:
-                msg += " to local container";
-                break;
-            }
-            msg += " '" + var->name() + "'";
-        }
-    }
-    return msg;
-}
-
 void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
 {
-    errorPath.emplace_back(contTok, "Container modified here.");
+    std::string method = tok ? tok->tokAt(2)->str() : "erase";
+    errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the containers data mey be invalid .");
     if (val)
         errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
     // ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainer", msg + " that is invalid.", CWE664, false);
+    reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, false);
 }
 
 void CheckStl::stlOutOfBounds()

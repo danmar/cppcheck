@@ -233,4 +233,6 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
+std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
+
 #endif // valueflowH
