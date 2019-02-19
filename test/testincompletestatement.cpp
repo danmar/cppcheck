@@ -84,6 +84,7 @@ private:
         TEST_CASE(mapindex);
         TEST_CASE(commaoperator);
         TEST_CASE(redundantstmts);
+        TEST_CASE(vardecl);
     }
 
     void test1() {
@@ -334,6 +335,27 @@ private:
         check("void f1(int x) { x; }", true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
 
+    }
+
+    void vardecl() {
+        // #8984
+        check("void f() { a::b *c = d(); }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { std::vector<b> *c; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { a::b &c = d(); }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { std::vector<b> &c; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { a::b &&c = d(); }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { std::vector<b> &&c; }", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

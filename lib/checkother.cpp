@@ -1339,6 +1339,30 @@ void CheckOther::charBitOpError(const Token *tok)
 // Incomplete statement..
 //---------------------------------------------------------------------------
 
+static bool isType(const Token * tok, bool unknown)
+{
+    if (Token::Match(tok, "%type%"))
+        return true;
+    if (Token::simpleMatch(tok, "::"))
+        return isType(tok->astOperand2(), unknown);
+    if (Token::simpleMatch(tok, "<") && tok->link())
+        return true;
+    if (unknown && Token::Match(tok, "%name% !!("))
+        return true;
+    return false;
+}
+
+static bool isVarDeclOp(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Token * vartok = tok->astOperand2();
+    if (vartok && vartok->variable() && vartok->variable()->nameToken() == vartok)
+        return true;
+    const Token * typetok = tok->astOperand1();
+    return isType(typetok, Token::Match(vartok, "%var%"));
+}
+
 static bool isConstStatement(const Token *tok)
 {
     if (!tok)
@@ -1350,8 +1374,7 @@ static bool isConstStatement(const Token *tok)
     if (Token::Match(tok, "%var%"))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
-        (Token::Match(tok->previous(), "::|.") || Token::Match(tok->astOperand1(), "%type%") ||
-         Token::Match(tok->astOperand2(), "%type%")))
+        (Token::Match(tok->previous(), "::|.") || isVarDeclOp(tok)))
         return false;
     if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
         return false;
