@@ -192,6 +192,19 @@ struct PathAnalysis
             return Progress::Continue;
         });
     }
+    template<class Predicate>
+    Info ForwardFind(Predicate pred)
+    {
+        Info result;
+        Forward([&](const Info& info) {
+            if (pred(info)) {
+                result = info;
+                return Progress::Break;
+            }
+            return Progress::Continue;
+        });
+        return result;
+    }
 
 private:
 

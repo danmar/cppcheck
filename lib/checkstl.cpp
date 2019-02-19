@@ -783,7 +783,9 @@ void CheckStl::invalidContainer()
             const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
             if (!endToken)
                 endToken = tok->next();
-            PathAnalysis{endToken}.ForwardAll([&](const PathAnalysis::Info& info) {
+            PathAnalysis pa{endToken};
+            const ValueFlow::Value* v = nullptr;
+            PathAnalysis::Info info = pa.ForwardFind([&](const PathAnalysis::Info& info) {
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
@@ -791,10 +793,15 @@ void CheckStl::invalidContainer()
                         continue;
                     if (val.tokvalue->varId() != tok->varId())
                         continue;
-                    if (precedes(val.tokvalue, tok))
-                        invalidContainerError(info.tok, tok, &val, info.errorPath);
+                    v = &val;
+                    return true;
                 }
+                return false;
             });
+            if (!info.tok || !v)
+                continue;
+            if (precedes(v->tokvalue, tok))
+                invalidContainerError(info.tok, tok, v, info.errorPath);
         }
     }
 }
