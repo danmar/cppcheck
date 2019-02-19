@@ -1133,7 +1133,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
 PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "asm ("))
+        if (Token::simpleMatch(tok, "asm|goto|break|continue|throw|return"))
             return Progress::Break;
         if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
             const Token * blockStart = tok->link()->linkAt(-1);
