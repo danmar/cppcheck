@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.4"
+CLIENT_VERSION = "1.1.5"
 
 
 def checkRequirements():
@@ -514,7 +514,7 @@ while True:
         print(output)
         print('=========================================================')
         break
-    if results_exist:
+    if crash or results_exist:
         uploadResults(package, output, server_address)
     if info_exists:
         uploadInfo(package, info_output, server_address)
