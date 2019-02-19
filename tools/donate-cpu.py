@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.3"
+CLIENT_VERSION = "1.1.4"
 
 
 def checkRequirements():
@@ -228,22 +228,19 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix --library=gnu'
-    if hasInclude('temp', ['<gtk/gtk.h>', '<glib.h>', '<glib/']):
-        libraries += ' --library=gtk'
-    if hasInclude('temp', ['<X11/', '<Xm/']):
-        libraries += ' --library=motif'
-    if os.path.exists(cppcheckPath + '/cfg/python.cfg') and hasInclude('temp', ['<Python.h>']):
-        libraries += ' --library=python'
-    if hasInclude('temp', ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui']):
-        libraries += ' --library=qt'
-    if hasInclude('temp', ['<wx/', '"wx/']):
-        libraries += ' --library=wxwidgets'
-    if hasInclude('temp', ['<zlib.h>']):
-        libraries += ' --library=zlib'
-    if os.path.exists(cppcheckPath + '/cfg/boost.cfg') and hasInclude('temp', ['<boost/']):
-        libraries += ' --library=boost'
-    if hasInclude('temp', ['<SDL.h>']):
-        libraries += ' --library=sdl'
+
+    libraryIncludes = {'boost': ['<boost/'],
+                       'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
+                       'motif': ['<X11/', '<Xm/'],
+                       'python': ['<Python.h>'],
+                       'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'sdl': ['<SDL.h>'],
+                       'wxwidgets': ['<wx/', '"wx/'],
+                       'zlib': ['<zlib.h>'],
+                      }
+    for library, includes in libraryIncludes.items():
+        if os.path.exists(os.path.join(cppcheckPath, 'cfg', library + '.cfg')) and hasInclude('temp', includes):
+            libraries += ' --library=' + library
 
 # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
