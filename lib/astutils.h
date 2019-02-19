@@ -211,6 +211,8 @@ private:
     Progress ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
 
     static const Scope* findOuterScope(const Scope * scope);
+
+    static std::pair<bool, bool> checkCond(const Token * tok, bool& known);
 };
 
 /**

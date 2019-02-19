@@ -1109,6 +1109,27 @@ static const Token* getCondTok(const Token* tok)
     return tok->next()->astOperand2();
 }
 
+std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
+{
+    if (tok->hasKnownIntValue()) {
+        known = true;
+        return std::make_pair(tok->values().front().intvalue, !tok->values().front().intvalue);
+    }
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
+        return v.isIntValue();
+    });
+    // If all possible values are the same, then assume all paths have the same value
+    if (it != tok->values().end() && std::all_of(it, tok->values().end(), [&](const ValueFlow::Value& v) {
+        if (v.isIntValue())
+            return v.intvalue == it->intvalue;
+        return true;
+    })) {
+        known = false;
+        return std::make_pair(it->intvalue, !it->intvalue);
+    }
+    return std::make_pair(true, true);
+}
+
 PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
@@ -1121,6 +1142,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, c
                 continue;
             info.errorPath.emplace_back(condTok, "Assuming condition is true.");
             info.known = false;
+            // Traverse a loop a second time
             if (Token::Match(blockStart, "for|while")) {
                 Progress result = ForwardRecursive(tok->link(), tok, info, f);
                 if (result == Progress::Break)
@@ -1131,21 +1153,33 @@ PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, c
             const Token * endCond = tok->next()->link();
             const Token * endBlock = endCond->next()->link();
             // TODO: Traverse condition
-            // TODO: Process as known if condition is true
             const Token * condTok = getCondTok(tok);
             if (!condTok)
                 continue;
+
             Info i = info;
             i.known = false;
             i.errorPath.emplace_back(condTok, "Assuming condition is true.");
-            Progress result = ForwardRecursive(endCond->next(), endBlock, i, f);
-            if (result == Progress::Break)
-                return Progress::Break;
-            if (Token::Match(endBlock, "} else {")) {
-                i.errorPath.back().second = "Assuming condition is false.";
-                Progress result2 = ForwardRecursive(endCond->next(), endBlock, i, f);
-                if (result2 == Progress::Break)
+            
+            // Check if condition is true or false
+            bool checkThen = false;
+            bool checkElse = false;
+            std::tie(checkThen, checkElse) = checkCond(condTok, i.known);
+
+            // Traverse then block
+            if (checkThen) {
+                Progress result = ForwardRecursive(endCond->next(), endBlock, i, f);
+                if (result == Progress::Break)
                     return Progress::Break;
+            }
+            // Traverse else block
+            if (Token::Match(endBlock, "} else {")) {
+                if (checkElse) {
+                    i.errorPath.back().second = "Assuming condition is false.";
+                    Progress result = ForwardRecursive(endCond->next(), endBlock, i, f);
+                    if (result == Progress::Break)
+                        return Progress::Break;
+                }
                 tok = endBlock->linkAt(2);
             } else {
                 tok = endBlock;
