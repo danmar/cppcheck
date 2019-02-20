@@ -216,7 +216,7 @@ def hasInclude(path, includes):
                     # Python3 directly reads the data into a string object that has no decode()
                     pass
                 f.close()
-                re_includes = map(lambda x: re.escape(x), includes)
+                re_includes = [re.escape(inc) for inc in includes]
                 if re.search('\n#[ \t]*include[ \t]+(' + '|'.join(re_includes) + ')', filedata):
                     return True
             except IOError:
