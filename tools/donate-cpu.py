@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.5"
+CLIENT_VERSION = "1.1.6"
 
 
 def checkRequirements():
@@ -216,9 +216,9 @@ def hasInclude(path, includes):
                     # Python3 directly reads the data into a string object that has no decode()
                     pass
                 f.close()
-                for inc in includes:
-                    if filedata.find('\n#include ' + inc) >= 0:
-                        return True
+                re_includes = map(lambda x: re.escape(x), includes)
+                if re.search('\n#[ \t]*include[ \t]+(' + '|'.join(re_includes) + ')', filedata):
+                    return True
             except IOError:
                 pass
     return False
