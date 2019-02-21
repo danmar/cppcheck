@@ -762,7 +762,7 @@ static bool isInvalidMethod(const Token * tok)
         return true;
     const Variable *var = tok->variable();
     const Token *decltok = var ? var->typeStartToken() : nullptr;
-    if (Token::Match(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back ("))
+    if (Token::simpleMatch(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back ("))
         return true;
     return false;
 }
@@ -783,9 +783,8 @@ void CheckStl::invalidContainer()
             const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
             if (!endToken)
                 endToken = tok->next();
-            PathAnalysis pa{endToken};
             const ValueFlow::Value* v = nullptr;
-            PathAnalysis::Info info = pa.ForwardFind([&](const PathAnalysis::Info& info) {
+            PathAnalysis::Info info = PathAnalysis{endToken}.ForwardFind([&](const PathAnalysis::Info& info) {
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
@@ -800,19 +799,28 @@ void CheckStl::invalidContainer()
             });
             if (!info.tok || !v)
                 continue;
-            if (precedes(v->tokvalue, tok))
-                invalidContainerError(info.tok, tok, v, info.errorPath);
+            if (v->tokvalue == tok)
+                continue;
+            if (precedes(v->tokvalue, tok)) {
+                PathAnalysis::Info rinfo = PathAnalysis{v->tokvalue}.ForwardFind([&](const PathAnalysis::Info& i) {
+                    return (i.tok == v->tokvalue);
+                });
+                if (!rinfo.tok)
+                    continue;
+                ErrorPath errorPath = info.errorPath;
+                errorPath.splice(errorPath.begin(), rinfo.errorPath);
+                invalidContainerError(info.tok, tok, v, errorPath);
+            }
         }
     }
 }
 
 void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
 {
-    std::string method = tok ? tok->tokAt(2)->str() : "erase";
-    errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the containers data mey be invalid .");
+    std::string method = contTok ? contTok->tokAt(2)->str() : "erase";
+    errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
     if (val)
         errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
-    // ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, false);

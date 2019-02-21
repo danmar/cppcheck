@@ -195,8 +195,31 @@ struct PathAnalysis
     template<class Predicate>
     Info ForwardFind(Predicate pred)
     {
-        Info result;
+        Info result{};
         Forward([&](const Info& info) {
+            if (pred(info)) {
+                result = info;
+                return Progress::Break;
+            }
+            return Progress::Continue;
+        });
+        return result;
+    }
+
+    void Reverse(const std::function<Progress(const Info&)>& f) const;
+    template<class F>
+    void ReverseAll(F f)
+    {
+        Reverse([&](const Info& info) {
+            f(info);
+            return Progress::Continue;
+        });
+    }
+    template<class Predicate>
+    Info ReverseFind(Predicate pred)
+    {
+        Info result{};
+        Reverse([&](const Info& info) {
             if (pred(info)) {
                 result = info;
                 return Progress::Break;
@@ -209,6 +232,7 @@ struct PathAnalysis
 private:
 
     Progress ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
+    Progress ReverseRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
 
     static const Scope* findOuterScope(const Scope * scope);
 
