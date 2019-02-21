@@ -3101,7 +3101,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             // child should be some buffer or variable
             const Token *vartok = tok->astOperand1();
             while (vartok) {
-                if (vartok->str() == "[")
+                if (vartok->str() == "[" || vartok->originalName() == "->")
                     vartok = vartok->astOperand1();
                 else if (vartok->str() == "." || vartok->str() == "::")
                     vartok = vartok->astOperand2();
