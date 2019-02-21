@@ -2727,7 +2727,7 @@ const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &err
             if (!vartok)
                 return tok;
             const Variable * var = vartok->variable();
-            if (var && var->isPointer() && Token::Match(vartok->astParent(), "[|*|.") && vartok->astParent()->originalName() != ".") {
+            if (!astIsContainer(vartok) && !(var && var->isArray()) && Token::Match(vartok->astParent(), "[|*|.") && vartok->astParent()->originalName() != ".") {
                 for (const ValueFlow::Value &v : vartok->values()) {
                     if (!v.isLocalLifetimeValue())
                         continue;

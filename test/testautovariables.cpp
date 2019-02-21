@@ -1109,6 +1109,17 @@ private:
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:6]: (error) Reference to local variable returned.\n",
             errout.str());
 
+        check("int& f(int& a) {\n"
+              "    return a;\n"
+              "}\n"
+              "int* hello() {\n"
+              "    int x = 0;\n"
+              "    return &f(x);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n",
+            errout.str());
+
         check("int f(int& a) {\n"
               "    return a;\n"
               "}\n"
@@ -1156,7 +1167,14 @@ private:
               "    auto it = v.begin();\n"
               "    return it->foo;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
+
+        check("struct A { int foo; };\n"
+              "int& f(std::vector<A>& v) {\n"
+              "    auto it = v.begin();\n"
+              "    return it->foo;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceLiteral() {
@@ -1475,7 +1493,7 @@ private:
               "    auto it = v.begin();\n"
               "    return &it->foo;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning object that points to local variable 'it' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n", errout.str());
 
         check("auto f(std::vector<int> x) {\n"
               "    auto it = x.begin();\n"
