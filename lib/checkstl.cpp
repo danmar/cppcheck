@@ -799,18 +799,11 @@ void CheckStl::invalidContainer()
             });
             if (!info.tok || !v)
                 continue;
+            // Skip possible temporaries
             if (v->tokvalue == tok)
                 continue;
-            if (precedes(v->tokvalue, tok)) {
-                PathAnalysis::Info rinfo = PathAnalysis{v->tokvalue}.ForwardFind([&](const PathAnalysis::Info& i) {
-                    return (i.tok == v->tokvalue);
-                });
-                if (!rinfo.tok)
-                    continue;
-                ErrorPath errorPath = info.errorPath;
-                errorPath.splice(errorPath.begin(), rinfo.errorPath);
-                invalidContainerError(info.tok, tok, v, errorPath);
-            }
+            if (precedes(v->tokvalue, tok) && Reaches(v->tokvalue, tok, &info.errorPath))
+                invalidContainerError(info.tok, tok, v, info.errorPath);
         }
     }
 }

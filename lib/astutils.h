@@ -205,39 +205,23 @@ struct PathAnalysis
         });
         return result;
     }
-
-    void Reverse(const std::function<Progress(const Info&)>& f) const;
-    template<class F>
-    void ReverseAll(F f)
-    {
-        Reverse([&](const Info& info) {
-            f(info);
-            return Progress::Continue;
-        });
-    }
-    template<class Predicate>
-    Info ReverseFind(Predicate pred)
-    {
-        Info result{};
-        Reverse([&](const Info& info) {
-            if (pred(info)) {
-                result = info;
-                return Progress::Break;
-            }
-            return Progress::Continue;
-        });
-        return result;
-    }
-
 private:
 
-    Progress ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
-    Progress ReverseRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
+    Progress ForwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
 
     static const Scope* findOuterScope(const Scope * scope);
 
     static std::pair<bool, bool> checkCond(const Token * tok, bool& known);
 };
+
+/**
+ * @brief Returns true if there is a path between the two tokens
+ * 
+ * @param start Starting point of the path
+ * @param dest The path destination
+ * @param errorPath Adds the path traversal to the errorPath
+ */
+bool Reaches(const Token * start, const Token * dest, ErrorPath* errorPath);
 
 /**
  * Forward data flow analysis for checks

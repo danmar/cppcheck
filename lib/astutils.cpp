@@ -1136,7 +1136,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
 
 
 
-PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
     for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
         if (Token::Match(tok, "asm|goto|break|continue"))
@@ -1158,7 +1158,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, c
             info.errorPath.emplace_back(condTok, "Assuming condition is true.");
             // Traverse a loop a second time
             if (Token::Match(blockStart, "for|while")) {
-                if (ForwardRecursive(tok->link(), tok, info, f) == Progress::Break)
+                if (ForwardRange(tok->link(), tok, info, f) == Progress::Break)
                     return Progress::Break;
             }
         }
@@ -1169,7 +1169,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, c
             if (!condTok)
                 continue;
             // Traverse condition
-            if (ForwardRecursive(tok->next(), tok->next()->link(), info, f) == Progress::Break)
+            if (ForwardRange(tok->next(), tok->next()->link(), info, f) == Progress::Break)
                 return Progress::Break;
             Info i = info;
             i.known = false;
@@ -1182,14 +1182,14 @@ PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* startToken, c
 
             // Traverse then block
             if (checkThen) {
-                if (ForwardRecursive(endCond->next(), endBlock, i, f) == Progress::Break)
+                if (ForwardRange(endCond->next(), endBlock, i, f) == Progress::Break)
                     return Progress::Break;
             }
             // Traverse else block
             if (Token::Match(endBlock, "} else {")) {
                 if (checkElse) {
                     i.errorPath.back().second = "Assuming condition is false.";
-                    Progress result = ForwardRecursive(endCond->next(), endBlock, i, f);
+                    Progress result = ForwardRange(endCond->next(), endBlock, i, f);
                     if (result == Progress::Break)
                         return Progress::Break;
                 }
@@ -1217,79 +1217,19 @@ void PathAnalysis::Forward(const std::function<Progress(const Info&)>& f) const
         return;
     const Token * endToken = endScope->bodyEnd;
     Info info{start, ErrorPath{}, true};
-    ForwardRecursive(start, endToken, info, f);
+    ForwardRange(start, endToken, info, f);
 }
 
-PathAnalysis::Progress PathAnalysis::ReverseRecursive(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+bool Reaches(const Token * start, const Token * dest, ErrorPath* errorPath)
 {
-    for (const Token *tok = startToken; tok && tok != endToken; tok = tok->previous()) {
-
-
-        if (Token::simpleMatch(tok, "}") && tok->link() && Token::Match(tok->link()->previous(), "else|) {")) {
-            bool elseBlock = tok->link()->previous()->str() == "else";
-            const Token * blockStart = elseBlock ? tok->link()->previous()->linkAt(-2) : tok;
-            if (!blockStart)
-                continue;
-            const Token * top = blockStart->linkAt(-1);
-            const Token * condTok = getCondTok(top);
-            if (!condTok)
-                continue;
-
-            Info i = info;
-            i.known = false;
-            i.errorPath.emplace_front(condTok, "Assuming condition is false.");
-            
-            // Check if condition is true or false
-            bool checkThen = false;
-            bool checkElse = false;
-            std::tie(checkThen, checkElse) = checkCond(condTok, i.known);
-
-            // Traverse else block
-            if (checkElse) {
-                Progress result = ReverseRecursive(tok->next(), tok->link(), i, f);
-                if (result == Progress::Break)
-                    return Progress::Break;
-            }
-            // Traverse then block
-            if (checkThen) {
-                i.errorPath.back().second = "Assuming condition is true.";
-                Progress result = ReverseRecursive(blockStart->link()->next(), blockStart, i, f);
-                if (result == Progress::Break)
-                    return Progress::Break;
-            }
-            tok = blockStart->previous();
-        } else if (Token::Match(tok->previous(), "else|) {")) {
-            bool elseBlock = tok->previous()->str() == "else";
-            const Token * blockStart = elseBlock ? tok->previous()->linkAt(-2) : tok;
-            if (!blockStart)
-                continue;
-            const Token * top = blockStart->linkAt(-1);
-            if (Token::Match(top->previous(), "if|while|for (")) {
-                const Token * condTok = getCondTok(top);
-                if (!condTok)
-                    continue;
-                info.errorPath.emplace_front(condTok, "Assuming condition is " + (elseBlock ? std::string("false") : std::string("true")) + ".");
-                info.known = false;
-                tok = top;
-            }
-        } else {
-            info.tok = tok;
-            Progress result = f(info);
-            if (result == Progress::Break)
-                return Progress::Break;
-        }
-    }
-    return Progress::Continue;
-}
-
-void PathAnalysis::Reverse(const std::function<Progress(const Info&)>& f) const
-{
-    const Scope * endScope = findOuterScope(start->scope());
-    if (!endScope)
-        return;
-    const Token * endToken = endScope->bodyStart;
-    Info info{start, ErrorPath{}, true};
-    ForwardRecursive(start, endToken, info, f);
+    PathAnalysis::Info info = PathAnalysis{start}.ForwardFind([&](const PathAnalysis::Info& i) {
+        return (i.tok == dest);
+    });
+    if (!info.tok)
+        return false;
+    if (errorPath)
+        errorPath->insert(errorPath->end(), info.errorPath.begin(), info.errorPath.end());
+    return true;
 }
 
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
