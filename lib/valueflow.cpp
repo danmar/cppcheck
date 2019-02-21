@@ -3136,7 +3136,6 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         // address of
         else if (tok->isUnaryOp("&")) {
             ErrorPath errorPath;
-            // child should be some buffer or variable
             const Token * lifeTok = getLifetimeToken(tok->astOperand1(), errorPath);
             if (!lifeTok)
                 continue;
