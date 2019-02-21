@@ -108,6 +108,7 @@ private:
         TEST_CASE(returnReference6);
         TEST_CASE(returnReference7);
         TEST_CASE(returnReferenceFunction);
+        TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
         TEST_CASE(returnReferenceCalculation);
         TEST_CASE(returnReferenceLambda);
@@ -1141,6 +1142,21 @@ private:
               "    return x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReferenceContainer() {
+        check("auto& f() {\n"
+              "    std::vector<int> x;\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n", errout.str());
+
+        check("struct A { int foo; };\n"
+              "int& f(std::vector<A> v) {\n"
+              "    auto it = v.begin();\n"
+              "    return it->foo;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning object that points to local variable 'it' that will be invalid when returning.\n", errout.str());
     }
 
     void returnReferenceLiteral() {
