@@ -2726,13 +2726,17 @@ const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &err
 
             if (!vartok)
                 return tok;
-            const Token * lifeTok = getLifetimeToken(vartok, errorPath);
-            if (!lifeTok)
-                return tok;
-            const Variable * var = lifeTok->variable();
-            if (var && var->isPointer() && Token::Match(vartok->astParent(), "[|*"))
-                return tok;
-            return lifeTok;
+            const Variable * var = vartok->variable();
+            if (var && var->isPointer() && Token::Match(vartok->astParent(), "[|*|.") && vartok->astParent()->originalName() != ".") {
+                for (const ValueFlow::Value &v : vartok->values()) {
+                    if (!v.isLocalLifetimeValue())
+                        continue;
+                    errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
+                    return getLifetimeToken(v.tokvalue, errorPath);
+                }
+            } else {
+                return getLifetimeToken(vartok, errorPath);
+            }
     }
     return tok;
 }

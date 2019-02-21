@@ -115,6 +115,11 @@ private:
         TEST_CASE(valueFlowContainerSize);
     }
 
+    static bool isNotTokValue(const ValueFlow::Value& val)
+    {
+        return !val.isTokValue();
+    }
+
     bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -321,6 +326,7 @@ private:
 
     void valueFlowPointerAlias() {
         const char *code;
+        std::list<ValueFlow::Value> values;
 
         code  = "const char * f() {\n"
                 "    static const char *x;\n"
@@ -342,8 +348,13 @@ private:
                 "  struct X *x;\n"
                 "  x = &x[1];\n"
                 "}";
-        ASSERT_EQUALS(true, tokenValues(code, "&").empty());
-        ASSERT_EQUALS(true, tokenValues(code, "x [").empty());
+        values = tokenValues(code, "&");
+        values.remove_if(&isNotTokValue);
+        ASSERT_EQUALS(true, values.empty());
+
+        values = tokenValues(code, "x [");
+        values.remove_if(&isNotTokValue);
+        ASSERT_EQUALS(true, values.empty());
     }
 
     void valueFlowLifetime() {
