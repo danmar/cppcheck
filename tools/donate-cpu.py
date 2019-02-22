@@ -236,6 +236,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
                        'python': ['<Python.h>'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'sdl': ['<SDL.h>'],
+                       'tinyxml2': ['<tinyxml2', '"tinyxml2'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
                       }
