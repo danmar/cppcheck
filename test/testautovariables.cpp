@@ -1538,6 +1538,16 @@ private:
             "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:4] -> [test.cpp:7]: (error) Non-local variable 'm' will use object that points to local variable 'x'.\n",
             errout.str());
 
+        check("std::vector<int>::iterator f(std::vector<int> v) {\n"
+              "    for(auto it = v.begin();it != v.end();it++) {\n"
+              "        return it;\n"
+              "    }\n"
+              "    return {};\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning iterator to local container 'v' that will be invalid when returning.\n",
+            errout.str());
+
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
               "    void f() {\n"
