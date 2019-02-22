@@ -115,10 +115,7 @@ private:
         TEST_CASE(valueFlowContainerSize);
     }
 
-    static bool isNotTokValue(const ValueFlow::Value& val)
-    {
-        return !val.isTokValue();
-    }
+    static bool isNotTokValue(const ValueFlow::Value &val) { return !val.isTokValue(); }
 
     bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
         // Tokenize..

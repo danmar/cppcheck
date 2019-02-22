@@ -612,7 +612,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 errorReturnReference(tok, errorPath);
                 continue;
             }
-        // Assign reference to non-local variable
+            // Assign reference to non-local variable
         } else if (Token::Match(tok->astParent(), "&|&&") && Token::simpleMatch(tok->astParent()->astParent(), "=") &&
                    tok->variable() && tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
                    !tok->variable()->isArgument()) {
