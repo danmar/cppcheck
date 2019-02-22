@@ -7575,6 +7575,21 @@ private:
               "    g(static_cast<int>(i));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8986
+        check("void f(int);\n"
+              "void g() {\n"
+              "    const int x[] = { 10, 10 };\n"
+              "    f(x[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int);\n"
+              "void g() {\n"
+              "    int x[] = { 10, 10 };\n"
+              "    f(x[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparePointers() {

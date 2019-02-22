@@ -231,10 +231,12 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
 
     libraryIncludes = {'boost': ['<boost/'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
+                       # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
                        'motif': ['<X11/', '<Xm/'],
                        'python': ['<Python.h>'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'sdl': ['<SDL.h>'],
+                       'tinyxml2': ['<tinyxml2', '"tinyxml2'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
                       }

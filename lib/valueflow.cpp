@@ -2662,27 +2662,27 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     return result;
 }
 
-const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth)
+const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth = 20)
 {
     if (!tok)
         return nullptr;
     const Variable *var = tok->variable();
     if (depth < 0)
-        return var;
+        return tok;
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
             if (!var->declEndToken())
-                return nullptr;
+                return tok;
             if (var->isArgument()) {
                 errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
-                return var;
+                return var->nameToken();
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
                 if (vartok == tok)
-                    return nullptr;
+                    return tok;
                 if (vartok)
-                    return getLifetimeVariable(vartok, errorPath, depth-1);
+                    return getLifetimeToken(vartok, errorPath, depth - 1);
             } else {
                 return nullptr;
             }
@@ -2690,17 +2690,20 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
         if (!f)
-            return nullptr;
+            return tok;
         if (!Function::returnsReference(f))
-            return nullptr;
+            return tok;
         const Token *returnTok = findSimpleReturn(f);
         if (!returnTok)
-            return nullptr;
+            return tok;
         if (returnTok == tok)
-            return var;
-        const Variable *argvar = getLifetimeVariable(returnTok, errorPath, depth-1);
+            return tok;
+        const Token *argvarTok = getLifetimeToken(returnTok, errorPath, depth - 1);
+        if (!argvarTok)
+            return tok;
+        const Variable *argvar = argvarTok->variable();
         if (!argvar)
-            return nullptr;
+            return tok;
         if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
             int n = getArgumentPos(argvar, f);
             if (n < 0)
@@ -2708,10 +2711,43 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
             const Token *argTok = getArguments(tok->previous()).at(n);
             errorPath.emplace_back(returnTok, "Return reference.");
             errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->str() + "'.");
-            return getLifetimeVariable(argTok, errorPath, depth-1);
+            return getLifetimeToken(argTok, errorPath, depth - 1);
+        }
+    } else if (Token::Match(tok, ".|::|[")) {
+        const Token *vartok = tok;
+        while (vartok) {
+            if (vartok->str() == "[" || vartok->originalName() == "->")
+                vartok = vartok->astOperand1();
+            else if (vartok->str() == "." || vartok->str() == "::")
+                vartok = vartok->astOperand2();
+            else
+                break;
+        }
+
+        if (!vartok)
+            return tok;
+        const Variable *tokvar = vartok->variable();
+        if (!astIsContainer(vartok) && !(tokvar && tokvar->isArray()) && Token::Match(vartok->astParent(), "[|*|.") &&
+            vartok->astParent()->originalName() != ".") {
+            for (const ValueFlow::Value &v : vartok->values()) {
+                if (!v.isLocalLifetimeValue())
+                    continue;
+                errorPath.insert(errorPath.end(), v.errorPath.begin(), v.errorPath.end());
+                return getLifetimeToken(v.tokvalue, errorPath);
+            }
+        } else {
+            return getLifetimeToken(vartok, errorPath);
         }
     }
-    return var;
+    return tok;
+}
+
+const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath)
+{
+    const Token *tok2 = getLifetimeToken(tok, errorPath);
+    if (tok2 && tok2->variable())
+        return tok2->variable();
+    return nullptr;
 }
 
 static bool isNotLifetimeValue(const ValueFlow::Value& val)
@@ -2729,7 +2765,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     if (!parent)
         return;
     // Assignment
-    if (parent->str() == "=" && !parent->astParent()) {
+    if (parent->str() == "=" && (!parent->astParent() || Token::simpleMatch(parent->astParent(), ";"))) {
         // Lhs should be a variable
         if (!parent->astOperand1() || !parent->astOperand1()->varId())
             return;
@@ -2768,6 +2804,21 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
                          tokenlist,
                          errorLogger,
                          settings);
+
+        if (tok->astTop() && Token::simpleMatch(tok->astTop()->previous(), "for (") &&
+            Token::simpleMatch(tok->astTop()->link(), ") {")) {
+            const Token *start = tok->astTop()->link()->next();
+            valueFlowForward(const_cast<Token *>(start),
+                             start->link(),
+                             var,
+                             var->declarationId(),
+                             values,
+                             false,
+                             false,
+                             tokenlist,
+                             errorLogger,
+                             settings);
+        }
         // Function call
     } else if (Token::Match(parent->previous(), "%name% (")) {
         valueFlowLifetimeFunction(const_cast<Token *>(parent->previous()), tokenlist, errorLogger, settings);
@@ -2810,17 +2861,17 @@ struct LifetimeStore {
     template <class Predicate>
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
         ErrorPath er = errorPath;
-        const Variable *var = getLifetimeVariable(argtok, er);
-        if (!var)
+        const Token *lifeTok = getLifetimeToken(argtok, er);
+        if (!lifeTok)
             return;
-        if (!pred(var))
+        if (!pred(lifeTok))
             return;
         er.emplace_back(argtok, message);
 
         ValueFlow::Value value;
         value.valueType = ValueFlow::Value::LIFETIME;
         value.lifetimeScope = ValueFlow::Value::Local;
-        value.tokvalue = var->nameToken();
+        value.tokvalue = lifeTok;
         value.errorPath = er;
         value.lifetimeKind = type;
         // Don't add the value a second time
@@ -2831,7 +2882,7 @@ struct LifetimeStore {
     }
 
     void byRef(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
-        byRef(tok, tokenlist, errorLogger, settings, [](const Variable *) {
+        byRef(tok, tokenlist, errorLogger, settings, [](const Token *) {
             return true;
         });
     }
@@ -2861,10 +2912,10 @@ struct LifetimeStore {
                 continue;
             const Token *tok3 = v.tokvalue;
             ErrorPath er = v.errorPath;
-            const Variable *var = getLifetimeVariable(tok3, er);
-            if (!var)
-                continue;
-            if (!pred(var))
+            const Token *lifeTok = getLifetimeToken(tok3, er);
+            if (!lifeTok)
+                return;
+            if (!pred(lifeTok))
                 return;
             er.emplace_back(argtok, message);
             er.insert(er.end(), errorPath.begin(), errorPath.end());
@@ -2872,7 +2923,7 @@ struct LifetimeStore {
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.lifetimeScope = v.lifetimeScope;
-            value.tokvalue = var->nameToken();
+            value.tokvalue = lifeTok;
             value.errorPath = er;
             value.lifetimeKind = type;
             // Don't add the value a second time
@@ -2884,7 +2935,7 @@ struct LifetimeStore {
     }
 
     void byVal(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
-        byVal(tok, tokenlist, errorLogger, settings, [](const Variable *) {
+        byVal(tok, tokenlist, errorLogger, settings, [](const Token *) {
             return true;
         });
     }
@@ -2910,7 +2961,7 @@ struct LifetimeStore {
     }
 
     void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
-        byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Variable *) {
+        byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Token *) {
             return true;
         });
     }
@@ -3070,7 +3121,10 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             std::set<const Scope *> scopes;
 
-            auto isCapturingVariable = [&](const Variable *var) {
+            auto isCapturingVariable = [&](const Token *varTok) {
+                const Variable *var = varTok->variable();
+                if (!var)
+                    return false;
                 const Scope *scope = var->scope();
                 if (!scope)
                     return false;
@@ -3100,23 +3154,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         // address of
         else if (tok->isUnaryOp("&")) {
             ErrorPath errorPath;
-            // child should be some buffer or variable
-            const Token *vartok = tok->astOperand1();
-            while (vartok) {
-                if (vartok->str() == "[")
-                    vartok = vartok->astOperand1();
-                else if (vartok->str() == "." || vartok->str() == "::")
-                    vartok = vartok->astOperand2();
-                else
-                    break;
-            }
-
-            if (!vartok)
-                continue;
-            const Variable * var = getLifetimeVariable(vartok, errorPath);
-            if (!var)
-                continue;
-            if (var->isPointer() && Token::Match(vartok->astParent(), "[|*"))
+            const Token *lifeTok = getLifetimeToken(tok->astOperand1(), errorPath);
+            if (!lifeTok)
                 continue;
 
             errorPath.emplace_back(tok, "Address of variable taken here.");
@@ -3124,7 +3163,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.lifetimeScope = ValueFlow::Value::Local;
-            value.tokvalue = var->nameToken();
+            value.tokvalue = lifeTok;
             value.errorPath = errorPath;
             setTokenValue(tok, value, tokenlist->getSettings());
 
@@ -3136,7 +3175,6 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
             if (!container)
                 continue;
-            const Variable * var = tok->variable();
 
             bool isIterator = !Token::Match(tok->tokAt(2), "data|c_str");
             if (isIterator)
@@ -3147,7 +3185,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             ValueFlow::Value value;
             value.valueType = ValueFlow::Value::LIFETIME;
             value.lifetimeScope = ValueFlow::Value::Local;
-            value.tokvalue = var->nameToken();
+            value.tokvalue = tok;
             value.errorPath = errorPath;
             value.lifetimeKind = isIterator ? ValueFlow::Value::Iterator : ValueFlow::Value::Object;
             setTokenValue(tok->tokAt(3), value, tokenlist->getSettings());

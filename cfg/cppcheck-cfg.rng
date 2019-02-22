@@ -69,13 +69,26 @@
           <ref name="DATA-EXTNAME"/>
         </attribute>
 
-        <zeroOrMore>
-          <choice>
+        <interleave>
+          <optional>
             <element name="noreturn"><ref name="DATA-BOOL"/></element>
+          </optional>
+          <optional>
             <element name="pure"><empty/></element>
+          </optional>
+          <optional>
             <element name="const"><empty/></element>
+          </optional>
+          <optional>
             <element name="ignorefunction"><ref name="DATA-BOOL"/></element>
+          </optional>
+          <optional>
             <element name="leak-ignore"><empty/></element>
+          </optional>
+          <optional>
+            <element name="use-retval"><empty/></element>
+          </optional>
+          <optional>
             <element name="returnValue">
               <optional>
                 <attribute name="type">
@@ -91,7 +104,8 @@
               </optional>
               <text/>
             </element>
-            <element name="use-retval"><empty/></element>
+          </optional>
+          <optional>
             <element name="formatstr">
               <optional>
                 <attribute name="scan"><ref name="DATA-BOOL"/></attribute>
@@ -101,6 +115,8 @@
               </optional>
               <empty/>
             </element>
+          </optional>
+          <optional>
             <element name="warn">
               <attribute name="severity">
                 <choice>
@@ -132,6 +148,8 @@
               </optional>
               <text/>
             </element>
+          </optional>
+          <zeroOrMore>
             <element name="arg">
               <attribute name="nr">
                 <choice>
@@ -190,8 +208,8 @@
                 </choice>
               </zeroOrMore>
             </element>
-          </choice>
-        </zeroOrMore>
+          </zeroOrMore>
+        </interleave>
       </element>
 
       <element name="markup">
