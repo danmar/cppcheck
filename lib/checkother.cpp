@@ -2836,3 +2836,70 @@ void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const V
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath, Severity::style, "constArgument", errmsg, CWE570, false);
 }
+
+static ValueFlow::Value getLifetimeObjValue(const Token* tok)
+{
+    ValueFlow::Value result;
+    auto pred = [](const ValueFlow::Value& v) {
+        if (!v.isLocalLifetimeValue())
+            return false;
+        if (!v.tokvalue->variable())
+            return false;
+        return true;
+    };
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), pred);
+    if (it == tok->values().end())
+        return result;
+    result = *it;
+    // There should only be one lifetime
+    if (std::find_if(std::next(it), tok->values().end(), pred) != tok->values().end())
+        return result;
+    return result;
+}
+
+void CheckOther::checkComparePointers()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *functionScope : symbolDatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "<|>|<=|>="))
+                continue;
+            const Token * tok1 = tok->astOperand1();
+            const Token * tok2 = tok->astOperand2();
+            if (!astIsPointer(tok1) || !astIsPointer(tok2))
+                continue;
+            ValueFlow::Value v1 = getLifetimeObjValue(tok1);
+            ValueFlow::Value v2 = getLifetimeObjValue(tok2);
+            if (!v1.isLocalLifetimeValue() || !v2.isLocalLifetimeValue())
+                continue;
+            const Variable * var1 = v1.tokvalue->variable();
+            const Variable * var2 = v2.tokvalue->variable();
+            if (!var1 || !var2)
+                continue;
+            if (v1.tokvalue->varId() == v2.tokvalue->varId())
+                continue;
+            if (var1->isPointer() || var2->isPointer())
+                continue;
+            if (var1->isReference() || var2->isReference())
+                continue;
+            if (var1->isRValueReference() || var2->isRValueReference())
+                continue;
+            comparePointersError(tok, &v1, &v2);
+        }
+    }
+}
+
+void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2)
+{
+    ErrorPath errorPath;
+    if (v1) {
+        errorPath.emplace_back(v1->tokvalue->variable()->nameToken(), "Variable declared here.");
+        errorPath.insert(errorPath.end(), v1->errorPath.begin(), v1->errorPath.end());
+    }
+    if (v2) {
+        errorPath.emplace_back(v2->tokvalue->variable()->nameToken(), "Variable declared here.");
+        errorPath.insert(errorPath.end(), v2->errorPath.begin(), v2->errorPath.end());
+    }
+    errorPath.emplace_back(tok, "");
+    reportError(errorPath, Severity::error, "comparePointers", "Comparing pointers that point to different objects", CWE570, false);
+}

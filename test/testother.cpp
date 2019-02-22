@@ -223,6 +223,7 @@ private:
 
         TEST_CASE(shadowVariables);
         TEST_CASE(constArgument);
+        TEST_CASE(checkComparePointers);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = 0) {
@@ -7574,6 +7575,38 @@ private:
               "    g(static_cast<int>(i));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkComparePointers() {
+        check("int f() {\n"
+              "    int foo[1] = {0};\n"
+              "    int bar[1] = {0};\n"
+              "    int diff = 0;\n"
+              "    if(foo > bar) {\n"
+              "       diff = 1;\n"
+              "    }\n"
+              "    return diff;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:5]: (error) Comparing pointers that point to different objects\n", errout.str());
+
+        check("bool f() {\n"
+              "    int x = 0;\n"
+              "    int y = 0;\n"
+              "    int* xp = &x;\n"
+              "    int* yp = &y;\n"
+              "    return xp > yp;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n", errout.str());
+
+        check("struct A {int data;};\n"
+              "bool f() {\n"
+              "    A x;\n"
+              "    A y;\n"
+              "    int* xp = &x.data;\n"
+              "    int* yp = &y.data;\n"
+              "    return xp > yp;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:5]: (error) Comparing pointers that point to different objects\n", errout.str());
     }
 };
 

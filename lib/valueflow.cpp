@@ -3039,6 +3039,8 @@ static bool isDecayedPointer(const Token *tok, const Settings *settings)
         return false;
     if (astIsPointer(tok->astParent()) && !Token::simpleMatch(tok->astParent(), "return"))
         return true;
+    if (Token::Match(tok->astParent(), "%cop%"))
+        return true;
     if (!Token::simpleMatch(tok->astParent(), "return"))
         return false;
     if (!tok->scope())

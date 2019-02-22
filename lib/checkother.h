@@ -83,6 +83,7 @@ public:
         checkOther.checkFuncArgNamesDifferent();
         checkOther.checkShadowVariables();
         checkOther.checkConstArgument();
+        checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
     }
 
@@ -214,6 +215,8 @@ public:
 
     void checkConstArgument();
 
+    void checkComparePointers();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
@@ -267,6 +270,7 @@ private:
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
     void shadowError(const Token *var, const Token *shadowed, bool shadowVar);
     void constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
+    void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);
@@ -331,6 +335,7 @@ private:
         c.shadowError(nullptr, nullptr, false);
         c.shadowError(nullptr, nullptr, true);
         c.constArgumentError(nullptr, nullptr, nullptr);
+        c.comparePointersError(nullptr, nullptr, nullptr);
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
