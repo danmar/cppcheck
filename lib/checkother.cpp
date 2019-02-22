@@ -2837,10 +2837,10 @@ void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const V
     reportError(errorPath, Severity::style, "constArgument", errmsg, CWE570, false);
 }
 
-static ValueFlow::Value getLifetimeObjValue(const Token* tok)
+static ValueFlow::Value getLifetimeObjValue(const Token *tok)
 {
     ValueFlow::Value result;
-    auto pred = [](const ValueFlow::Value& v) {
+    auto pred = [](const ValueFlow::Value &v) {
         if (!v.isLocalLifetimeValue())
             return false;
         if (!v.tokvalue->variable())
@@ -2864,16 +2864,16 @@ void CheckOther::checkComparePointers()
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "<|>|<=|>="))
                 continue;
-            const Token * tok1 = tok->astOperand1();
-            const Token * tok2 = tok->astOperand2();
+            const Token *tok1 = tok->astOperand1();
+            const Token *tok2 = tok->astOperand2();
             if (!astIsPointer(tok1) || !astIsPointer(tok2))
                 continue;
             ValueFlow::Value v1 = getLifetimeObjValue(tok1);
             ValueFlow::Value v2 = getLifetimeObjValue(tok2);
             if (!v1.isLocalLifetimeValue() || !v2.isLocalLifetimeValue())
                 continue;
-            const Variable * var1 = v1.tokvalue->variable();
-            const Variable * var2 = v2.tokvalue->variable();
+            const Variable *var1 = v1.tokvalue->variable();
+            const Variable *var2 = v2.tokvalue->variable();
             if (!var1 || !var2)
                 continue;
             if (v1.tokvalue->varId() == v2.tokvalue->varId())
@@ -2899,5 +2899,6 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
         errorPath.insert(errorPath.end(), v2->errorPath.begin(), v2->errorPath.end());
     }
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "comparePointers", "Comparing pointers that point to different objects", CWE570, false);
+    reportError(
+        errorPath, Severity::error, "comparePointers", "Comparing pointers that point to different objects", CWE570, false);
 }

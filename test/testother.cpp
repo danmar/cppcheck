@@ -7592,7 +7592,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkComparePointers() {
+    void checkComparePointers()
+    {
         check("int f() {\n"
               "    int foo[1] = {0};\n"
               "    int bar[1] = {0};\n"
@@ -7602,7 +7603,9 @@ private:
               "    }\n"
               "    return diff;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:5]: (error) Comparing pointers that point to different objects\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:5]: (error) Comparing pointers that point to different objects\n",
+            errout.str());
 
         check("bool f() {\n"
               "    int x = 0;\n"
@@ -7611,14 +7614,18 @@ private:
               "    int* yp = &y;\n"
               "    return xp > yp;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n",
+            errout.str());
 
         check("bool f() {\n"
               "    int x = 0;\n"
               "    int y = 1;\n"
               "    return &x > &y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (error) Comparing pointers that point to different objects\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (error) Comparing pointers that point to different objects\n",
+            errout.str());
 
         check("struct A {int data;};\n"
               "bool f() {\n"
@@ -7628,7 +7635,9 @@ private:
               "    int* yp = &y.data;\n"
               "    return xp > yp;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n",
+            errout.str());
 
         check("struct A {int data;};\n"
               "bool f(A ix, A iy) {\n"
@@ -7638,12 +7647,16 @@ private:
               "    int* yp = &y->data;\n"
               "    return xp > yp;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n",
+            errout.str());
 
         check("bool f(int * xp, int* yp) {\n"
               "    return &xp > &yp;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2]: (error) Comparing pointers that point to different objects\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2]: (error) Comparing pointers that point to different objects\n",
+            errout.str());
 
         check("bool f() {\n"
               "    int x[2] = {1, 2}m;\n"
