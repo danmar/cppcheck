@@ -2729,7 +2729,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     if (!parent)
         return;
     // Assignment
-    if (parent->str() == "=" && !parent->astParent()) {
+    if (parent->str() == "=" && (!parent->astParent() || Token::simpleMatch(parent->astParent(), ";"))) {
         // Lhs should be a variable
         if (!parent->astOperand1() || !parent->astOperand1()->varId())
             return;
@@ -2768,6 +2768,21 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
                          tokenlist,
                          errorLogger,
                          settings);
+
+        if (tok->astTop() && Token::simpleMatch(tok->astTop()->previous(), "for (") &&
+            Token::simpleMatch(tok->astTop()->link(), ") {")) {
+            const Token *start = tok->astTop()->link()->next();
+            valueFlowForward(const_cast<Token *>(start),
+                             start->link(),
+                             var,
+                             var->declarationId(),
+                             values,
+                             false,
+                             false,
+                             tokenlist,
+                             errorLogger,
+                             settings);
+        }
         // Function call
     } else if (Token::Match(parent->previous(), "%name% (")) {
         valueFlowLifetimeFunction(const_cast<Token *>(parent->previous()), tokenlist, errorLogger, settings);
