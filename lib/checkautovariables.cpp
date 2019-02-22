@@ -681,8 +681,8 @@ void CheckAutoVariables::checkVarLifetime()
 static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
 {
     const Token *tokvalue = val ? val->tokvalue : nullptr;
-    const Variable *var = tokvalue ? tokvalue->variable() : nullptr;
-    const Token *vartok = var ? var->nameToken() : nullptr;
+    const Variable *tokvar = tokvalue ? tokvalue->variable() : nullptr;
+    const Token *vartok = tokvar ? tokvar->nameToken() : nullptr;
     std::string type = lifetimeType(tok, val);
     std::string msg = type;
     if (vartok) {
