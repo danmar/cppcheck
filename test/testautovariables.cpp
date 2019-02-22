@@ -802,6 +802,15 @@ private:
               "    return &q[1];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("char *foo()\n"
+              "{\n"
+              "char q[] = \"AAAAAAAAAAAA\";\n"
+              "char *p;\n"
+              "p = &q[1];\n"
+              "return p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3] -> [test.cpp:6]: (error) Returning pointer to local variable 'q' that will be invalid when returning.\n", errout.str());
     }
 
     void returnLocalVariable4() { // x+y
