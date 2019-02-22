@@ -208,7 +208,7 @@ private:
         c.noOperatorEqError(nullptr, false, nullptr, false);
         c.noDestructorError(nullptr, false, nullptr);
         c.uninitVarError(nullptr, false, "classname", "varname", false);
-        c.uninitVarError(nullptr, true, "classname", "varname", false);
+        c.uninitVarError(nullptr, true, "classname", "varnamepriv", false);
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");
