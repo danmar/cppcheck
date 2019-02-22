@@ -1062,7 +1062,7 @@ bool isConstVarExpression(const Token *tok)
     }
     if (Token::Match(tok, "( %type%"))
         return isConstVarExpression(tok->astOperand1());
-    if (Token::Match(tok, "%cop%")) {
+    if (Token::Match(tok, "%cop%|[|.")) {
         if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
             return false;
         if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
