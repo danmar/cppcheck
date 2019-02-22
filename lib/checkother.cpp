@@ -2878,8 +2878,6 @@ void CheckOther::checkComparePointers()
                 continue;
             if (v1.tokvalue->varId() == v2.tokvalue->varId())
                 continue;
-            if (var1->isPointer() || var2->isPointer())
-                continue;
             if (var1->isReference() || var2->isReference())
                 continue;
             if (var1->isRValueReference() || var2->isRValueReference())

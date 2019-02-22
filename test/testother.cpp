@@ -7613,6 +7613,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n", errout.str());
 
+        check("bool f() {\n"
+              "    int x = 0;\n"
+              "    int y = 1;\n"
+              "    return &x > &y;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (error) Comparing pointers that point to different objects\n", errout.str());
+
         check("struct A {int data;};\n"
               "bool f() {\n"
               "    A x;\n"
@@ -7621,7 +7628,60 @@ private:
               "    int* yp = &y.data;\n"
               "    return xp > yp;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:5]: (error) Comparing pointers that point to different objects\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n", errout.str());
+
+        check("struct A {int data;};\n"
+              "bool f(A ix, A iy) {\n"
+              "    A* x = &ix;\n"
+              "    A* y = &iy;\n"
+              "    int* xp = &x->data;\n"
+              "    int* yp = &y->data;\n"
+              "    return xp > yp;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n", errout.str());
+
+        check("bool f(int * xp, int* yp) {\n"
+              "    return &xp > &yp;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2]: (error) Comparing pointers that point to different objects\n", errout.str());
+
+        check("bool f() {\n"
+              "    int x[2] = {1, 2}m;\n"
+              "    int* xp = &x[0];\n"
+              "    int* yp = &x[1];\n"
+              "    return xp > yp;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int * xp, int* yp) {\n"
+              "    return xp > yp;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int & x, int& y) {\n"
+              "    return &x > &y;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& g();\n"
+              "bool f() {\n"
+              "    int& x = g();\n"
+              "    int& y = g();\n"
+              "    int* xp = &x;\n"
+              "    int* yp = &y;\n"
+              "    return xp > yp;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {int data;};\n"
+              "bool f(A ix) {\n"
+              "    A* x = &ix;\n"
+              "    A* y = x;\n"
+              "    int* xp = &x->data;\n"
+              "    int* yp = &y->data;\n"
+              "    return xp > yp;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
