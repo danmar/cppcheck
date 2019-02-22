@@ -2769,19 +2769,19 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
                          errorLogger,
                          settings);
 
-        if (tok->astTop() && Token::simpleMatch(tok->astTop()->previous(), "for (") && Token::simpleMatch(tok->astTop()->link(), ") {")) {
-            const Token* start = tok->astTop()->link()->next();
+        if (tok->astTop() && Token::simpleMatch(tok->astTop()->previous(), "for (") &&
+            Token::simpleMatch(tok->astTop()->link(), ") {")) {
+            const Token *start = tok->astTop()->link()->next();
             valueFlowForward(const_cast<Token *>(start),
-                         start->link(),
-                         var,
-                         var->declarationId(),
-                         values,
-                         false,
-                         false,
-                         tokenlist,
-                         errorLogger,
-                         settings);
-
+                             start->link(),
+                             var,
+                             var->declarationId(),
+                             values,
+                             false,
+                             false,
+                             tokenlist,
+                             errorLogger,
+                             settings);
         }
         // Function call
     } else if (Token::Match(parent->previous(), "%name% (")) {
