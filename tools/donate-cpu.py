@@ -217,7 +217,7 @@ def hasInclude(path, includes):
                     pass
                 f.close()
                 re_includes = [re.escape(inc) for inc in includes]
-                if re.search('\n#[ \t]*include[ \t]+(' + '|'.join(re_includes) + ')', filedata):
+                if re.search('^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')', filedata, re.MULTILINE):
                     return True
             except IOError:
                 pass
