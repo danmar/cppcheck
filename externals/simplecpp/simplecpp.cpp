@@ -329,13 +329,14 @@ static void ungetChar(std::istream &istr, unsigned int bom)
 
 static unsigned short getAndSkipBOM(std::istream &istr)
 {
-    const unsigned char ch1 = istr.peek();
+    const int ch1 = istr.peek();
 
     // The UTF-16 BOM is 0xfffe or 0xfeff.
     if (ch1 >= 0xfe) {
         unsigned short bom = ((unsigned char)istr.get() << 8);
         if (istr.peek() >= 0xfe)
             return bom | (unsigned char)istr.get();
+        istr.unget();
         return 0;
     }
 
@@ -1744,11 +1745,17 @@ namespace simplecpp {
                 throw invalidHashHash(tok->location, name());
             if (!sameline(tok, tok->next) || !sameline(tok, tok->next->next))
                 throw invalidHashHash(tok->location, name());
-            if (!A->name && !A->number && A->op != ',' && !A->str().empty())
+
+            bool canBeConcatenatedWithEqual = A->isOneOf("+-*/%&|^") || A->str() == "<<" || A->str() == ">>";
+            if (!A->name && !A->number && A->op != ',' && !A->str().empty() && !canBeConcatenatedWithEqual)
                 throw invalidHashHash(tok->location, name());
 
             Token *B = tok->next->next;
-            if (!B->name && !B->number && B->op && B->op != '#')
+            if (!B->name && !B->number && B->op && !B->isOneOf("#="))
+                throw invalidHashHash(tok->location, name());
+
+            if ((canBeConcatenatedWithEqual && B->op != '=') ||
+                (!canBeConcatenatedWithEqual && B->op == '='))
                 throw invalidHashHash(tok->location, name());
 
             std::string strAB;
@@ -1840,67 +1847,53 @@ namespace simplecpp {
 
 #ifdef SIMPLECPP_WINDOWS
 
-class ScopedLock
-{
+class ScopedLock {
 public:
-    explicit ScopedLock(HANDLE mutex)
-        : m_mutex(mutex)
-    {
-        if (WaitForSingleObject(m_mutex, INFINITE) == WAIT_FAILED)
-            throw std::runtime_error("cannot lock the mutex");
+    explicit ScopedLock(CRITICAL_SECTION& criticalSection)
+        : m_criticalSection(criticalSection) {
+        EnterCriticalSection(&m_criticalSection);
     }
 
-    ~ScopedLock()
-    {
-        ReleaseMutex(m_mutex);
+    ~ScopedLock() {
+        LeaveCriticalSection(&m_criticalSection);
     }
 
 private:
     ScopedLock& operator=(const ScopedLock&);
     ScopedLock(const ScopedLock&);
 
-    HANDLE m_mutex;
+    CRITICAL_SECTION& m_criticalSection;
 };
 
-class RealFileNameMap
-{
+class RealFileNameMap {
 public:
-    RealFileNameMap()
-    {
-        m_mutex = CreateMutex(NULL, FALSE, NULL);
-
-        if (!m_mutex)
-        {
-            throw std::runtime_error("cannot create the mutex handle");
-        }
+    RealFileNameMap() {
+        InitializeCriticalSection(&m_criticalSection);
     }
 
-    ~RealFileNameMap()
-    {
-        CloseHandle(m_mutex);
+    ~RealFileNameMap() {
+        DeleteCriticalSection(&m_criticalSection);
     }
 
-    bool getRealPathFromCache(const std::string& path, std::string* returnPath)
-    {
-        ScopedLock lock(m_mutex);
+    bool getRealPathFromCache(const std::string& path, std::string* returnPath) {
+        ScopedLock lock(m_criticalSection);
 
         std::map<std::string, std::string>::iterator it = m_fileMap.find(path);
-        if (it != m_fileMap.end())
-        {
+        if (it != m_fileMap.end()) {
             *returnPath = it->second;
             return true;
         }
         return false;
     }
 
-    void addToCache(const std::string& path, const std::string& actualPath)
-    {
-        ScopedLock lock(m_mutex);
+    void addToCache(const std::string& path, const std::string& actualPath) {
+        ScopedLock lock(m_criticalSection);
         m_fileMap[path] = actualPath;
     }
 
+private:
     std::map<std::string, std::string> m_fileMap;
-    HANDLE m_mutex;
+    CRITICAL_SECTION m_criticalSection;
 };
 
 static RealFileNameMap realFileNameMap;
@@ -1924,8 +1917,7 @@ static bool realFileName(const std::string &f, std::string *result)
         return false;
 
     // Lookup filename or foldername on file system
-    if (!realFileNameMap.getRealPathFromCache(f, result))
-    {
+    if (!realFileNameMap.getRealPathFromCache(f, result)) {
         WIN32_FIND_DATAA FindFileData;
         HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
 
@@ -1943,6 +1935,8 @@ static std::string realFilename(const std::string &f)
 {
     std::string ret;
     ret.reserve(f.size()); // this will be the final size
+    if (realFileNameMap.getRealPathFromCache(f, &ret))
+        return ret;
 
     // Current subpath
     std::string subpath;
@@ -1982,6 +1976,7 @@ static std::string realFilename(const std::string &f)
             ret += subpath;
     }
 
+    realFileNameMap.addToCache(f, ret);
     return ret;
 }
 
