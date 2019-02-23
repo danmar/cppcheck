@@ -118,12 +118,12 @@ bool MainWindow::runProcess(const QString &programName, const QStringList &argum
     return success;
 }
 
-bool MainWindow::wget(const QString url)
+bool MainWindow::wget(const QString &url)
 {
     return runProcess("wget", QStringList() << url);
 }
 
-bool MainWindow::unpackArchive(const QString archiveName)
+bool MainWindow::unpackArchive(const QString &archiveName)
 {
     // Unpack archive
     QStringList args;
@@ -164,14 +164,14 @@ void MainWindow::showResult(QListWidgetItem *item)
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);
     const QString fileName = WORK_FOLDER + '/' + msg.left(msg.indexOf(":"));
-    const int lineNumber = msg.mid(pos1+1,pos2-pos1-1).toInt();
+    const int lineNumber = msg.midRef(pos1+1,pos2-pos1-1).toInt();
 
-    if (!QFileInfo(fileName).exists()) {
-        if (QFileInfo(DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz").exists()) {
+    if (!QFileInfo::exists(fileName)) {
+        if (QFileInfo::exists(DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz")) {
             if (!unpackArchive(DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"))
                 return;
         } else {
-            if (!QFileInfo(WORK_FOLDER + '/' + archiveName).exists()) {
+            if (!QFileInfo::exists(WORK_FOLDER + '/' + archiveName)) {
                 // Download archive
                 if (!wget(url))
                     return;
@@ -186,7 +186,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     QFile f(fileName);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
         const QString errorMsg =
-            QString("Opening file %1 failed: %2").arg(f.fileName()).arg(f.errorString());
+            QString("Opening file %1 failed: %2").arg(f.fileName(), f.errorString());
         ui->statusBar->showMessage(errorMsg);
     } else {
         QTextStream textStream(&f);

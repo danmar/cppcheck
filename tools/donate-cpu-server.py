@@ -10,8 +10,38 @@ import time
 from threading import Thread
 import sys
 import urllib
+import logging
+import logging.handlers
 
-OLD_VERSION = '1.86'
+OLD_VERSION = '1.87'
+
+
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+# Logging to console
+handler_stream = logging.StreamHandler()
+logger.addHandler(handler_stream)
+# Log errors to a rotating file
+logfile = sys.path[0]
+if logfile:
+    logfile += '/'
+logfile += 'donate-cpu-server.log'
+handler_file = logging.handlers.RotatingFileHandler(filename=logfile, maxBytes=100*1024, backupCount=1)
+handler_file.setLevel(logging.ERROR)
+logger.addHandler(handler_file)
+
+
+# Set up an exception hook for all uncaught exceptions so they can be logged
+def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
+sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime():
@@ -474,7 +504,7 @@ def check_library_report(result_path, message_id):
             'Function'
     html += '</b>\n'
 
-    function_counts = dict()
+    function_counts = {}
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename):
             continue
@@ -491,15 +521,14 @@ def check_library_report(result_path, message_id):
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
-    functions_shown = 0
+    function_details_list = []
     for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
-        if functions_shown >= functions_shown_max:
+        if len(function_details_list) >= functions_shown_max:
             break
-        html += str(count).rjust(column_widths[0]) + ' ' + \
-                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n'
-        functions_shown += 1
+        function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +
+                '<a href="check_library-' + urllib.quote_plus(function_name) + '">' + function_name + '</a>\n')
 
-    html += '\n'
+    html += ''.join(function_details_list)
     html += '</pre>\n'
     html += '</body></html>\n'
 
@@ -509,8 +538,8 @@ def check_library_report(result_path, message_id):
 # Lists all checkLibrary* messages regarding the given function name
 def check_library_function_name(result_path, function_name):
     print('check_library_function_name')
-    text = ''
     function_name = urllib.unquote_plus(function_name)
+    output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename):
             continue
@@ -529,14 +558,14 @@ def check_library_function_name(result_path, function_name):
             if '[checkLibrary' in line:
                 if (' ' + function_name) in line:
                     if url:
-                        text += url
+                        output_lines_list.append(url)
                         url = None
                     if cppcheck_options:
-                        text += cppcheck_options
+                        output_lines_list.append(cppcheck_options)
                         cppcheck_options = None
-                    text += line
+                    output_lines_list.append(line)
 
-    return text
+    return ''.join(output_lines_list)
 
 
 def sendAll(connection, data):
@@ -688,9 +717,10 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] get:' + pkg)
             connection.send(pkg)
             connection.close()
-        elif cmd.startswith('write\nftp://'):
+        elif cmd.startswith('write\nftp://') or cmd.startswith('write-fast\nftp://'):
+            writeFast = cmd.startswith('write-fast')
             # read data
-            data = cmd[6:]
+            data = cmd[cmd.find('ftp'):]
             try:
                 t = 0
                 max_data_size = 2 * 1024 * 1024
@@ -722,16 +752,38 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 if url2 not in packages:
                     print('results not written. url is not in packages.')
                     continue
+            if not writeFast:
+                # Verify that head was compared to correct OLD_VERSION
+                versions_found = False
+                old_version_wrong = False
+                for line in data.split('\n', 20):
+                    if line.startswith('cppcheck: '):
+                        versions_found = True
+                        if OLD_VERSION not in line.split():
+                            print('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
+                                  line)
+                            print('Ignoring data.')
+                            old_version_wrong = True
+                            break
+                if not versions_found:
+                    print('Cppcheck versions missing in result data. Ignoring data.')
+                    continue
+                if old_version_wrong:
+                    continue
             print('results added for package ' + res.group(1))
-            filename = resultPath + '/' + res.group(1)
+            if writeFast:
+                filename = resultPath + '-fast/' + res.group(1)
+            else:
+                filename = resultPath + '/' + res.group(1)
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
             # track latest added results..
-            if len(latestResults) >= 20:
-                latestResults = latestResults[1:]
-            latestResults.append(filename)
-            with open('latest.txt', 'wt') as f:
-                f.write(' '.join(latestResults))
+            if not writeFast:
+                if len(latestResults) >= 20:
+                    latestResults = latestResults[1:]
+                latestResults.append(filename)
+                with open('latest.txt', 'wt') as f:
+                    f.write(' '.join(latestResults))
         elif cmd.startswith('write_info\nftp://'):
             # read data
             data = cmd[11:]

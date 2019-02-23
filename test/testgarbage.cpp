@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -233,6 +233,7 @@ private:
         TEST_CASE(garbageCode200); // #8757
         TEST_CASE(garbageCode201); // #8873
         TEST_CASE(garbageCode202); // #8907
+        TEST_CASE(garbageCode203); // #8972
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1586,6 +1587,12 @@ private:
     void garbageCode202() {
         ASSERT_THROW(checkCode("void f() { UNKNOWN_MACRO(return); }"), InternalError);
         ASSERT_THROW(checkCode("void f() { UNKNOWN_MACRO(throw); }"), InternalError);
+    }
+
+    void garbageCode203() { // #8972
+        checkCode("{ > () {} }");
+        checkCode("template <> a > ::b();");
+        ASSERT_THROW(checkCode("{ template <a> class b { } template <> template <c> c() b<a>::e() { } template b<d>; }"), InternalError);
     }
 
     void syntaxErrorFirstToken() {

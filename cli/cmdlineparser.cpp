@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,6 +158,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // max ctu depth
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
+
+            else if (std::strcmp(argv[i], "--experimental-fast") == 0)
+                // Skip slow simplifications and see how that affect the results, the
+                // goal is to remove the simplifications.
+                mSettings->experimentalFast = true;
 
             // (Experimental) exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0)
@@ -1152,5 +1157,11 @@ void CmdLineParser::printHelp()
               "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
               "\n"
               "For more information:\n"
-              "    http://cppcheck.net/manual.pdf\n";
+              "    http://cppcheck.net/manual.pdf\n"
+              "\n"
+              "Many thanks to the 3rd party libraries we use:\n"
+              " * tinyxml2 -- loading project/library/ctu files.\n"
+              " * picojson -- loading compile database.\n"
+              " * pcre -- rules.\n"
+              " * qt -- used in GUI\n";
 }

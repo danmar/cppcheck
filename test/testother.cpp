@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,6 +55,7 @@ private:
         TEST_CASE(zeroDiv9);
         TEST_CASE(zeroDiv10);
         TEST_CASE(zeroDiv11);
+        TEST_CASE(zeroDiv12);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -529,6 +530,14 @@ private:
               "  int res = (a*2)/0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv12() {
+        // #8141
+        check("intmax_t f() {\n"
+              "  return 1 / imaxabs(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
@@ -1979,7 +1988,7 @@ private:
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
-              "        y;\n"
+              "        (void)y;\n"
               "    case 3:\n"
               "        ++y;\n"
               "    }\n"
@@ -2033,7 +2042,7 @@ private:
               "    switch (a)\n"
               "    {\n"
               "    case 2:\n"
-              "        y;\n"
+              "        (void)y;\n"
               "    case 3:\n"
               "        --y;\n"
               "    }\n"
@@ -2732,8 +2741,12 @@ private:
 
         // #4711 lambda functions
         check("int f() {\n"
-              "    return g([](int x){x+1; return x;});\n"
-              "}", nullptr, false, false, false);
+              "    return g([](int x){(void)x+1; return x;});\n"
+              "}",
+              nullptr,
+              false,
+              false,
+              false);
         ASSERT_EQUALS("", errout.str());
 
         // #4756
@@ -2745,7 +2758,7 @@ private:
               "             __v = ((unsigned short int) ((((__x) >> 8) & 0xff) | (((__x) & 0xff) << 8)));\n"
               "         else\n"
               "             __asm__ (\"rorw $8, %w0\" : \"=r\" (__v) : \"0\" (__x) : \"cc\");\n"
-              "         __v;\n"
+              "         (void)__v;\n"
               "     }));\n"
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("", errout.str());
@@ -5459,13 +5472,13 @@ private:
         check("void foo()\n"
               "{\n"
               "   int a; a = 123;\n"
-              "   a << -1;\n"
+              "   (void)(a << -1);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"
               "{\n"
               "   int a; a = 123;\n"
-              "   a >> -1;\n"
+              "   (void)(a >> -1);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Shifting by a negative value is undefined behaviour\n", errout.str());
         check("void foo()\n"
@@ -7559,6 +7572,21 @@ private:
               "void f() {\n"
               "    char i = 1;\n"
               "    g(static_cast<int>(i));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8986
+        check("void f(int);\n"
+              "void g() {\n"
+              "    const int x[] = { 10, 10 };\n"
+              "    f(x[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int);\n"
+              "void g() {\n"
+              "    int x[] = { 10, 10 };\n"
+              "    f(x[0]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

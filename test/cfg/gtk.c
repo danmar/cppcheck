@@ -8,6 +8,8 @@
 //
 
 #include <gtk/gtk.h>
+#include <glib.h>
+
 
 void validCode(int argInt)
 {
@@ -27,6 +29,19 @@ void validCode(int argInt)
     gpointer gpt = g_malloc(4);
     printf("%p", gpt);
     g_free(gpt);
+    g_assert(gpt);
+    if (!gpt) {
+        // cppcheck-suppress checkLibraryNoReturn
+        g_assert_not_reached();
+    }
+    gpointer p = GINT_TO_POINTER(1);
+    int i = GPOINTER_TO_INT(p);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (i == 1) {}
+
+    g_print("test");
+    g_print("%d", 1);
+    g_printerr("err");
 }
 
 void g_malloc_test()
@@ -38,4 +53,20 @@ void g_malloc_test()
     printf("%p", gpt);
 
     // cppcheck-suppress memleak
+}
+
+void g_assert_test()
+{
+    int a;
+    // cppcheck-suppress checkLibraryNoReturn
+    // cppcheck-suppress assignmentInAssert
+    g_assert(a = 5);
+}
+
+void g_print_test()
+{
+    // cppcheck-suppress invalidPrintfArgType_uint
+    g_print("%u", -1);
+    // cppcheck-suppress invalidPrintfArgType_uint
+    g_printerr("%x", "a");
 }

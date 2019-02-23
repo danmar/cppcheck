@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2187,7 +2187,7 @@ private:
 
         ASSERT_EQUALS("1: template < int d , typename A , typename B > struct S { } ;\n", tokenize("template<int d, typename A, typename B> struct S {};"));
 
-        ASSERT_EQUALS("1: typename A a@1 ;\n", tokenize("typename A a;"));
+        ASSERT_EQUALS("1: A a@1 ;\n", tokenize("typename A a;"));
     }
 
     void varid_rvalueref() {

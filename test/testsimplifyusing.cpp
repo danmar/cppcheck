@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,10 @@ private:
         TEST_CASE(simplifyUsing14);
         TEST_CASE(simplifyUsing15);
         TEST_CASE(simplifyUsing16);
+
+        TEST_CASE(simplifyUsing8970);
+        TEST_CASE(simplifyUsing8971);
+        TEST_CASE(simplifyUsing8976);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -410,6 +414,51 @@ private:
 
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyUsing8970() {
+        const char code[] = "using V = std::vector<int>;\n"
+                            "struct A {\n"
+                            "    V p;\n"
+                            "};";
+
+        const char expected[] = "struct A { "
+                                "std :: vector < int > p ; "
+                                "} ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing8971() {
+        const char code[] = "class A {\n"
+                            "public:\n"
+                            "    using V = std::vector<double>;\n"
+                            "};\n"
+                            "using V = std::vector<int>;\n"
+                            "class I {\n"
+                            "private:\n"
+                            "    A::V v_;\n"
+                            "    V v2_;\n"
+                            "};";
+
+        const char expected[] = "class A { "
+                                "public: "
+                                "} ; "
+                                "class I { "
+                                "private: "
+                                "std :: vector < double > v_ ; "
+                                "std :: vector < int > v2_ ; "
+                                "} ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing8976() {
+        const char code[] = "using mystring = std::string;";
+
+        const char exp[] = ";";
+
+        ASSERT_EQUALS(exp, tok(code));
     }
 
 };

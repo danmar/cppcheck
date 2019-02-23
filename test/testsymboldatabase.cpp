@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -822,11 +822,42 @@ private:
     }
 
     void VariableValueType3() {
-        GET_SYMBOL_DB("void f(std::string::size_type x);\n");
-        const Variable* x = db->getVariableFromVarId(1);
-        ASSERT_EQUALS("x", x->name());
-        // TODO: Configure std::string::size_type somehow.
-        TODO_ASSERT_EQUALS(ValueType::Type::LONGLONG, ValueType::Type::UNKNOWN_TYPE, x->valueType()->type);
+        // std::string::size_type
+        {
+            GET_SYMBOL_DB("void f(std::string::size_type x);\n");
+            const Variable* const x = db->getVariableFromVarId(1);
+            ASSERT_EQUALS("x", x->name());
+            // TODO: Configure std::string::size_type somehow.
+            TODO_ASSERT_EQUALS(ValueType::Type::LONGLONG, ValueType::Type::UNKNOWN_INT, x->valueType()->type);
+            ASSERT_EQUALS(ValueType::Sign::UNSIGNED, x->valueType()->sign);
+        }
+        // std::wstring::size_type
+        {
+            GET_SYMBOL_DB("void f(std::wstring::size_type x);\n");
+            const Variable* const x = db->getVariableFromVarId(1);
+            ASSERT_EQUALS("x", x->name());
+            // TODO: Configure std::wstring::size_type somehow.
+            TODO_ASSERT_EQUALS(ValueType::Type::LONGLONG, ValueType::Type::UNKNOWN_INT, x->valueType()->type);
+            ASSERT_EQUALS(ValueType::Sign::UNSIGNED, x->valueType()->sign);
+        }
+        // std::u16string::size_type
+        {
+            GET_SYMBOL_DB("void f(std::u16string::size_type x);\n");
+            const Variable* const x = db->getVariableFromVarId(1);
+            ASSERT_EQUALS("x", x->name());
+            // TODO: Configure std::u16string::size_type somehow.
+            TODO_ASSERT_EQUALS(ValueType::Type::LONGLONG, ValueType::Type::UNKNOWN_INT, x->valueType()->type);
+            ASSERT_EQUALS(ValueType::Sign::UNSIGNED, x->valueType()->sign);
+        }
+        // std::u32string::size_type
+        {
+            GET_SYMBOL_DB("void f(std::u32string::size_type x);\n");
+            const Variable* const x = db->getVariableFromVarId(1);
+            ASSERT_EQUALS("x", x->name());
+            // TODO: Configure std::u32string::size_type somehow.
+            TODO_ASSERT_EQUALS(ValueType::Type::LONGLONG, ValueType::Type::UNKNOWN_INT, x->valueType()->type);
+            ASSERT_EQUALS(ValueType::Sign::UNSIGNED, x->valueType()->sign);
+        }
     }
 
     void findVariableType1() {

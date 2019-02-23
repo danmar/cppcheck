@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2870,6 +2870,15 @@ private:
               "  bool c = s<s;\n"
               "  if (c) return 0;\n"
               "  else return 42;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("long X::g(bool unknown, int& result) {\n"
+              "    long ret = 0;\n"
+              "    bool f = false;\n"
+              "    f = f || unknown;\n"
+              "    f ? result = 42 : ret = -1;\n"
+              "    return ret;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

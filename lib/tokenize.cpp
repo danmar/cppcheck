@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1494,8 +1494,9 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
 
                             if (openParenthesis) {
-                                // skip over name
-                                tok2 = tok2->next();
+                                // Skip over name, if any
+                                if (Token::Match(tok2->next(), "%name%"))
+                                    tok2 = tok2->next();
 
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
@@ -3866,7 +3867,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // convert platform dependent types to standard types
     // 32 bits: size_t -> unsigned long
     // 64 bits: size_t -> unsigned long long
-    simplifyPlatformTypes();
+    list.simplifyPlatformTypes();
 
     // collapse compound standard types into a single token
     // unsigned long long int => long (with _isUnsigned=true,_isLong=true)
@@ -5968,119 +5969,6 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             }
         }
         finishedwithkr = (only_k_r_fpar && tok2 && tok2->strAt(1) == "{");
-    }
-}
-
-void Tokenizer::simplifyPlatformTypes()
-{
-    const bool isCPP11  = mSettings->standards.cpp >= Standards::CPP11;
-
-    enum { isLongLong, isLong, isInt } type;
-
-    /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
-
-    if (mSettings->sizeof_size_t == mSettings->sizeof_long)
-        type = isLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_long_long)
-        type = isLongLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_int)
-        type = isInt;
-    else
-        return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // pre-check to reduce unneeded match calls
-        if (!Token::Match(tok, "std| ::| %type%"))
-            continue;
-        bool isUnsigned;
-        if (Token::Match(tok, "std| ::| size_t|uintptr_t|uintmax_t")) {
-            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
-                continue;
-            isUnsigned = true;
-        } else if (Token::Match(tok, "std| ::| ssize_t|ptrdiff_t|intptr_t|intmax_t")) {
-            if (isCPP11 && tok->strAt(-1) == "using" && tok->strAt(1) == "=")
-                continue;
-            isUnsigned = false;
-        } else
-            continue;
-
-        bool inStd = false;
-        if (tok->str() == "::") {
-            tok->deleteThis();
-        } else if (tok->str() == "std") {
-            if (tok->next()->str() != "::")
-                continue;
-            inStd = true;
-            tok->deleteNext();
-            tok->deleteThis();
-        }
-
-        if (inStd)
-            tok->originalName("std::" + tok->str());
-        else
-            tok->originalName(tok->str());
-        if (isUnsigned)
-            tok->isUnsigned(true);
-
-        switch (type) {
-        case isLongLong:
-            tok->isLong(true);
-            tok->str("long");
-            break;
-        case isLong:
-            tok->str("long");
-            break;
-        case isInt:
-            tok->str("int");
-            break;
-        }
-    }
-
-    const std::string platform_type(mSettings->platformString());
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
-            continue;
-
-        const Library::PlatformType * const platformtype = mSettings->library.platform_type(tok->str(), platform_type);
-
-        if (platformtype) {
-            // check for namespace
-            if (tok->strAt(-1) == "::") {
-                const Token * tok1 = tok->tokAt(-2);
-                // skip when non-global namespace defined
-                if (tok1 && tok1->tokType() == Token::eName)
-                    continue;
-                tok = tok->previous();
-                tok->deleteThis();
-            }
-            Token *typeToken;
-            if (platformtype->_const_ptr) {
-                tok->str("const");
-                tok->insertToken("*");
-                tok->insertToken(platformtype->mType);
-                typeToken = tok;
-            } else if (platformtype->_pointer) {
-                tok->str(platformtype->mType);
-                typeToken = tok;
-                tok->insertToken("*");
-            } else if (platformtype->_ptr_ptr) {
-                tok->str(platformtype->mType);
-                typeToken = tok;
-                tok->insertToken("*");
-                tok->insertToken("*");
-            } else {
-                tok->originalName(tok->str());
-                tok->str(platformtype->mType);
-                typeToken = tok;
-            }
-            if (platformtype->_signed)
-                typeToken->isSigned(true);
-            if (platformtype->_unsigned)
-                typeToken->isUnsigned(true);
-            if (platformtype->_long)
-                typeToken->isLong(true);
-        }
     }
 }
 

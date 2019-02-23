@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -179,7 +179,7 @@ static bool isAddressOfLocalVariableRecursive(const Token *expr)
         const Token *op = expr->astOperand1();
         bool deref = false;
         while (Token::Match(op, ".|[")) {
-            if (op->str() == "[")
+            if (op->str() == "[" || op->originalName() == "->")
                 deref = true;
             op = op->astOperand1();
         }
@@ -612,7 +612,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 errorReturnReference(tok, errorPath);
                 continue;
             }
-        // Assign reference to non-local variable
+            // Assign reference to non-local variable
         } else if (Token::Match(tok->astParent(), "&|&&") && Token::simpleMatch(tok->astParent()->astParent(), "=") &&
                    tok->variable() && tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
                    !tok->variable()->isArgument()) {

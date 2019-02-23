@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1062,7 +1062,7 @@ bool isConstVarExpression(const Token *tok)
     }
     if (Token::Match(tok, "( %type%"))
         return isConstVarExpression(tok->astOperand1());
-    if (Token::Match(tok, "%cop%")) {
+    if (Token::Match(tok, "%cop%|[|.")) {
         if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1()))
             return false;
         if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2()))
@@ -1204,6 +1204,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
             if (f(info) == Progress::Break)
                 return Progress::Break;
         }
+        // Prevent inifinite recursion
         if (tok->next() == start)
             break;
     }

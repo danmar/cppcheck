@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,13 @@ Settings::Settings()
       debugnormal(false),
       debugwarnings(false),
       debugtemplate(false),
+      maxCtuDepth(2),
       dump(false),
       exceptionHandling(false),
       inconclusive(false),
       jointSuppressionReport(false),
-      maxCtuDepth(2),
       experimental(false),
+      experimentalFast(false),
       quiet(false),
       inlineSuppressions(false),
       verbose(false),
