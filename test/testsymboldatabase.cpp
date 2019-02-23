@@ -6094,6 +6094,7 @@ private:
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (std::nothrow) int[100];", "data"));
         ASSERT_EQUALS("const signed short", typeOf("short values[10]; void f() { for (const auto *x : values); }", "x"));
         ASSERT_EQUALS("signed int *", typeOf("MACRO(test) void test() { auto x = (int*)y; }", "x")); // #7931 (garbage?)
+        ASSERT_EQUALS("const signed int", typeOf("; const auto x = 3;", "x"));
 
         // Variable declaration
         ASSERT_EQUALS("char *", typeOf("; char abc[] = \"abc\";", "["));
@@ -6617,7 +6618,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v4 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6707,7 +6708,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v9 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);

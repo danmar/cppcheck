@@ -4914,8 +4914,9 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     vt.constness |= 1;
                 setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
-                setValueType(var1Tok, *vt2);
-                setValueType(parent->previous(), *vt2);
+                setValueType(var1Tok, vt);
+                if (var1Tok != parent->previous())
+                    setValueType(parent->previous(), *vt2);
                 Variable *var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
                     var->setValueType(*vt2);
