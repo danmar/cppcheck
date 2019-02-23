@@ -2727,8 +2727,8 @@ const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &err
         if (!vartok)
             return tok;
         const Variable *tokvar = vartok->variable();
-        if (!astIsContainer(vartok) && !(tokvar && tokvar->isArray()) && Token::Match(vartok->astParent(), "[|*|.") &&
-            vartok->astParent()->originalName() != ".") {
+        if (!astIsContainer(vartok) && !(tokvar && tokvar->isArray()) &&
+            (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
             for (const ValueFlow::Value &v : vartok->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
@@ -3089,6 +3089,8 @@ static bool isDecayedPointer(const Token *tok, const Settings *settings)
     if (!tok)
         return false;
     if (astIsPointer(tok->astParent()) && !Token::simpleMatch(tok->astParent(), "return"))
+        return true;
+    if (Token::Match(tok->astParent(), "%cop%"))
         return true;
     if (!Token::simpleMatch(tok->astParent(), "return"))
         return false;
