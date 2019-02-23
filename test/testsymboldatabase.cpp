@@ -5989,6 +5989,7 @@ private:
         ASSERT_EQUALS("long double", typeOf("a = (long double)32;", "("));
         ASSERT_EQUALS("char", typeOf("a = static_cast<char>(32);", "("));
         ASSERT_EQUALS("", typeOf("a = (unsigned x)0;", "("));
+        ASSERT_EQUALS("unsigned int", typeOf("a = unsigned(123);", "("));
 
         // sizeof..
         ASSERT_EQUALS("char", typeOf("sizeof(char);", "char"));

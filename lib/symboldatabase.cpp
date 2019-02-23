@@ -5339,14 +5339,14 @@ void SymbolDatabase::setValueTypeInTokenList()
             setValueType(tok, valuetype);
         } else if (tok->str() == "(") {
             // cast
-            if (!tok->astOperand2() && Token::Match(tok, "( %name%")) {
+            if (tok->isCast() && !tok->astOperand2() && Token::Match(tok, "( %name%")) {
                 ValueType valuetype;
                 if (Token::simpleMatch(parsedecl(tok->next(), &valuetype, mDefaultSignedness, mSettings), ")"))
                     setValueType(tok, valuetype);
             }
 
             // C++ cast
-            if (tok->astOperand2() && Token::Match(tok->astOperand1(), "static_cast|const_cast|dynamic_cast|reinterpret_cast < %name%") && tok->astOperand1()->linkAt(1)) {
+            else if (tok->astOperand2() && Token::Match(tok->astOperand1(), "static_cast|const_cast|dynamic_cast|reinterpret_cast < %name%") && tok->astOperand1()->linkAt(1)) {
                 ValueType valuetype;
                 if (Token::simpleMatch(parsedecl(tok->astOperand1()->tokAt(2), &valuetype, mDefaultSignedness, mSettings), ">"))
                     setValueType(tok, valuetype);
@@ -5377,6 +5377,10 @@ void SymbolDatabase::setValueTypeInTokenList()
             else if (tok->previous() && tok->previous()->isStandardType()) {
                 ValueType valuetype;
                 valuetype.type = ValueType::typeFromString(tok->previous()->str(), tok->previous()->isLong());
+                if (tok->previous()->isUnsigned())
+                    valuetype.sign = ValueType::Sign::UNSIGNED;
+                else if (tok->previous()->isSigned())
+                    valuetype.sign = ValueType::Sign::SIGNED;
                 setValueType(tok, valuetype);
             }
 
