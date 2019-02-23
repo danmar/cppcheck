@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.6"
+CLIENT_VERSION = "1.1.7"
 
 
 def checkRequirements():
@@ -230,6 +230,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
     libraries = ' --library=posix --library=gnu'
 
     libraryIncludes = {'boost': ['<boost/'],
+                       'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
                        # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
                        'motif': ['<X11/', '<Xm/'],
