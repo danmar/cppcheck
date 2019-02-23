@@ -5392,7 +5392,7 @@ private:
               "    const int a = getA + 3;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Local variable getA shadows outer function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Local variable \'getA\' shadows outer function\n", errout.str());
 
         check("class A{public:A(){}};\n"
               "const A& getA(){static A a;return a;}\n"
@@ -7487,11 +7487,11 @@ private:
     void shadowVariables() {
         check("int x;\n"
               "void f() { int x; }\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer variable\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable \'x\' shadows outer variable\n", errout.str());
 
         check("int x();\n"
               "void f() { int x; }\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable x shadows outer function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) Local variable \'x\' shadows outer function\n", errout.str());
 
         check("struct C {\n"
               "    C(int x) : x(x) {}\n" // <- we do not want a FP here
@@ -7508,6 +7508,12 @@ private:
         check("int size() {\n"
               "  int size;\n" // <- not a shadow variable
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #8954 - lambda
+              "  int x;\n"
+              "  auto f = [](){ int x; }"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

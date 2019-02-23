@@ -2762,6 +2762,8 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
         if (f.name() == varname)
             return f.tokenDef;
     }
+    if (scope->type == Scope::eLambda)
+        return nullptr;
     return findShadowed(scope->nestedIn, varname, linenr);
 }
 
@@ -2771,7 +2773,7 @@ void CheckOther::checkShadowVariables()
         return;
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope & scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable())
+        if (!scope.isExecutable() || scope.type == Scope::eLambda)
             continue;
         for (const Variable &var : scope.varlist) {
             const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());
@@ -2791,7 +2793,7 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, bool shado
     errorPath.push_back(ErrorPathItem(var, "Shadow variable"));
     const std::string &varname = var ? var->str() : (shadowVar ? "var" : "f");
     const char *id = shadowVar ? "shadowVar" : "shadowFunction";
-    std::string message = "$symbol:" + varname + "\nLocal variable $symbol shadows outer " + (shadowVar ? "variable" : "function");
+    std::string message = "$symbol:" + varname + "\nLocal variable \'$symbol\' shadows outer " + (shadowVar ? "variable" : "function");
     reportError(errorPath, Severity::style, id, message, CWE398, false);
 }
 
