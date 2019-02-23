@@ -97,6 +97,7 @@ static bool test(const ReduceSettings &settings, const std::vector<std::string> 
     fout.close();
 
     CppcheckExecutor cppcheck(settings);
+    settings.terminate(false);
     return cppcheck.run(tempfilename.c_str(), settings.maxtime);
 }
 
