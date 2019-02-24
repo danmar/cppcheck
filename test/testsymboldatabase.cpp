@@ -6593,7 +6593,7 @@ private:
         autotok = Token::findsimplematch(autotok, "auto v3");
         ASSERT(db && autotok && autotok->valueType());
         if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, autotok->valueType()->constness);
+            ASSERT_EQUALS(1, autotok->valueType()->constness);
             ASSERT_EQUALS(1, autotok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
@@ -6601,7 +6601,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v3 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6637,7 +6637,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v5 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6683,7 +6683,7 @@ private:
         autotok = Token::findsimplematch(autotok, "auto v8");
         ASSERT(db && autotok && autotok->valueType());
         if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, autotok->valueType()->constness);
+            ASSERT_EQUALS(1, autotok->valueType()->constness);
             ASSERT_EQUALS(1, autotok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
@@ -6691,7 +6691,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v8 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6727,7 +6727,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v10 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);

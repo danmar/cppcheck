@@ -4837,8 +4837,14 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
         valuetype.bits = var.nameToken()->bits();
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
-    if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings))
+    if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
+        if (tok->str() == "." && tok->astOperand1()) {
+            const ValueType * const vt = tok->astOperand1()->valueType();
+            if (vt && (vt->constness & 1) != 0)
+                valuetype.constness |= 1;
+        }
         setValueType(tok, valuetype);
+    }
 }
 
 void SymbolDatabase::setValueType(Token *tok, const Enumerator &enumerator)
@@ -4908,15 +4914,19 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 ValueType vt(*vt2);
+                if (vt.constness & (1 << vt.pointer))
+                    vt.constness &= ~(1 << vt.pointer);
                 if (autoTok->strAt(1) == "*" && vt.pointer)
                     vt.pointer--;
                 if (autoTok->strAt(-1) == "const")
                     vt.constness |= 1;
                 setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
+                if (vt2->pointer > vt.pointer)
+                    vt.pointer++;
                 setValueType(var1Tok, vt);
                 if (var1Tok != parent->previous())
-                    setValueType(parent->previous(), *vt2);
+                    setValueType(parent->previous(), vt);
                 Variable *var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
                     ValueType vt2_(*vt2);
