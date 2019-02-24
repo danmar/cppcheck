@@ -461,8 +461,7 @@ private:
         const char code[] = "class BB {};\n"
                             "\n"
                             "template <class T>\n"
-                            "class AA\n"
-                            "{\n"
+                            "class AA {\n"
                             "public:\n"
                             "    static AA<T> create(T* newObject);\n"
                             "    static int size();\n"
@@ -481,9 +480,30 @@ private:
                             "    {}\n"
                             "\n"
                             "int yy[AA<CC>::size()];";
-
-        // Just run it and check that there are not assertions.
-        tok(code);
+        const char expected[] = "class BB { } ; "
+                                "class AA<BB> ; "
+                                "class AA<CC> ; "
+                                "class CC { public: CC ( AA<BB> , int ) { } } ; "
+                                "class XX { "
+                                "AA<CC> y ; "
+                                "public: "
+                                "XX ( ) ; "
+                                "} ; "
+                                "XX :: XX ( ) : "
+                                "y ( AA<CC> :: create ( new CC ( AA<BB> ( ) , 0 ) ) ) "
+                                "{ } "
+                                "int yy [ AA<CC> :: size ( ) ] ; "
+                                "class AA<BB> { "
+                                "public: "
+                                "static AA<BB> create ( BB * newObject ) ; "
+                                "static int size ( ) ; "
+                                "} ; "
+                                "class AA<CC> { "
+                                "public: "
+                                "static AA<CC> create ( CC * newObject ) ; "
+                                "static int size ( ) ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template14() {
@@ -494,14 +514,11 @@ private:
                             "{\n"
                             "foo<int*>();\n"
                             "}\n";
-
-        // The expected result..
         const char expected[] = "void foo<int*> ( ) ; "
                                 "void foo<int*> ( ) "
                                 "{ x ( ) ; } "
                                 "int main ( ) "
                                 "{ foo<int*> ( ) ; }";
-
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -582,9 +599,16 @@ private:
                             "};\n"
                             "\n"
                             "shared_ptr<int> i;\n";
-
-        // Assert that there is no segmentation fault..
-        tok(code);
+        const char expected[] = "template < class T > "
+                                "class Fred "
+                                "{ "
+                                "template < class T > "
+                                "static shared_ptr < Fred < T > > CreateFred ( ) "
+                                "{ "
+                                "} "
+                                "} ; "
+                                "shared_ptr < int > i ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template18() {
@@ -919,7 +943,23 @@ private:
                             "    A<A<BLA>>   gna1;\n"
                             "    A<BLA>      gna2;\n"
                             "}\n";
-        tok(code); // Don't crash or freeze
+        const char expected[] = "class A<A<BLA>> ; "
+                                "class A<BLA> ; "
+                                "int main ( ) { "
+                                "A<A<BLA>> gna1 ; "
+                                "A<BLA> gna2 ; "
+                                "} "
+                                "class A<A<BLA>> { "
+                                "A<BLA> mT ; "
+                                "public: "
+                                "void foo ( ) { } "
+                                "} ; "
+                                "class A<BLA> { "
+                                "BLA mT ; "
+                                "public: "
+                                "void foo ( ) { } "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template39() { // #4742 - Used to freeze in 1.60
@@ -981,14 +1021,25 @@ private:
     }
 
     void template44() { // #5297
-        tok("template<class T> struct StackContainer {"
-            "  void foo(int i) {"
-            "    if (0 >= 1 && i<0) {}"
-            "  }"
-            "};"
-            "template<class T> class ZContainer : public StackContainer<T> {};"
-            "struct FGSTensor {};"
-            "class FoldedZContainer : public ZContainer<FGSTensor> {};");
+        const char code[] = "template<class T> struct StackContainer {"
+                            "  void foo(int i) {"
+                            "    if (0 >= 1 && i<0) {}"
+                            "  }"
+                            "};"
+                            "template<class T> class ZContainer : public StackContainer<T> {};"
+                            "struct FGSTensor {};"
+                            "class FoldedZContainer : public ZContainer<FGSTensor> {};";
+        const char expected[] = "struct StackContainer<FGSTensor> ; "
+                                "class ZContainer<FGSTensor> ; "
+                                "struct FGSTensor { } ; "
+                                "class FoldedZContainer : public ZContainer<FGSTensor> { } ; "
+                                "class ZContainer<FGSTensor> : public StackContainer<FGSTensor> { } ; "
+                                "struct StackContainer<FGSTensor> { "
+                                "void foo ( int i ) { "
+                                "if ( 0 >= 1 && i < 0 ) { } "
+                                "} "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void template45() { // #5814
@@ -1081,13 +1132,31 @@ private:
     }
 
     void template52() { // #6437
-        tok("template <int value> int sum() { "
-            "  return value + sum<value/2>(); "
-            "} "
-            "template<int x, int y> int calculate_value() { "
-            "  return sum<x - y>(); "
-            "} "
-            "int value = calculate_value<1,1>();");
+        const char code[] = "template <int value> int sum() { "
+                            "  return value + sum<value/2>(); "
+                            "} "
+                            "template<int x, int y> int calculate_value() { "
+                            "  if (x != y) { "
+                            "    return sum<x - y>(); "
+                            "  } else { "
+                            "    return 0; "
+                            "  } "
+                            "} "
+                            "int value = calculate_value<1,1>();";
+        const char expected[] = "int sum<0> ( ) ; "
+                                "int calculate_value<1,1> ( ) ; "
+                                "int value ; value = calculate_value<1,1> ( ) ; "
+                                "int calculate_value<1,1> ( ) { "
+                                "if ( 1 != 1 ) { "
+                                "return sum<0> ( ) ; "
+                                "} else { "
+                                "return 0 ; "
+                                "} "
+                                "} "
+                                "int sum<0> ( ) { "
+                                "return 0 + sum<0> ( ) ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void template53() { // #4335
