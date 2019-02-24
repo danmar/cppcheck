@@ -1134,7 +1134,31 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
     return std::make_pair(true, true);
 }
 
+bool PathAnalysis::hasAssignToExpr(const Token* startTok, const Token* endToken, const Token* exprTok, unsigned int varid) const
+{
+    if (!startTok)
+        return false;
+    const Token * assignTok = Token::findmatch(startTok, "%varid% =", endToken, varid);
+    if (!assignTok)
+        return false;
+    if (isSameExpression(true, false, assignTok->next()->astOperand2(), exprTok, *library, true, true))
+        return true;
+    return hasAssignToExpr(assignTok->next()->astOperand2(), endToken, exprTok, varid);
+}
 
+PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+{
+    if (!tok)
+        return Progress::Continue;
+    if (tok->astOperand1() && ForwardRecursive(tok->astOperand1(), info, f) == Progress::Break)
+        return Progress::Break;
+    info.tok = tok;
+    if (f(info) == Progress::Break)
+        return Progress::Break;        
+    if (tok->astOperand2() && ForwardRecursive(tok->astOperand2(), info, f) == Progress::Break)
+        return Progress::Break;
+    return Progress::Continue;
+}
 
 PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
@@ -1142,12 +1166,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
         if (Token::Match(tok, "asm|goto|break|continue"))
             return Progress::Break;
         if (Token::Match(tok, "return|throw")) {
-            visitAstNodes(tok, [&](const Token* childTok) -> ChildrenToVisit {
-                info.tok = childTok;
-                if (f(info) == Progress::Break)
-                    return ChildrenToVisit::done;
-                return ChildrenToVisit::op1_and_op2;
-            });
+            ForwardRecursive(tok, info, f);
             return Progress::Break;
         }
         if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
@@ -1158,6 +1177,14 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
             info.errorPath.emplace_back(condTok, "Assuming condition is true.");
             // Traverse a loop a second time
             if (Token::Match(blockStart, "for|while")) {
+                bool traverseLoop = true;
+                // TODO: check variables on both sides
+                if (Token::Match(condTok->astOperand1(), "%var% !=")) {
+                    traverseLoop = !hasAssignToExpr(condTok->next(), tok, condTok->astOperand2(), condTok->astOperand1()->varId());
+                }
+                // Traverse condition
+                if (traverseLoop)
+                    ForwardRecursive(condTok, info, f);
                 if (ForwardRange(tok->link(), tok, info, f) == Progress::Break)
                     return Progress::Break;
             }
@@ -1221,9 +1248,9 @@ void PathAnalysis::Forward(const std::function<Progress(const Info&)>& f) const
     ForwardRange(start, endToken, info, f);
 }
 
-bool Reaches(const Token * start, const Token * dest, ErrorPath* errorPath)
+bool Reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
 {
-    PathAnalysis::Info info = PathAnalysis{start}.ForwardFind([&](const PathAnalysis::Info& i) {
+    PathAnalysis::Info info = PathAnalysis{start, library}.ForwardFind([&](const PathAnalysis::Info& i) {
         return (i.tok == dest);
     });
     if (!info.tok)

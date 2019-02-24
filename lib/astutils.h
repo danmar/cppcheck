@@ -171,10 +171,11 @@ struct PathAnalysis
         Continue,
         Break
     };
-    PathAnalysis(const Token* start)
-    : start(start)
+    PathAnalysis(const Token* start, const Library& library)
+    : start(start), library(&library)
     {}
     const Token * start;
+    const Library * library;
 
     struct Info
     {
@@ -207,7 +208,10 @@ struct PathAnalysis
     }
 private:
 
+    Progress ForwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
     Progress ForwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
+
+    bool hasAssignToExpr(const Token* startTok, const Token* endToken, const Token* exprTok, unsigned int varid) const;
 
     static const Scope* findOuterScope(const Scope * scope);
 
@@ -221,7 +225,7 @@ private:
  * @param dest The path destination
  * @param errorPath Adds the path traversal to the errorPath
  */
-bool Reaches(const Token * start, const Token * dest, ErrorPath* errorPath);
+bool Reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath);
 
 /**
  * Forward data flow analysis for checks

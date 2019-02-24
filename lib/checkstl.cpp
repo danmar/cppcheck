@@ -770,6 +770,7 @@ static bool isInvalidMethod(const Token * tok)
 void CheckStl::invalidContainer()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    const Library& library = mSettings->library;
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%var%"))
@@ -784,7 +785,7 @@ void CheckStl::invalidContainer()
             if (!endToken)
                 endToken = tok->next();
             const ValueFlow::Value* v = nullptr;
-            PathAnalysis::Info info = PathAnalysis{endToken}.ForwardFind([&](const PathAnalysis::Info& info) {
+            PathAnalysis::Info info = PathAnalysis{endToken, library}.ForwardFind([&](const PathAnalysis::Info& info) {
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
@@ -802,7 +803,7 @@ void CheckStl::invalidContainer()
             // Skip possible temporaries
             if (v->tokvalue == tok)
                 continue;
-            if (precedes(v->tokvalue, tok) && Reaches(v->tokvalue, tok, &info.errorPath))
+            if (precedes(v->tokvalue, tok) && Reaches(v->tokvalue, tok, library, &info.errorPath))
                 invalidContainerError(info.tok, tok, v, info.errorPath);
         }
     }
