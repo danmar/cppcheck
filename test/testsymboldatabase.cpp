@@ -380,6 +380,7 @@ private:
         TEST_CASE(auto8);
         TEST_CASE(auto9); // #8044 (segmentation fault)
         TEST_CASE(auto10); // #8020
+        TEST_CASE(auto11); // #8964 - const auto startX = x;
 
         TEST_CASE(unionWithConstructor);
     }
@@ -6815,6 +6816,21 @@ private:
             ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
             ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
         }
+    }
+
+    void auto11() {
+        GET_SYMBOL_DB("void f() {\n"
+                      "  const auto v1 = 3;\n"
+                      "  const auto *v2 = 0;\n"
+                      "}");
+
+        (void)db;
+
+        const Token *v1tok = Token::findsimplematch(tokenizer.tokens(), "v1");
+        ASSERT(v1tok && v1tok->variable() && v1tok->variable()->isConst());
+
+        const Token *v2tok = Token::findsimplematch(tokenizer.tokens(), "v2");
+        ASSERT(v2tok && v2tok->variable() && !v2tok->variable()->isConst());
     }
 
     void unionWithConstructor() {

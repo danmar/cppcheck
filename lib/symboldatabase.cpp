@@ -4919,7 +4919,12 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     setValueType(parent->previous(), *vt2);
                 Variable *var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
-                    var->setValueType(*vt2);
+                    ValueType vt2_(*vt2);
+                    if (vt2_.pointer == 0 && autoTok->strAt(1) == "*")
+                        vt2_.pointer = 1;
+                    if ((vt.constness & (1 << vt2->pointer)) != 0)
+                        vt2_.constness |= (1 << vt2->pointer);
+                    var->setValueType(vt2_);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
                         var->type(vt2->typeScope->definedType);
                         if (autoTok->valueType()->pointer == 0)
