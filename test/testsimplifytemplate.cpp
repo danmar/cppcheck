@@ -1287,12 +1287,19 @@ private:
     }
 
     void template56() { // #7117
-        tok("template<bool B> struct Foo { "
-            "  std::array<int, B ? 1 : 2> mfoo; "
-            "}; "
-            "void foo() { "
-            "  Foo<true> myFoo; "
-            "}", /*simplify=*/true, /*debugwarnings=*/true);
+        const char code[] = "template<bool B> struct Foo { "
+                            "  std::array<int, B ? 1 : 2> mfoo; "
+                            "}; "
+                            "void foo() { "
+                            "  Foo<true> myFoo; "
+                            "}";
+        const char expected[] = "struct Foo<true> ; "
+                                "void foo ( ) { "
+                                "Foo<true> myFoo ; "
+                                "} struct Foo<true> { "
+                                "std :: array < int , true ? 1 : 2 > mfoo ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false, true));
         ASSERT_EQUALS("", errout.str());
     }
 
