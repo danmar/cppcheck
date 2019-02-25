@@ -1434,7 +1434,26 @@ private:
                             "    t_func<1>();\n"
                             "}\n"
                             "};";
-        tok(code); // don't crash
+        const char exp [] = "bool foo<int> ( ) ; "
+                            "struct A { "
+                            "void t_func<0> ( ) ; "
+                            "void t_func<1> ( ) ; "
+                            "void t_caller ( ) "
+                            "{ "
+                            "t_func<0> ( ) ; "
+                            "t_func<1> ( ) ; "
+                            "} "
+                            "} ; "
+                            "void A :: t_func<0> ( ) "
+                            "{ "
+                            "if ( 0 || foo<int> ( ) ) { ; } "
+                            "} "
+                            "void A :: t_func<1> ( ) "
+                            "{ "
+                            "if ( 1 ) { ; } "
+                            "} "
+                            "bool foo<int> ( ) { return true ; }";
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 
     void template65() { // #8321 (crash)
