@@ -309,19 +309,21 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const char wanted[] = "template < typename T > class ABC { public: } ; "
+            const char wanted[] = "class ABC<int> ; "
                                   "int main ( ) { "
                                   "std :: vector < int > v ; "
                                   "v . push_back ( 4 ) ; "
                                   "return 0 ; "
-                                  "}";
+                                  "} "
+                                  "class ABC<int> { public: } ;";
 
-            const char current[] = "template < typename T > class ABC { public: } ; "
+            const char current[] = "class ABC<int> ; "
                                    "int main ( ) { "
-                                   "ABC < int > :: type v ; "
+                                   "ABC<int> :: type v ; "
                                    "v . push_back ( 4 ) ; "
                                    "return 0 ; "
-                                   "}";
+                                   "} "
+                                   "class ABC<int> { public: } ;";
 
             TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
@@ -1043,13 +1045,25 @@ private:
     }
 
     void template45() { // #5814
-        tok("namespace Constants { const int fourtytwo = 42; } "
-            "template <class T, int U> struct TypeMath { "
-            "  static const int mult = sizeof(T) * U; "
-            "}; "
-            "template <class T> struct FOO { "
-            "  enum { value = TypeMath<T, Constants::fourtytwo>::something }; "
-            "};");
+        const char code[] = "namespace Constants { const int fourtytwo = 42; } "
+                            "template <class T, int U> struct TypeMath { "
+                            "  static const int mult = sizeof(T) * U; "
+                            "}; "
+                            "template <class T> struct FOO { "
+                            "  enum { value = TypeMath<T, Constants::fourtytwo>::mult }; "
+                            "}; "
+                            "FOO<int> foo;";
+        const char expected[] = "namespace Constants { const int fourtytwo = 42 ; } "
+                                "struct TypeMath<int,Constants::fourtytwo> ; "
+                                "struct FOO<int> ; "
+                                "FOO<int> foo ; "
+                                "struct FOO<int> { "
+                                "enum Anonymous0 { value = TypeMath<int,Constants::fourtytwo> :: mult } ; "
+                                "} ; "
+                                "struct TypeMath<int,Constants::fourtytwo> { "
+                                "static const int mult = sizeof ( int ) * Constants :: fourtytwo ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false, true));
         ASSERT_EQUALS("", errout.str());
     }
 
