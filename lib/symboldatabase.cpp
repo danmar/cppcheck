@@ -5227,6 +5227,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
                 valuetype->sign = vt->sign;
             valuetype->constness = vt->constness;
+            valuetype->originalTypeName = vt->originalTypeName;
             while (Token::Match(type, "%name%|*|&|::") && !type->variable())
                 type = type->next();
             break;
