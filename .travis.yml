@@ -73,6 +73,14 @@ matrix:
 # check --dump
         - ${CPPCHECK} test/testpreprocessor.cpp --dump
         - xmllint --noout test/testpreprocessor.cpp.dump
+# check python syntax by compiling all addon scripts
+        - python -m compileall ./addons
+        - python3 -m compileall ./addons
+# check python syntax by compiling some selected scripts
+        - python -m py_compile ./tools/donate-cpu.py
+        - python3 -m py_compile ./tools/donate-cpu.py
+        - python -m py_compile ./tools/donate-cpu-server.py
+        # donate-cpu-server.py is currently not Python 3 compatible
 # check addons/misra.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
