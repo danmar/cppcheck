@@ -60,14 +60,14 @@ public:
         checkString.overlappingStrcmp();
         checkString.checkIncorrectStringCompare();
         checkString.sprintfOverlappingData();
+        checkString.checkAlwaysTrueOrFalseStringCompare();
     }
 
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckString checkString(tokenizer, settings, errorLogger);
-
-        // Checks
-        checkString.checkAlwaysTrueOrFalseStringCompare();
+        (void)tokenizer;
+        (void)settings;
+        (void)errorLogger;
     }
 
     /** @brief undefined behaviour, writing string literal */
