@@ -309,19 +309,21 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const char wanted[] = "template < typename T > class ABC { public: } ; "
+            const char wanted[] = "class ABC<int> ; "
                                   "int main ( ) { "
                                   "std :: vector < int > v ; "
                                   "v . push_back ( 4 ) ; "
                                   "return 0 ; "
-                                  "}";
+                                  "} "
+                                  "class ABC<int> { public: } ;";
 
-            const char current[] = "template < typename T > class ABC { public: } ; "
+            const char current[] = "class ABC<int> ; "
                                    "int main ( ) { "
-                                   "ABC < int > :: type v ; "
+                                   "ABC<int> :: type v ; "
                                    "v . push_back ( 4 ) ; "
                                    "return 0 ; "
-                                   "}";
+                                   "} "
+                                   "class ABC<int> { public: } ;";
 
             TODO_ASSERT_EQUALS(wanted, current, tok(code));
         }
@@ -1043,13 +1045,25 @@ private:
     }
 
     void template45() { // #5814
-        tok("namespace Constants { const int fourtytwo = 42; } "
-            "template <class T, int U> struct TypeMath { "
-            "  static const int mult = sizeof(T) * U; "
-            "}; "
-            "template <class T> struct FOO { "
-            "  enum { value = TypeMath<T, Constants::fourtytwo>::something }; "
-            "};");
+        const char code[] = "namespace Constants { const int fourtytwo = 42; } "
+                            "template <class T, int U> struct TypeMath { "
+                            "  static const int mult = sizeof(T) * U; "
+                            "}; "
+                            "template <class T> struct FOO { "
+                            "  enum { value = TypeMath<T, Constants::fourtytwo>::mult }; "
+                            "}; "
+                            "FOO<int> foo;";
+        const char expected[] = "namespace Constants { const int fourtytwo = 42 ; } "
+                                "struct TypeMath<int,Constants::fourtytwo> ; "
+                                "struct FOO<int> ; "
+                                "FOO<int> foo ; "
+                                "struct FOO<int> { "
+                                "enum Anonymous0 { value = TypeMath<int,Constants::fourtytwo> :: mult } ; "
+                                "} ; "
+                                "struct TypeMath<int,Constants::fourtytwo> { "
+                                "static const int mult = sizeof ( int ) * Constants :: fourtytwo ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false, true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1160,13 +1174,34 @@ private:
     }
 
     void template53() { // #4335
-        tok("template<int N> struct Factorial { "
-            "  enum { value = N * Factorial<N - 1>::value }; "
-            "};"
-            "template <> struct Factorial<0> { "
-            "  enum { value = 1 }; "
-            "};"
-            "const int x = Factorial<4>::value;", /*simplify=*/true, /*debugwarnings=*/true);
+        const char code[] = "template<int N> struct Factorial { "
+                            "  enum { value = N * Factorial<N - 1>::value }; "
+                            "};"
+                            "template <> struct Factorial<0> { "
+                            "  enum { value = 1 }; "
+                            "};"
+                            "const int x = Factorial<4>::value;";
+        const char expected[] = "struct Factorial<4> ; "
+                                "struct Factorial<3> ; "
+                                "struct Factorial<2> ; "
+                                "struct Factorial<1> ; "
+                                "struct Factorial<0> { "
+                                "enum Anonymous1 { value = 1 } ; "
+                                "} ; "
+                                "const int x = Factorial<4> :: value ; "
+                                "struct Factorial<4> { "
+                                "enum Anonymous0 { value = 4 * Factorial<3> :: value } ; "
+                                "} ; "
+                                "struct Factorial<3> { "
+                                "enum Anonymous0 { value = 3 * Factorial<2> :: value } ; "
+                                "} ; "
+                                "struct Factorial<2> { "
+                                "enum Anonymous0 { value = 2 * Factorial<1> :: value } ; "
+                                "} ; "
+                                "struct Factorial<1> { "
+                                "enum Anonymous0 { value = 1 * Factorial<0> :: value } ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false, true));
         ASSERT_EQUALS("", errout.str());
     }
 
