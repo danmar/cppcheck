@@ -2864,7 +2864,7 @@ void CheckOther::checkComparePointers()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "<|>|<=|>="))
+            if (!Token::Match(tok, "<|>|<=|>=|-"))
                 continue;
             const Token *tok1 = tok->astOperand1();
             const Token *tok2 = tok->astOperand2();
