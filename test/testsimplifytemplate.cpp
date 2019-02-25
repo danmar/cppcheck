@@ -1174,13 +1174,34 @@ private:
     }
 
     void template53() { // #4335
-        tok("template<int N> struct Factorial { "
-            "  enum { value = N * Factorial<N - 1>::value }; "
-            "};"
-            "template <> struct Factorial<0> { "
-            "  enum { value = 1 }; "
-            "};"
-            "const int x = Factorial<4>::value;", /*simplify=*/true, /*debugwarnings=*/true);
+        const char code[] = "template<int N> struct Factorial { "
+                            "  enum { value = N * Factorial<N - 1>::value }; "
+                            "};"
+                            "template <> struct Factorial<0> { "
+                            "  enum { value = 1 }; "
+                            "};"
+                            "const int x = Factorial<4>::value;";
+        const char expected[] = "struct Factorial<4> ; "
+                                "struct Factorial<3> ; "
+                                "struct Factorial<2> ; "
+                                "struct Factorial<1> ; "
+                                "struct Factorial<0> { "
+                                "enum Anonymous1 { value = 1 } ; "
+                                "} ; "
+                                "const int x = Factorial<4> :: value ; "
+                                "struct Factorial<4> { "
+                                "enum Anonymous0 { value = 4 * Factorial<3> :: value } ; "
+                                "} ; "
+                                "struct Factorial<3> { "
+                                "enum Anonymous0 { value = 3 * Factorial<2> :: value } ; "
+                                "} ; "
+                                "struct Factorial<2> { "
+                                "enum Anonymous0 { value = 2 * Factorial<1> :: value } ; "
+                                "} ; "
+                                "struct Factorial<1> { "
+                                "enum Anonymous0 { value = 1 * Factorial<0> :: value } ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false, true));
         ASSERT_EQUALS("", errout.str());
     }
 
