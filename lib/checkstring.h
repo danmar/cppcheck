@@ -59,6 +59,7 @@ public:
         checkString.stringLiteralWrite();
         checkString.overlappingStrcmp();
         checkString.checkIncorrectStringCompare();
+        checkString.sprintfOverlappingData();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -67,7 +68,6 @@ public:
 
         // Checks
         checkString.checkAlwaysTrueOrFalseStringCompare();
-        checkString.sprintfOverlappingData();
     }
 
     /** @brief undefined behaviour, writing string literal */
