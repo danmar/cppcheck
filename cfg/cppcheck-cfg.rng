@@ -163,18 +163,31 @@
                   <text/>
                 </attribute>
               </optional>
-              <zeroOrMore>
-                <choice>
+
+              <interleave>
+                <optional>
                   <element name="formatstr"><empty/></element>
+                </optional>
+                <optional>
                   <element name="strz"><empty/></element>
+                </optional>
+                <optional>
                   <element name="not-bool"><empty/></element>
+                </optional>
+                <optional>
                   <element name="not-null"><empty/></element>
+                </optional>
+                <optional>
                   <element name="not-uninit"><empty/></element>
+                </optional>
+                <optional>
                   <element name="valid">
                     <data type="string">
                       <param name="pattern">(-?[0-9]*(\.[0-9]+)?[,:])*([-]?[0-9]+(\.[0-9]+)?)?</param>
                     </data>
                   </element>
+                </optional>
+                <zeroOrMore>
                   <element name="minsize">
                     <attribute name="type">
                       <choice>
@@ -193,6 +206,8 @@
                       </attribute>
                     </optional>
                   </element>
+                </zeroOrMore>
+                <optional>
                   <element name="iterator">
                     <attribute name="container">
                       <data type="positiveInteger"/>
@@ -205,8 +220,8 @@
                       </choice>
                     </attribute>
                   </element>
-                </choice>
-              </zeroOrMore>
+                </optional>
+              </interleave>
             </element>
           </zeroOrMore>
         </interleave>
