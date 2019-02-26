@@ -1010,16 +1010,54 @@ private:
     }
 
     void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantation
-        const char code[] = "template <typename T> struct C { };"
-                            "template <typename T> struct D { static int f() { return C<T>::f(); } };"
-                            "template <typename T> inline int f2() { return D<T>::f(); }"
-                            "template <typename T> int f1(int x, T *) { int id = f2<T>(); return id; }"
-                            "template <> struct C < B < A >> {"
-                            "  static int f() {"
-                            "    return f1 < B < A >> (0, reinterpret_cast< B<A> *>(E<void *>::Int(-1)));"
-                            "  }"
-                            "};";
-        tok(code); // Don't assert
+        const char code[] = "template <typename T> struct E { typedef int Int; };\n"
+                            "template <typename T> struct C { };\n"
+                            "template <typename T> struct D { static int f() { return C<T>::f(); } };\n"
+                            "template <typename T> inline int f2() { return D<T>::f(); }\n"
+                            "template <typename T> int f1 (int x, T *) { int id = f2<T>(); return id; }\n"
+                            "template <typename T> struct B { void f3(B<T> & other) { } };\n"
+                            "struct A { };\n"
+                            "template <> struct C<B<A>> {\n"
+                            "    static int f() { return f1<B<A>>(0, reinterpret_cast<B<A>*>(E<void*>::Int(-1))); }\n"
+                            "};\n"
+                            "int main(void) {\n"
+                            "    C<A> ca;\n"
+                            "    return 0;\n"
+                            "}";
+        const char expected[] = "struct E<void*> ; "
+                                "struct C<A> ; "
+                                "struct D<B<A>> ; "
+                                "int f2<B<A>> ( ) ; "
+                                "int f1<B<A>> ( int x , B<A> * ) ; "
+                                "struct B<A> ; "
+                                "struct A { } ; "
+                                "struct C<B<A>> { "
+                                "static int f ( ) { "
+                                "return f1<B<A>> ( 0 , reinterpret_cast < B<A> * > ( E<void*> :: Int ( -1 ) ) ) ; "
+                                "} "
+                                "} ; "
+                                "int main ( ) { "
+                                "C<A> ca ; "
+                                "return 0 ; "
+                                "} "
+                                "struct B<A> { "
+                                "void f3 ( B<A> & other ) { } "
+                                "} ; "
+                                "int f1<B<A>> ( int x , B<A> * ) { "
+                                "int id ; id = f2<B<A>> ( ) ; "
+                                "return id ; "
+                                "} "
+                                "int f2<B<A>> ( ) { "
+                                "return D<B<A>> :: f ( ) ; "
+                                "} "
+                                "struct D<B<A>> { "
+                                "static int f ( ) { "
+                                "return C<B<A>> :: f ( ) ; "
+                                "} "
+                                "} ; "
+                                "struct C<A> { } ; struct E<void*> { "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void template44() { // #5297
@@ -1249,12 +1287,19 @@ private:
     }
 
     void template56() { // #7117
-        tok("template<bool B> struct Foo { "
-            "  std::array<int, B ? 1 : 2> mfoo; "
-            "}; "
-            "void foo() { "
-            "  Foo<true> myFoo; "
-            "}", /*simplify=*/true, /*debugwarnings=*/true);
+        const char code[] = "template<bool B> struct Foo { "
+                            "  std::array<int, B ? 1 : 2> mfoo; "
+                            "}; "
+                            "void foo() { "
+                            "  Foo<true> myFoo; "
+                            "}";
+        const char expected[] = "struct Foo<true> ; "
+                                "void foo ( ) { "
+                                "Foo<true> myFoo ; "
+                                "} struct Foo<true> { "
+                                "std :: array < int , true ? 1 : 2 > mfoo ; "
+                                "} ;";
+        ASSERT_EQUALS(expected, tok(code, false, true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1389,7 +1434,26 @@ private:
                             "    t_func<1>();\n"
                             "}\n"
                             "};";
-        tok(code); // don't crash
+        const char exp [] = "bool foo<int> ( ) ; "
+                            "struct A { "
+                            "void t_func<0> ( ) ; "
+                            "void t_func<1> ( ) ; "
+                            "void t_caller ( ) "
+                            "{ "
+                            "t_func<0> ( ) ; "
+                            "t_func<1> ( ) ; "
+                            "} "
+                            "} ; "
+                            "void A :: t_func<0> ( ) "
+                            "{ "
+                            "if ( 0 || foo<int> ( ) ) { ; } "
+                            "} "
+                            "void A :: t_func<1> ( ) "
+                            "{ "
+                            "if ( 1 ) { ; } "
+                            "} "
+                            "bool foo<int> ( ) { return true ; }";
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 
     void template65() { // #8321 (crash)

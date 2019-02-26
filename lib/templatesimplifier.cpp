@@ -696,7 +696,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                 else if (!isUsing && tok2 && tok2->str() == ";")
                     tok = const_cast<Token *>(tok2);
             }
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|& %name% ::|<|(") ||
+        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|< %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
             std::string scopeName = getScopeName(scopeList);
