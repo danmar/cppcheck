@@ -1374,7 +1374,7 @@ static bool isConstStatement(const Token *tok)
     if (Token::Match(tok, "%var%"))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
-        (Token::Match(tok->previous(), "::|.") || isVarDeclOp(tok)))
+        (Token::Match(tok->previous(), "::|.|const") || isVarDeclOp(tok)))
         return false;
     if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
         return false;

@@ -356,6 +356,9 @@ private:
 
         check("void f() { std::vector<b> &&c; }", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { char * const * a, * const * b; }", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
