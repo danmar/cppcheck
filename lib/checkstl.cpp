@@ -762,7 +762,7 @@ static bool isInvalidMethod(const Token * tok)
         return true;
     const Variable *var = tok->variable();
     const Token *decltok = var ? var->typeStartToken() : nullptr;
-    if (Token::simpleMatch(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back ("))
+    if (Token::simpleMatch(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back|reserve ("))
         return true;
     return false;
 }
