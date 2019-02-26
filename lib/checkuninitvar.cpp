@@ -54,6 +54,30 @@ static const struct CWE CWE676(676U);
 static const struct CWE CWE908(908U);
 static const struct CWE CWE825(825U);
 
+// get ast parent, skip possible address-of and casts
+static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok, bool *unknown)
+{
+    if (unknown)
+        *unknown = false;
+    if (!vartok)
+        return nullptr;
+    const Token *parent = vartok->astParent();
+    while (Token::Match(parent, ".|::"))
+        parent = parent->astParent();
+    if (!parent)
+        return nullptr;
+    if (parent->isUnaryOp("&"))
+        parent = parent->astParent();
+    else if (parent->str() == "&" && vartok == parent->astOperand2() && Token::Match(parent->astOperand1()->previous(), "( %type% )")) {
+        parent = parent->astParent();
+        if (unknown)
+            *unknown = true;
+    }
+    while (parent && parent->isCast())
+        parent = parent->astParent();
+    return parent;
+}
+
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -935,10 +959,16 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     // Passing variable to function..
-    if (Token::Match(vartok->previous(), "[(,] %name% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %name% [,)]")) {
-        const int use = isFunctionParUsage(vartok, pointer, alloc);
-        if (use >= 0)
-            return (use>0);
+    {
+        bool unknown = false;
+        const Token *possibleParent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
+        if (Token::Match(possibleParent, "[(,]")) {
+            if (unknown)
+                return false; // TODO: output some info message?
+            const int use = isFunctionParUsage(vartok, pointer, alloc);
+            if (use >= 0)
+                return (use>0);
+        }
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
@@ -1051,7 +1081,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
  */
 int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc) const
 {
-    if (!Token::Match(vartok->previous(), "[(,]") && !Token::Match(vartok->tokAt(-2), "[(,] &"))
+    bool unknown = false;
+    const Token *parent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
+    if (unknown || !Token::Match(parent, "[(,]"))
         return -1;
 
     // locate start parentheses in function call..

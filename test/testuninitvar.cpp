@@ -2571,6 +2571,12 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int main() {\n"
+                       "    int done;\n"
+                       "    dostuff(1, (AuPointer) &done);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void f() {\n" // #4778 - cast address of uninitialized variable
                        "    long a;\n"
                        "    &a;\n"
