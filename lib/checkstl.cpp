@@ -805,7 +805,8 @@ void CheckStl::invalidContainer()
             // Skip possible temporaries
             if (v->tokvalue == tok)
                 continue;
-            if (precedes(v->tokvalue, info.tok) && Reaches(v->tokvalue, info.tok, library, &info.errorPath))
+            // Check the iterator is created before the change
+            if (Reaches(v->tokvalue, tok, library, &info.errorPath))
                 invalidContainerError(info.tok, tok, v, info.errorPath);
         }
     }
