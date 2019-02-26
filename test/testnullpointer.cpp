@@ -1098,6 +1098,22 @@ private:
                   "}");
             ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
         }
+
+        // ticket #8831 - FP triggered by if/return/else sequence
+        {
+            check("void f(int *p, int *q) {\n"
+                  "    if (p == NULL)\n"
+                  "        return;\n"
+                  "    else if (q == NULL)\n"
+                  "        return;\n"
+                  "    *q = 0;\n"
+                  "}\n"
+                  "\n"
+                  "void g() {\n"
+                  "    f(NULL, NULL);\n"
+                  "}", true);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     // Ticket #2350
