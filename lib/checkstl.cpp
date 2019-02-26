@@ -786,6 +786,8 @@ void CheckStl::invalidContainer()
                 endToken = tok->next();
             const ValueFlow::Value* v = nullptr;
             PathAnalysis::Info info = PathAnalysis{endToken, library}.ForwardFind([&](const PathAnalysis::Info& info) {
+                if (!info.tok->variable())
+                    return false;
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
                         continue;
@@ -803,7 +805,7 @@ void CheckStl::invalidContainer()
             // Skip possible temporaries
             if (v->tokvalue == tok)
                 continue;
-            if (precedes(v->tokvalue, tok) && Reaches(v->tokvalue, tok, library, &info.errorPath))
+            if (precedes(v->tokvalue, info.tok) && Reaches(v->tokvalue, info.tok, library, &info.errorPath))
                 invalidContainerError(info.tok, tok, v, info.errorPath);
         }
     }
