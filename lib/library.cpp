@@ -723,8 +723,14 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     else
                         wi.message += ", ";
                 }
-            } else
-                wi.message = functionnode->GetText();
+            } else {
+                const char * const message = functionnode->GetText();
+                if (!message) {
+                    printf("Error in library configuration. Warning for function '%s' is missing arguments 'reason' and 'alternatives' or some text.\n", name.c_str());
+                    return Error(MISSING_ATTRIBUTE);
+                } else
+                    wi.message = message;
+            }
 
             functionwarn[name] = wi;
         } else
