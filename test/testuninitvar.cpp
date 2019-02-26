@@ -2573,7 +2573,7 @@ private:
 
         checkUninitVar("int main() {\n"
                        "    int done;\n"
-                       "    dostuff(1, (AuPointer) &done);\n"
+                       "    dostuff(1, (AuPointer) &done);\n" // <- It is not conclusive if the "&" is a binary or unary operator. Bailout.
                        "}");
         ASSERT_EQUALS("", errout.str());
 
