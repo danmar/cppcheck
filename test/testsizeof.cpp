@@ -160,6 +160,10 @@ private:
                "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Found calculation inside sizeof().\n"
                       "[test.cpp:5]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
+
+        checkP("#define MACRO(data)  f(data, sizeof(data))\n"
+               "x = MACRO((unsigned int *)data + 4);");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found calculation inside sizeof().\n", errout.str());
     }
 
     void sizeofFunction() {

@@ -300,8 +300,17 @@ void CheckSizeof::sizeofCalculation()
         }
 
         const Token *argument = tok->next()->astOperand2();
-        if (argument && argument->isCalculation() && (!argument->isExpandedMacro() || printInconclusive))
-            sizeofCalculationError(argument, argument->isExpandedMacro());
+        if (!argument || !argument->isCalculation())
+            continue;
+
+        bool inconclusive = false;
+        if (argument->isExpandedMacro())
+            inconclusive = true;
+        else if (tok->next()->isExpandedMacro())
+            inconclusive = true;
+
+        if (!inconclusive || printInconclusive)
+            sizeofCalculationError(argument, inconclusive);
     }
 }
 
