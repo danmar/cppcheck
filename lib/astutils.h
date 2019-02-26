@@ -211,8 +211,6 @@ private:
     Progress ForwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
     Progress ForwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
 
-    bool hasAssignToExpr(const Token* startTok, const Token* endToken, const Token* exprTok, unsigned int varid) const;
-
     static const Scope* findOuterScope(const Scope * scope);
 
     static std::pair<bool, bool> checkCond(const Token * tok, bool& known);

@@ -1134,18 +1134,6 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
     return std::make_pair(true, true);
 }
 
-bool PathAnalysis::hasAssignToExpr(const Token* startTok, const Token* endToken, const Token* exprTok, unsigned int varid) const
-{
-    if (!startTok)
-        return false;
-    const Token * assignTok = Token::findmatch(startTok, "%varid% =", endToken, varid);
-    if (!assignTok)
-        return false;
-    if (isSameExpression(true, false, assignTok->next()->astOperand2(), exprTok, *library, true, true))
-        return true;
-    return hasAssignToExpr(assignTok->next()->astOperand2(), endToken, exprTok, varid);
-}
-
 PathAnalysis::Progress PathAnalysis::ForwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
     if (!tok)
@@ -1176,17 +1164,19 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
                 continue;
             info.errorPath.emplace_back(condTok, "Assuming condition is true.");
             // Traverse a loop a second time
-            if (Token::Match(blockStart, "for|while")) {
+            if (Token::Match(blockStart, "for|while (")) {
+                const Token* endCond = blockStart->linkAt(1);
                 bool traverseLoop = true;
-                // TODO: check variables on both sides
-                if (Token::Match(condTok->astOperand1(), "%var% !=")) {
-                    traverseLoop = !hasAssignToExpr(condTok->next(), tok, condTok->astOperand2(), condTok->astOperand1()->varId());
-                }
-                // Traverse condition
-                if (traverseLoop)
+                // Only traverse simple for loops
+                if (Token::simpleMatch(blockStart, "for") && !Token::Match(endCond->tokAt(-3), "; ++|--|%var% %var%|++|-- ) {"))
+                    traverseLoop = false;
+                // Traverse loop a second time
+                if (traverseLoop) {
+                    // Traverse condition
                     ForwardRecursive(condTok, info, f);
-                if (ForwardRange(tok->link(), tok, info, f) == Progress::Break)
-                    return Progress::Break;
+                    if (ForwardRange(tok->link(), tok, info, f) == Progress::Break)
+                        return Progress::Break;
+                }
             }
         }
         if (Token::Match(tok, "if|while|for (") && Token::Match(tok->next()->link(), ") {")) {
