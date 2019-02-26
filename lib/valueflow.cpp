@@ -2662,7 +2662,7 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     return result;
 }
 
-const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth = 20)
+static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth = 20)
 {
     if (!tok)
         return nullptr;
