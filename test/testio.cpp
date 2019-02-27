@@ -72,6 +72,7 @@ private:
         TEST_CASE(testReturnValueTypeStdLib);
 
         TEST_CASE(testPrintfTypeAlias1);
+        TEST_CASE(testPrintfAuto); // #8992
     }
 
     void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified) {
@@ -4720,6 +4721,14 @@ private:
                       "[test.cpp:8]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'const signed int *'.\n", errout.str());
     }
 
+    void testPrintfAuto() { // #8992
+        check("void f() {\n"
+              "    auto s = sizeof(int);\n"
+              "    printf(\"%zu\", s);\n"
+              "    printf(\"%f\", s);\n"
+              "}\n", false, true);
+        ASSERT_EQUALS("[test.cpp:4]: (portability) %f in format string (no. 1) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestIO)
