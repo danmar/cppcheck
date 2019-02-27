@@ -359,6 +359,12 @@ private:
 
         check("void f() { char * const * a, * const * b; }", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { char * const * a = 0, * volatile restrict * b; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { char * const * a = 0, * volatile const * b; }", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
