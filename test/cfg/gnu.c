@@ -24,7 +24,7 @@ void ignoreleak(void)
 
 void memleak_asprintf(char **ptr, const char *fmt, const int arg)
 {
-	// No warning is expected for
+    // No warning is expected for
     if (-1 != asprintf(ptr,fmt,arg)) {
         free(ptr);
     }
