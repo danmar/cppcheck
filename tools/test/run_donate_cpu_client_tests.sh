@@ -18,16 +18,22 @@ trap error_occurred ERR
 
 # Run tests
 client_script=../donate-cpu.py
-test_package=ftp://ftp.se.debian.org/debian/pool/main/0/0xffff/0xffff_0.8.orig.tar.gz
+test_packages=(
+ftp://ftp.se.debian.org/debian/pool/main/0/0xffff/0xffff_0.8.orig.tar.gz
+ftp://ftp.se.debian.org/debian/pool/main/a/actionaz/actionaz_3.8.0.orig.tar.gz
+)
 
 for python_exec in "python" "python3"
 do
-    echo "Testing with ${python_exec} ..."
-    ${python_exec} ${client_script} --package=${test_package}
-    ${python_exec} ${client_script} --package=${test_package} -j1
-    ${python_exec} ${client_script} --package=${test_package} -j2
-    ${python_exec} ${client_script} --package=${test_package} --bandwidth-limit=250k
-    ${python_exec} ${client_script} --package=${test_package} -j2 --bandwidth-limit=0.5M
+    for test_package in "${test_packages[@]}"
+    do
+        echo "Testing package ${test_package} with ${python_exec} ..."
+        ${python_exec} ${client_script} --package=${test_package}
+        ${python_exec} ${client_script} --package=${test_package} -j1
+        ${python_exec} ${client_script} --package=${test_package} -j2
+        ${python_exec} ${client_script} --package=${test_package} --bandwidth-limit=250k
+        ${python_exec} ${client_script} --package=${test_package} -j2 --bandwidth-limit=0.5M
+    done
 done
 
 # Report result and exit accordingly

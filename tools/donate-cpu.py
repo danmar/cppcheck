@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.8"
+CLIENT_VERSION = "1.1.9"
 
 
 def checkRequirements():
@@ -208,7 +208,10 @@ def hasInclude(path, includes):
         for name in files:
             filename = os.path.join(root, name)
             try:
-                f = open(filename, 'rt')
+                if sys.version_info.major < 3:
+                    f = open(filename, 'rt')
+                else:
+                    f = open(filename, 'rt', errors='ignore')
                 filedata = f.read()
                 try:
                     # Python2 needs to decode the data first
