@@ -3053,7 +3053,8 @@ private:
                        "    struct AB ab;\n"
                        "    do_something(ab.a);\n"
                        "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized variable: ab\n"
+                      "[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void do_something(const struct AB &ab) { a = ab.a; }\n"
@@ -3183,12 +3184,19 @@ private:
                            "}\n", "test.c");
             ASSERT_EQUALS("", errout.str());
 
+            checkUninitVar("struct AB { unsigned char a[10]; };\n" // #8999 - cast
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    strcpy((char *)ab.a, STR);\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("", errout.str());
+
             checkUninitVar("struct AB { char a[10]; };\n"
                            "void f(void) {\n"
                            "    struct AB ab;\n"
                            "    strcpy(x, ab.a);\n"
                            "}\n", "test.c");
-            TODO_ASSERT_EQUALS("error", "", errout.str());
+            ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
 
             checkUninitVar("struct AB { int a; };\n"
                            "void f(void) {\n"

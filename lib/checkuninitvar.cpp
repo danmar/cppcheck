@@ -925,19 +925,23 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     // Accessing Rvalue member using "." or "->"
     if (Token::Match(vartok->previous(), "!!& %var% .")) {
         // Is struct member passed to function?
-        if (!pointer && Token::Match(vartok->previous(), "[,(] %name% . %name%")) {
+        if (!pointer) {
             // TODO: there are FN currently:
             // - should only return false if struct member is (or might be) array.
             // - should only return false if function argument is (or might be) non-const pointer or reference
-            const Token *tok2 = vartok->next();
-            do {
-                tok2 = tok2->tokAt(2);
-            } while (Token::Match(tok2, ". %name%"));
-            if (Token::Match(tok2, "[,)]"))
-                return false;
-        } else if (pointer && alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% (")) {
-            return true;
+            bool unknown = false;
+            const Token *possibleParent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
+            if (Token::Match(possibleParent, "[(,]")) {
+                if (unknown)
+                    return false; // TODO: output some info message?
+                const int use = isFunctionParUsage(vartok, pointer, alloc);
+                if (use >= 0)
+                    return (use>0);
+            }
         }
+
+        if (pointer && alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% ("))
+            return true;
 
         bool assignment = false;
         const Token* parent = vartok->astParent();
