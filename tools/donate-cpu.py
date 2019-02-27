@@ -37,7 +37,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.7"
+CLIENT_VERSION = "1.1.8"
 
 
 def checkRequirements():
@@ -191,7 +191,8 @@ def unpackPackage(workPath, tgz):
             if member.name.startswith(('/', '..')):
                 # Skip dangerous file names
                 continue
-            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
+            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
+                                               '.hxx', '.hh', '.tpp', '.txx', '.qml')):
                 try:
                     tf.extract(member.name)
                 except OSError:
