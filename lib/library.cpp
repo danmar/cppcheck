@@ -726,8 +726,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             } else {
                 const char * const message = functionnode->GetText();
                 if (!message) {
-                    printf("Error in library configuration. Warning for function '%s' is missing arguments 'reason' and 'alternatives' or some text.\n", name.c_str());
-                    return Error(MISSING_ATTRIBUTE);
+                    return Error(MISSING_ATTRIBUTE, "\"reason\" and \"alternatives\" or some text.");
                 } else
                     wi.message = message;
             }
