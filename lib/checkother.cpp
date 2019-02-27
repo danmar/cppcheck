@@ -2864,7 +2864,7 @@ void CheckOther::checkComparePointers()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "<|>|<=|>="))
+            if (!Token::Match(tok, "<|>|<=|>=|-"))
                 continue;
             const Token *tok1 = tok->astOperand1();
             const Token *tok2 = tok->astOperand2();
@@ -2892,6 +2892,9 @@ void CheckOther::checkComparePointers()
 void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2)
 {
     ErrorPath errorPath;
+    std::string verb = "Comparing";
+    if (Token::simpleMatch(tok, "-"))
+        verb = "Subtracting";
     if (v1) {
         errorPath.emplace_back(v1->tokvalue->variable()->nameToken(), "Variable declared here.");
         errorPath.insert(errorPath.end(), v1->errorPath.begin(), v1->errorPath.end());
@@ -2902,5 +2905,5 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, "comparePointers", "Comparing pointers that point to different objects", CWE570, false);
+        errorPath, Severity::error, "comparePointers", verb + " pointers that point to different objects", CWE570, false);
 }

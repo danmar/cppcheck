@@ -7663,6 +7663,15 @@ private:
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2]: (error) Comparing pointers that point to different objects\n",
             errout.str());
 
+        check("int f() {\n"
+              "    int x = 0;\n"
+              "    int y = 1;\n"
+              "    return &x - &y;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (error) Subtracting pointers that point to different objects\n",
+            errout.str());
+
         check("bool f() {\n"
               "    int x[2] = {1, 2}m;\n"
               "    int* xp = &x[0];\n"
