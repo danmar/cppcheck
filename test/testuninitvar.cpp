@@ -3095,6 +3095,14 @@ private:
                        "}\n", "test.c");
         ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.b\n", errout.str());
 
+        checkUninitVar("void f(void) {\n"
+                       "    struct AB ab;\n"
+                       "    int x;\n"
+                       "    ab.a = (addr)&x;\n"
+                       "    dostuff(&ab,0);\n"
+                       "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("class Element {\n"
                        "    static void f() { }\n"
                        "};\n"

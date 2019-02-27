@@ -973,6 +973,10 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
             if (use >= 0)
                 return (use>0);
         }
+
+        else if (!pointer && Token::simpleMatch(possibleParent, "=") && vartok->astParent()->str() == "&") {
+            return false;
+        }
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
