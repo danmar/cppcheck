@@ -184,7 +184,7 @@ private:
         TEST_CASE(templateTypeDeduction2);
     }
 
-    std::string tok(const char code[], bool simplify = true, bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
+    std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings.debugwarnings = debugwarnings;
@@ -194,32 +194,16 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        if (simplify)
-            tokenizer.simplifyTokenList2();
-
-        return tokenizer.tokens()->stringifyList(0, !simplify);
-    }
-
-    std::string tok(const char code[], const char filename[]) {
-        errout.str("");
-
-        settings.debugwarnings = false;
-        Tokenizer tokenizer(&settings, this);
-
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
-        tokenizer.simplifyTokenList2();
-
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(0, true);
     }
 
     void template1() {
-        const char code[] = "template <class T> void f(T val) { T a; }\n"
+        const char code[] = "template <class T> T f(T val) { T a; }\n"
                             "f<int>(10);";
 
-        const char expected[] = "void f<int> ( int val ) ; "
+        const char expected[] = "int f<int> ( int val ) ; "
                                 "f<int> ( 10 ) ; "
-                                "void f<int> ( int val ) { }";
+                                "int f<int> ( int val ) { int a ; }";
 
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -371,7 +355,7 @@ private:
 
         ASSERT_EQUALS("template < typename T > class A ; "
                       "template < typename T > class B ; "
-                      "template < typename T > class A { void f ( ) { B < T > a ; a = B < T > :: g ( ) ; T b ; b = 0 ; } } ; "
+                      "template < typename T > class A { void f ( ) { B < T > a ; a = B < T > :: g ( ) ; T b ; b = 0 ; if ( b ) { b = 0 ; } } } ; "
                       "template < typename T > B < T > h ( ) { return B < T > ( ) ; }", tok(code));
 
         ASSERT_EQUALS("class A { template < typename T > int foo ( T d ) ; } ;", tok("class A{ template<typename T> int foo(T d);};"));
@@ -454,7 +438,7 @@ private:
                                 "{"
                                 " A<12,12,11> a ; "
                                 "} "
-                                "class A<12,12,11> : public B < 12 , 12 , 0 > "
+                                "class A<12,12,11> : public B < 12 , 12 , ( 0 ) ? ( ( 0 ) ? 1 : -1 ) : 0 > "
                                 "{ } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -764,7 +748,7 @@ private:
         const char actual[] = "template < int n > struct B { int a [ n ] ; } ; "
                               "class bitset<1> ; "
                               "bitset<1> z ; "
-                              "class bitset<1> : B < 4 > { } ;";
+                              "class bitset<1> : B < ( sizeof ( int ) ? : 1 ) > { } ;";
 
         const char expected[] = "class bitset<1> ; "
                                 "bitset<1> z ; "
@@ -1057,7 +1041,7 @@ private:
                                 "} ; "
                                 "struct C<A> { } ; struct E<void*> { "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template44() { // #5297
@@ -1079,7 +1063,7 @@ private:
                                 "if ( 0 >= 1 && i < 0 ) { } "
                                 "} "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template45() { // #5814
@@ -1101,7 +1085,7 @@ private:
                                 "struct TypeMath<int,Constants::fourtytwo> { "
                                 "static const int mult = sizeof ( int ) * Constants :: fourtytwo ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, false, true));
+        ASSERT_EQUALS(expected, tok(code, true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1208,7 +1192,7 @@ private:
                                 "int sum<0> ( ) { "
                                 "return 0 + sum<0> ( ) ; "
                                 "}";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template53() { // #4335
@@ -1239,7 +1223,7 @@ private:
                                 "struct Factorial<1> { "
                                 "enum Anonymous0 { value = 1 * Factorial<0> :: value } ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, false, true));
+        ASSERT_EQUALS(expected, tok(code, true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1271,11 +1255,11 @@ private:
             "struct A<int...> ; "
             "A<int> a ( 0 ) ; "
             "struct A<int> { "
-            "A<int> ( int * p ) { p ; } "
+            "A<int> ( int * p ) { ( A<int...> * ) ( p ) ; } "
             "} ; "
             "struct A<int...> { "
             "A<int...> ( int * p ) { "
-            "p ; "
+            "( A<int...> * ) ( p ) ; "
             "} } ;",
             tok("template <typename... T> struct A\n"
                 "{\n"
@@ -1299,7 +1283,7 @@ private:
                                 "} struct Foo<true> { "
                                 "std :: array < int , true ? 1 : 2 > mfoo ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, false, true));
+        ASSERT_EQUALS(expected, tok(code, true));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1308,7 +1292,7 @@ private:
                             "Test<unsigned long> test( 0 );";
         const char exp [] = "struct Test<unsignedlong> ; "
                             "Test<unsignedlong> test ( 0 ) ; "
-                            "struct Test<unsignedlong> { Test<unsignedlong> ( long ) ; } ;";
+                            "struct Test<unsignedlong> { Test<unsignedlong> ( unsigned long ) ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1325,7 +1309,7 @@ private:
                            " TestArithmetic<int> ( ) ; "
                            "} "
                            "void TestArithmetic<int> ( ) {"
-                           " x ( CheckedNumeric < int > ( ) ) ; "
+                           " x ( 1 * CheckedNumeric < int > ( ) ) ; "
                            "}";
         ASSERT_EQUALS(exp, tok(code));
     }
@@ -1357,7 +1341,7 @@ private:
                            "struct Factorial<4> { enum FacHelper { value = 4 * Factorial<3> :: value } ; } ; "
                            "struct Factorial<3> { enum FacHelper { value = 3 * Factorial<2> :: value } ; } ; "
                            "struct Factorial<2> { enum FacHelper { value = 2 * Factorial<1> :: value } ; } ; "
-                           "struct Factorial<1> { enum FacHelper { value = Factorial<0> :: value } ; } ;";
+                           "struct Factorial<1> { enum FacHelper { value = 1 * Factorial<0> :: value } ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1453,7 +1437,7 @@ private:
                             "if ( 1 ) { ; } "
                             "} "
                             "bool foo<int> ( ) { return true ; }";
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template65() { // #8321 (crash)
@@ -1481,7 +1465,7 @@ private:
                             "bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> grObs ; "
                             "return 1 ; "
                             "} class bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> : "
-                            "public AssociationGraphImplObserver < std :: string , int , DAGlobalGraph > "
+                            "public AssociationGraphImplObserver < std :: string , unsigned int , DAGlobalGraph > "
                             "{ } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
@@ -1543,7 +1527,7 @@ private:
         const char exp [] = "union Fred<int> ; "
                             "Fred<int> fred ; "
                             "union Fred<int> { "
-                            "char dummy [ 4 ] ; "
+                            "char dummy [ sizeof ( int ) ] ; "
                             "int value ; "
                             "} ;";
         ASSERT_EQUALS(exp, tok(code));
@@ -1778,7 +1762,8 @@ private:
                             "  tvec3<f16> tt3;\n"
                             "  swizzle<2,3>(tt3);\n"
                             "}";
-        const char exp[] = "class tvec2<f16> ; "
+        const char exp[] = "const int f16 = 16 ; "
+                           "class tvec2<f16> ; "
                            "class tvec3<f16> ; "
                            "namespace swizzle { "
                            "void swizzle<1> ( tvec2<f16> v ) ; "
@@ -2135,7 +2120,7 @@ private:
                            "long f1 ; f1 = fib<1> ; "
                            "long f2 ; f2 = fib<2> ; "
                            "long f3 ; f3 = fib<3> ;";
-        TODO_ASSERT_EQUALS(exp, act, tok(code, false));
+        TODO_ASSERT_EQUALS(exp, act, tok(code));
     }
 
     void template97() {
@@ -2410,7 +2395,7 @@ private:
                                     " A<int,3,2> a2 ; "
                                     "} "
                                     "class A<int,3,2> "
-                                    "{ int ar [ 5 ] ; } ;";
+                                    "{ int ar [ 3 + 2 ] ; } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
@@ -2776,7 +2761,7 @@ private:
                       "union C<int> ; "
                       "} "
                       "NS :: C<int> intC ; union NS :: C<int> { "
-                      "char dummy [ 4 ] ; "
+                      "char dummy [ sizeof ( int ) ] ; "
                       "int value ; "
                       "C<int> ( ) ; "
                       "~ C<int> ( ) ; "
@@ -3148,10 +3133,10 @@ private:
                             "    std::basic_ostream<unsigned char> &outputStream_;\n"
                             "};";
         const char expected[] = "struct OutputU16<unsignedchar> final { "
-                                "explicit OutputU16<unsignedchar> ( std :: basic_ostream < char > & t ) : outputStream_ ( t ) { } "
-                                "void operator() ( short ) const ; "
+                                "explicit OutputU16<unsignedchar> ( std :: basic_ostream < unsigned char > & t ) : outputStream_ ( t ) { } "
+                                "void operator() ( unsigned short ) const ; "
                                 "private: "
-                                "std :: basic_ostream < char > & outputStream_ ; "
+                                "std :: basic_ostream < unsigned char > & outputStream_ ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -3358,7 +3343,7 @@ private:
                                 "void f<constwchar_t*> ( const wchar_t * n ) { ( void ) n ; } "
                                 "void f<bool> ( bool n ) { ( void ) n ; }";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3385,7 +3370,7 @@ private:
                               "f ( 0.0 , 0 ) ; "
                               "}";
 
-        TODO_ASSERT_EQUALS(expected, actual, tok(code, false));
+        TODO_ASSERT_EQUALS(expected, actual, tok(code));
     }
 
 };
