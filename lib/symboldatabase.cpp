@@ -4837,6 +4837,9 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
         valuetype.bits = var.nameToken()->bits();
     valuetype.pointer = var.dimensions().size();
     valuetype.typeScope = var.typeScope();
+    if (var.valueType()) {
+        valuetype.container = var.valueType()->container;
+    }
     if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
         if (tok->str() == "." && tok->astOperand1()) {
             const ValueType * const vt = tok->astOperand1()->valueType();

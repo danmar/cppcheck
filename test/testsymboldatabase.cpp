@@ -381,6 +381,7 @@ private:
         TEST_CASE(auto9); // #8044 (segmentation fault)
         TEST_CASE(auto10); // #8020
         TEST_CASE(auto11); // #8964 - const auto startX = x;
+        TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
 
         TEST_CASE(unionWithConstructor);
     }
@@ -6831,6 +6832,22 @@ private:
 
         const Token *v2tok = Token::findsimplematch(tokenizer.tokens(), "v2");
         ASSERT(v2tok && v2tok->variable() && !v2tok->variable()->isConst());
+    }
+
+    void auto12() {
+        GET_SYMBOL_DB("void f(const std::string &x) {\n"
+                      "  auto y = x;\n"
+                      "  if (y.empty()) {}\n"
+                      "}");
+        (void)db;
+
+        const Token *tok;
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "y =");
+        ASSERT(tok && tok->valueType() && tok->valueType()->container);
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "y .");
+        ASSERT(tok && tok->valueType() && tok->valueType()->container);
     }
 
     void unionWithConstructor() {
