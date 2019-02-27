@@ -1406,8 +1406,10 @@ void TemplateSimplifier::expandTemplate(
                         dst->insertToken(newName, "", true);
                         if (start->strAt(1) == "<")
                             start = start->next()->findClosingBracket();
-                    } else
+                    } else {
                         dst->insertToken(start->str(), "", true);
+                        mTemplateInstantiations.emplace_back(dst->previous(), templateDeclaration.scope);
+                    }
                 } else {
                     // check if type is a template
                     if (start->strAt(1) == "<") {
