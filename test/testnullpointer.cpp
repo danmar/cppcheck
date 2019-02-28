@@ -2536,7 +2536,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int *p = 0) {\n"
-              "    printf(\"%d\", p);\n"
+              "    printf(\"%p\", p);\n"
               "    *p = 0;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
