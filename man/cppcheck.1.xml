@@ -622,6 +622,6 @@ There are false positives with this option. Each result must be carefully invest
   <refsect1 id="see_also">
     <title>SEE ALSO</title>
     <!-- In alphabetical order. -->
-    <para>Full list of features: http://cppcheck.wiki.sourceforge.net/</para>
+    <para>Full list of features: https://sourceforge.net/p/cppcheck/wiki/Home/</para>
   </refsect1>
 </refentry>
