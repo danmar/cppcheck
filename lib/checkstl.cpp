@@ -785,6 +785,7 @@ void CheckStl::invalidContainer()
             if (!endToken)
                 endToken = tok->next();
             const ValueFlow::Value* v = nullptr;
+            ErrorPath errorPath;
             PathAnalysis::Info info = PathAnalysis{endToken, library}.ForwardFind([&](const PathAnalysis::Info& info) {
                 if (!info.tok->variable())
                     return false;
@@ -795,19 +796,23 @@ void CheckStl::invalidContainer()
                         continue;
                     if (val.tokvalue->varId() != tok->varId())
                         continue;
-                    v = &val;
-                    return true;
+                    // Skip possible temporaries
+                    if (val.tokvalue == tok)
+                        continue;
+                    ErrorPath ep;
+                    // Check the iterator is created before the change
+                    if (Reaches(val.tokvalue, tok, library, &ep)) {
+                        v = &val;
+                        errorPath = ep;
+                        return true;
+                    }
                 }
                 return false;
             });
             if (!info.tok || !v)
                 continue;
-            // Skip possible temporaries
-            if (v->tokvalue == tok)
-                continue;
-            // Check the iterator is created before the change
-            if (Reaches(v->tokvalue, tok, library, &info.errorPath))
-                invalidContainerError(info.tok, tok, v, info.errorPath);
+            errorPath.insert(errorPath.end(), info.errorPath.begin(), info.errorPath.end());
+            invalidContainerError(info.tok, tok, v, errorPath);
         }
     }
 }
