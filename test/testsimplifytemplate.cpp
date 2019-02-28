@@ -2094,33 +2094,44 @@ private:
     }
 
     void template96() { // #7854
-        const char code[] = "template<unsigned int n>\n"
-                            "  constexpr long fib = fib<n-1> + fib<n-2>;\n"
-                            "template<>\n"
-                            "  constexpr long fib<0> = 0;\n"
-                            "template<>\n"
-                            "  constexpr long fib<1> = 1;\n"
-                            "long f0 = fib<0>;\n"
-                            "long f1 = fib<1>;\n"
-                            "long f2 = fib<2>;\n"
-                            "long f3 = fib<3>;";
-        const char act[] = "const long fib<2> = fib < 1 > + fib < 0 > ; "
-                           "const long fib<3> = fib < 2 > + fib < 1 > ; "
-                           "const long fib<0> = 0 ; "
-                           "const long fib<1> = 1 ; "
-                           "long f0 ; f0 = fib<0> ; "
-                           "long f1 ; f1 = fib<1> ; "
-                           "long f2 ; f2 = fib<2> ; "
-                           "long f3 ; f3 = fib<3> ;";
-        const char exp[] = "const long fib<2> = fib<1> + fib<0> ; "
-                           "const long fib<3> = fib<2> + fib<1> ; "
-                           "const long fib<0> = 0 ; "
-                           "const long fib<1> = 1 ; "
-                           "long f0 ; f0 = fib<0> ; "
-                           "long f1 ; f1 = fib<1> ; "
-                           "long f2 ; f2 = fib<2> ; "
-                           "long f3 ; f3 = fib<3> ;";
-        TODO_ASSERT_EQUALS(exp, act, tok(code));
+        {
+            const char code[] = "template<unsigned int n>\n"
+                                "  constexpr long fib = fib<n-1> + fib<n-2>;\n"
+                                "template<>\n"
+                                "  constexpr long fib<0> = 0;\n"
+                                "template<>\n"
+                                "  constexpr long fib<1> = 1;\n"
+                                "long f0 = fib<0>;\n"
+                                "long f1 = fib<1>;\n"
+                                "long f2 = fib<2>;\n"
+                                "long f3 = fib<3>;";
+            const char exp[] = "const long fib<2> = fib<1> + fib<0> ; "
+                               "const long fib<3> = fib<2> + fib<1> ; "
+                               "const long fib<0> = 0 ; "
+                               "const long fib<1> = 1 ; "
+                               "long f0 ; f0 = fib<0> ; "
+                               "long f1 ; f1 = fib<1> ; "
+                               "long f2 ; f2 = fib<2> ; "
+                               "long f3 ; f3 = fib<3> ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template<unsigned int n>\n"
+                                "  constexpr long fib = fib<n-1> + fib<n-2>;\n"
+                                "template<>\n"
+                                "  constexpr long fib<0> = 0;\n"
+                                "template<>\n"
+                                "  constexpr long fib<1> = 1;\n"
+                                "long f5 = fib<5>;\n";
+            const char exp[] = "const long fib<5> = fib<4> + fib<3> ; "
+                               "const long fib<4> = fib<3> + fib<2> ; "
+                               "const long fib<3> = fib<2> + fib<1> ; "
+                               "const long fib<2> = fib<1> + fib<0> ; "
+                               "const long fib<0> = 0 ; "
+                               "const long fib<1> = 1 ; "
+                               "long f5 ; f5 = fib<5> ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template97() {
