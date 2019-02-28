@@ -723,8 +723,13 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     else
                         wi.message += ", ";
                 }
-            } else
-                wi.message = functionnode->GetText();
+            } else {
+                const char * const message = functionnode->GetText();
+                if (!message) {
+                    return Error(MISSING_ATTRIBUTE, "\"reason\" and \"alternatives\" or some text.");
+                } else
+                    wi.message = message;
+            }
 
             functionwarn[name] = wi;
         } else
