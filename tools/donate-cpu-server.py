@@ -12,6 +12,7 @@ import sys
 import urllib
 import logging
 import logging.handlers
+import operator
 
 OLD_VERSION = '1.87'
 
@@ -522,7 +523,7 @@ def check_library_report(result_path, message_id):
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
     function_details_list = []
-    for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
+    for function_name, count in sorted(function_counts.items(), key=operator.itemgetter(1), reverse=True):
         if len(function_details_list) >= functions_shown_max:
             break
         function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +

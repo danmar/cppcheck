@@ -80,7 +80,7 @@ matrix:
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
         - python -m py_compile ./tools/donate-cpu-server.py
-        # donate-cpu-server.py is currently not Python 3 compatible
+        - python3 -m py_compile ./tools/donate-cpu-server.py
 # check addons/misra.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
