@@ -981,7 +981,7 @@ private:
                       "int f<int> ( int t ) { return t ; }", tok(code2));
     }
 
-    void template42() { // #4878 cpcheck aborts in ext-blocks.cpp (clang testcode)
+    void template42() { // #4878 cppcheck aborts in ext-blocks.cpp (clang testcode)
         const char code[] = "template<typename ...Args>\n"
                             "int f0(Args ...args) {\n"
                             "  return ^ {\n"
@@ -993,7 +993,7 @@ private:
         tok(code);
     }
 
-    void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantation
+    void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantiation
         const char code[] = "template <typename T> struct E { typedef int Int; };\n"
                             "template <typename T> struct C { };\n"
                             "template <typename T> struct D { static int f() { return C<T>::f(); } };\n"
