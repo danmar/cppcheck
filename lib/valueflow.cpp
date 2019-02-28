@@ -2398,10 +2398,13 @@ static bool valueFlowForward(Token * const               startToken,
                         valueFlowAST(const_cast<Token*>(op2), varid, v, settings);
                 }
 
-                const std::pair<const Token *, const Token *> expr0 = op2->astOperand1()->findExpressionStartEndTokens();
-                const std::pair<const Token *, const Token *> expr1 = op2->astOperand2()->findExpressionStartEndTokens();
-                const bool changed0 = isVariableChanged(expr0.first, expr0.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
-                const bool changed1 = isVariableChanged(expr1.first, expr1.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+                const Token * const expr0 = op2->astOperand1() ? op2->astOperand1() : tok2->astOperand1();
+                const Token * const expr1 = op2->astOperand2();
+
+                const std::pair<const Token *, const Token *> startEnd0 = expr0->findExpressionStartEndTokens();
+                const std::pair<const Token *, const Token *> startEnd1 = expr1->findExpressionStartEndTokens();
+                const bool changed0 = isVariableChanged(startEnd0.first, startEnd0.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+                const bool changed1 = isVariableChanged(startEnd1.first, startEnd1.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
 
                 if (changed0 && changed1) {
                     if (settings->debugwarnings)

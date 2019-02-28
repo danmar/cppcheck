@@ -2312,6 +2312,12 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 5));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 5));
+
+        code = "int f(int *p) {\n" // #9008 - gcc ternary ?:
+               "  if (p) return;\n"
+               "  x = *p ? : 1;\n" // <- no explicit expr0
+               "}";
+        testValueOfX(code, 1U, 0); // do not crash
     }
 
     void valueFlowForwardLambda() {
