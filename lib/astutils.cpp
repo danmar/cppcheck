@@ -812,42 +812,43 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
         return false;
 
     // address of variable
-    const bool addressOf = Token::simpleMatch(tok->previous(), "&");
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
-    // passing variable to subfunction?
-    if (Token::Match(tok->tokAt(-2), ") & %name% [,)]") && Token::Match(tok->linkAt(-2)->previous(), "[,(] ("))
-        ;
-    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %name% [,)]"))
-        ;
-    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[?:] &| %name% [:,)]")) {
+    {
         const Token *parent = tok->astParent();
-        if (parent == tok->previous() && parent->str() == "&")
+        if (parent && parent->isUnaryOp("&"))
             parent = parent->astParent();
-        while (Token::Match(parent, "[?:]"))
+        while (parent && parent->isCast())
             parent = parent->astParent();
-        while (Token::simpleMatch(parent, ","))
-            parent = parent->astParent();
-        if (!parent || parent->str() != "(")
-            return false;
-    } else
-        return false;
 
-    // reinterpret_cast etc..
-    if (Token::Match(tok->tokAt(-3), "> ( & %name% ) [,)]") &&
-        tok->linkAt(-3) &&
-        Token::Match(tok->linkAt(-3)->tokAt(-2), "[,(] %type% <"))
-        tok = tok->linkAt(-3);
+        // passing variable to subfunction?
+        if (Token::Match(parent, "[(,]"))
+            ;
+        else if (Token::simpleMatch(parent, ":")) {
+            while (Token::Match(parent, "[?:]"))
+                parent = parent->astParent();
+            while (Token::simpleMatch(parent, ","))
+                parent = parent->astParent();
+            if (!parent || parent->str() != "(")
+                return false;
+        } else
+            return false;
+    }
 
     // goto start of function call and get argnr
     unsigned int argnr = 0;
-    while (tok && tok->str() != "(") {
+    while (tok && !Token::Match(tok, "[;{}]")) {
         if (tok->str() == ",")
             ++argnr;
         else if (tok->str() == ")")
             tok = tok->link();
+        else if (Token::Match(tok->previous(), "%name% ("))
+            break;
         tok = tok->previous();
     }
-    tok = tok ? tok->previous() : nullptr;
+    if (!tok || tok->str() != "(")
+        return false;
+    tok = tok->previous();
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
     if (!Token::Match(tok, "%name% [(<]"))
@@ -935,7 +936,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         }
 
         const Token *ftok = tok;
-        while (ftok && !Token::Match(ftok, "[({[]"))
+        while (ftok && (!Token::Match(ftok, "[({[]") || ftok->isCast()))
             ftok = ftok->astParent();
 
         if (ftok && Token::Match(ftok->link(), ") !!{")) {

@@ -2397,7 +2397,19 @@ static bool valueFlowForward(Token * const               startToken,
                     else
                         valueFlowAST(const_cast<Token*>(op2), varid, v, settings);
                 }
-                if (isVariableChangedByFunctionCall(op2, varid, settings, nullptr))
+
+                const std::pair<const Token *, const Token *> expr0 = op2->astOperand1()->findExpressionStartEndTokens();
+                const std::pair<const Token *, const Token *> expr1 = op2->astOperand2()->findExpressionStartEndTokens();
+                const bool changed0 = isVariableChanged(expr0.first, expr0.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+                const bool changed1 = isVariableChanged(expr1.first, expr1.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+
+                if (changed0 && changed1) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, changed in both : expressions");
+                    return false;
+                }
+
+                if (changed0 || changed1)
                     changeKnownToPossible(values);
             }
 

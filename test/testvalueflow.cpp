@@ -3354,6 +3354,17 @@ private:
         ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
         ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
+
+        code = "void f() {\n"
+               "  int szHdr;\n"
+               "  idx = (A<0x80) ? (szHdr = 0) : dostuff(A, (int *)&(szHdr));\n"
+               "  d = szHdr;\n"
+               "}";
+        values = tokenValues(code, "szHdr ; }");
+        TODO_ASSERT_EQUALS(1, 0, values.size());
+        if (values.size() == 1) {
+            ASSERT_EQUALS(false, values.front().isUninitValue());
+        }
     }
 
     void valueFlowTerminatingCond() {
