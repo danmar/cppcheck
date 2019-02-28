@@ -811,8 +811,6 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (!tok)
         return false;
 
-    const Token * const tok1 = tok;
-
     // address of variable
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
@@ -846,13 +844,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
             tok = tok->link();
         else if (Token::Match(tok->previous(), "%name% ("))
             break;
-        else if (Token::simpleMatch(tok->previous(), "> (") && tok->previous()->link())
-            break;
         tok = tok->previous();
     }
     if (!tok || tok->str() != "(")
         return false;
-    const bool possiblyPassedByReference = (tok->next() == tok1 || Token::simpleMatch(tok->previous(), ", %name% [,)]"));
     tok = tok->previous();
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
@@ -884,13 +879,12 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
         // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
         if (!addressOf && settings && settings->library.isnullargbad(tok, 1+argnr))
             return false;
-        // possible pass-by-reference => inconclusive
-        if (possiblyPassedByReference) {
+        // addressOf => inconclusive
+        if (!addressOf) {
             if (inconclusive != nullptr)
                 *inconclusive = true;
             return false;
         }
-        // Safe guess: Assume that parameter is changed by function call
         return true;
     }
 
