@@ -224,11 +224,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char *value = node->Attribute("value");
             if (value == nullptr)
                 return Error(MISSING_ATTRIBUTE, "value");
-            defines.push_back(std::string("#define ") +
-                              name +
+            defines.push_back(std::string(name) +
                               " " +
-                              value +
-                              "\n");
+                              value);
         }
 
         else if (nodename == "function") {
