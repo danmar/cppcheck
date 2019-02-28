@@ -88,7 +88,7 @@ def getpackages():
             filename = None
         elif line.startswith('./pool/main/'):
             path = line[2:-1]
-        elif path and line.endswith('.orig.tar.gz'):
+        elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2')):
             filename = line[1 + line.rfind(' '):]
 
     return archives

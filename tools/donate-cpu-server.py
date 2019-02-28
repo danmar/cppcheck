@@ -743,7 +743,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz', url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -809,7 +809,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write_info:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz', url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
             if res is None:
                 print('info output not written. res is None.')
                 continue
