@@ -70,3 +70,10 @@ void g_print_test()
     // cppcheck-suppress invalidPrintfArgType_uint
     g_printerr("%x", "a");
 }
+
+void g_alloca_test()
+{
+    // cppcheck-suppress allocaCalled
+    char * pBuf1 = g_alloca(5);
+    pBuf1[0] = '\0';
+}
