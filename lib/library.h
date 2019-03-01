@@ -227,7 +227,8 @@ public:
             strz(false),
             optional(false),
             variadic(false),
-            iteratorInfo() {
+            iteratorInfo(),
+            direction(DIR_UNKNOWN) {
         }
 
         bool         notbool;
@@ -259,6 +260,9 @@ public:
             int arg2;
         };
         std::vector<MinSize> minsizes;
+
+        enum Direction { DIR_IN, DIR_OUT, DIR_INOUT, DIR_UNKNOWN };
+        Direction direction;
     };
 
 
@@ -318,6 +322,11 @@ public:
     const std::vector<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
+    }
+
+    ArgumentChecks::Direction getArgDirection(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
+        return arg ? arg->direction : ArgumentChecks::Direction::DIR_UNKNOWN;
     }
 
     bool markupFile(const std::string &path) const;

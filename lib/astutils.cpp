@@ -880,6 +880,16 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     }
 
     if (!tok->function()) {
+        // Check if direction (in, out, inout) is specified in the library configuration and use that
+        if (!addressOf && settings) {
+            const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
+            if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
+                return false;
+            else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
+                     argDirection == Library::ArgumentChecks::Direction::DIR_INOUT)
+                return true;
+        }
+
         // if the library says 0 is invalid
         // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
         if (!addressOf && settings && settings->library.isnullargbad(tok, 1+argnr))

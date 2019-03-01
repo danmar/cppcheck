@@ -581,6 +581,17 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             ArgumentChecks &ac = func.argumentChecks[nr];
             ac.optional  = functionnode->Attribute("default") != nullptr;
             ac.variadic = bVariadicArg;
+            const char * const argDirection = functionnode->Attribute("direction");
+            if (argDirection) {
+                const size_t argDirLen = strlen(argDirection);
+                if (!strncmp(argDirection, "in", argDirLen)) {
+                    ac.direction = ArgumentChecks::Direction::DIR_IN;
+                } else if (!strncmp(argDirection, "out", argDirLen)) {
+                    ac.direction = ArgumentChecks::Direction::DIR_OUT;
+                } else if (!strncmp(argDirection, "inout", argDirLen)) {
+                    ac.direction = ArgumentChecks::Direction::DIR_INOUT;
+                }
+            }
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
                 if (argnodename == "not-bool")
