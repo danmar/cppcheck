@@ -3361,16 +3361,24 @@ private:
         ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
 
-        code = "void f() {\n"
+        code = "void f() {\n" // sqlite
                "  int szHdr;\n"
                "  idx = (A<0x80) ? (szHdr = 0) : dostuff(A, (int *)&(szHdr));\n"
-               "  d = szHdr;\n"
+               "  d = szHdr;\n" // szHdr can be 0.
                "}";
         values = tokenValues(code, "szHdr ; }");
         TODO_ASSERT_EQUALS(1, 0, values.size());
         if (values.size() == 1) {
             ASSERT_EQUALS(false, values.front().isUninitValue());
         }
+        
+        code = "void f () {\n"
+               "  int szHdr;\n"
+               "  idx = ((aKey<0x80) ? ((szHdr)=aKey), 1 : sqlite3GetVarint32(&(szHdr)));\n"
+               "  d = szHdr;\n"
+               "}";
+        values = tokenValues(code, "szHdr ; }");
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowTerminatingCond() {

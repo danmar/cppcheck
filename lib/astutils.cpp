@@ -917,10 +917,14 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             continue;
         }
 
-        if (Token::Match(tok, "%name% %assign%|++|--"))
+        const Token *tok2 = tok;
+        while (Token::simpleMatch(tok2->astParent(), "*"))
+            tok2 = tok2->astParent();
+
+        if (Token::Match(tok2->astParent(), "++|--"))
             return true;
 
-        if (Token::Match(tok->previous(), "++|-- %name%"))
+        if (tok2->astParent() && tok2->astParent()->isAssignmentOp() && tok2 == tok2->astParent()->astOperand1())
             return true;
 
         if (isLikelyStreamRead(cpp, tok->previous()))
