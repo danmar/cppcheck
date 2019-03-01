@@ -472,6 +472,7 @@ void ignoredReturnValue()
     // cppcheck-suppress leakReturnValNotUsed
     CreateEventEx(NULL, L"test", CREATE_EVENT_INITIAL_SET, EVENT_MODIFY_STATE);
 
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     _malloca(10);
     // cppcheck-suppress ignoredReturnValue
@@ -482,8 +483,10 @@ void ignoredReturnValue()
 
     // cppcheck-suppress ignoredReturnValue
     GetProcessHeap()
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     HeapAlloc(GetProcessHeap(), 0, 10);
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     HeapReAlloc(GetProcessHeap(), 0, 1, 0);
 
