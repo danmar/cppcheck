@@ -3371,7 +3371,7 @@ private:
         if (values.size() == 1) {
             ASSERT_EQUALS(false, values.front().isUninitValue());
         }
-        
+
         code = "void f () {\n"
                "  int szHdr;\n"
                "  idx = ((aKey<0x80) ? ((szHdr)=aKey), 1 : sqlite3GetVarint32(&(szHdr)));\n"
