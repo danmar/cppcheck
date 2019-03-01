@@ -163,6 +163,11 @@
                   <text/>
                 </attribute>
               </optional>
+              <optional>
+                <attribute name="direction">
+                  <ref name="ARG-DIRECTION"/>
+                </attribute>
+              </optional>
 
               <interleave>
                 <optional>
@@ -424,6 +429,14 @@
       <param name="minInclusive">1</param>
       <param name="maxInclusive">20</param>
     </data>
+  </define>
+  
+  <define name="ARG-DIRECTION">
+    <choice>
+      <value>in</value>
+      <value>out</value>
+      <value>inout</value>
+    </choice>
   </define>
 
   <define name="DATA-BOOL">
