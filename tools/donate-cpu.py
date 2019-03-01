@@ -11,6 +11,7 @@
 #  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.
 #                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second
 #                                 --bandwidth-limit=2m => max. 2 megabytes per second
+#  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.
 #
 # What this script does:
 # 1. Check requirements
@@ -37,7 +38,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.10"
+CLIENT_VERSION = "1.1.11"
 
 
 def checkRequirements():
@@ -380,6 +381,7 @@ workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 packageUrl = None
 server_address = ('cppcheck.osuosl.org', 8000)
 bandwidth_limit = None
+max_packages = None
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -401,6 +403,20 @@ for arg in sys.argv[1:]:
         server_address = ('localhost', 8001)
     elif arg.startswith('--bandwidth-limit='):
         bandwidth_limit = arg[arg.find('=')+1:]
+    elif arg.startswith('--max-packages='):
+        arg_value = arg[arg.find('=')+1:]
+        try:
+            max_packages = int(arg_value)
+        except ValueError:
+            max_packages = None
+        if max_packages < 0:
+            max_packages = None
+        if max_packages is None:
+            print('Error: Max. packages value "{}" is invalid. Must be a positive number or 0.'.format(arg_value))
+            sys.exit(1)
+        # 0 means infinitely, no counting needed.
+        if max_packages == 0:
+            max_packages = None
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -413,6 +429,7 @@ for arg in sys.argv[1:]:
         print('  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.')
         print('                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second')
         print('                                 --bandwidth-limit=2m => max. 2 megabytes per second')
+        print('  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.')
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
@@ -429,10 +446,20 @@ if bandwidth_limit and isinstance(bandwidth_limit, str):
         sys.exit(1)
     else:
         print('Bandwidth-limit: ' + bandwidth_limit)
+if max_packages:
+    print('Maximum number of packages to download and analyze: {}'.format(max_packages))
 if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
+packages_processed = 0
 while True:
+    if max_packages:
+        if packages_processed >= max_packages:
+            print('Processed the specified number of {} package(s). Exiting now.'.format(max_packages))
+            break
+        else:
+            print('Processing package {} of the specified {} package(s).'.format(packages_processed + 1, max_packages))
+        packages_processed += 1
     if stopTime:
         print('stopTime:' + stopTime + '. Time:' + time.strftime('%H:%M') + '.')
         if stopTime < time.strftime('%H:%M'):
@@ -525,5 +552,6 @@ while True:
         uploadResults(package, output, server_address)
     if info_exists:
         uploadInfo(package, info_output, server_address)
-    print('Sleep 5 seconds..')
-    time.sleep(5)
+    if not max_packages or packages_processed < max_packages:
+        print('Sleep 5 seconds..')
+        time.sleep(5)
