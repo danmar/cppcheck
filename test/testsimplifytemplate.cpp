@@ -119,8 +119,8 @@ private:
         TEST_CASE(template79); // #5133
         TEST_CASE(template80);
         TEST_CASE(template81);
-        TEST_CASE(template82); // 8603
-        TEST_CASE(template83);
+        TEST_CASE(template82); // #8603
+        TEST_CASE(template83); // #8867
         TEST_CASE(template84); // #8880
         TEST_CASE(template85); // #8902 crash
         TEST_CASE(template86); // crash
@@ -139,6 +139,7 @@ private:
         TEST_CASE(template99); // #8960
         TEST_CASE(template100); // #8967
         TEST_CASE(template101); // #8968
+        TEST_CASE(template102); // #9005
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1783,13 +1784,21 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
-    void template83() {
+    void template83() { // #8867
         const char code[] = "template<typename Task>\n"
+                            "class MultiConsumer {\n"
+                            "    MultiConsumer();\n"
+                            "};\n"
+                            "template<typename Task>\n"
                             "MultiConsumer<Task>::MultiConsumer() : sizeBuffer(0) {}\n"
                             "MultiReads::MultiReads() {\n"
                             "    mc = new MultiConsumer<reads_packet>();\n"
                             "}";
-        const char exp[] = "MultiConsumer<reads_packet> :: MultiConsumer<reads_packet> ( ) ; "
+        const char exp[] = "template < typename Task > " // TODO: this should be expanded
+                           "class MultiConsumer { "
+                           "MultiConsumer ( ) ; "
+                           "} ; "
+                           "MultiConsumer<reads_packet> :: MultiConsumer<reads_packet> ( ) ; "
                            "MultiReads :: MultiReads ( ) { "
                            "mc = new MultiConsumer<reads_packet> ( ) ; "
                            "} "
@@ -2301,6 +2310,28 @@ private:
 
         ASSERT_EQUALS(exp, tok(code));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void template102() { // #9005
+        const char code[] = "namespace ns {\n"
+                            "template <class T>\n"
+                            "struct is_floating_point \n"
+                            ": std::integral_constant<bool, std::is_floating_point<T>::value || true>\n"
+                            "{};\n"
+                            "}\n"
+                            "void f() {\n"
+                            "    if(std::is_floating_point<float>::value) {}\n"
+                            "}";
+        const char exp[] = "namespace ns { "
+                           "template < class T > "
+                           "struct is_floating_point "
+                           ": std :: integral_constant < bool , std :: is_floating_point < T > :: value || true > "
+                           "{ } ; "
+                           "} "
+                           "void f ( ) { "
+                           "if ( std :: is_floating_point < float > :: value ) { } "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

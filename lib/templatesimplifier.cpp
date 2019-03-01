@@ -838,7 +838,10 @@ void TemplateSimplifier::getTemplateInstantiations()
                             break;
 
                         if (scopeName.empty()) {
-                            mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList));
+                            if (!qualification.empty())
+                                mTemplateInstantiations.emplace_back(tok, qualification);
+                            else
+                                mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList));
                             break;
                         }
                         const std::string::size_type pos = scopeName.rfind(" :: ");
@@ -2178,10 +2181,14 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             continue;
 
         if (instantiation.fullName != templateDeclaration.fullName) {
-            // FIXME: fallback to not matching scopes until type deduction work
+            // FIXME: fallback to not matching scopes until type deduction works
 
             // names must match
             if (instantiation.name != templateDeclaration.name)
+                continue;
+
+            // scopes must match when present
+            if (!instantiation.scope.empty() && !templateDeclaration.scope.empty())
                 continue;
         }
 
