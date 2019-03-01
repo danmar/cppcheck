@@ -33,6 +33,7 @@ do
         ${python_exec} ${client_script} --package=${test_package} -j2
         ${python_exec} ${client_script} --package=${test_package} --bandwidth-limit=250k
         ${python_exec} ${client_script} --package=${test_package} -j2 --bandwidth-limit=0.5M
+        ${python_exec} ${client_script} --package=${test_package} --max-packages=1
     done
 done
 
