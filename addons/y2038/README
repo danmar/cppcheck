@@ -36,7 +36,7 @@ any user code around which uses 32-bit epoch representations.
 
 There is Y2038-proofing work in progress on the Linux and GNU glibc front.
 
-2. What is the Y2038 ccpcheck addon?
+2. What is the Y2038 cppcheck addon?
 
 The Y2038 cppcheck addon is a tool to help detect code which might need fixing
 because it is Y2038-unsafe. This may be because it uses types or functions from
