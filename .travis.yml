@@ -63,9 +63,6 @@ matrix:
         - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
 # check if it actually works:
         - /usr/bin/cppcheck ./cli
-# check if reduce tool compiles
-        - echo $CXXFLAGS
-        - make -s reduce -j 2
 # check if showtime=top5 works
         - ./tools/test_showtimetop5.sh
 # check matchcompiler
