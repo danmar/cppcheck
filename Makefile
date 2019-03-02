@@ -276,11 +276,8 @@ run-dmake: dmake
 
 generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)
 	g++ -Iexternals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)
-reduce:	tools/reduce.o $(LIBOBJ) $(EXTOBJ)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
-
 clean:
-	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner reduce dmake cppcheck cppcheck.1
+	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.1
 
 man:	man/cppcheck.1
 
@@ -700,7 +697,4 @@ tools/dmake.o: tools/dmake.cpp cli/filelister.h lib/pathmatch.h lib/config.h
 
 tools/generate_cfg_tests.o: tools/generate_cfg_tests.cpp
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/generate_cfg_tests.o tools/generate_cfg_tests.cpp
-
-tools/reduce.o: tools/reduce.cpp
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/reduce.o tools/reduce.cpp
 
