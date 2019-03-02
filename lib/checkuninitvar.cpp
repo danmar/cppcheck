@@ -643,19 +643,15 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 // variable is seen..
                 if (tok->varId() == var.declarationId()) {
                     if (!membervar.empty()) {
-                        if (Token::Match(tok, "%name% . %name% ;|%cop%") && tok->strAt(2) == membervar)
+                        if (!suppressErrors && Token::Match(tok, "%name% . %name% ;|%cop%") && tok->strAt(2) == membervar)
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
-                        else
-                            return true;
                     }
 
                     // Use variable
                     else if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc))
                         uninitvarError(tok, tok->str(), *alloc);
 
-                    else
-                        // assume that variable is assigned
-                        return true;
+                    return true;
                 }
 
                 else if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
@@ -723,16 +719,20 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                if (isMemberVariableUsage(tok, var.isPointer(), *alloc, membervar))
+                if (isMemberVariableUsage(tok, var.isPointer(), *alloc, membervar)) {
                     uninitStructMemberError(tok, tok->str() + "." + membervar);
+                    return true;
+                }
 
                 else if (Token::Match(tok->previous(), "[(,] %name% [,)]"))
                     return true;
 
             } else {
                 // Use variable
-                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc))
+                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc)) {
                     uninitvarError(tok, tok->str(), *alloc);
+                    return true;
+                }
 
                 else {
                     if (tok->strAt(1) == "=")

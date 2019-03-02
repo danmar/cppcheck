@@ -40,6 +40,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(uninitvar1);
+        TEST_CASE(uninitvar_warn_once); // only write 1 warning at a time
         TEST_CASE(uninitvar_decl);      // handling various types in C and C++ files
         TEST_CASE(uninitvar_bitop);     // using uninitialized operand in bit operation
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
@@ -667,6 +668,15 @@ private:
                        "  return (*sink)[0];\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_warn_once() {
+        checkUninitVar("void f() {\n"
+                       "  int x;\n"
+                       "  a = x;\n"
+                       "  b = x;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     // Handling of unknown types. Assume they are POD in C.
@@ -1503,16 +1513,7 @@ private:
                        "        vertices[i][1][3] = 5.0;\n"
                        "    }\n"
                        "}\n");
-        // kind of regression test - there are more lines which access vertices!?
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:5]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:6]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:7]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:8]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:9]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:10]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:11]: (error) Uninitialized variable: vertices\n"
-                      "[test.cpp:18]: (error) Uninitialized variable: vertices\n",
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: vertices\n",
                       errout.str());
     }
 
@@ -3326,7 +3327,6 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: abc.a\n"
                       "[test.cpp:5]: (error) Uninitialized struct member: abc.b\n"
-                      "[test.cpp:6]: (error) Uninitialized struct member: abc.b\n"
                       "[test.cpp:5]: (error) Uninitialized struct member: abc.c\n", errout.str());
 
         // return
