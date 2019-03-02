@@ -2869,14 +2869,14 @@ void bufferAccessOutOfBounds_strcat(char *dest, const char * const source)
 
 void uninitvar_wcscat(wchar_t *dest, const wchar_t * const source)
 {
-    wchar_t *deststr;
-    wchar_t *srcstr;
+    wchar_t *deststr_1, *deststr_2;
+    wchar_t *srcstr_1, *srcstr_2;
     // cppcheck-suppress uninitvar
-    (void)wcscat(deststr,srcstr);
+    (void)wcscat(deststr_1,srcstr_1);
     // cppcheck-suppress uninitvar
-    (void)wcscat(dest,srcstr);
+    (void)wcscat(dest,srcstr_2);
     // cppcheck-suppress uninitvar
-    (void)wcscat(deststr,source);
+    (void)wcscat(deststr_2,source);
 
     // no warning shall be shown for
     (void)wcscat(dest,source);
@@ -3022,13 +3022,13 @@ void uninitvar_strpbrk(void)
 
 void uninitvar_strncat(char *Ct, char *S, size_t N)
 {
-    char *ct;
+    char *ct_1, *ct_2;
     char *s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)strncat(ct,s,n1);
+    (void)strncat(ct_1,s,n1);
     // cppcheck-suppress uninitvar
-    (void)strncat(ct,S,N);
+    (void)strncat(ct_2,S,N);
     // cppcheck-suppress uninitvar
     (void)strncat(Ct,s,N);
     // cppcheck-suppress uninitvar
@@ -3041,13 +3041,13 @@ void uninitvar_strncat(char *Ct, char *S, size_t N)
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
 void uninitvar_strcat_s(char *Ct, size_t N, char *S)
 {
-    char *ct;
+    char *ct_1, *ct_2;
     char *s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)strcat_s(ct,n1,s);
+    (void)strcat_s(ct_1,n1,s);
     // cppcheck-suppress uninitvar
-    (void)strcat_s(ct,N,S);
+    (void)strcat_s(ct_2,N,S);
     // cppcheck-suppress uninitvar
     (void)strcat_s(Ct,N,s);
     // cppcheck-suppress uninitvar
@@ -3060,13 +3060,13 @@ void uninitvar_strcat_s(char *Ct, size_t N, char *S)
 // errno_t wcscat_s(wchar_t *restrict dest, rsize_t destsz, const wchar_t *restrict src); // since C11
 void uninitvar_wcscat_s(wchar_t *Ct, size_t N, wchar_t *S)
 {
-    wchar_t *ct;
+    wchar_t *ct_1, *ct_2;
     wchar_t *s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)wcscat_s(ct,n1,s);
+    (void)wcscat_s(ct_1,n1,s);
     // cppcheck-suppress uninitvar
-    (void)wcscat_s(ct,N,S);
+    (void)wcscat_s(ct_2,N,S);
     // cppcheck-suppress uninitvar
     (void)wcscat_s(Ct,N,s);
     // cppcheck-suppress uninitvar
@@ -3078,7 +3078,7 @@ void uninitvar_wcscat_s(wchar_t *Ct, size_t N, wchar_t *S)
 
 void uninitvar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
 {
-    char *ct;
+    char *ct_1, *ct_2;
     char *s;
     size_t n1;
     size_t n2;
@@ -3086,9 +3086,9 @@ void uninitvar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
     size_t n4;
 
     // cppcheck-suppress uninitvar
-    (void)strncat_s(ct,n1,s,n2);
+    (void)strncat_s(ct_1,n1,s,n2);
     // cppcheck-suppress uninitvar
-    (void)strncat_s(ct,N1,S,N2);
+    (void)strncat_s(ct_2,N1,S,N2);
     // cppcheck-suppress uninitvar
     (void)strncat_s(Ct,n3,S,N2);
     // cppcheck-suppress uninitvar
@@ -3102,13 +3102,13 @@ void uninitvar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
 
 void uninitvar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
 {
-    wchar_t *ct;
+    wchar_t *ct_1, *ct_2;
     wchar_t *s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)wcsncat(ct,s,n1);
+    (void)wcsncat(ct_1,s,n1);
     // cppcheck-suppress uninitvar
-    (void)wcsncat(ct,S,N);
+    (void)wcsncat(ct_2,S,N);
     // cppcheck-suppress uninitvar
     (void)wcsncat(Ct,s,N);
     // cppcheck-suppress uninitvar
