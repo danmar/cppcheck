@@ -1883,7 +1883,7 @@ static Token *skipTernaryOp(Token *tok, Token *backToken)
                 break;
             }
         }
-        if (tok->link() && Token::Match(tok, "("))
+        if (tok->link() && tok->str() == "(")
             tok = tok->link();
         else if (Token::Match(tok->next(), "[{};)]") || tok->next() == backToken)
             break;
@@ -1939,7 +1939,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
                         tok->deleteNext(3);
                         again = true;
                     }
-                } else if (Token::Match(tok->next(), "(")) {
+                } else if (tok->strAt(1) == "(") {
                     tok = tok->linkAt(1);
                 }
             }
