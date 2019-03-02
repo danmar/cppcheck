@@ -234,12 +234,24 @@ public:
      */
     bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr);
 
+    /** Simplify template instantiation arguments.
+     * @param start first token of arguments
+     * @param end token following last argument token
+     */
+    void simplifyTemplateArgs(Token *start, Token *end);
+
 private:
     /**
      * Get template declarations
      * @return true if code has templates.
      */
     bool getTemplateDeclarations();
+
+    /** Add template instantiation.
+     * @param token first token of instantiation
+     * @param scope scope of instantiation
+     */
+    void addInstantiation(Token *token, const std::string &scope);
 
     /**
      * Get template instantiations

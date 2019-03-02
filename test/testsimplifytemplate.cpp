@@ -432,14 +432,12 @@ private:
                             "{\n"
                             "    A<12,12,11> a;\n"
                             "}\n";
-
-        // The expected result..
         const char expected[] = "class A<12,12,11> ; "
                                 "void f ( ) "
                                 "{"
                                 " A<12,12,11> a ; "
                                 "} "
-                                "class A<12,12,11> : public B < 12 , 12 , ( 0 ) ? ( ( 0 ) ? 1 : -1 ) : 0 > "
+                                "class A<12,12,11> : public B < 12 , 12 , 0 > "
                                 "{ } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -745,18 +743,12 @@ private:
                             "{};\n"
                             "\n"
                             "bitset<1> z;";
-
-        const char actual[] = "template < int n > struct B { int a [ n ] ; } ; "
-                              "class bitset<1> ; "
-                              "bitset<1> z ; "
-                              "class bitset<1> : B < ( sizeof ( int ) ? : 1 ) > { } ;";
-
-        const char expected[] = "class bitset<1> ; "
+        const char expected[] = "struct B<4> ; "
+                                "class bitset<1> ; "
                                 "bitset<1> z ; "
-                                "class bitset<1> : B < 4 > { } ; "
-                                "struct B < 4 > { int a [ 4 ] ; } ;";
-
-        TODO_ASSERT_EQUALS(expected, actual, tok(code));
+                                "class bitset<1> : B<4> { } ; "
+                                "struct B<4> { int a [ 4 ] ; } ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template26() {
@@ -1431,11 +1423,11 @@ private:
                             "} ; "
                             "void A :: t_func<0> ( ) "
                             "{ "
-                            "if ( 0 || foo<int> ( ) ) { ; } "
+                            "if ( 0 != 0 || foo<int> ( ) ) { ; } "
                             "} "
                             "void A :: t_func<1> ( ) "
                             "{ "
-                            "if ( 1 ) { ; } "
+                            "if ( 1 != 0 || foo<int> ( ) ) { ; } "
                             "} "
                             "bool foo<int> ( ) { return true ; }";
         ASSERT_EQUALS(exp, tok(code));

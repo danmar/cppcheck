@@ -2316,14 +2316,6 @@ void Tokenizer::simplifyTemplates()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // simple fix for sizeof used as template parameter
-        // TODO: this is a bit hardcoded. make a bit more generic
-        if (Token::Match(tok, "%name% < sizeof ( %type% ) >") && tok->tokAt(4)->isStandardType()) {
-            Token * const tok3 = tok->next();
-            const unsigned int sizeOfResult = sizeOfType(tok3->tokAt(3));
-            tok3->deleteNext(4);
-            tok3->insertToken(MathLib::toString(sizeOfResult));
-        }
         // Ticket #6181: normalize C++11 template parameter list closing syntax
         if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok)) {
             Token *endTok = tok->findClosingBracket();
