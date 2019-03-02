@@ -32,6 +32,9 @@ private:
         TEST_CASE(no_test_method);
         TEST_CASE(not_quiet);
         TEST_CASE(quiet);
+        TEST_CASE(not_help);
+        TEST_CASE(help);
+        TEST_CASE(help_long);
         TEST_CASE(multiple_testcases);
         TEST_CASE(invalid_switches);
     }
@@ -71,8 +74,25 @@ private:
         ASSERT_EQUALS(true, args.quiet());
     }
 
+    void not_help() const {
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-v"};
+        options args(sizeof argv / sizeof argv[0], argv);
+        ASSERT_EQUALS(false, args.help());
+    }
 
 
+    void help() const {
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-h"};
+        options args(sizeof argv / sizeof argv[0], argv);
+        ASSERT_EQUALS(true, args.help());
+    }
+
+
+    void help_long() const {
+        const char* argv[] = {"./test_runner", "TestClass::TestMethod", "--help"};
+        options args(sizeof argv / sizeof argv[0], argv);
+        ASSERT_EQUALS(true, args.help());
+    }
 
     void multiple_testcases() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "Ignore::ThisOne"};
