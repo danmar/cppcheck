@@ -42,10 +42,10 @@ private:
     const options& operator =(const options& non_assign);
 
 private:
-    std::set<std::string> _options;
-    std::string _which_test;
-    const bool _quiet;
-    const bool _help;
+    std::set<std::string> mOptions;
+    std::string mWhichTest;
+    const bool mQuiet;
+    const bool mHelp;
 };
 
 #endif
