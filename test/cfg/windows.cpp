@@ -557,11 +557,11 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     lstrcat(buf, buf2);
 
-    HANDLE hMutex;
+    HANDLE hMutex1, hMutex2;
     // cppcheck-suppress uninitvar
-    ReleaseMutex(hMutex);
+    ReleaseMutex(hMutex1);
     // cppcheck-suppress uninitvar
-    CloseHandle(hMutex);
+    CloseHandle(hMutex2);
 
     HANDLE hEvent;
     // cppcheck-suppress uninitvar
@@ -573,13 +573,14 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     CloseHandle(hEvent);
 
-    char buf_uninit[10];
+    char buf_uninit1[10];
+    char buf_uninit2[10];
     // cppcheck-suppress strlwrCalled
     // cppcheck-suppress uninitvar
-    strlwr(buf_uninit);
+    strlwr(buf_uninit1);
     // cppcheck-suppress struprCalled
     // cppcheck-suppress uninitvar
-    strupr(buf_uninit);
+    strupr(buf_uninit2);
 
     DWORD dwordUninit;
     // cppcheck-suppress uninitvar
@@ -682,20 +683,20 @@ void allocDealloc_GetModuleHandleEx()
 
 void uninitvar_tolower(_locale_t l)
 {
-    int c;
+    int c1, c2;
     // cppcheck-suppress uninitvar
-    (void)_tolower(c);
+    (void)_tolower(c1);
     // cppcheck-suppress uninitvar
-    (void)_tolower_l(c, l);
+    (void)_tolower_l(c2, l);
 }
 
 void uninitvar_toupper(_locale_t l)
 {
-    int c;
+    int c1, c2;
     // cppcheck-suppress uninitvar
-    (void)_toupper(c);
+    (void)_toupper(c1);
     // cppcheck-suppress uninitvar
-    (void)_toupper_l(c, l);
+    (void)_toupper_l(c2, l);
 }
 
 void uninitvar_towlower(_locale_t l)

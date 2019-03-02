@@ -217,18 +217,18 @@ void invalidFunctionArg()
 
 void uninitvar(int fd)
 {
-    int x;
+    int x1, x2, x3, x4;
     char buf[2];
     int decimal, sign;
     double d;
     void *p;
-    pthread_mutex_t mutex;
+    pthread_mutex_t mutex, mutex1, mutex2, mutex3;
     // cppcheck-suppress uninitvar
-    write(x,"ab",2);
+    write(x1,"ab",2);
     // TODO cppcheck-suppress uninitvar
     write(fd,buf,2); // #6325
     // cppcheck-suppress uninitvar
-    write(fd,"ab",x);
+    write(fd,"ab",x2);
     // cppcheck-suppress uninitvar
     write(fd,p,2);
 
@@ -236,12 +236,12 @@ void uninitvar(int fd)
     /* int regcomp(regex_t *restrict preg, const char *restrict pattern, int cflags); */
     regex_t reg;
     const char * pattern;
-    int cflags;
+    int cflags1, cflags2;
     // cppcheck-suppress uninitvar
-    regcomp(&reg, pattern, cflags);
+    regcomp(&reg, pattern, cflags1);
     pattern="";
     // cppcheck-suppress uninitvar
-    regcomp(&reg, pattern, cflags);
+    regcomp(&reg, pattern, cflags2);
     regerror(0, &reg, 0, 0);
 #ifndef __CYGWIN__
     // cppcheck-suppress uninitvar
@@ -264,12 +264,12 @@ void uninitvar(int fd)
 
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress uninitvar
-    int access_ret = access("file", x);
+    int access_ret = access("file", x3);
 
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
-    fdopen(x, "rw");
+    fdopen(x4, "rw");
 
     char *strtok_arg1;
     // cppcheck-suppress strtokCalled
@@ -277,11 +277,11 @@ void uninitvar(int fd)
     strtok(strtok_arg1, ";");
 
     // cppcheck-suppress uninitvar
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex1);
     // cppcheck-suppress uninitvar
-    pthread_mutex_trylock(&mutex);
+    pthread_mutex_trylock(&mutex2);
     // cppcheck-suppress uninitvar
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex3);
     // after initialization it must be OK to call lock, trylock and unlock for this mutex
     pthread_mutex_init(&mutex, NULL);
     pthread_mutex_lock(&mutex);
@@ -312,20 +312,20 @@ void uninitvar_types(void)
 
 void timet_h(struct timespec* ptp1)
 {
-    clockid_t clk_id;
+    clockid_t clk_id1, clk_id2, clk_id3;
     struct timespec* ptp;
     // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, ptp);
     // cppcheck-suppress uninitvar
-    clock_settime(clk_id, ptp);
+    clock_settime(clk_id1, ptp);
     // cppcheck-suppress uninitvar
-    clock_settime(clk_id, ptp1);
+    clock_settime(clk_id2, ptp1);
 
     struct timespec tp;
     // TODO cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
     // cppcheck-suppress uninitvar
-    clock_settime(clk_id, &tp);
+    clock_settime(clk_id3, &tp);
 
     time_t clock = time(0);
     char buf[26];
