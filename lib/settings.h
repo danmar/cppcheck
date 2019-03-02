@@ -285,6 +285,10 @@ public:
     /** Check for incomplete info in library files? */
     bool checkLibrary;
 
+    /** Check code in the headers, this is on by default but can
+     * be turned off to save CPU */
+    bool checkHeaders;
+
     /** Struct contains standards settings */
     Standards standards;
 

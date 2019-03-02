@@ -49,6 +49,7 @@ Settings::Settings()
       maxConfigs(12),
       enforcedLang(None),
       reportProgress(false),
+      checkHeaders(true),
       checkConfiguration(false),
       checkLibrary(false)
 {

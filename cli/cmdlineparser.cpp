@@ -155,6 +155,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings->dump = true;
 
+            // --check-headers=no
+            else if (std::strcmp(argv[i], "--check-headers=no") == 0)
+                mSettings->checkHeaders = false;
+
             // max ctu depth
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
@@ -914,6 +918,8 @@ void CmdLineParser::printHelp()
               "                         incremental analysis, distributed analysis.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
+              "    --check-headers=no   Turn off checking of included files, to make the\n"
+              "                         analysis faster.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
               "    --config-exclude=<dir>\n"

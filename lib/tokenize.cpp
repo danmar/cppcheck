@@ -3630,6 +3630,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    simplifyHeaders();
+
     // Remove __asm..
     simplifyAsm();
 
@@ -4255,6 +4257,40 @@ void Tokenizer::dump(std::ostream &out) const
     mSymbolDatabase->printXml(out);
     if (list.front())
         list.front()->printValueFlow(true, out);
+}
+
+void Tokenizer::simplifyHeaders()
+{
+    // TODO : can we remove anything in headers here? Like unused declarations.
+    // Maybe if --dump is used we want to have _everything_.
+
+    if (mSettings->checkHeaders)
+        // Default=full analysis. All information in the headers are kept.
+        return;
+
+    // We want to remove selected stuff from the headers but not *everything*.
+    // The intention here is to not damage the analysis of the source file.
+
+    // TODO: Remove unused types/variables/etc in headers..
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->fileIndex() == 0)
+            // Keep all code in the source file
+            continue;
+
+        // Remove executable code
+        if (tok->str() == "{") {
+            const Token *prev = tok->previous();
+            while (prev && prev->isName())
+                prev = prev->previous();
+            if (Token::simpleMatch(prev, ")")) {
+                // Replace all tokens from { to } with a ";".
+                Token::eraseTokens(tok,tok->link()->next());
+                tok->str(";");
+                tok->link(nullptr);
+            }
+        }
+    }
 }
 
 void Tokenizer::removeMacrosInGlobalScope()

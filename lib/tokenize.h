@@ -165,6 +165,13 @@ public:
     bool simplifyTokenList2();
 
     /**
+     * If --check-headers=no has been given; then remove unneeded code in headers.
+     * - All executable code.
+     * - Unused types/variables/etc
+     */
+    void simplifyHeaders();
+
+    /**
      * Deletes dead code between 'begin' and 'end'.
      * In general not everything can be erased, such as:
      * - code after labels;
