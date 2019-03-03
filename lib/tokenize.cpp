@@ -4266,10 +4266,20 @@ void Tokenizer::simplifyHeaders()
 
     // TODO: Remove unused types/variables/etc in headers..
 
-    std::set<std::string> functions;
+    // functions and types to keep
+    std::set<std::string> keep;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->fileIndex() == 0 && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {"))
-            functions.insert(tok->str());
+        if (tok->fileIndex() != 0 || !tok->isName())
+            continue;
+
+        if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+            keep.insert(tok->str());
+            continue;
+        }
+
+        if (Token::Match(tok, "%name% %name%|::|*|&|<")) {
+            keep.insert(tok->str());
+        }
     }
 
     const std::set<std::string> functionStart{"static", "const", "unsigned", "signed", "void", "bool", "char", "short", "int", "long", "float", "*"};
@@ -4293,16 +4303,28 @@ void Tokenizer::simplifyHeaders()
             }
         }
 
-        // Remove unused function declarations
         if (Token::Match(tok, "[;{}]")) {
+            // Remove unused function declarations
             while (1) {
                 Token *start = tok->next();
                 while (start && functionStart.find(start->str()) != functionStart.end())
                     start = start->next();
-                if (Token::Match(start, "%name% (") && Token::simpleMatch(start->linkAt(1), ") const| ;") && functions.find(start->str()) == functions.end())
+                if (Token::Match(start, "%name% (") && Token::simpleMatch(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
                     Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
                 else
                     break;
+            }
+
+            if (Token::Match(tok, "[;{}] class|struct %name% [:{]") && keep.find(tok->strAt(2)) == keep.end()) {
+                // Remove this class/struct
+                const Token *endToken = tok->tokAt(3);
+                if (endToken->str() == ":") {
+                    endToken = endToken->next();
+                    while (Token::Match(endToken, "%name%|,"))
+                        endToken = endToken->next();
+                }
+                if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;"))
+                    Token::eraseTokens(tok, endToken->link()->next());
             }
         }
     }
