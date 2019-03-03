@@ -1572,8 +1572,38 @@ void TemplateSimplifier::expandTemplate(
                         tok5->str(newName);
                         eraseTokens(tok5, tok5->next()->findClosingBracket()->next());
                     }
-                } else if (copy)
-                    mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
+                } else if (copy) {
+                    bool added = false;
+                    if (tok5->isName()) {
+                        // search for this token in the type vector
+                        unsigned int itype = 0;
+                        while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok5->str())
+                            ++itype;
+
+                        // replace type with given type..
+                        if (itype < typeParametersInDeclaration.size()) {
+                            unsigned int typeindentlevel = 0;
+                            for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token;
+                                 typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>"));
+                                 typetok = typetok->next()) {
+                                if (Token::simpleMatch(typetok, ". . .")) {
+                                    typetok = typetok->tokAt(2);
+                                } else {
+                                    if (Token::Match(typetok, "%name% <") && templateParameters(typetok->next()) > 0)
+                                        ++typeindentlevel;
+                                    else if (typeindentlevel > 0 && typetok->str() == ">")
+                                        --typeindentlevel;
+                                    mTokenList.addtoken(typetok, tok5->linenr(), tok5->fileIndex());
+                                    mTokenList.back()->isTemplateArg(true);
+                                    added = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!added)
+                        mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
+                }
 
                 tok5 = tok5->next();
             }

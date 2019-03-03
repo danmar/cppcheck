@@ -140,6 +140,7 @@ private:
         TEST_CASE(template100); // #8967
         TEST_CASE(template101); // #8968
         TEST_CASE(template102); // #9005
+        TEST_CASE(template103);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2322,6 +2323,33 @@ private:
                            "} "
                            "void f ( ) { "
                            "if ( std :: is_floating_point < float > :: value ) { } "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template103() {
+        const char code[] = "namespace sample {\n"
+                            "  template <typename T>\n"
+                            "  class Sample {\n"
+                            "  public:\n"
+                            "    T function(T t);\n"
+                            "  };\n"
+                            "  template <typename T>\n"
+                            "  T Sample<T>::function(T t) {\n"
+                            "    return t;\n"
+                            "  }\n"
+                            "}\n"
+                            "sample::Sample<int> s1;";
+        const char exp[] = "namespace sample { "
+                           "class Sample<int> ; "
+                           "} "
+                           "sample :: Sample<int> s1 ; "
+                           "class sample :: Sample<int> { "
+                           "public: "
+                           "int function ( int t ) ; "
+                           "} ; "
+                           "int sample :: Sample<int> :: function ( int t ) { "
+                           "return t ; "
                            "}";
         ASSERT_EQUALS(exp, tok(code));
     }
