@@ -4326,6 +4326,27 @@ void Tokenizer::simplifyHeaders()
                 if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;"))
                     Token::eraseTokens(tok, endToken->link()->next());
             }
+
+            if (Token::simpleMatch(tok->next(), "template <")) {
+                const Token *tok2 = tok->tokAt(3);
+                while (Token::Match(tok2, "%name% %name% ,"))
+                    tok2 = tok2->tokAt(3);
+                if (Token::Match(tok2, "%name% %name% >")) {
+                    tok2 = tok2->tokAt(3);
+                    if (Token::Match(tok2, "class|struct %name% [;:{]") && keep.find(tok2->strAt(1)) == keep.end()) {
+                        const Token *endToken = tok2->tokAt(2);
+                        if (endToken->str() == ":") {
+                            endToken = endToken->next();
+                            while (Token::Match(endToken, "%name%|,"))
+                                endToken = endToken->next();
+                        }
+                        if (endToken && endToken->str() == "{")
+                            endToken = endToken->link()->next();
+                        if (endToken && endToken->str() == ";")
+                            Token::eraseTokens(tok, endToken);
+                    }
+                }
+            }
         }
     }
 }
