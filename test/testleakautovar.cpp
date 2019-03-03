@@ -36,9 +36,11 @@ private:
         int id = 0;
         while (!settings.library.ismemory(++id));
         settings.library.setalloc("malloc", id, -1);
+        settings.library.setrealloc("realloc", id, -1);
         settings.library.setdealloc("free", id, 1);
         while (!settings.library.isresource(++id));
         settings.library.setalloc("fopen", id, -1);
+        settings.library.setrealloc("freopen", id, -1);
         settings.library.setdealloc("fclose", id, 1);
         settings.library.smartPointers.insert("std::shared_ptr");
         settings.library.smartPointers.insert("std::unique_ptr");
@@ -62,6 +64,10 @@ private:
         TEST_CASE(assign16);
         TEST_CASE(assign17); // #9047
         TEST_CASE(assign18);
+
+        TEST_CASE(realloc1);
+        TEST_CASE(realloc2);
+        TEST_CASE(realloc3);
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -348,6 +354,31 @@ private:
               "    if (x && (p = (char*)(int*)malloc(10))) { }"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void realloc1() {
+        check("void f() {\n"
+              "    void *p = malloc(10);\n"
+              "    void *q = realloc(p, 20);\n"
+              "    free(q)\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc2() {
+        check("void f() {\n"
+              "    void *p = malloc(10);\n"
+              "    void *q = realloc(p, 20);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: q\n", errout.str());
+    }
+
+    void realloc3() {
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    char *q = (char*) realloc(p, 20);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: q\n", errout.str());
     }
 
     void deallocuse1() {

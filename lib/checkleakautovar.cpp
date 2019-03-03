@@ -342,6 +342,16 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     varAlloc.type = f->groupId;
                     varAlloc.status = VarInfo::ALLOC;
                 }
+                const Library::AllocFunc* g = mSettings->library.realloc(tokRightAstOperand->previous());
+                if (g && g->arg == -1) {
+                    VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
+                    varAlloc.type = g->groupId;
+                    varAlloc.status = VarInfo::ALLOC;
+                    const Token* argTok = tokRightAstOperand->next();
+                    VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
+                    argAlloc.status = VarInfo::DEALLOC;
+
+                }
             } else if (mTokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
                 const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
@@ -383,6 +393,15 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         } else {
                             // Fixme: warn about leak
                             alloctype.erase(innerTok->varId());
+                        }
+                        const Library::AllocFunc* g = mSettings->library.realloc(innerTok->tokAt(2));
+                        if (g && g->arg == -1) {
+                            VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
+                            varAlloc.type = g->groupId;
+                            varAlloc.status = VarInfo::ALLOC;
+                            const Token* argTok = innerTok->tokAt(4);
+                            VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
+                            argAlloc.status = VarInfo::DEALLOC;
                         }
                     } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();
@@ -739,6 +758,9 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
 {
     // Ignore function call?
     if (mSettings->library.isLeakIgnore(tokName->str()))
+        return;
+    const Library::AllocFunc* g = mSettings->library.realloc(tokName);
+    if (g)
         return;
 
     const Token * const tokFirstArg = tokOpeningPar->next();
