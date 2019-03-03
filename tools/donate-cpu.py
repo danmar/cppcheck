@@ -235,7 +235,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
     libraries = ' --library=posix --library=gnu'
 
     libraryIncludes = {'boost': ['<boost/'],
-                       'cppunit': ['<cppunit/'],
+                       # 'cppunit': ['<cppunit/'], <- Enable after release of 1.88
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
                        # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
