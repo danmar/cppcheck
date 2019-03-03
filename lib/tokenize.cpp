@@ -4262,8 +4262,17 @@ void Tokenizer::simplifyHeaders()
 
     // We want to remove selected stuff from the headers but not *everything*.
     // The intention here is to not damage the analysis of the source file.
+    // You should get all warnings in the source file.
 
     // TODO: Remove unused types/variables/etc in headers..
+
+    std::set<std::string> functions;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->fileIndex() == 0 && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {"))
+            functions.insert(tok->str());
+    }
+
+    const std::set<std::string> functionStart{"static", "const", "unsigned", "signed", "void", "bool", "char", "short", "int", "long", "float", "*"};
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->fileIndex() == 0)
@@ -4272,6 +4281,7 @@ void Tokenizer::simplifyHeaders()
 
         // Remove executable code
         if (tok->str() == "{") {
+            // TODO: We probably need to keep the executable code if this function is called from the source file.
             const Token *prev = tok->previous();
             while (prev && prev->isName())
                 prev = prev->previous();
@@ -4280,6 +4290,19 @@ void Tokenizer::simplifyHeaders()
                 Token::eraseTokens(tok,tok->link()->next());
                 tok->str(";");
                 tok->link(nullptr);
+            }
+        }
+
+        // Remove unused function declarations
+        if (Token::Match(tok, "[;{}]")) {
+            while (1) {
+                Token *start = tok->next();
+                while (start && functionStart.find(start->str()) != functionStart.end())
+                    start = start->next();
+                if (Token::Match(start, "%name% (") && Token::simpleMatch(start->linkAt(1), ") const| ;") && functions.find(start->str()) == functions.end())
+                    Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
+                else
+                    break;
             }
         }
     }
