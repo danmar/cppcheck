@@ -4309,7 +4309,7 @@ void Tokenizer::simplifyHeaders()
                 Token *start = tok->next();
                 while (start && functionStart.find(start->str()) != functionStart.end())
                     start = start->next();
-                if (Token::Match(start, "%name% (") && Token::simpleMatch(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
+                if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
                     Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
                 else
                     break;
