@@ -261,7 +261,12 @@ public:
         };
         std::vector<MinSize> minsizes;
 
-        enum Direction { DIR_IN, DIR_OUT, DIR_INOUT, DIR_UNKNOWN };
+        enum Direction {
+            DIR_IN,     ///< argument points to / references memory that the function only reads
+            DIR_OUT,    ///< argument points to / references memory that the function writes to (do not specify for references to pointers)
+            DIR_INOUT,  ///< argument points to / references memory that the function reads and writes (do not specify for references to pointers)
+            DIR_UNKNOWN ///< direction not known / specified
+        };
         Direction direction;
     };
 
