@@ -1079,7 +1079,10 @@ void CmdLineParser::printHelp()
               "                         files that are on a lower level in the directory tree.\n"
               "    --remove-unused-included-templates\n"
               "                         Remove unused templates in included files. This option\n"
-              "                         can be used to speed up the analysis.\n"
+              "                         can be used to speed up the analysis. The analysis of a\n"
+              "                         template can be more accurate when it is instantiated and\n"
+              "                         therefore it can be a good idea to only analyse the\n"
+              "                         instantiated templates.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"
