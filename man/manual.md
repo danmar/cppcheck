@@ -4,9 +4,7 @@
 
 ## Introduction
 
-Cppcheck is an analysis tool for C/C++ code. Unlike C/C++ compilers and many other analysis tools, it doesn't detect
-syntax errors. Instead, Cppcheck detects the types of bugs that the compilers normally fail to detect. The goal is no
-false positives.
+Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives).
 
 Supported code and platforms:
 
@@ -76,7 +74,7 @@ If "path" is a folder then cppcheck will recursively check all source files in t
 
 With Cppcheck you can check files manually, by specifying files/paths to check and settings. Or you can use a project file (cmake/visual studio/etc).
 
-We don't know which approach will give you the best results. It is recommended that you try both. It is possible that you will get different results so that to find most bugs you need to use both approaches.
+We don't know which approach (project file or manual configuration) will give you the best results. It is recommended that you try both. It is possible that you will get different results so that to find most bugs you need to use both approaches.
 
 Later chapters will describe this in more detail.
 
@@ -125,35 +123,6 @@ portability warnings. 64-bit portability. code might work different on different
 Configuration problems. The recommendation is to only enable these during configuration.
 
 
-### Platform
-
-You should use a platform configuration that match your target.
-
-By default Cppcheck uses native platform configuration that works well if your code is compiled and executed locally.
-
-Cppcheck has builtin configurations for unix and windows targets. You can easily use these with the --platform command line flag.
-
-You can also create your own custom platform configuration in a xml file. Here is an example:
-
-    <?xml version="1"?>
-    <platform>
-      <char_bit>8</char_bit>
-      <default-sign>signed</default-sign>
-      <sizeof>
-        <short>2</short>
-        <int>4</int>
-        <long>4</long>
-        <long-long>8</long-long>
-        <float>4</float>
-        <double>8</double>
-        <long-double>12</long-double>
-        <pointer>4</pointer>
-        <size_t>4</size_t>
-        <wchar_t>2</wchar_t>
-      </sizeof>
-    </platform>
-
-
 ## Importing project
 
 You can import some project files and build configurations into Cppcheck.
@@ -199,6 +168,34 @@ If you can generate a compile database then it's possible to import that in Cppc
 In Linux you can use for instance the `bear` (build ear) utility to generate a compile database from arbitrary build tools:
 
     bear make
+
+## Platform
+
+You should use a platform configuration that match your target.
+
+By default Cppcheck uses native platform configuration that works well if your code is compiled and executed locally.
+
+Cppcheck has builtin configurations for unix and windows targets. You can easily use these with the --platform command line flag.
+
+You can also create your own custom platform configuration in a xml file. Here is an example:
+
+    <?xml version="1"?>
+    <platform>
+      <char_bit>8</char_bit>
+      <default-sign>signed</default-sign>
+      <sizeof>
+        <short>2</short>
+        <int>4</int>
+        <long>4</long>
+        <long-long>8</long-long>
+        <float>4</float>
+        <double>8</double>
+        <long-double>12</long-double>
+        <pointer>4</pointer>
+        <size_t>4</size_t>
+        <wchar_t>2</wchar_t>
+      </sizeof>
+    </platform>
 
 
 ## Preprocessor Settings
