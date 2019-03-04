@@ -49,6 +49,7 @@ private:
         TEST_CASE(function_arg);
         TEST_CASE(function_arg_any);
         TEST_CASE(function_arg_variadic);
+        TEST_CASE(function_arg_direction);
         TEST_CASE(function_arg_valid);
         TEST_CASE(function_arg_minsize);
         TEST_CASE(function_namespace);
@@ -271,6 +272,31 @@ private:
         ASSERT_EQUALS(true, library.isuninitargbad(tokenList.front(), 2));
         ASSERT_EQUALS(true, library.isuninitargbad(tokenList.front(), 3));
         ASSERT_EQUALS(true, library.isuninitargbad(tokenList.front(), 4));
+    }
+
+    void function_arg_direction() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "<function name=\"foo\">\n"
+                               "   <arg nr=\"1\" direction=\"in\"></arg>\n"
+                               "   <arg nr=\"2\" direction=\"out\"></arg>\n"
+                               "   <arg nr=\"3\" direction=\"inout\"></arg>\n"
+                               "   <arg nr=\"4\"></arg>\n"
+                               "</function>\n"
+                               "</def>";
+
+        Library library;
+        ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
+
+        TokenList tokenList(nullptr);
+        std::istringstream istr("foo(a,b,c,d);");
+        tokenList.createTokens(istr);
+        tokenList.front()->next()->astOperand1(tokenList.front());
+
+        ASSERT_EQUALS(Library::ArgumentChecks::Direction::DIR_IN, library.getArgDirection(tokenList.front(), 1));
+        ASSERT_EQUALS(Library::ArgumentChecks::Direction::DIR_OUT, library.getArgDirection(tokenList.front(), 2));
+        ASSERT_EQUALS(Library::ArgumentChecks::Direction::DIR_INOUT, library.getArgDirection(tokenList.front(), 3));
+        ASSERT_EQUALS(Library::ArgumentChecks::Direction::DIR_UNKNOWN, library.getArgDirection(tokenList.front(), 4));
     }
 
     void function_arg_valid() const {
