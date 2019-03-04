@@ -261,7 +261,12 @@ public:
         };
         std::vector<MinSize> minsizes;
 
-        enum Direction { DIR_IN, DIR_OUT, DIR_INOUT, DIR_UNKNOWN };
+        enum Direction {
+            DIR_IN,     ///< Input to called function. Data is treated as read-only.
+            DIR_OUT,    ///< Output to caller. Data is passed by reference or address and is potentially written.
+            DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
+            DIR_UNKNOWN ///< direction not known / specified
+        };
         Direction direction;
     };
 

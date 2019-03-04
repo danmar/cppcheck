@@ -1962,18 +1962,18 @@ void uninitvar_remquo(void)
 
 void uninivar_printf(char *Format, int Argument)
 {
-    char * format;
+    char * format_1, * format_2, * format_3;
     int argument1, argument2;
     // no warning is expected
     (void)std::printf("x");
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,argument1);
+    (void)std::printf(format_1,argument1);
     // cppcheck-suppress uninitvar
     (void)std::printf(Format,argument2);
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,Argument);
+    (void)std::printf(format_2,Argument);
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,1);
+    (void)std::printf(format_3,1);
 
     // no warning is expected
     (void)std::printf(Format,Argument);
@@ -2251,14 +2251,14 @@ void uninitvar_strcat(char *dest, const char * const source)
 
 void uninitvar_wcscat(wchar_t *dest, const wchar_t * const source)
 {
-    wchar_t *deststr;
+    wchar_t *deststr_1, *deststr_2;
     wchar_t *srcstr;
     // cppcheck-suppress uninitvar
-    (void)std::wcscat(deststr,srcstr);
+    (void)std::wcscat(deststr_1,srcstr);
     // cppcheck-suppress uninitvar
     (void)std::wcscat(dest,srcstr);
     // cppcheck-suppress uninitvar
-    (void)std::wcscat(deststr,source);
+    (void)std::wcscat(deststr_2,source);
 
     // no warning shall be shown for
     (void)std::wcscat(dest,source);
@@ -2364,13 +2364,13 @@ void uninivar_strpbrk(void)
 
 void uninivar_strncat(char *Ct, char *S, size_t N)
 {
-    char *ct;
+    char *ct_1, *ct_2;
     char *s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)std::strncat(ct,s,n1);
+    (void)std::strncat(ct_1,s,n1);
     // cppcheck-suppress uninitvar
-    (void)std::strncat(ct,S,N);
+    (void)std::strncat(ct_2,S,N);
     // cppcheck-suppress uninitvar
     (void)std::strncat(Ct,s,N);
     // cppcheck-suppress uninitvar
@@ -2382,13 +2382,13 @@ void uninivar_strncat(char *Ct, char *S, size_t N)
 
 void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
 {
-    wchar_t *ct;
+    wchar_t *ct_1, *ct_2;
     wchar_t *s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)std::wcsncat(ct,s,n1);
+    (void)std::wcsncat(ct_1,s,n1);
     // cppcheck-suppress uninitvar
-    (void)std::wcsncat(ct,S,N);
+    (void)std::wcsncat(ct_2,S,N);
     // cppcheck-suppress uninitvar
     (void)std::wcsncat(Ct,s,N);
     // cppcheck-suppress uninitvar

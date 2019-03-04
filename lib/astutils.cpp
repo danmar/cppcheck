@@ -886,8 +886,13 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
             if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
             else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
-                     argDirection == Library::ArgumentChecks::Direction::DIR_INOUT)
-                return true;
+                     argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
+                // With out or inout the direction of the content is specified, not a pointer itself, so ignore pointers for now
+                const ValueType * const valueType = tok1->valueType();
+                if (valueType && !valueType->pointer) {
+                    return true;
+                }
+            }
         }
 
         // if the library says 0 is invalid
