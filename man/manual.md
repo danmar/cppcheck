@@ -535,4 +535,14 @@ When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc, Cppcheck 
 
 Cppcheck already contains configurations for several libraries. They can be loaded as described below. Note that the configuration for the standard libraries of C and C++, std.cfg, is always loaded by cppcheck. If you create or update a configuration file for a popular library, we would appreciate if you upload it to us.
 
+### Using your own custom .cfg file
 
+You can create and use your own .cfg files for your projects. Use `--check-library` and `--enable=information` to get hints about what you should configure.
+
+It is recommended that you use the `Library Editor` in the `Cppcheck GUI` to edit configuration files. It is available in the `View` menu. Not all settings are documented in this manual yet.
+
+If you have a question about the .cfg file format it is recommended that you ask in the forum (<http://sourceforge.net/p/cppcheck/discussion/>).
+
+The command line cppcheck will try to load custom .cfg files from the working path - execute cppcheck from the path where the .cfg files are.
+
+The cppcheck GUI will try to load custom .cfg files from the project file path. The custom .cfg files should be shown in the `Edit Project File` dialog that you open from the `File` menu.
