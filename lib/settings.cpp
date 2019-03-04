@@ -50,6 +50,7 @@ Settings::Settings()
       enforcedLang(None),
       reportProgress(false),
       checkHeaders(true),
+      removeUnusedIncludedTemplates(false),
       checkConfiguration(false),
       checkLibrary(false)
 {

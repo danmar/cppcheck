@@ -158,6 +158,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --check-headers=no
             else if (std::strcmp(argv[i], "--check-headers=no") == 0)
                 mSettings->checkHeaders = false;
+            else if (std::strcmp(argv[i], "--remove-unused-included-templates") == 0)
+                mSettings->removeUnusedIncludedTemplates = true;
 
             // max ctu depth
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
@@ -1075,6 +1077,9 @@ void CmdLineParser::printHelp()
               "                         using e.g. ~ for home folder does not work. It is\n"
               "                         currently only possible to apply the base paths to\n"
               "                         files that are on a lower level in the directory tree.\n"
+              "    --remove-unused-included-templates\n"
+              "                         Remove unused templates in included files. This option\n"
+              "                         can be used to speed up the analysis.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"

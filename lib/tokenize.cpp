@@ -4256,9 +4256,14 @@ void Tokenizer::simplifyHeaders()
     // TODO : can we remove anything in headers here? Like unused declarations.
     // Maybe if --dump is used we want to have _everything_.
 
-    if (mSettings->checkHeaders)
+    if (mSettings->checkHeaders && !mSettings->removeUnusedIncludedTemplates)
         // Default=full analysis. All information in the headers are kept.
         return;
+
+    const bool checkHeaders = mSettings->checkHeaders;
+    const bool removeUnusedIncludedFunctions = mSettings->checkHeaders;
+    const bool removeUnusedIncludedClasses   = mSettings->checkHeaders;
+    const bool removeUnusedIncludedTemplates = mSettings->checkHeaders || mSettings->removeUnusedIncludedTemplates;
 
     // We want to remove selected stuff from the headers but not *everything*.
     // The intention here is to not damage the analysis of the source file.
@@ -4269,7 +4274,10 @@ void Tokenizer::simplifyHeaders()
     // functions and types to keep
     std::set<std::string> keep;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->fileIndex() != 0 || !tok->isName())
+        if (!tok->isName())
+            continue;
+
+        if (checkHeaders && tok->fileIndex() != 0)
             continue;
 
         if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
@@ -4290,7 +4298,7 @@ void Tokenizer::simplifyHeaders()
             continue;
 
         // Remove executable code
-        if (tok->str() == "{") {
+        if (mSettings->checkHeaders && tok->str() == "{") {
             // TODO: We probably need to keep the executable code if this function is called from the source file.
             const Token *prev = tok->previous();
             while (prev && prev->isName())
@@ -4305,48 +4313,54 @@ void Tokenizer::simplifyHeaders()
 
         if (Token::Match(tok, "[;{}]")) {
             // Remove unused function declarations
-            while (1) {
-                Token *start = tok->next();
-                while (start && functionStart.find(start->str()) != functionStart.end())
-                    start = start->next();
-                if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
-                    Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
-                else
-                    break;
+            if (removeUnusedIncludedFunctions) {
+                while (1) {
+                    Token *start = tok->next();
+                    while (start && functionStart.find(start->str()) != functionStart.end())
+                        start = start->next();
+                    if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
+                        Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
+                    else
+                        break;
+                }
             }
 
-            if (Token::Match(tok, "[;{}] class|struct %name% [:{]") && keep.find(tok->strAt(2)) == keep.end()) {
-                // Remove this class/struct
-                const Token *endToken = tok->tokAt(3);
-                if (endToken->str() == ":") {
-                    endToken = endToken->next();
-                    while (Token::Match(endToken, "%name%|,"))
-                        endToken = endToken->next();
-                }
-                if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;"))
-                    Token::eraseTokens(tok, endToken->link()->next());
-            }
-
-            if (Token::Match(tok->next(), "template < %name%")) {
-                const Token *tok2 = tok->tokAt(3);
-                while (Token::Match(tok2, "%name% %name% [,=>]")) {
-                    tok2 = tok2->tokAt(2);
-                    if (Token::Match(tok2, "= %name% [,>]"))
-                        tok2 = tok2->tokAt(2);
-                    if (tok2->str() == ",")
-                        tok2 = tok2->next();
-                }
-                if (Token::Match(tok2, "> class|struct %name% [;:{]") && keep.find(tok2->strAt(2)) == keep.end()) {
-                    const Token *endToken = tok2->tokAt(3);
+            if (removeUnusedIncludedClasses) {
+                if (Token::Match(tok, "[;{}] class|struct %name% [:{]") && keep.find(tok->strAt(2)) == keep.end()) {
+                    // Remove this class/struct
+                    const Token *endToken = tok->tokAt(3);
                     if (endToken->str() == ":") {
                         endToken = endToken->next();
                         while (Token::Match(endToken, "%name%|,"))
                             endToken = endToken->next();
                     }
-                    if (endToken && endToken->str() == "{")
-                        endToken = endToken->link()->next();
-                    if (endToken && endToken->str() == ";")
-                        Token::eraseTokens(tok, endToken);
+                    if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;"))
+                        Token::eraseTokens(tok, endToken->link()->next());
+                }
+            }
+
+            if (removeUnusedIncludedTemplates) {
+                if (Token::Match(tok->next(), "template < %name%")) {
+                    const Token *tok2 = tok->tokAt(3);
+                    while (Token::Match(tok2, "%name% %name% [,=>]")) {
+                        tok2 = tok2->tokAt(2);
+                        if (Token::Match(tok2, "= %name% [,>]"))
+                            tok2 = tok2->tokAt(2);
+                        if (tok2->str() == ",")
+                            tok2 = tok2->next();
+                    }
+                    if (Token::Match(tok2, "> class|struct %name% [;:{]") && keep.find(tok2->strAt(2)) == keep.end()) {
+                        const Token *endToken = tok2->tokAt(3);
+                        if (endToken->str() == ":") {
+                            endToken = endToken->next();
+                            while (Token::Match(endToken, "%name%|,"))
+                                endToken = endToken->next();
+                        }
+                        if (endToken && endToken->str() == "{")
+                            endToken = endToken->link()->next();
+                        if (endToken && endToken->str() == ";")
+                            Token::eraseTokens(tok, endToken);
+                    }
                 }
             }
         }
