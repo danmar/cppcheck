@@ -882,12 +882,16 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (!tok->function()) {
         // Check if direction (in, out, inout) is specified in the library configuration and use that
         if (!addressOf && settings) {
-            const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
-            if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
-                return false;
-            else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
-                     argDirection == Library::ArgumentChecks::Direction::DIR_INOUT)
-                return true;
+            // With in, out, inout the direction of the content is specified, not for a pointer itself
+            const ValueType * const valueType = tok1->valueType();
+            if (valueType && !valueType->pointer) {
+                const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
+                if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
+                    return false;
+                else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
+                         argDirection == Library::ArgumentChecks::Direction::DIR_INOUT)
+                    return true;
+            }
         }
 
         // if the library says 0 is invalid

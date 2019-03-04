@@ -2580,18 +2580,18 @@ void uninitvar_remquo(void)
 
 void uninitvar_printf(char *Format, int Argument)
 {
-    char * format;
+    char * format_1, * format_2, * format_3;
     int argument1, argument2;
     // no warning is expected
     (void)printf("x");
     // cppcheck-suppress uninitvar
-    (void)printf(format,argument1);
+    (void)printf(format_1,argument1);
     // cppcheck-suppress uninitvar
     (void)printf(Format,argument2);
     // cppcheck-suppress uninitvar
-    (void)printf(format,Argument);
+    (void)printf(format_2,Argument);
     // cppcheck-suppress uninitvar
-    (void)printf(format,1);
+    (void)printf(format_3,1);
 
     // no warning is expected
     (void)printf(Format,Argument);

@@ -1962,18 +1962,18 @@ void uninitvar_remquo(void)
 
 void uninivar_printf(char *Format, int Argument)
 {
-    char * format;
+    char * format_1, * format_2, * format_3;
     int argument1, argument2;
     // no warning is expected
     (void)std::printf("x");
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,argument1);
+    (void)std::printf(format_1,argument1);
     // cppcheck-suppress uninitvar
     (void)std::printf(Format,argument2);
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,Argument);
+    (void)std::printf(format_2,Argument);
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,1);
+    (void)std::printf(format_3,1);
 
     // no warning is expected
     (void)std::printf(Format,Argument);
