@@ -240,6 +240,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
                        # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
                        'motif': ['<X11/', '<Xm/'],
+                       #'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'], <- Enable after release of 1.88
                        'python': ['<Python.h>'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'sdl': ['<SDL.h>'],
