@@ -60,20 +60,23 @@ void nullPointer(const wxString &str)
     double *doublePtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToDouble(doublePtr);
+    double *doublePtr1 = NULL;
     // cppcheck-suppress nullPointer
-    (void)str.ToCDouble(doublePtr);
+    (void)str.ToCDouble(doublePtr1);
 
     long * longPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToLong(longPtr);
+    long * longPtr1 = NULL;
     // cppcheck-suppress nullPointer
-    (void)str.ToCLong(longPtr);
+    (void)str.ToCLong(longPtr1);
 
     unsigned long * ulongPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToULong(ulongPtr);
+    unsigned long * ulongPtr1 = NULL;
     // cppcheck-suppress nullPointer
-    (void)str.ToCULong(ulongPtr);
+    (void)str.ToCULong(ulongPtr1);
 
     long long * longLongPtr = NULL;
     // cppcheck-suppress nullPointer
