@@ -75,6 +75,18 @@ void bufferAccessOutOfBounds(void)
     fread(a,1,6,stdout);
 }
 
+void bufferAccessOutOfBounds_libraryDirectionConfiguration(void)
+{
+    // This tests whether the argument to isdigit() is configured with direction "in". This allows
+    // Cppcheck to report the error without marking it as inconclusive.
+    char arr[10];
+    char c = 'A';
+    (void)isdigit(c);
+    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress unreadVariable
+    arr[c] = 'x';
+}
+
 // memory leak
 
 void ignoreleak(void)
