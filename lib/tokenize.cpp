@@ -1928,7 +1928,7 @@ void Tokenizer::combineStringAndCharLiterals()
 {
     // Combine wide strings and wide characters
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[Lu] %char%|%str%")) {
+        if (Token::Match(tok, "L|u|U|u8 %char%|%str%")) {
             // Combine 'L "string"' and 'L 'c''
             tok->str(tok->next()->str());
             tok->deleteNext();
