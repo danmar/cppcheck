@@ -1130,6 +1130,30 @@ private:
                       tokenizeAndStringify("; return f(^(void){somecode});"));
         ASSERT_EQUALS("; asm ( \"a?(b?(c,asm(\"^{}\")):0):^{}\" ) ;",
                       tokenizeAndStringify(";a?(b?(c,^{}):0):^{};"));
+        ASSERT_EQUALS("template < typename T > "
+                      "CImg < T > operator| ( const char * const expression , const CImg < T > & img ) { "
+                      "return img | expression ; "
+                      "} "
+                      "template < typename T > "
+                      "CImg < T > operator^ ( const char * const expression , const CImg < T > & img ) { "
+                      "return img ^ expression ; "
+                      "} "
+                      "template < typename T > "
+                      "CImg < T > operator== ( const char * const expression , const CImg < T > & img ) { "
+                      "return img == expression ; "
+                      "}",
+                      tokenizeAndStringify("template < typename T >"
+                                           "inline CImg<T> operator|(const char *const expression, const CImg<T>& img) {"
+                                           "  return img | expression ;"
+                                           "}"
+                                           "template<typename T>"
+                                           "inline CImg<T> operator^(const char *const expression, const CImg<T>& img) {"
+                                           "  return img ^ expression;"
+                                           "}"
+                                           "template<typename T>"
+                                           "inline CImg<T> operator==(const char *const expression, const CImg<T>& img) {"
+                                           "  return img == expression;"
+                                           "}"));
     }
 
     void ifAddBraces1() {
