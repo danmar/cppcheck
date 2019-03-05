@@ -44,6 +44,8 @@ void bufferAccessOutOfBounds(void)
     // cppcheck-suppress bufferAccessOutOfBounds
     // TODO cppcheck-suppress redundantCopy
     strcpy(a, "abcde");
+    // cppcheck-suppress bufferAccessOutOfBounds
+    strcpy_s(a, 10, "abcdefghij");
     // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcde",5);
     // cppcheck-suppress bufferAccessOutOfBounds
@@ -190,6 +192,10 @@ void nullpointer(int value)
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     wcscmp(0,0);
+    // cppcheck-suppress nullPointer
+    strcpy_s(0,1,1);
+    // cppcheck-suppress nullPointer
+    strcpy_s(1,1,0);
     // cppcheck-suppress nullPointer
     strncpy(0,0,1);
     // cppcheck-suppress nullPointer
@@ -2956,6 +2962,16 @@ void uninitvar_strcpy(void)
     (void)strcpy(str1,str2);
 }
 
+void uninitvar_strcpy_s(char * strDest)
+{
+    char *strUninit1;
+    char *strUninit2;
+    // cppcheck-suppress uninitvar
+    (void)strcpy_s(strUninit1, 1, "a");
+    // cppcheck-suppress uninitvar
+    (void)strcpy_s(strDest, 1, strUninit2);
+}
+
 void uninitvar_wcscpy(void)
 {
     wchar_t *str1;
@@ -3822,6 +3838,9 @@ void invalidFunctionArg(char c)
     (void)toupper(c);
     (void)toupper(0);
     (void)toupper(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)strcpy_s(1,0,"a");
 }
 
 void invalidFunctionArgString(char c)
