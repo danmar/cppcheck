@@ -9390,7 +9390,7 @@ void Tokenizer::simplifyAsm2()
         if (tok->str() != "^")
             continue;
 
-        if (Token::simpleMatch(tok, "^ {") || Token::simpleMatch(tok->linkAt(1), ") {")) {
+        if (Token::simpleMatch(tok, "^ {") || (Token::simpleMatch(tok->linkAt(1), ") {") && tok->strAt(-1) != "operator")) {
             Token * start = tok;
             while (start && !Token::Match(start, "[,(;{}=]")) {
                 if (start->link() && Token::Match(start, ")|]|>"))
