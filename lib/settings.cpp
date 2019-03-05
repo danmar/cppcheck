@@ -51,6 +51,7 @@ Settings::Settings()
       reportProgress(false),
       checkHeaders(true),
       removeUnusedIncludedTemplates(false),
+      removeUnusedTemplates(false),
       checkConfiguration(false),
       checkLibrary(false)
 {

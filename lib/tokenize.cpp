@@ -4256,13 +4256,14 @@ void Tokenizer::simplifyHeaders()
     // TODO : can we remove anything in headers here? Like unused declarations.
     // Maybe if --dump is used we want to have _everything_.
 
-    if (mSettings->checkHeaders && !mSettings->removeUnusedIncludedTemplates)
+    if (mSettings->checkHeaders && !mSettings->removeUnusedTemplates && !mSettings->removeUnusedIncludedTemplates)
         // Default=full analysis. All information in the headers are kept.
         return;
 
     const bool checkHeaders = mSettings->checkHeaders;
     const bool removeUnusedIncludedFunctions = mSettings->checkHeaders;
     const bool removeUnusedIncludedClasses   = mSettings->checkHeaders;
+    const bool removeUnusedTemplates = mSettings->removeUnusedTemplates;
     const bool removeUnusedIncludedTemplates = mSettings->checkHeaders || mSettings->removeUnusedIncludedTemplates;
 
     // We want to remove selected stuff from the headers but not *everything*.
@@ -4293,12 +4294,10 @@ void Tokenizer::simplifyHeaders()
     const std::set<std::string> functionStart{"static", "const", "unsigned", "signed", "void", "bool", "char", "short", "int", "long", "float", "*"};
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->fileIndex() == 0)
-            // Keep all code in the source file
-            continue;
+        const bool isIncluded = (tok->fileIndex() != 0);
 
         // Remove executable code
-        if (mSettings->checkHeaders && tok->str() == "{") {
+        if (isIncluded && mSettings->checkHeaders && tok->str() == "{") {
             // TODO: We probably need to keep the executable code if this function is called from the source file.
             const Token *prev = tok->previous();
             while (prev && prev->isName())
@@ -4313,7 +4312,7 @@ void Tokenizer::simplifyHeaders()
 
         if (Token::Match(tok, "[;{}]")) {
             // Remove unused function declarations
-            if (removeUnusedIncludedFunctions) {
+            if (isIncluded && removeUnusedIncludedFunctions) {
                 while (1) {
                     Token *start = tok->next();
                     while (start && functionStart.find(start->str()) != functionStart.end())
@@ -4325,7 +4324,7 @@ void Tokenizer::simplifyHeaders()
                 }
             }
 
-            if (removeUnusedIncludedClasses) {
+            if (isIncluded && removeUnusedIncludedClasses) {
                 if (Token::Match(tok, "[;{}] class|struct %name% [:{]") && keep.find(tok->strAt(2)) == keep.end()) {
                     // Remove this class/struct
                     const Token *endToken = tok->tokAt(3);
@@ -4339,7 +4338,7 @@ void Tokenizer::simplifyHeaders()
                 }
             }
 
-            if (removeUnusedIncludedTemplates) {
+            if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
                 if (Token::Match(tok->next(), "template < %name%")) {
                     const Token *tok2 = tok->tokAt(3);
                     while (Token::Match(tok2, "%name% %name% [,=>]")) {

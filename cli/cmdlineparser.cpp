@@ -155,9 +155,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings->dump = true;
 
+            // TODO: These options are about removing code. Instead of having lots of different options
+            // can we create one option that is customizable somehow.
             // --check-headers=no
             else if (std::strcmp(argv[i], "--check-headers=no") == 0)
                 mSettings->checkHeaders = false;
+            else if (std::strcmp(argv[i], "--remove-unused-templates") == 0)
+                mSettings->removeUnusedTemplates = true;
             else if (std::strcmp(argv[i], "--remove-unused-included-templates") == 0)
                 mSettings->removeUnusedIncludedTemplates = true;
 
@@ -1077,12 +1081,10 @@ void CmdLineParser::printHelp()
               "                         using e.g. ~ for home folder does not work. It is\n"
               "                         currently only possible to apply the base paths to\n"
               "                         files that are on a lower level in the directory tree.\n"
+              "    --remove-unused-templates\n"
+              "                         Remove unused templates.\n"
               "    --remove-unused-included-templates\n"
-              "                         Remove unused templates in included files. This option\n"
-              "                         can be used to speed up the analysis. The analysis of a\n"
-              "                         template can be more accurate when it is instantiated and\n"
-              "                         therefore it can be a good idea to only analyse the\n"
-              "                         instantiated templates.\n"
+              "                         Remove unused templates in included files.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"

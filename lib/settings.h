@@ -290,6 +290,9 @@ public:
      * be turned off to save CPU */
     bool checkHeaders;
 
+    /** Remove unused templates in all files */
+    bool removeUnusedTemplates;
+
     /** Remove unused included templates */
     bool removeUnusedIncludedTemplates;
 
