@@ -38,7 +38,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.12"
+CLIENT_VERSION = "1.1.13"
 
 
 def checkRequirements():
@@ -239,6 +239,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
                        # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
+                       'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
                        #'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'], <- Enable after release of 1.88
                        'python': ['<Python.h>'],
