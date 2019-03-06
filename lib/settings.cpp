@@ -49,11 +49,11 @@ Settings::Settings()
       maxConfigs(12),
       enforcedLang(None),
       reportProgress(false),
-      checkHeaders(true),
-      removeUnusedIncludedTemplates(false),
-      removeUnusedTemplates(false),
       checkConfiguration(false),
-      checkLibrary(false)
+      checkLibrary(false),
+      checkHeaders(true),
+      removeUnusedTemplates(false),
+      removeUnusedIncludedTemplates(false)
 {
 }
 
