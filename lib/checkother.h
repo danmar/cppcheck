@@ -86,6 +86,7 @@ public:
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
         checkOther.checkPipeParameterSize();
+        checkOther.checkRedundantCopy();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -101,7 +102,6 @@ public:
         checkOther.checkMisusedScopedObject();
 
         checkOther.checkInvalidFree();
-        checkOther.checkRedundantCopy();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkAccessOfMovedVariable();
     }
