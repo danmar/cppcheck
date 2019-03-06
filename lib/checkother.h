@@ -89,6 +89,7 @@ public:
         checkOther.checkRedundantCopy();
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
+        checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -102,7 +103,6 @@ public:
         checkOther.checkMisusedScopedObject();
 
         checkOther.checkInvalidFree();
-        checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkAccessOfMovedVariable();
     }
 
