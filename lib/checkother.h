@@ -86,22 +86,24 @@ public:
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
         checkOther.checkPipeParameterSize();
-        checkOther.clarifyCalculation();
-        checkOther.clarifyStatement();
-        checkOther.checkPassByReference();
-        checkOther.checkCastIntToCharAndBack();
-        checkOther.checkMisusedScopedObject();
-        checkOther.checkInvalidFree();
-        checkOther.checkRedundantCopy();
-        checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
-        checkOther.checkAccessOfMovedVariable();
     }
 
     /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
+        CheckOther checkOther(tokenizer, settings, errorLogger);
+
+        // Checks
+        checkOther.clarifyCalculation();
+        checkOther.clarifyStatement();
+        checkOther.checkPassByReference();
+        checkOther.checkCastIntToCharAndBack();
+
+        checkOther.checkMisusedScopedObject();
+
+        checkOther.checkInvalidFree();
+        checkOther.checkRedundantCopy();
+        checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
+        checkOther.checkAccessOfMovedVariable();
     }
 
     /** @brief Clarify calculation for ".. a * b ? .." */
