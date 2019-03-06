@@ -85,6 +85,7 @@ public:
         checkOther.checkConstArgument();
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
+        checkOther.checkPipeParameterSize();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -98,7 +99,6 @@ public:
         checkOther.checkCastIntToCharAndBack();
 
         checkOther.checkMisusedScopedObject();
-        checkOther.checkPipeParameterSize();
 
         checkOther.checkInvalidFree();
         checkOther.checkRedundantCopy();
