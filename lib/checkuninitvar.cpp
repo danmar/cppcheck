@@ -1199,6 +1199,14 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             if (Token::Match(ftok, "%name% (")) {
                 // check how function handle uninitialized data arguments..
                 const Function *function = ftok->function();
+
+                if (!function && mSettings) {
+                    // Function definition not seen, check if direction is specified in the library configuration
+                    const Library::ArgumentChecks::Direction argDirection = mSettings->library.getArgDirection(ftok, 1 + argumentNumber);
+                    if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
+                        return false;
+                }
+
                 const Variable *arg      = function ? function->getArgumentVar(argumentNumber) : nullptr;
                 const Token *argStart    = arg ? arg->typeStartToken() : nullptr;
                 while (argStart && argStart->previous() && argStart->previous()->isName())
