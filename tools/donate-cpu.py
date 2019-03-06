@@ -38,7 +38,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.13"
+CLIENT_VERSION = "1.1.14"
 
 
 def checkRequirements():
@@ -246,6 +246,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'sdl': ['<SDL.h>'],
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
+                       'windows': ['<windows.h>'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
                       }
