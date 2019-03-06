@@ -1010,13 +1010,16 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             }
         }
 
-        if (printWarning && Token::Match(tok2, "strncpy|strncat ( %varid% ,", arrayInfo.declarationId()) && Token::Match(tok2->linkAt(1)->tokAt(-2), ", %num% )")) {
-            const Token* param3 = tok2->linkAt(1)->previous();
+        if (printWarning && Token::Match(tok2, "strncpy|strncat ( %varid% ,", arrayInfo.declarationId())) {
+            const std::vector<const Token *> args = getArguments(tok2);
+            const Token * const sizeArg = args.size() == 3 ? args[2] : nullptr;
+            const bool knownSize = sizeArg && sizeArg->hasKnownIntValue();
+            const Token * const endToken = tok2->linkAt(1);
 
             // check for strncpy which is not terminated
-            if (tok2->str() == "strncpy") {
+            if (knownSize && tok2->str() == "strncpy") {
                 // strncpy takes entire variable length as input size
-                const MathLib::biguint num = MathLib::toULongNumber(param3->str());
+                const MathLib::bigint num = sizeArg->getKnownIntValue();
 
                 // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
                 if (printInconclusive && num >= total_size) {
@@ -1037,17 +1040,21 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             }
 
             // Dangerous usage of strncat..
-            else if (tok2->str() == "strncat") {
-                const MathLib::biguint n = MathLib::toULongNumber(param3->str());
+            else if (knownSize && tok2->str() == "strncat") {
+                const MathLib::bigint n = sizeArg->getKnownIntValue();
                 if (n >= total_size)
                     strncatUsageError(tok2);
             }
 
             // Dangerous usage of strncpy + strncat..
-            if (Token::Match(param3->tokAt(2), "; strncat ( %varid% ,", arrayInfo.declarationId()) && Token::Match(param3->linkAt(4)->tokAt(-2), ", %num% )")) {
-                const MathLib::biguint n = MathLib::toULongNumber(param3->str()) + MathLib::toULongNumber(param3->linkAt(4)->strAt(-1));
-                if (n > total_size)
-                    strncatUsageError(param3->tokAt(3));
+            if (knownSize && Token::Match(endToken, ") ; strncat ( %varid% ,", arrayInfo.declarationId())) {
+                const std::vector<const Token *> args2 = getArguments(endToken->tokAt(2));
+                const Token *sizeArg2 = args2.size() == 3 ? args2[2] : nullptr;
+                if (sizeArg2 && sizeArg2->hasKnownIntValue()) {
+                    const MathLib::bigint n = sizeArg->getKnownIntValue() + sizeArg2->getKnownIntValue();
+                    if (n > total_size)
+                        strncatUsageError(endToken->tokAt(4));
+                }
             }
         }
 

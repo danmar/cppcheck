@@ -917,6 +917,10 @@ public:
         return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
     }
 
+    MathLib::bigint getKnownIntValue() const {
+        return mImpl->mValues->front().intvalue;
+    }
+
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
