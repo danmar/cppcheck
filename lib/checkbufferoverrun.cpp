@@ -1015,9 +1015,14 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             const Token * const sizeArg = args.size() == 3 ? args[2] : nullptr;
             const bool knownSize = sizeArg && sizeArg->hasKnownIntValue();
             const Token * const endToken = tok2->linkAt(1);
+            const bool smallerSrcString = (args.size() == 3 &&
+                                           args[1]->hasKnownValue() &&
+                                           args[1]->values().front().isTokValue() &&
+                                           args[1]->values().front().tokvalue->tokType() == Token::eString &&
+                                           Token::getStrLength(args[1]->values().front().tokvalue) < sizeArg->getKnownIntValue());
 
             // check for strncpy which is not terminated
-            if (knownSize && tok2->str() == "strncpy") {
+            if (knownSize && !smallerSrcString && tok2->str() == "strncpy") {
                 // strncpy takes entire variable length as input size
                 const MathLib::bigint num = sizeArg->getKnownIntValue();
 
@@ -1040,7 +1045,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
             }
 
             // Dangerous usage of strncat..
-            else if (knownSize && tok2->str() == "strncat") {
+            else if (knownSize && !smallerSrcString && tok2->str() == "strncat") {
                 const MathLib::bigint n = sizeArg->getKnownIntValue();
                 if (n >= total_size)
                     strncatUsageError(tok2);

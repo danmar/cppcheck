@@ -221,6 +221,7 @@ private:
         TEST_CASE(terminateStrncpy1);
         TEST_CASE(terminateStrncpy2);
         TEST_CASE(terminateStrncpy3);
+        TEST_CASE(terminateStrncpy4);
         TEST_CASE(recursive_long_time);
 
         TEST_CASE(crash1);  // Ticket #1587 - crash
@@ -3603,6 +3604,20 @@ private:
               "    strncpy(p, str, 100);\n"
               "}\n", false);
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'str' may not be null-terminated after the call to strncpy().\n", errout.str());
+    }
+
+    void terminateStrncpy4() {
+        check("void bar() {\n"
+              "    char buf[4];\n"
+              "    strncpy(buf, \"ab\", 4);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void bar() {\n"
+              "    char buf[4];\n"
+              "    strncpy(buf, \"abcde\", 4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void recursive_long_time() {
