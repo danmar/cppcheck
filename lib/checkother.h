@@ -88,6 +88,7 @@ public:
         checkOther.checkPipeParameterSize();
         checkOther.checkRedundantCopy();
         checkOther.clarifyCalculation();
+        checkOther.checkPassByReference();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -96,7 +97,6 @@ public:
 
         // Checks
         checkOther.clarifyStatement();
-        checkOther.checkPassByReference();
         checkOther.checkCastIntToCharAndBack();
 
         checkOther.checkMisusedScopedObject();
