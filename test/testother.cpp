@@ -5305,7 +5305,7 @@ private:
               "  char *a; a = new char[1024];\n"
               "  delete[] (a + 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset..\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
