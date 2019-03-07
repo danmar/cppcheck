@@ -5287,31 +5287,31 @@ private:
               "  char *a; a = malloc(1024);\n"
               "  free(a + 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = malloc(1024);\n"
               "  free(a - 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = malloc(1024);\n"
               "  free(10 + a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char[1024];\n"
               "  delete[] (a + 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset..\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
               "  delete a + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
@@ -5327,7 +5327,7 @@ private:
               "  delete a + 10;\n"
               "  delete b + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
@@ -5343,14 +5343,14 @@ private:
               "  bar()\n"
               "  delete a + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(size_t xx) {\n"
               "  char *ptr; ptr = malloc(42);\n"
               "  ptr += xx;\n"
-              "  free(ptr - xx - 1);\n"
+              "  free(ptr + 1 - xx);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(size_t xx) {\n"
               "  char *ptr; ptr = malloc(42);\n"

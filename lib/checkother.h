@@ -90,6 +90,7 @@ public:
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
+        checkOther.checkInvalidFree();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -102,7 +103,6 @@ public:
 
         checkOther.checkMisusedScopedObject();
 
-        checkOther.checkInvalidFree();
         checkOther.checkAccessOfMovedVariable();
     }
 
@@ -169,7 +169,7 @@ public:
 
     /** @brief %Check for free() operations on invalid memory locations */
     void checkInvalidFree();
-    void invalidFreeError(const Token *tok, bool inconclusive);
+    void invalidFreeError(const Token *tok, const std::string &allocation, bool inconclusive);
 
     /** @brief %Check for code creating redundant copies */
     void checkRedundantCopy();
@@ -285,7 +285,7 @@ private:
         c.negativeBitwiseShiftError(nullptr, 2);
         c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
         c.raceAfterInterlockedDecrementError(nullptr);
-        c.invalidFreeError(nullptr, false);
+        c.invalidFreeError(nullptr, "malloc", false);
 
         //performance
         c.redundantCopyError(nullptr,  "varname");
