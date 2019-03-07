@@ -3175,6 +3175,21 @@ private:
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("struct AB { int a; int b; };\n"  // pass struct members to memcmp by address
+                       "void f(void) {\n"
+                       "    struct AB ab;\n"
+                       "    (void)memcmp(&ab.a, &ab.b, sizeof(int));\n"
+                       "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
+
+        checkUninitVar("struct AB { int a; int b; };\n"  // pass struct members to memset and memcmp by address
+                       "void f(void) {\n"
+                       "    struct AB ab;\n"
+                       "    memset(&ab, 0, sizeof(struct AB));\n"
+                       "    (void)memcmp(&ab.a, &ab.b, sizeof(int));\n"
+                       "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void do_something(const struct AB ab);\n"
                        "void f(void) {\n"
