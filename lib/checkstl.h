@@ -60,6 +60,7 @@ public:
         }
 
         CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.checkAutoPointer();
         checkStl.erase();
         checkStl.if_find();
         checkStl.iterators();
@@ -82,7 +83,6 @@ public:
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
         checkStl.stlBoundaries();
-        checkStl.checkAutoPointer();
         checkStl.uselessCalls();
         checkStl.checkDereferenceInvalidIterator();
 
