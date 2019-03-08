@@ -167,14 +167,19 @@ private:
         settings.inconclusive = inconclusive;
         settings.standards.cpp = cppstandard;
 
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
+
+        CheckStl checkStl(&tokenizer, &settings, this);
+
         tokenizer.tokenize(istr, "test.cpp");
+        checkStl.runChecks(&tokenizer, &settings, this);
+
         tokenizer.simplifyTokenList2();
 
         // Check..
-        CheckStl checkStl(&tokenizer, &settings, this);
         checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
     }
     void check(const std::string &code, const bool inconclusive=false) {

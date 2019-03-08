@@ -60,6 +60,7 @@ public:
         }
 
         CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
     }
@@ -88,7 +89,6 @@ public:
         // Style check
         checkStl.size();
         checkStl.redundantCondition();
-        checkStl.missingComparison();
         checkStl.useStlAlgorithm();
     }
 
