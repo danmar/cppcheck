@@ -3175,20 +3175,35 @@ private:
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("struct AB { int a; int b; };\n"  // pass struct members to memcmp by address
-                       "void f(void) {\n"
-                       "    struct AB ab;\n"
-                       "    (void)memcmp(&ab.a, &ab.b, sizeof(int));\n"
-                       "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
+        {
+            const char argDirectionsTestXmlData[] = "<?xml version=\"1.0\"?>\n"
+                                                    "<def>\n"
+                                                    "  <function name=\"uninitvar_funcArgInTest\">\n"
+                                                    "    <arg nr=\"1\" direction=\"in\"/>\n"
+                                                    "  </function>\n"
+                                                    "  <function name=\"uninitvar_funcArgOutTest\">\n"
+                                                    "    <arg nr=\"1\" direction=\"out\"/>\n"
+                                                    "  </function>\n"
+                                                    "</def>";
 
-        checkUninitVar("struct AB { int a; int b; };\n"  // pass struct members to memset and memcmp by address
-                       "void f(void) {\n"
-                       "    struct AB ab;\n"
-                       "    memset(&ab, 0, sizeof(struct AB));\n"
-                       "    (void)memcmp(&ab.a, &ab.b, sizeof(int));\n"
-                       "}\n", "test.c");
-        ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(true, settings.library.loadxmldata(argDirectionsTestXmlData, sizeof(argDirectionsTestXmlData) / sizeof(argDirectionsTestXmlData[0])));
+
+            checkUninitVar("struct AB { int a; };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    uninitvar_funcArgInTest(&ab);\n"
+                           "    x = ab;\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+            checkUninitVar("struct AB { int a; };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    uninitvar_funcArgOutTest(&ab);\n"
+                           "    x = ab;\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("", errout.str());
+        }
 
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void do_something(const struct AB ab);\n"
