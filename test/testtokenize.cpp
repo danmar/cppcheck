@@ -6193,8 +6193,11 @@ private:
     }
 
     void simplifyOperatorName10() { // #8746
-        const char code[] = "using a::operator=;";
-        ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code));
+        const char code1[] = "using a::operator=;";
+        ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code1));
+
+        const char code2[] = "return &Fred::operator!=;";
+        ASSERT_EQUALS("return & Fred :: operator!= ;", tokenizeAndStringify(code2));
     }
 
     void simplifyOperatorName11() { // #8889

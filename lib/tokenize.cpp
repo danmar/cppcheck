@@ -242,7 +242,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
             if (end)
                 end = end->next();
         } else if (end->str() == "(") {
-            if (tok->previous()->str().find("operator")  == 0) {
+            if (tok->previous()->str().compare(0, 8, "operator")  == 0) {
                 // conversion operator
                 return false;
             } else if (tok->previous()->str() == "typedef") {
@@ -9922,19 +9922,10 @@ void Tokenizer::simplifyOperatorName()
     if (isC())
         return;
 
-    bool isUsingStmt = false;
-
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == ";") {
-            if (isUsingStmt && Token::Match(tok->tokAt(-3), "using|:: operator %op% ;")) {
-                tok->previous()->previous()->str("operator" + tok->previous()->str());
-                tok->deletePrevious();
-            }
-            isUsingStmt = false;
-            continue;
-        }
-        if (tok->str() == "using") {
-            isUsingStmt = true;
+        if (Token::Match(tok, "using|:: operator %op% ;")) {
+            tok->next()->str("operator" + tok->strAt(2));
+            tok->next()->deleteNext();
             continue;
         }
 
