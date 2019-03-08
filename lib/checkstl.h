@@ -62,6 +62,7 @@ public:
         CheckStl checkStl(tokenizer, settings, errorLogger);
         checkStl.if_find();
         checkStl.iterators();
+        checkStl.mismatchingContainers();
         checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
@@ -77,7 +78,6 @@ public:
 
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
-        checkStl.mismatchingContainers();
         checkStl.erase();
         checkStl.pushback();
         checkStl.stlBoundaries();
