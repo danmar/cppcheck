@@ -1019,6 +1019,7 @@ void CheckBufferOverrun::checkScope_inner(const Token *tok, const ArrayInfo &arr
                                            args[1]->hasKnownValue() &&
                                            args[1]->values().front().isTokValue() &&
                                            args[1]->values().front().tokvalue->tokType() == Token::eString &&
+                                           knownSize &&
                                            Token::getStrLength(args[1]->values().front().tokvalue) < sizeArg->getKnownIntValue());
 
             // check for strncpy which is not terminated

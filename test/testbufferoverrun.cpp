@@ -229,6 +229,7 @@ private:
         TEST_CASE(crash3);  // Ticket #5426 - crash
         TEST_CASE(crash4);  // Ticket #8679 - crash
         TEST_CASE(crash5);  // Ticket #8644 - crash
+        TEST_CASE(crash6);  // Ticket #9024 - crash
 
         TEST_CASE(executionPaths1);
         TEST_CASE(executionPaths2);
@@ -3699,6 +3700,13 @@ private:
               "    void b(char **dst) {\n"
               "        *dst = malloc(50);\n"
               "    }\n"
+              "}");
+    }
+
+    void crash6() { // 8644 - token has varId() but variable() is null
+        check("void start(char* name) {\n"
+              "char snapname[64] = { 0 }; \n"
+              "strncpy(snapname, \"snapshot\", arrayLength(snapname)); \n"
               "}");
     }
 
