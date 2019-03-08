@@ -60,6 +60,7 @@ public:
         }
 
         CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.erase();
         checkStl.if_find();
         checkStl.iterators();
         checkStl.mismatchingContainers();
@@ -79,7 +80,6 @@ public:
 
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
-        checkStl.erase();
         checkStl.stlBoundaries();
         checkStl.string_c_str();
         checkStl.checkAutoPointer();
