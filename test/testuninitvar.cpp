@@ -3175,6 +3175,36 @@ private:
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
+        {
+            const char argDirectionsTestXmlData[] = "<?xml version=\"1.0\"?>\n"
+                                                    "<def>\n"
+                                                    "  <function name=\"uninitvar_funcArgInTest\">\n"
+                                                    "    <arg nr=\"1\" direction=\"in\"/>\n"
+                                                    "  </function>\n"
+                                                    "  <function name=\"uninitvar_funcArgOutTest\">\n"
+                                                    "    <arg nr=\"1\" direction=\"out\"/>\n"
+                                                    "  </function>\n"
+                                                    "</def>";
+
+            ASSERT_EQUALS(true, settings.library.loadxmldata(argDirectionsTestXmlData, sizeof(argDirectionsTestXmlData) / sizeof(argDirectionsTestXmlData[0])));
+
+            checkUninitVar("struct AB { int a; };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    uninitvar_funcArgInTest(&ab);\n"
+                           "    x = ab;\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
+
+            checkUninitVar("struct AB { int a; };\n"
+                           "void f(void) {\n"
+                           "    struct AB ab;\n"
+                           "    uninitvar_funcArgOutTest(&ab);\n"
+                           "    x = ab;\n"
+                           "}\n", "test.c");
+            ASSERT_EQUALS("", errout.str());
+        }
+
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void do_something(const struct AB ab);\n"
                        "void f(void) {\n"

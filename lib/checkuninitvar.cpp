@@ -1205,6 +1205,8 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
                     const Library::ArgumentChecks::Direction argDirection = mSettings->library.getArgDirection(ftok, 1 + argumentNumber);
                     if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
                         return false;
+                    else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT)
+                        return true;
                 }
 
                 const Variable *arg      = function ? function->getArgumentVar(argumentNumber) : nullptr;
