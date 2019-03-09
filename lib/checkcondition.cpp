@@ -161,6 +161,11 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
         if (Token::Match(tok2, "%varid% =", varid)) {
             return true;
         }
+        if (bitop == '&' && Token::Match(tok2, "%varid% &= %num% ;", varid)) {
+            const MathLib::bigint num2 = MathLib::toLongNumber(tok2->strAt(2));
+            if (0 == (num & num2))
+                mismatchingBitAndError(assignTok, num, tok2, num2);
+        }
         if (Token::Match(tok2, "++|-- %varid%", varid) || Token::Match(tok2, "%varid% ++|--", varid))
             return true;
         if (Token::Match(tok2, "[(,] &| %varid% [,)]", varid) && isParameterChanged(tok2))
