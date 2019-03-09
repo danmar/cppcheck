@@ -5348,6 +5348,8 @@ void SymbolDatabase::setValueTypeInTokenList()
                 }
             }
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
+        } else if (tok->isBoolean()) {
+            setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
         } else if (tok->tokType() == Token::eChar)
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 0U));
         else if (tok->tokType() == Token::eString) {

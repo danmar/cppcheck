@@ -5959,10 +5959,12 @@ private:
         ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\");", "?"));
         ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"));", "?"));
 
-        // Boolean operators
+        // Boolean operators/literals
         ASSERT_EQUALS("bool", typeOf("a > b;", ">"));
         ASSERT_EQUALS("bool", typeOf(";!b;", "!"));
         ASSERT_EQUALS("bool", typeOf("c = a && b;", "&&"));
+        ASSERT_EQUALS("bool", typeOf("a = false;", "false"));
+        ASSERT_EQUALS("bool", typeOf("a = true;", "true"));
 
         // shift => result has same type as lhs
         ASSERT_EQUALS("signed int", typeOf("int x; a = x << 1U;", "<<"));
