@@ -69,6 +69,7 @@ public:
         checkStl.outOfBoundsIndexExpression();
         checkStl.pushback();
         checkStl.string_c_str();
+        checkStl.uselessCalls();
     }
 
     /** Simplified checks. The token list is simplified. */
@@ -83,7 +84,6 @@ public:
         checkStl.negativeIndex();
         checkStl.stlBoundaries();
         checkStl.checkAutoPointer();
-        checkStl.uselessCalls();
         checkStl.checkDereferenceInvalidIterator();
 
         // Style check
