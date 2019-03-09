@@ -8210,6 +8210,7 @@ private:
         if (!tokenList.list.createTokens(istr,"test.cpp"))
             return "ERROR";
 
+        tokenList.combineStringAndCharLiterals();
         tokenList.combineOperators();
         tokenList.createLinks();
         tokenList.createLinks2();
@@ -8295,9 +8296,11 @@ private:
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
-
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
+        ASSERT_EQUALS("'X''a'>", testAst("(u'X' > u'a')"));
+        ASSERT_EQUALS("'X''a'>", testAst("(U'X' > U'a')"));
+        ASSERT_EQUALS("'X''a'>", testAst("(u8'X' > u8'a')"));
 
         ASSERT_EQUALS("a0>bc/d:?", testAst("(a>0) ? (b/(c)) : d;"));
         ASSERT_EQUALS("abc/+d+", testAst("a + (b/(c)) + d;"));
