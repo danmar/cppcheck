@@ -48,14 +48,20 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    /** @brief Run checks against the normal token list */
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         if (!tokenizer->isCPP())
             return;
 
         CheckBoost checkBoost(tokenizer, settings, errorLogger);
-
         checkBoost.checkBoostForeachModification();
+    }
+
+    /** Simplified checks. The token list is simplified. */
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+        (void)tokenizer;
+        (void)settings;
+        (void)errorLogger;
     }
 
     /** @brief %Check for container modification while using the BOOST_FOREACH macro */
