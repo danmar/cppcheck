@@ -322,7 +322,7 @@ public:
         return arg && arg->iteratorInfo.it ? &arg->iteratorInfo : nullptr;
     }
 
-    bool hasminsize(const std::string &functionName) const;
+    bool hasminsize(const Token *ftok) const;
 
     const std::vector<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);

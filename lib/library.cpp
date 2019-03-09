@@ -648,13 +648,13 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
 
                     ArgumentChecks::MinSize::Type type;
                     if (strcmp(typeattr,"strlen")==0)
-                        type = ArgumentChecks::MinSize::STRLEN;
+                        type = ArgumentChecks::MinSize::Type::STRLEN;
                     else if (strcmp(typeattr,"argvalue")==0)
-                        type = ArgumentChecks::MinSize::ARGVALUE;
+                        type = ArgumentChecks::MinSize::Type::ARGVALUE;
                     else if (strcmp(typeattr,"sizeof")==0)
-                        type = ArgumentChecks::MinSize::SIZEOF;
+                        type = ArgumentChecks::MinSize::Type::SIZEOF;
                     else if (strcmp(typeattr,"mul")==0)
-                        type = ArgumentChecks::MinSize::MUL;
+                        type = ArgumentChecks::MinSize::Type::MUL;
                     else
                         return Error(BAD_ATTRIBUTE_VALUE, typeattr);
 
@@ -664,9 +664,9 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
                         return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
-                    ac.minsizes.reserve(type == ArgumentChecks::MinSize::MUL ? 2 : 1);
+                    ac.minsizes.reserve(type == ArgumentChecks::MinSize::Type::MUL ? 2 : 1);
                     ac.minsizes.emplace_back(type,argattr[0]-'0');
-                    if (type == ArgumentChecks::MinSize::MUL) {
+                    if (type == ArgumentChecks::MinSize::Type::MUL) {
                         const char *arg2attr = argnode->Attribute("arg2");
                         if (!arg2attr)
                             return Error(MISSING_ATTRIBUTE, "arg2");
@@ -1118,9 +1118,11 @@ int Library::returnValueContainer(const Token *ftok) const
     return it != mReturnValueContainer.end() ? it->second : -1;
 }
 
-bool Library::hasminsize(const std::string &functionName) const
+bool Library::hasminsize(const Token *ftok) const
 {
-    const std::map<std::string, Function>::const_iterator it1 = functions.find(functionName);
+    if (isNotLibraryFunction(ftok))
+        return false;
+    const std::map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
     if (it1 == functions.cend())
         return false;
     for (std::map<int, ArgumentChecks>::const_iterator it2 = it1->second.argumentChecks.cbegin(); it2 != it1->second.argumentChecks.cend(); ++it2) {
