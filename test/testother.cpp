@@ -224,6 +224,8 @@ private:
         TEST_CASE(shadowVariables);
         TEST_CASE(constArgument);
         TEST_CASE(checkComparePointers);
+
+        TEST_CASE(unusedVariableValueTemplate); // #8994
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = 0) {
@@ -7710,6 +7712,36 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void unusedVariableValueTemplate() {
+        check("#include <functional>\n"
+              "class A\n"
+              "{\n"
+              "public:\n"
+              "    class Hash\n"
+              "    {\n"
+              "    public:\n"
+              "        std::size_t operator()(const A& a) const\n"
+              "        {\n"
+              "            (void)a;\n"
+              "            return 0;\n"
+              "        }\n"
+              "    };\n"
+              "};\n"
+              "namespace std\n"
+              "{\n"
+              "    template <>\n"
+              "    struct hash<A>\n"
+              "    {\n"
+              "        std::size_t operator()(const A& a) const noexcept\n"
+              "        {\n"
+              "            return A::Hash{}(a);\n"
+              "        }\n"
+              "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestOther)
