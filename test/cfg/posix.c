@@ -306,7 +306,7 @@ void uninitvar_types(void)
     b + 1;
 
     struct dirent d;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     d.d_ino + 1;
 }
 
