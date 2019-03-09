@@ -925,20 +925,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     // Accessing Rvalue member using "." or "->"
     if (Token::Match(vartok->previous(), "!!& %var% .")) {
         // Is struct member passed to function?
-        if (!pointer) {
-            // TODO: there are FN currently:
-            // - should only return false if struct member is (or might be) array.
-            // - should only return false if function argument is (or might be) non-const pointer or reference
-            bool unknown = false;
-            const Token *possibleParent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
-            if (Token::Match(possibleParent, "[(,]")) {
-                if (unknown)
-                    return false; // TODO: output some info message?
-                const int use = isFunctionParUsage(vartok, pointer, alloc);
-                if (use >= 0)
-                    return (use>0);
-            }
-        }
+        if (!pointer)
+            return false;
 
         if (pointer && alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% ("))
             return true;
