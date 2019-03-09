@@ -68,6 +68,7 @@ public:
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
         checkStl.pushback();
+        checkStl.redundantCondition();
         checkStl.string_c_str();
         checkStl.uselessCalls();
     }
@@ -87,7 +88,6 @@ public:
 
         // Style check
         checkStl.size();
-        checkStl.redundantCondition();
         checkStl.useStlAlgorithm();
     }
 
