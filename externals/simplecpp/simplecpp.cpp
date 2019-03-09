@@ -327,6 +327,15 @@ static void ungetChar(std::istream &istr, unsigned int bom)
         istr.unget();
 }
 
+static unsigned char prevChar(std::istream &istr, unsigned int bom)
+{
+    ungetChar(istr, bom);
+    ungetChar(istr, bom);
+    unsigned char c = readChar(istr, bom);
+    readChar(istr, bom);
+    return c;
+}
+
 static unsigned short getAndSkipBOM(std::istream &istr)
 {
     const int ch1 = istr.peek();
@@ -384,9 +393,10 @@ static void portabilityBackslash(simplecpp::OutputList *outputList, const std::v
     outputList->push_back(err);
 }
 
-static bool isRawStringId(const std::string &str)
+static bool isStringLiteralPrefix(const std::string &str)
 {
-    return str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
+    return str == "u" || str == "U" || str == "L" || str == "u8" ||
+           str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
 }
 
 void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
@@ -545,31 +555,34 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         // string / char literal
         else if (ch == '\"' || ch == '\'') {
-            // C++11 raw string literal
-            if (ch == '\"' && cback() && cback()->name && isRawStringId(cback()->str())) {
+            if (cback() && cback()->name && !std::isspace(prevChar(istr, bom)) && (isStringLiteralPrefix(cback()->str()))) {
                 std::string delim;
-                ch = readChar(istr,bom);
-                while (istr.good() && ch != '(' && ch != '\n') {
-                    delim += ch;
+                currentToken = ch;
+                bool hasR = *cback()->str().rbegin() == 'R';
+                std::string prefix = cback()->str();
+                if (hasR) {
+                    prefix.resize(prefix.size() - 1);
+                    delim = ")";
                     ch = readChar(istr,bom);
+                    while (istr.good() && ch != '(' && ch != '\n') {
+                        delim += ch;
+                        ch = readChar(istr,bom);
+                    }
+                    if (!istr.good() || ch == '\n')
+                        // TODO report
+                        return;
                 }
-                if (!istr.good() || ch == '\n')
-                    // TODO report
-                    return;
-                currentToken = '\"';
-                const std::string endOfRawString(')' + delim + '\"');
-                while (istr.good() && !endsWith(currentToken, endOfRawString))
+                const std::string endOfRawString(delim + currentToken);
+                while (istr.good() && !(endsWith(currentToken, endOfRawString) && currentToken.size() > 1))
                     currentToken += readChar(istr,bom);
                 if (!endsWith(currentToken, endOfRawString))
                     // TODO report
                     return;
                 currentToken.erase(currentToken.size() - endOfRawString.size(), endOfRawString.size() - 1U);
-                if (cback()->op == 'R')
-                    back()->setstr(escapeString(currentToken));
-                else {
-                    back()->setstr(cback()->str().substr(0, cback()->str().size() - 1));
-                    push_back(new Token(currentToken, location)); // push string without newlines
-                }
+                if (hasR)
+                    currentToken = escapeString(currentToken);
+                currentToken.insert(0, prefix);
+                back()->setstr(currentToken);
                 location.adjust(currentToken);
                 if (currentToken.find_first_of("\r\n") == std::string::npos)
                     location.col += 2 + 2 * delim.size();
