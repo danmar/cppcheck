@@ -63,7 +63,7 @@ static const CWE CWE788(788U);  // Access of Memory Location After End of Buffer
 static void makeArrayIndexOutOfBoundsError(std::ostream& oss, const CheckBufferOverrun::ArrayInfo &arrayInfo, const std::vector<MathLib::bigint> &index)
 {
     oss << "$symbol:" << arrayInfo.varname() << '\n';
-    oss << "Array '" << arrayInfo.varname();
+    oss << "Array '$symbol";
     for (std::size_t i = 0; i < arrayInfo.num().size(); ++i)
         oss << "[" << arrayInfo.num(i) << "]";
     if (index.size() == 1)
@@ -1343,15 +1343,12 @@ void CheckBufferOverrun::checkStructVariable()
 {
     // find every class and struct
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const std::size_t classes = symbolDatabase->classAndStructScopes.size();
-    for (std::size_t i = 0; i < classes; ++i) {
-        const Scope * scope = symbolDatabase->classAndStructScopes[i];
-
-        for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
-            if (!var->isArray())
+    for (const Scope * scope : symbolDatabase->classAndStructScopes) {
+        for (const Variable &var : scope->varlist) {
+            if (!var.isArray())
                 continue;
             // create ArrayInfo from the array variable
-            ArrayInfo arrayInfo(&*var, symbolDatabase);
+            ArrayInfo arrayInfo(&var, symbolDatabase);
 
             // find every function
             for (const Scope * func_scope : symbolDatabase->functionScopes) {
@@ -1403,10 +1400,10 @@ void CheckBufferOverrun::checkStructVariable()
                         continue;
 
                     // check for variable sized structure
-                    if (scope->type == Scope::eStruct && var->isPublic()) {
+                    if (scope->type == Scope::eStruct && var.isPublic()) {
                         // last member of a struct with array size of 0 or 1 could be a variable sized structure
-                        if (var->dimensions().size() == 1 && var->dimension(0) < 2 &&
-                            var->index() == (scope->varlist.size() - 1)) {
+                        if (var.dimensions().size() == 1 && var.dimension(0) < 2 &&
+                            var.index() == (scope->varlist.size() - 1)) {
                             // dynamically allocated so could be variable sized structure
                             if (tok3->next()->str() == "*") {
                                 // check for allocation
