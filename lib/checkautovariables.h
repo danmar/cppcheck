@@ -54,11 +54,13 @@ public:
         checkAutoVariables.assignFunctionArg();
         checkAutoVariables.returnReference();
         checkAutoVariables.checkVarLifetime();
+        checkAutoVariables.autoVariables();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
-        checkAutoVariables.autoVariables();
+        (void)tokenizer;
+        (void)settings;
+        (void)errorLogger;
     }
 
     /** assign function argument */
