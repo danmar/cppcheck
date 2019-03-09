@@ -293,15 +293,16 @@ void CheckBool::checkAssignBoolToPointer()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->str() == "=" && astIsBool(tok->astOperand2())) {
-                const Token *lhs = tok->astOperand1();
-                while (lhs && (lhs->str() == "." || lhs->str() == "::"))
-                    lhs = lhs->astOperand2();
-                if (!lhs || !lhs->variable() || !lhs->variable()->isPointer())
-                    continue;
+            if (tok->str() != "=")
+                continue;
+            const ValueType *lhsType = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            if (!lhsType || lhsType->pointer == 0)
+                continue;
+            const ValueType *rhsType = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+            if (!rhsType || rhsType->pointer > 0 || rhsType->type != ValueType::Type::BOOL)
+                continue;
 
-                assignBoolToPointerError(tok);
-            }
+            assignBoolToPointerError(tok);
         }
     }
 }
