@@ -8214,6 +8214,12 @@ private:
         tokenList.createLinks();
         tokenList.createLinks2();
 
+        // set varid..
+        for (Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
+            if (tok->str() == "var")
+                tok->varId(1);
+        }
+
         // Create AST..
         tokenList.prepareTernaryOpForAST();
         tokenList.list.createAst();
@@ -8289,7 +8295,6 @@ private:
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
-        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
 
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
@@ -8342,7 +8347,9 @@ private:
         ASSERT_EQUALS("ifCA_FarReadfilenew(,sizeofobjtype(,(!(", testAst("if (!CA_FarRead(file, (void far *)new, sizeof(objtype)))")); // #5910 - don't hang if C code is parsed as C++
 
         // Variable declaration
+        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
         ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
+        ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
     }
 
     void astexpr2() { // limit for large expressions

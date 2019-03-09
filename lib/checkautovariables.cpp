@@ -613,8 +613,9 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 continue;
             }
             // Assign reference to non-local variable
-        } else if (Token::Match(tok->astParent(), "&|&&") && Token::simpleMatch(tok->astParent()->astParent(), "=") &&
-                   tok->variable() && tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
+        } else if (Token::Match(tok->previous(), "&|&& %var% =") && tok->astParent() == tok->next() &&
+                   tok->variable() && tok->variable()->nameToken() == tok &&
+                   tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
                    !tok->variable()->isArgument()) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
