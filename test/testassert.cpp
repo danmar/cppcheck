@@ -40,8 +40,8 @@ private:
         tokenizer.tokenize(istr, filename);
 
         // Check..
-        CheckAssert checkAssert(&tokenizer, &settings, this);
-        checkAssert.runSimplifiedChecks(&tokenizer, &settings, this);
+        CheckAssert checkAssert;
+        checkAssert.runChecks(&tokenizer, &settings, this);
     }
 
     void run() OVERRIDE {
