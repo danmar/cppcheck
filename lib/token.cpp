@@ -34,6 +34,19 @@
 #include <stack>
 #include <utility>
 
+static bool isStringCharLiteral(const std::string &str, char q)
+{
+
+    if (!endsWith(str, q))
+        return false;
+
+    const std::string prefix[5] = { "", "u8", "L", "U", "u" };
+    for (const std::string & p: prefix) {
+        if ((str.length() + 1) > p.length() && (str.find(p + q) == 0))
+            return true;
+    }
+    return false;
+}
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
@@ -73,6 +86,10 @@ void Token::update_property_info()
     if (!mStr.empty()) {
         if (mStr == "true" || mStr == "false")
             tokType(eBoolean);
+        else if (isStringCharLiteral(mStr, '\"'))
+            tokType(eString);
+        else if (isStringCharLiteral(mStr, '\''))
+            tokType(eChar);
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
@@ -80,10 +97,6 @@ void Token::update_property_info()
                 tokType(eName);
         } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1])))
             tokType(eNumber);
-        else if (mStr.length() > 1 && mStr[0] == '"' && endsWith(mStr,'"'))
-            tokType(eString);
-        else if (mStr.length() > 1 && mStr[0] == '\'' && endsWith(mStr,'\''))
-            tokType(eChar);
         else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                  (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
