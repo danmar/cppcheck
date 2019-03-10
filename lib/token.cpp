@@ -42,7 +42,7 @@ static bool isStringCharLiteral(const std::string &str, char q)
 
     const std::string prefix[5] = { "", "u8", "L", "U", "u" };
     for (const std::string & p: prefix) {
-        if ((str.length() + 1) > p.length() && (str.find(p + q) == 0))
+        if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, (p + q)) == 0))
             return true;
     }
     return false;
