@@ -327,6 +327,15 @@ static void ungetChar(std::istream &istr, unsigned int bom)
         istr.unget();
 }
 
+static unsigned char prevChar(std::istream &istr, unsigned int bom)
+{
+    ungetChar(istr, bom);
+    ungetChar(istr, bom);
+    unsigned char c = readChar(istr, bom);
+    readChar(istr, bom);
+    return c;
+}
+
 static unsigned short getAndSkipBOM(std::istream &istr)
 {
     const int ch1 = istr.peek();
@@ -384,9 +393,10 @@ static void portabilityBackslash(simplecpp::OutputList *outputList, const std::v
     outputList->push_back(err);
 }
 
-static bool isRawStringId(const std::string &str)
+static bool isStringLiteralPrefix(const std::string &str)
 {
-    return str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
+    return str == "u" || str == "U" || str == "L" || str == "u8" ||
+           str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
 }
 
 void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
@@ -480,7 +490,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 prev = ch;
                 ch = readChar(istr, bom);
             }
-            istr.unget();
+            ungetChar(istr, bom);
             push_back(new Token(currentToken, location));
             location.adjust(currentToken);
             continue;
@@ -512,7 +522,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 ++multiline;
                 currentToken.erase(currentToken.size() - 1U);
             } else {
-                istr.unget();
+                ungetChar(istr, bom);
             }
         }
 
@@ -545,31 +555,34 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         // string / char literal
         else if (ch == '\"' || ch == '\'') {
-            // C++11 raw string literal
-            if (ch == '\"' && cback() && cback()->name && isRawStringId(cback()->str())) {
+            if (cback() && cback()->name && !std::isspace(prevChar(istr, bom)) && (isStringLiteralPrefix(cback()->str()))) {
                 std::string delim;
-                ch = readChar(istr,bom);
-                while (istr.good() && ch != '(' && ch != '\n') {
-                    delim += ch;
+                currentToken = ch;
+                bool hasR = *cback()->str().rbegin() == 'R';
+                std::string prefix = cback()->str();
+                if (hasR) {
+                    prefix.resize(prefix.size() - 1);
+                    delim = ")";
                     ch = readChar(istr,bom);
+                    while (istr.good() && ch != '(' && ch != '\n') {
+                        delim += ch;
+                        ch = readChar(istr,bom);
+                    }
+                    if (!istr.good() || ch == '\n')
+                        // TODO report
+                        return;
                 }
-                if (!istr.good() || ch == '\n')
-                    // TODO report
-                    return;
-                currentToken = '\"';
-                const std::string endOfRawString(')' + delim + '\"');
-                while (istr.good() && !endsWith(currentToken, endOfRawString))
+                const std::string endOfRawString(delim + currentToken);
+                while (istr.good() && !(endsWith(currentToken, endOfRawString) && currentToken.size() > 1))
                     currentToken += readChar(istr,bom);
                 if (!endsWith(currentToken, endOfRawString))
                     // TODO report
                     return;
                 currentToken.erase(currentToken.size() - endOfRawString.size(), endOfRawString.size() - 1U);
-                if (cback()->op == 'R')
-                    back()->setstr(escapeString(currentToken));
-                else {
-                    back()->setstr(cback()->str().substr(0, cback()->str().size() - 1));
-                    push_back(new Token(currentToken, location)); // push string without newlines
-                }
+                if (hasR)
+                    currentToken = escapeString(currentToken);
+                currentToken.insert(0, prefix);
+                back()->setstr(currentToken);
                 location.adjust(currentToken);
                 if (currentToken.find_first_of("\r\n") == std::string::npos)
                     location.col += 2 + 2 * delim.size();
@@ -578,7 +591,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 continue;
             }
 
-            currentToken = readUntil(istr,location,ch,ch,outputList);
+            currentToken = readUntil(istr,location,ch,ch,outputList,bom);
             if (currentToken.size() < 2U)
                 // TODO report
                 return;
@@ -607,7 +620,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         }
 
         if (currentToken == "<" && lastLine() == "# include") {
-            currentToken = readUntil(istr, location, '<', '>', outputList);
+            currentToken = readUntil(istr, location, '<', '>', outputList, bom);
             if (currentToken.size() < 2U)
                 return;
         }
@@ -1045,7 +1058,7 @@ void simplecpp::TokenList::removeComments()
     }
 }
 
-std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList)
+std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList, unsigned int bom)
 {
     std::string ret;
     ret += start;
@@ -1053,7 +1066,7 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
     bool backslash = false;
     char ch = 0;
     while (ch != end && ch != '\r' && ch != '\n' && istr.good()) {
-        ch = (unsigned char)istr.get();
+        ch = readChar(istr, bom);
         if (backslash && ch == '\n') {
             ch = 0;
             backslash = false;
@@ -1062,7 +1075,7 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
         backslash = false;
         ret += ch;
         if (ch == '\\') {
-            const char next = (unsigned char)istr.get();
+            const char next = readChar(istr, bom);
             if (next == '\r' || next == '\n') {
                 ret.erase(ret.size()-1U);
                 backslash = (next == '\r');
@@ -1845,6 +1858,39 @@ namespace simplecpp {
     };
 }
 
+namespace simplecpp {
+
+    std::string convertCygwinToWindowsPath(const std::string &cygwinPath)
+    {
+        std::string windowsPath;
+
+        std::string::size_type pos = 0;
+        if (cygwinPath.size() >= 11 && startsWith(cygwinPath, "/cygdrive/")) {
+            unsigned char driveLetter = cygwinPath[10];
+            if (std::isalpha(driveLetter)) {
+                if (cygwinPath.size() == 11) {
+                    windowsPath = toupper(driveLetter);
+                    windowsPath += ":\\";   // volume root directory
+                    pos = 11;
+                } else if (cygwinPath[11] == '/') {
+                    windowsPath = toupper(driveLetter);
+                    windowsPath += ":";
+                    pos = 11;
+                }
+            }
+        }
+
+        for (; pos < cygwinPath.size(); ++pos) {
+            unsigned char c = cygwinPath[pos];
+            if (c == '/')
+                c = '\\';
+            windowsPath += c;
+        }
+
+        return windowsPath;
+    }
+}
+
 #ifdef SIMPLECPP_WINDOWS
 
 class ScopedLock {
@@ -1875,7 +1921,7 @@ public:
         DeleteCriticalSection(&m_criticalSection);
     }
 
-    bool getRealPathFromCache(const std::string& path, std::string* returnPath) {
+    bool getCacheEntry(const std::string& path, std::string* returnPath) {
         ScopedLock lock(m_criticalSection);
 
         std::map<std::string, std::string>::iterator it = m_fileMap.find(path);
@@ -1902,9 +1948,9 @@ static bool realFileName(const std::string &f, std::string *result)
 {
     // are there alpha characters in last subpath?
     bool alpha = false;
-    for (std::string::size_type pos = 1; pos < f.size(); ++pos) {
+    for (std::string::size_type pos = 1; pos <= f.size(); ++pos) {
         unsigned char c = f[f.size() - pos];
-        if (c=='/' || c=='\\')
+        if (c == '/' || c == '\\')
             break;
         if (std::isalpha(c)) {
             alpha = true;
@@ -1917,9 +1963,16 @@ static bool realFileName(const std::string &f, std::string *result)
         return false;
 
     // Lookup filename or foldername on file system
-    if (!realFileNameMap.getRealPathFromCache(f, result)) {
+    if (!realFileNameMap.getCacheEntry(f, result)) {
+
         WIN32_FIND_DATAA FindFileData;
+
+#ifdef __CYGWIN__
+        std::string fConverted = simplecpp::convertCygwinToWindowsPath(f);
+        HANDLE hFind = FindFirstFileExA(fConverted.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
+#else
         HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
+#endif
 
         if (INVALID_HANDLE_VALUE == hFind)
             return false;
@@ -1930,12 +1983,14 @@ static bool realFileName(const std::string &f, std::string *result)
     return true;
 }
 
+static RealFileNameMap realFilePathMap;
+
 /** Change case in given path to match filesystem */
 static std::string realFilename(const std::string &f)
 {
     std::string ret;
     ret.reserve(f.size()); // this will be the final size
-    if (realFileNameMap.getRealPathFromCache(f, &ret))
+    if (realFilePathMap.getCacheEntry(f, &ret))
         return ret;
 
     // Current subpath
@@ -1952,9 +2007,12 @@ static std::string realFilename(const std::string &f)
                 continue;
             }
 
+            bool isDriveSpecification = 
+                (pos == 2 && subpath.size() == 2 && std::isalpha(subpath[0]) && subpath[1] == ':');
+
             // Append real filename (proper case)
             std::string f2;
-            if (realFileName(f.substr(0,pos),&f2))
+            if (!isDriveSpecification && realFileName(f.substr(0, pos), &f2))
                 ret += f2;
             else
                 ret += subpath;
@@ -1976,7 +2034,7 @@ static std::string realFilename(const std::string &f)
             ret += subpath;
     }
 
-    realFileNameMap.addToCache(f, ret);
+    realFilePathMap.addToCache(f, ret);
     return ret;
 }
 
@@ -2164,23 +2222,73 @@ static const simplecpp::Token *gotoNextLine(const simplecpp::Token *tok)
     return tok;
 }
 
+#ifdef SIMPLECPP_WINDOWS
+
+class NonExistingFilesCache {
+public:
+    NonExistingFilesCache() {
+        InitializeCriticalSection(&m_criticalSection);
+    }
+
+    ~NonExistingFilesCache() {
+        DeleteCriticalSection(&m_criticalSection);
+    }
+
+    bool contains(const std::string& path) {
+        ScopedLock lock(m_criticalSection);
+        return (m_pathSet.find(path) != m_pathSet.end());
+    }
+
+    void add(const std::string& path) {
+        ScopedLock lock(m_criticalSection);
+        m_pathSet.insert(path);
+    }
+
+private:
+    std::set<std::string> m_pathSet;
+    CRITICAL_SECTION m_criticalSection;
+};
+
+static NonExistingFilesCache nonExistingFilesCache;
+
+#endif
+
+static std::string _openHeader(std::ifstream &f, const std::string &path)
+{
+#ifdef SIMPLECPP_WINDOWS
+    std::string simplePath = simplecpp::simplifyPath(path);
+    if (nonExistingFilesCache.contains(simplePath))
+        return "";  // file is known not to exist, skip expensive file open call
+
+    f.open(simplePath.c_str());
+    if (f.is_open())
+        return simplePath;
+    else {
+        nonExistingFilesCache.add(simplePath);
+        return "";
+    }
+#else
+    f.open(path.c_str());
+    return f.is_open() ? simplecpp::simplifyPath(path) : "";
+#endif
+}
+
 static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header, bool systemheader)
 {
     if (isAbsolutePath(header)) {
-        f.open(header.c_str());
-        return f.is_open() ? simplecpp::simplifyPath(header) : "";
+        return _openHeader(f, header);
     }
 
     if (!systemheader) {
         if (sourcefile.find_first_of("\\/") != std::string::npos) {
             const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-            f.open(s.c_str());
-            if (f.is_open())
-                return simplecpp::simplifyPath(s);
+            std::string simplePath = _openHeader(f, s);
+            if (!simplePath.empty())
+                return simplePath;
         } else {
-            f.open(header.c_str());
-            if (f.is_open())
-                return simplecpp::simplifyPath(header);
+            std::string simplePath = _openHeader(f, header);
+            if (!simplePath.empty())
+                return simplePath;
         }
     }
 
@@ -2189,9 +2297,10 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
         if (!s.empty() && s[s.size()-1U]!='/' && s[s.size()-1U]!='\\')
             s += '/';
         s += header;
-        f.open(s.c_str());
-        if (f.is_open())
-            return simplecpp::simplifyPath(s);
+
+        std::string simplePath = _openHeader(f, s);
+        if (!simplePath.empty())
+            return simplePath;
     }
 
     return "";

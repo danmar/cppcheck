@@ -258,7 +258,7 @@ namespace simplecpp {
         void constFoldLogicalOp(Token *tok);
         void constFoldQuestionOp(Token **tok1);
 
-        std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList);
+        std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList, unsigned int bom);
 
         std::string lastLine(int maxsize=100000) const;
 
@@ -312,6 +312,9 @@ namespace simplecpp {
 
     /** Simplify path */
     SIMPLECPP_LIB std::string simplifyPath(std::string path);
+
+    /** Convert Cygwin path to Windows path */
+    SIMPLECPP_LIB std::string convertCygwinToWindowsPath(const std::string &cygwinPath);
 }
 
 #endif
