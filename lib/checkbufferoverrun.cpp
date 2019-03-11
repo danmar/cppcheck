@@ -254,7 +254,7 @@ void CheckBufferOverrun::arrayIndexError(const Token *tok, const Variable *var, 
 
     reportError(getErrorPath(tok, index, "Array index out of bounds"),
                 index->errorSeverity() ? Severity::error : Severity::warning,
-                index->condition ? "arrayIndexOutOfBounds" : "arrayIndexOutOfBoundsCond",
+                index->condition ? "arrayIndexOutOfBoundsCond" : "arrayIndexOutOfBounds",
                 arrayIndexMessage(tok, var, index),
                 CWE788,
                 index->isInconclusive());
