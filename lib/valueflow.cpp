@@ -828,6 +828,28 @@ static unsigned int getSizeOfType(const Token *typeTok, const Settings *settings
         return 0;
 }
 
+static size_t getSizeOf(const ValueType &vt, const Settings *settings)
+{
+    if (vt.pointer)
+        return settings->sizeof_pointer;
+    else if (vt.type == ValueType::Type::CHAR)
+        return 1;
+    else if (vt.type == ValueType::Type::SHORT)
+        return settings->sizeof_short;
+    else if (vt.type == ValueType::Type::INT)
+        return settings->sizeof_int;
+    else if (vt.type == ValueType::Type::LONG)
+        return settings->sizeof_long;
+    else if (vt.type == ValueType::Type::LONGLONG)
+        return settings->sizeof_long_long;
+    else if (vt.type == ValueType::Type::FLOAT)
+        return settings->sizeof_float;
+    else if (vt.type == ValueType::Type::DOUBLE)
+        return settings->sizeof_double;
+
+    return 0;
+}
+
 // Handle various constants..
 static Token * valueFlowSetConstantValue(const Token *tok, const Settings *settings, bool cpp)
 {
@@ -862,7 +884,16 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             else
                 tok2 = tok2->tokAt(2);
         }
-        if (tok2->enumerator() && tok2->enumerator()->scope) {
+        if (Token::Match(tok, "sizeof ( *")) {
+            const ValueType *vt = tok->tokAt(2)->valueType();
+            const size_t sz = vt ? getSizeOf(*vt, settings) : 0;
+            if (sz > 0) {
+                ValueFlow::Value value(sz);
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            }
+        } else if (tok2->enumerator() && tok2->enumerator()->scope) {
             long long size = settings->sizeof_int;
             const Token * type = tok2->enumerator()->scope->enumType;
             if (type) {
@@ -933,43 +964,9 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            if (vt.pointer) {
-                ValueFlow::Value value(settings->sizeof_pointer);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::CHAR) {
-                ValueFlow::Value value(1);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::SHORT) {
-                ValueFlow::Value value(settings->sizeof_short);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::INT) {
-                ValueFlow::Value value(settings->sizeof_int);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::LONG) {
-                ValueFlow::Value value(settings->sizeof_long);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::LONGLONG) {
-                ValueFlow::Value value(settings->sizeof_long_long);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::FLOAT) {
-                ValueFlow::Value value(settings->sizeof_float);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::DOUBLE) {
-                ValueFlow::Value value(settings->sizeof_double);
+            const size_t sz = getSizeOf(vt, settings);
+            if (sz > 0) {
+                ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);

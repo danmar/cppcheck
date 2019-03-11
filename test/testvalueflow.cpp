@@ -752,6 +752,15 @@ private:
         const char *code;
         std::list<ValueFlow::Value> values;
 
+        // array size
+        code  = "void f() {\n"
+                "    char a[10];"
+                "    x = sizeof(*a);\n"
+                "}";
+        values = tokenValues(code,"( *");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
+
 #define CHECK(A, B)                              \
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
