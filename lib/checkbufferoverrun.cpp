@@ -192,7 +192,7 @@ void CheckBufferOverrun::arrayIndex()
 
         const Token *stringLiteral = nullptr;
 
-        if (tok->variable()->dimensions().empty()) {
+        if (!tok->variable()->isArray() && tok->variable()->dimensions().empty()) {
             stringLiteral = tok->getValueTokenMinStrSize();
             if (!stringLiteral)
                 continue;

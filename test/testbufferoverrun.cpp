@@ -3324,7 +3324,7 @@ private:
               "    char c[10] = \"c\";\n"
               "    mymemset(c, 0, 10);\n"
               "}", settings);
-        // TODO ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void minsize_sizeof() {
