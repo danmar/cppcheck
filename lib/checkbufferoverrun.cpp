@@ -278,6 +278,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const Variable *va
                 negativeValue->isInconclusive());
 }
 
+//---------------------------------------------------------------------------
 
 size_t CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 {
@@ -318,6 +319,7 @@ size_t CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     // TODO: For pointers get pointer value..
     return 0;
 }
+//---------------------------------------------------------------------------
 
 static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const std::vector<const Token *> &args, const MathLib::bigint bufferSize, const Settings *settings)
 {
@@ -397,4 +399,59 @@ void CheckBufferOverrun::bufferOverflow()
 void CheckBufferOverrun::bufferOverflowError(const Token *tok)
 {
     reportError(tok, Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? tok->expressionString() : "buf"), CWE788, false);
+}
+
+//---------------------------------------------------------------------------
+
+void CheckBufferOverrun::arrayIndexThenCheck()
+{
+    if (!mSettings->isEnabled(Settings::PORTABILITY))
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * const scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "sizeof (")) {
+                tok = tok->linkAt(1);
+                continue;
+            }
+
+            if (Token::Match(tok, "%name% [ %var% ]")) {
+                tok = tok->next();
+
+                const unsigned int indexID = tok->next()->varId();
+                const std::string& indexName(tok->strAt(1));
+
+                // Iterate AST upwards
+                const Token* tok2 = tok;
+                const Token* tok3 = tok2;
+                while (tok2->astParent() && tok2->tokType() != Token::eLogicalOp) {
+                    tok3 = tok2;
+                    tok2 = tok2->astParent();
+                }
+
+                // Ensure that we ended at a logical operator and that we came from its left side
+                if (tok2->tokType() != Token::eLogicalOp || tok2->astOperand1() != tok3)
+                    continue;
+
+                // check if array index is ok
+                // statement can be closed in parentheses, so "(| " is using
+                if (Token::Match(tok2, "&& (| %varid% <|<=", indexID))
+                    arrayIndexThenCheckError(tok, indexName);
+                else if (Token::Match(tok2, "&& (| %any% >|>= %varid% !!+", indexID))
+                    arrayIndexThenCheckError(tok, indexName);
+            }
+        }
+    }
+}
+
+void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::string &indexName)
+{
+    reportError(tok, Severity::style, "arrayIndexThenCheck",
+                "$symbol:" + indexName + "\n"
+                "Array index '$symbol' is used before limits check.\n"
+                "Defensive programming: The variable '$symbol' is used as an array index before it "
+                "is checked that is within limits. This can mean that the array might be accessed out of bounds. "
+                "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
+                "not be accessed if the index is out of limits.", CWE398, false);
 }

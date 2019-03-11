@@ -239,7 +239,7 @@ private:
         TEST_CASE(getErrorMessages);
 
         // Access array and then check if the used index is within bounds
-        // TODO TEST_CASE(arrayIndexThenCheck);
+        TEST_CASE(arrayIndexThenCheck);
 
         // TODO TEST_CASE(bufferNotZeroTerminated);
 
