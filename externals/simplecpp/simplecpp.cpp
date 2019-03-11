@@ -555,32 +555,45 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         // string / char literal
         else if (ch == '\"' || ch == '\'') {
+            std::string prefix;
             if (cback() && cback()->name && !std::isspace(prevChar(istr, bom)) && (isStringLiteralPrefix(cback()->str()))) {
+                prefix = cback()->str();
+            }
+            // C++11 raw string literal
+            if (ch == '\"' && !prefix.empty() && *cback()->str().rbegin() == 'R') {
                 std::string delim;
                 currentToken = ch;
-                bool hasR = *cback()->str().rbegin() == 'R';
-                std::string prefix = cback()->str();
-                if (hasR) {
-                    prefix.resize(prefix.size() - 1);
-                    delim = ")";
+                prefix.resize(prefix.size() - 1);
+                ch = readChar(istr,bom);
+                while (istr.good() && ch != '(' && ch != '\n') {
+                    delim += ch;
                     ch = readChar(istr,bom);
-                    while (istr.good() && ch != '(' && ch != '\n') {
-                        delim += ch;
-                        ch = readChar(istr,bom);
-                    }
-                    if (!istr.good() || ch == '\n')
-                        // TODO report
-                        return;
                 }
-                const std::string endOfRawString(delim + currentToken);
+                if (!istr.good() || ch == '\n') {
+                    if (outputList) {
+                        Output err(files);
+                        err.type = Output::SYNTAX_ERROR;
+                        err.location = location;
+                        err.msg = "Invalid newline in raw string delimiter.";
+                        outputList->push_back(err);
+                    }
+                    return;
+                }
+                const std::string endOfRawString(')' + delim + currentToken);
                 while (istr.good() && !(endsWith(currentToken, endOfRawString) && currentToken.size() > 1))
                     currentToken += readChar(istr,bom);
-                if (!endsWith(currentToken, endOfRawString))
-                    // TODO report
+                if (!endsWith(currentToken, endOfRawString)) {
+                    if (outputList) {
+                        Output err(files);
+                        err.type = Output::SYNTAX_ERROR;
+                        err.location = location;
+                        err.msg = "Raw string missing terminating delimiter.";
+                        outputList->push_back(err);
+                    }
                     return;
+                }
                 currentToken.erase(currentToken.size() - endOfRawString.size(), endOfRawString.size() - 1U);
-                if (hasR)
-                    currentToken = escapeString(currentToken);
+                currentToken = escapeString(currentToken);
                 currentToken.insert(0, prefix);
                 back()->setstr(currentToken);
                 location.adjust(currentToken);
@@ -588,12 +601,13 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     location.col += 2 + 2 * delim.size();
                 else
                     location.col += 1 + delim.size();
+
                 continue;
             }
 
             currentToken = readUntil(istr,location,ch,ch,outputList,bom);
             if (currentToken.size() < 2U)
-                // TODO report
+                // Error is reported by readUntil()
                 return;
 
             std::string s = currentToken;
@@ -604,7 +618,10 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 newlines++;
             }
 
-            push_back(new Token(s, location)); // push string without newlines
+            if (prefix.empty())
+                push_back(new Token(s, location)); // push string without newlines
+            else
+                back()->setstr(prefix + s);
 
             if (newlines > 0 && lastLine().compare(0,9,"# define ") == 0) {
                 multiline += newlines;
