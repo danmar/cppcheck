@@ -248,12 +248,13 @@ void CheckBufferOverrun::arrayIndexError(const Token *tok, const Variable *var, 
 {
     if (!tok) {
         reportError(tok, Severity::error, "arrayIndexOutOfBounds", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE788, false);
+        reportError(tok, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE788, false);
         return;
     }
 
     reportError(getErrorPath(tok, index, "Array index out of bounds"),
                 index->errorSeverity() ? Severity::error : Severity::warning,
-                "arrayIndexOutOfBounds",
+                index->condition ? "arrayIndexOutOfBounds" : "arrayIndexOutOfBoundsCond",
                 arrayIndexMessage(tok, var, index),
                 CWE788,
                 index->isInconclusive());
