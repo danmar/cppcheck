@@ -16,6 +16,8 @@ import os
 import datetime
 import time
 
+import semver
+
 DEBIAN = ('ftp://ftp.se.debian.org/debian/',
           'ftp://ftp.debian.org/debian/')
 
@@ -31,6 +33,14 @@ def wget(filepath):
         print('Sleep for 10 seconds..')
         time.sleep(10)
     return False
+
+
+def latestvername(names):
+    if len(names) == 1:
+        return names[0]
+    names.sort(cmp=semver.cmp, key=lambda x: x[x.index(
+        '_')+1:x.index('.orig.tar')-x.index('_')+1])
+    return names[-1]
 
 
 def getpackages():
@@ -79,17 +89,21 @@ def getpackages():
     path = None
     archives = []
     filename = None
+    filenames = []
     for line in lines:
         line = line.strip()
         if len(line) < 4:
             if filename:
-                archives.append(DEBIAN[0] + path + '/' + filename)
+                archives.append(DEBIAN[0] + path + '/' +
+                                latestvername(filenames))
             path = None
             filename = None
+            filenames = []
         elif line.startswith('./pool/main/'):
             path = line[2:-1]
         elif path and line.endswith(('.orig.tar.gz', '.orig.tar.bz2')):
             filename = line[1 + line.rfind(' '):]
+            filenames.append(filename)
 
     return archives
 
