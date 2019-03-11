@@ -607,16 +607,16 @@ Imagine this source code:
     #ifdef __GNUC__
         x = 0;
     #endif
-    #ifdef __MSCVER
+    #ifdef _MSC_VER
         x = 1;
     #endif
         return x;
     }
 
 By default Cppcheck will try to check all the configurations. There are 3 important configurations here:
- * Neither `__GNUC__` nor `__MSCVER` is defined
+ * Neither `__GNUC__` nor `_MSC_VER` is defined
  * `__GNUC__` is defined
- * `__MSCVER` is defined
+ * `_MSC_VER` is defined
 
 When you run Cppcheck, the output will be something like:
 
@@ -624,7 +624,7 @@ When you run Cppcheck, the output will be something like:
     Checking test.c ...
     [test.c:10]: (error) Uninitialized variable: x
     Checking test.c: __GNUC__...
-    Checking test.c: __MSCVER...
+    Checking test.c: _MSC_VER...
 
 Now if you want you can limit the analysis. You probably know what the target compiler is. If `-D` is supplied and you do not specify `--force` then Cppcheck will only check the configuration you give.
 
