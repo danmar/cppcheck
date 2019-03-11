@@ -1617,19 +1617,6 @@ void CheckStl::string_c_strParam(const Token* tok, unsigned int number)
     reportError(tok, Severity::performance, "stlcstrParam", oss.str(), CWE704, false);
 }
 
-static bool hasArrayEnd(const Token *tok1)
-{
-    const Token *end = Token::findsimplematch(tok1, ";");
-    return (end && Token::simpleMatch(end->previous(), "] ;"));
-}
-
-static bool hasArrayEndParen(const Token *tok1)
-{
-    const Token *end = Token::findsimplematch(tok1, ";");
-    return (end && end->previous() &&
-            Token::simpleMatch(end->tokAt(-2), "] ) ;"));
-}
-
 //---------------------------------------------------------------------------
 //
 //---------------------------------------------------------------------------
