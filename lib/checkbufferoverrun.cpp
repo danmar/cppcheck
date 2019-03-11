@@ -291,6 +291,8 @@ size_t CheckBufferOverrun::getBufferSize(const Token *bufTok) const
         MathLib::bigint dim = 1;
         for (const Dimension &d : var->dimensions())
             dim *= d.num;
+        if (var->isPointerArray())
+            return dim * mSettings->sizeof_pointer;
         switch (bufTok->valueType()->type) {
         case ValueType::Type::BOOL:
             return dim * mSettings->sizeof_bool;
