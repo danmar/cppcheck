@@ -228,7 +228,8 @@ void CheckBufferOverrun::arrayIndex()
     }
 }
 
-static std::string arrayIndexMessage(const Token *tok, const Variable *var, const ValueFlow::Value *index) {
+static std::string arrayIndexMessage(const Token *tok, const Variable *var, const ValueFlow::Value *index)
+{
     std::string array = tok->astOperand1()->expressionString();
     for (const Dimension &dim : var->dimensions())
         array += "[" + MathLib::toString(dim.num) + "]";
