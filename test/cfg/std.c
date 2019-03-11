@@ -60,14 +60,14 @@ void bufferAccessOutOfBounds(void)
     strncpy_s(a,5,"abcd",5);
     // string will be truncated, error is returned, but no buffer overflow
     strncpy_s(a,5,"abcde",6);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncpy_s(a,5,"a",6);
     strncpy_s(a,5,"abcdefgh",4);
     // valid call
     strncat_s(a,5,"1",2);
     // cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,10,"1",2);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,5,"1",5);
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
