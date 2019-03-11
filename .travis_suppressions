@@ -1,3 +1,4 @@
+unusedPrivateFunction:test/testbufferoverrun.cpp
 unusedPrivateFunction:test/testcmdlineparser.cpp
 redundantNextPrevious:test/testtoken.cpp
 simplePatternError:test/testtoken.cpp
