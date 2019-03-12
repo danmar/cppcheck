@@ -34,14 +34,17 @@
 #include <stack>
 #include <utility>
 
+static const std::string literal_prefix[4] = {"u8", "u", "U", "L"};
+
 static bool isStringCharLiteral(const std::string &str, char q)
 {
 
     if (!endsWith(str, q))
         return false;
+    if (str[0] == q && str.length() > 1)
+        return true;
 
-    const std::string prefix[5] = { "", "u8", "L", "U", "u" };
-    for (const std::string & p: prefix) {
+    for (const std::string & p: literal_prefix) {
         if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, (p + q)) == 0))
             return true;
     }
@@ -131,6 +134,7 @@ void Token::update_property_info()
         tokType(eNone);
     }
 
+    update_property_char_string_literal();
     update_property_isStandardType();
 }
 
@@ -160,6 +164,20 @@ void Token::update_property_isStandardType()
     }
 }
 
+void Token::update_property_char_string_literal()
+{
+    if (!(mTokType == Token::eString || mTokType == Token::eChar)) // Token has already been updated
+        return;
+
+    for (const std::string & p : literal_prefix) {
+        if (((mTokType == Token::eString) && mStr.compare(0, p.size() + 1, p + "\"") == 0) ||
+            ((mTokType == Token::eChar) && (mStr.compare(0, p.size() +  1, p + "\'") == 0))) {
+            mStr = mStr.substr(p.size());
+            isLong(p != "u8");
+            break;
+        }
+    }
+}
 
 bool Token::isUpperCaseName() const
 {

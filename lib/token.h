@@ -1069,6 +1069,9 @@ private:
     /** Update internal property cache about isStandardType() */
     void update_property_isStandardType();
 
+    /** Update internal property cache about string and char literals */
+    void update_property_char_string_literal();
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);

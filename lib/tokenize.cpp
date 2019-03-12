@@ -1928,18 +1928,6 @@ void Tokenizer::combineOperators()
 
 void Tokenizer::combineStringAndCharLiterals()
 {
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        const std::string prefix[4] = {"u8", "L", "U", "u"};
-        for (const std::string & p : prefix) {
-            if (((tok->tokType() == Token::eString) && (tok->str().find(p + "\"") == 0)) ||
-                ((tok->tokType() == Token::eChar) && (tok->str().find(p + "\'") == 0))) {
-                tok->str(tok->str().substr(p.size()));
-                tok->isLong(p != "u8");
-                break;
-            }
-        }
-    }
-
     // Combine strings
     for (Token *tok = list.front();
          tok;

@@ -267,16 +267,28 @@ private:
         Token tok;
 
         tok.str("\"\"");
-        ASSERT_EQUALS(0, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(0, Token::getStrLength(&tok));
 
         tok.str("\"test\"");
-        ASSERT_EQUALS(4, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(4, Token::getStrLength(&tok));
 
         tok.str("\"test \\\\test\"");
-        ASSERT_EQUALS(10, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(10, Token::getStrLength(&tok));
 
         tok.str("\"a\\0\"");
-        ASSERT_EQUALS(1, (int)Token::getStrLength(&tok));
+        ASSERT_EQUALS(1, Token::getStrLength(&tok));
+
+        tok.str("L\"\"");
+        ASSERT_EQUALS(0, Token::getStrLength(&tok));
+
+        tok.str("u8\"test\"");
+        ASSERT_EQUALS(4, Token::getStrLength(&tok));
+
+        tok.str("U\"test \\\\test\"");
+        ASSERT_EQUALS(10, Token::getStrLength(&tok));
+
+        tok.str("u\"a\\0\"");
+        ASSERT_EQUALS(1, Token::getStrLength(&tok));
     }
 
     void getStrSize() const {
