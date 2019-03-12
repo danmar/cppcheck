@@ -176,29 +176,35 @@ static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &pa
 void CheckBufferOverrun::arrayIndex()
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%name% [") || !tok->variable() || tok->variable()->nameToken() == tok)
+        if (tok->str() != "[")
             continue;
-        if (!tok->scope()->isExecutable()) {
+        const Token *array = tok->astOperand1();
+        while (Token::Match(array, ".|::"))
+            array = array->astOperand2();
+        if (!array|| !array->variable() || array->variable()->nameToken() == array)
+            continue;
+        if (!array->scope()->isExecutable()) {
             // LHS in non-executable scope => This is just a definition
-            const Token *parent = tok->next();
+            const Token *parent = tok;
             while (parent && !Token::simpleMatch(parent->astParent(), "="))
                 parent = parent->astParent();
             if (parent && parent == parent->astParent()->astOperand1())
                 continue;
         }
-        const Token *indexToken = tok->next()->astOperand2();
+
+        const Token *indexToken = tok->astOperand2();
         if (!indexToken)
             continue;
 
         const Token *stringLiteral = nullptr;
 
-        if (!tok->variable()->isArray() && tok->variable()->dimensions().empty()) {
-            stringLiteral = tok->getValueTokenMinStrSize();
+        if (!array->variable()->isArray() && array->variable()->dimensions().empty()) {
+            stringLiteral = array->getValueTokenMinStrSize();
             if (!stringLiteral)
                 continue;
         }
 
-        const MathLib::bigint dim = stringLiteral ? Token::getStrSize(stringLiteral) : tok->variable()->dimensions()[0].num;
+        const MathLib::bigint dim = stringLiteral ? Token::getStrSize(stringLiteral) : array->variable()->dimensions()[0].num;
 
         // Positive index
         if (stringLiteral || dim > 1) { // TODO check arrays with dim 1 also
@@ -210,20 +216,20 @@ void CheckBufferOverrun::arrayIndex()
                 if (index < dim)
                     continue;
                 if (index == dim) {
-                    const Token *parent = tok->next();
+                    const Token *parent = tok;
                     while (Token::simpleMatch(parent, "["))
                         parent = parent->astParent();
-                    if (parent->str() == "&")
+                    if (parent->isUnaryOp("&"))
                         continue;
                 }
-                arrayIndexError(tok->next(), tok->variable(), value);
+                arrayIndexError(tok, array->variable(), value);
             }
         }
 
         // Negative index
         const ValueFlow::Value *negativeValue = indexToken->getValueLE(-1, mSettings);
         if (negativeValue) {
-            negativeIndexError(tok->next(), tok->variable(), negativeValue);
+            negativeIndexError(tok, array->variable(), negativeValue);
         }
     }
 }

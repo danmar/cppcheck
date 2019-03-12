@@ -358,6 +358,10 @@ private:
         check("int x[5];\n"
               "int a = x[10];\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Array 'x[5]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("int x[5];\n"
+              "int a = (x)[10];\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Array 'x[5]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
 
 
