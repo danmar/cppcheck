@@ -655,24 +655,37 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         type = ArgumentChecks::MinSize::Type::SIZEOF;
                     else if (strcmp(typeattr,"mul")==0)
                         type = ArgumentChecks::MinSize::Type::MUL;
+                    else if (strcmp(typeattr,"value")==0)
+                        type = ArgumentChecks::MinSize::Type::VALUE;
                     else
                         return Error(BAD_ATTRIBUTE_VALUE, typeattr);
 
-                    const char *argattr  = argnode->Attribute("arg");
-                    if (!argattr)
-                        return Error(MISSING_ATTRIBUTE, "arg");
-                    if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
-                        return Error(BAD_ATTRIBUTE_VALUE, argattr);
+                    if (type == ArgumentChecks::MinSize::Type::VALUE) {
+                        const char *valueattr = argnode->Attribute("value");
+                        if (!valueattr)
+                            return Error(MISSING_ATTRIBUTE, "value");
+                        const long long minsizevalue = strtoll(valueattr, NULL, 0);
+                        if (minsizevalue <= 0)
+                            return Error(BAD_ATTRIBUTE_VALUE, valueattr);
+                        ac.minsizes.emplace_back(type, 0);
+                        ac.minsizes.back().value = minsizevalue;
+                    } else {
+                        const char *argattr = argnode->Attribute("arg");
+                        if (!argattr)
+                            return Error(MISSING_ATTRIBUTE, "arg");
+                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
+                            return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
-                    ac.minsizes.reserve(type == ArgumentChecks::MinSize::Type::MUL ? 2 : 1);
-                    ac.minsizes.emplace_back(type,argattr[0]-'0');
-                    if (type == ArgumentChecks::MinSize::Type::MUL) {
-                        const char *arg2attr = argnode->Attribute("arg2");
-                        if (!arg2attr)
-                            return Error(MISSING_ATTRIBUTE, "arg2");
-                        if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
-                            return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
-                        ac.minsizes.back().arg2 = arg2attr[0] - '0';
+                        ac.minsizes.reserve(type == ArgumentChecks::MinSize::Type::MUL ? 2 : 1);
+                        ac.minsizes.emplace_back(type, argattr[0] - '0');
+                        if (type == ArgumentChecks::MinSize::Type::MUL) {
+                            const char *arg2attr = argnode->Attribute("arg2");
+                            if (!arg2attr)
+                                return Error(MISSING_ATTRIBUTE, "arg2");
+                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
+                                return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
+                            ac.minsizes.back().arg2 = arg2attr[0] - '0';
+                        }
                     }
                 }
 

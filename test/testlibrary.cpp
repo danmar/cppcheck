@@ -448,6 +448,7 @@ private:
                                "    <arg nr=\"1\"><minsize type=\"strlen\" arg=\"2\"/></arg>\n"
                                "    <arg nr=\"2\"><minsize type=\"argvalue\" arg=\"3\"/></arg>\n"
                                "    <arg nr=\"3\"/>\n"
+                               "    <arg nr=\"4\"><minsize type=\"value\" value=\"500\"/></arg>\n"
                                "  </function>\n"
                                "</def>";
 
@@ -455,7 +456,7 @@ private:
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
-        std::istringstream istr("foo(a,b,c);");
+        std::istringstream istr("foo(a,b,c,d);");
         tokenList.createTokens(istr);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
@@ -477,6 +478,16 @@ private:
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
             ASSERT_EQUALS(Library::ArgumentChecks::MinSize::ARGVALUE, m.type);
             ASSERT_EQUALS(3, m.arg);
+        }
+
+        // arg4: type=value
+        minsizes = library.argminsizes(tokenList.front(), 4);
+        ASSERT_EQUALS(true, minsizes != nullptr);
+        ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
+        if (minsizes && minsizes->size() == 1U) {
+            const Library::ArgumentChecks::MinSize &m = minsizes->front();
+            ASSERT_EQUALS(Library::ArgumentChecks::MinSize::VALUE, m.type);
+            ASSERT_EQUALS(500, m.value);
         }
     }
 
