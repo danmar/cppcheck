@@ -218,11 +218,11 @@ private:
         TEST_CASE(minsize_mul);
         TEST_CASE(unknownType);
 
-        // TODO strncpy TEST_CASE(terminateStrncpy1);
-        // TODO strncpy TEST_CASE(terminateStrncpy2);
-        // TODO strncpy TEST_CASE(terminateStrncpy3);
-        // TODO strncpy TEST_CASE(terminateStrncpy4);
-        // TODO strncpy TEST_CASE(recursive_long_time);
+        TEST_CASE(terminateStrncpy1);
+        TEST_CASE(terminateStrncpy2);
+        TEST_CASE(terminateStrncpy3);
+        TEST_CASE(terminateStrncpy4);
+        TEST_CASE(recursive_long_time);
 
         TEST_CASE(crash1);  // Ticket #1587 - crash
         TEST_CASE(crash2);  // Ticket #3034 - crash
@@ -3543,7 +3543,7 @@ private:
               "    strncpy(baz, bar, 100);\n"
               "    baz[99] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'baz' may not be null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo ( char *bar ) {\n"
               "    char baz[100];\n"
@@ -3610,7 +3610,7 @@ private:
               "    char buf[4];\n"
               "    strncpy(buf, \"abcde\", 4);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' is not null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void recursive_long_time() {

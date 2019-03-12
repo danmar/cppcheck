@@ -463,3 +463,74 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
                 "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
                 "not be accessed if the index is out of limits.", CWE398, false);
 }
+
+//---------------------------------------------------------------------------
+
+void CheckBufferOverrun::stringNotZeroTerminated()
+{
+    // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
+    if (!mSettings->isEnabled(Settings::WARNING) || !mSettings->inconclusive)
+        return;
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * const scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "strncpy|memcpy ("))
+                continue;
+            const std::vector<const Token *> args = getArguments(tok);
+            if (args.size() != 3)
+                continue;
+            const Token *sizeToken = args[2];
+            if (!sizeToken->hasKnownIntValue())
+                continue;
+            const size_t bufferSize = getBufferSize(args[0]);
+            if (bufferSize == 0 || sizeToken->getKnownIntValue() < bufferSize)
+                continue;
+            const Token *srcValue = args[1]->getValueTokenMaxStrLength();
+            if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())
+                continue;
+            // Is the buffer zero terminated after the call?
+            bool isZeroTerminated = false;
+            for (const Token *tok2 = tok->next()->link(); tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+                if (!Token::Match(tok2, "] ="))
+                    continue;
+                const Token *rhs = tok2->next()->astOperand2();
+                if (!rhs || !rhs->hasKnownIntValue() || rhs->getKnownIntValue() != 0)
+                    continue;
+                if (isSameExpression(mTokenizer->isCPP(), false, args[0], tok2->link()->astOperand1(), mSettings->library, false, false))
+                    isZeroTerminated = true;
+            }
+            if (isZeroTerminated)
+                continue;
+            // TODO: Locate unsafe string usage..
+            if (tok->str() == "strncpy")
+                terminateStrncpyError(tok, args[0]->expressionString());
+            else
+                bufferNotZeroTerminatedError(tok, args[0]->expressionString(), tok->str());
+        }
+    }
+}
+
+void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::string &varname)
+{
+    const std::string shortMessage = "The buffer '$symbol' may not be null-terminated after the call to strncpy().";
+    reportError(tok, Severity::warning, "terminateStrncpy",
+                "$symbol:" + varname + '\n' +
+                shortMessage + '\n' +
+                shortMessage + ' ' +
+                "If the source string's size fits or exceeds the given size, strncpy() does not add a "
+                "zero at the end of the buffer. This causes bugs later in the code if the code "
+                "assumes buffer is null-terminated.", CWE170, true);
+}
+
+void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
+{
+    const std::string errmsg = "$symbol:" + varname + '\n' +
+                               "$symbol:" + function + '\n' +
+                               "The buffer '" + varname + "' is not null-terminated after the call to " + function + "().\n"
+                               "The buffer '" + varname + "' is not null-terminated after the call to " + function + "(). "
+                               "This will cause bugs later in the code if the code assumes the buffer is null-terminated.";
+
+    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, CWE170, true);
+}
+
+

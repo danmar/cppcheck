@@ -64,6 +64,7 @@ public:
         checkBufferOverrun.arrayIndex();
         checkBufferOverrun.bufferOverflow();
         checkBufferOverrun.arrayIndexThenCheck();
+        checkBufferOverrun.stringNotZeroTerminated();
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
@@ -91,6 +92,11 @@ private:
     void arrayIndexThenCheck();
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
 
+    void stringNotZeroTerminated();
+    void terminateStrncpyError(const Token *tok, const std::string &varname);
+    void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
+
+
     size_t getBufferSize(const Token *bufTok) const;
 
     static std::string myName() {
@@ -102,7 +108,8 @@ private:
                "- Array index out of bounds\n"
                "- Buffer overflow\n"
                "- Dangerous usage of strncat()\n"
-               "- Using array index before checking it\n";
+               "- Using array index before checking it\n"
+               "- Partial string write that leads to buffer that is not zero terminated.\n";
     }
 };
 /// @}
