@@ -3766,12 +3766,39 @@ static void execute(const Token *expr,
             *result = result1 != result2;
     }
 
-    else if (expr->str() == "=") {
+    else if (expr->isAssignmentOp()) {
         execute(expr->astOperand2(), programMemory, result, error);
-        if (!*error && expr->astOperand1() && expr->astOperand1()->varId())
-            programMemory->setIntValue(expr->astOperand1()->varId(), *result);
-        else
+        if (!expr->astOperand1() || !expr->astOperand1()->varId())
             *error = true;
+        if (*error)
+            return;
+
+        if (expr->str() == "=") {
+            programMemory->setIntValue(expr->astOperand1()->varId(), *result);
+            return;
+        }
+
+        long long intValue;
+        if (!programMemory->getIntValue(expr->astOperand1()->varId(), &intValue)) {
+            *error = true;
+            return;
+        }
+        if (expr->str() == "+=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue + *result);
+        else if (expr->str() == "-=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue - *result);
+        else if (expr->str() == "*=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue * *result);
+        else if (expr->str() == "/=" && *result != 0)
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue / *result);
+        else if (expr->str() == "%=" && *result != 0)
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue % *result);
+        else if (expr->str() == "&=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue & *result);
+        else if (expr->str() == "|=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue | *result);
+        else if (expr->str() == "^=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue ^ *result);
     }
 
     else if (Token::Match(expr, "++|--")) {
