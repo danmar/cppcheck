@@ -73,14 +73,14 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.arrayIndex();
         checkBufferOverrun.bufferOverflow();
         checkBufferOverrun.arrayIndexThenCheck();
     }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         (void)tokenizer;
         (void)settings;
         (void)errorLogger;
