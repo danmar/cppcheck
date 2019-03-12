@@ -2559,6 +2559,13 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
 
         code = "void f() {\n"
+               "    for (int x = 0; x < 5; x += 2)\n"
+               "        a[x] = 0;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
+
+        code = "void f() {\n"
                "    for (int x = 0; x < 10; x = x + 2)\n"
                "        a[x] = 0;\n"
                "}";
