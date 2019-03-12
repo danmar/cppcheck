@@ -34,20 +34,6 @@
 #include <string>
 #include <vector>
 
-class Settings;
-class SymbolDatabase;
-class Token;
-namespace ValueFlow {
-    class Value;
-}  // namespace ValueFlow
-namespace tinyxml2 {
-    class XMLElement;
-}  // namespace tinyxml2
-
-// CWE ids used
-static const struct CWE CWE119(119U); // Improper Restriction of Operations within the Bounds of a Memory Buffer
-
-class Variable;
 
 /// @addtogroup Checks
 /// @{
@@ -73,14 +59,14 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.arrayIndex();
         checkBufferOverrun.bufferOverflow();
         checkBufferOverrun.arrayIndexThenCheck();
     }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         (void)tokenizer;
         (void)settings;
         (void)errorLogger;
