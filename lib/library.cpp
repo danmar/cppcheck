@@ -664,7 +664,12 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         const char *valueattr = argnode->Attribute("value");
                         if (!valueattr)
                             return Error(MISSING_ATTRIBUTE, "value");
-                        const long long minsizevalue = strtoll(valueattr, NULL, 0);
+                        long long minsizevalue = 0;
+                        try {
+                            minsizevalue = MathLib::toLongNumber(valueattr);
+                        } catch (const InternalError&) {
+                            return Error(BAD_ATTRIBUTE_VALUE, valueattr);
+                        }
                         if (minsizevalue <= 0)
                             return Error(BAD_ATTRIBUTE_VALUE, valueattr);
                         ac.minsizes.emplace_back(type, 0);
