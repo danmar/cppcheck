@@ -32,7 +32,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <cctype>
+#include <cstdint>
 
 class TestValueFlow : public TestFixture {
 public:
