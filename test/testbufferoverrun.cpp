@@ -2138,11 +2138,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class X { static const int x[100]; };\n" // #6070
-              "const int X::x[100] = {0};", false, "test.cpp");
+              "const int X::x[100] = {0};");
         ASSERT_EQUALS("", errout.str());
 
         check("namespace { class X { static const int x[100]; };\n" // #6232
-              "const int X::x[100] = {0}; }", false, "test.cpp");
+              "const int X::x[100] = {0}; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class ActorSprite { static ImageSet * targetCursorImages[2][10]; };\n"
+              "ImageSet *ActorSprite::targetCursorImages[2][10];\n");
         ASSERT_EQUALS("", errout.str());
 
     }
