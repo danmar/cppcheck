@@ -924,6 +924,12 @@ private:
         CHECK(": wchar_t", settings.sizeof_wchar_t);
         CHECK(": size_t", settings.sizeof_size_t);
 #undef CHECK
+
+        code = "uint16_t arr[10];\n"
+               "x = sizeof(arr);";
+        values = tokenValues(code,"( arr )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(10 * sizeof(uint16_t), values.back().intvalue);
     }
 
     void valueFlowErrorPath() {

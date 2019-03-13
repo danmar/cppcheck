@@ -943,6 +943,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                     size = settings->sizeof_int;
                     if (var->type()->classScope && var->type()->classScope->enumType)
                         size = getSizeOfType(var->type()->classScope->enumType, settings);
+                } else if (var->valueType()) {
+                    size = getSizeOf(*var->valueType(), settings);
                 } else if (!var->type()) {
                     size = getSizeOfType(var->typeStartToken(), settings);
                 }
