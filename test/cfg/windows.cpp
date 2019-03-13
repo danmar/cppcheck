@@ -201,8 +201,8 @@ void bufferAccessOutOfBounds()
         buf[i] = L'\0';
     }
 
-    char byteBuf[5] = {0};
-    char byteBuf2[10] = {0};
+    uint8_t byteBuf[5] = {0};
+    uint8_t byteBuf2[10] = {0};
     // TODO ticket #8412 cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress bufferAccessOutOfBounds
     RtlEqualMemory(byteBuf, byteBuf2, 20);
