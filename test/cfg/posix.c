@@ -351,7 +351,7 @@ void dl(const char* libname, const char* func)
     // cppcheck-suppress resourceLeak
 }
 
-void asctime_r_test(struct tm * tm)
+void asctime_r_test(struct tm * tm, char * bufSizeUnknown)
 {
     struct tm tm_uninit_data;
     struct tm * tm_uninit_pointer;
@@ -377,9 +377,12 @@ void asctime_r_test(struct tm * tm)
     // cppcheck-suppress asctime_rCalled
     // cppcheck-suppress uninitvar
     asctime_r(tm_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSizeUnknown);
 }
 
-void ctime_r_test(time_t * timep)
+void ctime_r_test(time_t * timep, char * bufSizeUnknown)
 {
     time_t time_t_uninit_data;
     time_t * time_t_uninit_pointer;
@@ -405,4 +408,7 @@ void ctime_r_test(time_t * timep)
     // cppcheck-suppress ctime_rCalled
     // cppcheck-suppress uninitvar
     ctime_r(time_t_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSizeUnknown);
 }
