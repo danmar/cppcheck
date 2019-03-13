@@ -474,7 +474,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "strncpy|memcpy ("))
+            if (!Token::simpleMatch(tok, "strncpy ("))
                 continue;
             const std::vector<const Token *> args = getArguments(tok);
             if (args.size() != 3)
@@ -502,10 +502,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             if (isZeroTerminated)
                 continue;
             // TODO: Locate unsafe string usage..
-            if (tok->str() == "strncpy")
-                terminateStrncpyError(tok, args[0]->expressionString());
-            else
-                bufferNotZeroTerminatedError(tok, args[0]->expressionString(), tok->str());
+            terminateStrncpyError(tok, args[0]->expressionString());
         }
     }
 }
