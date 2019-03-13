@@ -32,6 +32,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cctype>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -929,7 +930,7 @@ private:
                "x = sizeof(arr);";
         values = tokenValues(code,"( arr )");
         ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(10 * sizeof(uint16_t), values.back().intvalue);
+        ASSERT_EQUALS(10 * sizeof(std::uint16_t), values.back().intvalue);
     }
 
     void valueFlowErrorPath() {
