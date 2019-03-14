@@ -31,7 +31,7 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], bool inconclusive = false, bool runSimpleChecks = true, const char* filename = "test.cpp") {
+    void check(const char code[], bool inconclusive = false, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -42,17 +42,8 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
 
-        CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
-        checkAutoVariables.returnReference();
-        checkAutoVariables.assignFunctionArg();
-        checkAutoVariables.checkVarLifetime();
-
-        if (runSimpleChecks) {
-            tokenizer.simplifyTokenList2();
-
-            // Check auto variables
-            checkAutoVariables.autoVariables();
-        }
+        CheckAutoVariables checkAutoVariables;
+        checkAutoVariables.runChecks(&tokenizer, &settings, this);
     }
 
     void run() OVERRIDE {
@@ -78,6 +69,7 @@ private:
         TEST_CASE(testautovar16); // ticket #8114
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
+        TEST_CASE(testautovar_normal); // "normal" token list that does not remove casts etc
         TEST_CASE(testautovar_ptrptr); // ticket #6956
         TEST_CASE(testautovar_return1);
         TEST_CASE(testautovar_return2);
@@ -141,7 +133,7 @@ private:
               "    int num = 2;\n"
               "    *res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void func1(int **res)\n"
               "{\n"
@@ -167,7 +159,7 @@ private:
               "    int num = 2;\n"
               "    *res = &num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("class Fred {\n"
               "    void func1(int **res);\n"
@@ -196,7 +188,7 @@ private:
               "    int x[100];\n"
               "    *p = x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar4() { // ticket #2928
@@ -213,15 +205,8 @@ private:
               "{\n"
               "    char a;\n"
               "    ab->a = &a;\n"
-              "}", false);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo(struct AB *ab)\n"
-              "{\n"
-              "    char a;\n"
-              "    ab->a = &a;\n"
-              "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar6() { // ticket #2931
@@ -237,7 +222,7 @@ private:
               "    char a[10];\n"
               "    x->str = a;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar7() { // ticket #3066
@@ -255,7 +240,7 @@ private:
               "    int i = 0;\n"
               "    p = &i;\n"
               "}", false);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void foo(std::string& s) {\n"
               "    s = foo;\n"
@@ -273,7 +258,7 @@ private:
               "    p = &p_fp->i;\n"
               "    p = &fp.f->i;\n"
               "}", false);
-        ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar10() { // #2930 - assignment of function parameter
@@ -350,7 +335,7 @@ private:
               "    int i = d;\n"
               "    d = i;\n"
               "    return d;"
-              "}",false,false);
+              "}",false);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int* ptr) {\n" // #4793
@@ -386,7 +371,7 @@ private:
               "    struct A a = bar();\n"
               "    *p = &a.data[0];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void f(char **out) {\n"
               "  struct S *p = glob;\n"
@@ -405,7 +390,7 @@ private:
               "  s8 p[10];\n"  // <- p is array => error
               "  *out = &p[1];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar12() { // Ticket #5024, #5050 - Crash on invalid input
@@ -447,7 +432,7 @@ private:
               "    if (lumdiff > 5.0f)\n"
               "        return &darkOutline;\n"
               "    return 0;\n"
-              "}", false, false);
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -465,7 +450,7 @@ private:
               "    int num=2;"
               "    arr[0]=&num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_array2() {
@@ -477,7 +462,16 @@ private:
               "    int num=2;"
               "    arr[0]=&num;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+    }
+
+    void testautovar_normal() {
+        check("void f(XmDestinationCallbackStruct *ds)\n"
+              "{\n"
+              "    XPoint DropPoint;\n"
+              "    ds->location_data = (XtPointer *)&DropPoint;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_ptrptr() { // #6596
@@ -485,7 +479,7 @@ private:
               "  char dead_slot;\n"
               "  matches[0] = (char *)&dead_slot;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_return1() {
@@ -677,7 +671,7 @@ private:
         check("void svn_repos_dir_delta2() {\n"
               "  struct context c;\n"
               "      SVN_ERR(delete(&c, root_baton, src_entry, pool));\n"
-              "}\n", false, true, "test.c");
+              "}\n", false, "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1055,7 +1049,7 @@ private:
               "    double ret = getValue();\n"
               "    rd = ret;\n"
               "    return rd;\n"
-              "}", false, false);
+              "}", false);
         ASSERT_EQUALS("", errout.str());
     }
 

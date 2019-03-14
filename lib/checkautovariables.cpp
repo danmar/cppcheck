@@ -167,14 +167,14 @@ static bool checkRvalueExpression(const Token * const vartok)
     return ((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
 }
 
-static bool isAddressOfLocalVariableRecursive(const Token *expr)
+static bool isAddressOfLocalVariable(const Token *expr)
 {
     if (!expr)
         return false;
     if (Token::Match(expr, "+|-"))
-        return isAddressOfLocalVariableRecursive(expr->astOperand1()) || isAddressOfLocalVariableRecursive(expr->astOperand2());
+        return isAddressOfLocalVariable(expr->astOperand1()) || isAddressOfLocalVariable(expr->astOperand2());
     if (expr->isCast())
-        return isAddressOfLocalVariableRecursive(expr->astOperand2() ? expr->astOperand2() : expr->astOperand1());
+        return isAddressOfLocalVariable(expr->astOperand2() ? expr->astOperand2() : expr->astOperand1());
     if (expr->isUnaryOp("&")) {
         const Token *op = expr->astOperand1();
         bool deref = false;
@@ -188,13 +188,6 @@ static bool isAddressOfLocalVariableRecursive(const Token *expr)
         return op && isAutoVar(op) && (!deref || !op->variable()->isPointer());
     }
     return false;
-}
-
-static bool isAddressOfLocalVariable(const Token *expr)
-{
-    if (!expr || !expr->valueType() || expr->valueType()->pointer == 0)
-        return false;
-    return isAddressOfLocalVariableRecursive(expr);
 }
 
 static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)
@@ -271,6 +264,8 @@ void CheckAutoVariables::autoVariables()
                     errorAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAddressOfLocalVariable(tok->tokAt(3)->astOperand2())) {
                 errorAutoVariableAssignment(tok->next(), false);
+            } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAddressOfLocalVariable(tok->tokAt(4)->astOperand2())) {
+                errorAutoVariableAssignment(tok->next(), false);
             } else if (mSettings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = &| %var% ;") && isGlobalPtr(tok->next())) {
                 const Token * const pointer = tok->next();
                 if (isAutoVarArray(tok->tokAt(3))) {
@@ -282,14 +277,6 @@ void CheckAutoVariables::autoVariables()
                     if (!reassignedGlobalPointer(variable, pointer->varId(), mSettings, mTokenizer->isCPP()))
                         errorAssignAddressOfLocalVariableToGlobalPointer(pointer, variable);
                 }
-            } else if (Token::Match(tok, "[;{}] %var% . %var% = & %var%")) {
-                // TODO: check if the parameter is only changed temporarily (#2969)
-                if (printInconclusive && isPtrArg(tok->next())) {
-                    const Token * const var2tok = tok->tokAt(6);
-                    if (isAutoVar(var2tok) && checkRvalueExpression(var2tok))
-                        errorAutoVariableAssignment(tok->next(), true);
-                }
-                tok = tok->tokAt(6);
             } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive && isPtrArg(tok->next())) {
@@ -304,11 +291,9 @@ void CheckAutoVariables::autoVariables()
                         errorAutoVariableAssignment(tok->next(), false);
                 }
                 tok = tok->tokAt(4);
-            } else if (Token::Match(tok, "[;{}] %var% [") && Token::Match(tok->linkAt(2), "] = & %var%") &&
-                       (isPtrArg(tok->next()) || isArrayArg(tok->next())) && isAutoVar(tok->linkAt(2)->tokAt(3))) {
-                const Token* const varTok = tok->linkAt(2)->tokAt(3);
-                if (checkRvalueExpression(varTok))
-                    errorAutoVariableAssignment(tok->next(), false);
+            } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
+                       (isPtrArg(tok->next()) || isArrayArg(tok->next())) && isAddressOfLocalVariable(tok->linkAt(2)->next()->astOperand2())) {
+                errorAutoVariableAssignment(tok->next(), false);
             }
             // Invalid pointer deallocation
             else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.dealloc(tok)) ||
@@ -354,14 +339,14 @@ void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
 void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inconclusive)
 {
     if (!inconclusive) {
-        reportError(tok, Severity::error, "autoVariables",
+        reportError(tok, Severity::warning, "autoVariables",
                     "Address of local auto-variable assigned to a function parameter.\n"
                     "Dangerous assignment - the function parameter is assigned the address of a local "
                     "auto-variable. Local auto-variables are reserved from the stack which "
                     "is freed when the function ends. So the pointer to a local variable "
                     "is invalid after the function ends.", CWE562, false);
     } else {
-        reportError(tok, Severity::error, "autoVariables",
+        reportError(tok, Severity::warning, "autoVariables",
                     "Address of local auto-variable assigned to a function parameter.\n"
                     "Function parameter is assigned the address of a local auto-variable. "
                     "Local auto-variables are reserved from the stack which is freed when "
