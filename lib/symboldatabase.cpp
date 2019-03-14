@@ -1261,14 +1261,13 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
 {
     // set all unknown array dimensions
-    for (std::size_t i = 1; i <= mTokenizer->varIdCount(); i++) {
+    for (const Variable *var : mVariableList) {
         // check each array variable
-        if (!mVariableList[i] || !mVariableList[i]->isArray())
+        if (!var || !var->isArray())
             continue;
         // check each array dimension
-        const std::vector<Dimension>& dimensions = mVariableList[i]->dimensions();
-        for (std::size_t j = 0; j < dimensions.size(); j++) {
-            Dimension &dimension = const_cast<Dimension &>(dimensions[j]);
+        for (const Dimension &const_dimension : var->dimensions()) {
+            Dimension &dimension = const_cast<Dimension &>(const_dimension);
             if (dimension.num != 0)
                 continue;
             dimension.known = false;
