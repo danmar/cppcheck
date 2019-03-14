@@ -51,7 +51,7 @@ void bufferAccessOutOfBounds__builtin_memset(void)
 
 void bufferAccessOutOfBounds()
 {
-    char buf[2];
+    char buf[2] = "a";
     // This is valid
     sethostname(buf, 2);
     // cppcheck-suppress bufferAccessOutOfBounds
