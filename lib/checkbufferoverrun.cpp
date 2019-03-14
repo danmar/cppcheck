@@ -229,10 +229,10 @@ void CheckBufferOverrun::arrayIndex()
                     return ChildrenToVisit::op1_and_op2;
                 });
             }
-        } else if (const Token *stringLiteral = array->getValueTokenMinStrSize()) {
+        } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(mSettings)) {
             Dimension dim;
             dim.tok = nullptr;
-            dim.num = Token::getStrSize(stringLiteral);
+            dim.num = Token::getStrSize(stringLiteral, mSettings);
             dim.known = array->hasKnownValue();
             dimensions.emplace_back(dim);
         } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {

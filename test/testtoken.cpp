@@ -293,15 +293,52 @@ private:
 
     void getStrSize() const {
         Token tok;
+        Settings settings;
 
         tok.str("\"abc\"");
-        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok));
+        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok, &settings));
 
         tok.str("\"\\0abc\"");
-        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok));
+        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok, &settings));
 
         tok.str("\"\\\\\"");
-        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok));
+        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok, &settings));
+
+        tok.str("L\"abc\"");
+        ASSERT_EQUALS(sizeof(L"abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("L\"\\0abc\"");
+        ASSERT_EQUALS(sizeof(L"\0abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("L\"\\\\\"");
+        ASSERT_EQUALS(sizeof(L"\\"), Token::getStrSize(&tok, &settings));
+
+        tok.str("u8\"abc\"");
+        ASSERT_EQUALS(sizeof(u8"abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("u8\"\\0abc\"");
+        ASSERT_EQUALS(sizeof(u8"\0abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("u8\"\\\\\"");
+        ASSERT_EQUALS(sizeof(u8"\\"), Token::getStrSize(&tok, &settings));
+
+        tok.str("u\"abc\"");
+        ASSERT_EQUALS(sizeof(u"abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("u\"\\0abc\"");
+        ASSERT_EQUALS(sizeof(u"\0abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("u\"\\\\\"");
+        ASSERT_EQUALS(sizeof(u"\\"), Token::getStrSize(&tok, &settings));
+
+        tok.str("U\"abc\"");
+        ASSERT_EQUALS(sizeof(U"abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("U\"\\0abc\"");
+        ASSERT_EQUALS(sizeof(U"\0abc"), Token::getStrSize(&tok, &settings));
+
+        tok.str("U\"\\\\\"");
+        ASSERT_EQUALS(sizeof(U"\\"), Token::getStrSize(&tok, &settings));
     }
 
     void strValue() const {

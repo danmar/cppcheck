@@ -60,7 +60,7 @@ void CheckString::stringLiteralWrite()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->variable() || !tok->variable()->isPointer())
                 continue;
-            const Token *str = tok->getValueTokenMinStrSize();
+            const Token *str = tok->getValueTokenMinStrSize(mSettings);
             if (!str)
                 continue;
             if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->linkAt(1), "] ="))

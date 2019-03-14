@@ -281,13 +281,23 @@ public:
     static std::size_t getStrLength(const Token *tok);
 
     /**
-     * @return sizeof of C-string.
+     * @return array length of C-string.
      *
      * Should be called for %%str%% tokens only.
      *
      * @param tok token with C-string
      **/
-    static std::size_t getStrSize(const Token *tok);
+    static std::size_t getStrArraySize(const Token *tok);
+
+    /**
+     * @return sizeof of C-string.
+     *
+     * Should be called for %%str%% tokens only.
+     *
+     * @param tok token with C-string
+     * @param settings Settings
+     **/
+    static std::size_t getStrSize(const Token *tok, const Settings *const);
 
     /**
      * @return char of C-string at index (possible escaped "\\n")
@@ -971,7 +981,7 @@ public:
     }
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize() const;
+    const Token *getValueTokenMinStrSize(const Settings *settings) const;
 
     const Token *getValueTokenDeadPointer() const;
 

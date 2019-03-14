@@ -741,16 +741,27 @@ std::size_t Token::getStrLength(const Token *tok)
     return len;
 }
 
-std::size_t Token::getStrSize(const Token *tok)
+std::size_t Token::getStrArraySize(const Token *tok)
 {
     assert(tok != nullptr && tok->tokType() == eString);
     const std::string &str = tok->str();
-    unsigned int sizeofstring = 1U;
+    std::size_t sizeofstring = 1U;
     for (unsigned int i = 1U; i < str.size() - 1U; i++) {
         if (str[i] == '\\')
             ++i;
         ++sizeofstring;
     }
+
+    return sizeofstring;
+}
+
+std::size_t Token::getStrSize(const Token *tok, const Settings *settings)
+{
+    assert(tok != nullptr && tok->tokType() == eString);
+    std::size_t sizeofstring = getStrArraySize(tok);
+
+    if (settings && tok->isLong())
+        sizeofstring *= settings->sizeof_wchar_t;
     return sizeofstring;
 }
 
@@ -1584,7 +1595,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, unsigned int 
     return ret;
 }
 
-const Token *Token::getValueTokenMinStrSize() const
+const Token *Token::getValueTokenMinStrSize(const Settings *settings) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -1593,7 +1604,7 @@ const Token *Token::getValueTokenMinStrSize() const
     std::list<ValueFlow::Value>::const_iterator it;
     for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
-            const std::size_t size = getStrSize(it->tokvalue);
+            const std::size_t size = getStrSize(it->tokvalue, settings);
             if (!ret || size < minsize) {
                 minsize = size;
                 ret = it->tokvalue;

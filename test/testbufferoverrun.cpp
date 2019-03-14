@@ -2059,6 +2059,26 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    const wchar_t *str = L\"abc\";\n"
+              "    bar(str[10]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'str[4]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const wchar_t *str = L\"abc\";\n"
+              "    bar(str[4]);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[4]' accessed at index 4, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    const wchar_t *str = L\"abc\";\n"
+              "    bar(str[3]);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f()\n"
               "{\n"
               "    const char *str = \"a\tc\";\n"
@@ -3292,9 +3312,27 @@ private:
         // Ticket #909
         check("void f(void) {\n"
               "    char str[] = \"abcd\";\n"
-              "    mymemset(str, 0, 10);\n"
+              "    mymemset(str, 0, 6);\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        check("void f(void) {\n"
+              "    char str[] = \"abcd\";\n"
+              "    mymemset(str, 0, 5);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void) {\n"
+              "    wchar_t str[] = L\"abcd\";\n"
+              "    mymemset(str, 0, 10081);\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout.str());
+
+        check("void f(void) {\n"
+              "    wchar_t str[] = L\"abcd\";\n"
+              "    mymemset(str, 0, 49);\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
 
         // ticket #1659 - overflowing variable when using memcpy
         check("void f(void) { \n"
