@@ -388,6 +388,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
+        check("void f(char **out) {\n"
+              "  struct S *p = glob;\n"
+              "  *out = &p->data;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #4998
         check("void f(s8**out) {\n"
               "  s8 *p;\n"  // <- p is pointer => no error

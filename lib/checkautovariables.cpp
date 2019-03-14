@@ -173,13 +173,15 @@ static bool isAddressOfLocalVariableRecursive(const Token *expr)
         return false;
     if (Token::Match(expr, "+|-"))
         return isAddressOfLocalVariableRecursive(expr->astOperand1()) || isAddressOfLocalVariableRecursive(expr->astOperand2());
-    if (expr->str() == "(" && !expr->astOperand2())
-        return isAddressOfLocalVariableRecursive(expr->astOperand1());
-    if (expr->str() == "&" && !expr->astOperand2()) {
+    if (expr->isCast())
+        return isAddressOfLocalVariableRecursive(expr->astOperand2() ? expr->astOperand2() : expr->astOperand1());
+    if (expr->isUnaryOp("&")) {
         const Token *op = expr->astOperand1();
         bool deref = false;
         while (Token::Match(op, ".|[")) {
-            if (op->str() == "[" || op->originalName() == "->")
+            if (op->originalName() == "->")
+                return false;
+            if (op->str() == "[")
                 deref = true;
             op = op->astOperand1();
         }
