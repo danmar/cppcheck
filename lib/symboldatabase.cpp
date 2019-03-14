@@ -1263,84 +1263,84 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
     // set all unknown array dimensions
     for (std::size_t i = 1; i <= mTokenizer->varIdCount(); i++) {
         // check each array variable
-        if (mVariableList[i] && mVariableList[i]->isArray()) {
-            // check each array dimension
-            const std::vector<Dimension>& dimensions = mVariableList[i]->dimensions();
-            for (std::size_t j = 0; j < dimensions.size(); j++) {
-                Dimension &dimension = const_cast<Dimension &>(dimensions[j]);
-                if (dimension.num == 0) {
-                    dimension.known = false;
-                    // check for a single token dimension
-                    if (dimension.start && (dimension.start == dimension.end)) {
-                        // check for an enumerator
-                        if (dimension.start->enumerator()) {
-                            if (dimension.start->enumerator()->value_known) {
-                                dimension.num = dimension.start->enumerator()->value;
-                                dimension.known = true;
-                            }
-                        }
+        if (!mVariableList[i] || !mVariableList[i]->isArray())
+            continue;
+        // check each array dimension
+        const std::vector<Dimension>& dimensions = mVariableList[i]->dimensions();
+        for (std::size_t j = 0; j < dimensions.size(); j++) {
+            Dimension &dimension = const_cast<Dimension &>(dimensions[j]);
+            if (dimension.num != 0)
+                continue;
+            dimension.known = false;
+            // check for a single token dimension
+            if (dimension.start && (dimension.start == dimension.end)) {
+                // check for an enumerator
+                if (dimension.start->enumerator()) {
+                    if (dimension.start->enumerator()->value_known) {
+                        dimension.num = dimension.start->enumerator()->value;
+                        dimension.known = true;
+                    }
+                }
 
-                        // check for a variable
-                        else if (dimension.start->varId()) {
-                            // get maximum size from type
-                            // find where this type is defined
-                            const Variable *var = getVariableFromVarId(dimension.start->varId());
+                // check for a variable
+                else if (dimension.start->varId()) {
+                    // get maximum size from type
+                    // find where this type is defined
+                    const Variable *var = getVariableFromVarId(dimension.start->varId());
 
-                            // make sure it is in the database
-                            if (!var)
-                                break;
-                            // get type token
-                            const Token *index_type = var->typeEndToken();
+                    // make sure it is in the database
+                    if (!var)
+                        break;
+                    // get type token
+                    const Token *index_type = var->typeEndToken();
 
-                            if (index_type->str() == "char") {
-                                if (index_type->isUnsigned())
-                                    dimension.num = UCHAR_MAX + 1;
-                                else if (index_type->isSigned())
-                                    dimension.num = SCHAR_MAX + 1;
-                                else
-                                    dimension.num = CHAR_MAX + 1;
-                            } else if (index_type->str() == "short") {
-                                if (index_type->isUnsigned())
-                                    dimension.num = USHRT_MAX + 1;
-                                else
-                                    dimension.num = SHRT_MAX + 1;
-                            }
+                    if (index_type->str() == "char") {
+                        if (index_type->isUnsigned())
+                            dimension.num = UCHAR_MAX + 1;
+                        else if (index_type->isSigned())
+                            dimension.num = SCHAR_MAX + 1;
+                        else
+                            dimension.num = CHAR_MAX + 1;
+                    } else if (index_type->str() == "short") {
+                        if (index_type->isUnsigned())
+                            dimension.num = USHRT_MAX + 1;
+                        else
+                            dimension.num = SHRT_MAX + 1;
+                    }
 
-                            // checkScope assumes size is signed int so we limit the following sizes to INT_MAX
-                            else if (index_type->str() == "int") {
-                                if (index_type->isUnsigned())
-                                    dimension.num = UINT_MAX + 1ULL;
-                                else
-                                    dimension.num = INT_MAX + 1ULL;
-                            } else if (index_type->str() == "long") {
-                                if (index_type->isUnsigned()) {
-                                    if (index_type->isLong())
-                                        dimension.num = ULLONG_MAX; // should be ULLONG_MAX + 1ULL
-                                    else
-                                        dimension.num = ULONG_MAX; // should be ULONG_MAX + 1ULL
-                                } else {
-                                    if (index_type->isLong())
-                                        dimension.num = LLONG_MAX; // should be LLONG_MAX + 1LL
-                                    else
-                                        dimension.num = LONG_MAX;  // should be LONG_MAX + 1LL
-                                }
-                            }
+                    // checkScope assumes size is signed int so we limit the following sizes to INT_MAX
+                    else if (index_type->str() == "int") {
+                        if (index_type->isUnsigned())
+                            dimension.num = UINT_MAX + 1ULL;
+                        else
+                            dimension.num = INT_MAX + 1ULL;
+                    } else if (index_type->str() == "long") {
+                        if (index_type->isUnsigned()) {
+                            if (index_type->isLong())
+                                dimension.num = ULLONG_MAX; // should be ULLONG_MAX + 1ULL
+                            else
+                                dimension.num = ULONG_MAX; // should be ULONG_MAX + 1ULL
+                        } else {
+                            if (index_type->isLong())
+                                dimension.num = LLONG_MAX; // should be LLONG_MAX + 1LL
+                            else
+                                dimension.num = LONG_MAX;  // should be LONG_MAX + 1LL
                         }
                     }
-                    // check for qualified enumerator
-                    else if (dimension.start) {
-                        // rhs of [
-                        const Token *rhs = dimension.start->previous()->astOperand2();
+                }
+            }
+            // check for qualified enumerator
+            else if (dimension.start) {
+                // rhs of [
+                const Token *rhs = dimension.start->previous()->astOperand2();
 
-                        // constant folding of expression:
-                        ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
+                // constant folding of expression:
+                ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
 
-                        // get constant folded value:
-                        if (rhs && rhs->hasKnownIntValue()) {
-                            dimension.num = rhs->values().front().intvalue;
-                            dimension.known = true;
-                        }
-                    }
+                // get constant folded value:
+                if (rhs && rhs->hasKnownIntValue()) {
+                    dimension.num = rhs->values().front().intvalue;
+                    dimension.known = true;
                 }
             }
         }
