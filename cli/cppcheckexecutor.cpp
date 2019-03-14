@@ -811,6 +811,17 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     Settings& settings = cppcheck.settings();
     _settings = &settings;
     const bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
+
+    for (const std::string &lib : settings.libraries) {
+        if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
+            const std::string msg("Failed to load the library " + lib);
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+            ErrorLogger::ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", false);
+            reportErr(errmsg);
+            return EXIT_FAILURE;
+        }
+    }
+
     bool posix = true;
     if (settings.standards.posix)
         posix = tryLoadLibrary(settings.library, argv[0], "posix.cfg");

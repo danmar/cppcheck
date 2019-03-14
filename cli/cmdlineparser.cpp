@@ -532,8 +532,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --library
             else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-                if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], argv[i]+10))
-                    return false;
+                std::string lib(argv[i] + 10);
+                mSettings->libraries.push_back(lib);
             }
 
             // --project
