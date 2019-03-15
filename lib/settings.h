@@ -255,7 +255,10 @@ public:
     /** @brief --report-progress */
     bool reportProgress;
 
-    /** Library (--library) */
+    /** @brief --library= */
+    std::list<std::string> libraries;
+
+    /** Library */
     Library library;
 
     /** Rule */

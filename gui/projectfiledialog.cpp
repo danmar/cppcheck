@@ -89,6 +89,30 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     if (!datadir.isEmpty())
         searchPaths << datadir << datadir + "/cfg";
     QStringList libs;
+    // Search the std.cfg first since other libraries could depend on it
+    QString stdLibraryFilename;
+    foreach (const QString sp, searchPaths) {
+        QDir dir(sp);
+        dir.setSorting(QDir::Name);
+        dir.setNameFilters(QStringList("*.cfg"));
+        dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+        foreach (QFileInfo item, dir.entryInfoList()) {
+            QString library = item.fileName();
+            if (library.compare("std.cfg", Qt::CaseInsensitive) != 0)
+                continue;
+            Library lib;
+            const QString fullfilename = sp + "/" + library;
+            const Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
+            if (err.errorcode != Library::OK)
+                continue;
+            // Working std.cfg found
+            stdLibraryFilename = fullfilename;
+            break;
+        }
+        if (!stdLibraryFilename.isEmpty())
+            break;
+    }
+    // Search other libraries
     foreach (const QString sp, searchPaths) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
@@ -99,7 +123,12 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
             {
                 Library lib;
                 const QString fullfilename = sp + "/" + library;
-                const Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
+                Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
+                if (err.errorcode != Library::OK) {
+                    // Some libraries depend on std.cfg so load it first and test again
+                    lib.load(nullptr, stdLibraryFilename.toLatin1());
+                    err = lib.load(nullptr, fullfilename.toLatin1());
+                }
                 if (err.errorcode != Library::OK)
                     continue;
             }
