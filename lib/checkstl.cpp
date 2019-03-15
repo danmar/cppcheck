@@ -1877,7 +1877,7 @@ static const Token *singleAssignInScope(const Token *start, unsigned int varid, 
         return nullptr;
     if (isVariableChanged(assignTok->next(), endStatement, varid, false, nullptr, true))
         return nullptr;
-    input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid);
+    input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid) || !Token::Match(start->next(), "%var% =");
     return assignTok;
 }
 
@@ -1957,8 +1957,7 @@ static bool addByOne(const Token *tok, unsigned int varid)
 
 static bool accumulateBoolLiteral(const Token *tok, unsigned int varid)
 {
-    // TODO: Missing %oreq%
-    if (Token::Match(tok, "=|&= %bool% ;") &&
+    if (Token::Match(tok, "%assign% %bool% ;") &&
         tok->tokAt(1)->hasKnownIntValue()) {
         return true;
     }
@@ -1971,8 +1970,8 @@ static bool accumulateBoolLiteral(const Token *tok, unsigned int varid)
 
 static bool accumulateBool(const Token *tok, unsigned int varid)
 {
-    // TODO: Missing %oreq%
-    if (Token::simpleMatch(tok, "&=")) {
+    // Missing %oreq% so we have to check both manually
+    if (Token::simpleMatch(tok, "&=") || Token::simpleMatch(tok, "|=")) {
         return true;
     }
     if (Token::Match(tok, "= %varid% %oror%|%or%|&&|&", varid)) {
