@@ -339,14 +339,14 @@ void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
 void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inconclusive)
 {
     if (!inconclusive) {
-        reportError(tok, Severity::warning, "autoVariables",
+        reportError(tok, Severity::error, "autoVariables",
                     "Address of local auto-variable assigned to a function parameter.\n"
                     "Dangerous assignment - the function parameter is assigned the address of a local "
                     "auto-variable. Local auto-variables are reserved from the stack which "
                     "is freed when the function ends. So the pointer to a local variable "
                     "is invalid after the function ends.", CWE562, false);
     } else {
-        reportError(tok, Severity::warning, "autoVariables",
+        reportError(tok, Severity::error, "autoVariables",
                     "Address of local auto-variable assigned to a function parameter.\n"
                     "Function parameter is assigned the address of a local auto-variable. "
                     "Local auto-variables are reserved from the stack which is freed when "
