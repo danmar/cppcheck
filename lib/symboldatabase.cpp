@@ -61,7 +61,6 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseSetVariablePointers();
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
-    createSymbolDatabaseUnknownArrayDimensions();
 }
 
 static const Token* skipScopeIdentifiers(const Token* tok)
@@ -1258,7 +1257,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
     }
 }
 
-void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
+void SymbolDatabase::setArrayDimensionsUsingValueFlow()
 {
     // set all unknown array dimensions
     for (const Variable *var : mVariableList) {
@@ -1268,78 +1267,44 @@ void SymbolDatabase::createSymbolDatabaseUnknownArrayDimensions()
         // check each array dimension
         for (const Dimension &const_dimension : var->dimensions()) {
             Dimension &dimension = const_cast<Dimension &>(const_dimension);
-            if (dimension.num != 0)
+            if (dimension.num != 0 || !dimension.tok)
                 continue;
             dimension.known = false;
+
             // check for a single token dimension
-            if (dimension.start && (dimension.start == dimension.end)) {
-                // check for an enumerator
-                if (dimension.start->enumerator()) {
-                    if (dimension.start->enumerator()->value_known) {
-                        dimension.num = dimension.start->enumerator()->value;
-                        dimension.known = true;
-                    }
-                }
-
-                // check for a variable
-                else if (dimension.start->varId()) {
-                    // get maximum size from type
-                    // find where this type is defined
-                    const Variable *var = getVariableFromVarId(dimension.start->varId());
-
-                    // make sure it is in the database
-                    if (!var)
-                        break;
-                    // get type token
-                    const Token *index_type = var->typeEndToken();
-
-                    if (index_type->str() == "char") {
-                        if (index_type->isUnsigned())
-                            dimension.num = UCHAR_MAX + 1;
-                        else if (index_type->isSigned())
-                            dimension.num = SCHAR_MAX + 1;
-                        else
-                            dimension.num = CHAR_MAX + 1;
-                    } else if (index_type->str() == "short") {
-                        if (index_type->isUnsigned())
-                            dimension.num = USHRT_MAX + 1;
-                        else
-                            dimension.num = SHRT_MAX + 1;
-                    }
-
-                    // checkScope assumes size is signed int so we limit the following sizes to INT_MAX
-                    else if (index_type->str() == "int") {
-                        if (index_type->isUnsigned())
-                            dimension.num = UINT_MAX + 1ULL;
-                        else
-                            dimension.num = INT_MAX + 1ULL;
-                    } else if (index_type->str() == "long") {
-                        if (index_type->isUnsigned()) {
-                            if (index_type->isLong())
-                                dimension.num = ULLONG_MAX; // should be ULLONG_MAX + 1ULL
-                            else
-                                dimension.num = ULONG_MAX; // should be ULONG_MAX + 1ULL
-                        } else {
-                            if (index_type->isLong())
-                                dimension.num = LLONG_MAX; // should be LLONG_MAX + 1LL
-                            else
-                                dimension.num = LONG_MAX;  // should be LONG_MAX + 1LL
-                        }
-                    }
-                }
+            if (dimension.tok->hasKnownIntValue()) {
+                dimension.known = true;
+                dimension.num = dimension.tok->getKnownIntValue();
+                continue;
             }
-            // check for qualified enumerator
-            else if (dimension.start) {
-                // rhs of [
-                const Token *rhs = dimension.start->previous()->astOperand2();
 
-                // constant folding of expression:
-                ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
+            else if (dimension.tok->valueType() && dimension.tok->valueType()->pointer == 0) {
+                int bits = 0;
+                switch (dimension.tok->valueType()->type) {
+                case ValueType::Type::CHAR:
+                    bits = mSettings->char_bit;
+                    break;
+                case ValueType::Type::SHORT:
+                    bits = mSettings->short_bit;
+                    break;
+                case ValueType::Type::INT:
+                    bits = mSettings->int_bit;
+                    break;
+                case ValueType::Type::LONG:
+                    bits = mSettings->long_bit;
+                    break;
+                case ValueType::Type::LONGLONG:
+                    bits = mSettings->long_long_bit;
+                    break;
+                default:
+                    break;
+                };
 
-                // get constant folded value:
-                if (rhs && rhs->hasKnownIntValue()) {
-                    dimension.num = rhs->values().front().intvalue;
-                    dimension.known = true;
+                if (bits > 0 && bits < 64) {
+                    if (dimension.tok->valueType()->sign == ValueType::Sign::SIGNED)
+                        dimension.num = 1LL << (bits - 1);
+                    else
+                        dimension.num = 1LL << bits;
                 }
             }
         }
@@ -1626,7 +1591,7 @@ void Variable::evaluate(const Settings* settings)
     const Library * const lib = settings ? &settings->library : nullptr;
 
     if (mNameToken)
-        setFlag(fIsArray, arrayDimensions(lib));
+        setFlag(fIsArray, arrayDimensions(settings));
 
     if (mTypeStartToken)
         setValueType(ValueType::parseDecl(mTypeStartToken,settings));
@@ -1689,7 +1654,7 @@ void Variable::evaluate(const Settings* settings)
                 tok = tok->link()->previous();
             // add array dimensions if present
             if (tok && tok->next()->str() == "[")
-                setFlag(fIsArray, arrayDimensions(lib));
+                setFlag(fIsArray, arrayDimensions(settings));
         }
         if (!tok)
             return;
@@ -2469,9 +2434,9 @@ bool Type::isDerivedFrom(const std::string & ancestor) const
     return false;
 }
 
-bool Variable::arrayDimensions(const Library* lib)
+bool Variable::arrayDimensions(const Settings* settings)
 {
-    const Library::Container* container = lib->detectContainer(mTypeStartToken);
+    const Library::Container* container = settings->library.detectContainer(mTypeStartToken);
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
         const Token* tok = Token::findsimplematch(mTypeStartToken, "<");
         if (tok) {
@@ -2481,16 +2446,17 @@ bool Variable::arrayDimensions(const Library* lib)
                 tok = tok->nextTemplateArgument();
             }
             if (tok) {
-                dimension_.start = tok;
-                dimension_.end = Token::findmatch(tok, ",|>");
-                if (dimension_.end)
-                    dimension_.end = dimension_.end->previous();
-                if (dimension_.start == dimension_.end) {
-                    dimension_.num = MathLib::toLongNumber(dimension_.start->str());
+                while (!tok->astParent() && !Token::Match(tok->next(), "[,<>]"))
+                    tok = tok->next();
+                while (tok->astParent() && !Token::Match(tok->astParent(), "[,<>]"))
+                    tok = tok->astParent();
+                dimension_.tok = tok;
+                ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+                if (tok->hasKnownIntValue()) {
+                    dimension_.num = tok->getKnownIntValue();
                     dimension_.known = true;
                 }
             }
-            assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
             mDimensions.push_back(dimension_);
             return true;
         }
@@ -2512,16 +2478,16 @@ bool Variable::arrayDimensions(const Library* lib)
     bool arr = false;
     while (dim && dim->next() && dim->str() == "[") {
         Dimension dimension_;
+        dimension_.known = false;
         // check for empty array dimension []
         if (dim->next()->str() != "]") {
-            dimension_.start = dim->next();
-            dimension_.end = dim->link()->previous();
-            if (dimension_.start == dimension_.end && dimension_.start->isNumber()) {
-                dimension_.num = MathLib::toLongNumber(dimension_.start->str());
+            dimension_.tok = dim->astOperand2();
+            ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+            if (dimension_.tok && dimension_.tok->hasKnownIntValue()) {
+                dimension_.num = dimension_.tok->getKnownIntValue();
                 dimension_.known = true;
             }
         }
-        assert((dimension_.start == nullptr) == (dimension_.end == nullptr));
         mDimensions.push_back(dimension_);
         dim = dim->link()->next();
         arr = true;

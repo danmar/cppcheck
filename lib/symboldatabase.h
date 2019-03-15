@@ -51,10 +51,9 @@ enum AccessControl { Public, Protected, Private, Global, Namespace, Argument, Lo
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : start(nullptr), end(nullptr), num(0), known(true) { }
+    Dimension() : tok(nullptr), num(0), known(true) { }
 
-    const Token *start;  ///< size start token
-    const Token *end;    ///< size end token
+    const Token *tok;    ///< size token
     MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
     bool known;          ///< Known size
 };
@@ -213,10 +212,10 @@ class CPPCHECKLIB Variable {
 
     /**
      * @brief parse and save array dimension information
-     * @param lib Library instance
+     * @param settings Platform settings and library
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Library* lib);
+    bool arrayDimensions(const Settings* settings);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -1218,6 +1217,9 @@ public:
      */
     unsigned int sizeOfType(const Token *type) const;
 
+    /** Set array dimensions when valueflow analysis is completed */
+    void setArrayDimensionsUsingValueFlow();
+
 private:
     friend class Scope;
     friend class Function;
@@ -1237,7 +1239,6 @@ private:
     void createSymbolDatabaseSetVariablePointers();
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseEnums();
-    void createSymbolDatabaseUnknownArrayDimensions();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);

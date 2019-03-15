@@ -401,15 +401,19 @@ private:
         ASSERT_EQUALS(12U, v->dimension(0));
     }
 
-    void stlarray() const {
-        std::istringstream code("std::array<int, 20> arr;");
-        TokenList list(nullptr);
-        list.createTokens(code, "test.c");
-        list.front()->tokAt(3)->link(list.front()->tokAt(7));
-        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, nullptr, nullptr, &settings1);
-        ASSERT(v.isArray());
-        ASSERT_EQUALS(1U, v.dimensions().size());
-        ASSERT_EQUALS(20U, v.dimension(0));
+    void stlarray() {
+        GET_SYMBOL_DB("std::array<int, (16 + 4)> arr;");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        ASSERT(db->variableList().size() == 2); // the first one is not used
+        const Variable * v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(20U, v->dimension(0));
     }
 
     void test_isVariableDeclarationCanHandleNull() {

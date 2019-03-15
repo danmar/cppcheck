@@ -1797,6 +1797,8 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
     }
 
+    mSymbolDatabase->setArrayDimensionsUsingValueFlow();
+
     printDebugOutput(1);
 
     return true;
