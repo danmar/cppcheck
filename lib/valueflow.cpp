@@ -3055,6 +3055,37 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
     }
 }
 
+static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+{
+    if (!Token::Match(tok, "(|{"))
+        return;
+    if (Token::Match(tok->previous(), "%type%")) {
+        const Type* t = tok->type();
+        if (!t)
+            return;
+        if ()
+        const Scope * scope = t->classScope;
+        if (!scope)
+            return;
+        // Only support aggregate constructors for now
+        if (scope->numConstructors == 0 && t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
+            std::vector<const Token *> args = getArguments(tok);
+            std::size_t i = 0;
+            for(Variable& var:scope->varlist) {
+                if (i >= args.size())
+                    break;
+                const Token* argtok = args[i];
+                LifetimeStore ls{argtok, "Passed to constructor of '" + tok->previous()->str() + "'.", ValueFlow::Value::Object};
+                if (var.isReference() || var.isRValueReference()) {
+                    ls.byRef(tok, tokenlist, errorLogger, settings);
+                } else {
+                    ls.byVal(tok, tokenlist, errorLogger, settings);
+                }
+            }
+        }
+    }
+}
+
 struct Lambda {
     explicit Lambda(const Token * tok)
         : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr) {
