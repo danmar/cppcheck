@@ -38,7 +38,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.14"
+CLIENT_VERSION = "1.1.15"
 
 
 def checkRequirements():
@@ -244,6 +244,7 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
                        #'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'], <- Enable after release of 1.88
                        'python': ['<Python.h>'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'ruby': ['<ruby.h>', '<ruby/'],
                        'sdl': ['<SDL.h>'],
                        #'sqlite3': ['<sqlite3.h>'], <- Enable after release of 1.88
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
