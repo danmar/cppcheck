@@ -71,6 +71,7 @@ public:
         checkStl.redundantCondition();
         checkStl.string_c_str();
         checkStl.uselessCalls();
+        checkStl.useStlAlgorithm();
     }
 
     /** Simplified checks. The token list is simplified. */
@@ -88,7 +89,6 @@ public:
 
         // Style check
         checkStl.size();
-        checkStl.useStlAlgorithm();
     }
 
     /** Accessing container out of bounds using ValueFlow */
