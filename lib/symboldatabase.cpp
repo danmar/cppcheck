@@ -1301,10 +1301,10 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                 };
 
                 if (bits > 0 && bits < 64) {
-                    if (dimension.tok->valueType()->sign == ValueType::Sign::SIGNED)
-                        dimension.num = 1LL << (bits - 1);
-                    else
+                    if (dimension.tok->valueType()->sign == ValueType::Sign::UNSIGNED)
                         dimension.num = 1LL << bits;
+                    else
+                        dimension.num = 1LL << (bits - 1);
                 }
             }
         }
