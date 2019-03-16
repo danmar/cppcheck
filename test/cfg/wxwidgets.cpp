@@ -52,9 +52,9 @@ void validGuiCode()
 
 void nullPointer(const wxString &str)
 {
-    // cppcheck-suppress nullPointer
+    // TODO cppcheck-suppress nullPointer
     wxLogGeneric(wxLOG_Message, (char*)NULL);
-    // cppcheck-suppress nullPointer
+    // TODO cppcheck-suppress nullPointer
     wxLogMessage((char*)NULL);
 
     double *doublePtr = NULL;

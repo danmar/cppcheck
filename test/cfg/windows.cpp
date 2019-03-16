@@ -346,7 +346,7 @@ void memleak_LocalAlloc()
     (void)LocalFlags(pszBuf);
     LocalLock(pszBuf);
     LocalUnlock(pszBuf);
-    // cppcheck-suppress memleak
+    // TODO cppcheck-suppress memleak
 }
 
 void resourceLeak_CreateSemaphoreA()
