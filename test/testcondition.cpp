@@ -140,8 +140,6 @@ private:
         // Run checks..
         CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings0, this);
-        tokenizer.simplifyTokenList2();
-        checkCondition.runSimplifiedChecks(&tokenizer, &settings0, this);
     }
 
     void assignAndCompare() {

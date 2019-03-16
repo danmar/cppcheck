@@ -54,8 +54,6 @@ private:
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun;
         checkBufferOverrun.runChecks(&tokenizer, &settings0, this);
-        tokenizer.simplifyTokenList2();
-        checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings0, this);
     }
 
     void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -69,8 +67,6 @@ private:
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.runChecks(&tokenizer, &settings, this);
-        tokenizer.simplifyTokenList2();
-        checkBufferOverrun.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void run() OVERRIDE {

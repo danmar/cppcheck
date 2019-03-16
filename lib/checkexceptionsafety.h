@@ -61,8 +61,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    /** Checks that uses the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         if (tokenizer->isC())
             return;
 
@@ -73,6 +72,12 @@ public:
         checkExceptionSafety.checkCatchExceptionByValue();
         checkExceptionSafety.nothrowThrows();
         checkExceptionSafety.unhandledExceptionSpecification();
+    }
+
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+        (void)tokenizer;
+        (void)settings;
+        (void)errorLogger;
     }
 
     /** Don't throw exceptions in destructors */
