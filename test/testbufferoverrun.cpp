@@ -928,16 +928,14 @@ private:
 
     void array_index_24() {
         // ticket #1492 and #1539
-        std::ostringstream charMaxPlusOne;
-        charMaxPlusOne << (settings0.defaultSign == 'u' ? 256 : 128);
+        const std::string charMaxPlusOne(settings0.defaultSign == 'u' ? "256" : "128");
         check(("void f(char n) {\n"
                "    int a[n];\n"     // n <= CHAR_MAX
                "    a[-1] = 0;\n"    // negative index
-               "    a[" + charMaxPlusOne.str() + "] = 0;\n"   // 128/256 > CHAR_MAX
+               "    a[" + charMaxPlusOne + "] = 0;\n"   // 128/256 > CHAR_MAX
                "}\n").c_str());
-        // FIXME
-        //ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index -1, which is out of bounds.\n"
-        //              "[test.cpp:4]: (error) Array 'a["+charMaxPlusOne.str()+"]' accessed at index "+charMaxPlusOne.str()+", which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[" + charMaxPlusOne + "]' accessed at index -1, which is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'a[" + charMaxPlusOne + "]' accessed at index " + charMaxPlusOne + ", which is out of bounds.\n", errout.str());
 
         check("void f(signed char n) {\n"
               "    int a[n];\n"     // n <= SCHAR_MAX
