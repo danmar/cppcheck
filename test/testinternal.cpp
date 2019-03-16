@@ -55,11 +55,10 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckInternal checkInternal;
-        checkInternal.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkInternal.runChecks(&tokenizer, &settings, this);
     }
 
     void simplePatternInTokenMatch() {
