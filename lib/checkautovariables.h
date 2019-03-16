@@ -57,12 +57,6 @@ public:
         checkAutoVariables.autoVariables();
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** assign function argument */
     void assignFunctionArg();
 

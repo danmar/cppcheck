@@ -74,12 +74,6 @@ public:
         checkExceptionSafety.unhandledExceptionSpecification();
     }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** Don't throw exceptions in destructors */
     void destructors();
 

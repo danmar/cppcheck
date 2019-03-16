@@ -67,13 +67,6 @@ public:
         checkCondition.checkModuloAlwaysTrueFalse();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** mismatching assignment / comparison */
     void assignIf();
 

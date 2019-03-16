@@ -68,13 +68,6 @@ public:
         checkUninitVar.valueFlowUninit();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** Check for uninitialized variables */
     void check();
     void checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs);

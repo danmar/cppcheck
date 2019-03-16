@@ -91,18 +91,9 @@ public:
         checkOther.checkPassByReference();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkInvalidFree();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckOther checkOther(tokenizer, settings, errorLogger);
-
-        // Checks
         checkOther.clarifyStatement();
         checkOther.checkCastIntToCharAndBack();
-
         checkOther.checkMisusedScopedObject();
-
         checkOther.checkAccessOfMovedVariable();
     }
 

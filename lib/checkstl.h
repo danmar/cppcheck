@@ -72,15 +72,6 @@ public:
         checkStl.string_c_str();
         checkStl.uselessCalls();
         checkStl.useStlAlgorithm();
-    }
-
-    /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
-        if (!tokenizer->isCPP()) {
-            return;
-        }
-
-        CheckStl checkStl(tokenizer, settings, errorLogger);
 
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();

@@ -59,13 +59,6 @@ public:
         checkInternal.checkStlUsage();
     }
 
-    /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** @brief %Check if a simple pattern is used inside Token::Match or Token::findmatch */
     void checkTokenMatchPatterns();
 

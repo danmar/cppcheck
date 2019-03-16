@@ -81,14 +81,6 @@ public:
         checkClass.checkOverride();
     }
 
-    /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
-
     /** @brief %Check that all class constructors are ok */
     void constructors();
 

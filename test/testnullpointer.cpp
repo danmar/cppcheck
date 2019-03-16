@@ -128,10 +128,6 @@ private:
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
         checkNullPointer.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-
-        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[]) {
@@ -158,10 +154,6 @@ private:
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
         checkNullPointer.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-
-        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
 
@@ -1433,8 +1425,7 @@ private:
               "    }\n"
               "    return p;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n"
-                      "[test.cpp:7]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer_cast() { // #4692

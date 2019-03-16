@@ -174,12 +174,8 @@ private:
 
         tokenizer.tokenize(istr, "test.cpp");
         checkStl.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-
-        // Check..
-        checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
     }
+
     void check(const std::string &code, const bool inconclusive=false) {
         check(code.c_str(), inconclusive);
     }

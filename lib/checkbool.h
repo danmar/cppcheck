@@ -66,13 +66,6 @@ public:
         checkBool.checkBitwiseOnBoolean();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** @brief %Check for comparison of function returning bool*/
     void checkComparisonOfFuncReturningBool();
 
