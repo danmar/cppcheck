@@ -928,10 +928,8 @@ private:
 
     void array_index_24() {
         // ticket #1492 and #1539
-        // CHAR_MAX can be equal to SCHAR_MAX or UCHAR_MAX depending on the environment.
-        // This test should work for both environments.
         std::ostringstream charMaxPlusOne;
-        charMaxPlusOne << (CHAR_MAX+1);
+        charMaxPlusOne << (settings0.defaultSign == 'u' ? 256 : 128);
         check(("void f(char n) {\n"
                "    int a[n];\n"     // n <= CHAR_MAX
                "    a[-1] = 0;\n"    // negative index
