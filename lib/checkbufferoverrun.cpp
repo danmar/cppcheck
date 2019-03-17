@@ -328,17 +328,21 @@ size_t CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     const Variable *var = bufTok->variable();
     if (!var)
         return 0;
-    if (!var->dimensions().empty()) {
-        MathLib::bigint dim = 1;
-        for (const Dimension &d : var->dimensions())
-            dim *= d.num;
-        if (var->isPointerArray())
-            return dim * mSettings->sizeof_pointer;
-        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
-        return dim * typeSize;
-    }
-    // TODO: For pointers get pointer value..
-    return 0;
+    const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
+    std::vector<Dimension> dimensions;
+    if (!var->dimensions().empty())
+        dimensions = var->dimensions();
+    else
+        dimensions = getDynamicDimensions(bufTok, typeSize);
+    if (dimensions.empty())
+        return 0;
+
+    MathLib::bigint dim = 1;
+    for (const Dimension &d : dimensions)
+        dim *= d.num;
+    if (var->isPointerArray())
+        return dim * mSettings->sizeof_pointer;
+    return dim * typeSize;
 }
 //---------------------------------------------------------------------------
 

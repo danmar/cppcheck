@@ -241,6 +241,8 @@ private:
 
         // TODO TEST_CASE(negativeMemoryAllocationSizeError) // #389
         TEST_CASE(negativeArraySize);
+
+        // TODO TEST_CASE(pointerAddition1);
     }
 
 
@@ -3030,6 +3032,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
 
+        check("void foo() {\n"
+              "    char *p = malloc(10);\n"
+              "    memset(p, 0, 100);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: p\n", errout.str());
+
         // ticket #842
         check("void f() {\n"
               "    int *tab4 = malloc(20 * sizeof(int));\n"
@@ -4087,6 +4095,14 @@ private:
               "int b[x?1:-1];\n"
               "int c[x?y:-1];\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void pointerAddition1() {
+        check("void f() {\n"
+              "    char arr[10];\n"
+              "    p = arr + 20;\n"
+              "\n");
+        ASSERT_EQUALS("error", errout.str());
     }
 };
 
