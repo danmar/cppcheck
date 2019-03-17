@@ -73,6 +73,7 @@ public:
         c.arrayIndexError(nullptr, std::vector<Dimension>(), nullptr);
         c.negativeIndexError(nullptr, std::vector<Dimension>(), nullptr);
         c.arrayIndexThenCheckError(nullptr, "i");
+        c.bufferOverflowError(nullptr, nullptr);
     }
 
 private:
@@ -82,7 +83,7 @@ private:
     void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *negativeValue);
 
     void bufferOverflow();
-    void bufferOverflowError(const Token *tok);
+    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value);
 
     void arrayIndexThenCheck();
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
@@ -91,7 +92,7 @@ private:
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
 
-    size_t getBufferSize(const Token *bufTok) const;
+    ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
     static std::string myName() {
         return "Bounds checking";

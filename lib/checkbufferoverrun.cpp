@@ -318,30 +318,37 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const std::vector<
 
 //---------------------------------------------------------------------------
 
-size_t CheckBufferOverrun::getBufferSize(const Token *bufTok) const
+ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 {
     if (!bufTok->valueType())
-        return 0;
+        return ValueFlow::Value(-1);
     const Variable *var = bufTok->variable();
 
     if (!var || var->dimensions().empty()) {
         const ValueFlow::Value *value = getBufferSizeValue(bufTok);
         if (value)
-            return value->intvalue;
+            return *value;
     }
 
     if (!var)
-        return 0;
+        return ValueFlow::Value(-1);
 
     MathLib::bigint dim = 1;
     for (const Dimension &d : var->dimensions())
         dim *= d.num;
 
-    if (var->isPointerArray())
-        return dim * mSettings->sizeof_pointer;
+    ValueFlow::Value v;
+    v.setKnown();
+    v.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
 
-    const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
-    return dim * typeSize;
+    if (var->isPointerArray())
+        v.intvalue = dim * mSettings->sizeof_pointer;
+    else {
+        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
+        v.intvalue = dim * typeSize;
+    }
+
+    return v;
 }
 //---------------------------------------------------------------------------
 
@@ -403,26 +410,26 @@ void CheckBufferOverrun::bufferOverflow()
                 if (!argtok || !argtok->variable())
                     continue;
                 // TODO: strcpy(buf+10, "hello");
-                const size_t bufferSize = getBufferSize(argtok);
-                if (bufferSize <= 1)
+                const ValueFlow::Value bufferSize = getBufferSize(argtok);
+                if (bufferSize.intvalue <= 1)
                     continue;
                 bool error = true;
                 for (const Library::ArgumentChecks::MinSize &minsize : *minsizes) {
-                    if (checkBufferSize(tok, minsize, args, bufferSize, mSettings)) {
+                    if (checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings)) {
                         error = false;
                         break;
                     }
                 }
                 if (error)
-                    bufferOverflowError(args[argnr]);
+                    bufferOverflowError(args[argnr], &bufferSize);
             }
         }
     }
 }
 
-void CheckBufferOverrun::bufferOverflowError(const Token *tok)
+void CheckBufferOverrun::bufferOverflowError(const Token *tok, const ValueFlow::Value *value)
 {
-    reportError(tok, Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? tok->expressionString() : "buf"), CWE788, false);
+    reportError(getErrorPath(tok, value, "Buffer overrun"), Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? tok->expressionString() : "buf"), CWE788, false);
 }
 
 //---------------------------------------------------------------------------
@@ -498,8 +505,8 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             const Token *sizeToken = args[2];
             if (!sizeToken->hasKnownIntValue())
                 continue;
-            const size_t bufferSize = getBufferSize(args[0]);
-            if (bufferSize == 0 || sizeToken->getKnownIntValue() < bufferSize)
+            const ValueFlow::Value &bufferSize = getBufferSize(args[0]);
+            if (bufferSize.intvalue < 0 || sizeToken->getKnownIntValue() < bufferSize.intvalue)
                 continue;
             const Token *srcValue = args[1]->getValueTokenMaxStrLength();
             if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())

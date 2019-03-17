@@ -172,6 +172,7 @@ private:
         TEST_CASE(buffer_overrun_27); // #4444 (segmentation fault)
         TEST_CASE(buffer_overrun_29); // #7083: false positive: typedef and initialization with strings
         TEST_CASE(buffer_overrun_30); // #6367
+        TEST_CASE(buffer_overrun_errorpath);
         // TODO CTU TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         // TODO TEST_CASE(buffer_overrun_function_array_argument);
         // TODO alloca TEST_CASE(possible_buffer_overrun_1); // #3035
@@ -2571,6 +2572,18 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 's->m[9]' accessed at index 36, which is out of bounds.\n", errout.str());
     }
 
+    void buffer_overrun_errorpath() {
+        setMultiline();
+        settings0.templateLocation = "{file}:{line}:note:{info}";
+
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    memset(p, 0, 20);\n"
+              "}");
+        ASSERT_EQUALS("test.cpp:3:error:Buffer is accessed out of bounds: p\n"
+                      "test.cpp:2:note:Assign p, buffer with size 10\n"
+                      "test.cpp:3:note:Buffer overrun\n", errout.str());
+    }
 
     void buffer_overrun_bailoutIfSwitch() {
         // No false positive
@@ -3031,12 +3044,6 @@ private:
               "    s[10] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' accessed at index 10, which is out of bounds.\n", errout.str());
-
-        check("void foo() {\n"
-              "    char *p = malloc(10);\n"
-              "    memset(p, 0, 100);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: p\n", errout.str());
 
         // ticket #842
         check("void f() {\n"
