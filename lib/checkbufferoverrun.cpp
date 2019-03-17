@@ -378,6 +378,8 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         if (arg && arg2 && arg->hasKnownIntValue() && arg2->hasKnownIntValue())
             return (arg->getKnownIntValue() * arg2->getKnownIntValue()) <= bufferSize;
         break;
+    case Library::ArgumentChecks::MinSize::Type::VALUE:
+        return minsize.value <= bufferSize;
     case Library::ArgumentChecks::MinSize::Type::NONE:
         break;
     };
