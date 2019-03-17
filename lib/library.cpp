@@ -200,6 +200,13 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         temp.arg = atoi(arg);
                     else
                         temp.arg = -1;
+
+                    const char *bufferSize = memorynode->Attribute("buffer-size");
+                    if (bufferSize && std::strncmp(bufferSize, "arg-value:", 10) == 0)
+                        temp.bufferSizeArgValue = bufferSize[10] - '0';
+                    else
+                        temp.bufferSizeArgValue = -1;
+
                     mAlloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
                     AllocFunc temp;

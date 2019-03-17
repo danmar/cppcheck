@@ -73,6 +73,7 @@ public:
     struct AllocFunc {
         int groupId;
         int arg;
+        int bufferSizeArgValue;
     };
 
     /** get allocation info for function */
