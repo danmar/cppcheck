@@ -350,3 +350,65 @@ void dl(const char* libname, const char* func)
     dlclose(uninit);
     // cppcheck-suppress resourceLeak
 }
+
+void asctime_r_test(struct tm * tm, char * bufSizeUnknown)
+{
+    struct tm tm_uninit_data;
+    struct tm * tm_uninit_pointer;
+    char bufSize5[5];
+    char bufSize25[25];
+    char bufSize26[26];
+    char bufSize100[100];
+
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    asctime_r(tm, bufSize5);
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    asctime_r(tm, bufSize25);
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSize26);
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSize100);
+
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress uninitvar
+    asctime_r(&tm_uninit_data, bufSize100);
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress uninitvar
+    asctime_r(tm_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSizeUnknown);
+}
+
+void ctime_r_test(time_t * timep, char * bufSizeUnknown)
+{
+    time_t time_t_uninit_data;
+    time_t * time_t_uninit_pointer;
+    char bufSize5[5];
+    char bufSize25[25];
+    char bufSize26[26];
+    char bufSize100[100];
+
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    ctime_r(timep, bufSize5);
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    ctime_r(timep, bufSize25);
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSize26);
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSize100);
+
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress uninitvar
+    ctime_r(&time_t_uninit_data, bufSize100);
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress uninitvar
+    ctime_r(time_t_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSizeUnknown);
+}

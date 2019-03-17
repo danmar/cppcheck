@@ -196,24 +196,36 @@
                   </element>
                 </optional>
                 <zeroOrMore>
-                  <element name="minsize">
-                    <attribute name="type">
-                      <choice>
-                        <value>strlen</value>
-                        <value>argvalue</value>
-                        <value>sizeof</value>
-                        <value>mul</value>
-                      </choice>
-                    </attribute>
-                    <attribute name="arg">
-                      <ref name="ARGNO"/>
-                    </attribute>
-                    <optional>
-                      <attribute name="arg2">
+                  <choice>
+                    <element name="minsize">
+                      <attribute name="type">
+                        <choice>
+                          <value>strlen</value>
+                          <value>argvalue</value>
+                          <value>sizeof</value>
+                          <value>mul</value>
+                        </choice>
+                      </attribute>
+                      <attribute name="arg">
                         <ref name="ARGNO"/>
                       </attribute>
-                    </optional>
-                  </element>
+                      <optional>
+                        <attribute name="arg2">
+                          <ref name="ARGNO"/>
+                        </attribute>
+                      </optional>
+                    </element>
+                    <element name="minsize">
+                      <attribute name="type">
+                        <choice>
+                          <value>value</value>
+                        </choice>
+                      </attribute>
+                      <attribute name="value">
+                        <ref name="MINSIZE-VALUE"/>
+                      </attribute>
+                    </element>
+                  </choice>
                 </zeroOrMore>
                 <optional>
                   <element name="iterator">
@@ -494,5 +506,12 @@
       <value>size</value>
       <value>empty</value>
     </choice>
+  </define>
+  
+  <define name="MINSIZE-VALUE">
+    <data type="unsignedLong">
+      <param name="minInclusive">1</param>
+      <param name="maxInclusive">9223372036854775807</param>
+    </data>
   </define>
 </grammar>

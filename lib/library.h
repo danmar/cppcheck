@@ -254,11 +254,12 @@ public:
 
         class MinSize {
         public:
-            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL };
-            MinSize(Type t, int a) : type(t), arg(a), arg2(0) {}
+            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
+            MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
             Type type;
             int arg;
             int arg2;
+            long long value;
         };
         std::vector<MinSize> minsizes;
 
