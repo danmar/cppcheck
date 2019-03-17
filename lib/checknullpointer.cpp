@@ -62,12 +62,6 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         return;
 
     const std::vector<const Token *> args = getArguments(&tok);
-    const Token* firstParam = args.size() > 0 ? args[0] : nullptr;
-    const Token* secondParam = args.size() > 1 ? args[1] : nullptr;
-
-    // 1st parameter..
-    if (Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && secondParam && secondParam->str() != "0") // Only if length (second parameter) is not zero
-        var.push_back(firstParam);
 
     if (library || tok.function() != nullptr) {
         for (int argnr = 1; argnr <= args.size(); ++argnr) {
@@ -82,30 +76,23 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         }
     }
 
-    if (Token::Match(&tok, "printf|sprintf|snprintf|fprintf|fnprintf|scanf|sscanf|fscanf|wprintf|swprintf|fwprintf|wscanf|swscanf|fwscanf")) {
-        std::string formatString;
-        int argnr = args.size();
-        const bool scan = Token::Match(&tok, "scanf|sscanf|fscanf|wscanf|swscanf|fwscanf");
+    if (library && library->formatstr_function(&tok)) {
+        const int formatStringArgNr = library->formatstr_argno(&tok);
+        if (formatStringArgNr < 0 || formatStringArgNr >= args.size())
+            return;
 
-        if (Token::Match(&tok, "printf|scanf|wprintf|wscanf ( %str%")) {
-            formatString = firstParam->strValue();
-            argnr = 1;
-        } else if (Token::Match(&tok, "sprintf|fprintf|sscanf|fscanf|fwprintf|fwscanf|swscanf")) {
-            const Token* formatStringTok = secondParam; // Find second parameter (format string)
-            if (formatStringTok && formatStringTok->tokType() == Token::eString) {
-                argnr = 2; // third parameter (first argument of va_args)
-                formatString = formatStringTok->strValue();
-            }
-        } else if (Token::Match(&tok, "snprintf|fnprintf|swprintf") && secondParam) {
-            const Token* formatStringTok = args.size() > 2 ? args[2] : nullptr; // third parameter (format string)
-            if (formatStringTok && formatStringTok->tokType() == Token::eString) {
-                argnr = 3; // fourth parameter (first argument of va_args)
-                formatString = formatStringTok->strValue();
-            }
-        }
+        // 1st parameter..
+        if (Token::Match(&tok, "snprintf|vsnprintf|fnprintf|vfnprintf") && args.size() > 1 && !(args[1] && args[1]->hasKnownIntValue() && args[1]->getKnownIntValue() == 0)) // Only if length (second parameter) is not zero
+            var.push_back(args[0]);
+
+        if (args[formatStringArgNr]->tokType() != Token::eString)
+            return;
+        const std::string &formatString = args[formatStringArgNr]->strValue();
+        int argnr = formatStringArgNr + 1;
+        const bool scan = library->formatstr_scan(&tok);
 
         bool percent = false;
-        for (std::string::iterator i = formatString.begin(); i != formatString.end(); ++i) {
+        for (std::string::const_iterator i = formatString.begin(); i != formatString.end(); ++i) {
             if (*i == '%') {
                 percent = !percent;
             } else if (percent) {
