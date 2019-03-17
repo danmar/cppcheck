@@ -171,7 +171,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             else if (std::strcmp(argv[i], "--experimental-fast") == 0)
                 // TODO: Reomve this flag!
-		;
+                ;
 
             // (Experimental) exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0)
