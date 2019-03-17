@@ -435,18 +435,16 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     checkUnusedFunctions.parseTokens(mTokenizer, filename.c_str(), &mSettings);
 
                 // simplify more if required, skip rest of iteration if failed
-                if (mSimplify) {
-                    if (!mSettings.experimentalFast) {
+                if (mSimplify && hasRule("simple")) {
                         // if further simplification fails then skip rest of iteration
                         Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
                         result = mTokenizer.simplifyTokenList2();
                         timer3.Stop();
                         if (!result)
                             continue;
-                    }
 
-                    // Check simplified tokens
-                    checkSimplifiedTokens(mTokenizer);
+                        if (!mSettings.terminated())
+                            executeRules("simple", mTokenizer);
                 }
 
             } catch (const simplecpp::Output &o) {
@@ -605,14 +603,20 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 }
 
 //---------------------------------------------------------------------------
-// CppCheck - A function that checks a simplified token list
-//---------------------------------------------------------------------------
 
-void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
+bool CppCheck::hasRule(const std::string &tokenlist) const
 {
-    if (!mSettings.terminated())
-        executeRules("simple", tokenizer);
+#ifdef HAVE_RULES
+    for (const Settings::Rule &rule : mSettings.rules) {
+        if (rule.tokenlist == tokenlist)
+            return true;
+    }
+#else
+    (void)tokenlist;
+#endif
+    return false;
 }
+
 
 #ifdef HAVE_RULES
 
@@ -754,15 +758,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
     (void)tokenizer;
 
 #ifdef HAVE_RULES
-    // Are there rules to execute?
-    bool isrule = false;
-    for (std::list<Settings::Rule>::const_iterator it = mSettings.rules.begin(); it != mSettings.rules.end(); ++it) {
-        if (it->tokenlist == tokenlist)
-            isrule = true;
-    }
-
     // There is no rule to execute
-    if (isrule == false)
+    if (!hasRule(tokenlist))
         return;
 
     // Write all tokens in a string that can be parsed by pcre
@@ -771,8 +768,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         ostr << " " << tok->str();
     const std::string str(ostr.str());
 
-    for (std::list<Settings::Rule>::const_iterator it = mSettings.rules.begin(); it != mSettings.rules.end(); ++it) {
-        const Settings::Rule &rule = *it;
+    for (const Settings::Rule &rule : mSettings.rules) {
         if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
 

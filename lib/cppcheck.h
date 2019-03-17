@@ -145,6 +145,9 @@ public:
 
 private:
 
+    /** Are there "simple" rules */
+    bool hasRule(const std::string &tokenlist) const;
+
     /** @brief There has been an internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
 
@@ -168,12 +171,6 @@ private:
      * @param tokenizer tokenizer instance
      */
     void checkNormalTokens(const Tokenizer &tokenizer);
-
-    /**
-     * @brief Check simplified tokens
-     * @param tokenizer tokenizer instance
-     */
-    void checkSimplifiedTokens(const Tokenizer &tokenizer);
 
     /**
      * @brief Execute rules, if any
