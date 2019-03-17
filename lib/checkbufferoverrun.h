@@ -27,6 +27,7 @@
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "tokenize.h"
+#include "symboldatabase.h"
 
 #include <cstddef>
 #include <list>
@@ -69,16 +70,16 @@ public:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, nullptr, nullptr);
-        c.negativeIndexError(nullptr, nullptr, nullptr);
+        c.arrayIndexError(nullptr, std::vector<Dimension>(), nullptr);
+        c.negativeIndexError(nullptr, std::vector<Dimension>(), nullptr);
         c.arrayIndexThenCheckError(nullptr, "i");
     }
 
 private:
 
     void arrayIndex();
-    void arrayIndexError(const Token *tok, const Variable *var, const ValueFlow::Value *index);
-    void negativeIndexError(const Token *tok, const Variable *var, const ValueFlow::Value *negativeValue);
+    void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *index);
+    void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *negativeValue);
 
     void bufferOverflow();
     void bufferOverflowError(const Token *tok);
@@ -89,7 +90,6 @@ private:
     void stringNotZeroTerminated();
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
-
 
     size_t getBufferSize(const Token *bufTok) const;
 

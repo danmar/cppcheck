@@ -5636,6 +5636,33 @@ std::string ValueType::dump() const
     return ret.str();
 }
 
+MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
+{
+    switch (type) {
+    case ValueType::Type::BOOL:
+        return platform.sizeof_bool;
+    case ValueType::Type::CHAR:
+        return 1;
+    case ValueType::Type::SHORT:
+        return platform.sizeof_short;
+    case ValueType::Type::INT:
+        return platform.sizeof_int;
+    case ValueType::Type::LONG:
+        return platform.sizeof_long;
+    case ValueType::Type::LONGLONG:
+        return platform.sizeof_long_long;
+    case ValueType::Type::FLOAT:
+        return platform.sizeof_float;
+    case ValueType::Type::DOUBLE:
+        return platform.sizeof_double;
+    case ValueType::Type::LONGDOUBLE:
+        return platform.sizeof_long_double;
+    default:
+        return 0;
+    };
+
+}
+
 std::string ValueType::str() const
 {
     std::string ret;

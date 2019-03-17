@@ -1432,6 +1432,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::UNINIT:
                     out << "uninit=\"1\"";
                     break;
+                case ValueFlow::Value::BUFFER_SIZE:
+                    out << "buffer-size=\"" << value.intvalue << "\"";
+                    break;
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
@@ -1472,6 +1475,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::UNINIT:
                     out << "Uninit";
                     break;
+                case ValueFlow::Value::BUFFER_SIZE:
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
                     break;

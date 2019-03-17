@@ -121,7 +121,7 @@ private:
         TEST_CASE(array_index_39);
         TEST_CASE(array_index_40); // loop variable calculation, taking address
         TEST_CASE(array_index_41); // structs with the same name
-        // TODO malloc TEST_CASE(array_index_42);
+        TEST_CASE(array_index_42);
         TEST_CASE(array_index_43); // struct with array
         TEST_CASE(array_index_44); // #3979
         TEST_CASE(array_index_45); // #4207 - calling function with variable number of parameters (...)
@@ -202,9 +202,9 @@ private:
 
         TEST_CASE(assign1);
 
-        // TODO TEST_CASE(alloc_new);      // Buffer allocated with new
-        // TODO TEST_CASE(alloc_malloc);   // Buffer allocated with malloc
-        // TODO TEST_CASE(alloc_string);   // statically allocated buffer
+        // TODO new TEST_CASE(alloc_new);      // Buffer allocated with new
+        TEST_CASE(alloc_malloc);   // Buffer allocated with malloc
+        TEST_CASE(alloc_string);   // statically allocated buffer
         // TODO TEST_CASE(alloc_alloca);   // Buffer allocated with alloca
 
         // TODO TEST_CASE(countSprintfLength);

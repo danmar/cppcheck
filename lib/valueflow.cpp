@@ -5006,6 +5006,55 @@ static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *set
     }
 }
 
+static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (const Scope *functionScope : symboldatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "[;{}] %var% ="))
+                continue;
+
+            if (!tok->next()->variable())
+                continue;
+
+            const Token *rhs = tok->tokAt(2)->astOperand2();
+            while (rhs && rhs->isCast())
+                rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
+            if (!rhs)
+                continue;
+
+            if (!Token::Match(rhs->previous(), "%name% ("))
+                continue;
+
+            const Library::AllocFunc *allocFunc = settings->library.alloc(rhs->previous());
+            if (!allocFunc || allocFunc->bufferSizeArgValue < 1)
+                continue;
+
+            const std::vector<const Token *> args = getArguments(rhs->previous());
+            if (args.size() < allocFunc->bufferSizeArgValue)
+                continue;
+
+            const Token *sizeArg = args[allocFunc->bufferSizeArgValue - 1];
+            if (!sizeArg || !sizeArg->hasKnownIntValue())
+                continue;
+
+            ValueFlow::Value value(sizeArg->getKnownIntValue());
+            value.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
+            value.setKnown();
+            const std::list<ValueFlow::Value> values{value};
+            valueFlowForward(const_cast<Token *>(rhs),
+                             functionScope->bodyEnd,
+                             tok->next()->variable(),
+                             tok->next()->varId(),
+                             values,
+                             true,
+                             false,
+                             tokenlist,
+                             errorLogger,
+                             settings);
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token *c, long long val)
     : valueType(INT),
       intvalue(val),
@@ -5037,6 +5086,7 @@ std::string ValueFlow::Value::infoString() const
         return "<Moved>";
     case UNINIT:
         return "<Uninit>";
+    case BUFFER_SIZE:
     case CONTAINER_SIZE:
         return "size=" + MathLib::toString(intvalue);
     case LIFETIME:
@@ -5102,6 +5152,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }
     }
+
+    valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings);
 }
 
 

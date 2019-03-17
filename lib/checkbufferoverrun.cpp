@@ -60,6 +60,27 @@ static const CWE CWE788(788U);  // Access of Memory Location After End of Buffer
 
 //---------------------------------------------------------------------------
 
+static std::vector<Dimension> getDynamicDimensions(const Token *tok, MathLib::bigint typeSize)
+{
+    if (typeSize == 0) {
+        const std::vector<Dimension> dimensions;
+        return dimensions;
+    }
+    for (const ValueFlow::Value &value : tok->values()) {
+        if (!value.isBufferSizeValue())
+            continue;
+        Dimension dim;
+        dim.tok = nullptr;
+        dim.num = value.intvalue / typeSize;
+        dim.known = value.isKnown();
+        const std::vector<Dimension> dimensions{dim};
+        return dimensions;
+    }
+
+    const std::vector<Dimension> dimensions;
+    return dimensions;
+}
+
 static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, unsigned int formatStringArgNr)
 {
     if (formatStringArgNr == 0 || formatStringArgNr > parameters.size())
@@ -196,18 +217,32 @@ void CheckBufferOverrun::arrayIndex()
         if (!indexToken)
             continue;
 
-        const Token *stringLiteral = nullptr;
+        std::vector<Dimension> dimensions;
 
-        if (!array->variable()->isArray() && array->variable()->dimensions().empty()) {
-            stringLiteral = array->getValueTokenMinStrSize();
-            if (!stringLiteral)
-                continue;
+        bool mightBeLarger;
+
+        if (array->variable()->isArray() && !array->variable()->dimensions().empty()) {
+            dimensions = array->variable()->dimensions();
+            mightBeLarger = (dimensions.size() >= 1 && (dimensions[0].num <= 1 || !dimensions[0].tok));
+        } else if (const Token *stringLiteral = array->getValueTokenMinStrSize()) {
+            Dimension dim;
+            dim.tok = nullptr;
+            dim.num = Token::getStrSize(stringLiteral);
+            dim.known = array->hasKnownValue();
+            dimensions.emplace_back(dim);
+            mightBeLarger = false;
+        } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
+            dimensions = getDynamicDimensions(array, array->valueType()->typeSize(*mSettings));
+            mightBeLarger = false;
         }
 
-        const MathLib::bigint dim = stringLiteral ? Token::getStrSize(stringLiteral) : array->variable()->dimensions()[0].num;
+        if (dimensions.empty())
+            continue;
+
+        const MathLib::bigint dim = dimensions[0].num;
 
         // Positive index
-        if (stringLiteral || dim > 1) { // TODO check arrays with dim 1 also
+        if (!mightBeLarger) { // TODO check arrays with dim 1 also
             for (int cond = 0; cond < 2; cond++) {
                 const ValueFlow::Value *value = indexToken->getMaxValue(cond == 1);
                 if (!value)
@@ -222,22 +257,22 @@ void CheckBufferOverrun::arrayIndex()
                     if (parent->isUnaryOp("&"))
                         continue;
                 }
-                arrayIndexError(tok, array->variable(), value);
+                arrayIndexError(tok, dimensions, value);
             }
         }
 
         // Negative index
         const ValueFlow::Value *negativeValue = indexToken->getValueLE(-1, mSettings);
         if (negativeValue) {
-            negativeIndexError(tok, array->variable(), negativeValue);
+            negativeIndexError(tok, dimensions, negativeValue);
         }
     }
 }
 
-static std::string arrayIndexMessage(const Token *tok, const Variable *var, const ValueFlow::Value *index)
+static std::string arrayIndexMessage(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *index)
 {
     std::string array = tok->astOperand1()->expressionString();
-    for (const Dimension &dim : var->dimensions())
+    for (const Dimension &dim : dimensions)
         array += "[" + MathLib::toString(dim.num) + "]";
 
     std::ostringstream errmsg;
@@ -250,7 +285,7 @@ static std::string arrayIndexMessage(const Token *tok, const Variable *var, cons
     return errmsg.str();
 }
 
-void CheckBufferOverrun::arrayIndexError(const Token *tok, const Variable *var, const ValueFlow::Value *index)
+void CheckBufferOverrun::arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *index)
 {
     if (!tok) {
         reportError(tok, Severity::error, "arrayIndexOutOfBounds", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE788, false);
@@ -261,12 +296,12 @@ void CheckBufferOverrun::arrayIndexError(const Token *tok, const Variable *var, 
     reportError(getErrorPath(tok, index, "Array index out of bounds"),
                 index->errorSeverity() ? Severity::error : Severity::warning,
                 index->condition ? "arrayIndexOutOfBoundsCond" : "arrayIndexOutOfBounds",
-                arrayIndexMessage(tok, var, index),
+                arrayIndexMessage(tok, dimensions, index),
                 CWE788,
                 index->isInconclusive());
 }
 
-void CheckBufferOverrun::negativeIndexError(const Token *tok, const Variable *var, const ValueFlow::Value *negativeValue)
+void CheckBufferOverrun::negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *negativeValue)
 {
     if (!negativeValue) {
         reportError(tok, Severity::error, "negativeIndex", "Negative array index", CWE786, false);
@@ -279,7 +314,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const Variable *va
     reportError(getErrorPath(tok, negativeValue, "Negative array index"),
                 negativeValue->errorSeverity() ? Severity::error : Severity::warning,
                 "negativeIndex",
-                arrayIndexMessage(tok, var, negativeValue),
+                arrayIndexMessage(tok, dimensions, negativeValue),
                 CWE786,
                 negativeValue->isInconclusive());
 }
@@ -299,30 +334,8 @@ size_t CheckBufferOverrun::getBufferSize(const Token *bufTok) const
             dim *= d.num;
         if (var->isPointerArray())
             return dim * mSettings->sizeof_pointer;
-        switch (bufTok->valueType()->type) {
-        case ValueType::Type::BOOL:
-            return dim * mSettings->sizeof_bool;
-        case ValueType::Type::CHAR:
-            return dim;
-        case ValueType::Type::SHORT:
-            return dim * mSettings->sizeof_short;
-        case ValueType::Type::INT:
-            return dim * mSettings->sizeof_int;
-        case ValueType::Type::LONG:
-            return dim * mSettings->sizeof_long;
-        case ValueType::Type::LONGLONG:
-            return dim * mSettings->sizeof_long_long;
-        case ValueType::Type::FLOAT:
-            return dim * mSettings->sizeof_float;
-        case ValueType::Type::DOUBLE:
-            return dim * mSettings->sizeof_double;
-        case ValueType::Type::LONGDOUBLE:
-            return dim * mSettings->sizeof_long_double;
-        default:
-            // TODO: Get size of other types
-            break;
-        };
-        return 0;
+        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
+        return dim * typeSize;
     }
     // TODO: For pointers get pointer value..
     return 0;

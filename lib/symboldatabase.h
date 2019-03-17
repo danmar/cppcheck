@@ -24,6 +24,7 @@
 #include "config.h"
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "token.h"
 
 #include <cstddef>
@@ -1126,6 +1127,8 @@ public:
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
     }
+
+    MathLib::bigint typeSize(const cppcheck::Platform &platform) const;
 
     std::string str() const;
     std::string dump() const;

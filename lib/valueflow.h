@@ -80,6 +80,10 @@ namespace ValueFlow {
                 break;
             case UNINIT:
                 break;
+            case BUFFER_SIZE:
+                if (intvalue != rhs.intvalue)
+                    return false;
+                break;
             case CONTAINER_SIZE:
                 if (intvalue != rhs.intvalue)
                     return false;
@@ -99,7 +103,7 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
-        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME } valueType;
+        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE } valueType;
         bool isIntValue() const {
             return valueType == INT;
         }
@@ -120,6 +124,9 @@ namespace ValueFlow {
         }
         bool isLifetimeValue() const {
             return valueType == LIFETIME;
+        }
+        bool isBufferSizeValue() const {
+            return valueType == BUFFER_SIZE;
         }
 
         bool isLocalLifetimeValue() const {
