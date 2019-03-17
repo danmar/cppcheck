@@ -5038,6 +5038,7 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
                 continue;
 
             ValueFlow::Value value(sizeArg->getKnownIntValue());
+            value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + MathLib::toString(value.intvalue));
             value.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
             value.setKnown();
             const std::list<ValueFlow::Value> values{value};

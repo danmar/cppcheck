@@ -60,25 +60,13 @@ static const CWE CWE788(788U);  // Access of Memory Location After End of Buffer
 
 //---------------------------------------------------------------------------
 
-static std::vector<Dimension> getDynamicDimensions(const Token *tok, MathLib::bigint typeSize)
+static const ValueFlow::Value *getBufferSizeValue(const Token *tok)
 {
-    if (typeSize == 0) {
-        const std::vector<Dimension> dimensions;
-        return dimensions;
-    }
     for (const ValueFlow::Value &value : tok->values()) {
-        if (!value.isBufferSizeValue())
-            continue;
-        Dimension dim;
-        dim.tok = nullptr;
-        dim.num = value.intvalue / typeSize;
-        dim.known = value.isKnown();
-        const std::vector<Dimension> dimensions{dim};
-        return dimensions;
+        if (value.isBufferSizeValue())
+            return &value;
     }
-
-    const std::vector<Dimension> dimensions;
-    return dimensions;
+    return nullptr;
 }
 
 static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, unsigned int formatStringArgNr)
@@ -218,6 +206,7 @@ void CheckBufferOverrun::arrayIndex()
             continue;
 
         std::vector<Dimension> dimensions;
+        ErrorPath errorPath;
 
         bool mightBeLarger;
 
@@ -232,7 +221,15 @@ void CheckBufferOverrun::arrayIndex()
             dimensions.emplace_back(dim);
             mightBeLarger = false;
         } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
-            dimensions = getDynamicDimensions(array, array->valueType()->typeSize(*mSettings));
+            const ValueFlow::Value *value = getBufferSizeValue(array);
+            if (!value)
+                continue;
+            errorPath = value->errorPath;
+            Dimension dim;
+            dim.known = value->isKnown();
+            dim.tok = nullptr;
+            dim.num = value->intvalue / array->valueType()->typeSize(*mSettings);
+            dimensions.emplace_back(dim);
             mightBeLarger = false;
         }
 
@@ -326,22 +323,24 @@ size_t CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (!bufTok->valueType())
         return 0;
     const Variable *var = bufTok->variable();
+
+    if (!var || var->dimensions().empty()) {
+        const ValueFlow::Value *value = getBufferSizeValue(bufTok);
+        if (value)
+            return value->intvalue;
+    }
+
     if (!var)
-        return 0;
-    const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
-    std::vector<Dimension> dimensions;
-    if (!var->dimensions().empty())
-        dimensions = var->dimensions();
-    else
-        dimensions = getDynamicDimensions(bufTok, typeSize);
-    if (dimensions.empty())
         return 0;
 
     MathLib::bigint dim = 1;
-    for (const Dimension &d : dimensions)
+    for (const Dimension &d : var->dimensions())
         dim *= d.num;
+
     if (var->isPointerArray())
         return dim * mSettings->sizeof_pointer;
+
+    const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
     return dim * typeSize;
 }
 //---------------------------------------------------------------------------
@@ -372,8 +371,6 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         if (arg && arg2 && arg->hasKnownIntValue() && arg2->hasKnownIntValue())
             return (arg->getKnownIntValue() * arg2->getKnownIntValue()) <= bufferSize;
         break;
-    case Library::ArgumentChecks::MinSize::Type::VALUE:
-        return minsize.value <= bufferSize;
     case Library::ArgumentChecks::MinSize::Type::NONE:
         break;
     };

@@ -3601,7 +3601,8 @@ private:
               "void bar(char *p) {\n"
               "    strncpy(p, str, 100);\n"
               "}\n", false);
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'str' may not be null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'str' may not be null-terminated after the call to strncpy().\n"
+                      "[test.cpp:8]: (warning, inconclusive) The buffer 'p' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void terminateStrncpy4() {
