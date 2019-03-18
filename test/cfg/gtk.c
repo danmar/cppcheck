@@ -77,3 +77,39 @@ void g_alloca_test()
     char * pBuf1 = g_alloca(5);
     pBuf1[0] = '\0';
 }
+
+void g_new_test()
+{
+    struct a {
+        int b;
+    };
+    // valid
+    struct a * pNew1 = g_new(struct a, 5);
+    printf("%p", pNew1);
+    g_free(pNew1);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    g_new(struct a, 1);
+
+    struct a * pNew2 = g_new(struct a, 2);
+    printf("%p", pNew2);
+    // cppcheck-suppress memleak
+}
+
+void g_try_new0_test()
+{
+    struct a {
+        int b;
+    };
+    // valid
+    struct a * pNew1 = g_try_new0(struct a, 5);
+    printf("%p", pNew1);
+    g_free(pNew1);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    g_try_new0(struct a, 1);
+
+    struct a * pNew2 = g_try_new0(struct a, 2);
+    printf("%p", pNew2);
+    // cppcheck-suppress memleak
+}
