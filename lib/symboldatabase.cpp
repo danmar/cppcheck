@@ -5487,6 +5487,13 @@ void SymbolDatabase::setValueTypeInTokenList()
                     vt.sign = (vt.type == ValueType::Type::CHAR) ? mDefaultSignedness : ValueType::Sign::SIGNED;
             }
             setValueType(tok, vt);
+        } else if (tok->str() == "return" && tok->scope()) {
+            const Function *function = tok->scope()->function;
+            if (function) {
+                ValueType vt;
+                parsedecl(function->retDef, &vt, mDefaultSignedness, mSettings);
+                setValueType(tok, vt);
+            }
         }
     }
 

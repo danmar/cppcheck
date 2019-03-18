@@ -131,6 +131,7 @@ private:
         TEST_CASE(danglingLifetime);
         TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(danglingLifetimeAggegrateConstructor);
+        TEST_CASE(danglingLifetimeInitList);
         TEST_CASE(invalidLifetime);
     }
 
@@ -1896,6 +1897,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
 
+        // TODO: Ast is missing for this case
         check("struct A {\n"
               "    const int& x;\n"
               "    int y;\n"
@@ -1946,8 +1948,34 @@ private:
               "    return A{x, x};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void danglingLifetimeInitList() {
+        check("std::vector<int*> f() {\n"
+              "    int i = 0;\n"
+              "    std::vector<int*> v = {&i, &i};\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
 
+        // TODO: Ast is missing for this case
+        check("std::vector<int*> f() {\n"
+              "    int i = 0;\n"
+              "    std::vector<int*> v{&i, &i};\n"
+              "    return v;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", "", errout.str());
+
+        check("std::vector<int*> f() {\n"
+              "    int i = 0;\n"
+              "    return {&i, &i};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("std::vector<int*> f(int& x) {\n"
+              "    return {&x, &x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {

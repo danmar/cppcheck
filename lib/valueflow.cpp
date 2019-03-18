@@ -3092,28 +3092,34 @@ static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, Error
 {
     if (!Token::Match(tok, "(|{"))
         return;
-    const Type * t = getTypeOf(tok->previous());
-    if (!t)
-        return;
-    const Scope * scope = t->classScope;
-    if (!scope)
-        return;
-    // Only support aggregate constructors for now
-    if (scope->numConstructors == 0 && t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
-        std::vector<const Token *> args = getArguments(tok);
-        std::size_t i = 0;
-        for(const Variable& var:scope->varlist) {
-            if (i >= args.size())
-                break;
-            const Token* argtok = args[i];
-            LifetimeStore ls{argtok, "Passed to constructor of '" + tok->previous()->str() + "'.", ValueFlow::Value::Object};
-            if (var.isReference() || var.isRValueReference()) {
-                ls.byRef(tok, tokenlist, errorLogger, settings);
-            } else {
-                ls.byVal(tok, tokenlist, errorLogger, settings);
+    if (const Type * t = getTypeOf(tok->previous())) {
+        const Scope * scope = t->classScope;
+        if (!scope)
+            return;
+        // Only support aggregate constructors for now
+        if (scope->numConstructors == 0 && t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
+            std::vector<const Token *> args = getArguments(tok);
+            std::size_t i = 0;
+            for(const Variable& var:scope->varlist) {
+                if (i >= args.size())
+                    break;
+                const Token* argtok = args[i];
+                LifetimeStore ls{argtok, "Passed to constructor of '" + tok->previous()->str() + "'.", ValueFlow::Value::Object};
+                if (var.isReference() || var.isRValueReference()) {
+                    ls.byRef(tok, tokenlist, errorLogger, settings);
+                } else {
+                    ls.byVal(tok, tokenlist, errorLogger, settings);
+                }
             }
         }
+    } else if (Token::simpleMatch(tok, "{") && astIsContainer(tok->astParent())) {
+        std::vector<const Token *> args = getArguments(tok);
+        for(const Token* argtok:args) {
+            LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::Object};
+            ls.byVal(tok, tokenlist, errorLogger, settings);
+        }
     }
+
 }
 
 struct Lambda {

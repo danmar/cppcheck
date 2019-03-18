@@ -631,8 +631,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
                     continue;
-                if (tok->astParent()->str() == "return" && !astIsContainer(tok) && scope->function &&
-                    mSettings->library.detectContainer(scope->function->retDef))
+                if (tok->astParent()->str() == "return" && !Token::simpleMatch(tok, "{") && !astIsContainer(tok) && astIsContainer(tok->astParent()))
                     continue;
                 if (isInScope(val.tokvalue->variable()->nameToken(), scope)) {
                     errorReturnDanglingLifetime(tok, &val);
