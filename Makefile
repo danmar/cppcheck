@@ -371,7 +371,7 @@ $(SRCDIR)/checkbool.o: lib/checkbool.cpp lib/checkbool.h lib/check.h lib/config.
 $(SRCDIR)/checkboost.o: lib/checkboost.cpp lib/checkboost.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h lib/symboldatabase.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/checkboost.o $(SRCDIR)/checkboost.cpp
 
-$(SRCDIR)/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h lib/astutils.h lib/symboldatabase.h
+$(SRCDIR)/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h lib/symboldatabase.h lib/astutils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/checkbufferoverrun.o $(SRCDIR)/checkbufferoverrun.cpp
 
 $(SRCDIR)/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h lib/astutils.h lib/symboldatabase.h
@@ -443,7 +443,7 @@ $(SRCDIR)/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/config.h lib/
 $(SRCDIR)/importproject.o: lib/importproject.cpp lib/importproject.h lib/config.h lib/platform.h lib/utils.h lib/path.h lib/settings.h lib/errorlogger.h lib/suppressions.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h externals/picojson.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/importproject.o $(SRCDIR)/importproject.cpp
 
-$(SRCDIR)/library.o: lib/library.cpp lib/library.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/standards.h lib/astutils.h lib/path.h lib/symboldatabase.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenlist.h lib/utils.h
+$(SRCDIR)/library.o: lib/library.cpp lib/library.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/standards.h lib/astutils.h lib/path.h lib/symboldatabase.h lib/platform.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenlist.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/library.o $(SRCDIR)/library.cpp
 
 $(SRCDIR)/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/utils.h
@@ -467,7 +467,7 @@ $(SRCDIR)/settings.o: lib/settings.cpp lib/settings.h lib/config.h lib/errorlogg
 $(SRCDIR)/suppressions.o: lib/suppressions.cpp lib/suppressions.h lib/config.h lib/errorlogger.h lib/mathlib.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/suppressions.o $(SRCDIR)/suppressions.cpp
 
-$(SRCDIR)/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/config.h lib/library.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/standards.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/platform.h lib/settings.h lib/importproject.h lib/utils.h lib/timer.h lib/tokenize.h lib/tokenlist.h
+$(SRCDIR)/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/config.h lib/library.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/standards.h lib/platform.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/settings.h lib/importproject.h lib/utils.h lib/timer.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/symboldatabase.o $(SRCDIR)/symboldatabase.cpp
 
 $(SRCDIR)/templatesimplifier.o: lib/templatesimplifier.cpp lib/templatesimplifier.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h
@@ -524,7 +524,7 @@ test/testbool.o: test/testbool.cpp lib/checkbool.h lib/check.h lib/config.h lib/
 test/testboost.o: test/testboost.cpp lib/checkboost.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testboost.o test/testboost.cpp
 
-test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h test/testsuite.h
+test/testbufferoverrun.o: test/testbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h lib/symboldatabase.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testbufferoverrun.o test/testbufferoverrun.cpp
 
 test/testcharvar.o: test/testcharvar.cpp lib/checkother.h lib/check.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/mathlib.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/tokenize.h lib/tokenlist.h test/testsuite.h
