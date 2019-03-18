@@ -130,6 +130,7 @@ private:
         TEST_CASE(danglingLifetimeContainer);
         TEST_CASE(danglingLifetime);
         TEST_CASE(danglingLifetimeFunction);
+        TEST_CASE(danglingLifetimeAggegrateConstructor);
         TEST_CASE(invalidLifetime);
     }
 
@@ -1872,6 +1873,81 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetimeAggegrateConstructor() {
+        check("struct A {\n"
+              "    const int& x;\n"
+              "    int y;\n"
+              "};\n"
+              "A f() {\n"
+              "    int i = 0;\n"
+              "    return A{i, i};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("struct A {\n"
+              "    const int& x;\n"
+              "    int y;\n"
+              "};\n"
+              "A f() {\n"
+              "    int i = 0;\n"
+              "    return {i, i};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("struct A {\n"
+              "    const int& x;\n"
+              "    int y;\n"
+              "};\n"
+              "A f() {\n"
+              "    int i = 0;\n"
+              "    A r{i, i};\n"
+              "    return r;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", "", errout.str());
+
+        check("struct A {\n"
+              "    const int& x;\n"
+              "    int y;\n"
+              "};\n"
+              "A f() {\n"
+              "    int i = 0;\n"
+              "    A r = {i, i};\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:8]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("struct A {\n"
+              "    const int& x;\n"
+              "    int y;\n"
+              "};\n"
+              "A f(int& x) {\n"
+              "    int i = 0;\n"
+              "    return A{i, x};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n", errout.str());
+
+        check("struct A {\n"
+              "    const int& x;\n"
+              "    int y;\n"
+              "};\n"
+              "A f(int& x) {\n"
+              "    int i = 0;\n"
+              "    return A{x, i};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    const int& x;\n"
+              "    int y;\n"
+              "};\n"
+              "A f(int& x) {\n"
+              "    return A{x, x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
     }
 
     void invalidLifetime() {
