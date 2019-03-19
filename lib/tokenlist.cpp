@@ -1165,6 +1165,18 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     if (Token::Match(tok, "%type% <") && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
 
+    if (Token::Match(tok, "%type% %name%|*|&|::") && tok->str() != "return") {
+        bool decl = false;
+        Token *typetok = tok;
+        while (Token::Match(typetok, "%type%|::|*|&")) {
+            if (typetok->isStandardType() || Token::Match(typetok, "struct|const|static"))
+                decl = true;
+            typetok = typetok->next();
+        }
+        if (decl && Token::Match(typetok->previous(), "[*&] %var% ="))
+            tok = typetok;
+    }
+
     if (Token::Match(tok, "return|case") || (cpp && tok->str() == "throw") || !tok->previous() || Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") || Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
             tok = tok->previous();

@@ -828,6 +828,28 @@ static unsigned int getSizeOfType(const Token *typeTok, const Settings *settings
         return 0;
 }
 
+static size_t getSizeOf(const ValueType &vt, const Settings *settings)
+{
+    if (vt.pointer)
+        return settings->sizeof_pointer;
+    else if (vt.type == ValueType::Type::CHAR)
+        return 1;
+    else if (vt.type == ValueType::Type::SHORT)
+        return settings->sizeof_short;
+    else if (vt.type == ValueType::Type::INT)
+        return settings->sizeof_int;
+    else if (vt.type == ValueType::Type::LONG)
+        return settings->sizeof_long;
+    else if (vt.type == ValueType::Type::LONGLONG)
+        return settings->sizeof_long_long;
+    else if (vt.type == ValueType::Type::FLOAT)
+        return settings->sizeof_float;
+    else if (vt.type == ValueType::Type::DOUBLE)
+        return settings->sizeof_double;
+
+    return 0;
+}
+
 // Handle various constants..
 static Token * valueFlowSetConstantValue(const Token *tok, const Settings *settings, bool cpp)
 {
@@ -862,7 +884,16 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             else
                 tok2 = tok2->tokAt(2);
         }
-        if (tok2->enumerator() && tok2->enumerator()->scope) {
+        if (Token::Match(tok, "sizeof ( *")) {
+            const ValueType *vt = tok->tokAt(2)->valueType();
+            const size_t sz = vt ? getSizeOf(*vt, settings) : 0;
+            if (sz > 0) {
+                ValueFlow::Value value(sz);
+                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
+                    value.setKnown();
+                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            }
+        } else if (tok2->enumerator() && tok2->enumerator()->scope) {
             long long size = settings->sizeof_int;
             const Token * type = tok2->enumerator()->scope->enumType;
             if (type) {
@@ -912,6 +943,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                     size = settings->sizeof_int;
                     if (var->type()->classScope && var->type()->classScope->enumType)
                         size = getSizeOfType(var->type()->classScope->enumType, settings);
+                } else if (var->valueType()) {
+                    size = getSizeOf(*var->valueType(), settings);
                 } else if (!var->type()) {
                     size = getSizeOfType(var->typeStartToken(), settings);
                 }
@@ -933,43 +966,9 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             }
         } else if (!tok2->type()) {
             const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            if (vt.pointer) {
-                ValueFlow::Value value(settings->sizeof_pointer);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::CHAR) {
-                ValueFlow::Value value(1);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::SHORT) {
-                ValueFlow::Value value(settings->sizeof_short);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::INT) {
-                ValueFlow::Value value(settings->sizeof_int);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::LONG) {
-                ValueFlow::Value value(settings->sizeof_long);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::LONGLONG) {
-                ValueFlow::Value value(settings->sizeof_long_long);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::FLOAT) {
-                ValueFlow::Value value(settings->sizeof_float);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
-                    value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
-            } else if (vt.type == ValueType::Type::DOUBLE) {
-                ValueFlow::Value value(settings->sizeof_double);
+            const size_t sz = getSizeOf(vt, settings);
+            if (sz > 0) {
+                ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
                 setTokenValue(const_cast<Token *>(tok->next()), value, settings);
@@ -2397,7 +2396,22 @@ static bool valueFlowForward(Token * const               startToken,
                     else
                         valueFlowAST(const_cast<Token*>(op2), varid, v, settings);
                 }
-                if (isVariableChangedByFunctionCall(op2, varid, settings, nullptr))
+
+                const Token * const expr0 = op2->astOperand1() ? op2->astOperand1() : tok2->astOperand1();
+                const Token * const expr1 = op2->astOperand2();
+
+                const std::pair<const Token *, const Token *> startEnd0 = expr0->findExpressionStartEndTokens();
+                const std::pair<const Token *, const Token *> startEnd1 = expr1->findExpressionStartEndTokens();
+                const bool changed0 = isVariableChanged(startEnd0.first, startEnd0.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+                const bool changed1 = isVariableChanged(startEnd1.first, startEnd1.second->next(), varid, var->isGlobal(), settings, tokenlist->isCPP());
+
+                if (changed0 && changed1) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok2, "variable " + var->name() + " valueFlowForward, changed in both : expressions");
+                    return false;
+                }
+
+                if (changed0 || changed1)
                     changeKnownToPossible(values);
             }
 
@@ -3853,12 +3867,39 @@ static void execute(const Token *expr,
             *result = result1 != result2;
     }
 
-    else if (expr->str() == "=") {
+    else if (expr->isAssignmentOp()) {
         execute(expr->astOperand2(), programMemory, result, error);
-        if (!*error && expr->astOperand1() && expr->astOperand1()->varId())
-            programMemory->setIntValue(expr->astOperand1()->varId(), *result);
-        else
+        if (!expr->astOperand1() || !expr->astOperand1()->varId())
             *error = true;
+        if (*error)
+            return;
+
+        if (expr->str() == "=") {
+            programMemory->setIntValue(expr->astOperand1()->varId(), *result);
+            return;
+        }
+
+        long long intValue;
+        if (!programMemory->getIntValue(expr->astOperand1()->varId(), &intValue)) {
+            *error = true;
+            return;
+        }
+        if (expr->str() == "+=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue + *result);
+        else if (expr->str() == "-=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue - *result);
+        else if (expr->str() == "*=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue * *result);
+        else if (expr->str() == "/=" && *result != 0)
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue / *result);
+        else if (expr->str() == "%=" && *result != 0)
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue % *result);
+        else if (expr->str() == "&=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue & *result);
+        else if (expr->str() == "|=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue | *result);
+        else if (expr->str() == "^=")
+            programMemory->setIntValue(expr->astOperand1()->varId(), intValue ^ *result);
     }
 
     else if (Token::Match(expr, "++|--")) {
@@ -5064,6 +5105,56 @@ static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *set
     }
 }
 
+static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (const Scope *functionScope : symboldatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "[;{}] %var% ="))
+                continue;
+
+            if (!tok->next()->variable())
+                continue;
+
+            const Token *rhs = tok->tokAt(2)->astOperand2();
+            while (rhs && rhs->isCast())
+                rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
+            if (!rhs)
+                continue;
+
+            if (!Token::Match(rhs->previous(), "%name% ("))
+                continue;
+
+            const Library::AllocFunc *allocFunc = settings->library.alloc(rhs->previous());
+            if (!allocFunc || allocFunc->bufferSizeArgValue < 1)
+                continue;
+
+            const std::vector<const Token *> args = getArguments(rhs->previous());
+            if (args.size() < allocFunc->bufferSizeArgValue)
+                continue;
+
+            const Token *sizeArg = args[allocFunc->bufferSizeArgValue - 1];
+            if (!sizeArg || !sizeArg->hasKnownIntValue())
+                continue;
+
+            ValueFlow::Value value(sizeArg->getKnownIntValue());
+            value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + MathLib::toString(value.intvalue));
+            value.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
+            value.setKnown();
+            const std::list<ValueFlow::Value> values{value};
+            valueFlowForward(const_cast<Token *>(rhs),
+                             functionScope->bodyEnd,
+                             tok->next()->variable(),
+                             tok->next()->varId(),
+                             values,
+                             true,
+                             false,
+                             tokenlist,
+                             errorLogger,
+                             settings);
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token *c, long long val)
     : valueType(INT),
       intvalue(val),
@@ -5095,6 +5186,7 @@ std::string ValueFlow::Value::infoString() const
         return "<Moved>";
     case UNINIT:
         return "<Uninit>";
+    case BUFFER_SIZE:
     case CONTAINER_SIZE:
         return "size=" + MathLib::toString(intvalue);
     case LIFETIME:
@@ -5160,6 +5252,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }
     }
+
+    valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings);
 }
 
 

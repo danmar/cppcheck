@@ -381,6 +381,7 @@ private:
         TEST_CASE(auto9); // #8044 (segmentation fault)
         TEST_CASE(auto10); // #8020
         TEST_CASE(auto11); // #8964 - const auto startX = x;
+        TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
 
         TEST_CASE(unionWithConstructor);
     }
@@ -400,15 +401,19 @@ private:
         ASSERT_EQUALS(12U, v->dimension(0));
     }
 
-    void stlarray() const {
-        std::istringstream code("std::array<int, 20> arr;");
-        TokenList list(nullptr);
-        list.createTokens(code, "test.c");
-        list.front()->tokAt(3)->link(list.front()->tokAt(7));
-        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, nullptr, nullptr, &settings1);
-        ASSERT(v.isArray());
-        ASSERT_EQUALS(1U, v.dimensions().size());
-        ASSERT_EQUALS(20U, v.dimension(0));
+    void stlarray() {
+        GET_SYMBOL_DB("std::array<int, (16 + 4)> arr;");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        ASSERT(db->variableList().size() == 2); // the first one is not used
+        const Variable * v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(20U, v->dimension(0));
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -5958,10 +5963,12 @@ private:
         ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\");", "?"));
         ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"));", "?"));
 
-        // Boolean operators
+        // Boolean operators/literals
         ASSERT_EQUALS("bool", typeOf("a > b;", ">"));
         ASSERT_EQUALS("bool", typeOf(";!b;", "!"));
         ASSERT_EQUALS("bool", typeOf("c = a && b;", "&&"));
+        ASSERT_EQUALS("bool", typeOf("a = false;", "false"));
+        ASSERT_EQUALS("bool", typeOf("a = true;", "true"));
 
         // shift => result has same type as lhs
         ASSERT_EQUALS("signed int", typeOf("int x; a = x << 1U;", "<<"));
@@ -6831,6 +6838,22 @@ private:
 
         const Token *v2tok = Token::findsimplematch(tokenizer.tokens(), "v2");
         ASSERT(v2tok && v2tok->variable() && !v2tok->variable()->isConst());
+    }
+
+    void auto12() {
+        GET_SYMBOL_DB("void f(const std::string &x) {\n"
+                      "  auto y = x;\n"
+                      "  if (y.empty()) {}\n"
+                      "}");
+        (void)db;
+
+        const Token *tok;
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "y =");
+        ASSERT(tok && tok->valueType() && tok->valueType()->container);
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "y .");
+        ASSERT(tok && tok->valueType() && tok->valueType()->container);
     }
 
     void unionWithConstructor() {

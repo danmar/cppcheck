@@ -60,36 +60,26 @@ public:
         }
 
         CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.erase();
+        checkStl.if_find();
+        checkStl.iterators();
+        checkStl.mismatchingContainers();
+        checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
-    }
-
-    /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
-        if (!tokenizer->isCPP()) {
-            return;
-        }
-
-        CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.pushback();
+        checkStl.redundantCondition();
+        checkStl.string_c_str();
+        checkStl.uselessCalls();
+        checkStl.useStlAlgorithm();
 
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
-        checkStl.iterators();
-        checkStl.mismatchingContainers();
-        checkStl.erase();
-        checkStl.pushback();
         checkStl.stlBoundaries();
-        checkStl.if_find();
-        checkStl.string_c_str();
-        checkStl.checkAutoPointer();
-        checkStl.uselessCalls();
         checkStl.checkDereferenceInvalidIterator();
 
         // Style check
         checkStl.size();
-        checkStl.redundantCondition();
-        checkStl.missingComparison();
-        checkStl.useStlAlgorithm();
     }
 
     /** Accessing container out of bounds using ValueFlow */
@@ -164,9 +154,6 @@ public:
     /** Check for common mistakes when using the function string::c_str() */
     void string_c_str();
 
-    /** @brief %Check for use and copy auto pointer */
-    void checkAutoPointer();
-
     /** @brief %Check calls that using them is useless */
     void uselessCalls();
 
@@ -218,11 +205,6 @@ private:
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
 
-    void autoPointerError(const Token* tok);
-    void autoPointerContainerError(const Token* tok);
-    void autoPointerArrayError(const Token* tok);
-    void autoPointerMallocError(const Token* tok, const std::string& allocFunction);
-
     void uselessCallsReturnValueError(const Token* tok, const std::string& varname, const std::string& function);
     void uselessCallsSwapError(const Token* tok, const std::string& varname);
     void uselessCallsSubstrError(const Token* tok, bool empty);
@@ -264,10 +246,6 @@ private:
         c.sizeError(nullptr);
         c.missingComparisonError(nullptr, nullptr);
         c.redundantIfRemoveError(nullptr);
-        c.autoPointerError(nullptr);
-        c.autoPointerContainerError(nullptr);
-        c.autoPointerArrayError(nullptr);
-        c.autoPointerMallocError(nullptr, "malloc");
         c.uselessCallsReturnValueError(nullptr, "str", "find");
         c.uselessCallsSwapError(nullptr, "str");
         c.uselessCallsSubstrError(nullptr, false);
@@ -294,7 +272,6 @@ private:
                "- suspicious condition when using find\n"
                "- redundant condition\n"
                "- common mistakes when using string::c_str()\n"
-               "- using auto pointer (auto_ptr)\n"
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
                "- reading from empty STL container\n"

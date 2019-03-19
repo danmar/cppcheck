@@ -277,10 +277,6 @@ private:
         }
 
         tokenizer.simplifyTokenList2();
-        // call all "runSimplifiedChecks" in all registered Check classes
-        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-            (*it)->runSimplifiedChecks(&tokenizer, &settings, this);
-        }
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
     }

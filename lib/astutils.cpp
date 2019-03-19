@@ -823,43 +823,49 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     if (!tok)
         return false;
 
+    const Token * const tok1 = tok;
+
     // address of variable
-    const bool addressOf = Token::simpleMatch(tok->previous(), "&");
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
-    // passing variable to subfunction?
-    if (Token::Match(tok->tokAt(-2), ") & %name% [,)]") && Token::Match(tok->linkAt(-2)->previous(), "[,(] ("))
-        ;
-    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[(,] &| %name% [,)]"))
-        ;
-    else if (Token::Match(tok->tokAt(addressOf?-2:-1), "[?:] &| %name% [:,)]")) {
+    {
         const Token *parent = tok->astParent();
-        if (parent == tok->previous() && parent->str() == "&")
+        if (parent && parent->isUnaryOp("&"))
             parent = parent->astParent();
-        while (Token::Match(parent, "[?:]"))
+        while (parent && parent->isCast())
             parent = parent->astParent();
-        while (Token::simpleMatch(parent, ","))
-            parent = parent->astParent();
-        if (!parent || parent->str() != "(")
-            return false;
-    } else
-        return false;
 
-    // reinterpret_cast etc..
-    if (Token::Match(tok->tokAt(-3), "> ( & %name% ) [,)]") &&
-        tok->linkAt(-3) &&
-        Token::Match(tok->linkAt(-3)->tokAt(-2), "[,(] %type% <"))
-        tok = tok->linkAt(-3);
+        // passing variable to subfunction?
+        if (Token::Match(parent, "[(,]"))
+            ;
+        else if (Token::simpleMatch(parent, ":")) {
+            while (Token::Match(parent, "[?:]"))
+                parent = parent->astParent();
+            while (Token::simpleMatch(parent, ","))
+                parent = parent->astParent();
+            if (!parent || parent->str() != "(")
+                return false;
+        } else
+            return false;
+    }
 
     // goto start of function call and get argnr
     unsigned int argnr = 0;
-    while (tok && tok->str() != "(") {
+    while (tok && !Token::Match(tok, "[;{}]")) {
         if (tok->str() == ",")
             ++argnr;
         else if (tok->str() == ")")
             tok = tok->link();
+        else if (Token::Match(tok->previous(), "%name% ("))
+            break;
+        else if (Token::simpleMatch(tok->previous(), "> (") && tok->previous()->link())
+            break;
         tok = tok->previous();
     }
-    tok = tok ? tok->previous() : nullptr;
+    if (!tok || tok->str() != "(")
+        return false;
+    const bool possiblyPassedByReference = (tok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)]"));
+    tok = tok->previous();
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
     if (!Token::Match(tok, "%name% [(<]"))
@@ -886,16 +892,32 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     }
 
     if (!tok->function()) {
+        // Check if direction (in, out, inout) is specified in the library configuration and use that
+        if (!addressOf && settings) {
+            const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
+            if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
+                return false;
+            else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
+                     argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
+                // With out or inout the direction of the content is specified, not a pointer itself, so ignore pointers for now
+                const ValueType * const valueType = tok1->valueType();
+                if (valueType && !valueType->pointer) {
+                    return true;
+                }
+            }
+        }
+
         // if the library says 0 is invalid
         // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
         if (!addressOf && settings && settings->library.isnullargbad(tok, 1+argnr))
             return false;
-        // addressOf => inconclusive
-        if (!addressOf) {
+        // possible pass-by-reference => inconclusive
+        if (possiblyPassedByReference) {
             if (inconclusive != nullptr)
                 *inconclusive = true;
             return false;
         }
+        // Safe guess: Assume that parameter is changed by function call
         return true;
     }
 
@@ -922,10 +944,14 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             continue;
         }
 
-        if (Token::Match(tok, "%name% %assign%|++|--"))
+        const Token *tok2 = tok;
+        while (Token::simpleMatch(tok2->astParent(), "*"))
+            tok2 = tok2->astParent();
+
+        if (Token::Match(tok2->astParent(), "++|--"))
             return true;
 
-        if (Token::Match(tok->previous(), "++|-- %name%"))
+        if (tok2->astParent() && tok2->astParent()->isAssignmentOp() && tok2 == tok2->astParent()->astOperand1())
             return true;
 
         if (isLikelyStreamRead(cpp, tok->previous()))
@@ -947,7 +973,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         }
 
         const Token *ftok = tok;
-        while (ftok && !Token::Match(ftok, "[({[]"))
+        while (ftok && (!Token::Match(ftok, "[({[]") || ftok->isCast()))
             ftok = ftok->astParent();
 
         if (ftok && Token::Match(ftok->link(), ") !!{")) {

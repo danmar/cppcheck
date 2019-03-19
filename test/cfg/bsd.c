@@ -15,15 +15,15 @@ void uninitvar_strlcat(char *Ct, const char *S, size_t N)
 {
     char *ct;
     char *s;
-    size_t n;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)strlcat(ct,s,n);
+    (void)strlcat(ct,s,n1);
     // cppcheck-suppress uninitvar
     (void)strlcat(ct,S,N);
     // cppcheck-suppress uninitvar
     (void)strlcat(Ct,s,N);
     // cppcheck-suppress uninitvar
-    (void)strlcat(Ct,S,n);
+    (void)strlcat(Ct,S,n2);
 
     // no warning is expected for
     (void)strlcat(Ct,S,N);

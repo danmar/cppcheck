@@ -242,7 +242,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
             if (end)
                 end = end->next();
         } else if (end->str() == "(") {
-            if (tok->previous()->str().find("operator")  == 0) {
+            if (tok->previous()->str().compare(0, 8, "operator")  == 0) {
                 // conversion operator
                 return false;
             } else if (tok->previous()->str() == "typedef") {
@@ -1797,6 +1797,8 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
     }
 
+    mSymbolDatabase->setArrayDimensionsUsingValueFlow();
+
     printDebugOutput(1);
 
     return true;
@@ -1926,16 +1928,6 @@ void Tokenizer::combineOperators()
 
 void Tokenizer::combineStringAndCharLiterals()
 {
-    // Combine wide strings and wide characters
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[Lu] %char%|%str%")) {
-            // Combine 'L "string"' and 'L 'c''
-            tok->str(tok->next()->str());
-            tok->deleteNext();
-            tok->isLong(true);
-        }
-    }
-
     // Combine strings
     for (Token *tok = list.front();
          tok;
@@ -2316,14 +2308,6 @@ void Tokenizer::simplifyTemplates()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // simple fix for sizeof used as template parameter
-        // TODO: this is a bit hardcoded. make a bit more generic
-        if (Token::Match(tok, "%name% < sizeof ( %type% ) >") && tok->tokAt(4)->isStandardType()) {
-            Token * const tok3 = tok->next();
-            const unsigned int sizeOfResult = sizeOfType(tok3->tokAt(3));
-            tok3->deleteNext(4);
-            tok3->insertToken(MathLib::toString(sizeOfResult));
-        }
         // Ticket #6181: normalize C++11 template parameter list closing syntax
         if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok)) {
             Token *endTok = tok->findClosingBracket();
@@ -3630,6 +3614,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    simplifyHeaders();
+
     // Remove __asm..
     simplifyAsm();
 
@@ -4255,6 +4241,121 @@ void Tokenizer::dump(std::ostream &out) const
     mSymbolDatabase->printXml(out);
     if (list.front())
         list.front()->printValueFlow(true, out);
+}
+
+void Tokenizer::simplifyHeaders()
+{
+    // TODO : can we remove anything in headers here? Like unused declarations.
+    // Maybe if --dump is used we want to have _everything_.
+
+    if (mSettings->checkHeaders && !mSettings->removeUnusedTemplates && !mSettings->removeUnusedIncludedTemplates)
+        // Default=full analysis. All information in the headers are kept.
+        return;
+
+    const bool checkHeaders = mSettings->checkHeaders;
+    const bool removeUnusedIncludedFunctions = mSettings->checkHeaders;
+    const bool removeUnusedIncludedClasses   = mSettings->checkHeaders;
+    const bool removeUnusedTemplates = mSettings->removeUnusedTemplates;
+    const bool removeUnusedIncludedTemplates = mSettings->checkHeaders || mSettings->removeUnusedIncludedTemplates;
+
+    // We want to remove selected stuff from the headers but not *everything*.
+    // The intention here is to not damage the analysis of the source file.
+    // You should get all warnings in the source file.
+
+    // TODO: Remove unused types/variables/etc in headers..
+
+    // functions and types to keep
+    std::set<std::string> keep;
+    for (const Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!tok->isName())
+            continue;
+
+        if (checkHeaders && tok->fileIndex() != 0)
+            continue;
+
+        if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+            keep.insert(tok->str());
+            continue;
+        }
+
+        if (Token::Match(tok, "%name% %name%|::|*|&|<")) {
+            keep.insert(tok->str());
+        }
+    }
+
+    const std::set<std::string> functionStart{"static", "const", "unsigned", "signed", "void", "bool", "char", "short", "int", "long", "float", "*"};
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        const bool isIncluded = (tok->fileIndex() != 0);
+
+        // Remove executable code
+        if (isIncluded && mSettings->checkHeaders && tok->str() == "{") {
+            // TODO: We probably need to keep the executable code if this function is called from the source file.
+            const Token *prev = tok->previous();
+            while (prev && prev->isName())
+                prev = prev->previous();
+            if (Token::simpleMatch(prev, ")")) {
+                // Replace all tokens from { to } with a ";".
+                Token::eraseTokens(tok,tok->link()->next());
+                tok->str(";");
+                tok->link(nullptr);
+            }
+        }
+
+        if (Token::Match(tok, "[;{}]")) {
+            // Remove unused function declarations
+            if (isIncluded && removeUnusedIncludedFunctions) {
+                while (1) {
+                    Token *start = tok->next();
+                    while (start && functionStart.find(start->str()) != functionStart.end())
+                        start = start->next();
+                    if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
+                        Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
+                    else
+                        break;
+                }
+            }
+
+            if (isIncluded && removeUnusedIncludedClasses) {
+                if (Token::Match(tok, "[;{}] class|struct %name% [:{]") && keep.find(tok->strAt(2)) == keep.end()) {
+                    // Remove this class/struct
+                    const Token *endToken = tok->tokAt(3);
+                    if (endToken->str() == ":") {
+                        endToken = endToken->next();
+                        while (Token::Match(endToken, "%name%|,"))
+                            endToken = endToken->next();
+                    }
+                    if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;"))
+                        Token::eraseTokens(tok, endToken->link()->next());
+                }
+            }
+
+            if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
+                if (Token::Match(tok->next(), "template < %name%")) {
+                    const Token *tok2 = tok->tokAt(3);
+                    while (Token::Match(tok2, "%name% %name% [,=>]")) {
+                        tok2 = tok2->tokAt(2);
+                        if (Token::Match(tok2, "= %name% [,>]"))
+                            tok2 = tok2->tokAt(2);
+                        if (tok2->str() == ",")
+                            tok2 = tok2->next();
+                    }
+                    if (Token::Match(tok2, "> class|struct %name% [;:{]") && keep.find(tok2->strAt(2)) == keep.end()) {
+                        const Token *endToken = tok2->tokAt(3);
+                        if (endToken->str() == ":") {
+                            endToken = endToken->next();
+                            while (Token::Match(endToken, "%name%|,"))
+                                endToken = endToken->next();
+                        }
+                        if (endToken && endToken->str() == "{")
+                            endToken = endToken->link()->next();
+                        if (endToken && endToken->str() == ";")
+                            Token::eraseTokens(tok, endToken);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Tokenizer::removeMacrosInGlobalScope()
@@ -9280,7 +9381,7 @@ void Tokenizer::simplifyAsm2()
         if (tok->str() != "^")
             continue;
 
-        if (Token::simpleMatch(tok, "^ {") || Token::simpleMatch(tok->linkAt(1), ") {")) {
+        if (Token::simpleMatch(tok, "^ {") || (Token::simpleMatch(tok->linkAt(1), ") {") && tok->strAt(-1) != "operator")) {
             Token * start = tok;
             while (start && !Token::Match(start, "[,(;{}=]")) {
                 if (start->link() && Token::Match(start, ")|]|>"))
@@ -9813,19 +9914,10 @@ void Tokenizer::simplifyOperatorName()
     if (isC())
         return;
 
-    bool isUsingStmt = false;
-
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == ";") {
-            if (isUsingStmt && Token::Match(tok->tokAt(-3), "using|:: operator %op% ;")) {
-                tok->previous()->previous()->str("operator" + tok->previous()->str());
-                tok->deletePrevious();
-            }
-            isUsingStmt = false;
-            continue;
-        }
-        if (tok->str() == "using") {
-            isUsingStmt = true;
+        if (Token::Match(tok, "using|:: operator %op% ;")) {
+            tok->next()->str("operator" + tok->strAt(2));
+            tok->next()->deleteNext();
             continue;
         }
 

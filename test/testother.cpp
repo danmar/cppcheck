@@ -224,6 +224,8 @@ private:
         TEST_CASE(shadowVariables);
         TEST_CASE(constArgument);
         TEST_CASE(checkComparePointers);
+
+        TEST_CASE(unusedVariableValueTemplate); // #8994
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = 0) {
@@ -252,10 +254,7 @@ private:
         CheckOther checkOther(&tokenizer, settings, this);
         checkOther.runChecks(&tokenizer, settings, this);
 
-        if (runSimpleChecks) {
-            tokenizer.simplifyTokenList2();
-            checkOther.runSimplifiedChecks(&tokenizer, settings, this);
-        }
+        (void)runSimpleChecks; // TODO Remove this
     }
 
     void check(const char code[], Settings *s) {
@@ -294,8 +293,6 @@ private:
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
         checkOther.runChecks(&tokenizer, settings, this);
-        tokenizer.simplifyTokenList2();
-        checkOther.runSimplifiedChecks(&tokenizer, settings, this);
     }
 
     void checkposix(const char code[]) {
@@ -3335,7 +3332,7 @@ private:
         check("void f(char c) {\n"
               "    printf(\"%i\", 1 + 1 ? 1 : 2);\n" // "1+1" is simplified away
               "}",0,false,false,false);
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '+' and '?'.\n", "", errout.str()); // TODO: Is that really necessary, or is this pattern too unlikely?
+        ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '+' and '?'.\n", errout.str());
 
         check("void f() {\n"
               "    std::cout << x << 1 ? 2 : 3;\n"
@@ -5287,31 +5284,31 @@ private:
               "  char *a; a = malloc(1024);\n"
               "  free(a + 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = malloc(1024);\n"
               "  free(a - 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = malloc(1024);\n"
               "  free(10 + a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char[1024];\n"
               "  delete[] (a + 10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
               "  delete a + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
@@ -5327,7 +5324,7 @@ private:
               "  delete a + 10;\n"
               "  delete b + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(char *p) {\n"
               "  char *a; a = new char;\n"
@@ -5343,14 +5340,14 @@ private:
               "  bar()\n"
               "  delete a + 10;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching address is deleted. The address you get from new must be deleted without offset.\n", errout.str());
 
         check("void foo(size_t xx) {\n"
               "  char *ptr; ptr = malloc(42);\n"
               "  ptr += xx;\n"
-              "  free(ptr - xx - 1);\n"
+              "  free(ptr + 1 - xx);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Invalid memory address freed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching address is freed. The address you get from malloc() must be freed without offset.\n", errout.str());
 
         check("void foo(size_t xx) {\n"
               "  char *ptr; ptr = malloc(42);\n"
@@ -7663,6 +7660,15 @@ private:
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2]: (error) Comparing pointers that point to different objects\n",
             errout.str());
 
+        check("int f() {\n"
+              "    int x = 0;\n"
+              "    int y = 1;\n"
+              "    return &x - &y;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:4]: (error) Subtracting pointers that point to different objects\n",
+            errout.str());
+
         check("bool f() {\n"
               "    int x[2] = {1, 2}m;\n"
               "    int* xp = &x[0];\n"
@@ -7701,6 +7707,36 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void unusedVariableValueTemplate() {
+        check("#include <functional>\n"
+              "class A\n"
+              "{\n"
+              "public:\n"
+              "    class Hash\n"
+              "    {\n"
+              "    public:\n"
+              "        std::size_t operator()(const A& a) const\n"
+              "        {\n"
+              "            (void)a;\n"
+              "            return 0;\n"
+              "        }\n"
+              "    };\n"
+              "};\n"
+              "namespace std\n"
+              "{\n"
+              "    template <>\n"
+              "    struct hash<A>\n"
+              "    {\n"
+              "        std::size_t operator()(const A& a) const noexcept\n"
+              "        {\n"
+              "            return A::Hash{}(a);\n"
+              "        }\n"
+              "    };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestOther)

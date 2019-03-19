@@ -143,8 +143,6 @@ private:
         // catch common problems when using the string::c_str() function
         TEST_CASE(cstr);
 
-        TEST_CASE(autoPointer);
-
         TEST_CASE(uselessCalls);
         TEST_CASE(stabilityOfChecks); // #4684 cppcheck crash in template function call
 
@@ -167,16 +165,17 @@ private:
         settings.inconclusive = inconclusive;
         settings.standards.cpp = cppstandard;
 
+
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
-        // Check..
         CheckStl checkStl(&tokenizer, &settings, this);
-        checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
+
+        tokenizer.tokenize(istr, "test.cpp");
+        checkStl.runChecks(&tokenizer, &settings, this);
     }
+
     void check(const std::string &code, const bool inconclusive=false) {
         check(code.c_str(), inconclusive);
     }
@@ -3049,205 +3048,6 @@ private:
               "    return ref.c_str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
-    }
-
-    void autoPointer() {
-
-        // ticket 2846
-        check("void f()\n"
-              "{\n"
-              "    std::vector<int*> vec;\n"
-              "    vec.push_back(new int(3));\n"
-              "    std::auto_ptr<int> ret(vec[0]);\n"
-              "};");
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket 2839
-        check("template <class MUTEX_TYPE>\n"
-              "class Guarded\n"
-              "{\n"
-              "    typedef std::auto_ptr<MUTEX_TYPE > WriteGuardType;\n"
-              "    virtual WriteGuardType getWriteGuard(bool enabledGuard = true);\n"
-              "};\n"
-              "class SafeSharedMemory : public Guarded<int>\n"
-              "{\n"
-              "};");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    auto_ptr< ns1:::MyClass > y;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T> p2;\n"
-              "    p2 = new T;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::vector< std::auto_ptr< ns1::MyClass> > v;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) You can randomly lose access to pointers if you store 'auto_ptr' pointers in an STL container.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    std::vector< auto_ptr< MyClass> > v;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) You can randomly lose access to pointers if you store 'auto_ptr' pointers in an STL container.\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    int *i = new int;\n"
-              "    auto_ptr<int> x(i);\n"
-              "    auto_ptr<int> y;\n"
-              "    y = x;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Copying 'auto_ptr' pointer to another does not create two equal objects since one has lost its ownership of the pointer.\n", errout.str());
-
-        check("std::auto_ptr<A> function();\n"
-              "int quit;"
-              "void f() { quit = true; }\n"
-             );
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket #748
-        check("void f()\n"
-              "{\n"
-              "    T* var = new T[10];\n"
-              "    auto_ptr<T> p2( var );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    foo::bar::baz* var = new foo::bar::baz[10];\n"
-              "    auto_ptr<foo::bar::baz> p2( var );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T> p2( new T[] );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T> p2( new T[5] );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<foo::bar> p(new foo::bar[10]);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T> p2;\n"
-              "    p2.reset( new T[] );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T> p2( new T[][] );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T> p2;\n"
-              "    p2 = new T[10];\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T::B> p2;\n"
-              "    p2 = new T::B[10];\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T> p2;\n"
-              "    p2.reset( new T[10] );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    auto_ptr<T::B> p2;\n"
-              "    p2.reset( new T::B[10] );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.\n", errout.str());
-
-        // ticket #2887 (infinite loop)
-        check("A::A(std::auto_ptr<X> e){}");
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket #4390
-        check("auto_ptr<ConnectionStringReadStorage> CreateRegistryStringStorage() {\n"
-              "    return auto_ptr<ConnectionStringReadStorage>(new RegistryConnectionStringStorage());\n"
-              "}\n"
-              "\n"
-              "void LookupWindowsUserAccountName() {\n"
-              "    auto_ptr_array<char> domainName(new char[42]);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // ticket #749
-        check("int main()\n"
-              "{\n"
-              "    int *i = malloc(sizeof(int));\n"
-              "    auto_ptr<int> x(i);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
-
-        check("int main()\n"
-              "{\n"
-              "    auto_ptr<int> x((int*)malloc(sizeof(int)*4));\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
-
-        check("int main()\n"
-              "{\n"
-              "    auto_ptr<int> b(static_cast<int*>(malloc(sizeof(int)*4)));\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
-
-        check("int main()\n"
-              "{\n"
-              "    auto_ptr<int> x = (int*)malloc(sizeof(int)*4);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
-
-        check("int main()\n"
-              "{\n"
-              "    auto_ptr<int> x = static_cast<int*>(malloc(sizeof(int)*4));\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
-
-        check("int main()\n"
-              "{\n"
-              "    auto_ptr<int> x;\n"
-              "    x.reset((int*)malloc(sizeof(int)*4));\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
-
-        check("int main()\n"
-              "{\n"
-              "    auto_ptr<int> x;\n"
-              "    x.reset(static_cast<int*>(malloc(sizeof(int)*4)));\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with function 'malloc'.\n", errout.str());
     }
 
     void uselessCalls() {

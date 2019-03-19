@@ -1130,6 +1130,30 @@ private:
                       tokenizeAndStringify("; return f(^(void){somecode});"));
         ASSERT_EQUALS("; asm ( \"a?(b?(c,asm(\"^{}\")):0):^{}\" ) ;",
                       tokenizeAndStringify(";a?(b?(c,^{}):0):^{};"));
+        ASSERT_EQUALS("template < typename T > "
+                      "CImg < T > operator| ( const char * const expression , const CImg < T > & img ) { "
+                      "return img | expression ; "
+                      "} "
+                      "template < typename T > "
+                      "CImg < T > operator^ ( const char * const expression , const CImg < T > & img ) { "
+                      "return img ^ expression ; "
+                      "} "
+                      "template < typename T > "
+                      "CImg < T > operator== ( const char * const expression , const CImg < T > & img ) { "
+                      "return img == expression ; "
+                      "}",
+                      tokenizeAndStringify("template < typename T >"
+                                           "inline CImg<T> operator|(const char *const expression, const CImg<T>& img) {"
+                                           "  return img | expression ;"
+                                           "}"
+                                           "template<typename T>"
+                                           "inline CImg<T> operator^(const char *const expression, const CImg<T>& img) {"
+                                           "  return img ^ expression;"
+                                           "}"
+                                           "template<typename T>"
+                                           "inline CImg<T> operator==(const char *const expression, const CImg<T>& img) {"
+                                           "  return img == expression;"
+                                           "}"));
     }
 
     void ifAddBraces1() {
@@ -6169,8 +6193,11 @@ private:
     }
 
     void simplifyOperatorName10() { // #8746
-        const char code[] = "using a::operator=;";
-        ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code));
+        const char code1[] = "using a::operator=;";
+        ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code1));
+
+        const char code2[] = "return &Fred::operator!=;";
+        ASSERT_EQUALS("return & Fred :: operator!= ;", tokenizeAndStringify(code2));
     }
 
     void simplifyOperatorName11() { // #8889
@@ -8183,9 +8210,16 @@ private:
         if (!tokenList.list.createTokens(istr,"test.cpp"))
             return "ERROR";
 
+        tokenList.combineStringAndCharLiterals();
         tokenList.combineOperators();
         tokenList.createLinks();
         tokenList.createLinks2();
+
+        // set varid..
+        for (Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
+            if (tok->str() == "var")
+                tok->varId(1);
+        }
 
         // Create AST..
         tokenList.prepareTernaryOpForAST();
@@ -8262,10 +8296,11 @@ private:
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
-        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
-
         ASSERT_EQUALS("'X''a'>", testAst("('X' > 'a')"));
         ASSERT_EQUALS("'X''a'>", testAst("(L'X' > L'a')"));
+        ASSERT_EQUALS("'X''a'>", testAst("(u'X' > u'a')"));
+        ASSERT_EQUALS("'X''a'>", testAst("(U'X' > U'a')"));
+        ASSERT_EQUALS("'X''a'>", testAst("(u8'X' > u8'a')"));
 
         ASSERT_EQUALS("a0>bc/d:?", testAst("(a>0) ? (b/(c)) : d;"));
         ASSERT_EQUALS("abc/+d+", testAst("a + (b/(c)) + d;"));
@@ -8315,7 +8350,9 @@ private:
         ASSERT_EQUALS("ifCA_FarReadfilenew(,sizeofobjtype(,(!(", testAst("if (!CA_FarRead(file, (void far *)new, sizeof(objtype)))")); // #5910 - don't hang if C code is parsed as C++
 
         // Variable declaration
+        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
         ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
+        ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
     }
 
     void astexpr2() { // limit for large expressions

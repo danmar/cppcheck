@@ -12,6 +12,7 @@ import sys
 import urllib
 import logging
 import logging.handlers
+import operator
 
 OLD_VERSION = '1.87'
 
@@ -476,8 +477,8 @@ def timeReport(resultPath):
         total_time_factor = 0.0
     html += 'Time for all packages (not just the ones listed above):\n'
     html += 'Total time: '.ljust(column_widths[0]) + ' ' + \
-            str(total_time_base).rjust(column_widths[1]) + ' ' + \
-            str(total_time_head).rjust(column_widths[2]) + ' ' + \
+            '{:.1f}'.format(total_time_base).rjust(column_widths[1]) + ' ' + \
+            '{:.1f}'.format(total_time_head).rjust(column_widths[2]) + ' ' + \
             '{:.2f}'.format(total_time_factor).rjust(column_widths[3])
 
     html += '\n'
@@ -522,7 +523,7 @@ def check_library_report(result_path, message_id):
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
     function_details_list = []
-    for function_name, count in sorted(function_counts.iteritems(), key=lambda (k, v): (v, k), reverse=True):
+    for function_name, count in sorted(function_counts.items(), key=operator.itemgetter(1), reverse=True):
         if len(function_details_list) >= functions_shown_max:
             break
         function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +
@@ -743,7 +744,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz', url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -809,7 +810,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] write_info:' + url)
 
             # save data
-            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.gz', url)
+            res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2)', url)
             if res is None:
                 print('info output not written. res is None.')
                 continue

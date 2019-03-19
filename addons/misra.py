@@ -1739,7 +1739,7 @@ class MisraChecker:
         # Rule existed in the dictionary. Check for
         # filename entries.
 
-        # Get the dictionary for the rule numer
+        # Get the dictionary for the rule number
         fileDict = self.suppressedRules[ruleNum]
 
         # If the filename is not in the dict already add it

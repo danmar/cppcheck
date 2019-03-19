@@ -28,9 +28,11 @@
 class options {
 public:
     /** Call from main() to populate object */
-    options(int argc, const char* argv[]);
+    options(int argc, const char* const argv[]);
     /** Don't print the name of each method being tested. */
     bool quiet() const;
+    /** Print help. */
+    bool help() const;
     /** Which test should be run. Empty string means 'all tests' */
     const std::string& which_test() const;
 
@@ -40,9 +42,10 @@ private:
     const options& operator =(const options& non_assign);
 
 private:
-    std::set<std::string> _options;
-    std::string _which_test;
-    const bool _quiet;
+    std::set<std::string> mOptions;
+    std::string mWhichTest;
+    const bool mQuiet;
+    const bool mHelp;
 };
 
 #endif

@@ -2,6 +2,17 @@
 import subprocess
 import sys
 
+def show_syntax():
+    print('Syntax:')
+    print('  reduce.py --cmd=<full command> --expected=<expected text output> --file=<source file> [--segfault]')
+    print('')
+    print("Example. source file = foo/bar.c")
+    print("  reduce.py --cmd='./cppcheck --enable=style foo/bar.c' --expected=\"Variable 'x' is reassigned\" --file=foo/bar.c")
+    sys.exit(1)
+
+if len(sys.argv) == 1:
+    show_syntax()
+
 CMD = None
 EXPECTED = None
 SEGFAULT = False
@@ -20,15 +31,15 @@ for arg in sys.argv[1:]:
 
 if CMD is None:
     print('Abort: No --cmd')
-    sys.exit(1)
+    show_syntax()
 
 if not SEGFAULT and EXPECTED is None:
     print('Abort: No --expected')
-    sys.exit(1)
+    show_syntax()
 
 if FILE is None:
     print('Abort: No --file')
-    sys.exit(1)
+    show_syntax()
 
 print('CMD=' + CMD)
 if SEGFAULT:

@@ -57,13 +57,9 @@ $ cd path/to/cppcheck
 $ make dmake
 $ ./dmake
 ```
-### * tools/reduce.cpp
+### * tools/reduce.py
 
-Cppcheck tool that reduces code for a hang/false positive. To build the tool run:
-```shell
-$ cd path/to/cppcheck
-$ make reduce
-```
+Script that reduces code for a hang/false positive.
 
 ### * tools/times.sh
 

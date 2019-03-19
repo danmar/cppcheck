@@ -82,8 +82,6 @@ private:
         // Check...
         CheckBool checkBool(&tokenizer, &settings, this);
         checkBool.runChecks(&tokenizer, &settings, this);
-        tokenizer.simplifyTokenList2();
-        checkBool.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
 

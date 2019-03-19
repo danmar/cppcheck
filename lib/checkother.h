@@ -85,24 +85,15 @@ public:
         checkOther.checkConstArgument();
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckOther checkOther(tokenizer, settings, errorLogger);
-
-        // Checks
-        checkOther.clarifyCalculation();
-        checkOther.clarifyStatement();
-        checkOther.checkPassByReference();
-        checkOther.checkCastIntToCharAndBack();
-
-        checkOther.checkMisusedScopedObject();
         checkOther.checkPipeParameterSize();
-
-        checkOther.checkInvalidFree();
         checkOther.checkRedundantCopy();
+        checkOther.clarifyCalculation();
+        checkOther.checkPassByReference();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
+        checkOther.checkInvalidFree();
+        checkOther.clarifyStatement();
+        checkOther.checkCastIntToCharAndBack();
+        checkOther.checkMisusedScopedObject();
         checkOther.checkAccessOfMovedVariable();
     }
 
@@ -169,7 +160,7 @@ public:
 
     /** @brief %Check for free() operations on invalid memory locations */
     void checkInvalidFree();
-    void invalidFreeError(const Token *tok, bool inconclusive);
+    void invalidFreeError(const Token *tok, const std::string &allocation, bool inconclusive);
 
     /** @brief %Check for code creating redundant copies */
     void checkRedundantCopy();
@@ -285,7 +276,7 @@ private:
         c.negativeBitwiseShiftError(nullptr, 2);
         c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
         c.raceAfterInterlockedDecrementError(nullptr);
-        c.invalidFreeError(nullptr, false);
+        c.invalidFreeError(nullptr, "malloc", false);
 
         //performance
         c.redundantCopyError(nullptr,  "varname");

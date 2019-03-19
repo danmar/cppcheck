@@ -34,7 +34,6 @@ Settings::Settings()
       inconclusive(false),
       jointSuppressionReport(false),
       experimental(false),
-      experimentalFast(false),
       quiet(false),
       inlineSuppressions(false),
       verbose(false),
@@ -50,7 +49,10 @@ Settings::Settings()
       enforcedLang(None),
       reportProgress(false),
       checkConfiguration(false),
-      checkLibrary(false)
+      checkLibrary(false),
+      checkHeaders(true),
+      removeUnusedTemplates(false),
+      removeUnusedIncludedTemplates(false)
 {
 }
 

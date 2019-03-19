@@ -46,11 +46,10 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckBoost checkBoost;
-        checkBoost.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkBoost.runChecks(&tokenizer, &settings, this);
     }
 
     void BoostForeachContainerModification() {

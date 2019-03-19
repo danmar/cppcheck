@@ -62,16 +62,6 @@ public:
         // can't be a simplified check .. the 'sizeof' is used.
         checkClass.checkMemset();
         checkClass.checkUnsafeClassDivZero();
-    }
-
-    /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        if (tokenizer->isC())
-            return;
-
-        CheckClass checkClass(tokenizer, settings, errorLogger);
-
-        // Coding style checks
         checkClass.constructors();
         checkClass.operatorEq();
         checkClass.privateFunctions();
@@ -81,19 +71,15 @@ public:
         checkClass.initializerListOrder();
         checkClass.initializationListUsage();
         checkClass.checkSelfInitialization();
-
         checkClass.virtualDestructor();
         checkClass.checkConst();
         checkClass.copyconstructors();
         checkClass.checkVirtualFunctionCallInConstructor();
-
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
-
         checkClass.checkOverride();
     }
-
 
     /** @brief %Check that all class constructors are ok */
     void constructors();

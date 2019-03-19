@@ -529,14 +529,12 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         splitcfg(cfg, dui.defines, emptyString);
 
     for (const std::string &def : mSettings.library.defines) {
-        if (def.compare(0,8,"#define ") != 0)
-            continue;
-        std::string s = def.substr(8);
-        const std::string::size_type pos = s.find_first_of(" (");
+        const std::string::size_type pos = def.find_first_of(" (");
         if (pos == std::string::npos) {
-            dui.defines.push_back(s);
+            dui.defines.push_back(def);
             continue;
         }
+        std::string s = def;
         if (s[pos] == ' ') {
             s[pos] = '=';
         } else {

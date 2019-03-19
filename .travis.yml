@@ -63,9 +63,6 @@ matrix:
         - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
 # check if it actually works:
         - /usr/bin/cppcheck ./cli
-# check if reduce tool compiles
-        - echo $CXXFLAGS
-        - make -s reduce -j 2
 # check if showtime=top5 works
         - ./tools/test_showtimetop5.sh
 # check matchcompiler
@@ -80,15 +77,21 @@ matrix:
         - python -m py_compile ./tools/donate-cpu.py
         - python3 -m py_compile ./tools/donate-cpu.py
         - python -m py_compile ./tools/donate-cpu-server.py
-        # donate-cpu-server.py is currently not Python 3 compatible
-# check addons/misra.py
+        - python3 -m py_compile ./tools/donate-cpu-server.py
+# check addons/misc.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
         - python3 ../misc.py -verify misc-test.cpp.dump
+        - cd ../../
+# check addons/cert.py
+        - cd addons/test
         - ${CPPCHECK} --dump cert-test.c
         - python3 ../cert.py -verify cert-test.c.dump
         - ${CPPCHECK} --dump cert-test.cpp
         - python3 ../cert.py -verify cert-test.cpp.dump
+        - cd ../../
+# check addons/misra.py
+        - cd addons/test
         - ${CPPCHECK} --dump misra-test.c
         - python3 ../misra.py -verify misra-test.c.dump
         - ${CPPCHECK} --dump misra-test.cpp
@@ -191,9 +194,9 @@ script:
   - cd ../
 # use same hack as for clang to work around cppchecks broken exit status with -j 2 ; create file, tee everything to the file and stdout, grep for errors in the file
   - touch /tmp/cppcheck.cppcheck
-  - ${CPPCHECK} -D__CPPCHECK__ -f --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
+  - ${CPPCHECK} --template=gcc -D__CPPCHECK__ -f --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/synthetic -iaddons  -igui . -j 2 |& tee /tmp/cppcheck.cppcheck
 # check gui with qt settings
-  - ${CPPCHECK} --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test |& tee --append /tmp/cppcheck.cppcheck
+  - ${CPPCHECK} --template=gcc --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test |& tee --append /tmp/cppcheck.cppcheck
   - sh -c "! grep '^\[' /tmp/cppcheck.cppcheck"
 # check naming conventions
   - ${CPPCHECK} -i gui/test -j 2 --dump -q gui lib

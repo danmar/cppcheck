@@ -111,11 +111,6 @@ public:
      */
     bool experimental;
 
-    /** Experimental "fast" checking. We skip slow simplifications. The
-     * goal is that there will not be significant effect on the results
-     * and that we can remove the slow simplifications. */
-    bool experimentalFast;
-
     /** @brief Is --quiet given? */
     bool quiet;
 
@@ -255,7 +250,10 @@ public:
     /** @brief --report-progress */
     bool reportProgress;
 
-    /** Library (--library) */
+    /** @brief --library= */
+    std::list<std::string> libraries;
+
+    /** Library */
     Library library;
 
     /** Rule */
@@ -284,6 +282,17 @@ public:
 
     /** Check for incomplete info in library files? */
     bool checkLibrary;
+
+    /**
+     * Check code in the headers, this is on by default but can
+     * be turned off to save CPU */
+    bool checkHeaders;
+
+    /** Remove unused templates in all files */
+    bool removeUnusedTemplates;
+
+    /** Remove unused included templates */
+    bool removeUnusedIncludedTemplates;
 
     /** Struct contains standards settings */
     Standards standards;

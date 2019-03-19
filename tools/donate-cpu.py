@@ -11,6 +11,7 @@
 #  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.
 #                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second
 #                                 --bandwidth-limit=2m => max. 2 megabytes per second
+#  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.
 #
 # What this script does:
 # 1. Check requirements
@@ -37,7 +38,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.7"
+CLIENT_VERSION = "1.1.16"
 
 
 def checkRequirements():
@@ -191,7 +192,8 @@ def unpackPackage(workPath, tgz):
             if member.name.startswith(('/', '..')):
                 # Skip dangerous file names
                 continue
-            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp', '.hxx', '.hh', '.tpp', '.txx')):
+            elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
+                                               '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
                 try:
                     tf.extract(member.name)
                 except OSError:
@@ -207,7 +209,10 @@ def hasInclude(path, includes):
         for name in files:
             filename = os.path.join(root, name)
             try:
-                f = open(filename, 'rt')
+                if sys.version_info.major < 3:
+                    f = open(filename, 'rt')
+                else:
+                    f = open(filename, 'rt', errors='ignore')
                 filedata = f.read()
                 try:
                     # Python2 needs to decode the data first
@@ -224,19 +229,24 @@ def hasInclude(path, includes):
     return False
 
 
-def scanPackage(workPath, cppcheckPath, jobs, fast):
+def scanPackage(workPath, cppcheckPath, jobs):
     print('Analyze..')
     os.chdir(workPath)
     libraries = ' --library=posix --library=gnu'
 
     libraryIncludes = {'boost': ['<boost/'],
+                       # 'cppunit': ['<cppunit/'], <- Enable after release of 1.88
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/'],
                        # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
+                       'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
-                       'python': ['<Python.h>'],
+                       #'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'], <- Enable after release of 1.88
+                       'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'ruby': ['<ruby.h>', '<ruby/'],
                        'sdl': ['<SDL.h>'],
+                       #'sqlite3': ['<sqlite3.h>'], <- Enable after release of 1.88
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
@@ -247,8 +257,6 @@ def scanPackage(workPath, cppcheckPath, jobs, fast):
 
 # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
-    if fast:
-        options = '--experimental-fast ' + options
     cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
     print(cmd)
     startTime = time.time()
@@ -376,6 +384,7 @@ workpath = os.path.expanduser('~/cppcheck-donate-cpu-workfolder')
 packageUrl = None
 server_address = ('cppcheck.osuosl.org', 8000)
 bandwidth_limit = None
+max_packages = None
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -397,6 +406,20 @@ for arg in sys.argv[1:]:
         server_address = ('localhost', 8001)
     elif arg.startswith('--bandwidth-limit='):
         bandwidth_limit = arg[arg.find('=')+1:]
+    elif arg.startswith('--max-packages='):
+        arg_value = arg[arg.find('=')+1:]
+        try:
+            max_packages = int(arg_value)
+        except ValueError:
+            max_packages = None
+        if max_packages < 0:
+            max_packages = None
+        if max_packages is None:
+            print('Error: Max. packages value "{}" is invalid. Must be a positive number or 0.'.format(arg_value))
+            sys.exit(1)
+        # 0 means infinitely, no counting needed.
+        if max_packages == 0:
+            max_packages = None
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -409,6 +432,7 @@ for arg in sys.argv[1:]:
         print('  --bandwidth-limit=limit Limit download rate for packages. Format for limit is the same that wget uses.')
         print('                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second')
         print('                                 --bandwidth-limit=2m => max. 2 megabytes per second')
+        print('  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.')
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
@@ -425,10 +449,20 @@ if bandwidth_limit and isinstance(bandwidth_limit, str):
         sys.exit(1)
     else:
         print('Bandwidth-limit: ' + bandwidth_limit)
+if max_packages:
+    print('Maximum number of packages to download and analyze: {}'.format(max_packages))
 if not os.path.exists(workpath):
     os.mkdir(workpath)
 cppcheckPath = workpath + '/cppcheck'
+packages_processed = 0
 while True:
+    if max_packages:
+        if packages_processed >= max_packages:
+            print('Processed the specified number of {} package(s). Exiting now.'.format(max_packages))
+            break
+        else:
+            print('Processing package {} of the specified {} package(s).'.format(packages_processed + 1, max_packages))
+        packages_processed += 1
     if stopTime:
         print('stopTime:' + stopTime + '. Time:' + time.strftime('%H:%M') + '.')
         if stopTime < time.strftime('%H:%M'):
@@ -470,7 +504,7 @@ while True:
             current_cppcheck_dir = 'cppcheck'
         else:
             current_cppcheck_dir = ver
-        c, errout, info, t, cppcheck_options = scanPackage(workpath, current_cppcheck_dir, jobs, False)
+        c, errout, info, t, cppcheck_options = scanPackage(workpath, current_cppcheck_dir, jobs)
         if c < 0:
             crash = True
             count += ' Crash!'
@@ -480,15 +514,6 @@ while True:
         resultsToDiff.append(errout)
         if ver == 'head':
             head_info_msg = info
-
-            # Fast results
-            fast_c, fast_errout, fast_info, fast_t, fast_cppcheck_options = scanPackage(workpath, current_cppcheck_dir, jobs, True)
-            if c > 0 and errout and fast_errout:
-                output = 'FAST\n'
-                output += 'elapsed-time: %.1f %.1f' % (t, fast_t)
-                output += '\ndiff:\n'
-                output += diffResults(workpath, 'head', errout, 'fast', fast_errout)
-                uploadResults(package, output, server_address)
 
     results_exist = True
     if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
@@ -521,5 +546,6 @@ while True:
         uploadResults(package, output, server_address)
     if info_exists:
         uploadInfo(package, info_output, server_address)
-    print('Sleep 5 seconds..')
-    time.sleep(5)
+    if not max_packages or packages_processed < max_packages:
+        print('Sleep 5 seconds..')
+        time.sleep(5)

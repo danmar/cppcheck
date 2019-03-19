@@ -151,6 +151,33 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=boost ${DIR}boost.cpp
 
+# sqlite3.c
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve SQLite3 configuration is not available, skipping syntax check."
+else
+    set +e
+    SQLITE3CONFIG=$(pkg-config --cflags sqlite3)
+    SQLITE3CONFIG_RETURNCODE=$?
+    set -e
+    if [ $SQLITE3CONFIG_RETURNCODE -eq 0 ]; then
+        set +e
+        echo -e "#include <sqlite3.h>" | ${CC} ${CC_OPT} ${SQLITE3CONFIG} -x c -
+        SQLITE3CHECK_RETURNCODE=$?
+        set -e
+        if [ $SQLITE3CHECK_RETURNCODE -ne 0 ]; then
+            echo "SQLite3 not completely present or not working, skipping syntax check with ${CC}."
+        else
+            echo "SQLite3 found and working, checking syntax with ${CC} now."
+            ${CC} ${CC_OPT} ${SQLITE3CONFIG} ${DIR}sqlite3.c
+        fi
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=sqlite3 ${DIR}sqlite3.c
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version

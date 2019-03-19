@@ -647,6 +647,12 @@ bool TemplateSimplifier::getTemplateDeclarations()
     return codeWithTemplates;
 }
 
+void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope)
+{
+    simplifyTemplateArgs(token->tokAt(2), token->next()->findClosingBracket());
+
+    mTemplateInstantiations.emplace_back(token, scope);
+}
 
 void TemplateSimplifier::getTemplateInstantiations()
 {
@@ -795,7 +801,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
                 if (Token::Match(tok2, ", %name% <") &&
                     templateParameters(tok2->tokAt(2))) {
-                    mTemplateInstantiations.emplace_back(tok2->next(), getScopeName(scopeList));
+                    addInstantiation(tok2->next(), getScopeName(scopeList));
                 } else if (Token::Match(tok2->next(), "class|struct"))
                     const_cast<Token *>(tok2)->deleteNext();
             }
@@ -809,7 +815,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                     const std::list<TokenAndName>::const_iterator it = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), FindFullName(fullName));
                     if (it != mTemplateDeclarations.end()) {
                         // full name matches
-                        mTemplateInstantiations.emplace_back(tok, it->scope);
+                        addInstantiation(tok, it->scope);
                         break;
                     } else {
                         // full name doesn't match so try with using namespaces if available
@@ -829,7 +835,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                                 }
                                 qualificationTok->insertToken(nameSpace.substr(offset), "", true);
                                 qualificationTok->insertToken("::", "", true);
-                                mTemplateInstantiations.emplace_back(tok, it1->scope);
+                                addInstantiation(tok, it1->scope);
                                 found = true;
                                 break;
                             }
@@ -838,7 +844,10 @@ void TemplateSimplifier::getTemplateInstantiations()
                             break;
 
                         if (scopeName.empty()) {
-                            mTemplateInstantiations.emplace_back(tok, getScopeName(scopeList));
+                            if (!qualification.empty())
+                                addInstantiation(tok, qualification);
+                            else
+                                addInstantiation(tok, getScopeName(scopeList));
                             break;
                         }
                         const std::string::size_type pos = scopeName.rfind(" :: ");
@@ -1089,7 +1098,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
                                 mTemplateInstantiations.end(),
                                 FindToken(tok1));
                         if (it != mTemplateInstantiations.end())
-                            mTemplateInstantiations.emplace_back(tok2, it->scope);
+                            addInstantiation(tok2, it->scope);
                     }
                     continue;
                 }
@@ -1314,6 +1323,12 @@ void TemplateSimplifier::expandTemplate(
     const bool isFunction = templateDeclaration.isFunction();
     const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
+    struct newInstantiation {
+        newInstantiation(Token *t, const std::string &s) : token(t), scope(s) { }
+        Token *token;
+        std::string scope;
+    };
+    std::vector<newInstantiation> newInstantiations;
 
     // add forward declarations
     if (copy && isClass) {
@@ -1406,8 +1421,10 @@ void TemplateSimplifier::expandTemplate(
                         dst->insertToken(newName, "", true);
                         if (start->strAt(1) == "<")
                             start = start->next()->findClosingBracket();
-                    } else
+                    } else {
                         dst->insertToken(start->str(), "", true);
+                        newInstantiations.emplace_back(dst->previous(), templateDeclaration.scope);
+                    }
                 } else {
                     // check if type is a template
                     if (start->strAt(1) == "<") {
@@ -1459,7 +1476,7 @@ void TemplateSimplifier::expandTemplate(
         dst->insertToken(";", "", true);
 
         if (isVariable)
-            simplifyCalculations(dstStart, dst);
+            simplifyTemplateArgs(dstStart, dst);
     }
 
     if (copy && (isClass || isFunction)) {
@@ -1555,8 +1572,38 @@ void TemplateSimplifier::expandTemplate(
                         tok5->str(newName);
                         eraseTokens(tok5, tok5->next()->findClosingBracket()->next());
                     }
-                } else if (copy)
-                    mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
+                } else if (copy) {
+                    bool added = false;
+                    if (tok5->isName()) {
+                        // search for this token in the type vector
+                        unsigned int itype = 0;
+                        while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok5->str())
+                            ++itype;
+
+                        // replace type with given type..
+                        if (itype < typeParametersInDeclaration.size()) {
+                            unsigned int typeindentlevel = 0;
+                            for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token;
+                                 typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>"));
+                                 typetok = typetok->next()) {
+                                if (Token::simpleMatch(typetok, ". . .")) {
+                                    typetok = typetok->tokAt(2);
+                                } else {
+                                    if (Token::Match(typetok, "%name% <") && templateParameters(typetok->next()) > 0)
+                                        ++typeindentlevel;
+                                    else if (typeindentlevel > 0 && typetok->str() == ">")
+                                        --typeindentlevel;
+                                    mTokenList.addtoken(typetok, tok5->linenr(), tok5->fileIndex());
+                                    mTokenList.back()->isTemplateArg(true);
+                                    added = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!added)
+                        mTokenList.addtoken(tok5, tok5->linenr(), tok5->fileIndex());
+                }
 
                 tok5 = tok5->next();
             }
@@ -1683,9 +1730,9 @@ void TemplateSimplifier::expandTemplate(
                         scope = prev->str() + " :: " + scope;
                 }
                 if (copy)
-                    mTemplateInstantiations.emplace_back(mTokenList.back(), scope);
+                    newInstantiations.emplace_back(mTokenList.back(), scope);
                 else if (!inTemplateDefinition)
-                    mTemplateInstantiations.emplace_back(tok3, scope);
+                    newInstantiations.emplace_back(tok3, scope);
             }
 
             // link() newly tokens manually
@@ -1722,6 +1769,10 @@ void TemplateSimplifier::expandTemplate(
 
         assert(brackets.empty());
     }
+
+    // add new instantiations
+    for (const auto & inst : newInstantiations)
+        addInstantiation(inst.token, inst.scope);
 }
 
 static bool isLowerThanLogicalAnd(const Token *lower)
@@ -1847,6 +1898,153 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
     }
 
     return ret;
+}
+
+static Token *skipTernaryOp(Token *tok, Token *backToken)
+{
+    unsigned int colonLevel = 1;
+    while (nullptr != (tok = tok->next())) {
+        if (tok->str() == "?") {
+            ++colonLevel;
+        } else if (tok->str() == ":") {
+            --colonLevel;
+            if (colonLevel == 0) {
+                tok = tok->next();
+                break;
+            }
+        }
+        if (tok->link() && tok->str() == "(")
+            tok = tok->link();
+        else if (Token::Match(tok->next(), "[{};)]") || tok->next() == backToken)
+            break;
+    }
+    if (colonLevel > 0) // Ticket #5214: Make sure the ':' matches the proper '?'
+        return nullptr;
+    return tok;
+}
+
+void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
+{
+    bool again = true;
+
+    while (again) {
+        again = false;
+
+        for (Token *tok = start; tok && tok != end; tok = tok->next()) {
+            if (tok->str() == "sizeof") {
+                // sizeof('x')
+                if (Token::Match(tok->next(), "( %char% )")) {
+                    tok->deleteNext();
+                    tok->deleteThis();
+                    tok->deleteNext();
+                    std::ostringstream sz;
+                    sz << 1;
+                    tok->str(sz.str());
+                    again = true;
+                }
+
+                // sizeof ("text")
+                else if (Token::Match(tok->next(), "( %str% )")) {
+                    tok->deleteNext();
+                    tok->deleteThis();
+                    tok->deleteNext();
+                    std::ostringstream ostr;
+                    ostr << (Token::getStrLength(tok) + 1);
+                    tok->str(ostr.str());
+                    again = true;
+                }
+
+                else if (Token::Match(tok->next(), "( %type% * )")) {
+                    tok->str(MathLib::toString(mTokenizer->sizeOfType(tok->tokAt(3))));
+                    tok->deleteNext(4);
+                    again = true;
+                } else if (Token::simpleMatch(tok->next(), "( * )")) {
+                    tok->str(MathLib::toString(mTokenizer->sizeOfType(tok->tokAt(2))));
+                    tok->deleteNext(3);
+                    again = true;
+                } else if (Token::Match(tok->next(), "( %type% )")) {
+                    const unsigned int size = mTokenizer->sizeOfType(tok->tokAt(2));
+                    if (size > 0) {
+                        tok->str(MathLib::toString(size));
+                        tok->deleteNext(3);
+                        again = true;
+                    }
+                } else if (tok->strAt(1) == "(") {
+                    tok = tok->linkAt(1);
+                }
+            }
+        }
+
+        if (simplifyCalculations(start, end))
+            again = true;
+
+        for (Token *tok = start; tok && tok != end; tok = tok->next()) {
+            if (tok->str() == "?" && tok->previous()->isNumber()) {
+                const int offset = (tok->previous()->str() == ")") ? 2 : 1;
+
+                // Find the token ":" then go to the next token
+                Token *colon = skipTernaryOp(tok, end);
+                if (!colon || colon->previous()->str() != ":" || !colon->next())
+                    continue;
+
+                //handle the GNU extension: "x ? : y" <-> "x ? x : y"
+                if (colon->previous() == tok->next())
+                    tok->insertToken(tok->strAt(-offset));
+
+                // go back before the condition, if possible
+                tok = tok->tokAt(-2);
+                if (offset == 2) {
+                    // go further back before the "("
+                    tok = tok->tokAt(-2);
+                    //simplify the parentheses
+                    tok->deleteNext();
+                    tok->next()->deleteNext();
+                }
+
+                if (Token::Match(tok->next(), "false|0")) {
+                    // Use code after colon, remove code before it.
+                    Token::eraseTokens(tok, colon);
+
+                    tok = tok->next();
+                    again = true;
+                }
+
+                // The condition is true. Delete the operator after the ":"..
+                else {
+                    // delete the condition token and the "?"
+                    tok->deleteNext(2);
+
+                    unsigned int ternaryOplevel = 0;
+                    for (const Token *endTok = colon; endTok; endTok = endTok->next()) {
+                        if (Token::Match(endTok, "(|[|{")) {
+                            endTok = endTok->link();
+                        }
+
+                        else if (endTok->str() == "?")
+                            ++ternaryOplevel;
+                        else if (Token::Match(endTok, ")|}|]|;|,|:|>")) {
+                            if (endTok->str() == ":" && ternaryOplevel)
+                                --ternaryOplevel;
+                            else if (endTok->str() == ">" && !end)
+                                ;
+                            else {
+                                Token::eraseTokens(colon->tokAt(-2), endTok);
+                                again = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (Token *tok = start; tok && tok != end; tok = tok->next()) {
+            if (Token::Match(tok, "( %num% )") && !Token::Match(tok->previous(), "%name%")) {
+                tok->deleteThis();
+                tok->deleteNext();
+            }
+        }
+    }
 }
 
 // TODO: This is not the correct class for simplifyCalculations(), so it
@@ -2159,7 +2357,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     for (const TokenAndName &instantiation : mTemplateInstantiations) {
         if (numberOfTemplateInstantiations != mTemplateInstantiations.size()) {
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
-            simplifyCalculations(instantiation.token);
             ++recursiveCount;
             if (recursiveCount > 100) {
                 // bail out..
@@ -2167,19 +2364,19 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             }
         }
 
-        // simplifyCalculations can erase an instantiation
-        if (!instantiation.token)
-            continue;
-
         // already simplified
         if (!Token::Match(instantiation.token, "%name% <"))
             continue;
 
         if (instantiation.fullName != templateDeclaration.fullName) {
-            // FIXME: fallback to not matching scopes until type deduction work
+            // FIXME: fallback to not matching scopes until type deduction works
 
             // names must match
             if (instantiation.name != templateDeclaration.name)
+                continue;
+
+            // scopes must match when present
+            if (!instantiation.scope.empty() && !templateDeclaration.scope.empty())
                 continue;
         }
 
@@ -2247,8 +2444,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     // process uninstantiated templates
     // TODO: remove the specialized check and handle all uninstantiated templates someday.
     if (!instantiated && specialized) {
-        simplifyCalculations(templateDeclaration.token);
-
         Token * tok2 = const_cast<Token *>(templateDeclaration.nameToken);
         if (mErrorLogger && !mTokenList.getFiles().empty())
             mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());

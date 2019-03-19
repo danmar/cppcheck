@@ -67,9 +67,6 @@ private:
         // Check char variable usage..
         CheckString checkString(&tokenizer, &settings, this);
         checkString.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-        checkString.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void stringLiteralWrite() {

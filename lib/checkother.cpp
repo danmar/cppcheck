@@ -1374,7 +1374,7 @@ static bool isConstStatement(const Token *tok)
     if (Token::Match(tok, "%var%"))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
-        (Token::Match(tok->previous(), "::|.") || isVarDeclOp(tok)))
+        (Token::Match(tok->previous(), "::|.|const|volatile|restrict") || isVarDeclOp(tok)))
         return false;
     if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
         return false;
@@ -1677,7 +1677,8 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2, Erro
 //-----------------------------------------------------------------------------
 void CheckOther::checkInvalidFree()
 {
-    std::map<unsigned int, bool> allocatedVariables;
+    std::map<unsigned int, bool> inconclusive;
+    std::map<unsigned int, std::string> allocation;
 
     const bool printInconclusive = mSettings->inconclusive;
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1686,7 +1687,8 @@ void CheckOther::checkInvalidFree()
 
             // Keep track of which variables were assigned addresses to newly-allocated memory
             if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
-                allocatedVariables.insert(std::make_pair(tok->varId(), false));
+                allocation.insert(std::make_pair(tok->varId(), tok->strAt(2)));
+                inconclusive.insert(std::make_pair(tok->varId(), false));
             }
 
             // If a previously-allocated pointer is incremented or decremented, any subsequent
@@ -1694,17 +1696,20 @@ void CheckOther::checkInvalidFree()
             // report an inconclusive result.
             else if (Token::Match(tok, "%var% = %name% +|-") &&
                      tok->varId() == tok->tokAt(2)->varId() &&
-                     allocatedVariables.find(tok->varId()) != allocatedVariables.end()) {
+                     allocation.find(tok->varId()) != allocation.end()) {
                 if (printInconclusive)
-                    allocatedVariables[tok->varId()] = true;
-                else
-                    allocatedVariables.erase(tok->varId());
+                    inconclusive[tok->varId()] = true;
+                else {
+                    allocation.erase(tok->varId());
+                    inconclusive.erase(tok->varId());
+                }
             }
 
             // If a previously-allocated pointer is assigned a completely new value,
             // we can't know if any subsequent free() on that pointer is valid or not.
             else if (Token::Match(tok, "%var% =")) {
-                allocatedVariables.erase(tok->varId());
+                allocation.erase(tok->varId());
+                inconclusive.erase(tok->varId());
             }
 
             // If a variable that was previously assigned a newly-allocated memory location is
@@ -1717,12 +1722,12 @@ void CheckOther::checkInvalidFree()
                                      tok->strAt(3) == "(" ? 4 : 1;
                 const unsigned int var1 = tok->tokAt(varIndex)->varId();
                 const unsigned int var2 = tok->tokAt(varIndex + 2)->varId();
-                const std::map<unsigned int, bool>::const_iterator alloc1 = allocatedVariables.find(var1);
-                const std::map<unsigned int, bool>::const_iterator alloc2 = allocatedVariables.find(var2);
-                if (alloc1 != allocatedVariables.end()) {
-                    invalidFreeError(tok, alloc1->second);
-                } else if (alloc2 != allocatedVariables.end()) {
-                    invalidFreeError(tok, alloc2->second);
+                const std::map<unsigned int, bool>::const_iterator alloc1 = inconclusive.find(var1);
+                const std::map<unsigned int, bool>::const_iterator alloc2 = inconclusive.find(var2);
+                if (alloc1 != inconclusive.end()) {
+                    invalidFreeError(tok, allocation[var1], alloc1->second);
+                } else if (alloc2 != inconclusive.end()) {
+                    invalidFreeError(tok, allocation[var2], alloc2->second);
                 }
             }
 
@@ -1732,7 +1737,8 @@ void CheckOther::checkInvalidFree()
             else if (Token::Match(tok, "%name% (") && !mSettings->library.isFunctionConst(tok->str(), true)) {
                 const Token* tok2 = Token::findmatch(tok->next(), "%var%", tok->linkAt(1));
                 while (tok2 != nullptr) {
-                    allocatedVariables.erase(tok2->varId());
+                    allocation.erase(tok->varId());
+                    inconclusive.erase(tok2->varId());
                     tok2 = Token::findmatch(tok2->next(), "%var%", tok->linkAt(1));
                 }
             }
@@ -1740,9 +1746,13 @@ void CheckOther::checkInvalidFree()
     }
 }
 
-void CheckOther::invalidFreeError(const Token *tok, bool inconclusive)
+void CheckOther::invalidFreeError(const Token *tok, const std::string &allocation, bool inconclusive)
 {
-    reportError(tok, Severity::error, "invalidFree", "Invalid memory address freed.", CWE(0U), inconclusive);
+    std::string alloc = allocation;
+    if (alloc != "new")
+        alloc += "()";
+    std::string deallocated = (alloc == "new") ? "deleted" : "freed";
+    reportError(tok, Severity::error, "invalidFree", "Mismatching address is " + deallocated + ". The address you get from " + alloc + " must be " + deallocated + " without offset.", CWE(0U), inconclusive);
 }
 
 
@@ -2864,7 +2874,7 @@ void CheckOther::checkComparePointers()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "<|>|<=|>="))
+            if (!Token::Match(tok, "<|>|<=|>=|-"))
                 continue;
             const Token *tok1 = tok->astOperand1();
             const Token *tok2 = tok->astOperand2();
@@ -2892,6 +2902,9 @@ void CheckOther::checkComparePointers()
 void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2)
 {
     ErrorPath errorPath;
+    std::string verb = "Comparing";
+    if (Token::simpleMatch(tok, "-"))
+        verb = "Subtracting";
     if (v1) {
         errorPath.emplace_back(v1->tokvalue->variable()->nameToken(), "Variable declared here.");
         errorPath.insert(errorPath.end(), v1->errorPath.begin(), v1->errorPath.end());
@@ -2902,5 +2915,5 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, "comparePointers", "Comparing pointers that point to different objects", CWE570, false);
+        errorPath, Severity::error, "comparePointers", verb + " pointers that point to different objects", CWE570, false);
 }

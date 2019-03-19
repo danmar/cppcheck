@@ -34,6 +34,22 @@
 #include <stack>
 #include <utility>
 
+static const std::string literal_prefix[4] = {"u8", "u", "U", "L"};
+
+static bool isStringCharLiteral(const std::string &str, char q)
+{
+
+    if (!endsWith(str, q))
+        return false;
+    if (str[0] == q && str.length() > 1)
+        return true;
+
+    for (const std::string & p: literal_prefix) {
+        if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, (p + q)) == 0))
+            return true;
+    }
+    return false;
+}
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
@@ -73,6 +89,10 @@ void Token::update_property_info()
     if (!mStr.empty()) {
         if (mStr == "true" || mStr == "false")
             tokType(eBoolean);
+        else if (isStringCharLiteral(mStr, '\"'))
+            tokType(eString);
+        else if (isStringCharLiteral(mStr, '\''))
+            tokType(eChar);
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
@@ -80,10 +100,6 @@ void Token::update_property_info()
                 tokType(eName);
         } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1])))
             tokType(eNumber);
-        else if (mStr.length() > 1 && mStr[0] == '"' && endsWith(mStr,'"'))
-            tokType(eString);
-        else if (mStr.length() > 1 && mStr[0] == '\'' && endsWith(mStr,'\''))
-            tokType(eChar);
         else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                  (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
@@ -118,6 +134,7 @@ void Token::update_property_info()
         tokType(eNone);
     }
 
+    update_property_char_string_literal();
     update_property_isStandardType();
 }
 
@@ -147,6 +164,20 @@ void Token::update_property_isStandardType()
     }
 }
 
+void Token::update_property_char_string_literal()
+{
+    if (!(mTokType == Token::eString || mTokType == Token::eChar)) // Token has already been updated
+        return;
+
+    for (const std::string & p : literal_prefix) {
+        if (((mTokType == Token::eString) && mStr.compare(0, p.size() + 1, p + "\"") == 0) ||
+            ((mTokType == Token::eChar) && (mStr.compare(0, p.size() +  1, p + "\'") == 0))) {
+            mStr = mStr.substr(p.size());
+            isLong(p != "u8");
+            break;
+        }
+    }
+}
 
 bool Token::isUpperCaseName() const
 {
@@ -1419,6 +1450,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::UNINIT:
                     out << "uninit=\"1\"";
                     break;
+                case ValueFlow::Value::BUFFER_SIZE:
+                    out << "buffer-size=\"" << value.intvalue << "\"";
+                    break;
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
@@ -1459,6 +1493,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::UNINIT:
                     out << "Uninit";
                     break;
+                case ValueFlow::Value::BUFFER_SIZE:
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
                     break;

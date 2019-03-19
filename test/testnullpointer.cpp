@@ -40,19 +40,7 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        // Load std.cfg configuration
-        {
-            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-            "<def>\n"
-            "  <function name=\"strcpy\">\n"
-            "    <arg nr=\"1\"><not-null/></arg>\n"
-            "    <arg nr=\"2\"><not-null/></arg>\n"
-            "  </function>\n"
-            "</def>";
-            tinyxml2::XMLDocument doc;
-            doc.Parse(xmldata, sizeof(xmldata));
-            settings.library.load(doc);
-        }
+        LOAD_LIB_2(settings.library, "std.cfg");
         settings.addEnabled("warning");
 
         TEST_CASE(nullpointerAfterLoop);
@@ -128,10 +116,6 @@ private:
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
         checkNullPointer.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-
-        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[]) {
@@ -158,10 +142,6 @@ private:
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
         checkNullPointer.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-
-        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
 
@@ -1433,8 +1413,7 @@ private:
               "    }\n"
               "    return p;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n"
-                      "[test.cpp:7]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer_cast() { // #4692
@@ -2536,7 +2515,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int *p = 0) {\n"
-              "    printf(\"%d\", p);\n"
+              "    printf(\"%p\", p);\n"
               "    *p = 0;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());

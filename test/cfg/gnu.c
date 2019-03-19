@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
@@ -18,7 +19,18 @@ void ignoreleak(void)
 {
     char *p = (char *)malloc(10);
     __builtin_memset(&(p[0]), 0, 10);
-    // cppcheck-suppress memleak
+    // TODO // cppcheck-suppress memleak
+}
+
+void memleak_asprintf(char **ptr, const char *fmt, const int arg)
+{
+    // No warning is expected for
+    if (-1 != asprintf(ptr,fmt,arg)) {
+        free(ptr);
+    }
+    if (-1 != asprintf(ptr,fmt,arg)) {
+        // TODO: Related to #8980 cppcheck-suppress memleak
+    }
 }
 
 void uninitvar__builtin_memset(void)
@@ -39,7 +51,7 @@ void bufferAccessOutOfBounds__builtin_memset(void)
 
 void bufferAccessOutOfBounds()
 {
-    char buf[2];
+    char buf[2] = "a";
     // This is valid
     sethostname(buf, 2);
     // cppcheck-suppress bufferAccessOutOfBounds

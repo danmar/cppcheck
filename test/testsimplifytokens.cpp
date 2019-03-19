@@ -115,6 +115,8 @@ private:
 
         TEST_CASE(combine_wstrings);
         TEST_CASE(combine_ustrings);
+        TEST_CASE(combine_Ustrings);
+        TEST_CASE(combine_u8strings);
 
         // Simplify "not" to "!" (#345)
         TEST_CASE(not1);
@@ -507,9 +509,9 @@ private:
     }
 
     void combine_ustrings() {
-        const char code[] =  "abc = u\"abc\";";
+        const char code[] =  "abcd = u\"ab\" u\"cd\";";
 
-        const char expected[] =  "abc = \"abc\" ;";
+        const char expected[] =  "abcd = \"abcd\" ;";
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
@@ -517,6 +519,33 @@ private:
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
         ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
+    }
+
+    void combine_Ustrings() {
+        const char code[] =  "abcd = U\"ab\" U\"cd\";";
+
+        const char expected[] =  "abcd = \"abcd\" ;";
+
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(true, tokenizer.tokens()->tokAt(2)->isLong());
+    }
+
+    void combine_u8strings() {
+        const char code[] =  "abcd = u8\"ab\" u8\"cd\";";
+
+        const char expected[] =  "abcd = \"abcd\" ;";
+
+
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(false, tokenizer.tokens()->tokAt(2)->isLong());
     }
 
     void double_plus() {

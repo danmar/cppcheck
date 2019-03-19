@@ -200,6 +200,13 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         temp.arg = atoi(arg);
                     else
                         temp.arg = -1;
+
+                    const char *bufferSize = memorynode->Attribute("buffer-size");
+                    if (bufferSize && std::strncmp(bufferSize, "arg-value:", 10) == 0)
+                        temp.bufferSizeArgValue = bufferSize[10] - '0';
+                    else
+                        temp.bufferSizeArgValue = -1;
+
                     mAlloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
                     AllocFunc temp;
@@ -224,11 +231,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char *value = node->Attribute("value");
             if (value == nullptr)
                 return Error(MISSING_ATTRIBUTE, "value");
-            defines.push_back(std::string("#define ") +
-                              name +
+            defines.push_back(std::string(name) +
                               " " +
-                              value +
-                              "\n");
+                              value);
         }
 
         else if (nodename == "function") {
@@ -583,6 +588,17 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             ArgumentChecks &ac = func.argumentChecks[nr];
             ac.optional  = functionnode->Attribute("default") != nullptr;
             ac.variadic = bVariadicArg;
+            const char * const argDirection = functionnode->Attribute("direction");
+            if (argDirection) {
+                const size_t argDirLen = strlen(argDirection);
+                if (!strncmp(argDirection, "in", argDirLen)) {
+                    ac.direction = ArgumentChecks::Direction::DIR_IN;
+                } else if (!strncmp(argDirection, "out", argDirLen)) {
+                    ac.direction = ArgumentChecks::Direction::DIR_OUT;
+                } else if (!strncmp(argDirection, "inout", argDirLen)) {
+                    ac.direction = ArgumentChecks::Direction::DIR_INOUT;
+                }
+            }
             for (const tinyxml2::XMLElement *argnode = functionnode->FirstChildElement(); argnode; argnode = argnode->NextSiblingElement()) {
                 const std::string argnodename = argnode->Name();
                 if (argnodename == "not-bool")
@@ -639,31 +655,49 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
 
                     ArgumentChecks::MinSize::Type type;
                     if (strcmp(typeattr,"strlen")==0)
-                        type = ArgumentChecks::MinSize::STRLEN;
+                        type = ArgumentChecks::MinSize::Type::STRLEN;
                     else if (strcmp(typeattr,"argvalue")==0)
-                        type = ArgumentChecks::MinSize::ARGVALUE;
+                        type = ArgumentChecks::MinSize::Type::ARGVALUE;
                     else if (strcmp(typeattr,"sizeof")==0)
-                        type = ArgumentChecks::MinSize::SIZEOF;
+                        type = ArgumentChecks::MinSize::Type::SIZEOF;
                     else if (strcmp(typeattr,"mul")==0)
-                        type = ArgumentChecks::MinSize::MUL;
+                        type = ArgumentChecks::MinSize::Type::MUL;
+                    else if (strcmp(typeattr,"value")==0)
+                        type = ArgumentChecks::MinSize::Type::VALUE;
                     else
                         return Error(BAD_ATTRIBUTE_VALUE, typeattr);
 
-                    const char *argattr  = argnode->Attribute("arg");
-                    if (!argattr)
-                        return Error(MISSING_ATTRIBUTE, "arg");
-                    if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
-                        return Error(BAD_ATTRIBUTE_VALUE, argattr);
+                    if (type == ArgumentChecks::MinSize::Type::VALUE) {
+                        const char *valueattr = argnode->Attribute("value");
+                        if (!valueattr)
+                            return Error(MISSING_ATTRIBUTE, "value");
+                        long long minsizevalue = 0;
+                        try {
+                            minsizevalue = MathLib::toLongNumber(valueattr);
+                        } catch (const InternalError&) {
+                            return Error(BAD_ATTRIBUTE_VALUE, valueattr);
+                        }
+                        if (minsizevalue <= 0)
+                            return Error(BAD_ATTRIBUTE_VALUE, valueattr);
+                        ac.minsizes.emplace_back(type, 0);
+                        ac.minsizes.back().value = minsizevalue;
+                    } else {
+                        const char *argattr = argnode->Attribute("arg");
+                        if (!argattr)
+                            return Error(MISSING_ATTRIBUTE, "arg");
+                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
+                            return Error(BAD_ATTRIBUTE_VALUE, argattr);
 
-                    ac.minsizes.reserve(type == ArgumentChecks::MinSize::MUL ? 2 : 1);
-                    ac.minsizes.emplace_back(type,argattr[0]-'0');
-                    if (type == ArgumentChecks::MinSize::MUL) {
-                        const char *arg2attr = argnode->Attribute("arg2");
-                        if (!arg2attr)
-                            return Error(MISSING_ATTRIBUTE, "arg2");
-                        if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
-                            return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
-                        ac.minsizes.back().arg2 = arg2attr[0] - '0';
+                        ac.minsizes.reserve(type == ArgumentChecks::MinSize::Type::MUL ? 2 : 1);
+                        ac.minsizes.emplace_back(type, argattr[0] - '0');
+                        if (type == ArgumentChecks::MinSize::Type::MUL) {
+                            const char *arg2attr = argnode->Attribute("arg2");
+                            if (!arg2attr)
+                                return Error(MISSING_ATTRIBUTE, "arg2");
+                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
+                                return Error(BAD_ATTRIBUTE_VALUE, arg2attr);
+                            ac.minsizes.back().arg2 = arg2attr[0] - '0';
+                        }
                     }
                 }
 
@@ -723,8 +757,13 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     else
                         wi.message += ", ";
                 }
-            } else
-                wi.message = functionnode->GetText();
+            } else {
+                const char * const message = functionnode->GetText();
+                if (!message) {
+                    return Error(MISSING_ATTRIBUTE, "\"reason\" and \"alternatives\" or some text.");
+                } else
+                    wi.message = message;
+            }
 
             functionwarn[name] = wi;
         } else
@@ -1104,9 +1143,11 @@ int Library::returnValueContainer(const Token *ftok) const
     return it != mReturnValueContainer.end() ? it->second : -1;
 }
 
-bool Library::hasminsize(const std::string &functionName) const
+bool Library::hasminsize(const Token *ftok) const
 {
-    const std::map<std::string, Function>::const_iterator it1 = functions.find(functionName);
+    if (isNotLibraryFunction(ftok))
+        return false;
+    const std::map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
     if (it1 == functions.cend())
         return false;
     for (std::map<int, ArgumentChecks>::const_iterator it2 = it1->second.argumentChecks.cbegin(); it2 != it1->second.argumentChecks.cend(); ++it2) {

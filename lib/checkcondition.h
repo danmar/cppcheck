@@ -61,11 +61,6 @@ public:
         checkCondition.alwaysTrueFalse();
         checkCondition.duplicateCondition();
         checkCondition.checkPointerAdditionResultNotNull();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();

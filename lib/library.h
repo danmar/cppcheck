@@ -73,6 +73,7 @@ public:
     struct AllocFunc {
         int groupId;
         int arg;
+        int bufferSizeArgValue;
     };
 
     /** get allocation info for function */
@@ -227,7 +228,8 @@ public:
             strz(false),
             optional(false),
             variadic(false),
-            iteratorInfo() {
+            iteratorInfo(),
+            direction(DIR_UNKNOWN) {
         }
 
         bool         notbool;
@@ -252,13 +254,22 @@ public:
 
         class MinSize {
         public:
-            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL };
-            MinSize(Type t, int a) : type(t), arg(a), arg2(0) {}
+            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
+            MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
             Type type;
             int arg;
             int arg2;
+            long long value;
         };
         std::vector<MinSize> minsizes;
+
+        enum Direction {
+            DIR_IN,     ///< Input to called function. Data is treated as read-only.
+            DIR_OUT,    ///< Output to caller. Data is passed by reference or address and is potentially written.
+            DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
+            DIR_UNKNOWN ///< direction not known / specified
+        };
+        Direction direction;
     };
 
 
@@ -313,11 +324,16 @@ public:
         return arg && arg->iteratorInfo.it ? &arg->iteratorInfo : nullptr;
     }
 
-    bool hasminsize(const std::string &functionName) const;
+    bool hasminsize(const Token *ftok) const;
 
     const std::vector<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
+    }
+
+    ArgumentChecks::Direction getArgDirection(const Token *ftok, int argnr) const {
+        const ArgumentChecks *arg = getarg(ftok, argnr);
+        return arg ? arg->direction : ArgumentChecks::Direction::DIR_UNKNOWN;
     }
 
     bool markupFile(const std::string &path) const;

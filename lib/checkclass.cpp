@@ -308,7 +308,7 @@ static bool isNonCopyable(const Scope *scope, bool *unknown)
 
 void CheckClass::copyconstructors()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
@@ -435,7 +435,7 @@ void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *all
 
 void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
 {
-    reportError(tok, Severity::style, "copyCtorPointerCopying",
+    reportError(tok, Severity::warning, "copyCtorPointerCopying",
                 "$symbol:" + varname + "\nValue of pointer '$symbol', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, false);
 }
 
@@ -461,17 +461,17 @@ static std::string noMemberErrorMessage(const Scope *scope, const char function[
 
 void CheckClass::noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
-    reportError(alloc, Severity::style, "noCopyConstructor", noMemberErrorMessage(scope, "copy constructor", isdefault), CWE398, inconclusive);
+    reportError(alloc, Severity::warning, "noCopyConstructor", noMemberErrorMessage(scope, "copy constructor", isdefault), CWE398, inconclusive);
 }
 
 void CheckClass::noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
-    reportError(alloc, Severity::style, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, inconclusive);
+    reportError(alloc, Severity::warning, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, inconclusive);
 }
 
 void CheckClass::noDestructorError(const Scope *scope, bool isdefault, const Token *alloc)
 {
-    reportError(alloc, Severity::style, "noDestructor", noMemberErrorMessage(scope, "destructor", isdefault), CWE398, false);
+    reportError(alloc, Severity::warning, "noDestructor", noMemberErrorMessage(scope, "destructor", isdefault), CWE398, false);
 }
 
 bool CheckClass::canNotCopy(const Scope *scope)

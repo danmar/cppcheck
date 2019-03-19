@@ -59,13 +59,6 @@ public:
         checkBool.checkAssignBoolToFloat();
         checkBool.pointerArithBool();
         checkBool.returnValueOfFunctionReturningBool();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckBool checkBool(tokenizer, settings, errorLogger);
-
-        // Checks
         checkBool.checkComparisonOfFuncReturningBool();
         checkBool.checkComparisonOfBoolWithBool();
         checkBool.checkIncrementBoolean();
