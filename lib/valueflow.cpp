@@ -2755,26 +2755,25 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
-static const Variable* getLHSVariableRecursive(const Token * tok)
+static const Variable *getLHSVariableRecursive(const Token *tok)
 {
     if (!tok)
         return nullptr;
     if (Token::Match(tok, "*|&|&&|[")) {
-        const Variable * var1 = getLHSVariableRecursive(tok->astOperand1());
+        const Variable *var1 = getLHSVariableRecursive(tok->astOperand1());
         if (var1 || Token::simpleMatch(tok, "["))
             return var1;
-        const Variable * var2 = getLHSVariableRecursive(tok->astOperand2());
-            return var2;
+        const Variable *var2 = getLHSVariableRecursive(tok->astOperand2());
+        return var2;
     }
     if (!tok->variable())
         return nullptr;
     if (tok->variable()->nameToken() == tok)
         return tok->variable();
     return nullptr;
-
 }
 
-static const Variable* getLHSVariable(const Token * tok)
+static const Variable *getLHSVariable(const Token *tok)
 {
     if (!Token::Match(tok, "%assign%"))
         return nullptr;
@@ -2787,7 +2786,10 @@ static const Variable* getLHSVariable(const Token * tok)
 
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
 
-static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
+static void valueFlowLifetimeConstructor(Token *tok,
+                                         TokenList *tokenlist,
+                                         ErrorLogger *errorLogger,
+                                         const Settings *settings);
 
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -3087,25 +3089,25 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
     }
 }
 
-static const Type * getTypeOf(const Token * tok)
+static const Type *getTypeOf(const Token *tok)
 {
     if (Token::simpleMatch(tok, "return")) {
-        const Scope * scope = tok->scope();
+        const Scope *scope = tok->scope();
         if (!scope)
             return nullptr;
-        const Function * function = scope->function;
+        const Function *function = scope->function;
         if (!function)
             return nullptr;
         return function->retType;
     } else if (Token::Match(tok, "%type%")) {
         return tok->type();
     } else if (Token::Match(tok, "%var%")) {
-        const Variable * var = tok->variable();
+        const Variable *var = tok->variable();
         if (!var)
             return nullptr;
         return var->type();
     } else if (Token::Match(tok, "%name%")) {
-        const Function * function = tok->function();
+        const Function *function = tok->function();
         if (!function)
             return nullptr;
         return function->retType;
@@ -3119,18 +3121,18 @@ static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, Error
 {
     if (!Token::Match(tok, "(|{"))
         return;
-    if (const Type * t = getTypeOf(tok->previous())) {
-        const Scope * scope = t->classScope;
+    if (const Type *t = getTypeOf(tok->previous())) {
+        const Scope *scope = t->classScope;
         if (!scope)
             return;
         // Only support aggregate constructors for now
         if (scope->numConstructors == 0 && t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
             std::vector<const Token *> args = getArguments(tok);
             std::size_t i = 0;
-            for(const Variable& var:scope->varlist) {
+            for (const Variable &var : scope->varlist) {
                 if (i >= args.size())
                     break;
-                const Token* argtok = args[i];
+                const Token *argtok = args[i];
                 LifetimeStore ls{argtok, "Passed to constructor of '" + t->name() + "'.", ValueFlow::Value::Object};
                 if (var.isReference() || var.isRValueReference()) {
                     ls.byRef(tok, tokenlist, errorLogger, settings);
@@ -3141,12 +3143,11 @@ static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, Error
         }
     } else if (Token::simpleMatch(tok, "{") && (astIsContainer(tok->astParent()) || astIsPointer(tok->astParent()))) {
         std::vector<const Token *> args = getArguments(tok);
-        for(const Token* argtok:args) {
+        for (const Token *argtok : args) {
             LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::Object};
             ls.byVal(tok, tokenlist, errorLogger, settings);
         }
     }
-
 }
 
 struct Lambda {

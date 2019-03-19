@@ -238,7 +238,7 @@ static bool isAliased(const Token * startTok, const Token * endTok, unsigned int
             continue;
         if (!astIsPointer(tok))
             continue;
-        for(const ValueFlow::Value& val:tok->values()) {
+        for (const ValueFlow::Value &val : tok->values()) {
             if (!val.isLocalLifetimeValue())
                 continue;
             if (val.tokvalue->varId() == varid)
@@ -1010,10 +1010,10 @@ static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *
 std::vector<const Token *> getArguments(const Token *ftok)
 {
     std::vector<const Token *> arguments;
-    const Token * tok = ftok->next();
+    const Token *tok = ftok->next();
     if (!Token::Match(tok, "(|{"))
         tok = ftok;
-    const Token* startTok = tok->astOperand2();
+    const Token *startTok = tok->astOperand2();
     if (!startTok && Token::simpleMatch(tok->astOperand1(), ","))
         startTok = tok->astOperand1();
     getArgumentsRecursive(startTok, &arguments);
