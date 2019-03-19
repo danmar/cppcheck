@@ -70,8 +70,8 @@ public:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, std::vector<Dimension>(), nullptr);
-        c.negativeIndexError(nullptr, std::vector<Dimension>(), nullptr);
+        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
+        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr);
     }
@@ -79,8 +79,8 @@ public:
 private:
 
     void arrayIndex();
-    void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *index);
-    void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const ValueFlow::Value *negativeValue);
+    void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
+    void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
 
     void bufferOverflow();
     void bufferOverflowError(const Token *tok, const ValueFlow::Value *value);
