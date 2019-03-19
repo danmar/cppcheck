@@ -32,7 +32,7 @@ matrix:
     - name: "undefined behaviour sanitizers"
       compiler: gcc
       script:
-        - CXXFLAGS="-fsanitize=undefined -Og -g3" make cppcheck test checkcfg -j 2
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -Og -g3" make cppcheck test checkcfg -j 2
 # -fsanitize=address
     - name: "address sanitizers"
       compiler: gcc
