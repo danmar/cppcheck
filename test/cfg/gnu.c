@@ -15,6 +15,13 @@
 #include <sys/epoll.h>
 #endif
 
+
+void valid_code(int argInt1)
+{
+    if (__builtin_expect(argInt1, 0)) {}
+    if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
+}
+
 void ignoreleak(void)
 {
     char *p = (char *)malloc(10);
