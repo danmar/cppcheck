@@ -215,12 +215,11 @@ void CheckBufferOverrun::arrayIndex()
         std::vector<Dimension> dimensions;
         ErrorPath errorPath;
 
-        bool mightBeLarger;
+        bool mightBeLarger = false;
 
         if (array->variable()->isArray() && !array->variable()->dimensions().empty()) {
             dimensions = array->variable()->dimensions();
             if (dimensions.size() >= 1 && (dimensions[0].num <= 1 || !dimensions[0].tok)) {
-                mightBeLarger = false;
                 visitAstNodes(tok->astOperand1(),
                 [&](const Token *child) {
                     if (child->originalName() == "->") {
@@ -236,7 +235,6 @@ void CheckBufferOverrun::arrayIndex()
             dim.num = Token::getStrSize(stringLiteral);
             dim.known = array->hasKnownValue();
             dimensions.emplace_back(dim);
-            mightBeLarger = false;
         } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
             const ValueFlow::Value *value = getBufferSizeValue(array);
             if (!value)
@@ -247,7 +245,6 @@ void CheckBufferOverrun::arrayIndex()
             dim.tok = nullptr;
             dim.num = value->intvalue / array->valueType()->typeSize(*mSettings);
             dimensions.emplace_back(dim);
-            mightBeLarger = false;
         }
 
         if (dimensions.empty())
