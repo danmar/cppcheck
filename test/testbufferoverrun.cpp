@@ -172,6 +172,7 @@ private:
         TEST_CASE(buffer_overrun_27); // #4444 (segmentation fault)
         TEST_CASE(buffer_overrun_29); // #7083: false positive: typedef and initialization with strings
         TEST_CASE(buffer_overrun_30); // #6367
+        TEST_CASE(buffer_overrun_31);
         TEST_CASE(buffer_overrun_errorpath);
         // TODO CTU TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         // TODO TEST_CASE(buffer_overrun_function_array_argument);
@@ -2567,6 +2568,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 's->m[9]' accessed at index 36, which is out of bounds.\n", errout.str());
     }
 
+    void buffer_overrun_31() {
+        check("void f(WhereInfo *pWInfo, int *aiCur) {\n"
+              "  memcpy(aiCur, pWInfo->aiCurOnePass, sizeof(int)*2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void buffer_overrun_errorpath() {
         setMultiline();
         settings0.templateLocation = "{file}:{line}:note:{info}";
@@ -3603,8 +3611,7 @@ private:
               "void bar(char *p) {\n"
               "    strncpy(p, str, 100);\n"
               "}\n", false);
-        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'str' may not be null-terminated after the call to strncpy().\n"
-                      "[test.cpp:8]: (warning, inconclusive) The buffer 'p' may not be null-terminated after the call to strncpy().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'str' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
     void terminateStrncpy4() {

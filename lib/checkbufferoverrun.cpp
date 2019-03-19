@@ -421,6 +421,8 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 
     if (var->isPointerArray())
         v.intvalue = dim * mSettings->sizeof_pointer;
+    else if (var->isPointer())
+        return ValueFlow::Value(-1);
     else {
         const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
         v.intvalue = dim * typeSize;
