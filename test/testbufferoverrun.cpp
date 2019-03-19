@@ -113,7 +113,7 @@ private:
         TEST_CASE(array_index_31); // ticket #2120 - out of bounds in subfunction when type is unknown
         TEST_CASE(array_index_32);
         TEST_CASE(array_index_33); // ticket #3044
-        // TODO multidim TEST_CASE(array_index_34); // ticket #3063
+        TEST_CASE(array_index_34); // ticket #3063
         TEST_CASE(array_index_35); // ticket #2889
         TEST_CASE(array_index_36); // ticket #2960
         TEST_CASE(array_index_37);
@@ -127,7 +127,7 @@ private:
         TEST_CASE(array_index_45); // #4207 - calling function with variable number of parameters (...)
         TEST_CASE(array_index_46); // #4840 - two-statement for loop
         TEST_CASE(array_index_47); // #5849
-        // TODO multidim TEST_CASE(array_index_multidim);
+        TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
         TEST_CASE(array_index_calculation);
@@ -571,7 +571,7 @@ private:
               "    struct ABC x;\n"
               "    x.str[1] = 0;"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array 'x.str[1]' accessed at index 1, which is out of bounds.\n", errout.str());
 
         check("struct foo\n"
               "{\n"
@@ -596,7 +596,7 @@ private:
               "void f() {\n"
               "    ab.a[2] = 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'ab.a[1]' accessed at index 2, which is out of bounds.\n", errout.str());
     }
 
 
@@ -1134,8 +1134,8 @@ private:
               "    y[0][2][0] = 0;\n"
               "    y[0][0][2] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'y[2][2][2]' index y[0][2][0] out of bounds.\n"
-                      "[test.cpp:4]: (error) Array 'y[2][2][2]' index y[0][0][2] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'y[2][2][2]' accessed at index y[0][2][0], which is out of bounds.\n"
+                      "[test.cpp:4]: (error) Array 'y[2][2][2]' accessed at index y[0][0][2], which is out of bounds.\n", errout.str());
 
         check("struct TEST\n"
               "{\n"
@@ -1155,14 +1155,11 @@ private:
               "    ptest->b[0][19] = 4;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:9]: (error) Array 'test.a[10]' accessed at index 10, which is out of bounds.\n"
-                      "[test.cpp:10]: (error) Array 'test.b[10][5]' index test.b[10][2] out of bounds.\n"
-                      "[test.cpp:11]: (error) Array 'test.b[10][5]' index test.b[0][19] out of bounds.\n"
+                      "[test.cpp:10]: (error) Array 'test.b[10][5]' accessed at index test.b[10][2], which is out of bounds.\n"
+                      "[test.cpp:11]: (error) Array 'test.b[10][5]' accessed at index test.b[0][19], which is out of bounds.\n"
                       "[test.cpp:14]: (error) Array 'ptest->a[10]' accessed at index 10, which is out of bounds.\n"
-                      "[test.cpp:15]: (error) Array 'ptest->b[10][5]' index ptest->b[10][2] out of bounds.\n"
-                      "[test.cpp:16]: (error) Array 'ptest->b[10][5]' index ptest->b[0][19] out of bounds.\n"
-                      "[test.cpp:14]: (error) Array 'ptest.a[10]' accessed at index 10, which is out of bounds.\n"
-                      "[test.cpp:15]: (error) Array 'ptest.b[10][5]' index ptest.b[10][2] out of bounds.\n"
-                      "[test.cpp:16]: (error) Array 'ptest.b[10][5]' index ptest.b[0][19] out of bounds.\n", errout.str());
+                      "[test.cpp:15]: (error) Array 'ptest->b[10][5]' accessed at index ptest->b[10][2], which is out of bounds.\n"
+                      "[test.cpp:16]: (error) Array 'ptest->b[10][5]' accessed at index ptest->b[0][19], which is out of bounds.\n", errout.str());
 
         check("struct TEST\n"
               "{\n"
@@ -1178,12 +1175,10 @@ private:
               "    ptest->a[9][5] = 4;\n"
               "    ptest->a[0][50] = 4;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'test.a[10][5]' index test.a[9][5] out of bounds.\n"
-                      "[test.cpp:9]: (error) Array 'test.a[10][5]' index test.a[0][50] out of bounds.\n"
-                      "[test.cpp:12]: (error) Array 'ptest->a[10][5]' index ptest->a[9][5] out of bounds.\n"
-                      "[test.cpp:13]: (error) Array 'ptest->a[10][5]' index ptest->a[0][50] out of bounds.\n"
-                      "[test.cpp:12]: (error) Array 'ptest.a[10][5]' index ptest.a[9][5] out of bounds.\n"
-                      "[test.cpp:13]: (error) Array 'ptest.a[10][5]' index ptest.a[0][50] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'test.a[10][5]' accessed at index test.a[9][5], which is out of bounds.\n"
+                      "[test.cpp:9]: (error) Array 'test.a[10][5]' accessed at index test.a[0][50], which is out of bounds.\n"
+                      "[test.cpp:12]: (error) Array 'ptest->a[10][5]' accessed at index ptest->a[9][5], which is out of bounds.\n"
+                      "[test.cpp:13]: (error) Array 'ptest->a[10][5]' accessed at index ptest->a[0][50], which is out of bounds.\n", errout.str());
     }
 
     void array_index_35() { // ticket #2889
@@ -1550,67 +1545,67 @@ private:
               "  char a[2][2];\n"
               "  a[2][1] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[2][1] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' accessed at index a[2][1], which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2];\n"
               "  a[1][2] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[1][2] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' accessed at index a[1][2], which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[2][1][1] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[2][1][1] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' accessed at index a[2][1][1], which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[1][2][1] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][2][1] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' accessed at index a[1][2][1], which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2][2];\n"
               "  a[1][2][1][1] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2][2]' index a[1][2][1][1] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2][2]' accessed at index a[1][2][1][1], which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[1][1][2] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][1][2] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' accessed at index a[1][1][2], which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[10][10][10];\n"
               "  a[2*3][4*3][2] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' accessed at index a[6][12][2], which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "  char a[10][10][10];\n"
               "  a[6][40][10] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[10][10][10]' accessed at index a[6][40][10], which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "  char a[1][1][1];\n"
               "  a[2][2][2] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[1][1][1]' index a[2][2][2] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[1][1][1]' accessed at index a[2][2][2], which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "  char a[6][6][6];\n"
               "  a[6][6][2] = 'a';\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[6][6][6]' index a[6][6][2] out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[6][6][6]' accessed at index a[6][6][2], which is out of bounds.\n", errout.str());
 
         check("void f() {\n"
               "  int a[2][2];\n"
