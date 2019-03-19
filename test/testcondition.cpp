@@ -2959,6 +2959,18 @@ private:
               "    if(x == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8996
+        check("void g(int** v);\n"
+              "void f() {\n"
+              "  int a = 0;\n"
+              "  int b = 0;\n"
+              "  int* d[] = {&a, &b};\n"
+              "  g(d);\n"
+              "  if (a) {}\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
