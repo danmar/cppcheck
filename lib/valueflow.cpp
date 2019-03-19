@@ -3131,7 +3131,7 @@ static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, Error
                 if (i >= args.size())
                     break;
                 const Token* argtok = args[i];
-                LifetimeStore ls{argtok, "Passed to constructor of '" + tok->previous()->str() + "'.", ValueFlow::Value::Object};
+                LifetimeStore ls{argtok, "Passed to constructor of '" + t->name() + "'.", ValueFlow::Value::Object};
                 if (var.isReference() || var.isRValueReference()) {
                     ls.byRef(tok, tokenlist, errorLogger, settings);
                 } else {
