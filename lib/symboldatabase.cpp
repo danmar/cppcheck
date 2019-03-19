@@ -4970,6 +4970,16 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         setValueType(parent, vt);
         return;
     }
+    if (parent->str() == "*" && Token::simpleMatch(parent->astOperand2(), "[") && valuetype.pointer > 0U) {
+        const Token *op1 = parent->astOperand2()->astOperand1();
+        while (op1 && op1->str() == "[")
+            op1 = op1->astOperand1();
+        ValueType vt(valuetype);
+        if (op1 && op1->variable() && op1->variable()->nameToken() == op1) {
+            setValueType(parent, vt);
+            return;
+        }
+    }
     if (parent->str() == "&" && !parent->astOperand2()) {
         ValueType vt(valuetype);
         vt.pointer += 1U;

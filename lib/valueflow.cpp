@@ -2755,6 +2755,36 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
+static const Variable* getLHSVariableRecursive(const Token * tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "*|&|&&|[")) {
+        const Variable * var1 = getLHSVariableRecursive(tok->astOperand1());
+        if (var1 || Token::simpleMatch(tok, "["))
+            return var1;
+        const Variable * var2 = getLHSVariableRecursive(tok->astOperand2());
+            return var2;
+    }
+    if (!tok->variable())
+        return nullptr;
+    if (tok->variable()->nameToken() == tok)
+        return tok->variable();
+    return nullptr;
+
+}
+
+static const Variable* getLHSVariable(const Token * tok)
+{
+    if (!Token::Match(tok, "%assign%"))
+        return nullptr;
+    if (!tok->astOperand1())
+        return nullptr;
+    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
+        return tok->astOperand1()->variable();
+    return getLHSVariableRecursive(tok->astOperand1());
+}
+
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
 
 static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
@@ -2768,10 +2798,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         return;
     // Assignment
     if (parent->str() == "=" && (!parent->astParent() || Token::simpleMatch(parent->astParent(), ";"))) {
-        // Lhs should be a variable
-        if (!parent->astOperand1() || !parent->astOperand1()->varId())
-            return;
-        const Variable *var = parent->astOperand1()->variable();
+        const Variable *var = getLHSVariable(parent);
         if (!var || (!var->isLocal() && !var->isGlobal() && !var->isArgument()))
             return;
 
@@ -3112,7 +3139,7 @@ static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, Error
                 }
             }
         }
-    } else if (Token::simpleMatch(tok, "{") && astIsContainer(tok->astParent())) {
+    } else if (Token::simpleMatch(tok, "{") && (astIsContainer(tok->astParent()) || astIsPointer(tok->astParent()))) {
         std::vector<const Token *> args = getArguments(tok);
         for(const Token* argtok:args) {
             LifetimeStore ls{argtok, "Passed to initializer list.", ValueFlow::Value::Object};
