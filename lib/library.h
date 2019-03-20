@@ -75,6 +75,8 @@ public:
         int arg;
         enum class BufferSize {none,malloc,calloc,strdup};
         BufferSize bufferSize;
+        int bufferSizeArg1;
+        int bufferSizeArg2;
     };
 
     /** get allocation info for function */

@@ -474,11 +474,9 @@
   </define>
 
   <define name="DATA-BUFFER-SIZE">
-    <choice>
-      <value>malloc</value>
-      <value>calloc</value>
-      <value>strdup</value>
-    </choice>
+    <data type="string">
+      <param name="pattern">malloc(:[1-5])?|calloc(:[1-5],[1-5])?|strdup(:[1-5])?</param>
+    </data>
   </define>
 
   <define name="CONTAINER-ACTION">

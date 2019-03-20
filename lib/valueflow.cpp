@@ -5130,21 +5130,24 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
 
             const std::vector<const Token *> args = getArguments(rhs->previous());
 
+            const Token * const arg1 = (args.size() >= allocFunc->bufferSizeArg1) ? args[allocFunc->bufferSizeArg1 - 1] : nullptr;
+            const Token * const arg2 = (args.size() >= allocFunc->bufferSizeArg2) ? args[allocFunc->bufferSizeArg2 - 1] : nullptr;
+
             MathLib::bigint sizeValue = -1;
             switch (allocFunc->bufferSize) {
             case Library::AllocFunc::BufferSize::none:
                 break;
             case Library::AllocFunc::BufferSize::malloc:
-                if (args.size() == 1 && args[0]->hasKnownIntValue())
-                    sizeValue = args[0]->getKnownIntValue();
+                if (arg1 && arg1->hasKnownIntValue())
+                    sizeValue = arg1->getKnownIntValue();
                 break;
             case Library::AllocFunc::BufferSize::calloc:
-                if (args.size() == 2 && args[0]->hasKnownIntValue() && args[1]->hasKnownIntValue())
-                    sizeValue = args[0]->getKnownIntValue() * args[1]->getKnownIntValue();
+                if (arg1 && arg2 && arg1->hasKnownIntValue() && arg2->hasKnownIntValue())
+                    sizeValue = arg1->getKnownIntValue() * arg2->getKnownIntValue();
                 break;
             case Library::AllocFunc::BufferSize::strdup:
-                if (args.size() == 1 && args[0]->hasKnownValue()) {
-                    const ValueFlow::Value &value = args[0]->values().back();
+                if (arg1 && arg1->hasKnownValue()) {
+                    const ValueFlow::Value &value = arg1->values().back();
                     if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
                         sizeValue = Token::getStrLength(value.tokvalue);
                 }

@@ -204,14 +204,25 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     const char *bufferSize = memorynode->Attribute("buffer-size");
                     if (!bufferSize)
                         temp.bufferSize = AllocFunc::BufferSize::none;
-                    else if (std::strcmp(bufferSize, "malloc") == 0)
-                        temp.bufferSize = AllocFunc::BufferSize::malloc;
-                    else if (std::strcmp(bufferSize, "calloc") == 0)
-                        temp.bufferSize = AllocFunc::BufferSize::calloc;
-                    else if (std::strcmp(bufferSize, "strdup") == 0)
-                        temp.bufferSize = AllocFunc::BufferSize::strdup;
-                    else
-                        return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
+                    else {
+                        if (std::strncmp(bufferSize, "malloc", 6) == 0)
+                            temp.bufferSize = AllocFunc::BufferSize::malloc;
+                        else if (std::strncmp(bufferSize, "calloc", 6) == 0)
+                            temp.bufferSize = AllocFunc::BufferSize::calloc;
+                        else if (std::strncmp(bufferSize, "strdup", 6) == 0)
+                            temp.bufferSize = AllocFunc::BufferSize::strdup;
+                        else
+                            return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
+                        if (bufferSize[6] == 0) {
+                            temp.bufferSizeArg1 = 1;
+                            temp.bufferSizeArg2 = 2;
+                        } else if (bufferSize[6] == ':' && bufferSize[7] >= '1' && bufferSize[7] <= '5') {
+                            temp.bufferSizeArg1 = bufferSize[7] - '0';
+                            if (bufferSize[8] == ',' && bufferSize[9] >= '1' && bufferSize[9] <= '5')
+                                temp.bufferSizeArg2 = bufferSize[9] - '0';
+                        } else
+                            return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
+                    }
 
                     mAlloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
