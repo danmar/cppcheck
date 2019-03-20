@@ -83,8 +83,13 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
         isAlias(paramEnd->strAt(1) == "using");
         isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;"));
         const Token *tok1 = nameToken->next();
-        if (tok1->str() == "<")
-            tok1 = tok1->findClosingBracket()->next();
+        if (tok1->str() == "<") {
+            const Token *closing = tok1->findClosingBracket();
+            if (closing)
+                tok1 = closing->next();
+            else
+                throw InternalError(tok, "unsupported syntax", InternalError::SYNTAX);
+        }
         isFunction(tok1->str() == "(");
         isVariable(!isClass() && Token::Match(tok1, "=|;"));
         if (isVariable())
