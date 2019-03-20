@@ -1,5 +1,5 @@
 language: cpp
-dist: trusty
+dist: xenial
 
 compiler:
   - gcc
@@ -28,6 +28,16 @@ matrix:
       compiler: clang
 # defined extra jobs that run besides what is configured in the build matrix
   include:
+# -fsanitize=undefined
+    - name: "undefined behaviour sanitizers"
+      compiler: gcc
+      script:
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -Og -g3" make cppcheck test checkcfg -j 2
+# -fsanitize=address
+    - name: "address sanitizers"
+      compiler: gcc
+      script:
+         - CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck test checkcfg -j 2
 # check a lot of stuff that only needs to be checked in a single configuration
     - name: "misc"
       compiler: clang
@@ -155,6 +165,17 @@ matrix:
     - name: "make ubuntu 12.04 precise"
       compiler: gcc
       dist: precise
+      before_install:
+        - sudo apt-get update -qq
+        - sudo apt-get install libxml2-utils libpcre3
+      script:
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+        - make clean
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
+# check if cppcheck builds on trusty
+    - name: "make ubuntu 14.04 trusty"
+      compiler: gcc
+      dist: trusty
       before_install:
         - sudo apt-get update -qq
         - sudo apt-get install libxml2-utils libpcre3
