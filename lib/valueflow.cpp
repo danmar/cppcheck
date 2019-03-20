@@ -5125,19 +5125,36 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
                 continue;
 
             const Library::AllocFunc *allocFunc = settings->library.alloc(rhs->previous());
-            if (!allocFunc || allocFunc->bufferSizeArgValue < 1)
+            if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
                 continue;
 
             const std::vector<const Token *> args = getArguments(rhs->previous());
-            if (args.size() < allocFunc->bufferSizeArgValue)
+
+            MathLib::bigint sizeValue = -1;
+            switch (allocFunc->bufferSize) {
+            case Library::AllocFunc::BufferSize::none:
+                break;
+            case Library::AllocFunc::BufferSize::malloc:
+                if (args.size() == 1 && args[0]->hasKnownIntValue())
+                    sizeValue = args[0]->getKnownIntValue();
+                break;
+            case Library::AllocFunc::BufferSize::calloc:
+                if (args.size() == 2 && args[0]->hasKnownIntValue() && args[1]->hasKnownIntValue())
+                    sizeValue = args[0]->getKnownIntValue() * args[1]->getKnownIntValue();
+                break;
+            case Library::AllocFunc::BufferSize::strdup:
+                if (args.size() == 1 && args[0]->hasKnownValue()) {
+                    const ValueFlow::Value &value = args[0]->values().back();
+                    if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
+                        sizeValue = Token::getStrLength(value.tokvalue);
+                }
+                break;
+            };
+            if (sizeValue < 0)
                 continue;
 
-            const Token *sizeArg = args[allocFunc->bufferSizeArgValue - 1];
-            if (!sizeArg || !sizeArg->hasKnownIntValue())
-                continue;
-
-            ValueFlow::Value value(sizeArg->getKnownIntValue());
-            value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + MathLib::toString(value.intvalue));
+            ValueFlow::Value value(sizeValue);
+            value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + MathLib::toString(sizeValue));
             value.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
             value.setKnown();
             const std::list<ValueFlow::Value> values{value};

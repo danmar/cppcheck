@@ -202,10 +202,16 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         temp.arg = -1;
 
                     const char *bufferSize = memorynode->Attribute("buffer-size");
-                    if (bufferSize && std::strncmp(bufferSize, "arg-value:", 10) == 0)
-                        temp.bufferSizeArgValue = bufferSize[10] - '0';
+                    if (!bufferSize)
+                        temp.bufferSize = AllocFunc::BufferSize::none;
+                    else if (std::strcmp(bufferSize, "malloc") == 0)
+                        temp.bufferSize = AllocFunc::BufferSize::malloc;
+                    else if (std::strcmp(bufferSize, "calloc") == 0)
+                        temp.bufferSize = AllocFunc::BufferSize::calloc;
+                    else if (std::strcmp(bufferSize, "strdup") == 0)
+                        temp.bufferSize = AllocFunc::BufferSize::strdup;
                     else
-                        temp.bufferSizeArgValue = -1;
+                        return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
 
                     mAlloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {

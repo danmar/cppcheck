@@ -474,9 +474,11 @@
   </define>
 
   <define name="DATA-BUFFER-SIZE">
-    <data type="string">
-      <param name="pattern">arg-value:[1-3]</param>
-    </data>
+    <choice>
+      <value>malloc</value>
+      <value>calloc</value>
+      <value>strdup</value>
+    </choice>
   </define>
 
   <define name="CONTAINER-ACTION">

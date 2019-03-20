@@ -73,7 +73,8 @@ public:
     struct AllocFunc {
         int groupId;
         int arg;
-        int bufferSizeArgValue;
+        enum class BufferSize {none,malloc,calloc,strdup};
+        BufferSize bufferSize;
     };
 
     /** get allocation info for function */
