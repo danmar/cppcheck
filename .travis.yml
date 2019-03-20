@@ -28,6 +28,18 @@ matrix:
       compiler: clang
 # defined extra jobs that run besides what is configured in the build matrix
   include:
+# -fsanitize=undefined
+    - name: "undefined behaviour sanitizers"
+      compiler: gcc
+      dist: xenial
+      script:
+        - CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover=all -Og -g3" make cppcheck test checkcfg -j 2
+# -fsanitize=address
+    - name: "address sanitizers"
+      compiler: gcc
+      dist: xenial
+      script:
+         - CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck test checkcfg -j 2
 # check a lot of stuff that only needs to be checked in a single configuration
     - name: "misc"
       compiler: clang
