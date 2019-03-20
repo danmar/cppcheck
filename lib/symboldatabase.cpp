@@ -5470,7 +5470,7 @@ void SymbolDatabase::setValueTypeInTokenList()
             setValueType(tok, vt);
         } else if (tok->str() == "return" && tok->scope()) {
             const Function *function = tok->scope()->function;
-            if (function) {
+            if (function && function->retDef) {
                 ValueType vt;
                 parsedecl(function->retDef, &vt, mDefaultSignedness, mSettings);
                 setValueType(tok, vt);
