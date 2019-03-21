@@ -75,6 +75,12 @@ void bufferAccessOutOfBounds(void)
     fwrite(a,1,5,stdout);
     // cppcheck-suppress bufferAccessOutOfBounds
     fread(a,1,6,stdout);
+
+    char * pAlloc1 = aligned_alloc(8, 16);
+    memset(pAlloc1, 0, 16);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc1, 0, 17);
+    free(pAlloc1);
 }
 
 void bufferAccessOutOfBounds_libraryDirectionConfiguration(void)
@@ -87,6 +93,15 @@ void bufferAccessOutOfBounds_libraryDirectionConfiguration(void)
     // cppcheck-suppress arrayIndexOutOfBounds
     // cppcheck-suppress unreadVariable
     arr[c] = 'x';
+}
+
+void arrayIndexOutOfBounds()
+{
+    char * pAlloc1 = aligned_alloc(8, 16);
+    pAlloc1[15] = '\0';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc1[16] = '1';
+    free(pAlloc1);
 }
 
 // memory leak
