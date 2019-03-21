@@ -63,6 +63,14 @@ void bufferAccessOutOfBounds()
     sethostname(buf, 2);
     // cppcheck-suppress bufferAccessOutOfBounds
     sethostname(buf, 4);
+
+    // Declaration necessary because there is no specific / portable header containing xcalloc.
+    extern void *xcalloc(size_t nmemb, size_t size);
+    char * pAlloc1 = xcalloc(2, 4);
+    memset(pAlloc1, 0, 8);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc1, 0, 9);
+    free(pAlloc1);
 }
 
 void leakReturnValNotUsed()
