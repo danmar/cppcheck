@@ -17,8 +17,8 @@ env:
 
 before_install:
 # install needed deps
- - sudo apt-get update -qq
- - sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - travis_retry sudo apt-get update -qq
+ - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -166,8 +166,8 @@ matrix:
       compiler: gcc
       dist: precise
       before_install:
-        - sudo apt-get update -qq
-        - sudo apt-get install libxml2-utils libpcre3
+        - travis_retry sudo apt-get update -qq
+        - travis_retry sudo apt-get install libxml2-utils libpcre3
       script:
         - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
         - make clean
@@ -177,8 +177,8 @@ matrix:
       compiler: gcc
       dist: trusty
       before_install:
-        - sudo apt-get update -qq
-        - sudo apt-get install libxml2-utils libpcre3
+        - travis_retry sudo apt-get update -qq
+        - travis_retry sudo apt-get install libxml2-utils libpcre3
       script:
         - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck testrunner -j 2
         - make clean
