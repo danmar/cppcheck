@@ -1244,6 +1244,7 @@ void Tokenizer::simplifyTypedef()
                         (tok2->previous()->str() == "<" && Token::simpleMatch(tok2->next(), "> (")) ||
                         Token::Match(tok2->tokAt(-2), "( const %name% )"))
                         inCast = true;
+
                     // check for template parameters: t<some_typedef> t1
                     else if (Token::Match(tok2->previous(), "<|,") &&
                              Token::Match(tok2->next(), "&|*| &|*| >|,"))
