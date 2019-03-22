@@ -174,6 +174,9 @@ void validCode()
     __noop(1, "test", NULL);
     __nop();
 
+    void * pAlloc1 = _aligned_malloc(100, 2);
+    _aligned_free(pAlloc1);
+
     // Valid Library usage, no leaks, valid arguments
     HINSTANCE hInstLib = LoadLibrary(L"My.dll");
     FreeLibrary(hInstLib);
@@ -232,6 +235,23 @@ void bufferAccessOutOfBounds()
     RtlFillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
     // cppcheck-suppress bufferAccessOutOfBounds
     FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
+
+    char * pAlloc1 = _malloca(32);
+    memset(pAlloc1, 0, 32);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc1, 0, 33);
+    _freea(pAlloc1);
+}
+
+void mismatchAllocDealloc()
+{
+    char * pChar = _aligned_malloc(100, 2);
+    // cppcheck-suppress mismatchAllocDealloc
+    free(pChar);
+
+    pChar = _malloca(32);
+    // cppcheck-suppress mismatchAllocDealloc
+    _aligned_free(pChar);
 }
 
 void nullPointer()
