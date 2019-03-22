@@ -481,6 +481,9 @@ private:
         TEST_CASE(findGarbageCode);
         TEST_CASE(checkEnableIf);
 
+        // #9052
+        TEST_CASE(noCrash1);
+
         // --check-config
         TEST_CASE(checkConfiguration);
 
@@ -8781,6 +8784,14 @@ private:
                             "    int x = a < b ? b : a;"
                             "};\n"))
 
+    }
+
+    void noCrash1() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "struct A {\n"
+                            "  A( const std::string &name = "" );\n"
+                            "};\n"
+                            "A::A( const std::string &name ) { return; }\n"))
     }
 
     void checkConfig(const char code[]) {
