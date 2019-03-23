@@ -668,7 +668,8 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
 /** @brief Parse current TU and extract file info */
 Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE
 {
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, this, isCtuUnsafeBufferUsage);
+    CheckBufferOverrun checkBufferOverrun(tokenizer, settings, nullptr);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, &checkBufferOverrun, isCtuUnsafeBufferUsage);
     if (unsafeUsage.empty())
         return nullptr;
 
