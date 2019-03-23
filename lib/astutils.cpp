@@ -1122,9 +1122,9 @@ bool isConstVarExpression(const Token *tok)
     return false;
 }
 
-static bool nonLocal(const Variable* var)
+static bool nonLocal(const Variable* var, bool deref)
 {
-    return !var || (!var->isLocal() && !var->isArgument()) || var->isStatic() || var->isReference() || var->isExtern();
+    return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
 }
 
 static bool hasFunctionCall(const Token *tok)
@@ -1174,6 +1174,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (tok2->varId() && exprVarIds.find(tok2->varId()) != exprVarIds.end())
                     return Result(Result::Type::READ);
             }
+
+            if (!local && mWhat == What::Reassign)
+                return Result(Result::Type::BAILOUT);
 
             return Result(Result::Type::RETURN);
         }
@@ -1391,7 +1394,8 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
                 const Variable *var = tok->variable();
                 if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2()))
                     return ChildrenToVisit::none;
-                local &= !nonLocal(tok->variable());
+                const bool deref = tok->astParent() && (tok->astParent()->isUnaryOp("*") || (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
+                local &= !nonLocal(tok->variable(), deref);
             }
         }
         return ChildrenToVisit::op1_and_op2;
