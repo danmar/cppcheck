@@ -690,7 +690,8 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 }
 
 /** @brief Analyse all file infos for all TU */
-bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
+bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+{
     if (!ctu)
         return false;
     bool foundErrors = false;
@@ -698,8 +699,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
 
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
-    for (Check::FileInfo *fi1 : fileInfo)
-    {
+    for (Check::FileInfo *fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
         if (!fi)
             continue;
@@ -707,12 +707,12 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
             const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
             const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
-            ctu->getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
-                              unsafeUsage,
-                              callsMap,
-                              "Using argument ARG",
-                              &functionCall,
-                              false);
+                ctu->getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
+                                  unsafeUsage,
+                                  callsMap,
+                                  "Using argument ARG",
+                                  &functionCall,
+                                  false);
             if (locationList.empty())
                 continue;
 
