@@ -55,8 +55,8 @@ static const CWE CWE170(170U);  // Improper Null Termination
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE682(682U);  // Incorrect Calculation
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
-static const CWE CWE786(786U);  // Access of Memory Location Before Start of Buffer
-static const CWE CWE788(788U);  // Access of Memory Location After End of Buffer
+static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
+static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After End of Buffer
 
 //---------------------------------------------------------------------------
 
@@ -340,8 +340,8 @@ static std::string arrayIndexMessage(const Token *tok, const std::vector<Dimensi
 void CheckBufferOverrun::arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes)
 {
     if (!tok) {
-        reportError(tok, Severity::error, "arrayIndexOutOfBounds", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE788, false);
-        reportError(tok, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE788, false);
+        reportError(tok, Severity::error, "arrayIndexOutOfBounds", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE_BUFFER_OVERRUN, false);
+        reportError(tok, Severity::warning, "arrayIndexOutOfBoundsCond", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE_BUFFER_OVERRUN, false);
         return;
     }
 
@@ -362,14 +362,14 @@ void CheckBufferOverrun::arrayIndexError(const Token *tok, const std::vector<Dim
                 index->errorSeverity() ? Severity::error : Severity::warning,
                 index->condition ? "arrayIndexOutOfBoundsCond" : "arrayIndexOutOfBounds",
                 arrayIndexMessage(tok, dimensions, indexes, condition),
-                CWE788,
+                CWE_BUFFER_OVERRUN,
                 index->isInconclusive());
 }
 
 void CheckBufferOverrun::negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes)
 {
     if (!tok) {
-        reportError(tok, Severity::error, "negativeIndex", "Negative array index", CWE786, false);
+        reportError(tok, Severity::error, "negativeIndex", "Negative array index", CWE_BUFFER_UNDERRUN, false);
         return;
     }
 
@@ -390,7 +390,7 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const std::vector<
                 negativeValue->errorSeverity() ? Severity::error : Severity::warning,
                 "negativeIndex",
                 arrayIndexMessage(tok, dimensions, indexes, condition),
-                CWE786,
+                CWE_BUFFER_UNDERRUN,
                 negativeValue->isInconclusive());
 }
 
@@ -511,7 +511,7 @@ void CheckBufferOverrun::bufferOverflow()
 
 void CheckBufferOverrun::bufferOverflowError(const Token *tok, const ValueFlow::Value *value)
 {
-    reportError(getErrorPath(tok, value, "Buffer overrun"), Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? tok->expressionString() : "buf"), CWE788, false);
+    reportError(getErrorPath(tok, value, "Buffer overrun"), Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? tok->expressionString() : "buf"), CWE_BUFFER_OVERRUN, false);
 }
 
 //---------------------------------------------------------------------------
@@ -721,7 +721,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
                                                        Severity::error,
                                                        "Buffer access out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".",
                                                        "ctubufferoverrun",
-                                                       CWE788, false);
+                                                       CWE_BUFFER_OVERRUN, false);
                 errorLogger.reportErr(errmsg);
             } else {
                 const ErrorLogger::ErrorMessage errmsg(locationList,
@@ -729,7 +729,7 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
                                                        Severity::error,
                                                        "Buffer access out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".",
                                                        "ctubufferunderrun",
-                                                       CWE786, false);
+                                                       CWE_BUFFER_UNDERRUN, false);
                 errorLogger.reportErr(errmsg);
             }
 
