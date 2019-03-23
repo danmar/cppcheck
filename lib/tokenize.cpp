@@ -8508,6 +8508,22 @@ void Tokenizer::findGarbageCode() const
         }
     }
 
+    // keyword keyword
+    const std::set<std::string> nonConsecutiveKeywords{"break",
+		                                               "continue",
+		                                               "for",
+		                                               "goto",
+		                                               "if",
+		                                               "return",
+		                                               "switch",
+		                                               "throw",
+		                                               "typedef",
+		                                               "while"};
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->str()) == 1 && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
+            syntaxError(tok);
+    }
+
     // case keyword must be inside switch
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "switch (")) {

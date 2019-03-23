@@ -244,6 +244,7 @@ private:
         TEST_CASE(syntaxErrorFirstToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorCase);
+        TEST_CASE(syntaxErrorFuzzerCliType1);
         TEST_CASE(enumTrailingComma);
 
         TEST_CASE(nonGarbageCode1); // #8346
@@ -339,8 +340,8 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             assertThrowFail(__FILE__, __LINE__);
         } catch (InternalError& e) {
-            ASSERT_EQUALS("Analysis failed. If the code is valid then please report this failure.", e.errorMessage);
-            ASSERT_EQUALS("cppcheckError", e.id);
+            ASSERT_EQUALS("syntax error", e.errorMessage);
+            ASSERT_EQUALS("syntaxError", e.id);
             ASSERT_EQUALS(4, e.token->linenr());
         }
     }
@@ -433,7 +434,7 @@ private:
     }
 
     void garbageCode7() {
-        checkCode("1 (int j) { return return (c) * sizeof } y[1];");
+        ASSERT_THROW(checkCode("1 (int j) { return return (c) * sizeof } y[1];"), InternalError);
         ASSERT_THROW(checkCode("foo(Args&&...) fn void = { } auto template<typename... bar(Args&&...)"), InternalError);
     }
 
@@ -1649,6 +1650,10 @@ private:
         ASSERT_THROW(checkCode("void f() { true 0; }"), InternalError);
         ASSERT_THROW(checkCode("void f() { 'a' 0; }"), InternalError);
         ASSERT_THROW(checkCode("void f() { 1 \"\"; }"), InternalError);
+    }
+
+    void syntaxErrorFuzzerCliType1() {
+        ASSERT_THROW(checkCode("void f(){x=0,return return''[]()}"), InternalError);
     }
 
     void enumTrailingComma() {
