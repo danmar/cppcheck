@@ -641,7 +641,7 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
 // CTU..
 //---------------------------------------------------------------------------
 
-std::string CheckBufferOverrun::MyFileInfo::toString() const OVERRIDE
+std::string CheckBufferOverrun::MyFileInfo::toString() const
 {
     return CTU::toString(unsafeUsage);
 }
@@ -666,7 +666,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
 }
 
 /** @brief Parse current TU and extract file info */
-Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE
+Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
     CheckBufferOverrun checkBufferOverrun(tokenizer, settings, nullptr);
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, &checkBufferOverrun, isCtuUnsafeBufferUsage);
@@ -678,7 +678,7 @@ Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, con
     return fileInfo;
 }
 
-Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE
+Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::loadUnsafeUsageListFromXml(xmlElement);
     if (unsafeUsage.empty())
@@ -690,7 +690,7 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 }
 
 /** @brief Analyse all file infos for all TU */
-bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE {
+bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
     if (!ctu)
         return false;
     bool foundErrors = false;
