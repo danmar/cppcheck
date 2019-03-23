@@ -165,6 +165,7 @@ private:
         TEST_CASE(simplifyTypedef125); // #8749 - typedef char A[10]; p = new A[1];
         TEST_CASE(simplifyTypedef126); // ticket #5953
         TEST_CASE(simplifyTypedef127); // ticket #8878
+        TEST_CASE(simplifyTypedef128); // ticket #9053
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2548,6 +2549,17 @@ private:
         const char exp [] = "class a ; "
                             "template < long , class > struct c ; "
                             "template < int g > struct d { enum Anonymous0 { e = c < g , int ( a :: * ) > :: f } ; } ;";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef128() { // #9053
+        const char code[] = "typedef int d[4];\n"
+                            "void f() {\n"
+                            "    dostuff((const d){1,2,3,4});\n"
+                            "}";
+        const char exp [] = "void f ( ) { "
+                            "dostuff ( ( const int [ 4 ] ) { 1 , 2 , 3 , 4 } ) ; "
+                            "}";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
