@@ -246,8 +246,9 @@ private:
 
         // TODO TEST_CASE(pointerAddition1);
 
-        TEST_CASE(ctu_1);
-        TEST_CASE(ctu_2);
+        TEST_CASE(ctu_malloc);
+        TEST_CASE(ctu_array);
+        TEST_CASE(ctu_variable);
     }
 
 
@@ -4141,7 +4142,7 @@ private:
         delete ctu;
     }
 
-    void ctu_1() {
+    void ctu_malloc() {
         ctu("void dostuff(char *p) {\n"
             "  p[-3] = 0;\n"
             "}\n"
@@ -4163,7 +4164,7 @@ private:
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 4.\n", errout.str());
     }
 
-    void ctu_2() {
+    void ctu_array() {
         ctu("void dostuff(char *p) {\n"
             "    p[10] = 0;\n"
             "}\n"
@@ -4172,6 +4173,17 @@ private:
             "  dostuff(str);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 10.\n", errout.str());
+    }
+
+    void ctu_variable() {
+        ctu("void dostuff(int *p) {\n"
+            "    p[10] = 0;\n"
+            "}\n"
+            "int main() {\n"
+            "  int x = 4;\n"
+            "  dostuff(&x);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 40.\n", errout.str());
     }
 };
 

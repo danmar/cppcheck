@@ -345,6 +345,20 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(functionCall);
                 }
+                // &var => buffer
+                if (argtok->isUnaryOp("&") && argtok->astOperand1()->variable() && argtok->astOperand1()->valueType() && !argtok->astOperand1()->variable()->isArray()) {
+                    FileInfo::FunctionCall functionCall;
+                    functionCall.callValueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
+                    functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
+                    functionCall.callFunctionName = tok->astOperand1()->expressionString();
+                    functionCall.location.fileName = tokenizer->list.file(tok);
+                    functionCall.location.linenr = tok->linenr();
+                    functionCall.callArgNr = argnr + 1;
+                    functionCall.callArgumentExpression = argtok->expressionString();
+                    functionCall.callArgValue = argtok->astOperand1()->valueType()->typeSize(*tokenizer->getSettings());
+                    functionCall.warning = false;
+                    fileInfo->functionCalls.push_back(functionCall);
+                }
                 // pointer to uninitialized data..
                 if (!argtok->isUnaryOp("&"))
                     continue;
