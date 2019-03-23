@@ -594,8 +594,9 @@ std::string CheckNullPointer::MyFileInfo::toString() const
     return CTU::toString(unsafeUsage);
 }
 
-static bool isUnsafeUsage(const Check *check, const Token *vartok)
+static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
+    (void)value;
     const CheckNullPointer *checkNullPointer = dynamic_cast<const CheckNullPointer *>(check);
     bool unknown = false;
     return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);

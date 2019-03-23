@@ -24,6 +24,7 @@
 
 #include "check.h"
 #include "config.h"
+#include "ctu.h"
 #include "errorlogger.h"
 #include "mathlib.h"
 #include "tokenize.h"
@@ -76,6 +77,13 @@ public:
         c.bufferOverflowError(nullptr, nullptr);
     }
 
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+
+    /** @brief Analyse all file infos for all TU */
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+
+
 private:
 
     void arrayIndex();
@@ -93,6 +101,23 @@ private:
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
 
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
+
+    // CTU
+
+    /** data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /** function arguments that data are unconditionally read */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+
+        /** Convert MyFileInfo data into xml string */
+        std::string toString() const OVERRIDE;
+    };
+
+    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *value);
+
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
+
 
     static std::string myName() {
         return "Bounds checking";

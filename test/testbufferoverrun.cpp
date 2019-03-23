@@ -89,7 +89,7 @@ private:
         // TODO string TEST_CASE(array_index_4);
         TEST_CASE(array_index_6);
         TEST_CASE(array_index_7);
-        // TODO CTU TEST_CASE(array_index_9);
+        // TODO ctu TEST_CASE(array_index_9);
         TEST_CASE(array_index_11);
         TEST_CASE(array_index_12);
         TEST_CASE(array_index_13);
@@ -245,6 +245,8 @@ private:
         TEST_CASE(negativeArraySize);
 
         // TODO TEST_CASE(pointerAddition1);
+
+        TEST_CASE(ctu_1);
     }
 
 
@@ -4113,6 +4115,53 @@ private:
               "    p = arr + 20;\n"
               "\n");
         ASSERT_EQUALS("error", errout.str());
+    }
+
+    void ctu(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
+
+        // Check code..
+        std::list<Check::FileInfo*> fileInfo;
+        CheckBufferOverrun check(&tokenizer, &settings0, this);
+        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings0));
+        check.analyseWholeProgram(ctu, fileInfo, settings0, *this);
+        while (!fileInfo.empty()) {
+            delete fileInfo.back();
+            fileInfo.pop_back();
+        }
+        delete ctu;
+    }
+
+    void ctu_1() {
+        ctu("void dostuff(const char *p) {\n"
+            "  p[-3] = 0;\n"
+            "}\n"
+            "\n"
+            "int main() {\n"
+            "  char *s = malloc(4);\n"
+            "  dostuff(s);\n"
+            "  return 0;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Buffer access out of bounds; buffer 'p' is accessed at offset -3.\n", errout.str());
+
+        ctu("void dostuff(const char *p) {\n"
+            "  p[4] = 0;\n"
+            "}\n"
+            "\n"
+            "int main() {\n"
+            "  char *s = malloc(4);\n"
+            "  dostuff(s);\n"
+            "  return 0;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 4.\n", errout.str());
     }
 };
 

@@ -1342,8 +1342,9 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
     return checker.getFileInfo();
 }
 
-static bool isVariableUsage(const Check *check, const Token *vartok)
+static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
+    (void)value;
     const CheckUninitVar *c = dynamic_cast<const CheckUninitVar *>(check);
     return c && c->isVariableUsage(vartok, true, CheckUninitVar::Alloc::ARRAY);
 }
