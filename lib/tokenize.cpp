@@ -3018,11 +3018,13 @@ void Tokenizer::setVarIdPass2()
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
                 if (Token::Match(tok, "using namespace %name% ::|;")) {
-                    const Token *endtok = tok->tokAt(2);
+                    Token *endtok = tok->tokAt(2);
                     while (Token::Match(endtok, "%name% ::"))
                         endtok = endtok->tokAt(2);
                     if (Token::Match(endtok, "%name% ;"))
                         usingnamespaces.push_back(tok->tokAt(2));
+                    tok = endtok;
+                    continue;
                 } else if (Token::Match(tok, "namespace %name% {")) {
                     scope.push_back(tok->strAt(1));
                     endOfScope[tok->linkAt(2)] = tok->strAt(1);

@@ -296,6 +296,7 @@ private:
         TEST_CASE(symboldatabase73); // #8603
         TEST_CASE(symboldatabase74); // #8838 - final
         TEST_CASE(symboldatabase75);
+        TEST_CASE(symboldatabase76); // #9056
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4216,6 +4217,15 @@ private:
         ASSERT(f->function->isConst());
         ASSERT(f->function->hasTrailingReturnType());
         ASSERT(f->function->hasLvalRefQualifier());
+    }
+
+    void symboldatabase76() { // #9056
+        GET_SYMBOL_DB("namespace foo {\n"
+                      "  using namespace bar::baz;\n"
+                      "  auto func(int arg) -> bar::quux {}\n"
+                      "}");
+        // bar on line 3 should not have a varid
+        TODO_ASSERT_EQUALS(2, 3, db->mVariableList.size());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
