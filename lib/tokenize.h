@@ -857,6 +857,10 @@ public:
 #endif
     }
 
+    const Settings *getSettings() const {
+        return mSettings;
+    }
+
 private:
     /** Disable copy constructor */
     Tokenizer(const Tokenizer &) = delete;
