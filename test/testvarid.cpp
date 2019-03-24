@@ -92,6 +92,7 @@ private:
         TEST_CASE(varid59); // #6696
         TEST_CASE(varid60); // #7267 cast '(unsigned x)10'
         TEST_CASE(varid61); // #4988 inline function
+        TEST_CASE(varid62);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -209,6 +210,31 @@ private:
 
         // result..
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
+    }
+
+    std::string compareVaridsForVariable(const char code[], const char varname[], const char filename[] = "test.cpp") {
+        errout.str("");
+
+        Settings settings;
+        settings.platform(Settings::Unix64);
+        settings.standards.c   = Standards::C89;
+        settings.standards.cpp = Standards::CPP11;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+
+        unsigned int varid = ~0U;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == varname) {
+                if (varid == ~0U)
+                    varid = tok->varId();
+                else if (varid != tok->varId())
+                    return std::string("Variable ") + varname + " has different varids:\n" + tokenizer.tokens()->stringifyList(true,true,true,true,false);
+            }
+        }
+
+        return "same varid";
     }
 
     void varid1() {
@@ -1071,6 +1097,18 @@ private:
                                 "2: void bar ( int a@2 , int b@3 ) { }\n"
                                 "3: }\n";
         ASSERT_EQUALS(expected, tokenize(code, false));
+    }
+
+    void varid62() {
+        const char code[] = "void bar(int,int);\n"
+                            "void f() {\n"
+                            "    for (size_t c = 0; c < 42; ++c) {\n"
+                            "        int x;\n"
+                            "        bar(r, r * x);\n"
+                            "    }\n"
+                            "}";
+        // Ensure that there is only one variable id for "x"
+        ASSERT_EQUALS("same varid", compareVaridsForVariable(code, "x"));
     }
 
     void varid_cpp_keywords_in_c_code() {

@@ -2396,7 +2396,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
     if (tok2) {
         bool isLambdaArg = false;
-        if (cpp) {
+        {
             const Token *tok3 = (*tok)->previous();
             if (tok3 && tok3->str() == ",") {
                 while (tok3 && !Token::Match(tok3,";|(|[|{")) {
@@ -2404,10 +2404,23 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                         tok3 = tok3->link();
                     tok3 = tok3->previous();
                 }
+
+                if (tok3 && executableScope && Token::Match(tok3->previous(), "%name% (")) {
+                    const Token *fdecl = tok3->previous();
+                    int count = 0;
+                    while (Token::Match(fdecl, "%name%|*")) {
+                        fdecl = fdecl->previous();
+                        count++;
+                    }
+                    if (!Token::Match(fdecl, "[;{}] %name%") || count <= 1)
+                        return false;
+                }
             }
-            if (tok3 && Token::simpleMatch(tok3->previous(), "] (") && Token::simpleMatch(tok3->link(), ") {"))
+
+            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") && Token::simpleMatch(tok3->link(), ") {"))
                 isLambdaArg = true;
         }
+
 
         *tok = tok2;
 
