@@ -1021,13 +1021,14 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments)
+static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, unsigned int depth)
 {
-    if (!tok)
+    ++depth;
+    if (!tok || depth >= 100)
         return;
     if (tok->str() == ",") {
-        getArgumentsRecursive(tok->astOperand1(), arguments);
-        getArgumentsRecursive(tok->astOperand2(), arguments);
+        getArgumentsRecursive(tok->astOperand1(), arguments, depth);
+        getArgumentsRecursive(tok->astOperand2(), arguments, depth);
     } else {
         arguments->push_back(tok);
     }
@@ -1042,7 +1043,7 @@ std::vector<const Token *> getArguments(const Token *ftok)
     const Token *startTok = tok->astOperand2();
     if (!startTok && Token::simpleMatch(tok->astOperand1(), ","))
         startTok = tok->astOperand1();
-    getArgumentsRecursive(startTok, &arguments);
+    getArgumentsRecursive(startTok, &arguments, 0);
     return arguments;
 }
 
