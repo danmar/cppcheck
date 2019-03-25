@@ -1654,6 +1654,7 @@ private:
 
     void syntaxErrorFuzzerCliType1() {
         ASSERT_THROW(checkCode("void f(){x=0,return return''[]()}"), InternalError);
+        ASSERT_THROW(checkCode("void f(){x='0'++'0'(return)[];}"), InternalError); // #9063
     }
 
     void enumTrailingComma() {

@@ -8508,6 +8508,12 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok->linkAt(1)->previous());
     }
 
+    // Assign/increment/decrement literal
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok,"%num%|%str%|%char% %assign%|++|--"))
+            syntaxError(tok);
+    }
+
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,"))
