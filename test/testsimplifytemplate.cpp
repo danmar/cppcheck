@@ -141,6 +141,7 @@ private:
         TEST_CASE(template101); // #8968
         TEST_CASE(template102); // #9005
         TEST_CASE(template103);
+        TEST_CASE(template104); // #9021
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -184,6 +185,8 @@ private:
 
         TEST_CASE(templateTypeDeduction1); // #8962
         TEST_CASE(templateTypeDeduction2);
+
+        TEST_CASE(simplifyTemplateArgs);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -1275,7 +1278,7 @@ private:
                                 "void foo ( ) { "
                                 "Foo<true> myFoo ; "
                                 "} struct Foo<true> { "
-                                "std :: array < int , true ? 1 : 2 > mfoo ; "
+                                "std :: array < int , 1 > mfoo ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, true));
         ASSERT_EQUALS("", errout.str());
@@ -2351,6 +2354,32 @@ private:
                            "int sample :: Sample<int> :: function ( int t ) { "
                            "return t ; "
                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template104() { // #9021
+        const char code[] = "template < int i >\n"
+                            "auto key ( ) { return hana :: test :: ct_eq < i > { } ; }\n"
+                            "template < int i >\n"
+                            "auto val ( ) { return hana :: test :: ct_eq < - i > { } ; }\n"
+                            "template < int i , int j >\n"
+                            "auto p ( ) { return :: minimal_product ( key < i > ( ) , val < j > ( ) ) ; }\n"
+                            "int main ( ) {\n"
+                            "    BOOST_HANA_CONSTANT_CHECK ( hana :: equal (\n"
+                            "        hana :: at_key ( hana :: make_map ( p < 0 , 0 > ( ) ) , key < 0 > ( ) ) ,\n"
+                            "        val < 0 > ( ) ) ) ;\n"
+                            "}";
+        const char exp[] = "auto key<0> ( ) ; "
+                           "auto val<0> ( ) ; "
+                           "auto p<0,0> ( ) ; "
+                           "int main ( ) { "
+                           "BOOST_HANA_CONSTANT_CHECK ( hana :: equal ( "
+                           "hana :: at_key ( hana :: make_map ( p<0,0> ( ) ) , key<0> ( ) ) , "
+                           "val<0> ( ) ) ) ; "
+                           "} "
+                           "auto p<0,0> ( ) { return :: minimal_product ( key<0> ( ) , val<0> ( ) ) ; } "
+                           "auto val<0> ( ) { return hana :: test :: ct_eq < - 0 > { } ; } "
+                           "auto key<0> ( ) { return hana :: test :: ct_eq < 0 > { } ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -3433,6 +3462,23 @@ private:
                               "}";
 
         TODO_ASSERT_EQUALS(expected, actual, tok(code));
+    }
+
+    void simplifyTemplateArgs() {
+        ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < ( 2 ) >;"));
+        ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < 1 + 1 >;"));
+        ASSERT_EQUALS("foo<2> = 2 ; foo<2> ;", tok("template<int N> foo = N; foo < ( 1 + 1 ) >;"));
+
+        ASSERT_EQUALS("foo<2,2> = 4 ; foo<2,2> ;", tok("template<int N, int M> foo = N * M; foo < ( 2 ), ( 2 ) >;"));
+        ASSERT_EQUALS("foo<2,2> = 4 ; foo<2,2> ;", tok("template<int N, int M> foo = N * M; foo < 1 + 1, 1 + 1 >;"));
+        ASSERT_EQUALS("foo<2,2> = 4 ; foo<2,2> ;", tok("template<int N, int M> foo = N * M; foo < ( 1 + 1 ), ( 1 + 1 ) >;"));
+
+        ASSERT_EQUALS("foo<true> = true ; foo<true> ;", tok("template<bool N> foo = N; foo < true ? true : false >;"));
+        ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < false ? true : false >;"));
+        ASSERT_EQUALS("foo<true> = true ; foo<true> ;", tok("template<bool N> foo = N; foo < 1 ? true : false >;"));
+        ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < 0 ? true : false >;"));
+        ASSERT_EQUALS("foo<true> = true ; foo<true> ;", tok("template<bool N> foo = N; foo < (1 + 1 ) ? true : false >;"));
+        ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < ( 1 - 1) ? true : false >;"));
     }
 
 };
