@@ -8,6 +8,19 @@
 //
 
 #include <windows.h>
+#include <direct.h>
+#include <stdlib.h>
+
+void invalidFunctionArg__getcwd(char * buffer)
+{
+    // Passing NULL as the buffer forces getcwd to allocate
+    // memory for the path, which allows the code to support file paths
+    // longer than _MAX_PATH, which are supported by NTFS.
+    if ((buffer = _getcwd(NULL, 0)) == NULL) {
+        return;
+    }
+    free(buffer);
+}
 
 void validCode()
 {
