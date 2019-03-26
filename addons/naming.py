@@ -11,16 +11,28 @@ import cppcheckdata
 import sys
 import re
 
+
+def validate_regex(expr):
+    try:
+        re.compile(expr)
+    except re.error:
+        print('Error: "{}" is not a valid regular expression.'.format(expr))
+        exit(1)
+
+
 RE_VARNAME = None
 RE_PRIVATE_MEMBER_VARIABLE = None
 RE_FUNCTIONNAME = None
 for arg in sys.argv[1:]:
     if arg[:6] == '--var=':
         RE_VARNAME = arg[6:]
+        validate_regex(RE_VARNAME)
     elif arg.startswith('--private-member-variable='):
         RE_PRIVATE_MEMBER_VARIABLE = arg[arg.find('=')+1:]
+        validate_regex(RE_PRIVATE_MEMBER_VARIABLE)
     elif arg[:11] == '--function=':
         RE_FUNCTIONNAME = arg[11:]
+        validate_regex(RE_FUNCTIONNAME)
 
 
 FoundError = False
@@ -41,10 +53,11 @@ for arg in sys.argv[1:]:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
         if RE_VARNAME:
             for var in cfg.variables:
-                res = re.match(RE_VARNAME, var.nameToken.str)
-                if not res:
-                    reportError(var.typeStartToken, 'style', 'Variable ' +
-                                var.nameToken.str + ' violates naming convention')
+                if var.nameToken:
+                    res = re.match(RE_VARNAME, var.nameToken.str)
+                    if not res:
+                        reportError(var.typeStartToken, 'style', 'Variable ' +
+                                    var.nameToken.str + ' violates naming convention')
         if RE_PRIVATE_MEMBER_VARIABLE:
             for var in cfg.variables:
                 if (var.access is None) or var.access != 'Private':

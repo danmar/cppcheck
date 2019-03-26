@@ -113,6 +113,11 @@ matrix:
         - python ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
         - python3 ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
         - cd ../../
+# check addons/naming.py
+        - cd addons/test
+        - ${CPPCHECK} --dump naming_test.c
+        - python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
+        - cd ../..
 # check addons/namingng.py
         - cd addons/test
         - ${CPPCHECK} --dump namingng_test.c
