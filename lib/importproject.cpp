@@ -242,8 +242,11 @@ void ImportProject::FileSettings::parseCommand(const std::string &command)
             undefs.insert(fval);
         else if (F=='I')
             includePaths.push_back(fval);
-        else if (F=='s' && fval.compare(0,3,"td=") == 0)
-            standard = fval.substr(3);
+        else if (F=='s' && fval.compare(0,2,"td") == 0) {
+            ++pos;
+            const std::string stdval = readUntil(command, &pos, " ");
+            standard = stdval;
+        }
         else if (F == 'i' && fval == "system") {
             ++pos;
             const std::string isystem = readUntil(command, &pos, " ");
