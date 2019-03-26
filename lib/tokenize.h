@@ -377,6 +377,10 @@ public:
     void simplifyTypedef();
 
     /**
+     */
+    bool simplifyUsing();
+
+    /**
      * Simplify casts
      */
     void simplifyCasts();
