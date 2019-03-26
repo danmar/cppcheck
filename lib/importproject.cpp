@@ -246,11 +246,86 @@ void ImportProject::FileSettings::parseCommand(const std::string &command)
             ++pos;
             const std::string stdval = readUntil(command, &pos, " ");
             standard = stdval;
+            if (standard.compare(0, 3, "c++") || standard.compare(0, 5, "gnu++")) {
+                std::string stddef;
+                if (standard == "c++98" || standard == "gnu++98" || standard == "c++03" || standard == "gnu++03") {
+                    stddef = "199711L";
+                }
+                else if (standard == "c++11" || standard == "gnu++11"|| standard == "c++0x" || standard == "gnu++0x") {
+                    stddef = "201103L";
+                }
+                else if (standard == "c++14" || standard == "gnu++14" || standard == "c++1y" || standard == "gnu++1y") {
+                    stddef = "201402L";
+                }
+                else if (standard == "c++17" || standard == "gnu++17" || standard == "c++1z" || standard == "gnu++1z") {
+                    stddef = "201703L";
+                }
+
+                if (stddef.empty()) {
+                    // TODO: log error
+                    continue;
+                }
+
+                defs += "__cplusplus=";
+                defs += stddef;
+                defs += ";";
+            }
+            else if (standard.compare(0, 1, "c") || standard.compare(0, 3, "gnu")) {
+                if (standard == "c90" || standard == "iso9899:1990" || standard == "gnu90" || standard == "iso9899:199409") {
+                    // __STDC_VERSION__ is not set for C90 although the macro was added in the 1994 amendments
+                    continue;
+                }
+
+                std::string stddef;
+
+                if (standard == "c99" || standard == "iso9899:1999" || standard == "gnu99") {
+                    stddef = "199901L";
+                }
+                else if (standard == "c11" || standard == "iso9899:2011" || standard == "gnu11" || standard == "c1x" || standard == "gnu1x") {
+                    stddef = "201112L";
+                }
+                else if (standard == "c17") {
+                    stddef = "201710L";
+                }
+
+                if (stddef.empty()) {
+                    // TODO: log error
+                    continue;
+                }
+
+                defs += "__STDC_VERSION__=";
+                defs += stddef;
+                defs += ";";
+            }
         }
         else if (F == 'i' && fval == "system") {
             ++pos;
             const std::string isystem = readUntil(command, &pos, " ");
             systemIncludePaths.push_back(isystem);
+        }
+        else if (F=='m') {
+            if (fval == "unicode") {
+                defs += "UNICODE";
+                defs += ";";
+            }
+        }
+        else if (F=='f') {
+            if (fval == "pic") {
+                defs += "__pic__";
+                defs += ";";
+            }
+            else if (fval == "PIC") {
+                defs += "__PIC__";
+                defs += ";";
+            }
+            else if (fval == "pie") {
+                defs += "__pie__";
+                defs += ";";
+            }
+            else if (fval == "PIE") {
+                defs += "__PIE__";
+                defs += ";";
+            }
         }
     }
     setDefines(defs);
@@ -290,7 +365,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
             path += file;
             fs.filename = Path::simplifyPath(path);
         }
-        fs.parseCommand(command); // read settings; -D, -I, -U, -std
+        fs.parseCommand(command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);
         fileSettings.push_back(fs);
