@@ -1656,6 +1656,7 @@ private:
         ASSERT_THROW(checkCode("void f(){x=0,return return''[]()}"), InternalError);
         ASSERT_THROW(checkCode("void f(){x='0'++'0'(return)[];}"), InternalError); // #9063
         ASSERT_THROW(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), InternalError); // #9067
+        ASSERT_THROW(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), InternalError); // #9068
     }
 
     void enumTrailingComma() {

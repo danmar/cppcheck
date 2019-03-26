@@ -8993,6 +8993,14 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
 
 void Tokenizer::findGarbageCode() const
 {
+    // initialization: = {
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "= {"))
+            continue;
+        if (Token::simpleMatch(tok->linkAt(1), "} ("))
+            syntaxError(tok->linkAt(1));
+    }
+
     // Inside [] there can't be ; or various keywords
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() != "[")
