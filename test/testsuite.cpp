@@ -280,13 +280,15 @@ void TestFixture::printHelp()
     std::cout << "Testrunner - run Cppcheck tests\n"
               "\n"
               "Syntax:\n"
-              "    testrunner [OPTIONS] [TestClass::TestCase]\n"
+              "    testrunner [OPTIONS] [TestClass::TestCase...]\n"
               "    run all test cases:\n"
               "        testrunner\n"
               "    run all test cases in TestClass:\n"
               "        testrunner TestClass\n"
               "    run TestClass::TestCase:\n"
               "        testrunner TestClass::TestCase\n"
+              "    run all test cases in TestClass1 and TestClass2::TestCase:\n"
+              "        testrunner TestClass1 TestClass2::TestCase\n"
               "\n"
               "Options:\n"
               "    -q                   Do not print the test cases that have run.\n"
@@ -311,22 +313,24 @@ void TestFixture::processOptions(const options& args)
 
 std::size_t TestFixture::runTests(const options& args)
 {
-    std::string classname(args.which_test());
-    std::string testname;
-    if (classname.find("::") != std::string::npos) {
-        testname = classname.substr(classname.find("::") + 2);
-        classname.erase(classname.find("::"));
-    }
-
     countTests = 0;
     errmsg.str("");
 
-    const TestSet &tests = TestRegistry::theInstance().tests();
+    const std::set<std::string>& tests = args.which_test();
+    for (std::string classname : tests) {
+        std::string testname;
+        if (classname.find("::") != std::string::npos) {
+            testname = classname.substr(classname.find("::") + 2);
+            classname.erase(classname.find("::"));
+        }
 
-    for (TestFixture * test : tests) {
-        if (classname.empty() || test->classname == classname) {
-            test->processOptions(args);
-            test->run(testname);
+        const TestSet &tests = TestRegistry::theInstance().tests();
+
+        for (TestFixture * test : tests) {
+            if (classname.empty() || test->classname == classname) {
+                test->processOptions(args);
+                test->run(testname);
+            }
         }
     }
 
