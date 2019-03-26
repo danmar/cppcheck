@@ -396,8 +396,6 @@ private:
         const std::string &indent = "    ") const;
     void printOut(const std::string &text = "") const;
 
-    bool simplifyUsing();
-
     Tokenizer *mTokenizer;
     TokenList &mTokenList;
     const Settings *mSettings;

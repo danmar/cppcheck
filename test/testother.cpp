@@ -5004,6 +5004,16 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
+
+        // #9040
+        Settings settings1;
+        settings1.platform(Settings::Win64);
+        check("using BOOL = unsigned;\n"
+              "int i;\n"
+              "bool f() {\n"
+              "    return i >= 0;\n"
+              "}\n", &settings1);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkSignOfPointer() {

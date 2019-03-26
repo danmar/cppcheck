@@ -62,6 +62,7 @@ private:
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
         TEST_CASE(simplifyUsing8976);
+        TEST_CASE(simplifyUsing9040);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -459,6 +460,18 @@ private:
         const char exp[] = ";";
 
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyUsing9040() {
+        const char code[] = "using BOOL = unsigned; int i;";
+
+        const char exp[] = "int i ;";
+
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Unix32));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Unix64));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Win32A));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Win32W));
+        ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
     }
 
 };
