@@ -9046,6 +9046,8 @@ void Tokenizer::findGarbageCode() const
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->str()) == 1 && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
             syntaxError(tok);
+        if (Token::Match(tok, "%op% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
+            syntaxError(tok);
     }
 
     // case keyword must be inside switch
