@@ -274,7 +274,7 @@ def scanPackage(workPath, cppcheckPath, jobs):
     options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
     returncode, stdout, stderr, elapsedTime = runCommand(cmd)
-    if stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
+    if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
         # Crash!
         print('Crash!')
         # re-run within gdb to get a stacktrace
