@@ -1899,6 +1899,7 @@ bool Tokenizer::simplifyUsing()
             }
             if (tok == endOfTemplateDefinition) {
                 inTemplateDefinition = false;
+                endOfTemplateDefinition = nullptr;
                 continue;
             }
         }
@@ -2127,7 +2128,6 @@ bool Tokenizer::simplifyUsing()
                             str += " ;";
                             std::list<const Token *> callstack(1, usingStart);
                             mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &list, Severity::debug, "debug",
-
                                                     "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
                         }
                     }
@@ -2148,7 +2148,7 @@ bool Tokenizer::simplifyUsing()
             if (usingEnd->next())
                 Token::eraseTokens(usingStart->previous(), usingEnd->next());
             else {
-                Token::eraseTokens(usingStart, usingEnd);
+                Token::eraseTokens(usingStart->previous(), usingEnd);
                 usingEnd->deleteThis();
             }
         } else {

@@ -173,6 +173,16 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #9042
+        check("template <class T>\n"
+              "class c {\n"
+              "    int i = 0;\n"
+              "    c() { i--; }\n"
+              "};\n"
+              "template <class T>\n"
+              "class s {};\n"
+              "using BOOL = char;");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testfor() {
