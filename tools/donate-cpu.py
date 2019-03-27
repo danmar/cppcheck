@@ -43,7 +43,7 @@ CLIENT_VERSION = "1.1.16"
 
 def checkRequirements():
     result = True
-    for app in ['g++', 'git', 'make', 'wget']:
+    for app in ['g++', 'git', 'make', 'wget', 'gdb']:
         try:
             subprocess.call([app, '--version'])
         except OSError:
