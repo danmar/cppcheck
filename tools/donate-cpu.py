@@ -278,13 +278,15 @@ def scanPackage(workPath, cppcheckPath, jobs):
     if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
         # Crash!
         print('Crash!')
-        # re-run within gdb to get a stacktrace
-        cmd = 'gdb --batch --eval-command=run --eval-command=bt --return-child-result --args ' + cppcheck_cmd + " -j1"
-        returncode, stdout, stderr, elapsedTime = runCommand(cmd)
-        pos = stdout.find("Program received signal")
-        if not pos == -1:
-            print(stdout[pos:])
-        return -1, '', '', -1, options
+        stacktrace = ''
+        if cppcheckPath == 'cppcheck':
+            # re-run within gdb to get a stacktrace
+            cmd = 'gdb --batch --eval-command=run --eval-command=bt --return-child-result --args ' + cppcheck_cmd + " -j1"
+            returncode, stdout, stderr, elapsedTime = runCommand(cmd)
+            pos = stdout.find("Program received signal")
+            if not pos == -1:
+                stacktrace = stdout[pos:]
+        return -1, stacktrace, '', -1, options
     information_messages_list = []
     issue_messages_list = []
     count = 0
