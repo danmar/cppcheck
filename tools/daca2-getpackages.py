@@ -37,6 +37,8 @@ def getpackages():
     if not wget('ls-lR.gz'):
         sys.exit(1)
     subprocess.call(['nice', 'gunzip', 'ls-lR.gz'])
+    if not os.path.isfile('ls-lR'):
+        sys.exit(1)
     f = open('ls-lR', 'rt')
     lines = f.readlines()
     f.close()
