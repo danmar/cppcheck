@@ -461,6 +461,8 @@ if bandwidth_limit and isinstance(bandwidth_limit, str):
         sys.exit(1)
     else:
         print('Bandwidth-limit: ' + bandwidth_limit)
+if packageUrl:
+    max_packages = 1
 if max_packages:
     print('Maximum number of packages to download and analyze: {}'.format(max_packages))
 if not os.path.exists(workpath):
