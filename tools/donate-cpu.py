@@ -272,15 +272,18 @@ def scanPackage(workPath, cppcheckPath, jobs):
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
-    cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
+    cppcheck_cmd = cppcheckPath + '/cppcheck' + ' ' + options
+    cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsedTime = runCommand(cmd)
     if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
         # Crash!
         print('Crash!')
         # re-run within gdb to get a stacktrace
-        cmd = 'gdb --batch --eval-command="set target-charset UTF-8" --eval-command=run --eval-command=bt --return-child-result --args ' + cmd
-        returncode, stdout = runCommand(cmd)
-        print(stdout)
+        cmd = 'gdb --batch --eval-command=run --eval-command=bt --return-child-result --args ' + cppcheck_cmd + " -j1"
+        returncode, stdout, stderr, elapsedTime = runCommand(cmd)
+        pos = stdout.find("Program received signal")
+        if not pos == -1:
+            print(stdout[pos:])
         return -1, '', '', -1, options
     information_messages_list = []
     issue_messages_list = []
