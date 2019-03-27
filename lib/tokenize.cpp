@@ -9765,9 +9765,11 @@ void Tokenizer::simplifyKeyword()
                 Token::createMutualLinks(braceStart, braceEnd);
             }
 
-            // 3) thread_local
+            // 3) thread_local -> static
+            //    on single thread thread_local has the effect of static
             else if (tok->str() == "thread_local") {
-                tok->deleteThis();
+                tok->originalName(tok->str());
+                tok->str("static");
             }
         }
     }

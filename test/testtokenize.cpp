@@ -4132,7 +4132,7 @@ private:
             // Ticket #8679
             const char code[] = "thread_local void *thread_local_var; "
                                 "__thread void *thread_local_var_2;";
-            ASSERT_EQUALS("void * thread_local_var ; "
+            ASSERT_EQUALS("static void * thread_local_var ; "
                           "void * thread_local_var_2 ;", tokenizeAndStringify(code));
         }
     }
