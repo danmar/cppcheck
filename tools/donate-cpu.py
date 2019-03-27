@@ -227,6 +227,17 @@ def hasInclude(path, includes):
             except IOError:
                 pass
     return False
+	
+def runCommand(cmd):
+    print(cmd)
+    startTime = time.time()
+    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    comm = p.communicate()
+    stopTime = time.time()
+    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
+    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
+    elapsedTime = stopTime - startTime
+    return p.returncode, stdout, stderr, elapsedTime
 
 
 def scanPackage(workPath, cppcheckPath, jobs):
@@ -255,25 +266,19 @@ def scanPackage(workPath, cppcheckPath, jobs):
         if os.path.exists(os.path.join(cppcheckPath, 'cfg', library + '.cfg')) and hasInclude('temp', includes):
             libraries += ' --library=' + library
 
-# Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+    # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
     cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
-    print(cmd)
-    startTime = time.time()
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
-    stopTime = time.time()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
-    if p.returncode != 0 and 'cppcheck: error: could not find or open any of the paths given.' not in stdout:
+    returncode, stdout, stderr, elapsedTime = runCommand(cmd)
+    if (returncode != 0 and 'cppcheck: error: could not find or open any of the paths given.' not in stdout) or \
+            (stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0):
         # Crash!
         print('Crash!')
+        # re-run within gdb to get a stacktrace
+        cmd = 'gdb --batch --eval-command="set target-charset UTF-8" --eval-command=run --eval-command=bt --return-child-result --args ' + cmd
+        returncode, stdout = runCommand(cmd)
+        print(stdout)
         return -1, '', '', -1, options
-    if stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
-        # Crash!
-        print('Crash!')
-        return -1, '', '', -1, options
-    elapsedTime = stopTime - startTime
     information_messages_list = []
     issue_messages_list = []
     count = 0
