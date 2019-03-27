@@ -162,8 +162,11 @@ def wget(url, destfile, bandwidth_limit):
     limit_rate_option = ''
     if bandwidth_limit and isinstance(bandwidth_limit, str):
         limit_rate_option = '--limit-rate=' + bandwidth_limit
-    subprocess.call(
+    exitcode = subprocess.call(
             ['wget', '--tries=10', '--timeout=300', limit_rate_option, '-O', destfile, url])
+    if exitcode != 0:
+        os.remove(destfile)
+        return False
     if os.path.isfile(destfile):
         return True
     print('Sleep for 10 seconds..')
@@ -497,6 +500,9 @@ while True:
         time.sleep(30)
         package = getPackage(server_address)
     tgz = downloadPackage(workpath, package, bandwidth_limit)
+    if tgz is None:
+        print("No package downloaded")
+        continue
     unpackPackage(workpath, tgz)
     crash = False
     count = ''
