@@ -561,7 +561,6 @@ while True:
         print('=========================================================')
         print(output)
         print('=========================================================')
-        break
     if do_upload:
         if crash or results_exist:
             uploadResults(package, output, server_address)
