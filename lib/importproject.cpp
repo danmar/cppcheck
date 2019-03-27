@@ -297,7 +297,6 @@ void ImportProject::FileSettings::parseCommand(const std::string &command)
                 defs += stddef;
                 defs += ";";
             }
-        }
         } else if (F == 'i' && fval == "system") {
             ++pos;
             const std::string isystem = readUntil(command, &pos, " ");
