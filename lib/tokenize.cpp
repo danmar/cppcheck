@@ -9052,9 +9052,14 @@ void Tokenizer::findGarbageCode() const
         "typedef",
         "while"};
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->str()) == 1 && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
+        if (!tok->isName() || nonConsecutiveKeywords.count(tok->str()) == 0)
+            continue;
+        if (Token::Match(tok, "%name% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
             syntaxError(tok);
-        if (Token::Match(tok, "%op% %name%") && nonConsecutiveKeywords.count(tok->next()->str()) == 1)
+        const Token *prev = tok;
+        while (prev && prev->isName())
+            prev = prev->previous();
+        if (Token::Match(prev, "%op%|%num%|%str%|%char%"))
             syntaxError(tok);
     }
 
