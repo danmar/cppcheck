@@ -12,6 +12,7 @@
 #                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second
 #                                 --bandwidth-limit=2m => max. 2 megabytes per second
 #  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.
+#  --no-upload          Do not upload anything. Defaults to False.
 #
 # What this script does:
 # 1. Check requirements
@@ -393,6 +394,7 @@ packageUrl = None
 server_address = ('cppcheck.osuosl.org', 8000)
 bandwidth_limit = None
 max_packages = None
+do_upload = True
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -428,6 +430,8 @@ for arg in sys.argv[1:]:
         # 0 means infinitely, no counting needed.
         if max_packages == 0:
             max_packages = None
+    elif arg.startswith('--no-upload'):
+        do_upload = False
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -553,10 +557,11 @@ while True:
         print(output)
         print('=========================================================')
         break
-    if crash or results_exist:
-        uploadResults(package, output, server_address)
-    if info_exists:
-        uploadInfo(package, info_output, server_address)
+    if do_upload:
+        if crash or results_exist:
+            uploadResults(package, output, server_address)
+        if info_exists:
+            uploadInfo(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
         time.sleep(5)
