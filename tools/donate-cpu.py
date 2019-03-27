@@ -77,7 +77,7 @@ def compile_version(workPath, jobs, version):
     os.chdir(workPath + '/cppcheck')
     subprocess.call(['git', 'checkout', version])
     subprocess.call(['make', 'clean'])
-    subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2'])
+    subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2 -g'])
     if os.path.isfile(workPath + '/cppcheck/cppcheck'):
         os.mkdir(workpath + '/' + version)
         destPath = workpath + '/' + version + '/'
@@ -95,7 +95,7 @@ def compile(cppcheckPath, jobs):
     print('Compiling Cppcheck..')
     try:
         os.chdir(cppcheckPath)
-        subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2'])
+        subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2 -g'])
         subprocess.call([cppcheckPath + '/cppcheck', '--version'])
     except OSError:
         return False
