@@ -8993,6 +8993,14 @@ static const Token *findUnmatchedTernaryOp(const Token * const begin, const Toke
 
 void Tokenizer::findGarbageCode() const
 {
+    // initialization: = {
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "= {"))
+            continue;
+        if (Token::simpleMatch(tok->linkAt(1), "} ("))
+            syntaxError(tok->linkAt(1));
+    }
+
     // Inside [] there can't be ; or various keywords
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() != "[")
@@ -9146,8 +9154,10 @@ void Tokenizer::findGarbageCode() const
         syntaxError(list.back());
     if (list.back()->str() == ")" && !Token::Match(list.back()->link()->previous(), "%name% ("))
         syntaxError(list.back());
-    if (Token::Match(list.back(), "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|case|break|continue|typedef"))
-        syntaxError(list.back());
+    for (const Token *end = list.back(); end && end->isName(); end = end->previous()) {
+        if (Token::Match(end, "void|char|short|int|long|float|double|const|volatile|static|inline|struct|class|enum|union|template|sizeof|case|break|continue|typedef"))
+            syntaxError(list.back());
+    }
     if ((list.back()->str()==")" || list.back()->str()=="}") && list.back()->previous() && list.back()->previous()->isControlFlowKeyword())
         syntaxError(list.back()->previous());
 

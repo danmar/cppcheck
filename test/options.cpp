@@ -19,16 +19,19 @@
 #include <iterator>
 
 options::options(int argc, const char* const argv[])
-    :mOptions(argv + 1, argv + argc)
-    ,mWhichTest("")
-    ,mQuiet(mOptions.count("-q") != 0)
-    ,mHelp(mOptions.count("-h") != 0 || mOptions.count("--help"))
+    :mWhichTests(argv + 1, argv + argc)
+    ,mQuiet(mWhichTests.count("-q") != 0)
+    ,mHelp(mWhichTests.count("-h") != 0 || mWhichTests.count("--help"))
 {
-    mOptions.erase("-q");
-    mOptions.erase("-h");
-    mOptions.erase("--help");
-    if (! mOptions.empty()) {
-        mWhichTest = *mOptions.rbegin();
+    for (std::set<std::string>::const_iterator it = mWhichTests.begin(); it != mWhichTests.end();) {
+        if (!(*it).empty() && (((*it)[0] == '-') || ((*it).find("::") != std::string::npos && mWhichTests.count((*it).substr(0, (*it).find("::"))))))
+            it = mWhichTests.erase(it);
+        else
+            ++it;
+    }
+
+    if (mWhichTests.empty()) {
+        mWhichTests.insert("");
     }
 }
 
@@ -42,7 +45,7 @@ bool options::help() const
     return mHelp;
 }
 
-const std::string& options::which_test() const
+const std::set<std::string>& options::which_test() const
 {
-    return mWhichTest;
+    return mWhichTests;
 }

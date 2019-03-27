@@ -298,7 +298,7 @@ void ImportProject::FileSettings::parseCommand(const std::string &command)
                 defs += ";";
             }
         }
-        else if (F == 'i' && fval == "system") {
+        } else if (F == 'i' && fval == "system") {
             ++pos;
             const std::string isystem = readUntil(command, &pos, " ");
             systemIncludePaths.push_back(isystem);

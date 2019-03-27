@@ -1638,6 +1638,7 @@ private:
         ASSERT_THROW(checkCode("int"), InternalError);
         ASSERT_THROW(checkCode("struct A :\n"), InternalError); // #2591
         ASSERT_THROW(checkCode("{} const const\n"), InternalError); // #2637
+        ASSERT_THROW(checkCode("re2c: error: line 14, column 4: can only difference char sets"), InternalError);
 
         // ASSERT_THROW(  , InternalError)
     }
@@ -1656,6 +1657,7 @@ private:
         ASSERT_THROW(checkCode("void f(){x=0,return return''[]()}"), InternalError);
         ASSERT_THROW(checkCode("void f(){x='0'++'0'(return)[];}"), InternalError); // #9063
         ASSERT_THROW(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), InternalError); // #9067
+        ASSERT_THROW(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), InternalError); // #9068
     }
 
     void enumTrailingComma() {
