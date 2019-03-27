@@ -160,12 +160,12 @@ def wget(url, destfile, bandwidth_limit):
         else:
             print('Error: ' + destfile + ' exists but it is not a file! Please check the path and delete it manually.')
             sys.exit(1)
-    limit_rate_option = ''
+    wget_call = ['wget', '--verbose', '--tries=10', '--timeout=300', '-O', destfile, url]
     if bandwidth_limit and isinstance(bandwidth_limit, str):
-        limit_rate_option = '--limit-rate=' + bandwidth_limit
-    exitcode = subprocess.call(
-            ['wget', '--tries=10', '--timeout=300', limit_rate_option, '-O', destfile, url])
+        wget_call.append('--limit-rate=' + bandwidth_limit)
+    exitcode = subprocess.call(wget_call)
     if exitcode != 0:
+        print('wget failed with ' + str(exitcode))
         os.remove(destfile)
         return False
     if os.path.isfile(destfile):
