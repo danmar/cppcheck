@@ -300,7 +300,7 @@ def scanPackage(workPath, cppcheckPath, jobs):
         pos2 = stderr.find(' [cppcheckError]', pos1)
         signr = int(stderr[pos1+len(s):pos2])
         return -signr, '', '', -signr, options
-    if stderr.find('#### ThreadExecutor'):
+    if stderr.find('#### ThreadExecutor') > 0:
         print('Thread!')
         return -111, '', '', -111, options
     information_messages_list = []
