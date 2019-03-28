@@ -46,9 +46,7 @@ sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime():
-    d = datetime.date.strftime(datetime.datetime.now().date(), '%Y-%m-%d')
-    t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
-    return d + ' ' + t
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
 def overviewReport():
