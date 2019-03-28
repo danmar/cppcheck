@@ -14,6 +14,11 @@ import logging
 import logging.handlers
 import operator
 
+# Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
+# Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
+# changes)
+SERVER_VERSION = "1.1.0"
+
 OLD_VERSION = '1.87'
 
 
@@ -64,6 +69,8 @@ def overviewReport():
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
+    html += '<br>\n'
+    html += 'version ' + SERVER_VERSION + '\n'
     html += '</body></html>'
     return html
 
@@ -717,6 +724,9 @@ def server(server_address_port, packages, packageIndex, resultPath):
     if os.path.isfile('latest.txt'):
         with open('latest.txt', 'rt') as f:
             latestResults = f.read().strip().split(' ')
+
+    print('[' + strDateTime() + '] version ' + SERVER_VERSION)
+    print('[' + strDateTime() + '] listening on port ' + str(server_address_port))
 
     while True:
         # wait for a connection
