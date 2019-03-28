@@ -49,10 +49,14 @@ def strDateTime():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
+def dateTimeFromStr(datestr):
+    return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
+
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash.html">Crash report</a><br>\n'
+    html += '<a href="stale.html">Stale report</a><br>\n'
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
@@ -75,8 +79,10 @@ def fmt(a, b, c, d, e):
         ret += ' '
     ret += ' '
     ret += b[-5:].rjust(column_width[2]) + ' '
-    ret += c.rjust(column_width[3]) + ' '
-    ret += d.rjust(column_width[4]) + ' '
+    if not c is None:
+        ret += c.rjust(column_width[3]) + ' '
+    if not d is None:
+        ret += d.rjust(column_width[4]) + ' '
     if not e is None:
         ret += e.rjust(column_width[5])
     if a != 'Package':
@@ -151,6 +157,34 @@ def crashReport():
             if counts[1] == 'Crash!':
                 c1 = 'Crash'
             html += fmt(package, datestr, c2, c1, None) + '\n'
+            break
+    html += '</pre>\n'
+
+    html += '</body></html>\n'
+    return html
+
+
+def staleReport():
+    html = '<html><head><title>Stale report</title></head><body>\n'
+    html += '<h1>Stale report</h1>\n'
+    html += '<pre>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', None, None, None) + '</b>\n'
+    current_year = datetime.date.today().year
+    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+        if not os.path.isfile(filename):
+            continue
+        for line in open(filename, 'rt'):
+            line = line.strip()
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
+            else:
+                continue
+            dt = dateTimeFromStr(datestr)
+            diff = datetime.datetime.now() - dt
+            if diff.days < 30:
+                continue
+            package = filename[filename.rfind('/')+1:]
+            html += fmt(package, datestr, None, None, None) + '\n'
             break
     html += '</pre>\n'
 
@@ -612,6 +646,9 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'crash.html':
                 html = crashReport()
+                httpGetResponse(self.connection, html, 'text/html')
+            elif url == 'stale.html':
+                html = staleReport()
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff.html':
                 html = diffReport(self.resultPath)
