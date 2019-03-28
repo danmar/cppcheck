@@ -206,6 +206,8 @@ def unpackPackage(workPath, tgz):
 
 
 def hasInclude(path, includes):
+    re_includes = [re.escape(inc) for inc in includes]
+    re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
     for root, _, files in os.walk(path):
         for name in files:
             filename = os.path.join(root, name)
@@ -222,12 +224,12 @@ def hasInclude(path, includes):
                     # Python3 directly reads the data into a string object that has no decode()
                     pass
                 f.close()
-                re_includes = [re.escape(inc) for inc in includes]
-                if re.search('^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')', filedata, re.MULTILINE):
+                if re.search(re_expr, filedata, re.MULTILINE):
                     return True
             except IOError:
                 pass
     return False
+
 	
 def runCommand(cmd):
     print(cmd)
