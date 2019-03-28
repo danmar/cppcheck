@@ -67,7 +67,7 @@ def overviewReport():
 
 
 def fmt(a, b, c, d, e):
-    column_width = [15, 10, 5, 6, 6, 8]
+    column_width = [40, 10, 5, 6, 6, 8]
     ret = a
     while len(ret) < column_width[0]:
         ret += ' '
@@ -89,13 +89,14 @@ def fmt(a, b, c, d, e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
-    html += '<pre>\n<b>' + fmt('Package', 'Date       Time ', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
         if not os.path.isfile(filename):
             continue
         package = filename[filename.rfind('/')+1:]
+        current_year = datetime.date.today().year
 
         datestr = ''
         count = ['0', '0']
@@ -103,7 +104,6 @@ def latestReport(latestResults):
         added = 0
         for line in open(filename, 'rt'):
             line = line.strip()
-            current_year = datetime.date.today().year
             if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             #elif line.startswith('cppcheck:'):
