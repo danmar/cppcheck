@@ -168,19 +168,16 @@ def wget(url, destfile, bandwidth_limit):
         print('wget failed with ' + str(exitcode))
         os.remove(destfile)
         return False
-    if os.path.isfile(destfile):
-        return True
-    print('Sleep for 10 seconds..')
-    time.sleep(10)
-    return False
+    if not os.path.isfile(destfile):
+        return False
+    return True
 
 
 def downloadPackage(workPath, package, bandwidth_limit):
     print('Download package ' + package)
     destfile = workPath + '/temp.tgz'
     if not wget(package, destfile, bandwidth_limit):
-        if not wget(package, destfile, bandwidth_limit):
-            return None
+        return None
     return destfile
 
 
