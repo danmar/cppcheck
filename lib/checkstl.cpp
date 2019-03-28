@@ -73,6 +73,18 @@ void CheckStl::outOfBounds()
                     outOfBoundsError(tok, &value, nullptr);
                     continue;
                 }
+                if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
+                    const Token *parent = tok->tokAt(3)->astParent();
+                    const Token *other = nullptr;
+                    if (Token::simpleMatch(parent, "+") && parent->astOperand1() && parent->astOperand1()->hasKnownIntValue())
+                        other = parent->astOperand1();
+                    else if (Token::simpleMatch(parent, "+") && parent->astOperand2() && parent->astOperand2()->hasKnownIntValue())
+                        other = parent->astOperand2();
+                    if (other && other->getKnownIntValue() > value.intvalue) {
+                        outOfBoundsError(tok, &value, &other->values().back());
+                        continue;
+                    }
+                }
                 if (!container->arrayLike_indexOp && !container->stdStringLike)
                     continue;
                 if (value.intvalue == 0 && Token::Match(tok, "%name% [")) {

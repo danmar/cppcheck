@@ -274,6 +274,12 @@ private:
                     "  x[0];\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f() {\n"
+                    "  std::string s;\n"
+                    "  x = s.begin() + 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in s because s is empty.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
@@ -1130,7 +1136,7 @@ private:
     void dereference() {
         check("void f()\n"
               "{\n"
-              "    std::vector<int> ints;\n"
+              "    std::vector<int> ints{1,2,3,4,5};\n"
               "    std::vector<int>::iterator iter;\n"
               "    iter = ints.begin() + 2;\n"
               "    ints.erase(iter);\n"
@@ -1202,7 +1208,7 @@ private:
     void dereference_auto() {
         check("void f()\n"
               "{\n"
-              "    std::vector<int> ints;\n"
+              "    std::vector<int> ints{1,2,3,4,5};\n"
               "    auto iter = ints.begin() + 2;\n"
               "    ints.erase(iter);\n"
               "    std::cout << (*iter) << std::endl;\n"
