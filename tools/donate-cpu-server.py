@@ -79,7 +79,8 @@ def fmt(a, b, c, d, e):
     ret += b[-5:].rjust(column_width[2]) + ' '
     ret += c.rjust(column_width[3]) + ' '
     ret += d.rjust(column_width[4]) + ' '
-    ret += e.rjust(column_width[5])
+    if not e is None:
+        ret += e.rjust(column_width[5])
     if a != 'Package':
         pos = ret.find(' ')
         ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
@@ -129,28 +130,29 @@ def crashReport():
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>Package                                 ' + OLD_VERSION + '  Head</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', None) + '</b>\n'
+    current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
         if not os.path.isfile(filename):
             continue
+        datestr = ''
         for line in open(filename, 'rt'):
+            line = line.strip()
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
             if not line.startswith('count:'):
                 continue
             if line.find('Crash') < 0:
                 break
-            packageName = filename[filename.rfind('/')+1:]
+            package = filename[filename.rfind('/')+1:]
             counts = line.strip().split(' ')
-            out = packageName + ' '
-            while len(out) < 40:
-                out += ' '
+            c2 = ''
             if counts[2] == 'Crash!':
-                out += 'Crash '
-            else:
-                out += '      '
+                c2 = 'Crash'
+            c1 = ''
             if counts[1] == 'Crash!':
-                out += 'Crash'
-            out = '<a href="' + packageName + '">' + packageName + '</a>' + out[out.find(' '):]
-            html += out + '\n'
+                c1 = 'Crash'
+            html += fmt(package, datestr, c2, c1, None) + '\n'
             break
     html += '</pre>\n'
 
