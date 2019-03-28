@@ -12,6 +12,7 @@
 #                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second
 #                                 --bandwidth-limit=2m => max. 2 megabytes per second
 #  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.
+#  --no-upload          Do not upload anything. Defaults to False.
 #
 # What this script does:
 # 1. Check requirements
@@ -38,12 +39,12 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.16"
+CLIENT_VERSION = "1.1.17"
 
 
 def checkRequirements():
     result = True
-    for app in ['g++', 'git', 'make', 'wget']:
+    for app in ['g++', 'git', 'make', 'wget', 'gdb']:
         try:
             subprocess.call([app, '--version'])
         except OSError:
@@ -76,7 +77,7 @@ def compile_version(workPath, jobs, version):
     os.chdir(workPath + '/cppcheck')
     subprocess.call(['git', 'checkout', version])
     subprocess.call(['make', 'clean'])
-    subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2'])
+    subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2 -g'])
     if os.path.isfile(workPath + '/cppcheck/cppcheck'):
         os.mkdir(workpath + '/' + version)
         destPath = workpath + '/' + version + '/'
@@ -94,7 +95,7 @@ def compile(cppcheckPath, jobs):
     print('Compiling Cppcheck..')
     try:
         os.chdir(cppcheckPath)
-        subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2'])
+        subprocess.call(['make', jobs, 'SRCDIR=build', 'CXXFLAGS=-O2 -g'])
         subprocess.call([cppcheckPath + '/cppcheck', '--version'])
     except OSError:
         return False
@@ -159,24 +160,24 @@ def wget(url, destfile, bandwidth_limit):
         else:
             print('Error: ' + destfile + ' exists but it is not a file! Please check the path and delete it manually.')
             sys.exit(1)
-    limit_rate_option = ''
+    wget_call = ['wget', '--tries=10', '--timeout=300', '-O', destfile, url]
     if bandwidth_limit and isinstance(bandwidth_limit, str):
-        limit_rate_option = '--limit-rate=' + bandwidth_limit
-    subprocess.call(
-            ['wget', '--tries=10', '--timeout=300', limit_rate_option, '-O', destfile, url])
-    if os.path.isfile(destfile):
-        return True
-    print('Sleep for 10 seconds..')
-    time.sleep(10)
-    return False
+        wget_call.append('--limit-rate=' + bandwidth_limit)
+    exitcode = subprocess.call(wget_call)
+    if exitcode != 0:
+        print('wget failed with ' + str(exitcode))
+        os.remove(destfile)
+        return False
+    if not os.path.isfile(destfile):
+        return False
+    return True
 
 
 def downloadPackage(workPath, package, bandwidth_limit):
     print('Download package ' + package)
     destfile = workPath + '/temp.tgz'
     if not wget(package, destfile, bandwidth_limit):
-        if not wget(package, destfile, bandwidth_limit):
-            return None
+        return None
     return destfile
 
 
@@ -205,6 +206,8 @@ def unpackPackage(workPath, tgz):
 
 
 def hasInclude(path, includes):
+    re_includes = [re.escape(inc) for inc in includes]
+    re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
     for root, _, files in os.walk(path):
         for name in files:
             filename = os.path.join(root, name)
@@ -221,12 +224,23 @@ def hasInclude(path, includes):
                     # Python3 directly reads the data into a string object that has no decode()
                     pass
                 f.close()
-                re_includes = [re.escape(inc) for inc in includes]
-                if re.search('^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')', filedata, re.MULTILINE):
+                if re.search(re_expr, filedata, re.MULTILINE):
                     return True
             except IOError:
                 pass
     return False
+
+	
+def runCommand(cmd):
+    print(cmd)
+    startTime = time.time()
+    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    comm = p.communicate()
+    stopTime = time.time()
+    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
+    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
+    elapsedTime = stopTime - startTime
+    return p.returncode, stdout, stderr, elapsedTime
 
 
 def scanPackage(workPath, cppcheckPath, jobs):
@@ -255,25 +269,27 @@ def scanPackage(workPath, cppcheckPath, jobs):
         if os.path.exists(os.path.join(cppcheckPath, 'cfg', library + '.cfg')) and hasInclude('temp', includes):
             libraries += ' --library=' + library
 
-# Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+    # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = jobs + libraries + ' -D__GNUC__ --check-library --inconclusive --enable=style,information --platform=unix64 --template=daca2 -rp=temp temp'
-    cmd = 'nice ' + cppcheckPath + '/cppcheck' + ' ' + options
-    print(cmd)
-    startTime = time.time()
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
-    stopTime = time.time()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
-    if p.returncode != 0 and 'cppcheck: error: could not find or open any of the paths given.' not in stdout:
+    cppcheck_cmd = cppcheckPath + '/cppcheck' + ' ' + options
+    cmd = 'nice ' + cppcheck_cmd
+    returncode, stdout, stderr, elapsedTime = runCommand(cmd)
+    if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
         # Crash!
         print('Crash!')
-        return -1, '', '', -1, options
-    if stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
-        # Crash!
-        print('Crash!')
-        return -1, '', '', -1, options
-    elapsedTime = stopTime - startTime
+        stacktrace = ''
+        if cppcheckPath == 'cppcheck':
+            # re-run within gdb to get a stacktrace
+            cmd = 'gdb --batch --eval-command=run --eval-command=bt --return-child-result --args ' + cppcheck_cmd + " -j1"
+            returncode, stdout, stderr, elapsedTime = runCommand(cmd)
+            gdb_pos = stdout.find(" received signal")
+            if not gdb_pos == -1:
+                last_check_pos = stdout.rfind('Checking ', 0, gdb_pos)
+                if last_check_pos == -1:
+                    stacktrace = stdout[gdb_pos:]
+                else:
+                    stacktrace = stdout[last_check_pos:]
+        return -1, stacktrace, '', -1, options
     information_messages_list = []
     issue_messages_list = []
     count = 0
@@ -385,6 +401,7 @@ packageUrl = None
 server_address = ('cppcheck.osuosl.org', 8000)
 bandwidth_limit = None
 max_packages = None
+do_upload = True
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -420,6 +437,8 @@ for arg in sys.argv[1:]:
         # 0 means infinitely, no counting needed.
         if max_packages == 0:
             max_packages = None
+    elif arg.startswith('--no-upload'):
+        do_upload = False
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -433,6 +452,7 @@ for arg in sys.argv[1:]:
         print('                       Examples: --bandwidth-limit=250k => max. 250 kilobytes per second')
         print('                                 --bandwidth-limit=2m => max. 2 megabytes per second')
         print('  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.')
+        print('  --no-upload          Do not upload anything. Defaults to False.')
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
@@ -449,6 +469,8 @@ if bandwidth_limit and isinstance(bandwidth_limit, str):
         sys.exit(1)
     else:
         print('Bandwidth-limit: ' + bandwidth_limit)
+if packageUrl:
+    max_packages = 1
 if max_packages:
     print('Maximum number of packages to download and analyze: {}'.format(max_packages))
 if not os.path.exists(workpath):
@@ -492,6 +514,9 @@ while True:
         time.sleep(30)
         package = getPackage(server_address)
     tgz = downloadPackage(workpath, package, bandwidth_limit)
+    if tgz is None:
+        print("No package downloaded")
+        continue
     unpackPackage(workpath, tgz)
     crash = False
     count = ''
@@ -541,11 +566,11 @@ while True:
         print('=========================================================')
         print(output)
         print('=========================================================')
-        break
-    if crash or results_exist:
-        uploadResults(package, output, server_address)
-    if info_exists:
-        uploadInfo(package, info_output, server_address)
+    if do_upload:
+        if crash or results_exist:
+            uploadResults(package, output, server_address)
+        if info_exists:
+            uploadInfo(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
         time.sleep(5)
