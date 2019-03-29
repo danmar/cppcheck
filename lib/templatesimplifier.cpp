@@ -1032,6 +1032,8 @@ void TemplateSimplifier::simplifyTemplateAliases()
         TokenAndName &templateAlias = *it1;
         ++it1;
         Token *startToken = templateAlias.token;
+        if (!startToken)
+            continue;
         while (Token::Match(startToken->tokAt(-2), "%name% :: %name%"))
             startToken = startToken->tokAt(-2);
         if (!Token::Match(startToken->tokAt(-4), "> using %name% = %name% ::|<"))
@@ -1061,15 +1063,17 @@ void TemplateSimplifier::simplifyTemplateAliases()
         const Token *endToken = nullptr;
         for (it2 = it1; it2 != mTemplateInstantiations.end(); ++it2) {
             TokenAndName &aliasUsage = *it2;
-            if (aliasUsage.name != aliasName)
+            if (!aliasUsage.token || aliasUsage.name != aliasName)
                 continue;
             std::vector<std::pair<Token *, Token *>> args;
             Token *tok2 = aliasUsage.token->tokAt(2);
             while (tok2) {
                 Token * const start = tok2;
                 while (tok2 && !Token::Match(tok2, "[,>;{}]")) {
-                    if (tok2->link() && Token::Match(tok2, "(|<|["))
+                    if (tok2->link() && Token::Match(tok2, "(|["))
                         tok2 = tok2->link();
+                    else if (tok2->str() == "<")
+                        tok2 = tok2->findClosingBracket();
                     tok2 = tok2->next();
                 }
 
