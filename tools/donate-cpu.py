@@ -293,6 +293,8 @@ def scanPackage(workPath, cppcheckPath, jobs):
         return -11, stacktrace, '', -11, options
     if returncode != 0:
         print('Error!')
+        if returncode > 0:
+            returncode = -100-returncode
         return returncode, '', '', returncode, options
     if stderr.find('Internal error: Child process crashed with signal ') > 0:
         print('Error!')
@@ -303,7 +305,7 @@ def scanPackage(workPath, cppcheckPath, jobs):
         return -signr, '', '', -signr, options
     if stderr.find('#### ThreadExecutor') > 0:
         print('Thread!')
-        return -111, '', '', -111, options
+        return -222, '', '', -222, options
     information_messages_list = []
     issue_messages_list = []
     count = 0
