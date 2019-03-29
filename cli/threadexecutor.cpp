@@ -91,13 +91,13 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     }
 
     if (type != REPORT_OUT && type != REPORT_ERROR && type != REPORT_INFO && type != CHILD_END) {
-        std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
+        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(0);
     }
 
     unsigned int len = 0;
     if (read(rpipe, &len, sizeof(len)) <= 0) {
-        std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
+        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(0);
     }
 
@@ -106,7 +106,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     char *buf = new char[len + 1];
     const ssize_t readIntoBuf = read(rpipe, buf, len);
     if (readIntoBuf <= 0) {
-        std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
+        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(0);
     }
     buf[readIntoBuf] = 0;
@@ -183,25 +183,25 @@ unsigned int ThreadExecutor::check()
         if ((iFile != _files.end() || iFileSettings != _settings.project.fileSettings.end()) && nchildren < _settings.jobs && checkLoadAverage(nchildren)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
-                std::cerr << "pipe() failed: "<< std::strerror(errno) << std::endl;
+                std::cerr << "#### ThreadExecutor::check, pipe() failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
             int flags = 0;
             if ((flags = fcntl(pipes[0], F_GETFL, 0)) < 0) {
-                std::cerr << "fcntl(F_GETFL) failed: "<< std::strerror(errno) << std::endl;
+                std::cerr << "#### ThreadExecutor::check, fcntl(F_GETFL) failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
             if (fcntl(pipes[0], F_SETFL, flags | O_NONBLOCK) < 0) {
-                std::cerr << "fcntl(F_SETFL) failed: "<< std::strerror(errno) << std::endl;
+                std::cerr << "#### ThreadExecutor::check, fcntl(F_SETFL) failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
             pid_t pid = fork();
             if (pid < 0) {
                 // Error
-                std::cerr << "Failed to create child process: "<< std::strerror(errno) << std::endl;
+                std::cerr << "#### ThreadExecutor::check, Failed to create child process: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             } else if (pid == 0) {
                 close(pipes[0]);
@@ -377,7 +377,7 @@ unsigned int ThreadExecutor::check()
     for (unsigned int i = 0; i < _settings.jobs; ++i) {
         threadHandles[i] = (HANDLE)_beginthreadex(nullptr, 0, threadProc, this, 0, nullptr);
         if (!threadHandles[i]) {
-            std::cerr << "#### .\nThreadExecutor::check error, errno :" << errno << std::endl;
+            std::cerr << "#### ThreadExecutor::check error, errno :" << errno << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -385,10 +385,10 @@ unsigned int ThreadExecutor::check()
     const DWORD waitResult = WaitForMultipleObjects(_settings.jobs, threadHandles, TRUE, INFINITE);
     if (waitResult != WAIT_OBJECT_0) {
         if (waitResult == WAIT_FAILED) {
-            std::cerr << "#### .\nThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
+            std::cerr << "#### ThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
             exit(EXIT_FAILURE);
         } else {
-            std::cerr << "#### .\nThreadExecutor::check wait failed, result: " << waitResult << std::endl;
+            std::cerr << "#### ThreadExecutor::check wait failed, result: " << waitResult << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -398,14 +398,14 @@ unsigned int ThreadExecutor::check()
         DWORD exitCode;
 
         if (!GetExitCodeThread(threadHandles[i], &exitCode)) {
-            std::cerr << "#### .\nThreadExecutor::check get exit code failed, error:" << GetLastError() << std::endl;
+            std::cerr << "#### ThreadExecutor::check get exit code failed, error:" << GetLastError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
         result += exitCode;
 
         if (!CloseHandle(threadHandles[i])) {
-            std::cerr << "#### .\nThreadExecutor::check close handle failed, error:" << GetLastError() << std::endl;
+            std::cerr << "#### ThreadExecutor::check close handle failed, error:" << GetLastError() << std::endl;
             exit(EXIT_FAILURE);
         }
     }

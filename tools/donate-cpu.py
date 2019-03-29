@@ -39,7 +39,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.17"
+CLIENT_VERSION = "1.1.18"
 
 
 def checkRequirements():
@@ -274,8 +274,8 @@ def scanPackage(workPath, cppcheckPath, jobs):
     cppcheck_cmd = cppcheckPath + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsedTime = runCommand(cmd)
+    print('cppcheck finished with ' + str(returncode))
     if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
-        # Crash!
         print('Crash!')
         stacktrace = ''
         if cppcheckPath == 'cppcheck':
@@ -289,7 +289,20 @@ def scanPackage(workPath, cppcheckPath, jobs):
                     stacktrace = stdout[gdb_pos:]
                 else:
                     stacktrace = stdout[last_check_pos:]
-        return -1, stacktrace, '', -1, options
+        return -11, stacktrace, '', -11, options
+    if returncode != 0:
+        print('Error!')
+        return returncode, '', '', returncode, options
+    if stderr.find('Internal error: Child process crashed with signal ') > 0:
+        print('Error!')
+        s = 'Internal error: Child process crashed with signal '
+        pos1 = stderr.find(s)
+        pos2 = stderr.find(' [cppcheckError]', pos1)
+        signr = int(stderr[pos1+len(s):pos2])
+        return -signr, '', '', -signr, options
+    if stderr.find('#### ThreadExecutor') > 0:
+        print('Thread!')
+        return -111, '', '', -111, options
     information_messages_list = []
     issue_messages_list = []
     count = 0
