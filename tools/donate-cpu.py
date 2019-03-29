@@ -295,7 +295,7 @@ def scanPackage(workPath, cppcheckPath, jobs):
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
-        return returncode, '', '', returncode, options
+        return returncode, stdout, '', returncode, options
     if stderr.find('Internal error: Child process crashed with signal ') > 0:
         print('Error!')
         s = 'Internal error: Child process crashed with signal '
