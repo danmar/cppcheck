@@ -1,32 +1,18 @@
 
-# Cppcheck fuzzer
+# oss-fuzz client
 #
-# Example compile command when using AFL:
-# make CXX=../afl/afl-clang++ CXXFLAGS="-static -O1"
-#
-# Example compile command when using LibFuzzer:
-# make CXX=clang++-6.0 CXXFLAGS="-O1 -fsanitize=address,fuzzer -DNO_MAIN"
-#
-# Standalone LibFuzzer tool
-# make CXX=clang++-6.0 CXXFLAGS="-O1 -fsanitize=address,fuzzer-no-link"
 
-TARGET_NAME=cppcheck-fuzzing-client
-
-CPPCHECK_DIR=../cppcheck
+CPPCHECK_DIR=..
 INCLUDE_DIR=-I ${CPPCHECK_DIR}/lib -I ${CPPCHECK_DIR}/externals/simplecpp -I ${CPPCHECK_DIR}/externals/tinyxml
-SRC_FILES=main.cpp ${CPPCHECK_DIR}/externals/simplecpp/simplecpp.cpp ${CPPCHECK_DIR}/externals/tinyxml/tinyxml2.cpp ${CPPCHECK_DIR}/lib/*.cpp
-OBJ_FILES=main.cpp ${CPPCHECK_DIR}/externals/simplecpp/simplecpp.o ${CPPCHECK_DIR}/externals/tinyxml/tinyxml2.o ${CPPCHECK_DIR}/lib/*.o
+SRC_FILES=main.cpp type2.cpp ${CPPCHECK_DIR}/externals/simplecpp/simplecpp.cpp ${CPPCHECK_DIR}/externals/tinyxml/tinyxml2.cpp ${CPPCHECK_DIR}/lib/*.cpp
 
-all: ${TARGET_NAME}
-
-${TARGET_NAME}: main.cpp
-	${CXX} -std=c++11 -g ${CXXFLAGS} -o ${TARGET_NAME} ${INCLUDE_DIR} ${SRC_FILES}
+all:	oss-fuzz-client	translate
 
 oss-fuzz-client:
 	${CXX} -std=c++11 -g -DNO_MAIN ${CXXFLAGS} -o oss-fuzz-client ${INCLUDE_DIR} ${SRC_FILES} -lFuzzingEngine
 
-fast-build:	main.cpp
-	${CXX} -std=c++11 -g ${CXXFLAGS} -o ${TARGET_NAME} ${INCLUDE_DIR} ${OBJ_FILES}
+translate:
+	g++ -o translate type2.cpp translate.cpp
 
 clean:
-	rm -f ${TARGET_NAME}
+	rm -f oss-fuzz-client translate
