@@ -4,7 +4,8 @@
 #
 # Syntax: donate-cpu.py [-jN] [--package=url] [--stop-time=HH:MM] [--work-path=path] [--test] [--bandwidth-limit=limit]
 #  -jN                  Use N threads in compilation/analysis. Default is 1.
-#  --package=url        Check a specific package and then stop. Can be useful if you want to reproduce some warning/crash/exception/etc..
+#  --package=url        Check a specific package and then stop. Can be useful if you want to reproduce
+#                       some warning/crash/exception/etc..
 #  --stop-time=HH:MM    Stop analysis when time has passed. Default is that you must terminate the script.
 #  --work-path=path     Work folder path. Default path is cppcheck-donate-cpu-workfolder in your home folder.
 #  --test               Connect to a donate-cpu-server that is running locally on port 8001 for testing.
@@ -230,7 +231,7 @@ def hasInclude(path, includes):
                 pass
     return False
 
-	
+
 def runCommand(cmd):
     print(cmd)
     startTime = time.time()
@@ -255,12 +256,12 @@ def scanPackage(workPath, cppcheckPath, jobs):
                        # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
-                       #'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'], <- Enable after release of 1.88
+                       # 'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'], <- Enable after release of 1.88
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/'],
                        'sdl': ['<SDL.h>'],
-                       #'sqlite3': ['<sqlite3.h>'], <- Enable after release of 1.88
+                       # 'sqlite3': ['<sqlite3.h>'], <- Enable after release of 1.88
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
