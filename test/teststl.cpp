@@ -280,6 +280,12 @@ private:
                     "  x = s.begin() + 1;\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+1' because 's' is empty.\n", errout.str());
+
+        checkNormal("void f(int x) {\n"
+                    "  std::string s;\n"
+                    "  x = s.begin() + x;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+x' because 's' is empty and 'x' may be non-zero.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
