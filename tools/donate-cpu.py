@@ -556,15 +556,6 @@ while True:
         if ver == 'head':
             head_info_msg = info
 
-    results_exist = True
-    if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
-        results_exist = False
-    info_exists = True
-    if len(head_info_msg) == 0:
-        info_exists = False
-    if not crash and not results_exist and not info_exists:
-        print('No results')
-        continue
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
@@ -582,11 +573,11 @@ while True:
         print('=========================================================')
         print(output)
         print('=========================================================')
+        print(info_output)
+        print('=========================================================')
     if do_upload:
-        if crash or results_exist:
-            uploadResults(package, output, server_address)
-        if info_exists:
-            uploadInfo(package, info_output, server_address)
+        uploadResults(package, output, server_address)
+        uploadInfo(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
         time.sleep(5)
