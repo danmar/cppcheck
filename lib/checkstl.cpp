@@ -70,7 +70,7 @@ void CheckStl::outOfBounds()
                 if (!value.errorSeverity() && !mSettings->isEnabled(Settings::WARNING))
                     continue;
                 if (value.intvalue == 0 && Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::ITEM) {
-                    outOfBoundsError(tok, &value, nullptr);
+                    outOfBoundsError(tok->tokAt(3), tok->str(), &value, tok->strAt(2), nullptr);
                     continue;
                 }
                 if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
@@ -81,26 +81,26 @@ void CheckStl::outOfBounds()
                     else if (Token::simpleMatch(parent, "+") && parent->astOperand2() && parent->astOperand2()->hasKnownIntValue())
                         other = parent->astOperand2();
                     if (other && other->getKnownIntValue() > value.intvalue) {
-                        outOfBoundsError(tok, &value, &other->values().back());
+                        outOfBoundsError(parent, tok->str(), &value, other->expressionString(), &other->values().back());
                         continue;
                     }
                 }
                 if (!container->arrayLike_indexOp && !container->stdStringLike)
                     continue;
                 if (value.intvalue == 0 && Token::Match(tok, "%name% [")) {
-                    outOfBoundsError(tok, &value, nullptr);
+                    outOfBoundsError(tok->next(), tok->str(), &value, "", nullptr);
                     continue;
                 }
                 if (container->arrayLike_indexOp && Token::Match(tok, "%name% [")) {
                     const ValueFlow::Value *indexValue = tok->next()->astOperand2() ? tok->next()->astOperand2()->getMaxValue(false) : nullptr;
                     if (indexValue && indexValue->intvalue >= value.intvalue) {
-                        outOfBoundsError(tok, &value, indexValue);
+                        outOfBoundsError(tok->next(), tok->str(), &value, tok->next()->astOperand2()->expressionString(), indexValue);
                         continue;
                     }
                     if (mSettings->isEnabled(Settings::WARNING)) {
                         indexValue = tok->next()->astOperand2() ? tok->next()->astOperand2()->getMaxValue(true) : nullptr;
                         if (indexValue && indexValue->intvalue >= value.intvalue) {
-                            outOfBoundsError(tok, &value, indexValue);
+                            outOfBoundsError(tok->next(), tok->str(), &value, tok->next()->astOperand2()->expressionString(), indexValue);
                             continue;
                         }
                     }
@@ -110,39 +110,40 @@ void CheckStl::outOfBounds()
     }
 }
 
-void CheckStl::outOfBoundsError(const Token *tok, const ValueFlow::Value *containerSize, const ValueFlow::Value *index)
+void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue)
 {
-    // Do not warn if both the container size and index are possible
-    if (containerSize && index && containerSize->isPossible() && index->isPossible())
+    // Do not warn if both the container size and index value are possible
+    if (containerSize && indexValue && containerSize->isPossible() && indexValue->isPossible())
         return;
 
-    const std::string varname = tok ? tok->str() : std::string("var");
+    const std::string expression = tok ? tok->expressionString() : (containerName+"[x]");
 
     std::string errmsg;
     if (!containerSize)
-        errmsg = "Out of bounds access of item in container '$symbol'";
+        errmsg = "Out of bounds access in expression '" + expression + "'";
     else if (containerSize->intvalue == 0) {
         if (containerSize->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol is accessed out of bounds when $symbol is empty.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or expression '" + expression + "' cause access out of bounds.";
         else
-            errmsg = "Out of bounds access in $symbol because $symbol is empty.";
-    } else if (index) {
-        errmsg = "Accessing $symbol[" + MathLib::toString(index->intvalue) + "] is out of bounds when $symbol size is " + MathLib::toString(containerSize->intvalue) + ".";
+            errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty.";
+    } else if (indexValue) {
         if (containerSize->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + MathLib::toString(containerSize->intvalue) + ". " + errmsg;
-        else if (index->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(index->condition) + " or $symbol item " + MathLib::toString(index->intvalue) + " can be accessed. " + errmsg;
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + MathLib::toString(containerSize->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
+        else if (indexValue->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + MathLib::toString(indexValue->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
+        else
+            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + MathLib::toString(indexValue->intvalue);
     } else {
         // should not happen
         return;
     }
 
     ErrorPath errorPath;
-    if (!index)
+    if (!indexValue)
         errorPath = getErrorPath(tok, containerSize, "Access out of bounds");
     else {
         ErrorPath errorPath1 = getErrorPath(tok, containerSize, "Access out of bounds");
-        ErrorPath errorPath2 = getErrorPath(tok, index, "Access out of bounds");
+        ErrorPath errorPath2 = getErrorPath(tok, indexValue, "Access out of bounds");
         if (errorPath1.size() <= 1)
             errorPath = errorPath2;
         else if (errorPath2.size() <= 1)
@@ -154,11 +155,11 @@ void CheckStl::outOfBoundsError(const Token *tok, const ValueFlow::Value *contai
     }
 
     reportError(errorPath,
-                (containerSize && !containerSize->errorSeverity()) || (index && !index->errorSeverity()) ? Severity::warning : Severity::error,
+                (containerSize && !containerSize->errorSeverity()) || (indexValue && !indexValue->errorSeverity()) ? Severity::warning : Severity::error,
                 "containerOutOfBounds",
-                "$symbol:" + varname +"\n" + errmsg,
+                "$symbol:" + containerName +"\n" + errmsg,
                 CWE398,
-                (containerSize && containerSize->isInconclusive()) || (index && index->isInconclusive()));
+                (containerSize && containerSize->isInconclusive()) || (indexValue && indexValue->isInconclusive()));
 }
 
 bool CheckStl::isContainerSize(const Token *containerToken, const Token *expr) const

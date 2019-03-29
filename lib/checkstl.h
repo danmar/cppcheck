@@ -185,7 +185,7 @@ private:
     void string_c_strReturn(const Token* tok);
     void string_c_strParam(const Token* tok, unsigned int number);
 
-    void outOfBoundsError(const Token *tok, const ValueFlow::Value *containerSize, const ValueFlow::Value *index);
+    void outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue);
     void outOfBoundsIndexExpressionError(const Token *tok, const Token *index);
     void stlOutOfBoundsError(const Token* tok, const std::string& num, const std::string& var, bool at);
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
@@ -221,7 +221,7 @@ private:
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckStl c(nullptr, settings, errorLogger);
-        c.outOfBoundsError(nullptr, nullptr, nullptr);
+        c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
         c.iteratorsError(nullptr, nullptr, "container0", "container1");
