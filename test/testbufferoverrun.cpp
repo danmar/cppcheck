@@ -228,6 +228,7 @@ private:
         TEST_CASE(crash4);  // Ticket #8679 - crash
         TEST_CASE(crash5);  // Ticket #8644 - crash
         TEST_CASE(crash6);  // Ticket #9024 - crash
+        TEST_CASE(crash7);  // Ticket #9073 - crash
 
         // TODO TEST_CASE(insecureCmdLineArgs);
         // TODO TEST_CASE(checkBufferAllocatedWithStrlen);
@@ -3714,11 +3715,16 @@ private:
               "}");
     }
 
-    void crash6() { // 8644 - token has varId() but variable() is null
+    void crash6() {
         check("void start(char* name) {\n"
               "char snapname[64] = { 0 }; \n"
               "strncpy(snapname, \"snapshot\", arrayLength(snapname)); \n"
               "}");
+    }
+
+    void crash7() { // 9073 - [ has no astParent
+        check("char x[10];\n"
+              "void f() { x[10]; }");
     }
 
     void insecureCmdLineArgs() {

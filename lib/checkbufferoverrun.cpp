@@ -278,7 +278,7 @@ void CheckBufferOverrun::arrayIndex()
                     const Token *parent = tok;
                     while (Token::simpleMatch(parent, "["))
                         parent = parent->astParent();
-                    if (parent->isUnaryOp("&"))
+                    if (!parent || parent->isUnaryOp("&"))
                         continue;
                 }
                 if (overflow || equal) {
