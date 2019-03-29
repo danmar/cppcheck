@@ -14,6 +14,11 @@ import logging
 import logging.handlers
 import operator
 
+# Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
+# Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
+# changes)
+SERVER_VERSION = "1.1.0"
+
 OLD_VERSION = '1.87'
 
 
@@ -46,15 +51,17 @@ sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime():
-    d = datetime.date.strftime(datetime.datetime.now().date(), '%Y-%m-%d')
-    t = datetime.time.strftime(datetime.datetime.now().time(), '%H:%M')
-    return d + ' ' + t
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
+
+def dateTimeFromStr(datestr):
+    return datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M')
 
 def overviewReport():
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash.html">Crash report</a><br>\n'
+    html += '<a href="stale.html">Stale report</a><br>\n'
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
@@ -62,12 +69,14 @@ def overviewReport():
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
+    html += '<br>\n'
+    html += 'version ' + SERVER_VERSION + '\n'
     html += '</body></html>'
     return html
 
 
 def fmt(a, b, c, d, e):
-    column_width = [15, 10, 5, 6, 6, 8]
+    column_width = [40, 10, 5, 6, 6, 8]
     ret = a
     while len(ret) < column_width[0]:
         ret += ' '
@@ -77,9 +86,12 @@ def fmt(a, b, c, d, e):
         ret += ' '
     ret += ' '
     ret += b[-5:].rjust(column_width[2]) + ' '
-    ret += c.rjust(column_width[3]) + ' '
-    ret += d.rjust(column_width[4]) + ' '
-    ret += e.rjust(column_width[5])
+    if not c is None:
+        ret += c.rjust(column_width[3]) + ' '
+    if not d is None:
+        ret += d.rjust(column_width[4]) + ' '
+    if not e is None:
+        ret += e.rjust(column_width[5])
     if a != 'Package':
         pos = ret.find(' ')
         ret = '<a href="' + a + '">' + a + '</a>' + ret[pos:]
@@ -89,13 +101,14 @@ def fmt(a, b, c, d, e):
 def latestReport(latestResults):
     html = '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
-    html += '<pre>\n<b>' + fmt('Package', 'Date       Time ', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
+    html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff') + '</b>\n'
 
     # Write report for latest results
     for filename in latestResults:
         if not os.path.isfile(filename):
             continue
         package = filename[filename.rfind('/')+1:]
+        current_year = datetime.date.today().year
 
         datestr = ''
         count = ['0', '0']
@@ -103,7 +116,6 @@ def latestReport(latestResults):
         added = 0
         for line in open(filename, 'rt'):
             line = line.strip()
-            current_year = datetime.date.today().year
             if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             #elif line.startswith('cppcheck:'):
@@ -129,28 +141,57 @@ def crashReport():
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
-    html += '<b>Package                                 ' + OLD_VERSION + '  Head</b>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', None) + '</b>\n'
+    current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
         if not os.path.isfile(filename):
             continue
+        datestr = ''
         for line in open(filename, 'rt'):
+            line = line.strip()
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
             if not line.startswith('count:'):
                 continue
             if line.find('Crash') < 0:
                 break
-            packageName = filename[filename.rfind('/')+1:]
+            package = filename[filename.rfind('/')+1:]
             counts = line.strip().split(' ')
-            out = packageName + ' '
-            while len(out) < 40:
-                out += ' '
+            c2 = ''
             if counts[2] == 'Crash!':
-                out += 'Crash '
-            else:
-                out += '      '
+                c2 = 'Crash'
+            c1 = ''
             if counts[1] == 'Crash!':
-                out += 'Crash'
-            out = '<a href="' + packageName + '">' + packageName + '</a>' + out[out.find(' '):]
-            html += out + '\n'
+                c1 = 'Crash'
+            html += fmt(package, datestr, c2, c1, None) + '\n'
+            break
+    html += '</pre>\n'
+
+    html += '</body></html>\n'
+    return html
+
+
+def staleReport():
+    html = '<html><head><title>Stale report</title></head><body>\n'
+    html += '<h1>Stale report</h1>\n'
+    html += '<pre>\n'
+    html += '<b>' + fmt('Package', 'Date       Time', None, None, None) + '</b>\n'
+    current_year = datetime.date.today().year
+    for filename in sorted(glob.glob(os.path.expanduser('~/daca@home/donated-results/*'))):
+        if not os.path.isfile(filename):
+            continue
+        for line in open(filename, 'rt'):
+            line = line.strip()
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
+            else:
+                continue
+            dt = dateTimeFromStr(datestr)
+            diff = datetime.datetime.now() - dt
+            if diff.days < 30:
+                continue
+            package = filename[filename.rfind('/')+1:]
+            html += fmt(package, datestr, None, None, None) + '\n'
             break
     html += '</pre>\n'
 
@@ -613,6 +654,9 @@ class HttpClientThread(Thread):
             elif url == 'crash.html':
                 html = crashReport()
                 httpGetResponse(self.connection, html, 'text/html')
+            elif url == 'stale.html':
+                html = staleReport()
+                httpGetResponse(self.connection, html, 'text/html')
             elif url == 'diff.html':
                 html = diffReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
@@ -680,6 +724,9 @@ def server(server_address_port, packages, packageIndex, resultPath):
     if os.path.isfile('latest.txt'):
         with open('latest.txt', 'rt') as f:
             latestResults = f.read().strip().split(' ')
+
+    print('[' + strDateTime() + '] version ' + SERVER_VERSION)
+    print('[' + strDateTime() + '] listening on port ' + str(server_address_port))
 
     while True:
         # wait for a connection
