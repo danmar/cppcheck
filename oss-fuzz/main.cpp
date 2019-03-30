@@ -27,10 +27,12 @@ public:
 };
 
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize) {
-
-    CppcheckExecutor cppcheckExecutor;
-    cppcheckExecutor.run(generateCode2(data, dataSize));
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
+{
+    if (dataSize < 10000) {
+        CppcheckExecutor cppcheckExecutor;
+        cppcheckExecutor.run(generateCode2(data, dataSize));
+    }
     return 0;
 }
 

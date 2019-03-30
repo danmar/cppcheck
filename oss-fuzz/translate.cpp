@@ -4,7 +4,8 @@
 
 #include "type2.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     const char *filename = argc==2 ? argv[1] : nullptr;
 
     if (!filename) {

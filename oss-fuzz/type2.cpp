@@ -4,7 +4,8 @@
 
 
 
-static int getValue(const uint8_t *data, size_t dataSize, uint8_t maxValue, bool *done = nullptr) {
+static int getValue(const uint8_t *data, size_t dataSize, uint8_t maxValue, bool *done = nullptr)
+{
     static size_t pos;    // current "data" position
     static int dataValue; // value extracted from data
     static int ones;      // ones. This variable tracks if we need to add more stuff in "dataValue".
@@ -29,14 +30,15 @@ static int getValue(const uint8_t *data, size_t dataSize, uint8_t maxValue, bool
     return ret;
 }
 
-static std::string generateExpression2_lvalue(const uint8_t *data, size_t dataSize) {
+static std::string generateExpression2_lvalue(const uint8_t *data, size_t dataSize)
+{
     return "var" + std::to_string(1 + getValue(data, dataSize, 5));
 }
 
-static std::string generateExpression2_Op(const uint8_t *data, size_t dataSize, int numberOfGlobalConstants) {
+static std::string generateExpression2_Op(const uint8_t *data, size_t dataSize, int numberOfGlobalConstants)
+{
     std::ostringstream code;
-    switch (getValue(data, dataSize, 3))
-    {
+    switch (getValue(data, dataSize, 3)) {
     case 0:
         code << generateExpression2_lvalue(data, dataSize);
         break;
@@ -50,7 +52,8 @@ static std::string generateExpression2_Op(const uint8_t *data, size_t dataSize, 
     return code.str();
 }
 
-static std::string generateExpression2_Expr(const uint8_t *data, size_t dataSize, int numberOfGlobalConstants, int depth=0) {
+static std::string generateExpression2_Expr(const uint8_t *data, size_t dataSize, int numberOfGlobalConstants, int depth=0)
+{
     ++depth;
     const unsigned int type = (depth > 3) ? 0 : getValue(data, dataSize, 3);
     const char binop[] = "=<>+-*/%&|^";
@@ -94,7 +97,8 @@ static std::string generateExpression2_Cond(const uint8_t *data, size_t dataSize
 }
 
 
-static std::string functionStart() {
+static std::string functionStart()
+{
     static int functionNumber;
     return "int f" + std::to_string(++functionNumber) + "()\n"
            "{\n";
@@ -112,8 +116,7 @@ static std::string generateExpression2_conditionalCode(const std::string &indent
     else
         code << indent << "{\n";
 
-    for (int line = 0; line < 4 || indent.empty(); ++line)
-    {
+    for (int line = 0; line < 4 || indent.empty(); ++line) {
         bool done = false;
         const int type1 = getValue(data, dataSize, 8, &done);
         if (done)
@@ -154,7 +157,8 @@ static std::string generateExpression2_conditionalCode(const std::string &indent
     return code.str();
 }
 
-std::string generateCode2(const uint8_t *data, size_t dataSize) {
+std::string generateCode2(const uint8_t *data, size_t dataSize)
+{
     std::ostringstream code;
 
     // create global constants
