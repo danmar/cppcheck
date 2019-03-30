@@ -213,9 +213,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             temp.bufferSize = AllocFunc::BufferSize::strdup;
                         else
                             return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
+                        temp.bufferSizeArg1 = 1;
+                        temp.bufferSizeArg2 = 2;
                         if (bufferSize[6] == 0) {
-                            temp.bufferSizeArg1 = 1;
-                            temp.bufferSizeArg2 = 2;
+                            // use default values
                         } else if (bufferSize[6] == ':' && bufferSize[7] >= '1' && bufferSize[7] <= '5') {
                             temp.bufferSizeArg1 = bufferSize[7] - '0';
                             if (bufferSize[8] == ',' && bufferSize[9] >= '1' && bufferSize[9] <= '5')
