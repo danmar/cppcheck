@@ -359,6 +359,7 @@ private:
 
         TEST_CASE(lambda); // #5867
         TEST_CASE(lambda2); // #7473
+        TEST_CASE(lambda3);
 
         TEST_CASE(circularDependencies); // #6298
 
@@ -5835,6 +5836,24 @@ private:
             ASSERT_EQUALS(Scope::eLambda, scope->type);
         }
     }
+
+
+    void lambda3() {
+        GET_SYMBOL_DB("void func() {\n"
+                      "    auto f = []() mutable {}\n"
+                      "}");
+
+        ASSERT(db && db->scopeList.size() == 3);
+        if (db && db->scopeList.size() == 3) {
+            std::list<Scope>::const_iterator scope = db->scopeList.begin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eFunction, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eLambda, scope->type);
+        }
+    }
+
     // #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"
     void circularDependencies() {
         check("template<template<class> class E,class D> class C : E<D> {\n"
