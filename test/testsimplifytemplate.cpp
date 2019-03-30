@@ -178,6 +178,7 @@ private:
         TEST_CASE(templateAlias1);
         TEST_CASE(templateAlias2);
         TEST_CASE(templateAlias3); // #8315
+        TEST_CASE(templateAlias4); // #9070
 
         // Test TemplateSimplifier::instantiateMatch
         TEST_CASE(instantiateMatch);
@@ -3319,6 +3320,21 @@ private:
                                 "std :: shared_ptr < void ( Tag<0> ) > s ; "
                                 "struct Tag<0> { } ;";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void templateAlias4() { // #9070
+        const char code[] = "template <class T>\n"
+                            "using IntrusivePtr = boost::intrusive_ptr<T>;\n"
+                            "template <class T> class Vertex { };\n"
+                            "IntrusivePtr<Vertex<int>> p;";
+        const char expected[] = "; "
+                                "class Vertex<int> ; "
+                                "boost :: intrusive_ptr < Vertex<int> > p ;"
+                                "class Vertex<int> { } ;";
+        const char actual[] = "; "
+                              "template < class T > class Vertex { } ; "
+                              "boost :: intrusive_ptr < T > p ;";
+        TODO_ASSERT_EQUALS(expected, actual, tok(code));
     }
 
     unsigned int instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {
