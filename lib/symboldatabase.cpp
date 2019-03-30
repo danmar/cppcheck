@@ -3034,7 +3034,11 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         const Token* nameTok  = nullptr;
 
         do {
-            if (tok->varId() != 0) {
+            if (tok != startTok && !nameTok && Token::Match(tok, "( & %var% ) [")) {
+                nameTok = tok->tokAt(2);
+                endTok = nameTok->previous();
+                tok = tok->link();
+            } else if (tok->varId() != 0) {
                 nameTok = tok;
                 endTok = tok->previous();
             } else if (tok->str() == "[") {
