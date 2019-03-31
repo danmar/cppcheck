@@ -5477,6 +5477,13 @@ void SymbolDatabase::setValueTypeInTokenList()
         }
     }
 
+    if (mSettings->debugwarnings) {
+        for (Token *tok = tokens; tok; tok = tok->next()) {
+            if (tok->str() == "auto" && !tok->valueType())
+                debugMessage(tok, "auto token with no type.");
+        }
+    }
+
     // Update functions with new type information.
     createSymbolDatabaseSetFunctionPointers(false);
 
