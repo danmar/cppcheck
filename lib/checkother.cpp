@@ -1443,6 +1443,9 @@ void CheckOther::checkIncompleteStatement()
             continue;
         if (isVoidStmt(tok))
             continue;
+        if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
+			// Possible archive
+			continue;
         bool inconclusive = Token::Match(tok, "%cop%");
         if (mSettings->inconclusive || !inconclusive)
             constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);

@@ -85,6 +85,7 @@ private:
         TEST_CASE(commaoperator);
         TEST_CASE(redundantstmts);
         TEST_CASE(vardecl);
+        TEST_CASE(archive);             // ar & x
     }
 
     void test1() {
@@ -366,6 +367,18 @@ private:
         check("void f() { char * const * a = 0, * volatile const * b; }", true);
         ASSERT_EQUALS("", errout.str());
     }
+
+	void archive() {
+		check("void f(Archive &ar) {\n"
+		      "  ar & x;\n"
+		      "}", true);
+		ASSERT_EQUALS("", errout.str());
+
+		check("void f(int ar) {\n"
+		      "  ar & x;\n"
+		      "}", true);
+		ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
+	}
 };
 
 REGISTER_TEST(TestIncompleteStatement)
