@@ -368,17 +368,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-	void archive() {
-		check("void f(Archive &ar) {\n"
-		      "  ar & x;\n"
-		      "}", true);
-		ASSERT_EQUALS("", errout.str());
+    void archive() {
+        check("void f(Archive &ar) {\n"
+              "  ar & x;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
 
-		check("void f(int ar) {\n"
-		      "  ar & x;\n"
-		      "}", true);
-		ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
-	}
+        check("void f(int ar) {\n"
+              "  ar & x;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestIncompleteStatement)
