@@ -9060,7 +9060,7 @@ void Tokenizer::findGarbageCode() const
         while (prev && prev->isName())
             prev = prev->previous();
         if (Token::Match(prev, "%op%|%num%|%str%|%char%"))
-            syntaxError(tok);
+            syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
     }
 
     // case keyword must be inside switch

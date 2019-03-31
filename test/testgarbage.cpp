@@ -1656,7 +1656,7 @@ private:
     void syntaxErrorFuzzerCliType1() {
         ASSERT_THROW(checkCode("void f(){x=0,return return''[]()}"), InternalError);
         ASSERT_THROW(checkCode("void f(){x='0'++'0'(return)[];}"), InternalError); // #9063
-        checkCode("void f(){*(int *)42=0;}");
+        checkCode("void f(){*(int *)42=0;}"); // no syntax error
         ASSERT_THROW(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), InternalError); // #9067
         ASSERT_THROW(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), InternalError); // #9068
         ASSERT_THROW(checkCode("void f() { x= y{ } name5 y[ ] + y ^ name5 ^ name5 for ( ( y y y && y y y && name5 ++ int )); }"), InternalError); // #9069
