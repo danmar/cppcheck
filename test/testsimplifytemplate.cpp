@@ -3016,6 +3016,11 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
 
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "var1")
+                (const_cast<Token *>(tok))->varId(1);
+        }
+
         return TemplateSimplifier::templateParameters(tokenizer.tokens()->next());
     }
 
@@ -3041,6 +3046,8 @@ private:
         ASSERT_EQUALS(1U, templateParameters("X<i == 0> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<int, i>=0> x;"));
         ASSERT_EQUALS(3U, templateParameters("X<int, i>=0, i - 2> x;"));
+        ASSERT_EQUALS(0U, templateParameters("var1<1> x;"));
+        ASSERT_EQUALS(0U, templateParameters("X<1>2;"));
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

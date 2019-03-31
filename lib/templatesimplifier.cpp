@@ -320,6 +320,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         return 0;
     if (tok->str() != "<")
         return 0;
+    if (Token::Match(tok->previous(), "%var% <"))
+        return 0;
     tok = tok->next();
 
     unsigned int level = 0;
@@ -412,11 +414,11 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         // ,/>
         while (Token::Match(tok, ">|>>")) {
             if (level == 0)
-                return ((tok->str() == ">") ? numberOfParameters : 0);
+                return tok->str() == ">" && !Token::Match(tok->next(), "%num%") ? numberOfParameters : 0;
             --level;
             if (tok->str() == ">>") {
                 if (level == 0)
-                    return numberOfParameters;
+                    return !Token::Match(tok->next(), "%num%") ? numberOfParameters : 0;
                 --level;
             }
             tok = tok->next();
