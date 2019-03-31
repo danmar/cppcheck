@@ -64,6 +64,7 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.arrayIndex();
+        checkBufferOverrun.pointerArithmetic();
         checkBufferOverrun.bufferOverflow();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.stringNotZeroTerminated();
@@ -72,6 +73,7 @@ public:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
         c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
+        c.pointerArithmeticError(nullptr, nullptr, nullptr);
         c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr);
@@ -89,6 +91,9 @@ private:
     void arrayIndex();
     void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
     void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
+
+    void pointerArithmetic();
+    void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
 
     void bufferOverflow();
     void bufferOverflowError(const Token *tok, const ValueFlow::Value *value);
@@ -126,6 +131,7 @@ private:
     std::string classInfo() const OVERRIDE {
         return "Out of bounds checking:\n"
                "- Array index out of bounds\n"
+               "- Pointer arithmetic overflow\n"
                "- Buffer overflow\n"
                "- Dangerous usage of strncat()\n"
                "- Using array index before checking it\n"

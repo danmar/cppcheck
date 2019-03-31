@@ -185,9 +185,9 @@ private:
         // char a[10];
         // char *p1 = a + 10;  // OK
         // char *p2 = a + 11   // UB
-        // TODO TEST_CASE(pointer_out_of_bounds_1);
+        TEST_CASE(pointer_out_of_bounds_1);
         // TODO TEST_CASE(pointer_out_of_bounds_2);
-        // TODO TEST_CASE(pointer_out_of_bounds_3);
+        TEST_CASE(pointer_out_of_bounds_3);
         // TODO TEST_CASE(pointer_out_of_bounds_sub);
 
         // TODO TEST_CASE(strncat1);
@@ -2743,7 +2743,7 @@ private:
               "    if (i == 123) {}\n"
               "    dostuff(x+i);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
 
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"

@@ -52,9 +52,10 @@ namespace {
 // CWE ids used:
 static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
 static const CWE CWE170(170U);  // Improper Null Termination
-static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+static const CWE CWE_ARRAY_INDEX_THEN_CHECK(398U);  // Indicator of Poor Code Quality
 static const CWE CWE682(682U);  // Incorrect Calculation
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE_POINTER_ARITHMETIC_OVERFLOW(758U); // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
 static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After End of Buffer
 
@@ -182,6 +183,91 @@ static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &pa
 
 //---------------------------------------------------------------------------
 
+static bool getDimensionsEtc(const Token * const arrayToken, const Settings *settings, std::vector<Dimension> * const dimensions, ErrorPath * const errorPath, bool * const mightBeLarger)
+{
+    const Token *array = arrayToken;
+    while (Token::Match(array, ".|::"))
+        array = array->astOperand2();
+
+    if (!array->variable())
+        return false;
+
+    if (array->variable()->isArray() && !array->variable()->dimensions().empty()) {
+        *dimensions = array->variable()->dimensions();
+        if (dimensions->size() >= 1 && ((*dimensions)[0].num <= 1 || !(*dimensions)[0].tok)) {
+            visitAstNodes(arrayToken,
+            [&](const Token *child) {
+                if (child->originalName() == "->") {
+                    *mightBeLarger = true;
+                    return ChildrenToVisit::none;
+                }
+                return ChildrenToVisit::op1_and_op2;
+            });
+        }
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize()) {
+        Dimension dim;
+        dim.tok = nullptr;
+        dim.num = Token::getStrSize(stringLiteral);
+        dim.known = array->hasKnownValue();
+        dimensions->emplace_back(dim);
+    } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
+        const ValueFlow::Value *value = getBufferSizeValue(array);
+        if (!value)
+            return false;
+        *errorPath = value->errorPath;
+        Dimension dim;
+        dim.known = value->isKnown();
+        dim.tok = nullptr;
+        dim.num = value->intvalue / array->valueType()->typeSize(*settings);
+        dimensions->emplace_back(dim);
+    }
+    return !dimensions->empty();
+}
+
+static std::vector<const ValueFlow::Value *> getOverrunIndexValues(const Token *tok, const Token *arrayToken, const std::vector<Dimension> &dimensions, const std::vector<const Token *> &indexTokens)
+{
+    const Token *array = arrayToken;
+    while (Token::Match(array, ".|::"))
+        array = array->astOperand2();
+
+    for (int cond = 0; cond < 2; cond++) {
+        bool equal = false;
+        bool overflow = false;
+        bool allKnown = true;
+        std::vector<const ValueFlow::Value *> indexValues;
+        for (size_t i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
+            const ValueFlow::Value *value = indexTokens[i]->getMaxValue(cond == 1);
+            indexValues.push_back(value);
+            if (!value)
+                continue;
+            if (!value->isKnown()) {
+                if (!allKnown)
+                    continue;
+                allKnown = false;
+            }
+            if (array->variable()->isArray() && dimensions[i].num == 0)
+                continue;
+            if (value->intvalue == dimensions[i].num)
+                equal = true;
+            else if (value->intvalue > dimensions[i].num)
+                overflow = true;
+        }
+        if (equal && tok->str() != "[")
+            continue;
+        if (!overflow && equal) {
+            const Token *parent = tok;
+            while (Token::simpleMatch(parent, "["))
+                parent = parent->astParent();
+            if (!parent || parent->isUnaryOp("&"))
+                continue;
+        }
+        if (overflow || equal)
+            return indexValues;
+    }
+
+    return std::vector<const ValueFlow::Value *>();
+}
+
 void CheckBufferOverrun::arrayIndex()
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -214,78 +300,15 @@ void CheckBufferOverrun::arrayIndex()
 
         std::vector<Dimension> dimensions;
         ErrorPath errorPath;
-
         bool mightBeLarger = false;
-
-        if (array->variable()->isArray() && !array->variable()->dimensions().empty()) {
-            dimensions = array->variable()->dimensions();
-            if (dimensions.size() >= 1 && (dimensions[0].num <= 1 || !dimensions[0].tok)) {
-                visitAstNodes(tok->astOperand1(),
-                [&](const Token *child) {
-                    if (child->originalName() == "->") {
-                        mightBeLarger = true;
-                        return ChildrenToVisit::none;
-                    }
-                    return ChildrenToVisit::op1_and_op2;
-                });
-            }
-        } else if (const Token *stringLiteral = array->getValueTokenMinStrSize()) {
-            Dimension dim;
-            dim.tok = nullptr;
-            dim.num = Token::getStrSize(stringLiteral);
-            dim.known = array->hasKnownValue();
-            dimensions.emplace_back(dim);
-        } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
-            const ValueFlow::Value *value = getBufferSizeValue(array);
-            if (!value)
-                continue;
-            errorPath = value->errorPath;
-            Dimension dim;
-            dim.known = value->isKnown();
-            dim.tok = nullptr;
-            dim.num = value->intvalue / array->valueType()->typeSize(*mSettings);
-            dimensions.emplace_back(dim);
-        }
-
-        if (dimensions.empty())
+        if (!getDimensionsEtc(tok->astOperand1(), mSettings, &dimensions, &errorPath, &mightBeLarger))
             continue;
 
         // Positive index
         if (!mightBeLarger) { // TODO check arrays with dim 1 also
-            for (int cond = 0; cond < 2; cond++) {
-                bool equal = false;
-                bool overflow = false;
-                bool allKnown = true;
-                std::vector<const ValueFlow::Value *> indexes;
-                for (size_t i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
-                    const ValueFlow::Value *value = indexTokens[i]->getMaxValue(cond == 1);
-                    indexes.push_back(value);
-                    if (!value)
-                        continue;
-                    if (!value->isKnown()) {
-                        if (!allKnown)
-                            continue;
-                        allKnown = false;
-                    }
-                    if (array->variable()->isArray() && dimensions[i].num == 0)
-                        continue;
-                    if (value->intvalue == dimensions[i].num)
-                        equal = true;
-                    else if (value->intvalue > dimensions[i].num)
-                        overflow = true;
-                }
-                if (!overflow && equal) {
-                    const Token *parent = tok;
-                    while (Token::simpleMatch(parent, "["))
-                        parent = parent->astParent();
-                    if (!parent || parent->isUnaryOp("&"))
-                        continue;
-                }
-                if (overflow || equal) {
-                    arrayIndexError(tok, dimensions, indexes);
-                    break;
-                }
-            }
+            const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, tok->astOperand1(), dimensions, indexTokens);
+            if (!indexValues.empty())
+                arrayIndexError(tok, dimensions, indexValues);
         }
 
         // Negative index
@@ -392,6 +415,80 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const std::vector<
                 arrayIndexMessage(tok, dimensions, indexes, condition),
                 CWE_BUFFER_UNDERRUN,
                 negativeValue->isInconclusive());
+}
+
+//---------------------------------------------------------------------------
+
+void CheckBufferOverrun::pointerArithmetic()
+{
+    if (!mSettings->isEnabled(Settings::PORTABILITY))
+        return;
+
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "+|-"))
+            continue;
+        if (!tok->valueType() || tok->valueType()->pointer == 0)
+            continue;
+        if (!tok->astOperand1() || !tok->astOperand2())
+            continue;
+        if (!tok->astOperand1()->valueType() || !tok->astOperand2()->valueType())
+            continue;
+
+        const Token *arrayToken, *indexToken;
+        if (tok->astOperand1()->valueType()->pointer > 0) {
+            arrayToken = tok->astOperand1();
+            indexToken = tok->astOperand2();
+        } else {
+            arrayToken = tok->astOperand2();
+            indexToken = tok->astOperand1();
+        }
+
+        if (!indexToken || !indexToken->valueType() || indexToken->valueType()->pointer > 0 || !indexToken->valueType()->isIntegral())
+            continue;
+
+        std::vector<Dimension> dimensions;
+        ErrorPath errorPath;
+        bool mightBeLarger = false;
+        if (!getDimensionsEtc(arrayToken, mSettings, &dimensions, &errorPath, &mightBeLarger))
+            continue;
+
+        if (tok->str() == "+") {
+            // Positive index
+            if (!mightBeLarger) { // TODO check arrays with dim 1 also
+                const std::vector<const Token *> indexTokens{indexToken};
+                const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, arrayToken, dimensions, indexTokens);
+                if (!indexValues.empty())
+                    pointerArithmeticError(tok, indexToken, indexValues.front());
+            }
+
+            if (const ValueFlow::Value *neg = indexToken->getValueLE(-1, mSettings))
+                pointerArithmeticError(tok, indexToken, neg);
+        } else if (tok->str() == "-") {
+            // TODO
+        }
+    }
+}
+
+void CheckBufferOverrun::pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue)
+{
+    if (!tok) {
+        reportError(tok, Severity::portability, "pointerOutOfBounds", "Pointer arithmetic overflow.", CWE_POINTER_ARITHMETIC_OVERFLOW, false);
+        reportError(tok, Severity::portability, "pointerOutOfBoundsCond", "Pointer arithmetic overflow.", CWE_POINTER_ARITHMETIC_OVERFLOW, false);
+        return;
+    }
+
+    std::string errmsg;
+    if (indexValue->condition)
+        errmsg = "Undefined behaviour, when '" + indexToken->expressionString() + "' is " + MathLib::toString(indexValue->intvalue) + " the pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
+    else
+        errmsg = "Undefined behaviour, pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
+
+    reportError(getErrorPath(tok, indexValue, "Pointer arithmetic overflow"),
+                Severity::portability,
+                indexValue->condition ? "pointerOutOfBoundsCond" : "pointerOutOfBounds",
+                errmsg,
+                CWE_POINTER_ARITHMETIC_OVERFLOW,
+                indexValue->isInconclusive());
 }
 
 //---------------------------------------------------------------------------
@@ -566,7 +663,7 @@ void CheckBufferOverrun::arrayIndexThenCheckError(const Token *tok, const std::s
                 "Defensive programming: The variable '$symbol' is used as an array index before it "
                 "is checked that is within limits. This can mean that the array might be accessed out of bounds. "
                 "Reorder conditions such as '(a[i] && i < 10)' to '(i < 10 && a[i])'. That way the array will "
-                "not be accessed if the index is out of limits.", CWE398, false);
+                "not be accessed if the index is out of limits.", CWE_ARRAY_INDEX_THEN_CHECK, false);
 }
 
 //---------------------------------------------------------------------------
