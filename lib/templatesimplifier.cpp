@@ -1479,6 +1479,10 @@ void TemplateSimplifier::expandTemplate(
                         dst->previous()->isLong(start->isLong());
                     }
                 }
+
+                if (!start)
+                    continue;
+
                 if (start->link()) {
                     if (Token::Match(start, "[|{|(")) {
                         links[start->link()] = dst->previous();
@@ -2342,6 +2346,8 @@ bool TemplateSimplifier::matchSpecialization(
         const Token *instToken = templateInstantiationNameToken->tokAt(2);
         const Token *declToken = (*it)->tokAt(2);
         const Token * const endToken = (*it)->next()->findClosingBracket();
+        if (!endToken)
+            continue;
         while (declToken != endToken) {
             if (declToken->str() != instToken->str()) {
                 int nr = 0;
@@ -2355,7 +2361,7 @@ bool TemplateSimplifier::matchSpecialization(
             instToken = instToken->next();
         }
 
-        if (declToken == endToken && instToken->str() == ">") {
+        if (declToken && instToken && declToken == endToken && instToken->str() == ">") {
             // specialization matches.
             return templateDeclarationNameToken == *it;
         }
