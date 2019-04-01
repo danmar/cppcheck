@@ -1135,7 +1135,6 @@ void CheckClass::checkMemset()
                     // 3 arguments.
                     continue;
 
-
                 const Token *typeTok = nullptr;
                 const Scope *type = nullptr;
                 if (Token::Match(arg3, "sizeof ( %type% ) )"))
@@ -1237,12 +1236,23 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             const Token *tok1 = var.typeStartToken();
             const Scope *typeScope = var.typeScope();
 
+            std::string typeName;
+            if (Token::Match(tok1, "%type% ::")) {
+                const Token *typeTok = tok1;
+                while (Token::Match(typeTok, "%type% ::")) {
+                    typeName += typeTok->str() + "::";
+                    typeTok = typeTok->tokAt(2);
+                }
+                typeName += typeTok->str();
+            }
+
             // check for std:: type
-            if (var.isStlType() && tok1->strAt(2) != "array" && !mSettings->library.podtype(tok1->strAt(2)))
+            if (var.isStlType() && typeName != "std::array" && !mSettings->library.podtype(typeName)) {
                 if (allocation)
-                    mallocOnClassError(tok, tok->str(), type->classDef, "'std::" + tok1->strAt(2) + "'");
+                    mallocOnClassError(tok, tok->str(), type->classDef, "'" + typeName + "'");
                 else
-                    memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
+                    memsetError(tok, tok->str(), "'" + typeName + "'", type->classDef->str());
+            }
 
             // check for known type
             else if (typeScope && typeScope != type)
