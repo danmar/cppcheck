@@ -1,5 +1,4 @@
 
-
 # Cppcheck 1.88 dev
 
 ## Introduction
@@ -8,9 +7,9 @@ Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to
 
 Supported code and platforms:
 
-  - You can check non-standard code that contains various compiler extensions, inline assembly code, etc.
-  - Cppcheck should be compilable by any C++ compiler that handles the latest C++ standard.
-  - Cppcheck should work on any platform that has sufficient CPU and memory.
+- You can check non-standard code that contains various compiler extensions, inline assembly code, etc.
+- Cppcheck should be compilable by any C++ compiler that handles the latest C++ standard.
+- Cppcheck should work on any platform that has sufficient CPU and memory.
 
 Please understand that there are limits of Cppcheck. Cppcheck is rarely wrong about reported errors. But there are
 many bugs that it doesn't detect.
@@ -28,9 +27,10 @@ good results.
 
 In the project settings dialog, the first option you see is "Import project". It is recommended that you use this
 feature if you can. Cppcheck can import:
- - Visual studio solution / project
- - Compile database (can be generated from cmake/qbs/etc build files)
- - Borland C++ Builder 6
+
+- Visual studio solution / project
+- Compile database (can be generated from cmake/qbs/etc build files)
+- Borland C++ Builder 6
 
 When you have filled out the project settings and click on OK; the Cppcheck analysis will start.
 
@@ -55,7 +55,6 @@ The output from cppcheck will then be:
 
     Checking file1.c...
     [file1.c:4]: (error) Array 'a[10]' index 10 out of bounds
-
 
 #### Checking all files in a folder
 
@@ -121,7 +120,6 @@ portability warnings. 64-bit portability. code might work different on different
 **information**
 
 Configuration problems. The recommendation is to only enable these during configuration.
-
 
 ## Importing project
 
@@ -197,7 +195,6 @@ You can also create your own custom platform configuration in a xml file. Here i
       </sizeof>
     </platform>
 
-
 ## Preprocessor Settings
 
 If you use `--project` then Cppcheck will use the preprocessor settings from the imported project. Otherwise you'll probably want to configure the include paths, defines, etc.
@@ -212,7 +209,7 @@ Here is a file that has 2 preprocessor configurations (with A defined and withou
         x = z;
     #endif
 
-By default Cppcheck will check all preprocessor configurations (except those that have #error in them). So the above code will by default be analyzed both with `A` defined and without `A` defined. 
+By default Cppcheck will check all preprocessor configurations (except those that have #error in them). So the above code will by default be analyzed both with `A` defined and without `A` defined.
 
 You can use `-D` to change this. When you use `-D`, cppcheck will by default only check the given configuration and nothing else. This is how compilers work. But you can use `--force` or `--max-configs` to override the number of configurations.
 
@@ -234,7 +231,6 @@ Another useful flag might be `-U`. It tells Cppcheck that a macro is not defined
 
 That will mean that X is not defined. Cppcheck will not check what happens when X is defined.
 
-
 ### Include paths
 
 To add an include path, use `-I`, followed by the path.
@@ -247,7 +243,7 @@ The purpose of this behaviour is that cppcheck is meant to work without necessar
 
 If you want to filter out certain errors you can suppress these.
 
-Please note that if you see a false positive then we (the Cppcheck team) want that you report it so we can fix it. 
+Please note that if you see a false positive then we (the Cppcheck team) want that you report it so we can fix it.
 
 ### Plain text suppressions
 
@@ -267,7 +263,6 @@ The `--suppress=` command line option is used to specify suppressions on the com
 
     cppcheck --suppress=memleak:src/file1.cpp src/
 
-
 ### Suppressions in a file
 
 You can create a suppressions file. Example:
@@ -275,7 +270,7 @@ You can create a suppressions file. Example:
     // suppress memleak and exceptNew errors in the file src/file1.cpp
     memleak:src/file1.cpp
     exceptNew:src/file1.cpp
-    
+
     // suppress all uninitvar errors in all files
     uninitvar
 
@@ -325,7 +320,7 @@ To suppress the error message, a comment can be added:
 
     void f() {
         char arr[5];
-    
+
         // cppcheck-suppress arrayIndexOutOfBounds
         arr[10] = 0;
     }
@@ -342,7 +337,6 @@ You can write comments for the suppress, however is recommended to use ; or // t
 
     // cppcheck-suppress arrayIndexOutOfBounds ; some comment
     // cppcheck-suppress arrayIndexOutOfBounds // some comment
-
 
 ## XML output
 
@@ -469,7 +463,7 @@ Many warnings have multiple locations. Example code:
     {
         *p = 3;       // line 3
     }
-    
+
     int main()
     {
         int *p = 0;   // line 8
@@ -502,7 +496,6 @@ The output from Cppcheck is:
 The first line in the warning is formatted by the --template format.
 
 The other lines in the warning are formatted by the --template-location format.
-
 
 #### Format specifiers for --template
 
@@ -555,7 +548,6 @@ Newline
 **\r**
 
 Carriage return
-
 
 #### Format specifiers for --template-location
 
@@ -614,9 +606,10 @@ Imagine this source code:
     }
 
 By default Cppcheck will try to check all the configurations. There are 3 important configurations here:
- * Neither `__GNUC__` nor `_MSC_VER` is defined
- * `__GNUC__` is defined
- * `_MSC_VER` is defined
+
+- Neither `__GNUC__` nor `_MSC_VER` is defined
+- `__GNUC__` is defined
+- `_MSC_VER` is defined
 
 When you run Cppcheck, the output will be something like:
 
@@ -631,7 +624,6 @@ Now if you want you can limit the analysis. You probably know what the target co
     $ cppcheck -D __GNUC__ test.c
     Checking test.c ...
     Checking test.c: __GNUC__=1...
-
 
 ### Unused templates
 
@@ -685,7 +677,7 @@ You need:
 
 Python 2.X or 3.X
 
-The MISRA C 2012 PDF. You can buy this from http://www.misra.org.uk (costs 15-20 pounds)
+The MISRA C 2012 PDF. You can buy this from <http://www.misra.org.uk> (costs 15-20 pounds)
 
 #### MISRA Text file
 
@@ -709,7 +701,6 @@ To create the text file manually, copy paste Appendix A "Summary of guidelines" 
     ...
 
 Rules that you want to disable does not need to have a rule text. Rules that don't have rule text will be suppressed by the addon.
-
 
 ## Library configuration
 
@@ -988,8 +979,7 @@ Some example expressions you can use in the valid element:
 :0  =>  all values that are less or equal to 0 are valid
 0:  =>  all values that are greater or equal to 0 are valid
 0,2:32  =>  the value 0 and all values between 2 and 32 are valid
--1.5:5.6  =>  all values between -1.5 and 5.6 are valid 
-
+-1.5:5.6  =>  all values between -1.5 and 5.6 are valid
 
 ##### `<minsize>`
 
@@ -1049,7 +1039,6 @@ With this you can say that an argument must be a zero-terminated string.
         </arg>
       </function>
     </def>
-
 
 ##### `<noreturn>`
 
@@ -1152,7 +1141,7 @@ Cppcheck normally assumes that the result might be different, and reports no war
 
 If a proper const.cfg is provided, the unreachable code is detected:
 
-    $ cppcheck --enable=style --library=const const.c 
+    $ cppcheck --enable=style --library=const const.c
     Checking const.c...
     [const.c:7]: (style) Expression is always false because 'else if' condition matches previous condition at line 5.
 
@@ -1253,10 +1242,9 @@ The following example provides a definition for std::vector, based on the defini
       </container>
     </def>
 
-
 ## HTML Report
 
-You can convert the XML output from cppcheck into a HTML report. You'll need Python and the pygments module (http://pygments.org/) for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
+You can convert the XML output from cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/)> for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
 
 This command generates the help screen:
 
@@ -1279,4 +1267,3 @@ An example usage:
 
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
-
