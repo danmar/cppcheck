@@ -188,6 +188,7 @@ def unpackPackage(workPath, tgz):
     removeTree(tempPath)
     os.mkdir(tempPath)
     os.chdir(tempPath)
+    found = False
     if tarfile.is_tarfile(tgz):
         tf = tarfile.open(tgz)
         for member in tf:
@@ -198,12 +199,14 @@ def unpackPackage(workPath, tgz):
                                                '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
                 try:
                     tf.extract(member.name)
+                    found = True
                 except OSError:
                     pass
                 except AttributeError:
                     pass
         tf.close()
     os.chdir(workPath)
+    return found
 
 
 def hasInclude(path, includes):
@@ -533,7 +536,9 @@ while True:
     if tgz is None:
         print("No package downloaded")
         continue
-    unpackPackage(workpath, tgz)
+    if not unpackPackage(workpath, tgz):
+        print("No files to process")
+        continue
     crash = False
     count = ''
     elapsedTime = ''
