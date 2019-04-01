@@ -475,7 +475,7 @@ Many warnings have multiple locations. Example code:
         int *p = 0;   // line 8
         f(p);         // line 9
         return 0;
-   }
+    }
 
 There is a possible null pointer dereference at line 3. Cppcheck can show how it came to that conclusion by showing extra location information. You need to use both --template and --template-location at the command line.
 
