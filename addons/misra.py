@@ -545,6 +545,26 @@ def remove_file_prefix(file_path, prefix):
         result = file_path
     return result
 
+class Rule:
+    """ Class to keep rule text and metadata """
+    def __init__(self, num1, num2):
+        self.num1 = num1
+        self.num2 = num2
+        self.text = ''
+        self.severity = 'style'
+
+    @property
+    def num(self):
+        return self.num1 * 100 + self.num2
+
+    @property
+    def cppcheck_severity(self):
+        return self.SEVERITY_MAP[self.severity]
+
+    def __repr__(self):
+        return "%d.%d %s" % (self.num1, self.num2, self.severity)
+
+    SEVERITY_MAP = { 'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'information' }
 
 class MisraChecker:
 
@@ -555,7 +575,7 @@ class MisraChecker:
         self.verify_actual      = list()
 
         # List of formatted violation messages
-        self.violations         = list()
+        self.violations         = dict()
 
         # if --rule-texts is specified this dictionary
         # is loaded with descriptions of each rule
@@ -1687,9 +1707,16 @@ class MisraChecker:
         return self.verify_actual
 
 
-    def get_violations(self):
+    def get_violations(self, violation_type = None):
         """Return the list of violations for a normal checker run"""
-        return self.violations
+        if violation_type == None:
+            return self.violations.items()
+        else:
+            return self.violations[violation_type]
+
+    def get_violation_types(self):
+        """Return the list of violations for a normal checker run"""
+        return self.violations.keys()
 
 
     def addSuppressedRule(self, ruleNum,
@@ -1916,23 +1943,26 @@ class MisraChecker:
             return
         else:
             id = 'misra-c2012-' + str(num1) + '.' + str(num2)
+            severity = 'style'
             if ruleNum in self.ruleTexts:
-                errmsg = self.ruleTexts[ruleNum] + ' [' + id + ']'
+                errmsg = self.ruleTexts[ruleNum].text + ' [' + id + ']'
+                severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
             else:
                 return
             formattedMsg = cppcheckdata.reportError(args.template,
                                                     callstack=[(location.file, location.linenr)],
-                                                    severity='style',
+                                                    severity=severity,
                                                     message = errmsg,
                                                     errorId = id,
                                                     suppressions = self.dumpfileSuppressions)
             if formattedMsg:
                 sys.stderr.write(formattedMsg)
                 sys.stderr.write('\n')
-                self.violations.append(errmsg)
-
+                if not severity in self.violations:
+                    self.violations[severity] = []
+                self.violations[severity].append(id)
 
     def loadRuleTexts(self, filename):
         num1 = 0
@@ -1966,13 +1996,14 @@ class MisraChecker:
                 # Python 2 does not support the errors parameter
                 file_stream = open(filename, 'rt')
         # Parse the rule texts
+        rule = None
         for line in file_stream:
             line = line.replace('\r', '').replace('\n', '')
             if len(line) == 0:
-                if ruleText:
+                if rule:
                     num1 = 0
                     num2 = 0
-                ruleText = False
+                rule = None
                 continue
             if not appendixA:
                 if line.find('Appendix A') >= 0 and line.find('Summary of guidelines') >= 10:
@@ -1984,21 +2015,18 @@ class MisraChecker:
             if res:
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
-                ruleText = False
+                rule = Rule(num1, num2)
                 continue
             if Choice_pattern.match(line):
-                ruleText = False
+                if rule:
+                    rule.severity = line
             elif xA_Z_pattern.match(line):
-                if ruleText:
-                    num2 = num2 + 1
-                num = num1 * 100 + num2
-                self.ruleTexts[num] = line
-                ruleText = True
-            elif ruleText and a_z_pattern.match(line):
-                num = num1 * 100 + num2
-                self.ruleTexts[num] = self.ruleTexts[num] + ' ' + line
+                if rule:
+                    rule.text = line
+                    self.ruleTexts[rule.num] = rule
+            elif rule and a_z_pattern.match(line):
+                self.ruleTexts[rule.num].text = self.ruleTexts[rule.num].text + ' ' + line
                 continue
-
 
     def parseDump(self, dumpfile):
 
@@ -2218,7 +2246,7 @@ else:
                 exitCode = 1
 
                 if SHOW_SUMMARY:
-                    print("\nMISRA rule violations found: %d\n" % (number_of_violations))
+                    print("\nMISRA rule violations found: %s\n" % ("\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
 
         if args.show_suppressed_rules:
             checker.showSuppressedRules()
