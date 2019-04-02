@@ -2253,6 +2253,17 @@ else:
 
                 if SHOW_SUMMARY:
                     print("\nMISRA rule violations found: %s\n" % ("\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
+                    rules_violated = {}
+                    for severity, ids in checker.get_violations():
+                        for id in ids:
+                            rules_violated[id] = rules_violated.get(id, 0) + 1
+                    print("Misra rules violated:")
+                    convert = lambda text: int(text) if text.isdigit() else text
+                    misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
+                    for misra_id in sorted(rules_violated.keys(), key=misra_sort):
+                        num = misra_id[len("misra-c2012-"):]
+                        num = int(num[:num.index(".")]) * 100 + int(num[num.index(".")+1:])
+                        print("\t%15s (%s): %d" % (misra_id, checker.ruleTexts[num].severity, rules_violated[misra_id]))
 
         if args.show_suppressed_rules:
             checker.showSuppressedRules()
