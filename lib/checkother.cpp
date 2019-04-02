@@ -867,6 +867,16 @@ void CheckOther::checkVariableScope()
         if (var->isConst())
             continue;
 
+        // reference of range for loop variable..
+        if (Token::Match(var->nameToken()->previous(), "& %var% = %var% .")) {
+            const Token *otherVarToken = var->nameToken()->tokAt(2);
+            const Variable *otherVar = otherVarToken->variable();
+            if (otherVar && Token::Match(otherVar->nameToken(), "%var% :") &&
+                otherVar->nameToken()->next()->astParent() &&
+                Token::Match(otherVar->nameToken()->next()->astParent()->previous(), "for ("))
+                continue;
+        }
+
         bool forHead = false; // Don't check variables declared in header of a for loop
         for (const Token* tok = var->typeStartToken(); tok; tok = tok->previous()) {
             if (tok->str() == "(") {

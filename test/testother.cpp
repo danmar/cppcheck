@@ -85,6 +85,7 @@ private:
         TEST_CASE(varScope23);      // Ticket #6154
         TEST_CASE(varScope24);      // pointer / reference
         TEST_CASE(varScope25);      // time_t
+        TEST_CASE(varScope26);      // range for loop, map
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1190,6 +1191,19 @@ private:
               "}", "test.c");
         ASSERT_EQUALS("[test.c:2]: (style) The scope of the variable 'currtime' can be reduced.\n", errout.str());
     }
+
+    void varScope26() {
+        check("void f(const std::map<int,int> &m) {\n"
+              "  for (auto it : m) {\n"
+              "     if (cond1) {\n"
+              "       int& key = it.first;\n"
+              "       if (cond2) { dostuff(key); }\n"
+              "     }\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void checkOldStylePointerCast(const char code[]) {
         // Clear the error buffer..
         errout.str("");
