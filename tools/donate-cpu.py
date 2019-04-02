@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.18"
+CLIENT_VERSION = "1.1.19"
 
 
 def checkRequirements():
@@ -372,28 +372,29 @@ def sendAll(connection, data):
 
 def uploadResults(package, results, server_address):
     print('Uploading results..')
-    for retry in range(4):
+    max_retries = 4
+    for retry in range(max_retries):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(server_address)
-            if results.startswith('FAST'):
-                cmd = 'write-fast\n'
-            else:
-                cmd = 'write\n'
+            cmd = 'write\n'
             sendAll(sock, cmd + package + '\n' + results + '\nDONE')
             sock.close()
             print('Results have been successfully uploaded.')
             return True
-        except socket.error:
-            print('Upload failed, retry in 30 seconds')
-            time.sleep(30)
+        except socket.error as err:
+            print('Upload error: ' + str(err))
+            if retry < (max_retries - 1):
+                print('Retrying upload in 30 seconds')
+                time.sleep(30)
     print('Upload permanently failed!')
     return False
 
 
 def uploadInfo(package, info_output, server_address):
     print('Uploading information output..')
-    for retry in range(3):
+    max_retries = 3
+    for retry in range(max_retries):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(server_address)
@@ -401,9 +402,11 @@ def uploadInfo(package, info_output, server_address):
             sock.close()
             print('Information output has been successfully uploaded.')
             return True
-        except socket.error:
-            print('Upload failed, retry in 30 seconds')
-            time.sleep(30)
+        except socket.error as err:
+            print('Upload error: ' + str(err))
+            if retry < (max_retries - 1):
+                print('Retrying upload in 30 seconds')
+                time.sleep(30)
     print('Upload permanently failed!')
     return False
 
