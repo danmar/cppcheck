@@ -475,7 +475,7 @@ Many warnings have multiple locations. Example code:
         int *p = 0;   // line 8
         f(p);         // line 9
         return 0;
-   }
+    }
 
 There is a possible null pointer dereference at line 3. Cppcheck can show how it came to that conclusion by showing extra location information. You need to use both --template and --template-location at the command line.
 
@@ -733,7 +733,7 @@ The cppcheck GUI will try to load custom .cfg files from the project file path. 
 
 Cppcheck has configurable checking for leaks, e.g. you can specify which functions allocate and free memory or resources and which functions do not affect the allocation at all.
 
-#### <alloc> and <dealloc>
+#### `<alloc>` and `<dealloc>`
 
 Here is an example program:
 
@@ -763,9 +763,9 @@ Here is a minimal windows.cfg file:
       </resource>
     </def>
 
-The allocation and deallocation functions are organized in groups. Each group is defined in a <resource> or <memory> tag and is identified by its <dealloc> functions. This means, groups with overlapping <dealloc> tags are merged.
+The allocation and deallocation functions are organized in groups. Each group is defined in a `<resource>` or `<memory>` tag and is identified by its `<dealloc>` functions. This means, groups with overlapping `<dealloc>` tags are merged.
 
-#### <leak-ignore> and <use>
+#### `<leak-ignore>` and `<use>`
 
 Often the allocated pointer is passed to functions. Example:
 
@@ -801,7 +801,7 @@ The `<use>` configuration has no logical purpose. You will get the same warnings
 
 ### Function behavior
 
-To specify the behaviour of functions and how they should be used, <function> tags can be used. Functions are identified by their name, specified in the name attribute and their number of arguments. The name is a comma-separated list of function names. For functions in namespaces or classes, just provide their fully qualified name. For example: `<function name="memcpy,std::memcpy">`. If you have template functions then provide their instantiated names `<function name="dostuff<int>">`.
+To specify the behaviour of functions and how they should be used, `<function>` tags can be used. Functions are identified by their name, specified in the name attribute and their number of arguments. The name is a comma-separated list of function names. For functions in namespaces or classes, just provide their fully qualified name. For example: `<function name="memcpy,std::memcpy">`. If you have template functions then provide their instantiated names `<function name="dostuff<int>">`.
 
 #### Function arguments
 
@@ -991,7 +991,7 @@ Some example expressions you can use in the valid element:
 -1.5:5.6  =>  all values between -1.5 and 5.6 are valid 
 
 
-##### <minsize>
+##### `<minsize>`
 
 Some function arguments take a buffer. With minsize you can configure the min size of the buffer (in bytes, not elements). Imagine:
 
@@ -1006,9 +1006,9 @@ No error is reported for that:
     $ cppcheck minsize.c
     Checking minsize.c...
 
-A configuration file can for instance be created that says that the size of the buffer in argument 1 must be larger than the strlen of argument 2.For instance:
+A configuration file can for instance be created that says that the size of the buffer in argument 1 must be larger than the strlen of argument 2. For instance:
 
-   <?xml version="1.0"?>
+    <?xml version="1.0"?>
     <def>
       <function name="do_something">
         <arg nr="1">
@@ -1051,7 +1051,7 @@ With this you can say that an argument must be a zero-terminated string.
     </def>
 
 
-##### <noreturn>
+##### `<noreturn>`
 
 Cppcheck doesn't assume that functions always return. Here is an example code:
 
@@ -1093,7 +1093,7 @@ Here is a minimal windows.cfg file:
       </function>
     </def>
 
-##### <use-retval>
+##### `<use-retval>`
 
 As long as nothing else is specified, cppcheck assumes that ignoring the return value of a function is ok:
 
@@ -1125,7 +1125,7 @@ Here is a minimal lib.cfg file:
       </function>
     </def>
 
-##### <pure> and <const>
+##### `<pure>` and `<const>`
 
 These correspond to the GCC function attributes `<pure>` and `<const>`.
 
@@ -1191,7 +1191,7 @@ The first argument that the function takes is a pointer. It must not be a null p
 
 The second argument the function takes is a pointer. It must not be null. And it must point at initialized data. Using `<not-null>` and `<not-uninit>` is correct. Moreover it must point at a zero-terminated string so `<strz>` is also used.
 
-### <define>
+### `<define>`
 
 Libraries can be used to define preprocessor macros as well. For example:
 
@@ -1202,7 +1202,7 @@ Libraries can be used to define preprocessor macros as well. For example:
 
 Each occurrence of "NULL_VALUE" in the code would then be replaced by "0" at preprocessor stage.
 
-### <podtype>
+### `<podtype>`
 
 Use this for integer/float/bool/pointer types. Not for structs/unions.
 
@@ -1230,7 +1230,7 @@ The size of the type is specified in bytes. Possible values for the "sign" attri
     Checking unusedvar.cpp...
     [unusedvar.cpp:2]: (style) Unused variable: a
 
-### <container>
+### `<container>`
 
 A lot of C++ libraries, among those the STL itself, provide containers with very similar functionality. Libraries can be used to tell cppcheck about their behaviour. Each container needs a unique ID. It can optionally have a startPattern, which must be a valid Token::Match pattern and an endPattern that is compared to the linked token of the first token with such a link. The optional attribute "inherits" takes an ID from a previously defined container.
 

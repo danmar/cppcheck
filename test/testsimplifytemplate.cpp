@@ -178,6 +178,7 @@ private:
         TEST_CASE(templateAlias1);
         TEST_CASE(templateAlias2);
         TEST_CASE(templateAlias3); // #8315
+        TEST_CASE(templateAlias4); // #9070
 
         // Test TemplateSimplifier::instantiateMatch
         TEST_CASE(instantiateMatch);
@@ -3015,6 +3016,11 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
 
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "var1")
+                (const_cast<Token *>(tok))->varId(1);
+        }
+
         return TemplateSimplifier::templateParameters(tokenizer.tokens()->next());
     }
 
@@ -3040,6 +3046,8 @@ private:
         ASSERT_EQUALS(1U, templateParameters("X<i == 0> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<int, i>=0> x;"));
         ASSERT_EQUALS(3U, templateParameters("X<int, i>=0, i - 2> x;"));
+        ASSERT_EQUALS(0U, templateParameters("var1<1> x;"));
+        ASSERT_EQUALS(0U, templateParameters("X<1>2;"));
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
@@ -3319,6 +3327,21 @@ private:
                                 "std :: shared_ptr < void ( Tag<0> ) > s ; "
                                 "struct Tag<0> { } ;";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void templateAlias4() { // #9070
+        const char code[] = "template <class T>\n"
+                            "using IntrusivePtr = boost::intrusive_ptr<T>;\n"
+                            "template <class T> class Vertex { };\n"
+                            "IntrusivePtr<Vertex<int>> p;";
+        const char expected[] = "; "
+                                "class Vertex<int> ; "
+                                "boost :: intrusive_ptr < Vertex<int> > p ;"
+                                "class Vertex<int> { } ;";
+        const char actual[] = "; "
+                              "template < class T > class Vertex { } ; "
+                              "boost :: intrusive_ptr < T > p ;";
+        TODO_ASSERT_EQUALS(expected, actual, tok(code));
     }
 
     unsigned int instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {

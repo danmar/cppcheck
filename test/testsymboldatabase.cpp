@@ -215,6 +215,7 @@ private:
         TEST_CASE(functionArgs11);
         TEST_CASE(functionArgs12); // #7661
         TEST_CASE(functionArgs13); // #7697
+        TEST_CASE(functionArgs14); // #9055
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -358,6 +359,7 @@ private:
 
         TEST_CASE(lambda); // #5867
         TEST_CASE(lambda2); // #7473
+        TEST_CASE(lambda3);
 
         TEST_CASE(circularDependencies); // #6298
 
@@ -2217,6 +2219,14 @@ private:
                 }
             }
         }
+    }
+
+    void functionArgs14() { // #7697
+        GET_SYMBOL_DB("void f(int (&a)[10], int (&b)[10]);");
+        (void)db;
+        const Function *func = tokenizer.tokens()->next()->function();
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(2, func ? func->argCount() : 0);
     }
 
     void functionImplicitlyVirtual() {
@@ -5826,6 +5836,24 @@ private:
             ASSERT_EQUALS(Scope::eLambda, scope->type);
         }
     }
+
+
+    void lambda3() {
+        GET_SYMBOL_DB("void func() {\n"
+                      "    auto f = []() mutable {}\n"
+                      "}");
+
+        ASSERT(db && db->scopeList.size() == 3);
+        if (db && db->scopeList.size() == 3) {
+            std::list<Scope>::const_iterator scope = db->scopeList.begin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eFunction, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eLambda, scope->type);
+        }
+    }
+
     // #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"
     void circularDependencies() {
         check("template<template<class> class E,class D> class C : E<D> {\n"

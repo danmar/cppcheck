@@ -597,7 +597,7 @@ private:
 public:
 
     /** Syntax error */
-    void syntaxError(const Token *tok) const;
+    void syntaxError(const Token *tok, const std::string code = "") const;
 
     /** Syntax error. Unmatched character. */
     void unmatchedToken(const Token *tok) const;

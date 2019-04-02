@@ -17,7 +17,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.0"
+SERVER_VERSION = "1.1.1"
 
 OLD_VERSION = '1.87'
 
@@ -765,8 +765,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             print('[' + strDateTime() + '] get:' + pkg)
             connection.send(pkg)
             connection.close()
-        elif cmd.startswith('write\nftp://') or cmd.startswith('write-fast\nftp://'):
-            writeFast = cmd.startswith('write-fast')
+        elif cmd.startswith('write\nftp://'):
             # read data
             data = cmd[cmd.find('ftp'):]
             try:
@@ -800,38 +799,33 @@ def server(server_address_port, packages, packageIndex, resultPath):
                 if url2 not in packages:
                     print('results not written. url is not in packages.')
                     continue
-            if not writeFast:
-                # Verify that head was compared to correct OLD_VERSION
-                versions_found = False
-                old_version_wrong = False
-                for line in data.split('\n', 20):
-                    if line.startswith('cppcheck: '):
-                        versions_found = True
-                        if OLD_VERSION not in line.split():
-                            print('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
-                                  line)
-                            print('Ignoring data.')
-                            old_version_wrong = True
-                            break
-                if not versions_found:
-                    print('Cppcheck versions missing in result data. Ignoring data.')
-                    continue
-                if old_version_wrong:
-                    continue
+            # Verify that head was compared to correct OLD_VERSION
+            versions_found = False
+            old_version_wrong = False
+            for line in data.split('\n', 20):
+                if line.startswith('cppcheck: '):
+                    versions_found = True
+                    if OLD_VERSION not in line.split():
+                        print('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
+                              line)
+                        print('Ignoring data.')
+                        old_version_wrong = True
+                        break
+            if not versions_found:
+                print('Cppcheck versions missing in result data. Ignoring data.')
+                continue
+            if old_version_wrong:
+                continue
             print('results added for package ' + res.group(1))
-            if writeFast:
-                filename = resultPath + '-fast/' + res.group(1)
-            else:
-                filename = resultPath + '/' + res.group(1)
+            filename = resultPath + '/' + res.group(1)
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
             # track latest added results..
-            if not writeFast:
-                if len(latestResults) >= 20:
-                    latestResults = latestResults[1:]
-                latestResults.append(filename)
-                with open('latest.txt', 'wt') as f:
-                    f.write(' '.join(latestResults))
+            if len(latestResults) >= 20:
+                latestResults = latestResults[1:]
+            latestResults.append(filename)
+            with open('latest.txt', 'wt') as f:
+                f.write(' '.join(latestResults))
         elif cmd.startswith('write_info\nftp://'):
             # read data
             data = cmd[11:]

@@ -1388,11 +1388,14 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     // all variable ids in expr.
     std::set<unsigned int> exprVarIds;
     bool local = true;
+    bool unknownVarId = false;
     visitAstNodes(expr,
     [&](const Token *tok) {
-        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".")
-            // unknown variables are not local
-            local = false;
+        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+            // unknown variable
+            unknownVarId = true;
+            return ChildrenToVisit::none;
+        }
         if (tok->varId() > 0) {
             exprVarIds.insert(tok->varId());
             if (!Token::simpleMatch(tok->previous(), ".")) {
@@ -1405,6 +1408,9 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
         }
         return ChildrenToVisit::op1_and_op2;
     });
+
+    if (unknownVarId)
+        return Result(FwdAnalysis::Result::Type::BAILOUT);
 
     // In unused values checking we do not want to check assignments to
     // global data.

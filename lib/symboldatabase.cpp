@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #include "symboldatabase.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "platform.h"
 #include "settings.h"
@@ -640,27 +641,21 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 else if (scope->type == Scope::eCatch)
                     scope->checkVariable(tok->tokAt(2), Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = scopeStartTok;
+            } else if (Token::Match(tok, "%var% {")) {
+                tok = tok->linkAt(1);
+            } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
+                const Token *lambdaStartToken = lambdaEndToken->link();
+                scopeList.emplace_back(this, tok, scope, Scope::eLambda, lambdaStartToken);
+                scope->nestedList.push_back(&scopeList.back());
+                scope = &scopeList.back();
+                tok = lambdaStartToken;
             } else if (tok->str() == "{") {
-                if (tok->previous()->varId())
+                if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
+                    scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
+                    scope->nestedList.push_back(&scopeList.back());
+                    scope = &scopeList.back();
+                } else {
                     tok = tok->link();
-                else {
-                    const Token* tok2 = tok->previous();
-                    while (!Token::Match(tok2, ";|}|{|)"))
-                        tok2 = tok2->previous();
-                    if (tok2->next() != tok && tok2->strAt(1) != ".")
-                        tok2 = nullptr; // No lambda
-
-                    if (tok2 && tok2->str() == ")" && tok2->link()->strAt(-1) == "]") {
-                        scopeList.emplace_back(this, tok2->link()->linkAt(-1), scope, Scope::eLambda, tok);
-                        scope->nestedList.push_back(&scopeList.back());
-                        scope = &scopeList.back();
-                    } else if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
-                        scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
-                        scope->nestedList.push_back(&scopeList.back());
-                        scope = &scopeList.back();
-                    } else {
-                        tok = tok->link();
-                    }
                 }
             }
         }
@@ -3034,7 +3029,11 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         const Token* nameTok  = nullptr;
 
         do {
-            if (tok->varId() != 0) {
+            if (tok != startTok && !nameTok && Token::Match(tok, "( & %var% ) [")) {
+                nameTok = tok->tokAt(2);
+                endTok = nameTok->previous();
+                tok = tok->link();
+            } else if (tok->varId() != 0) {
                 nameTok = tok;
                 endTok = tok->previous();
             } else if (tok->str() == "[") {
@@ -5475,6 +5474,13 @@ void SymbolDatabase::setValueTypeInTokenList()
                 parsedecl(function->retDef, &vt, mDefaultSignedness, mSettings);
                 setValueType(tok, vt);
             }
+        }
+    }
+
+    if (mSettings->debugwarnings) {
+        for (Token *tok = tokens; tok; tok = tok->next()) {
+            if (tok->str() == "auto" && !tok->valueType())
+                debugMessage(tok, "auto token with no type.");
         }
     }
 

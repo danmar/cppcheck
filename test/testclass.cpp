@@ -3144,7 +3144,8 @@ private:
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
-                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "  <podtype name=\"std::atomic_bool\"/>\n"
                                "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
@@ -3161,8 +3162,7 @@ private:
 
         checkNoMemset("struct st {\n"
                       "  std::uint8_t a;\n"
-                      "  std::uint8_t b;\n"
-                      "  std::uint8_t c;\n"
+                      "  std::atomic_bool b;\n"
                       "};\n"
                       "\n"
                       "void f() {\n"

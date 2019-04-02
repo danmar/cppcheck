@@ -76,12 +76,15 @@ void CheckStl::outOfBounds()
                 if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
                     const Token *parent = tok->tokAt(3)->astParent();
                     const Token *other = nullptr;
-                    if (Token::simpleMatch(parent, "+") && parent->astOperand1() && parent->astOperand1()->hasKnownIntValue())
-                        other = parent->astOperand1();
-                    else if (Token::simpleMatch(parent, "+") && parent->astOperand2() && parent->astOperand2()->hasKnownIntValue())
+                    if (Token::simpleMatch(parent, "+") && parent->astOperand1() == tok->tokAt(3))
                         other = parent->astOperand2();
-                    if (other && other->getKnownIntValue() > value.intvalue) {
+                    else if (Token::simpleMatch(parent, "+") && parent->astOperand2() == tok->tokAt(3))
+                        other = parent->astOperand1();
+                    if (other && other->hasKnownIntValue() && other->getKnownIntValue() > value.intvalue) {
                         outOfBoundsError(parent, tok->str(), &value, other->expressionString(), &other->values().back());
+                        continue;
+                    } else if (other && !other->hasKnownIntValue() && value.isKnown() && value.intvalue==0) {
+                        outOfBoundsError(parent, tok->str(), &value, other->expressionString(), nullptr);
                         continue;
                     }
                 }
@@ -124,6 +127,8 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
     else if (containerSize->intvalue == 0) {
         if (containerSize->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or expression '" + expression + "' cause access out of bounds.";
+        else if (indexValue == nullptr && !index.empty())
+            errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty and '" + index + "' may be non-zero.";
         else
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty.";
     } else if (indexValue) {

@@ -42,6 +42,14 @@ void validCode(int argInt)
     g_print("test");
     g_print("%d", 1);
     g_printerr("err");
+
+    GString * pGStr1 = g_string_new("test");
+    g_string_append(pGStr1, "a");
+    g_string_free(pGStr1, TRUE);
+
+    gchar * pGchar1 = g_strconcat("a", "b", NULL);
+    printf("%s", pGchar1);
+    g_free(pGchar1);
 }
 
 void g_malloc_test()

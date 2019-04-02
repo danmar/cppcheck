@@ -89,7 +89,6 @@ private:
         // TODO string TEST_CASE(array_index_4);
         TEST_CASE(array_index_6);
         TEST_CASE(array_index_7);
-        // TODO ctu TEST_CASE(array_index_9);
         TEST_CASE(array_index_11);
         TEST_CASE(array_index_12);
         TEST_CASE(array_index_13);
@@ -186,9 +185,9 @@ private:
         // char a[10];
         // char *p1 = a + 10;  // OK
         // char *p2 = a + 11   // UB
-        // TODO TEST_CASE(pointer_out_of_bounds_1);
+        TEST_CASE(pointer_out_of_bounds_1);
         // TODO TEST_CASE(pointer_out_of_bounds_2);
-        // TODO TEST_CASE(pointer_out_of_bounds_3);
+        TEST_CASE(pointer_out_of_bounds_3);
         // TODO TEST_CASE(pointer_out_of_bounds_sub);
 
         // TODO TEST_CASE(strncat1);
@@ -228,6 +227,7 @@ private:
         TEST_CASE(crash4);  // Ticket #8679 - crash
         TEST_CASE(crash5);  // Ticket #8644 - crash
         TEST_CASE(crash6);  // Ticket #9024 - crash
+        TEST_CASE(crash7);  // Ticket #9073 - crash
 
         // TODO TEST_CASE(insecureCmdLineArgs);
         // TODO TEST_CASE(checkBufferAllocatedWithStrlen);
@@ -616,74 +616,6 @@ private:
               "    abc->str[10] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:8]: (error) Array 'abc->str[10]' accessed at index 10, which is out of bounds.\n", errout.str());
-    }
-
-    void array_index_9() {
-        // Cross translation unit analysis
-        check("static void memclr( char *data )\n"
-              "{\n"
-              "    data[10] = 0;\n"
-              "}\n"
-              "\n"
-              "static void f()\n"
-              "{\n"
-              "    char str[5];\n"
-              "    memclr( str );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds.\n", errout.str());
-
-        check("static void memclr( int i, char *data )\n"
-              "{\n"
-              "    data[10] = 0;\n"
-              "}\n"
-              "\n"
-              "static void f()\n"
-              "{\n"
-              "    char str[5];\n"
-              "    memclr( 0, str );\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array 'str[5]' accessed at index 10, which is out of bounds.\n", errout.str());
-
-        check("static void memclr( int i, char *data )\n"
-              "{\n"
-              "    data[i] = 0;\n"
-              "}\n"
-              "\n"
-              "static void f()\n"
-              "{\n"
-              "    char str[5];\n"
-              "    memclr( 10, str );\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds.\n",
-                           "", errout.str());
-
-        // This is not an error
-        check("static void memclr( char *data, int size )\n"
-              "{\n"
-              "    if( size > 10 )"
-              "      data[10] = 0;\n"
-              "}\n"
-              "\n"
-              "static void f()\n"
-              "{\n"
-              "    char str[5];\n"
-              "    memclr( str, 5 );\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // #2097
-        check("void foo(int *p)\n"
-              "{\n"
-              "    --p;\n"
-              "    p[2] = 0;\n"
-              "}\n"
-              "\n"
-              "void bar()\n"
-              "{\n"
-              "    int p[3];\n"
-              "    foo(p+1);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_11() {
@@ -2811,7 +2743,7 @@ private:
               "    if (i == 123) {}\n"
               "    dostuff(x+i);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (portability) Undefined behaviour, when 'i' is 123 the pointer arithmetic 'x+i' is out of bounds.\n", errout.str());
 
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"
@@ -3714,11 +3646,16 @@ private:
               "}");
     }
 
-    void crash6() { // 8644 - token has varId() but variable() is null
+    void crash6() {
         check("void start(char* name) {\n"
               "char snapname[64] = { 0 }; \n"
               "strncpy(snapname, \"snapshot\", arrayLength(snapname)); \n"
               "}");
+    }
+
+    void crash7() { // 9073 - [ has no astParent
+        check("char x[10];\n"
+              "void f() { x[10]; }");
     }
 
     void insecureCmdLineArgs() {
@@ -4173,6 +4110,71 @@ private:
             "  dostuff(str);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 10.\n", errout.str());
+
+        ctu("static void memclr( char *data )\n"
+            "{\n"
+            "    data[10] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( str );\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Buffer access out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
+
+        ctu("static void memclr( int i, char *data )\n"
+            "{\n"
+            "    data[10] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( 0, str );\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Buffer access out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
+
+        ctu("static void memclr( int i, char *data )\n"
+            "{\n"
+            "    data[i] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( 10, str );\n"
+            "}");
+        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds.\n",
+                           "", errout.str());
+
+        // This is not an error
+        ctu("static void memclr( char *data, int size )\n"
+            "{\n"
+            "    if( size > 10 )"
+            "      data[10] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( str, 5 );\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #2097
+        ctu("void foo(int *p)\n"
+            "{\n"
+            "    --p;\n"
+            "    p[2] = 0;\n"
+            "}\n"
+            "\n"
+            "void bar()\n"
+            "{\n"
+            "    int p[3];\n"
+            "    foo(p+1);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu_variable() {

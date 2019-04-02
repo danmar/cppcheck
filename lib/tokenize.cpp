@@ -8471,10 +8471,10 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
 
 //---------------------------------------------------------------------------
 
-void Tokenizer::syntaxError(const Token *tok) const
+void Tokenizer::syntaxError(const Token *tok, const std::string code) const
 {
     printDebugOutput(0);
-    throw InternalError(tok, "syntax error", InternalError::SYNTAX);
+    throw InternalError(tok, code.empty() ? "syntax error" : "syntax error: " + code, InternalError::SYNTAX);
 }
 
 void Tokenizer::unmatchedToken(const Token *tok) const
@@ -9021,8 +9021,8 @@ void Tokenizer::findGarbageCode() const
 
     // Assign/increment/decrement literal
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok,"%num%|%str%|%char% %assign%|++|--"))
-            syntaxError(tok);
+        if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
+            syntaxError(tok, tok->next()->str() + " " + tok->tokAt(2)->str());
     }
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
@@ -9060,7 +9060,7 @@ void Tokenizer::findGarbageCode() const
         while (prev && prev->isName())
             prev = prev->previous();
         if (Token::Match(prev, "%op%|%num%|%str%|%char%"))
-            syntaxError(tok);
+            syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
     }
 
     // case keyword must be inside switch

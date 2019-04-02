@@ -327,15 +327,6 @@ static void ungetChar(std::istream &istr, unsigned int bom)
         istr.unget();
 }
 
-static unsigned char prevChar(std::istream &istr, unsigned int bom)
-{
-    ungetChar(istr, bom);
-    ungetChar(istr, bom);
-    unsigned char c = readChar(istr, bom);
-    readChar(istr, bom);
-    return c;
-}
-
 static unsigned short getAndSkipBOM(std::istream &istr)
 {
     const int ch1 = istr.peek();
@@ -556,7 +547,8 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         // string / char literal
         else if (ch == '\"' || ch == '\'') {
             std::string prefix;
-            if (cback() && cback()->name && !std::isspace(prevChar(istr, bom)) && (isStringLiteralPrefix(cback()->str()))) {
+            if (cback() && cback()->name && isStringLiteralPrefix(cback()->str()) &&
+                ((cback()->location.col + cback()->str().size()) == location.col)) {
                 prefix = cback()->str();
             }
             // C++11 raw string literal
