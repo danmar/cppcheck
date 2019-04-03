@@ -2435,7 +2435,7 @@ private:
               "public:\n"
               "    int f() { return C< ::D,int>::f(); }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (debug) Failed to instantiate template \"C\". The checking continues anyway.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void symboldatabase8() {

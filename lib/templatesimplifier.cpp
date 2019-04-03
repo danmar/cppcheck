@@ -327,6 +327,15 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     unsigned int level = 0;
 
     while (tok) {
+        // skip template template
+        if (level == 0 && Token::simpleMatch(tok, "template <")) {
+            const Token *closing = tok->next()->findClosingBracket();
+            if (closing)
+                tok = closing->next();
+            else
+                return 0;
+        }
+
         // skip const/volatile
         if (Token::Match(tok, "const|volatile"))
             tok = tok->next();
@@ -2324,7 +2333,14 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
     std::vector<const Token *> & typeParametersInDeclaration)
 {
     typeParametersInDeclaration.clear();
-    for (; tok && tok->str() != ">"; tok = tok->next()) {
+    const Token *closing = tok->previous()->findClosingBracket();
+    for (; tok && tok!= closing; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "template <")) {
+            const Token *closing = tok->next()->findClosingBracket();
+            if (closing)
+                tok = closing->next();
+        }
+
         if (Token::Match(tok, "%name% ,|>|="))
             typeParametersInDeclaration.push_back(tok);
     }
@@ -3009,8 +3025,7 @@ void TemplateSimplifier::simplifyTemplates(
             tok->deleteThis();
 
         if (Token::simpleMatch(tok, "template <")) {
-            while (tok && tok->str() != ">")
-                tok = tok->next();
+            tok = tok->next()->findClosingBracket();
             if (!tok)
                 break;
         }

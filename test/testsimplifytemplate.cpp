@@ -143,6 +143,7 @@ private:
         TEST_CASE(template103);
         TEST_CASE(template104); // #9021
         TEST_CASE(template105); // #9076
+        TEST_CASE(template106);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2398,6 +2399,27 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template106() {
+        const char code[] = "template<class T, class U> class A {\n"
+                            "public:\n"
+                            "   int x;\n"
+                            "};\n"
+                            "template<template<class T, class U> class V> class B {\n"
+                            "   V<char, char> i;\n"
+                            "};\n"
+                            "B<A> c;";
+        const char exp[] = "class A<char,char> ; "
+                           "class B<A> ; "
+                           "B<A> c ; "
+                           "class B<A> { "
+                           "A<char,char> i ; "
+                           "} ; class A<char,char> { "
+                           "public: "
+                           "int x ; "
+                           "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -3386,7 +3408,7 @@ private:
     void templateParameterWithoutName() {
         ASSERT_EQUALS(1U, templateParameters("template<typename = void> struct s;"));
         ASSERT_EQUALS(1U, templateParameters("template<template<typename = float> typename T> struct A {\n"
-                                             "    void f();n"
+                                             "    void f();\n"
                                              "    void g();\n"
                                              "};n"));
     }
