@@ -196,7 +196,7 @@ public:
             Action action;
             Yield yield;
         };
-        std::string startPattern, endPattern, itEndPattern;
+        std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
         int type_templateArgNo;
         int size_templateArgNo;

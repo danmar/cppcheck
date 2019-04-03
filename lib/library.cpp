@@ -381,8 +381,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
 
             const char* const startPattern = node->Attribute("startPattern");
-            if (startPattern)
+            if (startPattern) {
                 container.startPattern = startPattern;
+                container.startPattern2 = container.startPattern + " !!::";
+            }
             const char* const endPattern = node->Attribute("endPattern");
             if (endPattern)
                 container.endPattern = endPattern;
@@ -1012,10 +1014,7 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
         if (container.startPattern.empty())
             continue;
 
-        if (!endsWith(container.startPattern, '<')) {
-            if (!Token::Match(typeStart, (container.startPattern + " !!::").c_str()))
-                continue;
-        } else if (!Token::Match(typeStart, (container.startPattern + " !!::").c_str()))
+        if (!Token::Match(typeStart, container.startPattern2.c_str()))
             continue;
 
         if (!iterator && container.endPattern.empty()) // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
