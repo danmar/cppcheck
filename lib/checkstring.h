@@ -92,7 +92,7 @@ private:
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
     void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
     void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
-    void suspiciousStringCompareError(const Token* tok, const std::string& var);
+    void suspiciousStringCompareError(const Token* tok, const std::string& var, bool isLong);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
     void overlappingStrcmpError(const Token* eq0, const Token *ne0);
 
@@ -103,7 +103,7 @@ private:
         c.sprintfOverlappingDataError(nullptr, "varname");
         c.strPlusCharError(nullptr);
         c.incorrectStringCompareError(nullptr, "substr", "\"Hello World\"");
-        c.suspiciousStringCompareError(nullptr, "foo");
+        c.suspiciousStringCompareError(nullptr, "foo", false);
         c.suspiciousStringCompareError_char(nullptr, "foo");
         c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
         c.incorrectStringBooleanError(nullptr, "\'x\'");

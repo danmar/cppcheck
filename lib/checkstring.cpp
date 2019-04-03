@@ -213,7 +213,7 @@ void CheckString::checkSuspiciousStringCompare()
             const bool ischar(litTok->tokType() == Token::eChar);
             if (litTok->tokType() == Token::eString) {
                 if (mTokenizer->isC() || (var && var->isArrayOrPointer()))
-                    suspiciousStringCompareError(tok, varname);
+                    suspiciousStringCompareError(tok, varname, litTok->isLong());
             } else if (ischar && var && var->isPointer()) {
                 suspiciousStringCompareError_char(tok, varname);
             }
@@ -221,10 +221,11 @@ void CheckString::checkSuspiciousStringCompare()
     }
 }
 
-void CheckString::suspiciousStringCompareError(const Token* tok, const std::string& var)
+void CheckString::suspiciousStringCompareError(const Token* tok, const std::string& var, bool isLong)
 {
+    const std::string cmpFunc = isLong ? "wcscmp" : "strcmp";
     reportError(tok, Severity::warning, "literalWithCharPtrCompare",
-                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use strcmp() instead?", CWE595, false);
+                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use " + cmpFunc + "() instead?", CWE595, false);
 }
 
 void CheckString::suspiciousStringCompareError_char(const Token* tok, const std::string& var)

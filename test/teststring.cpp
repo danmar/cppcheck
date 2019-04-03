@@ -276,6 +276,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
 
+        check("bool foo(wchar_t* c) {\n"
+              "    return c == L\"x\";\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use wcscmp() instead?\n", errout.str());
+
         check("bool foo(const char* c) {\n"
               "    return \"x\" == c;\n"
               "}");
