@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.19"
+CLIENT_VERSION = "1.1.20"
 
 
 def checkRequirements():
@@ -188,6 +188,7 @@ def unpackPackage(workPath, tgz):
     removeTree(tempPath)
     os.mkdir(tempPath)
     os.chdir(tempPath)
+    found = False
     if tarfile.is_tarfile(tgz):
         tf = tarfile.open(tgz)
         for member in tf:
@@ -198,12 +199,14 @@ def unpackPackage(workPath, tgz):
                                                '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
                 try:
                     tf.extract(member.name)
+                    found = True
                 except OSError:
                     pass
                 except AttributeError:
                     pass
         tf.close()
     os.chdir(workPath)
+    return found
 
 
 def hasInclude(path, includes):
@@ -293,7 +296,9 @@ def scanPackage(workPath, cppcheckPath, jobs):
         return -11, stacktrace, '', -11, options
     if returncode != 0:
         print('Error!')
-        return returncode, '', '', returncode, options
+        if returncode > 0:
+            returncode = -100-returncode
+        return returncode, stdout, '', returncode, options
     if stderr.find('Internal error: Child process crashed with signal ') > 0:
         print('Error!')
         s = 'Internal error: Child process crashed with signal '
@@ -303,7 +308,7 @@ def scanPackage(workPath, cppcheckPath, jobs):
         return -signr, '', '', -signr, options
     if stderr.find('#### ThreadExecutor') > 0:
         print('Thread!')
-        return -111, '', '', -111, options
+        return -222, '', '', -222, options
     information_messages_list = []
     issue_messages_list = []
     count = 0
@@ -534,7 +539,9 @@ while True:
     if tgz is None:
         print("No package downloaded")
         continue
-    unpackPackage(workpath, tgz)
+    if not unpackPackage(workpath, tgz):
+        print("No files to process")
+        continue
     crash = False
     count = ''
     elapsedTime = ''
@@ -557,15 +564,6 @@ while True:
         if ver == 'head':
             head_info_msg = info
 
-    results_exist = True
-    if len(resultsToDiff[0]) + len(resultsToDiff[1]) == 0:
-        results_exist = False
-    info_exists = True
-    if len(head_info_msg) == 0:
-        info_exists = False
-    if not crash and not results_exist and not info_exists:
-        print('No results')
-        continue
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
@@ -583,11 +581,11 @@ while True:
         print('=========================================================')
         print(output)
         print('=========================================================')
+        print(info_output)
+        print('=========================================================')
     if do_upload:
-        if crash or results_exist:
-            uploadResults(package, output, server_address)
-        if info_exists:
-            uploadInfo(package, info_output, server_address)
+        uploadResults(package, output, server_address)
+        uploadInfo(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
         time.sleep(5)
