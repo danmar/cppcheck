@@ -382,6 +382,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
 
+        check("bool foo(wchar_t* c) {\n"
+              "    return c == L'x';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c'. Did you intend to dereference it?\n", errout.str());
+
         check("bool foo(char* c) {\n"
               "    return '\\0' != c;\n"
               "}");
