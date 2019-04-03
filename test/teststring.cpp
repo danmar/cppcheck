@@ -44,6 +44,7 @@ private:
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
         TEST_CASE(strPlusChar2);     // "/usr" + ch
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
+        TEST_CASE(strPlusChar4);     // L"/usr" + L'/'
 
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
@@ -517,6 +518,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void strPlusChar4() {
+        // Strange looking pointer arithmetic, wide char..
+        check("void foo()\n"
+              "{\n"
+              "    const wchar_t *p = L\"/usr\" + L'/';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Unusual pointer arithmetic. A value of type 'wchar_t' is added to a string literal.\n", errout.str());
+
+        check("void foo(wchar_t c)\n"
+              "{\n"
+              "    const wchar_t *p = L\"/usr\" + c;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Unusual pointer arithmetic. A value of type 'wchar_t' is added to a string literal.\n", errout.str());
+    }
 
     void incorrectStringCompare() {
         check("int f() {\n"

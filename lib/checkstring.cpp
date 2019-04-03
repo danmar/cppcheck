@@ -240,7 +240,7 @@ void CheckString::suspiciousStringCompareError_char(const Token* tok, const std:
 
 static bool isChar(const Variable* var)
 {
-    return (var && !var->isPointer() && !var->isArray() && var->typeStartToken()->str() == "char");
+    return (var && !var->isPointer() && !var->isArray() && (var->typeStartToken()->str() == "char" || var->typeStartToken()->str() == "wchar_t"));
 }
 
 void CheckString::strPlusChar()
@@ -260,7 +260,12 @@ void CheckString::strPlusChar()
 
 void CheckString::strPlusCharError(const Token *tok)
 {
-    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type 'char' is added to a string literal.", CWE665, false);
+    std::string charType = "char";
+    if (tok && tok->astOperand2() && tok->astOperand2()->variable())
+        charType = tok->astOperand2()->variable()->typeStartToken()->str();
+    else if (tok && tok->astOperand2() && tok->astOperand2()->tokType() == Token::eChar && tok->astOperand2()->isLong())
+        charType = "wchar_t";
+    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type '" + charType +"' is added to a string literal.", CWE665, false);
 }
 
 //---------------------------------------------------------------------------
