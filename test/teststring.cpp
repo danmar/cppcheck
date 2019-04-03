@@ -46,10 +46,12 @@ private:
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
         TEST_CASE(strPlusChar4);     // L"/usr" + L'/'
 
+        TEST_CASE(snprintf1);       // Dangerous usage of snprintf
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
         TEST_CASE(sprintf4);        // struct member
+        TEST_CASE(wsprintf1);       // Dangerous usage of wsprintf
 
         TEST_CASE(incorrectStringCompare);
 
@@ -442,13 +444,22 @@ private:
     }
 
 
+    void snprintf1() {
+        check("void foo()\n"
+              "{\n"
+              "    char buf[100];\n"
+              "    snprintf(buf,100,\"%s\",buf);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in snprintf().\n", errout.str());
+    }
+
     void sprintf1() {
         check("void foo()\n"
               "{\n"
               "    char buf[100];\n"
               "    sprintf(buf,\"%s\",buf);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in s[n]printf().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in sprintf().\n", errout.str());
     }
 
     void sprintf2() {
@@ -483,6 +494,15 @@ private:
               "    snprintf(a.filename, 128, \"%s\", filename);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void wsprintf1() {
+        check("void foo()\n"
+              "{\n"
+              "    wchar_t buf[100];\n"
+              "    swprintf(buf,10, \"%s\",buf);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in swprintf().\n", errout.str());
     }
 
     void strPlusChar1() {

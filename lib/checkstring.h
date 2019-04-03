@@ -86,7 +86,7 @@ public:
 
 private:
     void stringLiteralWriteError(const Token *tok, const Token *strValue);
-    void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
+    void sprintfOverlappingDataError(const Token *funcTok, const Token *tok, const std::string &varname);
     void strPlusCharError(const Token *tok);
     void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
     void incorrectStringBooleanError(const Token *tok, const std::string& string);
@@ -100,7 +100,7 @@ private:
         CheckString c(nullptr, settings, errorLogger);
 
         c.stringLiteralWriteError(nullptr, nullptr);
-        c.sprintfOverlappingDataError(nullptr, "varname");
+        c.sprintfOverlappingDataError(nullptr, nullptr, "varname");
         c.strPlusCharError(nullptr);
         c.incorrectStringCompareError(nullptr, "substr", "\"Hello World\"");
         c.suspiciousStringCompareError(nullptr, "foo", false);
