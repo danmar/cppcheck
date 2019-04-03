@@ -626,6 +626,9 @@ bool TemplateSimplifier::getTemplateDeclarations()
         }
         if (!Token::simpleMatch(tok, "template <"))
             continue;
+        // ignore template template parameter
+        if (tok->strAt(-1) == "<")
+            continue;
         // Some syntax checks, see #6865
         if (!tok->tokAt(2))
             syntaxError(tok->next());
