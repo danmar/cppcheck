@@ -105,6 +105,18 @@ private:
               "  foo_FP1(s);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  wchar_t *abc = L\"abc\";\n"
+              "  abc[0] = u'a';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (error) Modifying string literal \"abc\" directly or indirectly is undefined behaviour.\n", errout.str());
+
+        check("void f() {\n"
+              "  char16_t *abc = u\"abc\";\n"
+              "  abc[0] = 'a';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (error) Modifying string literal \"abc\" directly or indirectly is undefined behaviour.\n", errout.str());
     }
 
     void alwaysTrueFalseStringCompare() {
