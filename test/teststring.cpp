@@ -653,13 +653,16 @@ private:
 
         check("void f() {\n"
               "  if('\\0'){}\n"
+              "  if(L'\\0'){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  if('\\0' || cond){}\n"
+              "  if(L'\\0' || cond){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n"
+                      "[test.cpp:3]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n", errout.str());
     }
 
     void deadStrcmp() {
