@@ -17,7 +17,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.1"
+SERVER_VERSION = "1.1.2"
 
 OLD_VERSION = '1.87'
 
@@ -394,7 +394,13 @@ def headReport(resultsPath):
             if ': note: ' in line:
                 # notes normally do not contain message ids but can end with ']'
                 continue
-            messageId = line[line.rfind('[')+1:len(line)-1]
+            message_id_start_pos = line.rfind('[')
+            if message_id_start_pos <= 0:
+                continue
+            messageId = line[message_id_start_pos+1:len(line)-1]
+            if ' ' in messageId:
+                # skip invalid messageIds
+                continue
 
             if messageId not in out:
                 out[messageId] = 0
