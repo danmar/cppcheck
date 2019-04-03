@@ -85,7 +85,6 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
 
-
 private:
 
     void arrayIndex();
@@ -112,16 +111,22 @@ private:
     /** data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
-        /** function arguments that data are unconditionally read */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+        /** unsafe array index usage */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
+
+        /** unsafe pointer arithmetics */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
 
         /** Convert MyFileInfo data into xml string */
         std::string toString() const OVERRIDE;
     };
 
-    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *value);
+    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *value, int type);
+    static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *value);
+    static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *value);
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
+    bool analyseWholeProgram1(const CTU::FileInfo *ctu, const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
 
 
     static std::string myName() {

@@ -249,6 +249,7 @@ private:
         TEST_CASE(ctu_malloc);
         TEST_CASE(ctu_array);
         TEST_CASE(ctu_variable);
+        TEST_CASE(ctu_arithmetic);
     }
 
 
@@ -4088,7 +4089,7 @@ private:
             "  char *s = malloc(4);\n"
             "  dostuff(s);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Buffer access out of bounds; buffer 'p' is accessed at offset -3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Array index out of bounds; buffer 'p' is accessed at offset -3.\n", errout.str());
 
         ctu("void dostuff(char *p) {\n"
             "  p[4] = 0;\n"
@@ -4098,7 +4099,7 @@ private:
             "  char *s = malloc(4);\n"
             "  dostuff(s);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 4.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 4.\n", errout.str());
     }
 
     void ctu_array() {
@@ -4109,7 +4110,7 @@ private:
             "  char str[4];\n"
             "  dostuff(str);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 10.\n", errout.str());
 
         ctu("static void memclr( char *data )\n"
             "{\n"
@@ -4121,7 +4122,7 @@ private:
             "    char str[5];\n"
             "    memclr( str );\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Buffer access out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
 
         ctu("static void memclr( int i, char *data )\n"
             "{\n"
@@ -4133,7 +4134,7 @@ private:
             "    char str[5];\n"
             "    memclr( 0, str );\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Buffer access out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
 
         ctu("static void memclr( int i, char *data )\n"
             "{\n"
@@ -4185,7 +4186,16 @@ private:
             "  int x = 4;\n"
             "  dostuff(&x);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Buffer access out of bounds; 'p' buffer size is 4 and it is accessed at offset 40.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 40.\n", errout.str());
+    }
+
+    void ctu_arithmetic() {
+        ctu("void dostuff(int *p) { x = p + 10; }\n"
+            "int main() {\n"
+            "  int x[3];\n"
+            "  dostuff(x);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Pointer arithmetic overflow; 'p' buffer size is 12\n", errout.str());
     }
 };
 

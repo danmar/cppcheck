@@ -53,14 +53,14 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
         const std::string afile = getFilename(f);
         if (fileCount.find(afile) == fileCount.end())
             fileCount[afile] = 0;
-        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::fromNativeSeparators(f) << '\n';
+        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::simplifyPath(Path::fromNativeSeparators(f)) << '\n';
     }
 
     for (const ImportProject::FileSettings &fs : fileSettings) {
         const std::string afile = getFilename(fs.filename);
         if (fileCount.find(afile) == fileCount.end())
             fileCount[afile] = 0;
-        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::fromNativeSeparators(fs.filename) << std::endl;
+        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(Path::fromNativeSeparators(fs.filename)) << std::endl;
     }
 }
 

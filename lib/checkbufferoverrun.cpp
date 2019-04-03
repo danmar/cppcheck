@@ -740,49 +740,80 @@ void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const st
 
 std::string CheckBufferOverrun::MyFileInfo::toString() const
 {
-    return CTU::toString(unsafeUsage);
+    std::string xml;
+    if (!unsafeArrayIndex.empty())
+        xml = "    <array-index>\n" + CTU::toString(unsafeArrayIndex) + "    </array-index>\n";
+    if (!unsafePointerArith.empty())
+        xml += "    <pointer-arith>\n" + CTU::toString(unsafePointerArith) + "    </pointer-arith>\n";
+    return xml;
 }
 
-bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset)
+bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type)
 {
     const CheckBufferOverrun *c = dynamic_cast<const CheckBufferOverrun *>(check);
     if (!c)
         return false;
     if (!argtok->valueType())
         return false;
-    if (!Token::Match(argtok, "%name% [") || argtok->astParent() != argtok->next() || Token::simpleMatch(argtok->linkAt(1), "] ["))
+    const Token *indexTok = nullptr;
+    if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))
+        indexTok = argtok->next()->astOperand2();
+    else if (type == 2 && Token::simpleMatch(argtok->astParent(), "+"))
+        indexTok = (argtok == argtok->astParent()->astOperand1()) ?
+                   argtok->astParent()->astOperand2() :
+                   argtok->astParent()->astOperand1();
+    if (!indexTok)
         return false;
-    if (!argtok->next()->astOperand2())
-        return false;
-    if (!argtok->next()->astOperand2()->hasKnownIntValue())
+    if (!indexTok->hasKnownIntValue())
         return false;
     if (!offset)
         return false;
-    *offset = argtok->next()->astOperand2()->getKnownIntValue() * argtok->valueType()->typeSize(*c->mSettings);
+    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(*c->mSettings);
     return true;
+}
+
+bool CheckBufferOverrun::isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset)
+{
+    return CheckBufferOverrun::isCtuUnsafeBufferUsage(check, argtok, offset, 1);
+}
+
+bool CheckBufferOverrun::isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset)
+{
+    return CheckBufferOverrun::isCtuUnsafeBufferUsage(check, argtok, offset, 2);
 }
 
 /** @brief Parse current TU and extract file info */
 Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
     CheckBufferOverrun checkBufferOverrun(tokenizer, settings, nullptr);
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, &checkBufferOverrun, isCtuUnsafeBufferUsage);
-    if (unsafeUsage.empty())
-        return nullptr;
-
     MyFileInfo *fileInfo = new MyFileInfo;
-    fileInfo->unsafeUsage = unsafeUsage;
+    fileInfo->unsafeArrayIndex = CTU::getUnsafeUsage(tokenizer, settings, &checkBufferOverrun, isCtuUnsafeArrayIndex);
+    fileInfo->unsafePointerArith = CTU::getUnsafeUsage(tokenizer, settings, &checkBufferOverrun, isCtuUnsafePointerArith);
+    if (fileInfo->unsafeArrayIndex.empty() && fileInfo->unsafePointerArith.empty()) {
+        delete fileInfo;
+        return nullptr;
+    }
     return fileInfo;
 }
 
 Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
 {
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::loadUnsafeUsageListFromXml(xmlElement);
-    if (unsafeUsage.empty())
-        return nullptr;
+    const std::string arrayIndex("array-index");
+    const std::string pointerArith("pointer-arith");
 
     MyFileInfo *fileInfo = new MyFileInfo;
-    fileInfo->unsafeUsage = unsafeUsage;
+    for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (e->Name() == arrayIndex)
+            fileInfo->unsafeArrayIndex = CTU::loadUnsafeUsageListFromXml(e);
+        else if (e->Name() == pointerArith)
+            fileInfo->unsafePointerArith = CTU::loadUnsafeUsageListFromXml(e);
+    }
+
+    if (fileInfo->unsafeArrayIndex.empty() && fileInfo->unsafePointerArith.empty()) {
+        delete fileInfo;
+        return nullptr;
+    }
+
     return fileInfo;
 }
 
@@ -800,40 +831,53 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
         const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
         if (!fi)
             continue;
-        for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
-            const CTU::FileInfo::FunctionCall *functionCall = nullptr;
-
-            const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
-                ctu->getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
-                                  unsafeUsage,
-                                  callsMap,
-                                  "Using argument ARG",
-                                  &functionCall,
-                                  false);
-            if (locationList.empty())
-                continue;
-
-            if (unsafeUsage.value > 0) {
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       emptyString,
-                                                       Severity::error,
-                                                       "Buffer access out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".",
-                                                       "ctubufferoverrun",
-                                                       CWE_BUFFER_OVERRUN, false);
-                errorLogger.reportErr(errmsg);
-            } else {
-                const ErrorLogger::ErrorMessage errmsg(locationList,
-                                                       emptyString,
-                                                       Severity::error,
-                                                       "Buffer access out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".",
-                                                       "ctubufferunderrun",
-                                                       CWE_BUFFER_UNDERRUN, false);
-                errorLogger.reportErr(errmsg);
-            }
-
-            foundErrors = true;
-        }
+        for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeArrayIndex)
+            foundErrors |= analyseWholeProgram1(ctu, callsMap, unsafeUsage, 1, errorLogger);
+        for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafePointerArith)
+            foundErrors |= analyseWholeProgram1(ctu, callsMap, unsafeUsage, 2, errorLogger);
     }
     return foundErrors;
+}
+
+bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger)
+{
+    const CTU::FileInfo::FunctionCall *functionCall = nullptr;
+
+    const std::list<ErrorLogger::ErrorMessage::FileLocation> &locationList =
+        ctu->getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
+                          unsafeUsage,
+                          callsMap,
+                          "Using argument ARG",
+                          &functionCall,
+                          false);
+    if (locationList.empty())
+        return false;
+
+    const char *errorId = nullptr;
+    std::string errmsg;
+    CWE cwe(0);
+
+    if (type == 1) {
+        errorId = "ctuArrayIndex";
+        if (unsafeUsage.value > 0)
+            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+        else
+            errmsg = "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+        cwe = (unsafeUsage.value > 0) ? CWE_BUFFER_OVERRUN : CWE_BUFFER_UNDERRUN;
+    } else {
+        errorId = "ctuPointerArith";
+        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue);
+        cwe = CWE_POINTER_ARITHMETIC_OVERFLOW;
+    }
+
+    const ErrorLogger::ErrorMessage errorMessage(locationList,
+            emptyString,
+            Severity::error,
+            errmsg,
+            errorId,
+            cwe, false);
+    errorLogger.reportErr(errorMessage);
+
+    return true;
 }
 
