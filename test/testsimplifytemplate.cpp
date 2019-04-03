@@ -142,6 +142,7 @@ private:
         TEST_CASE(template102); // #9005
         TEST_CASE(template103);
         TEST_CASE(template104); // #9021
+        TEST_CASE(template105); // #9076
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2381,6 +2382,19 @@ private:
                            "auto p<0,0> ( ) { return :: minimal_product ( key<0> ( ) , val<0> ( ) ) ; } "
                            "auto val<0> ( ) { return hana :: test :: ct_eq < - 0 > { } ; } "
                            "auto key<0> ( ) { return hana :: test :: ct_eq < 0 > { } ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template105() { // #9076
+        const char code[] = "template <template <typename> class TOUT> class ObjectCache;\n"
+                            "template <template <typename> class TOUT>\n"
+                            "class ObjectCache { };\n"
+                            "template <typename T> class Fred {};\n"
+                            "ObjectCache<Fred> _cache;";
+        const char exp[] = "class ObjectCache<Fred> ; "
+                           "template < typename T > class Fred { } ; "
+                           "ObjectCache<Fred> _cache ; "
+                           "class ObjectCache<Fred> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
