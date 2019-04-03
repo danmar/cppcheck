@@ -610,6 +610,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
 
         check("int f() {\n"
+              "    return \"Hello\" ? 1 : 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
+
+        check("int f() {\n"
               "    assert (test || \"Hello\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of string literal \"Hello\" to bool always evaluates to true.\n", errout.str());
@@ -644,11 +649,12 @@ private:
               "  if('a'){}\n"
               "  if(L'b'){}\n"
               "  if(1 && 'c'){}\n"
-              "  int x = 'd' ? 1 : 2;\n" // <- TODO
+              "  int x = 'd' ? 1 : 2;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal 'a' to bool always evaluates to true.\n"
                       "[test.cpp:3]: (warning) Conversion of char literal 'b' to bool always evaluates to true.\n"
                       "[test.cpp:4]: (warning) Conversion of char literal 'c' to bool always evaluates to true.\n"
+                      "[test.cpp:5]: (warning) Conversion of char literal 'd' to bool always evaluates to true.\n"
                       , errout.str());
 
         check("void f() {\n"
