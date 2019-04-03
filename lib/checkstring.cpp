@@ -386,9 +386,9 @@ void CheckString::overlappingStrcmp()
 
             for (const Token *eq0 : equals0) {
                 for (const Token * ne0 : notEquals0) {
-                    if (!Token::simpleMatch(eq0->previous(), "strcmp ("))
+                    if (!Token::Match(eq0->previous(), "strcmp|wcscmp ("))
                         continue;
-                    if (!Token::simpleMatch(ne0->previous(), "strcmp ("))
+                    if (!Token::Match(ne0->previous(), "strcmp|wcscmp ("))
                         continue;
                     const std::vector<const Token *> args1 = getArguments(eq0->previous());
                     const std::vector<const Token *> args2 = getArguments(ne0->previous());

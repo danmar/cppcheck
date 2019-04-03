@@ -648,6 +648,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) The expression 'strcmp(str,\"def\") != 0' is suspicious. It overlaps 'strcmp(str,\"abc\") == 0'.\n", errout.str());
 
+        check("void f(const wchar_t *str) {\n"
+              "  if (wcscmp(str, L\"abc\") == 0 || wcscmp(str, L\"def\")) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) The expression 'wcscmp(str,L\"def\") != 0' is suspicious. It overlaps 'wcscmp(str,L\"abc\") == 0'.\n", errout.str());
+
         check("struct X {\n"
               "  char *str;\n"
               "};\n"
