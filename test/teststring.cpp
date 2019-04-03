@@ -540,6 +540,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
 
         check("int f() {\n"
+              "    return test.substr( 0 , 4 ) == L\"Hello\" ? 0 : 1 ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal \"Hello\" doesn't match length argument for substr().\n", errout.str());
+
+        check("int f() {\n"
               "    return test.substr( 0 , 5 ) == \"Hello\" ? 0 : 1 ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
