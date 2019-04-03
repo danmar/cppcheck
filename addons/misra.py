@@ -579,6 +579,9 @@ class MisraChecker:
         # Prefix to ignore when matching suppression files.
         self.filePrefix = None
 
+        # Statistics of all violations suppressed per rule
+        self.suppressionStats   = dict()
+
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
             if token.str.startswith('/*') or token.str.startswith('//'):
@@ -1875,7 +1878,7 @@ class MisraChecker:
                         else:
                             item_str = str(item[0])
 
-                        outlist.append("%s: %s: %s" % (float(ruleNum)/100,fname,item_str))
+                        outlist.append("%s: %s: %s (%d locations suppressed)" % (float(ruleNum)/100,fname,item_str, len(self.suppressionStats.get(ruleNum, []))))
 
             for line in sorted(outlist, reverse=True):
                 print("  %s" % line)
@@ -1913,6 +1916,9 @@ class MisraChecker:
             self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
         elif self.isRuleSuppressed(location, ruleNum):
             # Error is suppressed. Ignore
+            if not ruleNum in self.suppressionStats:
+                self.suppressionStats[ruleNum] = []
+            self.suppressionStats[ruleNum].append(location)
             return
         else:
             id = 'misra-c2012-' + str(num1) + '.' + str(num2)
