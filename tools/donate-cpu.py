@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.20"
+CLIENT_VERSION = "1.1.21"
 
 
 def checkRequirements():
@@ -110,7 +110,8 @@ def getCppcheckVersions(server_address):
         sock.connect(server_address)
         sock.send(b'GetCppcheckVersions\n')
         versions = sock.recv(256)
-    except socket.error:
+    except socket.error as err:
+        print('Failed to get cppcheck versions: ' + str(err))
         return None
     sock.close()
     return versions.decode('utf-8').split()
@@ -518,6 +519,9 @@ while True:
     cppcheckVersions = getCppcheckVersions(server_address)
     if cppcheckVersions is None:
         print('Failed to communicate with server, retry later')
+        sys.exit(1)
+    if len(cppcheckVersions) == 0:
+        print('Did not get any cppcheck versions from server, retry later')
         sys.exit(1)
     for ver in cppcheckVersions:
         if ver == 'head':
