@@ -2220,12 +2220,6 @@ else:
     if args.no_summary:
         SHOW_SUMMARY = False
     if args.dumpfile:
-        if args.template == 'xml':
-            sys.stderr.write("""<?xml version="1.0" encoding="UTF-8"?>
-<results version="2">
-    <cppcheck version="1.84"/>
-    <errors>
-""")
         exitCode = 0
         for item in args.dumpfile:
             checker.parseDump(item)
@@ -2263,8 +2257,4 @@ else:
         if args.show_suppressed_rules:
             checker.showSuppressedRules()
 
-        if args.template == 'xml':
-            sys.stderr.write("""    </errors>
-</results>
-""")
         sys.exit(exitCode)
