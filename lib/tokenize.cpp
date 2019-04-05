@@ -9022,7 +9022,7 @@ void Tokenizer::findGarbageCode() const
     // Assign/increment/decrement literal
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
-            syntaxError(tok, tok->next()->str() + " " + tok->tokAt(2)->str());
+            syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
     }
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
