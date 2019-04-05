@@ -6113,6 +6113,7 @@ private:
             Settings sC;
             Library::Container c;
             c.startPattern = "C";
+            c.startPattern2 = "C !!::";
             sC.library.containers["C"] = c;
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
@@ -6122,6 +6123,7 @@ private:
             Settings set;
             Library::Container vector;
             vector.startPattern = "Vector";
+            vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
             set.library.containers["Vector"] = vector;
