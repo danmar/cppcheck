@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.21"
+CLIENT_VERSION = "1.1.22"
 
 
 def checkRequirements():
@@ -377,7 +377,7 @@ def sendAll(connection, data):
 
 
 def uploadResults(package, results, server_address):
-    print('Uploading results..')
+    print('Uploading results.. ' + str(len(results)) + ' bytes')
     max_retries = 4
     for retry in range(max_retries):
         try:
@@ -398,7 +398,7 @@ def uploadResults(package, results, server_address):
 
 
 def uploadInfo(package, info_output, server_address):
-    print('Uploading information output..')
+    print('Uploading information output.. ' + str(len(info_output)) + ' bytes')
     max_retries = 3
     for retry in range(max_retries):
         try:
