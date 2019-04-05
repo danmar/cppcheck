@@ -68,6 +68,7 @@ public:
         checkBufferOverrun.bufferOverflow();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.stringNotZeroTerminated();
+        checkBufferOverrun.objectIndex();
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
@@ -77,6 +78,7 @@ public:
         c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr);
+        c.objectIndexError(nullptr, nullptr);
     }
 
     /** @brief Parse current TU and extract file info */
@@ -84,6 +86,7 @@ public:
 
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+
 
 private:
 
@@ -103,6 +106,9 @@ private:
     void stringNotZeroTerminated();
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
+    
+    void objectIndex();
+    void objectIndexError(const Token *tok, const ValueFlow::Value *v);
 
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 

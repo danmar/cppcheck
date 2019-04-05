@@ -2862,26 +2862,6 @@ void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const V
     reportError(errorPath, Severity::style, "constArgument", errmsg, CWE570, false);
 }
 
-static ValueFlow::Value getLifetimeObjValue(const Token *tok)
-{
-    ValueFlow::Value result;
-    auto pred = [](const ValueFlow::Value &v) {
-        if (!v.isLocalLifetimeValue())
-            return false;
-        if (!v.tokvalue->variable())
-            return false;
-        return true;
-    };
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), pred);
-    if (it == tok->values().end())
-        return result;
-    result = *it;
-    // There should only be one lifetime
-    if (std::find_if(std::next(it), tok->values().end(), pred) != tok->values().end())
-        return result;
-    return result;
-}
-
 void CheckOther::checkComparePointers()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -2930,3 +2910,5 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     reportError(
         errorPath, Severity::error, "comparePointers", verb + " pointers that point to different objects", CWE570, false);
 }
+
+

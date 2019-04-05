@@ -881,3 +881,47 @@ bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const st
     return true;
 }
 
+void CheckBufferOverrun::objectIndex()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *functionScope : symbolDatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "["))
+                continue;
+            const Token *obj = tok->astOperand1();
+            const Token *idx = tok->astOperand2();
+            if (!idx || !obj)
+                continue;
+            if (!idx->hasKnownIntValue())
+                continue;
+            if (idx->values().front().intvalue == 0)
+                continue;
+
+            ValueFlow::Value v = getLifetimeObjValue(obj);
+            if (!v.isLocalLifetimeValue())
+                continue;
+            const Variable *var = v.tokvalue->variable();
+            if (var->isReference())
+                continue;
+            if (var->isRValueReference())
+                continue;
+            if (var->isArray())
+                continue;
+            if (var->isPointer())
+                continue;
+            objectIndexError(tok, &v);
+        }
+    }
+}
+
+void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Value *v)
+{
+    ErrorPath errorPath;
+    if (v) {
+        errorPath.emplace_back(v->tokvalue->variable()->nameToken(), "Variable declared here.");
+        errorPath.insert(errorPath.end(), v->errorPath.begin(), v->errorPath.end());
+    }
+    errorPath.emplace_back(tok, "");
+    reportError(
+        errorPath, Severity::error, "objectIndex", "Index access with address of variable is out of range.", CWE758, false);
+}
