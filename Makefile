@@ -467,7 +467,7 @@ $(SRCDIR)/settings.o: lib/settings.cpp lib/settings.h lib/config.h lib/errorlogg
 $(SRCDIR)/suppressions.o: lib/suppressions.cpp lib/suppressions.h lib/config.h lib/errorlogger.h lib/mathlib.h lib/path.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/suppressions.o $(SRCDIR)/suppressions.cpp
 
-$(SRCDIR)/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/config.h lib/library.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/standards.h lib/platform.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/settings.h lib/importproject.h lib/utils.h lib/timer.h lib/tokenize.h lib/tokenlist.h
+$(SRCDIR)/symboldatabase.o: lib/symboldatabase.cpp lib/symboldatabase.h lib/config.h lib/library.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/standards.h lib/platform.h lib/token.h lib/valueflow.h lib/templatesimplifier.h lib/astutils.h lib/settings.h lib/importproject.h lib/utils.h lib/timer.h lib/tokenize.h lib/tokenlist.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CFG) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(SRCDIR)/symboldatabase.o $(SRCDIR)/symboldatabase.cpp
 
 $(SRCDIR)/templatesimplifier.o: lib/templatesimplifier.cpp lib/templatesimplifier.h lib/config.h lib/errorlogger.h lib/suppressions.h lib/mathlib.h lib/settings.h lib/importproject.h lib/platform.h lib/utils.h lib/library.h lib/standards.h lib/timer.h lib/token.h lib/valueflow.h lib/tokenize.h lib/tokenlist.h
