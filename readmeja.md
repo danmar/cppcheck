@@ -60,7 +60,7 @@ http://software-download.name/pcre-library-windows/
 
 ### GNU make
 
-単純で最適かしないビルド(依存関係なし):
+単純で最適化しないビルド(依存関係なし):
 
 ```shell
 make
