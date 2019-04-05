@@ -87,7 +87,6 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
 
-
 private:
 
     void arrayIndex();
@@ -106,7 +105,7 @@ private:
     void stringNotZeroTerminated();
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
-    
+
     void objectIndex();
     void objectIndexError(const Token *tok, const ValueFlow::Value *v);
 

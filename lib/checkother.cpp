@@ -2910,5 +2910,3 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     reportError(
         errorPath, Severity::error, "comparePointers", verb + " pointers that point to different objects", CWE570, false);
 }
-
-

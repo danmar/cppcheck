@@ -250,7 +250,7 @@ private:
         TEST_CASE(ctu_array);
         TEST_CASE(ctu_variable);
         TEST_CASE(ctu_arithmetic);
-        
+
         TEST_CASE(objectIndex);
     }
 
@@ -4200,12 +4200,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Pointer arithmetic overflow; 'p' buffer size is 12\n", errout.str());
     }
 
-    void objectIndex() {
+    void objectIndex()
+    {
         check("int f() { \n"
               "    int i;\n"
               "    return (&i)[1]; \n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (error) Index access with address of variable is out of range.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (error) Index access with address of variable is out of range.\n",
+            errout.str());
 
         check("int f() { \n"
               "    int i;\n"
