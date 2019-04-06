@@ -873,7 +873,7 @@ void CheckOther::checkVariableScope()
             const Variable *otherVar = otherVarToken->variable();
             if (otherVar && Token::Match(otherVar->nameToken(), "%var% :") &&
                 otherVar->nameToken()->next()->astParent() &&
-                Token::Match(otherVar->nameToken()->next()->astParent()->previous(), "for ("))
+                Token::simpleMatch(otherVar->nameToken()->next()->astParent()->previous(), "for ("))
                 continue;
         }
 

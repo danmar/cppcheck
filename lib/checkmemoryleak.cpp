@@ -1060,12 +1060,12 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
                 const Function *func = tok2->function();
                 const bool isNothrow = func && (func->isAttributeNothrow() || func->isThrow());
 
-                if (Token::Match(tok2, "shared_ptr|unique_ptr <") && tok2->next()->link() && Token::Match(tok2->next()->link(), "> ( new %name%")) {
+                if (Token::Match(tok2, "shared_ptr|unique_ptr <") && Token::Match(tok2->next()->link(), "> ( new %name%")) {
                     pointerType = tok2;
                 } else if (!isNothrow) {
                     if (Token::Match(tok2, "%name% ("))
                         functionCalled = tok2;
-                    else if (tok2->isName() && tok2->next()->link() && Token::simpleMatch(tok2->next()->link(), "> ("))
+                    else if (tok2->isName() && Token::simpleMatch(tok2->next()->link(), "> ("))
                         functionCalled = tok2;
                 }
             }

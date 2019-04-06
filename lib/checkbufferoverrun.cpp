@@ -693,7 +693,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             // Is the buffer zero terminated after the call?
             bool isZeroTerminated = false;
             for (const Token *tok2 = tok->next()->link(); tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-                if (!Token::Match(tok2, "] ="))
+                if (!Token::simpleMatch(tok2, "] ="))
                     continue;
                 const Token *rhs = tok2->next()->astOperand2();
                 if (!rhs || !rhs->hasKnownIntValue() || rhs->getKnownIntValue() != 0)

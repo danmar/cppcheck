@@ -884,7 +884,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             else
                 tok2 = tok2->tokAt(2);
         }
-        if (Token::Match(tok, "sizeof ( *")) {
+        if (Token::simpleMatch(tok, "sizeof ( *")) {
             const ValueType *vt = tok->tokAt(2)->valueType();
             const size_t sz = vt ? getSizeOf(*vt, settings) : 0;
             if (sz > 0) {
