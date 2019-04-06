@@ -4207,7 +4207,15 @@ private:
               "    return (&i)[1]; \n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (error) Index access with address of variable is out of range.\n",
+            "[test.cpp:3] -> [test.cpp:3]: (error) The address of variable 'i' is an array of size 1, but the index is non-zero.\n",
+            errout.str());
+
+        check("int f(int j) { \n"
+              "    int i;\n"
+              "    return (&i)[j]; \n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:3]: (warning) The address of variable 'i' is an array of size 1, but the index might be non-zero.\n",
             errout.str());
 
         check("int f() { \n"

@@ -892,9 +892,7 @@ void CheckBufferOverrun::objectIndex()
             const Token *idx = tok->astOperand2();
             if (!idx || !obj)
                 continue;
-            if (!idx->hasKnownIntValue())
-                continue;
-            if (idx->values().front().intvalue == 0)
+            if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;
 
             ValueFlow::Value v = getLifetimeObjValue(obj);
@@ -909,19 +907,21 @@ void CheckBufferOverrun::objectIndex()
                 continue;
             if (var->isPointer())
                 continue;
-            objectIndexError(tok, &v);
+            objectIndexError(tok, &v, idx->hasKnownIntValue());
         }
     }
 }
 
-void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Value *v)
+void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known)
 {
     ErrorPath errorPath;
+    std::string name;
     if (v) {
-        errorPath.emplace_back(v->tokvalue->variable()->nameToken(), "Variable declared here.");
+        name = v->tokvalue->variable()->name();
         errorPath.insert(errorPath.end(), v->errorPath.begin(), v->errorPath.end());
     }
     errorPath.emplace_back(tok, "");
+    std::string verb = known ? "is" : "might be";
     reportError(
-        errorPath, Severity::error, "objectIndex", "Index access with address of variable is out of range.", CWE758, false);
+        errorPath, known ? Severity::error : Severity::warning, "objectIndex", "The address of variable '" + name + "' is an array of size 1, but the index " + verb + " non-zero.", CWE758, false);
 }

@@ -78,7 +78,7 @@ public:
         c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr);
-        c.objectIndexError(nullptr, nullptr);
+        c.objectIndexError(nullptr, nullptr, true);
     }
 
     /** @brief Parse current TU and extract file info */
@@ -107,7 +107,7 @@ private:
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
 
     void objectIndex();
-    void objectIndexError(const Token *tok, const ValueFlow::Value *v);
+    void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
 
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
