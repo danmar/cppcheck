@@ -886,7 +886,7 @@ void CheckBufferOverrun::objectIndex()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "["))
+            if (!Token::simpleMatch(tok, "["))
                 continue;
             const Token *obj = tok->astOperand1();
             const Token *idx = tok->astOperand2();
@@ -918,7 +918,7 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
     std::string name;
     if (v) {
         name = v->tokvalue->variable()->name();
-        errorPath.insert(errorPath.end(), v->errorPath.begin(), v->errorPath.end());
+        errorPath = v->errorPath;
     }
     errorPath.emplace_back(tok, "");
     std::string verb = known ? "is" : "might be";
