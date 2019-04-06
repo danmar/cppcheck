@@ -140,11 +140,11 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
         }
     }
     qSort(libs);
-    foreach (const QString library, libs) {
-        QCheckBox *checkbox = new QCheckBox(this);
-        checkbox->setText(library);
-        mUI.mLayoutLibraries->addWidget(checkbox);
-        mLibraryCheckboxes << checkbox;
+    mUI.mLibraries->clear();
+    for (const QString &lib : libs) {
+        QListWidgetItem* item = new QListWidgetItem(lib, mUI.mLibraries);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
+        item->setCheckState(Qt::Unchecked); // AND initialize check state
     }
 
     // Platforms..
@@ -499,9 +499,10 @@ QStringList ProjectFileDialog::getExcludedPaths() const
 QStringList ProjectFileDialog::getLibraries() const
 {
     QStringList libraries;
-    foreach (const QCheckBox *checkbox, mLibraryCheckboxes) {
-        if (checkbox->isChecked())
-            libraries << checkbox->text();
+    for (int row = 0; row < mUI.mLibraries->count(); ++row) {
+        QListWidgetItem *item = mUI.mLibraries->item(row);
+        if (item->checkState() == Qt::Checked)
+            libraries << item->text();
     }
     return libraries;
 }
@@ -554,9 +555,9 @@ void ProjectFileDialog::setExcludedPaths(const QStringList &paths)
 
 void ProjectFileDialog::setLibraries(const QStringList &libraries)
 {
-    for (int i = 0; i < mLibraryCheckboxes.size(); i++) {
-        QCheckBox *checkbox = mLibraryCheckboxes[i];
-        checkbox->setChecked(libraries.contains(checkbox->text()));
+    for (int row = 0; row < mUI.mLibraries->count(); ++row) {
+        QListWidgetItem *item = mUI.mLibraries->item(row);
+        item->setCheckState(libraries.contains(item->text()) ? Qt::Checked : Qt::Unchecked);
     }
 }
 

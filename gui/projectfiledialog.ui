@@ -332,7 +332,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="mLayoutLibraries"/>
+           <widget class="QListWidget" name="mLibraries"/>
           </item>
           <item>
            <widget class="QLabel" name="mLabelLibrariesNote">
