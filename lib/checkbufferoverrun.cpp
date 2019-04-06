@@ -922,6 +922,10 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
     }
     errorPath.emplace_back(tok, "");
     std::string verb = known ? "is" : "might be";
-    reportError(
-        errorPath, known ? Severity::error : Severity::warning, "objectIndex", "The address of variable '" + name + "' is an array of size 1, but the index " + verb + " non-zero.", CWE758, false);
+    reportError(errorPath,
+                known ? Severity::error : Severity::warning,
+                "objectIndex",
+                "The address of variable '" + name + "' is an array of size 1, but the index " + verb + " non-zero.",
+                CWE758,
+                false);
 }
