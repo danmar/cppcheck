@@ -161,8 +161,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
-        for (std::vector<std::string>::const_iterator iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
+        for (const std::string &pathname : pathnames)
+            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(pathname), _settings->library.markupExtensions(), matcher);
     }
 
     if (_files.empty() && settings.project.fileSettings.empty()) {
@@ -890,8 +890,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
         // filesettings
         c = 0;
-        for (std::list<ImportProject::FileSettings>::const_iterator fs = settings.project.fileSettings.begin(); fs != settings.project.fileSettings.end(); ++fs) {
-            returnValue += cppcheck.check(*fs);
+        for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
+            returnValue += cppcheck.check(fs);
             ++c;
             if (!settings.quiet)
                 reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
