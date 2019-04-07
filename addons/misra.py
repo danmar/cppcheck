@@ -35,6 +35,7 @@ typeBits = {
 VERIFY = False
 QUIET = False
 SHOW_SUMMARY = True
+CLI = False  # Executed by Cppcheck binary?
 
 def printStatus(*args, **kwargs):
     if not QUIET:
@@ -1964,8 +1965,11 @@ class MisraChecker:
                                                     errorId = id,
                                                     suppressions = self.dumpfileSuppressions)
             if formattedMsg:
-                sys.stderr.write(formattedMsg)
-                sys.stderr.write('\n')
+                if CLI:
+                    print(formattedMsg)
+                else:
+                    sys.stderr.write(formattedMsg)
+                    sys.stderr.write('\n')
                 if not severity in self.violations:
                     self.violations[severity] = []
                 self.violations[severity].append(id)
@@ -2193,6 +2197,7 @@ parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_tru
 parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
 parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
 parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
+parser.add_argument("--cli", help="Addon is executed from Cppcheck", action="store_true")
 args = parser.parse_args()
 
 checker = MisraChecker()
@@ -2215,6 +2220,10 @@ else:
     if args.file_prefix:
         checker.setFilePrefix(args.file_prefix)
 
+    if args.cli:
+        CLI = True
+        QUIET = True
+        SHOW_SUMMARY = False
     if args.quiet:
         QUIET = True
     if args.no_summary:

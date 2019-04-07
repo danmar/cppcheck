@@ -277,6 +277,8 @@ public:
      */
     std::list<Rule> rules;
 
+    std::list<std::string> addons;
+
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration;
 

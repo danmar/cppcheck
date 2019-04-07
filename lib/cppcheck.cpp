@@ -40,6 +40,8 @@
 #include <set>
 #include <stdexcept>
 #include <vector>
+#include <memory>
+#include <iostream> // <- TEMPORARY
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
@@ -216,9 +218,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         // write dump file xml prolog
         std::ofstream fdump;
-        if (mSettings.dump) {
-            const std::string dumpfile(mSettings.dumpFile.empty() ? (filename + ".dump") : mSettings.dumpFile);
-            fdump.open(dumpfile);
+        std::string dumpFile;
+        if (mSettings.dump || !mSettings.addons.empty()) {
+            dumpFile = (mSettings.dumpFile.empty()) ? (filename + ".dump") : mSettings.dumpFile;
+            fdump.open(dumpFile);
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
                 fdump << "<dumps>" << std::endl;
@@ -247,7 +250,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1);
-        if (mSettings.dump && fdump.is_open()) {
+        if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
             mSettings.nomsg.dump(fdump);
         }
         tokens1.removeComments();
@@ -409,7 +412,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     continue;
 
                 // dump xml if --dump
-                if (mSettings.dump && fdump.is_open()) {
+                if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
                     fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
                     preprocessor.dump(fdump);
                     mTokenizer.dump(fdump);
@@ -504,8 +507,70 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // dumped all configs, close root </dumps> element now
-        if (mSettings.dump && fdump.is_open())
+        if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open())
             fdump << "</dumps>" << std::endl;
+
+        if (!mSettings.addons.empty()) {
+            fdump.close();
+
+            for (const std::string &addon : mSettings.addons) {
+                const std::string &results = executeAddon(addon, dumpFile);
+                for (std::string::size_type pos = 0; pos < results.size();) {
+                    const std::string::size_type pos2 = results.find("\n", pos);
+                    if (pos2 == std::string::npos)
+                        break;
+
+                    const std::string::size_type pos1 = pos;
+                    pos = pos2 + 1;
+
+                    if (pos1 + 5 > pos2)
+                        continue;
+                    if (results[pos1] != '[')
+                        continue;
+                    if (results[pos2-1] != ']')
+                        continue;
+
+                    const std::string line = results.substr(pos1, pos2-pos1);
+
+                    const std::string::size_type loc1 = 1;
+                    const std::string::size_type loc2 = line.find(':');
+                    const std::string::size_type loc3 = line.find("]: (");
+                    if (loc2 == std::string::npos || loc3 == std::string::npos)
+                        continue;
+                    if (!(loc1 < loc2 && loc2 < loc3))
+                        continue;
+
+                    const std::string::size_type sev1 = loc3 + 4;
+                    const std::string::size_type sev2 = line.find(")", sev1);
+                    if (sev2 == std::string::npos)
+                        continue;
+
+                    const std::string::size_type id1 = line.rfind("[" + addon + "-");
+                    if (id1 == std::string::npos || id1 < loc3)
+                        continue;
+
+                    ErrorLogger::ErrorMessage errmsg;
+
+                    const std::string filename = line.substr(loc1, loc2-loc1);
+                    const int lineNumber = std::atoi(line.c_str() + loc2 + 1);
+                    errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+
+                    errmsg._id = line.substr(id1+1, line.size()-id1-2);
+                    std::string text = line.substr(loc3 + 11, id1 - loc3 - 11);
+                    if (text[0] == ' ')
+                        text = text.substr(1);
+                    if (endsWith(text, " ", 1))
+                        text = text.erase(text.size() - 1);
+                    errmsg.setmsg(text);
+                    errmsg._severity = Severity::fromString(line.substr(sev1, sev2-sev1));
+                    if (errmsg._severity == Severity::SeverityType::none)
+                        continue;
+                    errmsg.file0 = filename;
+
+                    reportErr(errmsg);
+                }
+            }
+        }
 
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
@@ -876,6 +941,27 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         }
 #endif
     }
+#endif
+}
+
+std::string CppCheck::executeAddon(const std::string &addon, const std::string &dumpFile)
+{
+    const std::string addonFile = "addons/" + addon + ".py";
+
+#ifdef _WIN32
+    return "";
+#else
+    const std::string cmd = "python " + addonFile + " --cli " + dumpFile;
+
+    char buffer[1024];
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe)
+        return "";
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
+        result += buffer;
+    }
+    return result;
 #endif
 }
 

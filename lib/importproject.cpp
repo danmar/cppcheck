@@ -1017,7 +1017,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), AnalyzeAllVsConfigsElementName) == 0)
             ; // FIXME: Write some warning
         else if (strcmp(node->Name(), AddonsElementName) == 0)
-            node->Attribute(AddonElementName); // FIXME: Handle addons
+            temp.addons = readXmlStringList(node, AddonElementName, nullptr);
         else if (strcmp(node->Name(), TagsElementName) == 0)
             node->Attribute(TagElementName); // FIXME: Write some warning
         else if (strcmp(node->Name(), ToolsElementName) == 0)
@@ -1030,6 +1030,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->includePaths = temp.includePaths;
     settings->userDefines = temp.userDefines;
     settings->userUndefs = temp.userUndefs;
+    settings->addons = temp.addons;
     for (const std::string &path : paths)
         guiProject.pathNames.push_back(path);
     for (const std::string &supp : suppressions)

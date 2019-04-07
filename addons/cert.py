@@ -16,13 +16,17 @@ import re
 VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
+CLI = False
 
 def reportError(token, severity, msg, id):
     if VERIFY:
         VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
-        sys.stderr.write(
-            '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
+        msg = '[' + token.file + ':' + str(token.linenr) + ']: (' + severity + ') ' + msg + ' [' + id + ']'
+        if CLI:
+            print(msg)
+        else:
+            sys.stderr.write(msg + '\n')
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -238,6 +242,9 @@ def msc30(data):
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
+        continue
+    if arg == '--cli':
+        CLI = True
         continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
