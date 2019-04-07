@@ -4233,6 +4233,21 @@ private:
               "    return i[1]; \n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int i; int j; };\n"
+              "int f() { \n"
+              "    A x;\n"
+              "    return (&x.i)[0]; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int i; int j; };\n"
+              "int f() { \n"
+              "    A x;\n"
+              "    int * i = &x.i;\n"
+              "    return i[0]; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
