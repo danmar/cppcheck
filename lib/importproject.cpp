@@ -36,8 +36,8 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
-        for (std::size_t i = 0; i < ipaths.size(); ++i) {
-            if (it->filename.size() > ipaths[i].size() && it->filename.compare(0,ipaths[i].size(),ipaths[i])==0) {
+        for (const std::string &i : ipaths) {
+            if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
                 ignore = true;
                 break;
             }
