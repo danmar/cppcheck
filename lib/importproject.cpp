@@ -985,6 +985,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     (void)ProjectVersionAttrib;
 
     std::list<std::string> paths;
+    std::list<std::string> suppressions;
     Settings temp;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
@@ -1009,11 +1010,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             guiProject.excludedPaths = readXmlStringList(node, IgnorePathName, IgnorePathNameAttrib);
         else if (strcmp(node->Name(), LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, LibraryElementName, nullptr);
-        else if (strcmp(node->Name(), SuppressionsElementName) == 0) {
-            for (const std::string &s : readXmlStringList(node, SuppressionElementName, nullptr)) {
-                temp.nomsg.addSuppressionLine(s);
-            }
-        } else if (strcmp(node->Name(), PlatformElementName) == 0)
+        else if (strcmp(node->Name(), SuppressionsElementName) == 0)
+            suppressions = readXmlStringList(node, SuppressionElementName, nullptr);
+        else if (strcmp(node->Name(), PlatformElementName) == 0)
             guiProject.platform = node->GetText();
         else if (strcmp(node->Name(), AnalyzeAllVsConfigsElementName) == 0)
             ; // FIXME: Write some warning
@@ -1033,5 +1032,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userUndefs = temp.userUndefs;
     for (const std::string &path : paths)
         guiProject.pathNames.push_back(path);
+    for (const std::string &supp : suppressions)
+        settings->nomsg.addSuppressionLine(supp);
     return true;
 }
