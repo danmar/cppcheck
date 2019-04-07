@@ -14,6 +14,7 @@ DEBUG = ('-debug' in sys.argv)
 VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
+CLI = ('--cli' in sys.argv)
 
 def reportError(token, severity, msg, id):
     if id == 'debug' and DEBUG == False:
@@ -21,8 +22,11 @@ def reportError(token, severity, msg, id):
     if VERIFY:
         VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
-        sys.stderr.write(
-            '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
+        msg = '[' + token.file + ':' + str(token.linenr) + ']: (' + severity + ') ' + msg + ' [misc-' + id + ']'
+        if CLI:
+            print(msg)
+        else:
+            sys.stderr.write(msg + '\n')
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -136,7 +140,7 @@ def ellipsisStructArg(data):
                 break
 
 for arg in sys.argv[1:]:
-    if arg in ['-debug', '-verify']:
+    if arg in ['-debug', '-verify', '--cli']:
         continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
