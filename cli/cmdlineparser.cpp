@@ -128,6 +128,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 return true;
             }
 
+            else if (std::strncmp(argv[i], "--addon=", 8) == 0)
+                mSettings->addons.emplace_back(argv[i]+8);
+
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 mSettings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings->buildDir, '/'))
@@ -920,6 +923,8 @@ void CmdLineParser::printHelp()
               "If a directory is given instead of a filename, *.cpp, *.cxx, *.cc, *.c++, *.c,\n"
               "*.tpp, and *.txx files are checked recursively from the given directory.\n\n"
               "Options:\n"
+              "    --addon=<addon>\n"
+              "                         Execute addon. i.e. cert.\n"
               "    --cppcheck-build-dir=<dir>\n"
               "                         Analysis output directory. Useful for various data.\n"
               "                         Some possible usages are; whole program analysis,\n"
