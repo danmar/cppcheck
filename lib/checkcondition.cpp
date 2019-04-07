@@ -626,6 +626,10 @@ void CheckCondition::multiCondition2()
                     if (const Token *op = Token::findmatch(tok, "++|--", condEndToken)) {
                         bool bailout = false;
                         while (op) {
+                            if (!op->astOperand1()) {
+                                bailout = true;
+                                break;
+                            }
                             if (vars.find(op->astOperand1()->varId()) != vars.end()) {
                                 bailout = true;
                                 break;
