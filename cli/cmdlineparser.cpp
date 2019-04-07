@@ -546,6 +546,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             return false;
                     }
 
+                    for (const std::string &i : mSettings->project.guiProject.excludedPaths)
+                        mIgnoredPaths.emplace_back(i);
+
                     const std::string platform(mSettings->project.guiProject.platform);
 
                     if (platform == "win32A")

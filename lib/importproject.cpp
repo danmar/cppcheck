@@ -985,7 +985,6 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     (void)ProjectVersionAttrib;
 
     std::list<std::string> paths;
-    std::list<std::string> excludePaths;
     Settings temp;
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
@@ -1005,9 +1004,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), PathsElementName) == 0)
             paths = readXmlStringList(node, PathName, PathNameAttrib);
         else if (strcmp(node->Name(), ExcludeElementName) == 0)
-            excludePaths = readXmlStringList(node, ExcludePathName, ExcludePathNameAttrib);
+            guiProject.excludedPaths = readXmlStringList(node, ExcludePathName, ExcludePathNameAttrib);
         else if (strcmp(node->Name(), IgnoreElementName) == 0)
-            excludePaths = readXmlStringList(node, IgnorePathName, IgnorePathNameAttrib);
+            guiProject.excludedPaths = readXmlStringList(node, IgnorePathName, IgnorePathNameAttrib);
         else if (strcmp(node->Name(), LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, LibraryElementName, nullptr);
         else if (strcmp(node->Name(), SuppressionsElementName) == 0) {
@@ -1034,6 +1033,5 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userUndefs = temp.userUndefs;
     for (const std::string &path : paths)
         guiProject.pathNames.push_back(path);
-    settings->project.ignorePaths(std::vector<std::string>(excludePaths.begin(), excludePaths.end()));
     return true;
 }
