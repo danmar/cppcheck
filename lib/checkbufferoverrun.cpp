@@ -925,7 +925,7 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
     reportError(errorPath,
                 known ? Severity::error : Severity::warning,
                 "objectIndex",
-                "The address of variable '" + name + "' is an array of size 1, but the index " + verb + " non-zero.",
+                "The address of local variable '" + name + "' " + verb + " accessed at non-zero index.",
                 CWE758,
                 false);
 }
