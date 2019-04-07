@@ -947,22 +947,21 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 std::string CppCheck::executeAddon(const std::string &addon, const std::string &dumpFile)
 {
     const std::string addonFile = "addons/" + addon + ".py";
-
-#ifdef _WIN32
-    return "";
-#else
     const std::string cmd = "python " + addonFile + " --cli " + dumpFile;
 
-    char buffer[1024];
-    std::string result;
+#ifdef _WIN32
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
     if (!pipe)
         return "";
+    char buffer[1024];
+    std::string result;
     while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
         result += buffer;
     }
     return result;
-#endif
 }
 
 Settings &CppCheck::settings()
