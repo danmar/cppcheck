@@ -4852,8 +4852,11 @@ void Tokenizer::simplifyHeaders()
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
                 if (Token::Match(tok->next(), "template < %name%")) {
                     const Token *tok2 = tok->tokAt(3);
-                    while (Token::Match(tok2, "%name% %name% [,=>]")) {
-                        tok2 = tok2->tokAt(2);
+                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename . . . %name% [,>]")) {
+                        if (Token::simpleMatch(tok2, "typename . . ."))
+                            tok2 = tok2->tokAt(5);
+                        else
+                            tok2 = tok2->tokAt(2);
                         if (Token::Match(tok2, "= %name% [,>]"))
                             tok2 = tok2->tokAt(2);
                         if (tok2->str() == ",")
@@ -4870,6 +4873,9 @@ void Tokenizer::simplifyHeaders()
                             endToken = endToken->link()->next();
                         if (endToken && endToken->str() == ";")
                             Token::eraseTokens(tok, endToken);
+                    } else if (Token::Match(tok2, "> %type% %name% (") && Token::simpleMatch(tok2->linkAt(3), ") {") && keep.find(tok2->strAt(2)) == keep.end()) {
+                        const Token *endToken = tok2->linkAt(3)->linkAt(1)->next();
+                        Token::eraseTokens(tok, endToken);
                     }
                 }
             }

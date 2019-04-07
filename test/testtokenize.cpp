@@ -92,6 +92,8 @@ private:
 
         TEST_CASE(longtok);
 
+        TEST_CASE(removeUnusedTemplates);
+
         TEST_CASE(simplifyCasts1);
         TEST_CASE(simplifyCasts2);
         TEST_CASE(simplifyCasts3);
@@ -550,6 +552,18 @@ private:
             return "";
     }
 
+    std::string tokenizeAndStringify(const char code[], const Settings &settings) {
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        if (!tokenizer.tokens())
+            return "";
+        return tokenizer.tokens()->stringifyList(false, true, false, true, false, 0, 0);
+    }
+
     std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
@@ -973,6 +987,16 @@ private:
         ASSERT_EQUALS(filedata, tokenizeAndStringify(filedata.c_str(), true));
     }
 
+
+    void removeUnusedTemplates() {
+        Settings s;
+        s.removeUnusedTemplates = true;
+        ASSERT_EQUALS(";",
+                      tokenizeAndStringify("; template <typename... a> uint8_t b(std::tuple<uint8_t> d) {\n"
+                                           "  std::tuple<a...> c{std::move(d)};\n"
+                                           "  return std::get<0>(c);\n"
+                                           "}", s));
+    }
 
 
     // Don’t remove "(int *)"..
