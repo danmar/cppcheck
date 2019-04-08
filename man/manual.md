@@ -173,9 +173,9 @@ You should use a platform configuration that match your target.
 
 By default Cppcheck uses native platform configuration that works well if your code is compiled and executed locally.
 
-Cppcheck has builtin configurations for unix and windows targets. You can easily use these with the --platform command line flag.
+Cppcheck has builtin configurations for Unix and Windows targets. You can easily use these with the --platform command line flag.
 
-You can also create your own custom platform configuration in a xml file. Here is an example:
+You can also create your own custom platform configuration in a XML file. Here is an example:
 
     <?xml version="1"?>
     <platform>
@@ -294,7 +294,7 @@ You can specify suppressions in a XML file. Example file:
       </suppress>
     </suppressions>
 
-The xml format is extensible and may be extended with further attributes in the future.
+The XML format is extensible and may be extended with further attributes in the future.
 
 You can use the suppressions file like this:
 
@@ -667,7 +667,7 @@ The speedup you get can be remarkable.
 
 TBD
 
-## Misra
+## MISRA
 
 Cppcheck has an addon that checks for MISRA C 2012 compliance.
 
