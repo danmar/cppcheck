@@ -1609,13 +1609,14 @@ class MisraChecker:
 
 
     def misra_20_13(self, data):
+        dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
         for directive in data.directives:
             dir = directive.str
-            for sep in ' (<':
-                if dir.find(sep) > 0:
-                    dir = dir[:dir.find(sep)]
-            if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include',
-                        '#pragma', '#undef', '#warning']:
+            mo = dir_pattern.match(dir)
+            if mo:
+                dir = mo.group(1)
+            if dir not in ['define', 'elif', 'else', 'endif', 'error', 'if', 'ifdef', 'ifndef', 'include',
+                        'pragma', 'undef', 'warning']:
                 self.reportError(directive, 20, 13)
 
 
