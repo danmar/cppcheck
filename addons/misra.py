@@ -627,13 +627,11 @@ class MisraChecker:
 
         self.stdversion = stdversion
 
-    def get_num_significant_naming_chars(self):
-        if self.stdversion == "c90":
-            return 31
-        elif self.stdversion == "c99":
+    def get_num_significant_naming_chars(self, cfg):
+        if cfg.standards and cfg.standards.c == "c99":
             return 63
         else:
-            raise RuntimeException("Don't know the number of significant naming characters for C standard %s" % self.stdversion)
+            return 31
 
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
@@ -743,7 +741,7 @@ class MisraChecker:
 
 
     def misra_5_3(self, data):
-        num_sign_chars = self.get_num_significant_naming_chars()
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         enum = []
         scopeVars = {}
         for var in data.variables:
@@ -799,7 +797,7 @@ class MisraChecker:
 
 
     def misra_5_4(self, data):
-        num_sign_chars = self.get_num_significant_naming_chars()
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         macro = {}
         compile_name = re.compile(r'#define ([a-zA-Z0-9_]+)')
         compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[(]([a-zA-Z0-9_, ]+)[)]')
@@ -838,7 +836,7 @@ class MisraChecker:
 
 
     def misra_5_5(self, data):
-        num_sign_chars = self.get_num_significant_naming_chars()
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         macroNames = []
         compiled = re.compile(r'#define ([A-Za-z0-9_]+)')
         for dir in data.directives:
@@ -2290,12 +2288,11 @@ parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
 parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
 parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
-parser.add_argument("--std", choices=("c90", "c99"), default="c90", help="Specify version of C language being used")
 parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
 parser.add_argument("--cli", help="Addon is executed from Cppcheck", action="store_true")
 args = parser.parse_args()
 
-checker = MisraChecker(args.std)
+checker = MisraChecker()
 
 if args.generate_table:
     generateTable()
