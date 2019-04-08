@@ -20,6 +20,7 @@ def validate_regex(expr):
         exit(1)
 
 
+CLI = ('--cli' in sys.argv)
 RE_VARNAME = None
 RE_PRIVATE_MEMBER_VARIABLE = None
 RE_FUNCTIONNAME = None
@@ -37,11 +38,14 @@ for arg in sys.argv[1:]:
 
 FoundError = False
 
-def reportError(token, severity, msg):
+def reportError(token, severity, msg, errorId):
     global FoundError
     FoundError = True
-    sys.stderr.write(
-        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + ') naming.py: ' + msg + '\n')
+    msg = '[' + token.file + ':' + str(token.linenr) + ']: (' + severity + ') ' + msg + ' [naming-' + errorId + ']'
+    if CLI:
+        print(msg)
+    else:
+        sys.stderr.write(msg + '\n')
 
 for arg in sys.argv[1:]:
     if not arg[-5:] == '.dump':
@@ -57,7 +61,7 @@ for arg in sys.argv[1:]:
                     res = re.match(RE_VARNAME, var.nameToken.str)
                     if not res:
                         reportError(var.typeStartToken, 'style', 'Variable ' +
-                                    var.nameToken.str + ' violates naming convention')
+                                    var.nameToken.str + ' violates naming convention', 'varname')
         if RE_PRIVATE_MEMBER_VARIABLE:
             for var in cfg.variables:
                 if (var.access is None) or var.access != 'Private':
@@ -65,16 +69,16 @@ for arg in sys.argv[1:]:
                 res = re.match(RE_PRIVATE_MEMBER_VARIABLE, var.nameToken.str)
                 if not res:
                     reportError(var.typeStartToken, 'style', 'Private member variable ' +
-                                var.nameToken.str + ' violates naming convention')
+                                var.nameToken.str + ' violates naming convention', 'privateMemberVariable')
         if RE_FUNCTIONNAME:
             for scope in cfg.scopes:
                 if scope.type == 'Function':
                     res = re.match(RE_FUNCTIONNAME, scope.className)
                     if not res:
                         reportError(
-                            scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention')
+                            scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention', 'functionName')
 
-if FoundError:
+if FoundError and not CLI:
     print('FoundError')
     sys.exit(1)
 

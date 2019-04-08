@@ -57,6 +57,36 @@ static TimerResults S_timerResults;
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
+namespace {
+    struct AddonInfo {
+        std::string script;
+        std::string args;
+
+        std::string getAddonInfo(const std::string &fileName) {
+            if (!endsWith(fileName, ".json", 5)) {
+                script = fileName;
+                return "";
+            }
+            std::ifstream fin(fileName);
+            if (!fin.is_open())
+                return "Failed to open " + fileName;
+            picojson::value json;
+            fin >> json;
+            if (!json.is<picojson::object>())
+                return "Loading " + fileName + " failed. Bad json.";
+            picojson::object obj = json.get<picojson::object>();
+            if (obj.count("args")) {
+                if (!obj["args"].is<picojson::array>())
+                    return "Loading " + fileName + " failed. args must be array.";
+                for (const picojson::value &v : obj["args"].get<picojson::array>())
+                    args += " " + v.get<std::string>();
+            }
+            script = obj["addon"].get<std::string>();
+            return "";
+        }
+    };
+}
+
 static std::vector<std::string> split(const std::string &str, const std::string &sep)
 {
     std::vector<std::string> ret;
@@ -515,7 +545,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             fdump.close();
 
             for (const std::string &addon : mSettings.addons) {
-                const std::string &results = executeAddon(addon, "", dumpFile);
+                struct AddonInfo addonInfo;
+                const std::string errmsg = addonInfo.getAddonInfo(addon);
+                if (!errmsg.empty()) {
+                    reportOut(errmsg);
+                    continue;
+                }
+                const std::string &results = executeAddon(addonInfo.script, addonInfo.args, dumpFile);
                 for (std::string::size_type pos = 0; pos < results.size();) {
                     const std::string::size_type pos2 = results.find("\n", pos);
                     if (pos2 == std::string::npos)
@@ -551,7 +587,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                         continue;
 
                     // line must end with [addon-x]
-                    const std::string::size_type id1 = line.rfind("[" + addon + "-");
+                    const std::string::size_type id1 = line.rfind("[" + addonInfo.script + "-");
                     if (id1 == std::string::npos || id1 < loc3)
                         continue;
 
@@ -952,31 +988,6 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
 std::string CppCheck::executeAddon(const std::string &addon, const std::string &args, const std::string &dumpFile)
 {
-    if (endsWith(addon, ".json", 5)) {
-        std::ifstream fin(addon);
-        if (!fin.is_open()) {
-            reportOut("Failed to open " + addon);
-            return "";
-        }
-        picojson::value json;
-        fin >> json;
-        if (!json.is<picojson::object>()) {
-            reportOut("Loading " + addon + " failed. Bad json.");
-            return "";
-        }
-        picojson::object obj = json.get<picojson::object>();
-        std::string args;
-        if (obj.count("args")) {
-            if (!obj["args"].is<picojson::array>()) {
-                reportOut("Loading " + addon + " failed. args must be array.");
-                return "";
-            }
-            for (const picojson::value &v : obj["args"].get<picojson::array>())
-                args += " " + v.get<std::string>();
-        }
-        return executeAddon(obj["addon"].get<std::string>(), args, dumpFile);
-    }
-
     const std::string addonFile = "addons/" + addon + ".py";
     const std::string cmd = "python " + addonFile + " --cli" + args + " " + dumpFile;
 
