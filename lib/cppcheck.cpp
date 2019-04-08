@@ -961,19 +961,19 @@ std::string CppCheck::executeAddon(const std::string &addon, const std::string &
         picojson::value json;
         fin >> json;
         if (!json.is<picojson::object>()) {
-			reportOut("Loading " + addon + " failed. Bad json.");
-			return "";
-		}
-		picojson::object obj = json.get<picojson::object>();
+            reportOut("Loading " + addon + " failed. Bad json.");
+            return "";
+        }
+        picojson::object obj = json.get<picojson::object>();
         std::string args;
         if (obj.count("args")) {
-			if (!obj["args"].is<picojson::array>()) {
-				reportOut("Loading " + addon + " failed. args must be array.");
-				return "";
-			}
+            if (!obj["args"].is<picojson::array>()) {
+                reportOut("Loading " + addon + " failed. args must be array.");
+                return "";
+            }
             for (const picojson::value &v : obj["args"].get<picojson::array>())
                 args += " " + v.get<std::string>();
-		}
+        }
         return executeAddon(obj["addon"].get<std::string>(), args, dumpFile);
     }
 
