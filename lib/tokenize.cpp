@@ -4465,9 +4465,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
-    // Convert e.g. atol("0") into 0
-    simplifyMathFunctions();
-
     simplifyDoublePlusAndDoubleMinus();
 
     simplifyArrayAccessSyntax();
@@ -4501,6 +4498,9 @@ bool Tokenizer::simplifyTokenList2()
         tok->clearAst();
         tok->clearValueFlow();
     }
+
+    // Convert e.g. atol("0") into 0
+    simplifyMathFunctions();
 
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
