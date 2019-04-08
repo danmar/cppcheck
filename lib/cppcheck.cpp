@@ -81,7 +81,7 @@ namespace {
                 for (const picojson::value &v : obj["args"].get<picojson::array>())
                     args += " " + v.get<std::string>();
             }
-            script = obj["addon"].get<std::string>();
+            script = obj["script"].get<std::string>();
             return "";
         }
     };
