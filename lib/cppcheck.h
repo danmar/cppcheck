@@ -183,7 +183,7 @@ private:
      * @brief Execute a given addon
      * @return results in std::string
      */
-    std::string executeAddon(const std::string &addon, const std::string &dumpFile);
+    std::string executeAddon(const std::string &addon, const std::string &args, const std::string &dumpFile);
 
     /**
      * @brief Errors and warnings are directed here.

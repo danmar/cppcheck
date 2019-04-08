@@ -32,6 +32,7 @@
 #include "tokenlist.h"
 #include "version.h"
 
+#include "../externals/picojson.h"
 #include <simplecpp.h>
 #include <tinyxml2.h>
 #include <algorithm>
@@ -514,7 +515,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             fdump.close();
 
             for (const std::string &addon : mSettings.addons) {
-                const std::string &results = executeAddon(addon, dumpFile);
+                const std::string &results = executeAddon(addon, "", dumpFile);
                 for (std::string::size_type pos = 0; pos < results.size();) {
                     const std::string::size_type pos2 = results.find("\n", pos);
                     if (pos2 == std::string::npos)
@@ -530,8 +531,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     if (results[pos2-1] != ']')
                         continue;
 
+                    // Example line:
+                    // [test.cpp:123]: (style) some problem [abc-someProblem]
                     const std::string line = results.substr(pos1, pos2-pos1);
 
+                    // Line must start with [filename:line]: (
                     const std::string::size_type loc1 = 1;
                     const std::string::size_type loc2 = line.find(':');
                     const std::string::size_type loc3 = line.find("]: (");
@@ -540,11 +544,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     if (!(loc1 < loc2 && loc2 < loc3))
                         continue;
 
+                    // Then there must be a (severity)
                     const std::string::size_type sev1 = loc3 + 4;
                     const std::string::size_type sev2 = line.find(")", sev1);
                     if (sev2 == std::string::npos)
                         continue;
 
+                    // line must end with [addon-x]
                     const std::string::size_type id1 = line.rfind("[" + addon + "-");
                     if (id1 == std::string::npos || id1 < loc3)
                         continue;
@@ -944,10 +950,35 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 #endif
 }
 
-std::string CppCheck::executeAddon(const std::string &addon, const std::string &dumpFile)
+std::string CppCheck::executeAddon(const std::string &addon, const std::string &args, const std::string &dumpFile)
 {
+    if (endsWith(addon, ".json", 5)) {
+        std::ifstream fin(addon);
+        if (!fin.is_open()) {
+            reportOut("Failed to open " + addon);
+            return "";
+        }
+        picojson::value json;
+        fin >> json;
+        if (!json.is<picojson::object>()) {
+			reportOut("Loading " + addon + " failed. Bad json.");
+			return "";
+		}
+		picojson::object obj = json.get<picojson::object>();
+        std::string args;
+        if (obj.count("args")) {
+			if (!obj["args"].is<picojson::array>()) {
+				reportOut("Loading " + addon + " failed. args must be array.");
+				return "";
+			}
+            for (const picojson::value &v : obj["args"].get<picojson::array>())
+                args += " " + v.get<std::string>();
+		}
+        return executeAddon(obj["addon"].get<std::string>(), args, dumpFile);
+    }
+
     const std::string addonFile = "addons/" + addon + ".py";
-    const std::string cmd = "python " + addonFile + " --cli " + dumpFile;
+    const std::string cmd = "python " + addonFile + " --cli" + args + " " + dumpFile;
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
