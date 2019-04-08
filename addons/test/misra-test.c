@@ -500,6 +500,14 @@ union misra_19_2 { }; // 19.2
 
 #else1 // 20.13
 
+#ifdef A>1
+# define somethingis 5 // no warning
+# define func_20_13(v) (v) // no warning
+#else
+# definesomethingis 6 // 20.13
+# def fun_2013(v) () // 20.13
+#endif
+
 void misra_21_3() {
   p1=malloc(10); // 21.3
   p2=calloc(10); // 21.3
