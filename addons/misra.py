@@ -2255,8 +2255,8 @@ else:
                     print("\nMISRA rule violations found: %s\n" % ("\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
                     rules_violated = {}
                     for severity, ids in checker.get_violations():
-                        for id in ids:
-                            rules_violated[id] = rules_violated.get(id, 0) + 1
+                        for misra_id in ids:
+                            rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
                     print("Misra rules violated:")
                     convert = lambda text: int(text) if text.isdigit() else text
                     misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
