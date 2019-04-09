@@ -483,6 +483,8 @@ static bool iscpp11init(const Token * const tok)
         endtok = nameToken->linkAt(1)->linkAt(1);
     else
         return false;
+    if (Token::Match(nameToken, "else|try|do"))
+        return false;
     // There is no initialisation for example here: 'class Fred {};'
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
@@ -1191,6 +1193,12 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         createAstAtTokenInner(tok1->next(), endToken, cpp);
 
         return endToken->previous();
+    }
+
+    if (cpp && tok->str() == "{" && iscpp11init(tok)) {
+        AST_state state(cpp);
+        compileExpression(tok, state);
+        return tok;
     }
 
     return tok;

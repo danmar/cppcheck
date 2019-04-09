@@ -34,6 +34,7 @@ private:
 
     void run() OVERRIDE {
         TEST_CASE(findLambdaEndToken);
+        TEST_CASE(findLambdaStartToken);
         TEST_CASE(isReturnScope);
         TEST_CASE(isVariableChanged);
         TEST_CASE(isVariableChangedByFunctionCall);
@@ -70,6 +71,38 @@ private:
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> const * int { return x }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const ** int { return x }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * const* int { return x }"));
+    }
+
+    bool findLambdaStartToken(const char code[]) {
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token * const tokStart = ::findLambdaStartToken(tokenizer.list.back());
+        return tokStart && tokStart == tokenizer.list.front();
+    }
+
+    void findLambdaStartToken() {
+        ASSERT(nullptr == ::findLambdaStartToken(nullptr));
+        ASSERT_EQUALS(false, findLambdaStartToken("void f() { }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[]{ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[]{ return 0 }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](){ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[&](){ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[&, i](){ }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](int a, int b) { return a + b }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](int a, int b) mutable { return a + b }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](int a, int b) constexpr { return a + b }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) -> int { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) mutable -> int { return -1 }"));
+        ASSERT_EQUALS(false, findLambdaStartToken("[](void) foo -> int { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> int { return -1 }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> int* { return x }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const * int { return x }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) mutable -> const * int { return x }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const ** int { return x }"));
+        ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const * const* int { return x }"));
     }
 
     bool isReturnScope(const char code[], int offset) {
