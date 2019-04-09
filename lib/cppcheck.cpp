@@ -251,7 +251,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         std::ofstream fdump;
         std::string dumpFile;
         if (mSettings.dump || !mSettings.addons.empty()) {
-            dumpFile = (mSettings.dumpFile.empty()) ? (filename + ".dump") : mSettings.dumpFile;
+            if (!mSettings.dumpFile.empty())
+                dumpFile = mSettings.dumpFile;
+            else if (!mSettings.dump && !mSettings.buildDir.empty())
+                dumpFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, filename, "") + ".dump";
+            else
+                dumpFile = filename + ".dump";
+
             fdump.open(dumpFile);
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
