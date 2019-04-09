@@ -305,6 +305,18 @@ private:
         return tokenizer.tokens()->stringifyList(0, false);
     }
 
+    std::string tokWithNewlines(const char code[]) {
+        errout.str("");
+
+        Tokenizer tokenizer(&settings0, this);
+
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        return tokenizer.tokens()->stringifyList(false, false, false, true, false);
+    }
+
     std::string tokWithStdLib(const char code[]) {
         errout.str("");
 
@@ -348,7 +360,7 @@ private:
                                      "std :: cout << erfc ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_erfc, tok(code_erfc));
+        ASSERT_EQUALS(expected_erfc, tokWithNewlines(code_erfc));
 
         const char code_erfcf[] ="void f(float x) {\n"
                                  " std::cout << erfcf(x);\n" // do not simplify
@@ -358,17 +370,17 @@ private:
                                       "std :: cout << erfcf ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_erfcf, tok(code_erfcf));
+        ASSERT_EQUALS(expected_erfcf, tokWithNewlines(code_erfcf));
 
         const char code_erfcl[] ="void f(long double x) {\n"
                                  " std::cout << erfcl(x);\n" // do not simplify
                                  " std::cout << erfcl(0.0f);\n" // simplify to 1
                                  "}";
-        const char expected_erfcl[] = "void f ( long double x ) {\n"
+        const char expected_erfcl[] = "void f ( double x ) {\n"
                                       "std :: cout << erfcl ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_erfcl, tok(code_erfcl));
+        ASSERT_EQUALS(expected_erfcl, tokWithNewlines(code_erfcl));
     }
 
     void simplifyMathFunctions_cos() {
@@ -381,7 +393,7 @@ private:
                                     "std :: cout << cos ( x ) ;\n"
                                     "std :: cout << 1 ;\n"
                                     "}";
-        ASSERT_EQUALS(expected_cos, tok(code_cos));
+        ASSERT_EQUALS(expected_cos, tokWithNewlines(code_cos));
 
         const char code_cosf[] ="void f(float x) {\n"
                                 " std::cout << cosf(x);\n" // do not simplify
@@ -391,17 +403,17 @@ private:
                                      "std :: cout << cosf ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_cosf, tok(code_cosf));
+        ASSERT_EQUALS(expected_cosf, tokWithNewlines(code_cosf));
 
         const char code_cosl[] ="void f(long double x) {\n"
                                 " std::cout << cosl(x);\n" // do not simplify
                                 " std::cout << cosl(0.0f);\n" // simplify to 1
                                 "}";
-        const char expected_cosl[] = "void f ( long double x ) {\n"
+        const char expected_cosl[] = "void f ( double x ) {\n"
                                      "std :: cout << cosl ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_cosl, tok(code_cosl));
+        ASSERT_EQUALS(expected_cosl, tokWithNewlines(code_cosl));
     }
 
     void simplifyMathFunctions_cosh() {
@@ -414,7 +426,7 @@ private:
                                      "std :: cout << cosh ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_cosh, tok(code_cosh));
+        ASSERT_EQUALS(expected_cosh, tokWithNewlines(code_cosh));
 
         const char code_coshf[] ="void f(float x) {\n"
                                  " std::cout << coshf(x);\n" // do not simplify
@@ -424,17 +436,17 @@ private:
                                       "std :: cout << coshf ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_coshf, tok(code_coshf));
+        ASSERT_EQUALS(expected_coshf, tokWithNewlines(code_coshf));
 
         const char code_coshl[] ="void f(long double x) {\n"
                                  " std::cout << coshl(x);\n" // do not simplify
                                  " std::cout << coshl(0.0f);\n" // simplify to 1
                                  "}";
-        const char expected_coshl[] = "void f ( long double x ) {\n"
+        const char expected_coshl[] = "void f ( double x ) {\n"
                                       "std :: cout << coshl ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_coshl, tok(code_coshl));
+        ASSERT_EQUALS(expected_coshl, tokWithNewlines(code_coshl));
     }
 
     void simplifyMathFunctions_acos() {
@@ -447,7 +459,7 @@ private:
                                      "std :: cout << acos ( x ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_acos, tok(code_acos));
+        ASSERT_EQUALS(expected_acos, tokWithNewlines(code_acos));
 
         const char code_acosf[] ="void f(float x) {\n"
                                  " std::cout << acosf(x);\n" // do not simplify
@@ -457,17 +469,17 @@ private:
                                       "std :: cout << acosf ( x ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_acosf, tok(code_acosf));
+        ASSERT_EQUALS(expected_acosf, tokWithNewlines(code_acosf));
 
         const char code_acosl[] ="void f(long double x) {\n"
                                  " std::cout << acosl(x);\n" // do not simplify
                                  " std::cout << acosl(1.0f);\n" // simplify to 0
                                  "}";
-        const char expected_acosl[] = "void f ( long double x ) {\n"
+        const char expected_acosl[] = "void f ( double x ) {\n"
                                       "std :: cout << acosl ( x ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_acosl, tok(code_acosl));
+        ASSERT_EQUALS(expected_acosl, tokWithNewlines(code_acosl));
     }
 
     void simplifyMathFunctions_acosh() {
@@ -480,7 +492,7 @@ private:
                                       "std :: cout << acosh ( x ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_acosh, tok(code_acosh));
+        ASSERT_EQUALS(expected_acosh, tokWithNewlines(code_acosh));
 
         const char code_acoshf[] ="void f(float x) {\n"
                                   " std::cout << acoshf(x);\n" // do not simplify
@@ -490,17 +502,17 @@ private:
                                        "std :: cout << acoshf ( x ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_acoshf, tok(code_acoshf));
+        ASSERT_EQUALS(expected_acoshf, tokWithNewlines(code_acoshf));
 
         const char code_acoshl[] ="void f(long double x) {\n"
                                   " std::cout << acoshl(x);\n" // do not simplify
                                   " std::cout << acoshl(1.0f);\n" // simplify to 0
                                   "}";
-        const char expected_acoshl[] = "void f ( long double x ) {\n"
+        const char expected_acoshl[] = "void f ( double x ) {\n"
                                        "std :: cout << acoshl ( x ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_acoshl, tok(code_acoshl));
+        ASSERT_EQUALS(expected_acoshl, tokWithNewlines(code_acoshl));
     }
 
     void simplifyMathFunctions_sqrt() {
@@ -517,7 +529,7 @@ private:
                                      "std :: cout << 0 ;\n"
                                      "std :: cout << 1 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_sqrt, tok(code_sqrt));
+        ASSERT_EQUALS(expected_sqrt, tokWithNewlines(code_sqrt));
 
         const char code_sqrtf[] ="void f(float x) {\n"
                                  " std::cout << sqrtf(x);\n" // do not simplify
@@ -531,7 +543,7 @@ private:
                                       "std :: cout << 0 ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_sqrtf, tok(code_sqrtf));
+        ASSERT_EQUALS(expected_sqrtf, tokWithNewlines(code_sqrtf));
 
         const char code_sqrtl[] ="void f(long double x) {\n"
                                  " std::cout << sqrtf(x);\n" // do not simplify
@@ -539,13 +551,13 @@ private:
                                  " std::cout << sqrtf(0.0);\n" // simplify to 0
                                  " std::cout << sqrtf(1.0);\n" // simplify to 1
                                  "}";
-        const char expected_sqrtl[] = "void f ( long double x ) {\n"
+        const char expected_sqrtl[] = "void f ( double x ) {\n"
                                       "std :: cout << sqrtf ( x ) ;\n"
                                       "std :: cout << sqrtf ( -1.0 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_sqrtl, tok(code_sqrtl));
+        ASSERT_EQUALS(expected_sqrtl, tokWithNewlines(code_sqrtl));
     }
 
     void simplifyMathFunctions_cbrt() {
@@ -562,7 +574,7 @@ private:
                                      "std :: cout << 0 ;\n"
                                      "std :: cout << 1 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_cbrt, tok(code_cbrt));
+        ASSERT_EQUALS(expected_cbrt, tokWithNewlines(code_cbrt));
 
         const char code_cbrtf[] ="void f(float x) {\n"
                                  " std::cout << cbrtf(x);\n" // do not simplify
@@ -576,7 +588,7 @@ private:
                                       "std :: cout << 0 ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_cbrtf, tok(code_cbrtf));
+        ASSERT_EQUALS(expected_cbrtf, tokWithNewlines(code_cbrtf));
 
         const char code_cbrtl[] ="void f(long double x) {\n"
                                  " std::cout << cbrtl(x);\n" // do not simplify
@@ -584,13 +596,13 @@ private:
                                  " std::cout << cbrtl(0.0);\n" // simplify to 0
                                  " std::cout << cbrtl(1.0);\n" // simplify to 1
                                  "}";
-        const char expected_cbrtl[] = "void f ( long double x ) {\n"
+        const char expected_cbrtl[] = "void f ( double x ) {\n"
                                       "std :: cout << cbrtl ( x ) ;\n"
                                       "std :: cout << cbrtl ( -1.0 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "std :: cout << 1 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_cbrtl, tok(code_cbrtl));
+        ASSERT_EQUALS(expected_cbrtl, tokWithNewlines(code_cbrtl));
     }
 
     void simplifyMathFunctions_exp2() {
@@ -607,7 +619,7 @@ private:
                                      "std :: cout << 1 ;\n"
                                      "std :: cout << exp2 ( 1L ) ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_exp2, tok(code_exp2));
+        ASSERT_EQUALS(expected_exp2, tokWithNewlines(code_exp2));
 
         const char code_exp2f[] ="void f(float x) {\n"
                                  " std::cout << exp2f(x);\n" // do not simplify
@@ -621,7 +633,7 @@ private:
                                       "std :: cout << 1 ;\n"
                                       "std :: cout << exp2f ( 1.0 ) ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_exp2f, tok(code_exp2f));
+        ASSERT_EQUALS(expected_exp2f, tokWithNewlines(code_exp2f));
 
         const char code_exp2l[] ="void f(long double x) {\n"
                                  " std::cout << exp2l(x);\n" // do not simplify
@@ -629,13 +641,13 @@ private:
                                  " std::cout << exp2l(0.0);\n" // simplify to 1
                                  " std::cout << exp2l(1.0);\n" // do not simplify
                                  "}";
-        const char expected_exp2l[] = "void f ( long double x ) {\n"
+        const char expected_exp2l[] = "void f ( double x ) {\n"
                                       "std :: cout << exp2l ( x ) ;\n"
                                       "std :: cout << exp2l ( -1.0 ) ;\n"
                                       "std :: cout << 1 ;\n"
                                       "std :: cout << exp2l ( 1.0 ) ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_exp2l, tok(code_exp2l));
+        ASSERT_EQUALS(expected_exp2l, tokWithNewlines(code_exp2l));
     }
 
     void simplifyMathFunctions_exp() {
@@ -652,7 +664,7 @@ private:
                                     "std :: cout << 1 ;\n"
                                     "std :: cout << exp ( 1L ) ;\n"
                                     "}";
-        ASSERT_EQUALS(expected_exp, tok(code_exp));
+        ASSERT_EQUALS(expected_exp, tokWithNewlines(code_exp));
 
         const char code_expf[] ="void f(float x) {\n"
                                 " std::cout << expf(x);\n" // do not simplify
@@ -666,7 +678,7 @@ private:
                                      "std :: cout << 1 ;\n"
                                      "std :: cout << expf ( 1.0 ) ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_expf, tok(code_expf));
+        ASSERT_EQUALS(expected_expf, tokWithNewlines(code_expf));
 
         const char code_expl[] ="void f(long double x) {\n"
                                 " std::cout << expl(x);\n" // do not simplify
@@ -674,13 +686,13 @@ private:
                                 " std::cout << expl(0.0);\n" // simplify to 1
                                 " std::cout << expl(1.0);\n" // do not simplify
                                 "}";
-        const char expected_expl[] = "void f ( long double x ) {\n"
+        const char expected_expl[] = "void f ( double x ) {\n"
                                      "std :: cout << expl ( x ) ;\n"
                                      "std :: cout << expl ( -1.0 ) ;\n"
                                      "std :: cout << 1 ;\n"
                                      "std :: cout << expl ( 1.0 ) ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_expl, tok(code_expl));
+        ASSERT_EQUALS(expected_expl, tokWithNewlines(code_expl));
     }
 
     void simplifyMathFunctions_erf() {
@@ -695,7 +707,7 @@ private:
                                     "std :: cout << erf ( 10 ) ;\n"
                                     "std :: cout << 0 ;\n"
                                     "}";
-        ASSERT_EQUALS(expected_erf, tok(code_erf));
+        ASSERT_EQUALS(expected_erf, tokWithNewlines(code_erf));
 
         const char code_erff[] ="void f(float x) {\n"
                                 " std::cout << erff(x);\n" // do not simplify
@@ -707,19 +719,19 @@ private:
                                      "std :: cout << erff ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_erff, tok(code_erff));
+        ASSERT_EQUALS(expected_erff, tokWithNewlines(code_erff));
 
         const char code_erfl[] ="void f(long double x) {\n"
                                 " std::cout << erfl(x);\n" // do not simplify
                                 " std::cout << erfl(10.0f);\n" // do not simplify
                                 " std::cout << erfl(0.0f);\n" // simplify to 0
                                 "}";
-        const char expected_erfl[] = "void f ( long double x ) {\n"
+        const char expected_erfl[] = "void f ( double x ) {\n"
                                      "std :: cout << erfl ( x ) ;\n"
                                      "std :: cout << erfl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_erfl, tok(code_erfl));
+        ASSERT_EQUALS(expected_erfl, tokWithNewlines(code_erfl));
     }
 
     void simplifyMathFunctions_atanh() {
@@ -734,7 +746,7 @@ private:
                                       "std :: cout << atanh ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_atanh, tok(code_atanh));
+        ASSERT_EQUALS(expected_atanh, tokWithNewlines(code_atanh));
 
         const char code_atanhf[] ="void f(float x) {\n"
                                   " std::cout << atanhf(x);\n" // do not simplify
@@ -746,7 +758,7 @@ private:
                                        "std :: cout << atanhf ( 10 ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_atanhf, tok(code_atanhf));
+        ASSERT_EQUALS(expected_atanhf, tokWithNewlines(code_atanhf));
 
         const char code_atanhl[] ="void f(long double x) {\n"
                                   " std::cout << atanhl(x);\n" // do not simplify
@@ -754,13 +766,13 @@ private:
                                   " std::cout << atanhl(0.0d);\n" // do not simplify - invalid number!
                                   " std::cout << atanhl(0.0f);\n" // simplify to 0
                                   "}";
-        const char expected_atanhl[] = "void f ( long double x ) {\n"
+        const char expected_atanhl[] = "void f ( double x ) {\n"
                                        "std :: cout << atanhl ( x ) ;\n"
                                        "std :: cout << atanhl ( 10.0f ) ;\n"
                                        "std :: cout << atanhl ( 0.0d ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_atanhl, tok(code_atanhl));
+        ASSERT_EQUALS(expected_atanhl, tokWithNewlines(code_atanhl));
     }
 
     void simplifyMathFunctions_atan() {
@@ -775,7 +787,7 @@ private:
                                      "std :: cout << atan ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_atan, tok(code_atan));
+        ASSERT_EQUALS(expected_atan, tokWithNewlines(code_atan));
 
         const char code_atanf[] ="void f(float x) {\n"
                                  " std::cout << atanf(x);\n" // do not simplify
@@ -787,19 +799,19 @@ private:
                                       "std :: cout << atanf ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_atanf, tok(code_atanf));
+        ASSERT_EQUALS(expected_atanf, tokWithNewlines(code_atanf));
 
         const char code_atanl[] ="void f(long double x) {\n"
                                  " std::cout << atanl(x);\n" // do not simplify
                                  " std::cout << atanl(10.0f);\n" // do not simplify
                                  " std::cout << atanl(0.0f);\n" // simplify to 0
                                  "}";
-        const char expected_atanl[] = "void f ( long double x ) {\n"
+        const char expected_atanl[] = "void f ( double x ) {\n"
                                       "std :: cout << atanl ( x ) ;\n"
                                       "std :: cout << atanl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_atanl, tok(code_atanl));
+        ASSERT_EQUALS(expected_atanl, tokWithNewlines(code_atanl));
     }
 
     void simplifyMathFunctions_tanh() {
@@ -814,7 +826,7 @@ private:
                                      "std :: cout << tanh ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_tanh, tok(code_tanh));
+        ASSERT_EQUALS(expected_tanh, tokWithNewlines(code_tanh));
 
         const char code_tanhf[] ="void f(float x) {\n"
                                  " std::cout << tanhf(x);\n" // do not simplify
@@ -826,19 +838,19 @@ private:
                                       "std :: cout << tanhf ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_tanhf, tok(code_tanhf));
+        ASSERT_EQUALS(expected_tanhf, tokWithNewlines(code_tanhf));
 
         const char code_tanhl[] ="void f(long double x) {\n"
                                  " std::cout << tanhl(x);\n" // do not simplify
                                  " std::cout << tanhl(10.0f);\n" // do not simplify
                                  " std::cout << tanhl(0.0f);\n" // simplify to 0
                                  "}";
-        const char expected_tanhl[] = "void f ( long double x ) {\n"
+        const char expected_tanhl[] = "void f ( double x ) {\n"
                                       "std :: cout << tanhl ( x ) ;\n"
                                       "std :: cout << tanhl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_tanhl, tok(code_tanhl));
+        ASSERT_EQUALS(expected_tanhl, tokWithNewlines(code_tanhl));
     }
 
     void simplifyMathFunctions_tan() {
@@ -853,7 +865,7 @@ private:
                                     "std :: cout << tan ( 10 ) ;\n"
                                     "std :: cout << 0 ;\n"
                                     "}";
-        ASSERT_EQUALS(expected_tan, tok(code_tan));
+        ASSERT_EQUALS(expected_tan, tokWithNewlines(code_tan));
 
         const char code_tanf[] ="void f(float x) {\n"
                                 " std::cout << tanf(x);\n" // do not simplify
@@ -865,19 +877,19 @@ private:
                                      "std :: cout << tanf ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_tanf, tok(code_tanf));
+        ASSERT_EQUALS(expected_tanf, tokWithNewlines(code_tanf));
 
         const char code_tanl[] ="void f(long double x) {\n"
                                 " std::cout << tanl(x);\n" // do not simplify
                                 " std::cout << tanl(10.0f);\n" // do not simplify
                                 " std::cout << tanl(0.0f);\n" // simplify to 0
                                 "}";
-        const char expected_tanl[] = "void f ( long double x ) {\n"
+        const char expected_tanl[] = "void f ( double x ) {\n"
                                      "std :: cout << tanl ( x ) ;\n"
                                      "std :: cout << tanl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_tanl, tok(code_tanl));
+        ASSERT_EQUALS(expected_tanl, tokWithNewlines(code_tanl));
     }
 
     void simplifyMathFunctions_expm1() {
@@ -892,7 +904,7 @@ private:
                                       "std :: cout << expm1 ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_expm1, tok(code_expm1));
+        ASSERT_EQUALS(expected_expm1, tokWithNewlines(code_expm1));
 
         const char code_expm1f[] ="void f(float x) {\n"
                                   " std::cout << expm1f(x);\n" // do not simplify
@@ -904,19 +916,19 @@ private:
                                        "std :: cout << expm1f ( 10 ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_expm1f, tok(code_expm1f));
+        ASSERT_EQUALS(expected_expm1f, tokWithNewlines(code_expm1f));
 
         const char code_expm1l[] ="void f(long double x) {\n"
                                   " std::cout << expm1l(x);\n" // do not simplify
                                   " std::cout << expm1l(10.0f);\n" // do not simplify
                                   " std::cout << expm1l(0.0f);\n" // simplify to 0
                                   "}";
-        const char expected_expm1l[] = "void f ( long double x ) {\n"
+        const char expected_expm1l[] = "void f ( double x ) {\n"
                                        "std :: cout << expm1l ( x ) ;\n"
                                        "std :: cout << expm1l ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_expm1l, tok(code_expm1l));
+        ASSERT_EQUALS(expected_expm1l, tokWithNewlines(code_expm1l));
     }
 
     void simplifyMathFunctions_asinh() {
@@ -931,7 +943,7 @@ private:
                                       "std :: cout << asinh ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_asinh, tok(code_asinh));
+        ASSERT_EQUALS(expected_asinh, tokWithNewlines(code_asinh));
 
         const char code_asinhf[] ="void f(float x) {\n"
                                   " std::cout << asinhf(x);\n" // do not simplify
@@ -943,19 +955,19 @@ private:
                                        "std :: cout << asinhf ( 10 ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_asinhf, tok(code_asinhf));
+        ASSERT_EQUALS(expected_asinhf, tokWithNewlines(code_asinhf));
 
         const char code_asinhl[] ="void f(long double x) {\n"
                                   " std::cout << asinhl(x);\n" // do not simplify
                                   " std::cout << asinhl(10.0f);\n" // do not simplify
                                   " std::cout << asinhl(0.0f);\n" // simplify to 0
                                   "}";
-        const char expected_asinhl[] = "void f ( long double x ) {\n"
+        const char expected_asinhl[] = "void f ( double x ) {\n"
                                        "std :: cout << asinhl ( x ) ;\n"
                                        "std :: cout << asinhl ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_asinhl, tok(code_asinhl));
+        ASSERT_EQUALS(expected_asinhl, tokWithNewlines(code_asinhl));
     }
 
     void simplifyMathFunctions_asin() {
@@ -970,7 +982,7 @@ private:
                                      "std :: cout << asin ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_asin, tok(code_asin));
+        ASSERT_EQUALS(expected_asin, tokWithNewlines(code_asin));
 
         const char code_asinf[] ="void f(float x) {\n"
                                  " std::cout << asinf(x);\n" // do not simplify
@@ -982,19 +994,19 @@ private:
                                       "std :: cout << asinf ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_asinf, tok(code_asinf));
+        ASSERT_EQUALS(expected_asinf, tokWithNewlines(code_asinf));
 
         const char code_asinl[] ="void f(long double x) {\n"
                                  " std::cout << asinl(x);\n" // do not simplify
                                  " std::cout << asinl(10.0f);\n" // do not simplify
                                  " std::cout << asinl(0.0f);\n" // simplify to 0
                                  "}";
-        const char expected_asinl[] = "void f ( long double x ) {\n"
+        const char expected_asinl[] = "void f ( double x ) {\n"
                                       "std :: cout << asinl ( x ) ;\n"
                                       "std :: cout << asinl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_asinl, tok(code_asinl));
+        ASSERT_EQUALS(expected_asinl, tokWithNewlines(code_asinl));
     }
 
     void simplifyMathFunctions_sinh() {
@@ -1009,7 +1021,7 @@ private:
                                      "std :: cout << sinh ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_sinh, tok(code_sinh));
+        ASSERT_EQUALS(expected_sinh, tokWithNewlines(code_sinh));
 
         const char code_sinhf[] ="void f(float x) {\n"
                                  " std::cout << sinhf(x);\n" // do not simplify
@@ -1021,19 +1033,19 @@ private:
                                       "std :: cout << sinhf ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_sinhf, tok(code_sinhf));
+        ASSERT_EQUALS(expected_sinhf, tokWithNewlines(code_sinhf));
 
         const char code_sinhl[] ="void f(long double x) {\n"
                                  " std::cout << sinhl(x);\n" // do not simplify
                                  " std::cout << sinhl(10.0f);\n" // do not simplify
                                  " std::cout << sinhl(0.0f);\n" // simplify to 0
                                  "}";
-        const char expected_sinhl[] = "void f ( long double x ) {\n"
+        const char expected_sinhl[] = "void f ( double x ) {\n"
                                       "std :: cout << sinhl ( x ) ;\n"
                                       "std :: cout << sinhl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_sinhl, tok(code_sinhl));
+        ASSERT_EQUALS(expected_sinhl, tokWithNewlines(code_sinhl));
     }
 
     void simplifyMathFunctions_sin() {
@@ -1048,7 +1060,7 @@ private:
                                     "std :: cout << sin ( 10 ) ;\n"
                                     "std :: cout << 0 ;\n"
                                     "}";
-        ASSERT_EQUALS(expected_sin, tok(code_sin));
+        ASSERT_EQUALS(expected_sin, tokWithNewlines(code_sin));
 
         const char code_sinf[] ="void f(float x) {\n"
                                 " std::cout << sinf(x);\n" // do not simplify
@@ -1060,24 +1072,24 @@ private:
                                      "std :: cout << sinf ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_sinf, tok(code_sinf));
+        ASSERT_EQUALS(expected_sinf, tokWithNewlines(code_sinf));
 
         const char code_sinl[] ="void f(long double x) {\n"
                                 " std::cout << sinl(x);\n" // do not simplify
                                 " std::cout << sinl(10.0f);\n" // do not simplify
                                 " std::cout << sinl(0.0f);\n" // simplify to 0
                                 "}";
-        const char expected_sinl[] = "void f ( long double x ) {\n"
+        const char expected_sinl[] = "void f ( double x ) {\n"
                                      "std :: cout << sinl ( x ) ;\n"
                                      "std :: cout << sinl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_sinl, tok(code_sinl));
+        ASSERT_EQUALS(expected_sinl, tokWithNewlines(code_sinl));
 
         // #6629
         const char code[] = "class Foo { int sinf; Foo() : sinf(0) {} };";
         const char expected[] = "class Foo { int sinf ; Foo ( ) : sinf ( 0 ) { } } ;";
-        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS(expected, tokWithNewlines(code));
     }
 
     void simplifyMathFunctions_ilogb() {
@@ -1092,7 +1104,7 @@ private:
                                       "std :: cout << ilogb ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_ilogb, tok(code_ilogb));
+        ASSERT_EQUALS(expected_ilogb, tokWithNewlines(code_ilogb));
 
         const char code_ilogbf[] ="void f(float x) {\n"
                                   " std::cout << ilogbf(x);\n" // do not simplify
@@ -1104,19 +1116,19 @@ private:
                                        "std :: cout << ilogbf ( 10 ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_ilogbf, tok(code_ilogbf));
+        ASSERT_EQUALS(expected_ilogbf, tokWithNewlines(code_ilogbf));
 
         const char code_ilogbl[] ="void f(long double x) {\n"
                                   " std::cout << ilogbl(x);\n" // do not simplify
                                   " std::cout << ilogbl(10.0f);\n" // do not simplify
                                   " std::cout << ilogbl(1.0f);\n" // simplify to 0
                                   "}";
-        const char expected_ilogbl[] = "void f ( long double x ) {\n"
+        const char expected_ilogbl[] = "void f ( double x ) {\n"
                                        "std :: cout << ilogbl ( x ) ;\n"
                                        "std :: cout << ilogbl ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_ilogbl, tok(code_ilogbl));
+        ASSERT_EQUALS(expected_ilogbl, tokWithNewlines(code_ilogbl));
     }
 
     void simplifyMathFunctions_logb() {
@@ -1131,7 +1143,7 @@ private:
                                      "std :: cout << logb ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_logb, tok(code_logb));
+        ASSERT_EQUALS(expected_logb, tokWithNewlines(code_logb));
 
         const char code_logbf[] ="void f(float x) {\n"
                                  " std::cout << logbf(x);\n" // do not simplify
@@ -1143,19 +1155,19 @@ private:
                                       "std :: cout << logbf ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_logbf, tok(code_logbf));
+        ASSERT_EQUALS(expected_logbf, tokWithNewlines(code_logbf));
 
         const char code_logbl[] ="void f(long double x) {\n"
                                  " std::cout << logbl(x);\n" // do not simplify
                                  " std::cout << logbl(10.0f);\n" // do not simplify
                                  " std::cout << logbl(1.0f);\n" // simplify to 0
                                  "}";
-        const char expected_logbl[] = "void f ( long double x ) {\n"
+        const char expected_logbl[] = "void f ( double x ) {\n"
                                       "std :: cout << logbl ( x ) ;\n"
                                       "std :: cout << logbl ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_logbl, tok(code_logbl));
+        ASSERT_EQUALS(expected_logbl, tokWithNewlines(code_logbl));
     }
 
     void simplifyMathFunctions_log1p() {
@@ -1170,7 +1182,7 @@ private:
                                       "std :: cout << log1p ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_log1p, tok(code_log1p));
+        ASSERT_EQUALS(expected_log1p, tokWithNewlines(code_log1p));
 
         const char code_log1pf[] ="void f(float x) {\n"
                                   " std::cout << log1pf(x);\n" // do not simplify
@@ -1182,19 +1194,19 @@ private:
                                        "std :: cout << log1pf ( 10 ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_log1pf, tok(code_log1pf));
+        ASSERT_EQUALS(expected_log1pf, tokWithNewlines(code_log1pf));
 
         const char code_log1pl[] ="void f(long double x) {\n"
                                   " std::cout << log1pl(x);\n" // do not simplify
                                   " std::cout << log1pl(10.0f);\n" // do not simplify
                                   " std::cout << log1pl(0.0f);\n" // simplify to 0
                                   "}";
-        const char expected_log1pl[] = "void f ( long double x ) {\n"
+        const char expected_log1pl[] = "void f ( double x ) {\n"
                                        "std :: cout << log1pl ( x ) ;\n"
                                        "std :: cout << log1pl ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_log1pl, tok(code_log1pl));
+        ASSERT_EQUALS(expected_log1pl, tokWithNewlines(code_log1pl));
     }
 
     void simplifyMathFunctions_log10() {
@@ -1209,7 +1221,7 @@ private:
                                       "std :: cout << log10 ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_log10, tok(code_log10));
+        ASSERT_EQUALS(expected_log10, tokWithNewlines(code_log10));
 
         const char code_log10f[] ="void f(float x) {\n"
                                   " std::cout << log10f(x);\n" // do not simplify
@@ -1221,19 +1233,19 @@ private:
                                        "std :: cout << log10f ( 10 ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_log10f, tok(code_log10f));
+        ASSERT_EQUALS(expected_log10f, tokWithNewlines(code_log10f));
 
         const char code_log10l[] ="void f(long double x) {\n"
                                   " std::cout << log10l(x);\n" // do not simplify
                                   " std::cout << log10l(10.0f);\n" // do not simplify
                                   " std::cout << log10l(1.0f);\n" // simplify to 0
                                   "}";
-        const char expected_log10l[] = "void f ( long double x ) {\n"
+        const char expected_log10l[] = "void f ( double x ) {\n"
                                        "std :: cout << log10l ( x ) ;\n"
                                        "std :: cout << log10l ( 10.0f ) ;\n"
                                        "std :: cout << 0 ;\n"
                                        "}";
-        ASSERT_EQUALS(expected_log10l, tok(code_log10l));
+        ASSERT_EQUALS(expected_log10l, tokWithNewlines(code_log10l));
 
     }
     void simplifyMathFunctions_log() {
@@ -1248,7 +1260,7 @@ private:
                                     "std :: cout << log ( 10 ) ;\n"
                                     "std :: cout << 0 ;\n"
                                     "}";
-        ASSERT_EQUALS(expected_log, tok(code_log));
+        ASSERT_EQUALS(expected_log, tokWithNewlines(code_log));
 
         const char code_logf[] ="void f(float x) {\n"
                                 " std::cout << logf(x);\n" // do not simplify
@@ -1260,19 +1272,19 @@ private:
                                      "std :: cout << logf ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_logf, tok(code_logf));
+        ASSERT_EQUALS(expected_logf, tokWithNewlines(code_logf));
 
         const char code_logl[] ="void f(long double x) {\n"
                                 " std::cout << logl(x);\n" // do not simplify
                                 " std::cout << logl(10.0f);\n" // do not simplify
                                 " std::cout << logl(1.0f);\n" // simplify to 0
                                 "}";
-        const char expected_logl[] = "void f ( long double x ) {\n"
+        const char expected_logl[] = "void f ( double x ) {\n"
                                      "std :: cout << logl ( x ) ;\n"
                                      "std :: cout << logl ( 10.0f ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_logl, tok(code_logl));
+        ASSERT_EQUALS(expected_logl, tokWithNewlines(code_logl));
     }
 
     void simplifyMathFunctions_log2() {
@@ -1287,7 +1299,7 @@ private:
                                      "std :: cout << log2 ( 10 ) ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_log2, tok(code_log2));
+        ASSERT_EQUALS(expected_log2, tokWithNewlines(code_log2));
 
         const char code_log2f[] ="void f(float x) {\n"
                                  " std::cout << log2f(x);\n" // do not simplify
@@ -1299,19 +1311,19 @@ private:
                                       "std :: cout << log2f ( 10 ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_log2f, tok(code_log2f));
+        ASSERT_EQUALS(expected_log2f, tokWithNewlines(code_log2f));
 
         const char code_log2l[] ="void f(long double x) {\n"
                                  " std::cout << log2l(x);\n" // do not simplify
                                  " std::cout << log2l(10.0f);\n" // do not simplify
                                  " std::cout << log2l(1.0f);\n" // simplify to 0
                                  "}";
-        const char expected_log2l[] = "void f ( long double x ) {\n"
+        const char expected_log2l[] = "void f ( double x ) {\n"
                                       "std :: cout << log2l ( x ) ;\n"
                                       "std :: cout << log2l ( 10.0f ) ;\n"
                                       "std :: cout << 0 ;\n"
                                       "}";
-        ASSERT_EQUALS(expected_log2l, tok(code_log2l));
+        ASSERT_EQUALS(expected_log2l, tokWithNewlines(code_log2l));
     }
 
     void simplifyMathFunctions_pow() {
@@ -1345,25 +1357,25 @@ private:
                                     "std :: cout << 0 ;\n"
                                     "std :: cout << 1 ;\n"
                                     "}";
-        ASSERT_EQUALS(expected_pow, tok(code_pow));
+        ASSERT_EQUALS(expected_pow, tokWithNewlines(code_pow));
 
         // verify if code is simplified correctly.
         // Do not simplify class members.
         const char code_pow1[] = "int f(const Fred &fred) {return fred.pow(12,3);}";
         const char expected_pow1[] = "int f ( const Fred & fred ) { return fred . pow ( 12 , 3 ) ; }";
-        ASSERT_EQUALS(expected_pow1, tok(code_pow1));
+        ASSERT_EQUALS(expected_pow1, tokWithNewlines(code_pow1));
 
         const char code_pow2[] = "int f() {return pow(0,0);}";
         const char expected_pow2[] = "int f ( ) { return 1 ; }";
-        ASSERT_EQUALS(expected_pow2, tok(code_pow2));
+        ASSERT_EQUALS(expected_pow2, tokWithNewlines(code_pow2));
 
         const char code_pow3[] = "int f() {return pow(0,1);}";
         const char expected_pow3[] = "int f ( ) { return 0 ; }";
-        ASSERT_EQUALS(expected_pow3, tok(code_pow3));
+        ASSERT_EQUALS(expected_pow3, tokWithNewlines(code_pow3));
 
         const char code_pow4[] = "int f() {return pow(1,0);}";
         const char expected_pow4[] = "int f ( ) { return 1 ; }";
-        ASSERT_EQUALS(expected_pow4, tok(code_pow4));
+        ASSERT_EQUALS(expected_pow4, tokWithNewlines(code_pow4));
     }
 
     void simplifyMathFunctions_fmin() {
@@ -1391,12 +1403,12 @@ private:
                                      "std :: cout << 0 ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_fmin, tok(code_fmin));
+        ASSERT_EQUALS(expected_fmin, tokWithNewlines(code_fmin));
 
         // do not simplify this case
         const char code_fmin1[] = "float f(float f) { return fmin(f,0);}";
         const char expected_fmin1[] = "float f ( float f ) { return fmin ( f , 0 ) ; }";
-        ASSERT_EQUALS(expected_fmin1, tok(code_fmin1));
+        ASSERT_EQUALS(expected_fmin1, tokWithNewlines(code_fmin1));
     }
 
     void simplifyMathFunctions_fmax() {
@@ -1424,12 +1436,12 @@ private:
                                      "std :: cout << 1.0 ;\n"
                                      "std :: cout << 0 ;\n"
                                      "}";
-        ASSERT_EQUALS(expected_fmax, tok(code_fmax));
+        ASSERT_EQUALS(expected_fmax, tokWithNewlines(code_fmax));
 
         // do not simplify this case
         const char code_fmax1[] = "float f(float f) { return fmax(f,0);}";
         const char expected_fmax1[] = "float f ( float f ) { return fmax ( f , 0 ) ; }";
-        ASSERT_EQUALS(expected_fmax1, tok(code_fmax1));
+        ASSERT_EQUALS(expected_fmax1, tokWithNewlines(code_fmax1));
     }
 
     void simplifyMathExpressions() { //#1620
@@ -1474,7 +1486,7 @@ private:
                                  "std :: cout << -1 ;\n"
                                  "std :: cout << -1 ;\n"
                                  "}";
-        ASSERT_EQUALS(expected1, tok(code1));
+        ASSERT_EQUALS(expected1, tokWithNewlines(code1));
 
         const char code2[] = "void f ( ) {\n"
                              "a = pow ( sin ( x ) , 2 ) + pow ( cos ( y ) , 2 ) ;\n"
@@ -1486,7 +1498,7 @@ private:
                              "g = pow ( cos ( x ) , 2.0 ) + pow ( sin ( y ) , 2.0 ) ;\n"
                              "h = pow ( cosh ( x ) , 2.0 ) - pow ( sinh ( y ) , 2.0 ) ;\n"
                              "}";
-        ASSERT_EQUALS(code2, tok(code2));
+        ASSERT_EQUALS(code2, tokWithNewlines(code2));
 
         const char code3[] = "void foo() {\n"
                              "    std::cout<<powf(sinf(x),2)+powf(cosf(x),2);\n"
@@ -1529,7 +1541,7 @@ private:
                                  "std :: cout << -1 ;\n"
                                  "std :: cout << -1 ;\n"
                                  "}";
-        ASSERT_EQUALS(expected3, tok(code3));
+        ASSERT_EQUALS(expected3, tokWithNewlines(code3));
 
         const char code4[] = "void f ( ) {\n"
                              "a = powf ( sinf ( x ) , 2 ) + powf ( cosf ( y ) , 2 ) ;\n"
@@ -1541,7 +1553,7 @@ private:
                              "g = powf ( cosf ( x ) , 2.0 ) + powf ( sinf ( y ) , 2.0 ) ;\n"
                              "h = powf ( coshf ( x ) , 2.0 ) - powf ( sinhf ( y ) , 2.0 ) ;\n"
                              "}";
-        ASSERT_EQUALS(code4, tok(code4));
+        ASSERT_EQUALS(code4, tokWithNewlines(code4));
 
         const char code5[] = "void foo() {\n"
                              "    std::cout<<powf(sinl(x),2)+powl(cosl(x),2);\n"
@@ -1584,7 +1596,7 @@ private:
                                  "std :: cout << -1 ;\n"
                                  "std :: cout << -1 ;\n"
                                  "}";
-        ASSERT_EQUALS(expected5, tok(code5));
+        ASSERT_EQUALS(expected5, tokWithNewlines(code5));
 
 
         const char code6[] = "void f ( ) {\n"
@@ -1597,7 +1609,7 @@ private:
                              "g = powl ( cosl ( x ) , 2.0 ) + powl ( sinl ( y ) , 2.0 ) ;\n"
                              "h = powl ( coshl ( x ) , 2.0 ) - powl ( sinhl ( y ) , 2.0 ) ;\n"
                              "}";
-        ASSERT_EQUALS(code6, tok(code6));
+        ASSERT_EQUALS(code6, tokWithNewlines(code6));
     }
 
 
