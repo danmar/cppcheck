@@ -809,8 +809,6 @@ def reportError(template, callstack=(), severity='', message='', errorId='', sup
         template = '{file}({line}): {severity}: {message}'
     elif template == 'edit':
         template = '{file} +{line}: {severity}: {message}'
-    elif template == 'xml':
-        return reportErrorXML(callstack, severity, message, errorId, suppressions, outputFunc)
     # compute 'callstack}, {file} and {line} replacements
     stack = ' -> '.join('[' + f + ':' + str(l) + ']' for (f, l) in callstack)
     file = callstack[-1][0]
@@ -825,33 +823,6 @@ def reportError(template, callstack=(), severity='', message='', errorId='', sup
         outputFunc(outputLine)
     # format message
     return outputLine
-
-def reportErrorXML(callstack, severity, message, errorId, suppressions, outputFunc):
-    """
-        Format an error message according to cppcheck's xml format.
-
-        :param callstack: e.g. [['file1.cpp',10],['file2.h','20'], ... ]
-        :param severity: e.g. 'error', 'warning' ...
-        :param id: message ID.
-        :param message: message text.
-    """
-    node = ET.Element("error")
-    if errorId:
-        node.set("id", errorId)
-    if severity:
-        node.set("severity", severity)
-    node.set("msg", message)
-
-    file = callstack[-1][0]
-    line = str(callstack[-1][1])
-    if suppressions is not None and any(suppression.isMatch(file, line, message, errorId) for suppression in suppressions):
-        return None
-
-    for filename, lineno in callstack:
-        location = ET.Element("location", { 'file': filename, 'line': str(lineno) } )
-        node.append(location)
-
-    return ET.tostring(node, encoding="unicode")
 
 def reportErrorCli(token, severity, message, addon, errorId):
     if '--cli' in sys.argv:
