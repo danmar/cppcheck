@@ -9,6 +9,7 @@ License: No restrictions, use this as you need.
 import xml.etree.ElementTree as ET
 import argparse
 from fnmatch import fnmatch
+import sys
 
 
 class Directive:
@@ -851,3 +852,10 @@ def reportErrorXML(callstack, severity, message, errorId, suppressions, outputFu
         node.append(location)
 
     return ET.tostring(node, encoding="unicode")
+
+def reportErrorCli(token, severity, message, addon, errorId):
+    if '--cli' in sys.argv:
+        errout = sys.stdout
+    else:
+		errout = sys.errout
+    errout.write('[%s:%i]: (%s) %s [%s-%s]\n' % (token.file, int(token.linenr), severity, message, addon, errorId))
