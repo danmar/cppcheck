@@ -928,42 +928,45 @@ static std::string join(const std::list<std::string> &strlist, const char *sep)
 }
 
 // These constants are copy/pasted from gui/projectfile.cpp
-static const char ProjectElementName[] = "project";
-static const char ProjectVersionAttrib[] = "version";
-static const char ProjectFileVersion[] = "1";
-static const char BuildDirElementName[] = "builddir";
-static const char ImportProjectElementName[] = "importproject";
-static const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
-static const char IncludeDirElementName[] = "includedir";
-static const char DirElementName[] = "dir";
-static const char DirNameAttrib[] = "name";
-static const char DefinesElementName[] = "defines";
-static const char DefineName[] = "define";
-static const char DefineNameAttrib[] = "name";
-static const char UndefinesElementName[] = "undefines";
-static const char UndefineName[] = "undefine";
-static const char PathsElementName[] = "paths";
-static const char PathName[] = "dir";
-static const char PathNameAttrib[] = "name";
-static const char RootPathName[] = "root";
-static const char RootPathNameAttrib[] = "name";
-static const char IgnoreElementName[] = "ignore";
-static const char IgnorePathName[] = "path";
-static const char IgnorePathNameAttrib[] = "name";
-static const char ExcludeElementName[] = "exclude";
-static const char ExcludePathName[] = "path";
-static const char ExcludePathNameAttrib[] = "name";
-static const char LibrariesElementName[] = "libraries";
-static const char LibraryElementName[] = "library";
-static const char PlatformElementName[] = "platform";
-static const char SuppressionsElementName[] = "suppressions";
-static const char SuppressionElementName[] = "suppression";
-static const char AddonElementName[] = "addon";
-static const char AddonsElementName[] = "addons";
-static const char ToolElementName[] = "tool";
-static const char ToolsElementName[] = "tools";
-static const char TagsElementName[] = "tags";
-static const char TagElementName[] = "tag";
+static constexpr char ProjectElementName[] = "project";
+static constexpr char ProjectVersionAttrib[] = "version";
+static constexpr char ProjectFileVersion[] = "1";
+static constexpr char BuildDirElementName[] = "builddir";
+static constexpr char ImportProjectElementName[] = "importproject";
+static constexpr char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+static constexpr char IncludeDirElementName[] = "includedir";
+static constexpr char DirElementName[] = "dir";
+static constexpr char DirNameAttrib[] = "name";
+static constexpr char DefinesElementName[] = "defines";
+static constexpr char DefineName[] = "define";
+static constexpr char DefineNameAttrib[] = "name";
+static constexpr char UndefinesElementName[] = "undefines";
+static constexpr char UndefineName[] = "undefine";
+static constexpr char PathsElementName[] = "paths";
+static constexpr char PathName[] = "dir";
+static constexpr char PathNameAttrib[] = "name";
+static constexpr char RootPathName[] = "root";
+static constexpr char RootPathNameAttrib[] = "name";
+static constexpr char IgnoreElementName[] = "ignore";
+static constexpr char IgnorePathName[] = "path";
+static constexpr char IgnorePathNameAttrib[] = "name";
+static constexpr char ExcludeElementName[] = "exclude";
+static constexpr char ExcludePathName[] = "path";
+static constexpr char ExcludePathNameAttrib[] = "name";
+static constexpr char LibrariesElementName[] = "libraries";
+static constexpr char LibraryElementName[] = "library";
+static constexpr char PlatformElementName[] = "platform";
+static constexpr char SuppressionsElementName[] = "suppressions";
+static constexpr char SuppressionElementName[] = "suppression";
+static constexpr char AddonElementName[] = "addon";
+static constexpr char AddonsElementName[] = "addons";
+static constexpr char ToolElementName[] = "tool";
+static constexpr char ToolsElementName[] = "tools";
+static constexpr char TagsElementName[] = "tags";
+static constexpr char TagElementName[] = "tag";
+static constexpr char CheckHeadersElementName[] = "check-headers";
+static constexpr char CheckUnusedTemplatesElementName[] = "check-unused-templates";
+static constexpr char MaxCtuDepthElementName[] = "max-ctu-depth";
 
 static std::string istream_to_string(std::istream &istr)
 {
@@ -1022,6 +1025,12 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             node->Attribute(TagElementName); // FIXME: Write some warning
         else if (strcmp(node->Name(), ToolsElementName) == 0)
             node->Attribute(ToolElementName); // FIXME: Write some warning
+        else if (strcmp(node->Name(), CheckHeadersElementName) == 0)
+            temp.checkHeaders = (strcmp(node->GetText(), "true") == 0);
+        else if (strcmp(node->Name(), CheckUnusedTemplatesElementName) == 0)
+            temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
+        else if (strcmp(node->Name(), MaxCtuDepthElementName) == 0)
+            temp.maxCtuDepth = std::atoi(node->GetText());
         else
             return false;
     }
@@ -1035,5 +1044,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         guiProject.pathNames.push_back(path);
     for (const std::string &supp : suppressions)
         settings->nomsg.addSuppressionLine(supp);
+    settings->checkHeaders = temp.checkHeaders;
+    settings->checkUnusedTemplates = temp.checkUnusedTemplates;
+    settings->maxCtuDepth = temp.maxCtuDepth;
     return true;
 }
