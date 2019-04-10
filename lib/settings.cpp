@@ -51,7 +51,7 @@ Settings::Settings()
       checkConfiguration(false),
       checkLibrary(false),
       checkHeaders(true),
-      checkUnusedTemplates(false)
+      checkUnusedTemplates(true)
 {
 }
 
