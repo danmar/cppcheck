@@ -604,13 +604,14 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
 
                     errmsg._id = line.substr(id1+1, line.size()-id1-2);
-                    std::string text = line.substr(loc3 + 11, id1 - loc3 - 11);
+                    std::string text = line.substr(sev2 + 2, id1 - sev2 - 2);
                     if (text[0] == ' ')
                         text = text.substr(1);
                     if (endsWith(text, " ", 1))
                         text = text.erase(text.size() - 1);
                     errmsg.setmsg(text);
-                    errmsg._severity = Severity::fromString(line.substr(sev1, sev2-sev1));
+                    const std::string sev = line.substr(sev1, sev2-sev1);
+                    errmsg._severity = Severity::fromString(sev);
                     if (errmsg._severity == Severity::SeverityType::none)
                         continue;
                     errmsg.file0 = filename;
