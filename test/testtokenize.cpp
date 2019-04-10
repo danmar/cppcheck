@@ -960,7 +960,7 @@ private:
 
     void removeUnusedTemplates() {
         Settings s;
-        s.removeUnusedTemplates = true;
+        s.checkUnusedTemplates = false;
         ASSERT_EQUALS(";",
                       tokenizeAndStringify("; template <typename... a> uint8_t b(std::tuple<uint8_t> d) {\n"
                                            "  std::tuple<a...> c{std::move(d)};\n"
