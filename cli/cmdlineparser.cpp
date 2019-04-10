@@ -537,11 +537,22 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 std::string lib(argv[i] + 10);
                 mSettings->libraries.push_back(lib);
             }
-
+            // --vscfg
+            else if (std::strncmp(argv[i], "--vscfg=", 8) == 0) {
+                mVSConfig = argv[i] + 8;
+                if (!mVSConfig.empty() && (mSettings->project.mType == ImportProject::Type::VS_SLN || mSettings->project.mType == ImportProject::Type::VS_VCXPROJ))
+                    mSettings->project.ignoreOtherConfigs(mVSConfig);
+            }
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 const std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
+
+                mSettings->project.mType = projType;
+                if (!mVSConfig.empty() && (projType== ImportProject::Type::VS_SLN || projType== ImportProject::Type::VS_VCXPROJ)){
+                    mSettings->project.ignoreOtherConfigs(mVSConfig);
+                }
+
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
                     for (const std::string &lib : mSettings->project.guiProject.libraries) {
@@ -577,7 +588,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     }
 
                     if (!mSettings->project.guiProject.projectFile.empty())
+                    {
                         projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
+                        if (!mSettings->project.guiProject.vsConfig.empty() && (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ))
+                            mSettings->project.ignoreOtherConfigs(mSettings->project.guiProject.vsConfig);
+                    }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
@@ -1051,6 +1066,10 @@ void CmdLineParser::printHelp()
               "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
               "                         include paths, defines, platform and undefines in\n"
               "                         the specified file will be used.\n"
+              "    --vscfg=<config>     If used together with a Visual Studio Solution (*.sln)\n"
+              "                         or Visual Studio Project (*.vcxproj) you can limit \n"
+              "                         the configuration cppcheck should check.\n"
+              "                         For example: --vscfg=""Release|Win32"""
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"

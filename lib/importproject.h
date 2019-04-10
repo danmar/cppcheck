@@ -81,6 +81,7 @@ public:
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };
     std::list<FileSettings> fileSettings;
+    Type mType;
 
     // Cppcheck GUI output
     struct {
@@ -89,6 +90,7 @@ public:
         std::list<std::string> excludedPaths;
         std::string projectFile;
         std::string platform;
+        std::string vsConfig;
     } guiProject;
 
     void ignorePaths(const std::vector<std::string> &ipaths);

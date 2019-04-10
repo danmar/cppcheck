@@ -294,6 +294,9 @@ protected:
      */
     int getSuppressionIndex(const QString &shortText) const;
 
+private slots:
+    void on_mChkAllVsConfigs_stateChanged(int arg1);
+
 private:
     Ui::ProjectFile mUI;
 

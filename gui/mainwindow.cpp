@@ -1523,6 +1523,8 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         }
         try {
             p.import(prjfile.toStdString());
+            if((p.mType==ImportProject::Type::VS_SLN)||(p.mType==ImportProject::Type::VS_VCXPROJ))
+                p.ignoreOtherConfigs(projectFile->getVSCheckConfig().toStdString());
         } catch (InternalError &e) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),

@@ -392,6 +392,7 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnIncludeUp->setEnabled(!importProject);
     mUI.mBtnIncludeDown->setEnabled(!importProject);
     mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
+    mUI.mEditVSCheckConfig->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }
 
 void ProjectFileDialog::clearImportProject()
@@ -712,4 +713,10 @@ void ProjectFileDialog::browseMisraFile()
         mUI.mAddonMisra->setEnabled(true);
         updateAddonCheckBox(mUI.mAddonMisra, nullptr, settings.value("DATADIR", QString()).toString(), "misra");
     }
+}
+
+void ProjectFileDialog::on_mChkAllVsConfigs_stateChanged(int arg1)
+{
+    mUI.mLabelVSCheckConfig->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
+    mUI.mEditVSCheckConfig->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }

@@ -933,6 +933,7 @@ static const char ProjectVersionAttrib[] = "version";
 static const char ProjectFileVersion[] = "1";
 static const char BuildDirElementName[] = "builddir";
 static const char ImportProjectElementName[] = "importproject";
+static const char VisualStudioConfigName[] = "vscheckconfig";
 static const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
 static const char IncludeDirElementName[] = "includedir";
 static const char DirElementName[] = "dir";
@@ -1002,6 +1003,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 temp.userUndefs.insert(u);
         } else if (strcmp(node->Name(), ImportProjectElementName) == 0)
             guiProject.projectFile = node->GetText() ? node->GetText() : "";
+        else if (strcmp(node->Name(), VisualStudioConfigName) == 0)
+            guiProject.vsConfig = node->GetText() ? node->GetText() : "";
         else if (strcmp(node->Name(), PathsElementName) == 0)
             paths = readXmlStringList(node, PathName, PathNameAttrib);
         else if (strcmp(node->Name(), ExcludeElementName) == 0)

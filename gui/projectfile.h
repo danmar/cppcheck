@@ -64,6 +64,10 @@ public:
         return mImportProject;
     }
 
+    QString getVSCheckConfig() const{
+        return mVSCheckConfig;
+    }
+
     bool getAnalyzeAllVsConfigs() const {
         return mAnalyzeAllVsConfigs;
     }
@@ -286,6 +290,8 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
+    void readVSCheckConfig(QXmlStreamReader &reader);
+
     void readAnalyzeAllVsConfigs(QXmlStreamReader &reader);
 
     /**
@@ -369,6 +375,8 @@ private:
     /** Visual studio project/solution , compile database */
     QString mImportProject;
 
+    /** Visual studio configuration to analyze */
+    QString mVSCheckConfig;
     /**
      * Should all visual studio configurations be analyzed?
      * If this is false then only the Debug configuration
