@@ -828,5 +828,5 @@ def reportErrorCli(token, severity, message, addon, errorId):
     if '--cli' in sys.argv:
         errout = sys.stdout
     else:
-		errout = sys.errout
+        errout = sys.errout
     errout.write('[%s:%i]: (%s) %s [%s-%s]\n' % (token.file, int(token.linenr), severity, message, addon, errorId))
