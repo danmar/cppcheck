@@ -129,8 +129,8 @@ def getEssentialCategorylist(operand1, operand2):
     if (operand1.str in {'++', '--'} or
             operand2.str in {'++', '--'}):
         return None, None
-    if (operand1.valueType.pointer or
-            operand2.valueType.pointer):
+    if ((operand1.valueType and operand1.valueType.pointer) or
+            (operand2.valueType and operand2.valueType.pointer)):
         return None, None
     e1 = getEssentialTypeCategory(operand1)
     e2 = getEssentialTypeCategory(operand2)
