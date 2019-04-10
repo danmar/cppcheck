@@ -19,7 +19,7 @@ def reportError(token, severity, msg, id):
     if id == 'debug' and DEBUG == False:
         return
     if VERIFY:
-        VERIFY_ACTUAL.append(str(token.linenr) + ':misc-' + id)
+        VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
         cppcheckdata.reportErrorCli(token, severity, msg, 'misc', id)
 
