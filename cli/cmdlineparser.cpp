@@ -158,16 +158,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings->dump = true;
 
-            // TODO: These options are about removing code. Instead of having lots of different options
-            // can we create one option that is customizable somehow.
-            // --check-headers=no
-            else if (std::strcmp(argv[i], "--check-headers=no") == 0)
-                mSettings->checkHeaders = false;
-            else if (std::strcmp(argv[i], "--remove-unused-templates") == 0)
-                mSettings->removeUnusedTemplates = true;
-            else if (std::strcmp(argv[i], "--remove-unused-included-templates") == 0)
-                mSettings->removeUnusedIncludedTemplates = true;
-
             // max ctu depth
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
@@ -931,8 +921,6 @@ void CmdLineParser::printHelp()
               "                         incremental analysis, distributed analysis.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
-              "    --check-headers=no   Turn off checking of included files, to make the\n"
-              "                         analysis faster.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
               "    --config-exclude=<dir>\n"
@@ -1088,10 +1076,6 @@ void CmdLineParser::printHelp()
               "                         using e.g. ~ for home folder does not work. It is\n"
               "                         currently only possible to apply the base paths to\n"
               "                         files that are on a lower level in the directory tree.\n"
-              "    --remove-unused-templates\n"
-              "                         Remove unused templates.\n"
-              "    --remove-unused-included-templates\n"
-              "                         Remove unused templates in included files.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"

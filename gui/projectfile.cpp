@@ -61,6 +61,9 @@ static const char ToolElementName[] = "tool";
 static const char ToolsElementName[] = "tools";
 static const char TagsElementName[] = "tags";
 static const char TagElementName[] = "tag";
+static constexpr char CheckHeadersElementName[] = "check-headers";
+static constexpr char CheckUnusedTemplatesElementName[] = "check-unused-templates";
+static constexpr char MaxCtuDepthElementName[] = "max-ctu-depth";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -92,6 +95,10 @@ void ProjectFile::clear()
     mSuppressions.clear();
     mAddons.clear();
     mClangAnalyzer = mClangTidy = false;
+    mAnalyzeAllVsConfigs = false;
+    mCheckHeaders = true;
+    mCheckUnusedTemplates = false;
+    mMaxCtuDepth = 10;
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -131,7 +138,13 @@ bool ProjectFile::read(const QString &filename)
                 readImportProject(xmlReader);
 
             if (insideProject && xmlReader.name() == AnalyzeAllVsConfigsElementName)
-                readAnalyzeAllVsConfigs(xmlReader);
+                mAnalyzeAllVsConfigs = readBool(xmlReader);
+
+            if (insideProject && xmlReader.name() == CheckHeadersElementName)
+                mCheckHeaders = readBool(xmlReader);
+
+            if (insideProject && xmlReader.name() == CheckUnusedTemplatesElementName)
+                mCheckUnusedTemplates = readBool(xmlReader);
 
             // Find include directory from inside project element
             if (insideProject && xmlReader.name() == IncludeDirElementName)
@@ -179,6 +192,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (insideProject && xmlReader.name() == TagsElementName)
                 readStringList(mTags, xmlReader, TagElementName);
+
+            if (insideProject && xmlReader.name() == MaxCtuDepthElementName)
+                mMaxCtuDepth = readInt(xmlReader, mMaxCtuDepth);
 
             break;
 
@@ -263,15 +279,41 @@ void ProjectFile::readImportProject(QXmlStreamReader &reader)
     } while (1);
 }
 
-void ProjectFile::readAnalyzeAllVsConfigs(QXmlStreamReader &reader)
+bool ProjectFile::readBool(QXmlStreamReader &reader)
 {
+    bool ret = false;
     do {
         const QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::Characters:
-            mAnalyzeAllVsConfigs = (reader.text().toString() == "true");
+            ret = (reader.text().toString() == "true");
         case QXmlStreamReader::EndElement:
-            return;
+            return ret;
+        // Not handled
+        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (1);
+}
+
+int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
+{
+    int ret = defaultValue;
+    do {
+        const QXmlStreamReader::TokenType type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::Characters:
+            ret = reader.text().toString().toInt();
+        case QXmlStreamReader::EndElement:
+            return ret;
         // Not handled
         case QXmlStreamReader::StartElement:
         case QXmlStreamReader::NoToken:
@@ -640,6 +682,18 @@ bool ProjectFile::write(const QString &filename)
 
     xmlWriter.writeStartElement(AnalyzeAllVsConfigsElementName);
     xmlWriter.writeCharacters(mAnalyzeAllVsConfigs ? "true" : "false");
+    xmlWriter.writeEndElement();
+
+    xmlWriter.writeStartElement(CheckHeadersElementName);
+    xmlWriter.writeCharacters(mCheckHeaders ? "true" : "false");
+    xmlWriter.writeEndElement();
+
+    xmlWriter.writeStartElement(CheckUnusedTemplatesElementName);
+    xmlWriter.writeCharacters(mCheckUnusedTemplates ? "true" : "false");
+    xmlWriter.writeEndElement();
+
+    xmlWriter.writeStartElement(MaxCtuDepthElementName);
+    xmlWriter.writeCharacters(QString::number(mMaxCtuDepth));
     xmlWriter.writeEndElement();
 
     if (!mIncludeDirs.isEmpty()) {

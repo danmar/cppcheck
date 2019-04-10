@@ -892,6 +892,10 @@ Settings MainWindow::getCppcheckSettings()
                 }
             }
         }
+
+        result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
+        result.checkHeaders = mProjectFile->getCheckHeaders();
+        result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
     }
 
     // Include directories (and files) are searched in listed order.
