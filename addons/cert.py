@@ -16,7 +16,6 @@ import re
 VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
-CLI = False
 
 def reportError(token, severity, msg, id):
     if VERIFY:
@@ -240,7 +239,6 @@ for arg in sys.argv[1:]:
         VERIFY = True
         continue
     if arg == '--cli':
-        CLI = True
         continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
