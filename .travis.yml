@@ -7,7 +7,7 @@ compiler:
 
 env:
   global:
-    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
+    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
 #   unfortunately we need this to stay within 50min timelimit given by travis.
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
