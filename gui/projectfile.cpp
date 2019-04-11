@@ -25,9 +25,6 @@
 #include "projectfile.h"
 #include "common.h"
 
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define constexpr const  // TODO what handling of constexpr is there is MSC
-#endif
 
 static constexpr char ProjectElementName[] = "project";
 static constexpr char ProjectVersionAttrib[] = "version";

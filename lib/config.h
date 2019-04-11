@@ -26,6 +26,11 @@
 #  define OVERRIDE
 #endif
 
+// "constexpr" is available since Visual Studio 2015
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#  define constexpr const
+#endif
+
 #include <string>
 static const std::string emptyString;
 

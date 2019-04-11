@@ -927,10 +927,6 @@ static std::string join(const std::list<std::string> &strlist, const char *sep)
     return ret;
 }
 
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define constexpr const  // TODO what handling of constexpr is there is MSC
-#endif
-
 // These constants are copy/pasted from gui/projectfile.cpp
 static constexpr char ProjectElementName[] = "project";
 static constexpr char ProjectVersionAttrib[] = "version";
