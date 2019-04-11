@@ -36,7 +36,8 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
-        for (const std::string &i : ipaths) {
+        for (std::string i : ipaths) {
+            i = mPath + i;
             if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
                 ignore = true;
                 break;
@@ -173,14 +174,16 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     std::ifstream fin(filename);
     if (!fin.is_open())
         return ImportProject::Type::MISSING;
+
+    mPath = Path::getPathFromFilename(Path::fromNativeSeparators(filename));
+    if (!mPath.empty() && !endsWith(mPath,'/'))
+        mPath += '/';
+
     if (endsWith(filename, ".json", 5)) {
         importCompileCommands(fin);
         return ImportProject::Type::COMPILE_DB;
     } else if (endsWith(filename, ".sln", 4)) {
-        std::string path(Path::getPathFromFilename(Path::fromNativeSeparators(filename)));
-        if (!path.empty() && !endsWith(path,'/'))
-            path += '/';
-        importSln(fin,path);
+        importSln(fin,mPath);
         return ImportProject::Type::VS_SLN;
     } else if (endsWith(filename, ".vcxproj", 8)) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;

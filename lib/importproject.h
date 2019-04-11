@@ -103,6 +103,8 @@ private:
     void importSln(std::istream &istr, const std::string &path);
     void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories);
     void importBcb6Prj(const std::string &projectFilename);
+
+    std::string mPath;
 };
 
 /// @}
