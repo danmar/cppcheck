@@ -444,8 +444,12 @@ def getArguments(ftok):
     return arguments
 
 
+def isalnum(c):
+    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')
+
+
 def isHexDigit(c):
-    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c >= 'F')
+    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c <= 'F')
 
 
 def isOctalDigit(c):
@@ -467,6 +471,20 @@ def isNoReturnScope(tok):
     if prev and prev.next.str in ['throw', 'return']:
         return True
     return False
+
+
+class Define:
+    def __init__(self, directive):
+        self.args = []
+        self.expansionList = ''
+
+        res = re.match(r'#define [A-Za-z0-9_]+\(([A-Za-z0-9_,]+)\)[ ]+(.*)', directive.str)
+        if res is None:
+            return
+
+        self.args = res.group(1).split(',')
+        self.expansionList = res.group(2)
+
 
 def generateTable():
     numberOfRules = {}
@@ -1608,6 +1626,32 @@ class MisraChecker:
                 self.reportError(directive, 20, 5)
 
 
+    def misra_20_7(self, data):
+        for directive in data.directives:
+            d = Define(directive)
+            exp = '(' + d.expansionList + ')'
+            for arg in d.args:
+                pos = exp.find(arg)
+                if pos < 0:
+                    continue
+                pos1 = pos - 1
+                pos2 = pos + len(arg)
+                if isalnum(exp[pos1]) or exp[pos1]=='_':
+                    continue
+                if isalnum(exp[pos2]) or exp[pos2]=='_':
+                    continue
+                while exp[pos1] == ' ':
+                    pos1 -= 1
+                if exp[pos1] != '(' and exp[pos1] != '[':
+                    self.reportError(directive, 20, 7);
+                    break
+                while exp[pos2] == ' ':
+                    pos2 += 1
+                if exp[pos2] != ')' and exp[pos2] != ']':
+                    self.reportError(directive, 20, 7);
+                    break
+
+
     def misra_20_13(self, data):
         dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
         for directive in data.directives:
@@ -2140,6 +2184,7 @@ class MisraChecker:
                 self.misra_20_3(data.rawTokens)
             self.misra_20_4(cfg)
             self.misra_20_5(cfg)
+            self.misra_20_7(cfg)
             self.misra_20_13(cfg)
             self.misra_20_14(cfg)
             self.misra_21_3(cfg)
@@ -2273,7 +2318,10 @@ else:
                     for misra_id in sorted(rules_violated.keys(), key=misra_sort):
                         num = misra_id[len("misra-c2012-"):]
                         num = int(num[:num.index(".")]) * 100 + int(num[num.index(".")+1:])
-                        print("\t%15s (%s): %d" % (misra_id, checker.ruleTexts[num].severity, rules_violated[misra_id]))
+                        severity = '-'
+                        if num in checker.ruleTexts:
+                            severity = checker.ruleTexts[num].severity
+                        print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
 
         if args.show_suppressed_rules:
             checker.showSuppressedRules()

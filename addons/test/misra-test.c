@@ -498,6 +498,9 @@ union misra_19_2 { }; // 19.2
 #define int short // 20.4
 #undef X  // 20.5
 
+#define M1(A)  (A+1) // 20.7
+#define M2(A,B)  (1+AB+2)
+
 #else1 // 20.13
 
 #ifdef A>1
