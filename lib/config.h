@@ -28,7 +28,9 @@
 
 // "constexpr" is available since Visual Studio 2015
 #if defined(_MSC_VER) && _MSC_VER < 1900
-#  define constexpr const
+#  define CONSTEXPR const
+#else
+#  define CONSTEXPR constexpr
 #endif
 
 #include <string>
