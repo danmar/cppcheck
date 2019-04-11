@@ -118,6 +118,8 @@ private:
 
     void setImportProject(const QString &importProject);
 
+    void setVSCheckConfig(const QString &vsCheckConfig);
+
     /**
     * @brief Set include paths to dialog control.
     * @param includes List of include paths to set to dialog control.

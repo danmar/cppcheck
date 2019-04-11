@@ -239,6 +239,13 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setUndefines(projectFile->getUndefines());
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
+
+    if(!projectFile->getVSCheckConfig().isEmpty()){
+        mUI.mChkAllVsConfigs->setChecked(false);
+        mUI.mChkAllVsConfigs->setEnabled(false);
+        setVSCheckConfig(projectFile->getVSCheckConfig());
+    }
+
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
@@ -521,6 +528,9 @@ void ProjectFileDialog::setBuildDir(const QString &buildDir)
 void ProjectFileDialog::setImportProject(const QString &importProject)
 {
     mUI.mEditImportProject->setText(importProject);
+void ProjectFileDialog::setVSCheckConfig(const QString &vsCheckConfig)
+{
+    mUI.mEditVSCheckConfig->setText(vsCheckConfig);
 }
 
 void ProjectFileDialog::setIncludepaths(const QStringList &includes)
