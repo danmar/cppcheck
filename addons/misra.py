@@ -1631,26 +1631,35 @@ class MisraChecker:
             d = Define(directive)
             exp = '(' + d.expansionList + ')'
             for arg in d.args:
-                pos = exp.find(arg)
-                if pos < 0:
-                    continue
-                pos1 = pos - 1
-                pos2 = pos + len(arg)
-                if isalnum(exp[pos1]) or exp[pos1]=='_':
-                    continue
-                if isalnum(exp[pos2]) or exp[pos2]=='_':
-                    continue
-                while exp[pos1] == ' ':
-                    pos1 -= 1
-                if exp[pos1] != '(' and exp[pos1] != '[':
-                    self.reportError(directive, 20, 7);
-                    break
-                while exp[pos2] == ' ':
-                    pos2 += 1
-                if exp[pos2] != ')' and exp[pos2] != ']':
-                    self.reportError(directive, 20, 7);
-                    break
+                pos = 0
+                while pos < len(exp):
+                    pos = exp.find(arg, pos)
+                    if pos < 0:
+                        break
+                    pos1 = pos - 1
+                    pos2 = pos + len(arg)
+                    pos = pos2
+                    if isalnum(exp[pos1]) or exp[pos1]=='_':
+                        continue
+                    if isalnum(exp[pos2]) or exp[pos2]=='_':
+                        continue
+                    while exp[pos1] == ' ':
+                        pos1 -= 1
+                    if exp[pos1] != '(' and exp[pos1] != '[':
+                        self.reportError(directive, 20, 7);
+                        break
+                    while exp[pos2] == ' ':
+                        pos2 += 1
+                    if exp[pos2] != ')' and exp[pos2] != ']':
+                        self.reportError(directive, 20, 7);
+                        break
 
+
+    def misra_20_10(self, data):
+        for directive in data.directives:
+            d = Define(directive)
+            if d.expansionList.find('#') >= 0:
+                self.reportError(directive, 20, 10);
 
     def misra_20_13(self, data):
         dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
@@ -2185,6 +2194,7 @@ class MisraChecker:
             self.misra_20_4(cfg)
             self.misra_20_5(cfg)
             self.misra_20_7(cfg)
+            self.misra_20_10(cfg)
             self.misra_20_13(cfg)
             self.misra_20_14(cfg)
             self.misra_21_3(cfg)
