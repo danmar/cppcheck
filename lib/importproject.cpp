@@ -927,7 +927,7 @@ static std::string join(const std::list<std::string> &strlist, const char *sep)
     return ret;
 }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _MSC_VER < 1900
 #define constexpr const  // TODO what handling of constexpr is there is MSC
 #endif
 
