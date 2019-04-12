@@ -282,20 +282,16 @@ void MainWindow::loadSettings()
     mUI.mActionShowCppcheck->setChecked(true);
     mUI.mActionShowClang->setChecked(true);
 
-    const bool stdCpp03 = mSettings->value(SETTINGS_STD_CPP03, false).toBool();
-    mUI.mActionCpp03->setChecked(stdCpp03);
-    const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, false).toBool();
-    mUI.mActionCpp11->setChecked(stdCpp11 && !stdCpp03);
-    const bool stdCpp14 = mSettings->value(SETTINGS_STD_CPP14, false).toBool();
-    mUI.mActionCpp14->setChecked(stdCpp14 && !stdCpp03 && !stdCpp11);
-    const bool stdCpp17 = mSettings->value(SETTINGS_STD_CPP17, true).toBool();
-    mUI.mActionCpp17->setChecked(stdCpp17 && !stdCpp03 && !stdCpp11 && !stdCpp14);
-    const bool stdC89 = mSettings->value(SETTINGS_STD_C89, false).toBool();
-    mUI.mActionC89->setChecked(stdC89);
-    const bool stdC11 = mSettings->value(SETTINGS_STD_C11, false).toBool();
-    mUI.mActionC11->setChecked(stdC11);
-    const bool stdC99 = mSettings->value(SETTINGS_STD_C99, true).toBool();
-    mUI.mActionC99->setChecked(stdC99 || (!stdC89 && !stdC11));
+    Standards standards;
+    standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
+    mUI.mActionC89->setChecked(standards.c == Standards::C89);
+    mUI.mActionC99->setChecked(standards.c == Standards::C99);
+    mUI.mActionC11->setChecked(standards.c == Standards::C11);
+    standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
+    mUI.mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
+    mUI.mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
+    mUI.mActionCpp14->setChecked(standards.cpp == Standards::CPP14);
+    mUI.mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -359,13 +355,21 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
     mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
 
-    mSettings->setValue(SETTINGS_STD_CPP03, mUI.mActionCpp03->isChecked());
-    mSettings->setValue(SETTINGS_STD_CPP11, mUI.mActionCpp11->isChecked());
-    mSettings->setValue(SETTINGS_STD_CPP14, mUI.mActionCpp14->isChecked());
-    mSettings->setValue(SETTINGS_STD_CPP17, mUI.mActionCpp17->isChecked());
-    mSettings->setValue(SETTINGS_STD_C89, mUI.mActionC89->isChecked());
-    mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
-    mSettings->setValue(SETTINGS_STD_C11, mUI.mActionC11->isChecked());
+    if (mUI.mActionC89->isChecked())
+        mSettings->setValue(SETTINGS_STD_C, "C89");
+    if (mUI.mActionC99->isChecked())
+        mSettings->setValue(SETTINGS_STD_C, "C99");
+    if (mUI.mActionC11->isChecked())
+        mSettings->setValue(SETTINGS_STD_C, "C11");
+
+    if (mUI.mActionCpp03->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++03");
+    if (mUI.mActionCpp11->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++11");
+    if (mUI.mActionCpp14->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++14");
+    if (mUI.mActionCpp17->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++17");
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
@@ -926,15 +930,8 @@ Settings MainWindow::getCppcheckSettings()
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
     if (result.platformType == cppcheck::Platform::Unspecified)
         result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
-    if (mSettings->value(SETTINGS_STD_CPP03, false).toBool())
-        result.standards.cpp = Standards::CPP03;
-    else if (mSettings->value(SETTINGS_STD_CPP11, false).toBool())
-        result.standards.cpp = Standards::CPP11;
-    else if (mSettings->value(SETTINGS_STD_CPP14, false).toBool())
-        result.standards.cpp = Standards::CPP14;
-    else if (mSettings->value(SETTINGS_STD_CPP17, true).toBool())
-        result.standards.cpp = Standards::CPP17;
-    result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
+    result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
+    result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
 
     if (result.jobs <= 1) {
