@@ -207,6 +207,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionCpp03->setActionGroup(mCppStandardActions);
     mUI.mActionCpp11->setActionGroup(mCppStandardActions);
     mUI.mActionCpp14->setActionGroup(mCppStandardActions);
+    mUI.mActionCpp17->setActionGroup(mCppStandardActions);
 
     mUI.mActionEnforceC->setActionGroup(mSelectLanguageActions);
     mUI.mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
@@ -283,18 +284,18 @@ void MainWindow::loadSettings()
 
     const bool stdCpp03 = mSettings->value(SETTINGS_STD_CPP03, false).toBool();
     mUI.mActionCpp03->setChecked(stdCpp03);
-    const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, true).toBool();
+    const bool stdCpp11 = mSettings->value(SETTINGS_STD_CPP11, false).toBool();
     mUI.mActionCpp11->setChecked(stdCpp11 && !stdCpp03);
-    const bool stdCpp14 = mSettings->value(SETTINGS_STD_CPP14, true).toBool();
+    const bool stdCpp14 = mSettings->value(SETTINGS_STD_CPP14, false).toBool();
     mUI.mActionCpp14->setChecked(stdCpp14 && !stdCpp03 && !stdCpp11);
+    const bool stdCpp17 = mSettings->value(SETTINGS_STD_CPP17, true).toBool();
+    mUI.mActionCpp17->setChecked(stdCpp17 && !stdCpp03 && !stdCpp11 && !stdCpp14);
     const bool stdC89 = mSettings->value(SETTINGS_STD_C89, false).toBool();
     mUI.mActionC89->setChecked(stdC89);
     const bool stdC11 = mSettings->value(SETTINGS_STD_C11, false).toBool();
     mUI.mActionC11->setChecked(stdC11);
     const bool stdC99 = mSettings->value(SETTINGS_STD_C99, true).toBool();
     mUI.mActionC99->setChecked(stdC99 || (!stdC89 && !stdC11));
-    const bool stdPosix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
-    mUI.mActionPosix->setChecked(stdPosix);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -361,10 +362,10 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_STD_CPP03, mUI.mActionCpp03->isChecked());
     mSettings->setValue(SETTINGS_STD_CPP11, mUI.mActionCpp11->isChecked());
     mSettings->setValue(SETTINGS_STD_CPP14, mUI.mActionCpp14->isChecked());
+    mSettings->setValue(SETTINGS_STD_CPP17, mUI.mActionCpp17->isChecked());
     mSettings->setValue(SETTINGS_STD_C89, mUI.mActionC89->isChecked());
     mSettings->setValue(SETTINGS_STD_C99, mUI.mActionC99->isChecked());
     mSettings->setValue(SETTINGS_STD_C11, mUI.mActionC11->isChecked());
-    mSettings->setValue(SETTINGS_STD_POSIX, mUI.mActionPosix->isChecked());
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
@@ -829,7 +830,7 @@ Settings MainWindow::getCppcheckSettings()
 
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
     bool posix = true;
-    if (result.standards.posix)
+    if (result.posix())
         posix = tryLoadLibrary(&result.library, "posix.cfg");
     bool windows = true;
     if (result.isWindowsPlatform())
@@ -929,10 +930,11 @@ Settings MainWindow::getCppcheckSettings()
         result.standards.cpp = Standards::CPP03;
     else if (mSettings->value(SETTINGS_STD_CPP11, false).toBool())
         result.standards.cpp = Standards::CPP11;
-    else if (mSettings->value(SETTINGS_STD_CPP14, true).toBool())
+    else if (mSettings->value(SETTINGS_STD_CPP14, false).toBool())
         result.standards.cpp = Standards::CPP14;
+    else if (mSettings->value(SETTINGS_STD_CPP17, true).toBool())
+        result.standards.cpp = Standards::CPP17;
     result.standards.c = mSettings->value(SETTINGS_STD_C99, true).toBool() ? Standards::C99 : (mSettings->value(SETTINGS_STD_C11, false).toBool() ? Standards::C11 : Standards::C89);
-    result.standards.posix = mSettings->value(SETTINGS_STD_POSIX, false).toBool();
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
 
     if (result.jobs <= 1) {

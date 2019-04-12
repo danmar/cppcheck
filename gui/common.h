@@ -62,10 +62,10 @@
 #define SETTINGS_STD_CPP03              "Platform CPP03"
 #define SETTINGS_STD_CPP11              "Platform CPP11"
 #define SETTINGS_STD_CPP14              "Platform CPP14"
+#define SETTINGS_STD_CPP17              "Platform CPP17"
 #define SETTINGS_STD_C89                "Platform C89"
 #define SETTINGS_STD_C99                "Platform C99"
 #define SETTINGS_STD_C11                "Platform C11"
-#define SETTINGS_STD_POSIX              "Platform Posix"
 
 // Language enforcement
 #define SETTINGS_ENFORCED_LANGUAGE      "Enforced language"
