@@ -606,6 +606,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->standards.cpp = Standards::CPP11;
             } else if (std::strcmp(argv[i], "--std=c++14") == 0) {
                 mSettings->standards.cpp = Standards::CPP14;
+            } else if (std::strcmp(argv[i], "--std=c++17") == 0) {
+                mSettings->standards.cpp = Standards::CPP17;
             }
 
             // Output formatter
@@ -1095,7 +1097,9 @@ void CmdLineParser::printHelp()
               "                          * c++11\n"
               "                                 C++ code is C++11 compatible\n"
               "                          * c++14\n"
-              "                                 C++ code is C++14 compatible (default)\n"
+              "                                 C++ code is C++14 compatible\n"
+              "                          * c++17\n"
+              "                                 C++ code is C++17 compatible (default)\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

@@ -9040,7 +9040,7 @@ void Tokenizer::findGarbageCode() const
             if (!Token::Match(tok->next(), "( !!)"))
                 syntaxError(tok);
             if (tok->str() != "for") {
-                if (isGarbageExpr(tok->next(), tok->linkAt(1)))
+                if (isGarbageExpr(tok->next(), tok->linkAt(1), mSettings->standards.cpp>=Standards::cppstd_t::CPP17))
                     syntaxError(tok);
             }
         }
@@ -9197,12 +9197,12 @@ void Tokenizer::findGarbageCode() const
 }
 
 
-bool Tokenizer::isGarbageExpr(const Token *start, const Token *end)
+bool Tokenizer::isGarbageExpr(const Token *start, const Token *end, bool allowSemicolon)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->isControlFlowKeyword())
             return true;
-        if (tok->str() == ";")
+        if (!allowSemicolon && tok->str() == ";")
             return true;
         if (tok->str() == "{")
             tok = tok->link();

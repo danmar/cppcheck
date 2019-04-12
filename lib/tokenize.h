@@ -632,7 +632,7 @@ private:
     void findGarbageCode() const;
 
     /** Detect garbage expression */
-    static bool isGarbageExpr(const Token *start, const Token *end);
+    static bool isGarbageExpr(const Token *start, const Token *end, bool allowSemicolon);
 
     /**
      * Remove __declspec()
