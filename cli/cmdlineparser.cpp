@@ -593,7 +593,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --std
             else if (std::strcmp(argv[i], "--std=posix") == 0) {
-                mSettings->standards.posix = true;
+                printMessage("cppcheck: Option --std=posix is deprecated and will be removed in 1.95.");
             } else if (std::strcmp(argv[i], "--std=c89") == 0) {
                 mSettings->standards.c = Standards::C89;
             } else if (std::strcmp(argv[i], "--std=c99") == 0) {
@@ -1084,8 +1084,6 @@ void CmdLineParser::printHelp()
 #endif
               "    --std=<id>           Set standard.\n"
               "                         The available options are:\n"
-              "                          * posix\n"
-              "                                 POSIX compatible code\n"
               "                          * c89\n"
               "                                 C code is C89 compatible\n"
               "                          * c99\n"
@@ -1098,8 +1096,6 @@ void CmdLineParser::printHelp()
               "                                 C++ code is C++11 compatible\n"
               "                          * c++14\n"
               "                                 C++ code is C++14 compatible (default)\n"
-              "                         More than one --std can be used:\n"
-              "                           'cppcheck --std=c99 --std=posix file.c'\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

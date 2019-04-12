@@ -176,6 +176,10 @@ public:
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly;
 
+    bool posix() const {
+        return std::find(libraries.begin(), libraries.end(), "posix") != libraries.end();
+    }
+
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
