@@ -583,7 +583,7 @@ class Rule:
     def __repr__(self):
         return "%d.%d %s" % (self.num1, self.num2, self.severity)
 
-    SEVERITY_MAP = { 'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'information', 'style': 'style' }
+    SEVERITY_MAP = { 'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'style', 'style': 'style' }
 
 class MisraChecker:
 
