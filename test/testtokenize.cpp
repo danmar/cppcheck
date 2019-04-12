@@ -7088,6 +7088,9 @@ private:
         ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
         ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
         ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
+
+        // C++17: if (expr1; expr2)
+        ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
     }
 
     void astexpr2() { // limit for large expressions
