@@ -556,8 +556,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Unix64);
                     else if (platform == "native")
                         mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified")
-                        mSettings->platform(Settings::Unspecified);
+                    else if (platform == "unspecified" || platform == "Unspecified" || platform == "")
+                        ;
                     else if (!mSettings->loadPlatformFile(argv[0], platform)) {
                         std::string message("cppcheck: error: unrecognized platform: \"");
                         message += platform;
@@ -570,6 +570,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
+                    if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
+                        mSettings->project.selectOneVsConfig(mSettings->platformType);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");

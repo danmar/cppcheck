@@ -1003,6 +1003,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     std::list<std::string> suppressions;
     Settings temp;
 
+    guiProject.analyzeAllVsConfigs = false;
+
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib))
             temp.basePaths.push_back(joinRelativePath(path, node->Attribute(RootPathNameAttrib)));
@@ -1030,7 +1032,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), PlatformElementName) == 0)
             guiProject.platform = node->GetText();
         else if (strcmp(node->Name(), AnalyzeAllVsConfigsElementName) == 0)
-            ; // FIXME: Write some warning
+            guiProject.analyzeAllVsConfigs = node->GetText();
         else if (strcmp(node->Name(), AddonsElementName) == 0)
             temp.addons = readXmlStringList(node, "", AddonElementName, nullptr);
         else if (strcmp(node->Name(), TagsElementName) == 0)
@@ -1060,4 +1062,33 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;
     return true;
+}
+
+void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
+{
+    std::set<std::string> filenames;
+    for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+        if (it->cfg.empty()) {
+            ++it;
+            continue;
+        }
+        const ImportProject::FileSettings &fs = *it;
+        bool remove = false;
+        if (fs.cfg.compare(0,5,"Debug") != 0)
+            remove = true;
+        if (platform == Settings::Win64 && fs.platformType != platform)
+            remove = true;
+        else if ((platform == Settings::Win32A || platform == Settings::Win32W) && fs.platformType == Settings::Win64)
+            remove = true;
+        else if (fs.platformType != Settings::Win64 && platform == Settings::Win64)
+            remove = true;
+        else if (filenames.find(fs.filename) != filenames.end())
+            remove = true;
+        if (remove) {
+            it = fileSettings.erase(it);
+        } else {
+            filenames.insert(fs.filename);
+            ++it;
+        }
+    }
 }

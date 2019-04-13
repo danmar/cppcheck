@@ -877,24 +877,27 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
         std::size_t processedsize = 0;
         unsigned int c = 0;
-        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-            if (!_settings->library.markupFile(i->first)
-                || !_settings->library.processMarkupAfterCode(i->first)) {
-                returnValue += cppcheck.check(i->first);
-                processedsize += i->second;
-                if (!settings.quiet)
-                    reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
-                c++;
+        if (settings.project.fileSettings.empty()) {
+            for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+                if (!_settings->library.markupFile(i->first)
+                    || !_settings->library.processMarkupAfterCode(i->first)) {
+                    returnValue += cppcheck.check(i->first);
+                    processedsize += i->second;
+                    if (!settings.quiet)
+                        reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                    c++;
+                }
             }
-        }
+        } else {
 
-        // filesettings
-        c = 0;
-        for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
-            returnValue += cppcheck.check(fs);
-            ++c;
-            if (!settings.quiet)
-                reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+            // filesettings
+            c = 0;
+            for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
+                returnValue += cppcheck.check(fs);
+                ++c;
+                if (!settings.quiet)
+                    reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+            }
         }
 
         // second loop to parse all markup files which may not work until all

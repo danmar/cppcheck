@@ -405,32 +405,8 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            std::set<std::string> filenames;
             Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
-            for (std::list<ImportProject::FileSettings>::iterator it = p.fileSettings.begin(); it != p.fileSettings.end();) {
-                if (it->cfg.empty()) {
-                    ++it;
-                    continue;
-                }
-                const ImportProject::FileSettings &fs = *it;
-                bool remove = false;
-                if (fs.cfg.compare(0,5,"Debug") != 0)
-                    remove = true;
-                if (platform == Settings::Win64 && fs.platformType != platform)
-                    remove = true;
-                else if ((platform == Settings::Win32A || platform == Settings::Win32W) && fs.platformType == Settings::Win64)
-                    remove = true;
-                else if (fs.platformType != Settings::Win64 && platform == Settings::Win64)
-                    remove = true;
-                else if (filenames.find(fs.filename) != filenames.end())
-                    remove = true;
-                if (remove) {
-                    it = p.fileSettings.erase(it);
-                } else {
-                    filenames.insert(fs.filename);
-                    ++it;
-                }
-            }
+            p.selectOneVsConfig(platform);
         }
     } else {
         enableProjectActions(false);
