@@ -278,6 +278,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "    <tok "
                           << "fileIndex=\"" << tok->location.fileIndex << "\" "
                           << "linenr=\"" << tok->location.line << "\" "
+                          << "col=\"" << tok->location.col << "\" "
                           << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
                           << "/>" << std::endl;
                 }
@@ -577,31 +578,36 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     // [test.cpp:123]: (style) some problem [abc-someProblem]
                     const std::string line = results.substr(pos1, pos2-pos1);
 
-                    // Line must start with [filename:line]: (
+                    // Line must start with [filename:line:column]: (
                     const std::string::size_type loc1 = 1;
-                    const std::string::size_type loc2 = line.find(':');
-                    const std::string::size_type loc3 = line.find("]: (");
-                    if (loc2 == std::string::npos || loc3 == std::string::npos)
+                    const std::string::size_type loc4 = line.find("]");
+                    if (loc4 + 5 >= line.size() || line.compare(loc4, 3, "] (", 0, 3) != 0)
                         continue;
-                    if (!(loc1 < loc2 && loc2 < loc3))
+                    const std::string::size_type loc3 = line.rfind(':', loc4);
+                    if (loc3 == std::string::npos)
+                        continue;
+                    const std::string::size_type loc2 = line.rfind(':', loc3 - 1);
+                    if (loc2 == std::string::npos)
                         continue;
 
                     // Then there must be a (severity)
-                    const std::string::size_type sev1 = loc3 + 4;
+                    const std::string::size_type sev1 = loc4 + 3;
                     const std::string::size_type sev2 = line.find(")", sev1);
                     if (sev2 == std::string::npos)
                         continue;
 
                     // line must end with [addon-x]
                     const std::string::size_type id1 = line.rfind("[" + addonInfo.script + "-");
-                    if (id1 == std::string::npos || id1 < loc3)
+                    if (id1 == std::string::npos || id1 < sev2)
                         continue;
 
                     ErrorLogger::ErrorMessage errmsg;
 
                     const std::string filename = line.substr(loc1, loc2-loc1);
                     const int lineNumber = std::atoi(line.c_str() + loc2 + 1);
+                    const int column = std::atoi(line.c_str() + loc3 + 1);
                     errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+                    errmsg._callStack.back().col = column;
 
                     errmsg._id = line.substr(id1+1, line.size()-id1-2);
                     std::string text = line.substr(sev2 + 2, id1 - sev2 - 2);

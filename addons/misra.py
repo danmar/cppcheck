@@ -2003,30 +2003,20 @@ class MisraChecker:
             self.suppressionStats[ruleNum].append(location)
             return
         else:
-            id = 'misra-c2012-' + str(num1) + '.' + str(num2)
+            errorId = 'c2012-' + str(num1) + '.' + str(num2)
             severity = 'style'
             if ruleNum in self.ruleTexts:
-                errmsg = self.ruleTexts[ruleNum].text + ' [' + id + ']'
+                errmsg = self.ruleTexts[ruleNum].text
                 severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
-                errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
+                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
-            formattedMsg = cppcheckdata.reportError(args.template,
-                                                    callstack=[(location.file, location.linenr)],
-                                                    severity=severity,
-                                                    message = errmsg,
-                                                    errorId = id,
-                                                    suppressions = self.dumpfileSuppressions)
-            if formattedMsg:
-                if CLI:
-                    print(formattedMsg)
-                else:
-                    sys.stderr.write(formattedMsg)
-                    sys.stderr.write('\n')
-                if not severity in self.violations:
-                    self.violations[severity] = []
-                self.violations[severity].append(id)
+            cppcheckdata.reportErrorCli(location, severity, errmsg, 'misra', errorId)
+
+            if not severity in self.violations:
+                self.violations[severity] = []
+            self.violations[severity].append(errorId)
 
     def loadRuleTexts(self, filename):
         num1 = 0
