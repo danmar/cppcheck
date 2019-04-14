@@ -7,7 +7,7 @@ compiler:
 
 env:
   global:
-    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wshadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
+    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wabi -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
 #   unfortunately we need this to stay within 50min timelimit given by travis.
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
@@ -18,7 +18,7 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python-pygments qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
+ - travis_retry sudo apt-get install -qq python-pygments python-pytest qt5-default qt5-qmake qtbase5-dev qtcreator libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet
 
 matrix:
 # do notify immediately about it when a job of a build fails.
@@ -242,6 +242,10 @@ script:
   - qmake
   - make -s -j2
   - cd ../../
+# Testing cli
+ - cd test/cli
+ - python -m pytest test-helloworld.py
+ - cd ../..
 
 notifications:
   irc:

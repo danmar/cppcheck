@@ -14,7 +14,6 @@ DEBUG = ('-debug' in sys.argv)
 VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
 VERIFY_ACTUAL = []
-CLI = ('--cli' in sys.argv)
 
 def reportError(token, severity, msg, id):
     if id == 'debug' and DEBUG == False:
@@ -22,11 +21,7 @@ def reportError(token, severity, msg, id):
     if VERIFY:
         VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
     else:
-        msg = '[' + token.file + ':' + str(token.linenr) + ']: (' + severity + ') ' + msg + ' [misc-' + id + ']'
-        if CLI:
-            print(msg)
-        else:
-            sys.stderr.write(msg + '\n')
+        cppcheckdata.reportError(token, severity, msg, 'misc', id)
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):

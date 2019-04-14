@@ -36,13 +36,10 @@ struct Standards {
     enum cstd_t { C89, C99, C11, CLatest=C11 } c;
 
     /** C++ code standard */
-    enum cppstd_t { CPP03, CPP11, CPP14, CPPLatest=CPP14 } cpp;
-
-    /** Code is posix */
-    bool posix;
+    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPPLatest=CPP17 } cpp;
 
     /** This constructor clear all the variables **/
-    Standards() : c(C11), cpp(CPP14), posix(false) {}
+    Standards() : c(C11), cpp(CPP17) {}
 
     bool setC(const std::string& str) {
         if (str == "c89" || str == "C89") {
@@ -70,6 +67,10 @@ struct Standards {
         }
         if (str == "c++14" || str == "C++14") {
             cpp = CPP14;
+            return true;
+        }
+        if (str == "c++17" || str == "C++17") {
+            cpp = CPP17;
             return true;
         }
         return false;

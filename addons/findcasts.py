@@ -6,9 +6,10 @@
 import cppcheckdata
 import sys
 
-messages = set()
-
 for arg in sys.argv[1:]:
+    if arg.startswith('-'):
+        continue
+
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
 
@@ -17,6 +18,10 @@ for arg in sys.argv[1:]:
             print('Checking ' + arg + ', config "' + cfg.name + '"...')
         for token in cfg.tokenlist:
             if token.str != '(' or not token.astOperand1 or token.astOperand2:
+                continue
+
+            # Is it a lambda?
+            if token.astOperand1.str == '{':
                 continue
 
             # we probably have a cast.. if there is something inside the parentheses
@@ -33,8 +38,4 @@ for arg in sys.argv[1:]:
             if typetok.str == 'void':
                 continue
 
-            msg = '[' + token.file + ':' + str(
-                token.linenr) + '] (information) findcasts.py: found a cast\n'
-            if msg not in messages:
-                messages.add(msg)
-                sys.stderr.write(msg)
+            cppcheckdata.reportError(token, 'information', 'found a cast', 'findcasts', 'cast')

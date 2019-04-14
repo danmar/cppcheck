@@ -365,6 +365,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->link();
             if (tok)
                 tok = tok->next();
+            if (!tok)
+                return 0;
             if (tok->str() == ">" && level == 0)
                 return numberOfParameters;
             else if (tok->str() == "," && level == 0) {
@@ -2333,8 +2335,8 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
     std::vector<const Token *> & typeParametersInDeclaration)
 {
     typeParametersInDeclaration.clear();
-    const Token *closing = tok->previous()->findClosingBracket();
-    for (; tok && tok!= closing; tok = tok->next()) {
+    const Token *end = tok->previous()->findClosingBracket();
+    for (; tok && tok!= end; tok = tok->next()) {
         if (Token::simpleMatch(tok, "template <")) {
             const Token *closing = tok->next()->findClosingBracket();
             if (closing)

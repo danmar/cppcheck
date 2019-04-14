@@ -9,6 +9,7 @@ License: No restrictions, use this as you need.
 import xml.etree.ElementTree as ET
 import argparse
 from fnmatch import fnmatch
+import sys
 
 
 class Directive:
@@ -32,11 +33,12 @@ class Directive:
     str = None
     file = None
     linenr = None
+    col = 0
 
     def __init__(self, element):
         self.str = element.get('str')
         self.file = element.get('file')
-        self.linenr = element.get('linenr')
+        self.linenr = int(element.get('linenr'))
 
 
 class ValueType:
@@ -128,6 +130,7 @@ class Token:
         astOperand2        ast operand2
         file               file name
         linenr             line number
+        col                column
 
     To iterate through all tokens use such code:
     @code
@@ -183,6 +186,7 @@ class Token:
 
     file = None
     linenr = None
+    col = None
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -221,7 +225,8 @@ class Token:
                 self.isLogicalOp = True
         self.linkId = element.get('link')
         self.link = None
-        self.varId = element.get('varId')
+        if element.get('varId'):
+            self.varId = int(element.get('varId'))
         self.variableId = element.get('variable')
         self.variable = None
         self.functionId = element.get('function')
@@ -241,7 +246,8 @@ class Token:
         self.astOperand2Id = element.get('astOperand2')
         self.astOperand2 = None
         self.file = element.get('file')
-        self.linenr = element.get('linenr')
+        self.linenr = int(element.get('linenr'))
+        self.col = int(element.get('col'))
 
     def setId(self, IdMap):
         self.scope = IdMap[self.scopeId]
@@ -791,63 +797,11 @@ def ArgumentParser():
     return parser
 
 
-def reportError(template, callstack=(), severity='', message='', errorId='', suppressions=None, outputFunc=None):
-    """
-        Format an error message according to the template.
-
-        :param template: format string, or 'gcc', 'vs' or 'edit'.
-        :param callstack: e.g. [['file1.cpp',10],['file2.h','20'], ... ]
-        :param severity: e.g. 'error', 'warning' ...
-        :param errorId: message ID.
-        :param message: message text.
-    """
-    # expand predefined templates
-    if template == 'gcc':
-        template = '{file}:{line}: {severity}: {message}'
-    elif template == 'vs':
-        template = '{file}({line}): {severity}: {message}'
-    elif template == 'edit':
-        template = '{file} +{line}: {severity}: {message}'
-    elif template == 'xml':
-        return reportErrorXML(callstack, severity, message, errorId, suppressions, outputFunc)
-    # compute 'callstack}, {file} and {line} replacements
-    stack = ' -> '.join('[' + f + ':' + str(l) + ']' for (f, l) in callstack)
-    file = callstack[-1][0]
-    line = str(callstack[-1][1])
-
-    if suppressions is not None and any(suppression.isMatch(file, line, message, errorId) for suppression in suppressions):
-        return None
-
-    outputLine = template.format(callstack=stack, file=file, line=line,
-                           severity=severity, message=message, id=errorId)
-    if outputFunc is not None:
-        outputFunc(outputLine)
-    # format message
-    return outputLine
-
-def reportErrorXML(callstack, severity, message, errorId, suppressions, outputFunc):
-    """
-        Format an error message according to cppcheck's xml format.
-
-        :param callstack: e.g. [['file1.cpp',10],['file2.h','20'], ... ]
-        :param severity: e.g. 'error', 'warning' ...
-        :param id: message ID.
-        :param message: message text.
-    """
-    node = ET.Element("error")
-    if errorId:
-        node.set("id", errorId)
-    if severity:
-        node.set("severity", severity)
-    node.set("msg", message)
-
-    file = callstack[-1][0]
-    line = str(callstack[-1][1])
-    if suppressions is not None and any(suppression.isMatch(file, line, message, errorId) for suppression in suppressions):
-        return None
-
-    for filename, lineno in callstack:
-        location = ET.Element("location", { 'file': filename, 'line': str(lineno) } )
-        node.append(location)
-
-    return ET.tostring(node, encoding="unicode")
+def reportError(location, severity, message, addon, errorId):
+    if '--cli' in sys.argv:
+        errout = sys.stdout
+        loc = '[%s:%i:%i]' % (location.file, location.linenr, location.col)
+    else:
+        errout = sys.errout
+        loc = '[%s:%i]' % (location.file, location.linenr)
+    errout.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))

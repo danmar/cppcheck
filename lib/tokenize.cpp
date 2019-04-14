@@ -4696,7 +4696,7 @@ void Tokenizer::dump(std::ostream &out) const
     // tokens..
     out << "  <tokenlist>" << std::endl;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << '\"';
+        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\" col=\"" << tok->col() << "\"";
         out << " str=\"" << ErrorLogger::toxml(tok->str()) << '\"';
         out << " scope=\"" << tok->scope() << '\"';
         if (tok->isName()) {
@@ -4767,15 +4767,15 @@ void Tokenizer::simplifyHeaders()
     // TODO : can we remove anything in headers here? Like unused declarations.
     // Maybe if --dump is used we want to have _everything_.
 
-    if (mSettings->checkHeaders && !mSettings->removeUnusedTemplates && !mSettings->removeUnusedIncludedTemplates)
+    if (mSettings->checkHeaders && mSettings->checkUnusedTemplates)
         // Default=full analysis. All information in the headers are kept.
         return;
 
     const bool checkHeaders = mSettings->checkHeaders;
-    const bool removeUnusedIncludedFunctions = mSettings->checkHeaders;
-    const bool removeUnusedIncludedClasses   = mSettings->checkHeaders;
-    const bool removeUnusedTemplates = mSettings->removeUnusedTemplates;
-    const bool removeUnusedIncludedTemplates = mSettings->checkHeaders || mSettings->removeUnusedIncludedTemplates;
+    const bool removeUnusedIncludedFunctions = !mSettings->checkHeaders;
+    const bool removeUnusedIncludedClasses   = !mSettings->checkHeaders;
+    const bool removeUnusedIncludedTemplates = !mSettings->checkUnusedTemplates || !mSettings->checkHeaders;
+    const bool removeUnusedTemplates = !mSettings->checkUnusedTemplates;
 
     // We want to remove selected stuff from the headers but not *everything*.
     // The intention here is to not damage the analysis of the source file.
@@ -9040,7 +9040,7 @@ void Tokenizer::findGarbageCode() const
             if (!Token::Match(tok->next(), "( !!)"))
                 syntaxError(tok);
             if (tok->str() != "for") {
-                if (isGarbageExpr(tok->next(), tok->linkAt(1)))
+                if (isGarbageExpr(tok->next(), tok->linkAt(1), mSettings->standards.cpp>=Standards::cppstd_t::CPP17))
                     syntaxError(tok);
             }
         }
@@ -9197,12 +9197,12 @@ void Tokenizer::findGarbageCode() const
 }
 
 
-bool Tokenizer::isGarbageExpr(const Token *start, const Token *end)
+bool Tokenizer::isGarbageExpr(const Token *start, const Token *end, bool allowSemicolon)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->isControlFlowKeyword())
             return true;
-        if (tok->str() == ";")
+        if (!allowSemicolon && tok->str() == ";")
             return true;
         if (tok->str() == "{")
             tok = tok->link();

@@ -59,12 +59,14 @@ static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 namespace {
     struct AddonInfo {
-        std::string script;
+        std::string name;
+        std::string scriptFile;
         std::string args;
 
-        std::string getAddonInfo(const std::string &fileName) {
+        std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
             if (!endsWith(fileName, ".json", 5)) {
-                script = fileName;
+                name = fileName;
+                scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
                 return "";
             }
             std::ifstream fin(fileName);
@@ -81,10 +83,30 @@ namespace {
                 for (const picojson::value &v : obj["args"].get<picojson::array>())
                     args += " " + v.get<std::string>();
             }
-            script = obj["script"].get<std::string>();
+            name = obj["script"].get<std::string>();
+            scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
             return "";
         }
     };
+}
+
+static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
+{
+    const std::string cmd = "python " + addonInfo.scriptFile + " --cli" + addonInfo.args + " " + dumpFile;
+
+#ifdef _WIN32
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+    if (!pipe)
+        return "";
+    char buffer[1024];
+    std::string result;
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
+        result += buffer;
+    }
+    return result;
 }
 
 static std::vector<std::string> split(const std::string &str, const std::string &sep)
@@ -278,6 +300,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "    <tok "
                           << "fileIndex=\"" << tok->location.fileIndex << "\" "
                           << "linenr=\"" << tok->location.line << "\" "
+                          << "col=\"" << tok->location.col << "\" "
                           << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
                           << "/>" << std::endl;
                 }
@@ -552,12 +575,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             for (const std::string &addon : mSettings.addons) {
                 struct AddonInfo addonInfo;
-                const std::string errmsg = addonInfo.getAddonInfo(addon);
+                const std::string errmsg = addonInfo.getAddonInfo(addon, mSettings.exename);
                 if (!errmsg.empty()) {
                     reportOut(errmsg);
                     continue;
                 }
-                const std::string &results = executeAddon(addonInfo.script, addonInfo.args, dumpFile);
+                const std::string &results = executeAddon(addonInfo, dumpFile);
                 for (std::string::size_type pos = 0; pos < results.size();) {
                     const std::string::size_type pos2 = results.find("\n", pos);
                     if (pos2 == std::string::npos)
@@ -577,40 +600,46 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     // [test.cpp:123]: (style) some problem [abc-someProblem]
                     const std::string line = results.substr(pos1, pos2-pos1);
 
-                    // Line must start with [filename:line]: (
+                    // Line must start with [filename:line:column]: (
                     const std::string::size_type loc1 = 1;
-                    const std::string::size_type loc2 = line.find(':');
-                    const std::string::size_type loc3 = line.find("]: (");
-                    if (loc2 == std::string::npos || loc3 == std::string::npos)
+                    const std::string::size_type loc4 = line.find("]");
+                    if (loc4 + 5 >= line.size() || line.compare(loc4, 3, "] (", 0, 3) != 0)
                         continue;
-                    if (!(loc1 < loc2 && loc2 < loc3))
+                    const std::string::size_type loc3 = line.rfind(':', loc4);
+                    if (loc3 == std::string::npos)
+                        continue;
+                    const std::string::size_type loc2 = line.rfind(':', loc3 - 1);
+                    if (loc2 == std::string::npos)
                         continue;
 
                     // Then there must be a (severity)
-                    const std::string::size_type sev1 = loc3 + 4;
+                    const std::string::size_type sev1 = loc4 + 3;
                     const std::string::size_type sev2 = line.find(")", sev1);
                     if (sev2 == std::string::npos)
                         continue;
 
                     // line must end with [addon-x]
-                    const std::string::size_type id1 = line.rfind("[" + addonInfo.script + "-");
-                    if (id1 == std::string::npos || id1 < loc3)
+                    const std::string::size_type id1 = line.rfind("[" + addonInfo.name + "-");
+                    if (id1 == std::string::npos || id1 < sev2)
                         continue;
 
                     ErrorLogger::ErrorMessage errmsg;
 
                     const std::string filename = line.substr(loc1, loc2-loc1);
                     const int lineNumber = std::atoi(line.c_str() + loc2 + 1);
+                    const int column = std::atoi(line.c_str() + loc3 + 1);
                     errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+                    errmsg._callStack.back().col = column;
 
                     errmsg._id = line.substr(id1+1, line.size()-id1-2);
-                    std::string text = line.substr(loc3 + 11, id1 - loc3 - 11);
+                    std::string text = line.substr(sev2 + 2, id1 - sev2 - 2);
                     if (text[0] == ' ')
                         text = text.substr(1);
                     if (endsWith(text, " ", 1))
                         text = text.erase(text.size() - 1);
                     errmsg.setmsg(text);
-                    errmsg._severity = Severity::fromString(line.substr(sev1, sev2-sev1));
+                    const std::string sev = line.substr(sev1, sev2-sev1);
+                    errmsg._severity = Severity::fromString(sev);
                     if (errmsg._severity == Severity::SeverityType::none)
                         continue;
                     errmsg.file0 = filename;
@@ -990,26 +1019,6 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 #endif
     }
 #endif
-}
-
-std::string CppCheck::executeAddon(const std::string &addon, const std::string &args, const std::string &dumpFile)
-{
-    const std::string addonFile = "addons/" + addon + ".py";
-    const std::string cmd = "python " + addonFile + " --cli" + args + " " + dumpFile;
-
-#ifdef _WIN32
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
-#else
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-#endif
-    if (!pipe)
-        return "";
-    char buffer[1024];
-    std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
-        result += buffer;
-    }
-    return result;
 }
 
 Settings &CppCheck::settings()

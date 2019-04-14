@@ -1161,6 +1161,36 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         return endPar;
     }
 
+    if (cpp && Token::Match(tok, "if|switch (")) {
+        Token *semicolon = nullptr;
+        Token *tok2;
+        for (tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
+            if (tok2->str() == ";") {
+                if (semicolon)
+                    break;
+                semicolon = tok2;
+            }
+            if (tok2->str() == "(")
+                tok2 = tok2->link();
+        }
+        if (semicolon && tok2 == tok->linkAt(1)) {
+            tok2 = skipDecl(tok->tokAt(2));
+            Token *init1 = tok2;
+            AST_state state1(cpp);
+            compileExpression(tok2, state1);
+
+            tok2 = semicolon->next();
+            Token *expr1 = tok2;
+            AST_state state2(cpp);
+            compileExpression(tok2, state2);
+
+            semicolon->astOperand1(findAstTop(init1, semicolon->previous()));
+            semicolon->astOperand2(findAstTop(expr1, tok2));
+            tok->next()->astOperand1(tok);
+            tok->next()->astOperand2(semicolon);
+        }
+    }
+
     if (Token::simpleMatch(tok, "( {"))
         return tok;
 

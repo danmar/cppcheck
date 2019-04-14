@@ -498,6 +498,12 @@ union misra_19_2 { }; // 19.2
 #define int short // 20.4
 #undef X  // 20.5
 
+#define M_20_7_1(A)  (A+1) // 20.7
+#define M_20_7_2(A,B)  (1+AB+2) // no warning
+#define M_20_7_3(A)  ((A)+A) // 20.7
+
+#define STRINGIFY(a) (#a) // 20.7 20.10
+
 #else1 // 20.13
 
 #ifdef A>1

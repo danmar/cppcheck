@@ -68,6 +68,22 @@ public:
         return mAnalyzeAllVsConfigs;
     }
 
+    bool getCheckHeaders() const {
+        return mCheckHeaders;
+    }
+
+    void setCheckHeaders(bool b) {
+        mCheckHeaders = b;
+    }
+
+    bool getCheckUnusedTemplates() const {
+        return mCheckUnusedTemplates;
+    }
+
+    void setCheckUnusedTemplates(bool b) {
+        mCheckUnusedTemplates = b;
+    }
+
     /**
     * @brief Get list of include directories.
     * @return list of directories.
@@ -164,6 +180,14 @@ public:
 
     QStringList getTags() const {
         return mTags;
+    }
+
+    int getMaxCtuDepth() const {
+        return mMaxCtuDepth;
+    }
+
+    void setMaxCtuDepth(int maxCtuDepth) {
+        mMaxCtuDepth = maxCtuDepth;
     }
 
     /**
@@ -286,7 +310,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    void readAnalyzeAllVsConfigs(QXmlStreamReader &reader);
+    bool readBool(QXmlStreamReader &reader);
+
+    int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -376,6 +402,12 @@ private:
      */
     bool mAnalyzeAllVsConfigs;
 
+    /** Check code in headers */
+    bool mCheckHeaders;
+
+    /** Check code in unused templates */
+    bool mCheckUnusedTemplates;
+
     /**
      * @brief List of include directories used to search include files.
      */
@@ -431,6 +463,9 @@ private:
      * @brief Warning tags
      */
     QStringList mTags;
+
+    /** Max CTU depth */
+    int mMaxCtuDepth;
 };
 /// @}
 #endif  // PROJECT_FILE_H

@@ -62,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>25</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -137,6 +137,7 @@
      <addaction name="mActionCpp03"/>
      <addaction name="mActionCpp11"/>
      <addaction name="mActionCpp14"/>
+     <addaction name="mActionCpp17"/>
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
@@ -156,7 +157,6 @@
     <addaction name="separator"/>
     <addaction name="menuC_standard"/>
     <addaction name="menuCpp_standard"/>
-    <addaction name="mActionPosix"/>
     <addaction name="separator"/>
     <addaction name="mActionAutoDetectLanguage"/>
     <addaction name="mActionEnforceCpp"/>
@@ -809,6 +809,14 @@
    </property>
    <property name="text">
     <string>Check configuration (defines, includes)</string>
+   </property>
+  </action>
+  <action name="mActionCpp17">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++17</string>
    </property>
   </action>
  </widget>

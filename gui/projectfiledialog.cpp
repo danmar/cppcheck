@@ -240,6 +240,9 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
+    mUI.mCheckHeaders->setChecked(projectFile->getCheckHeaders());
+    mUI.mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
+    mUI.mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     const QString platform = projectFile->getPlatform();
@@ -304,6 +307,9 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setBuildDir(getBuildDir());
     projectFile->setImportProject(getImportProject());
     projectFile->setAnalyzeAllVsConfigs(mUI.mChkAllVsConfigs->isChecked());
+    projectFile->setCheckHeaders(mUI.mCheckHeaders->isChecked());
+    projectFile->setCheckUnusedTemplates(mUI.mCheckUnusedTemplates->isChecked());
+    projectFile->setMaxCtuDepth(mUI.mMaxCtuDepth->value());
     projectFile->setIncludes(getIncludePaths());
     projectFile->setDefines(getDefines());
     projectFile->setUndefines(getUndefines());
