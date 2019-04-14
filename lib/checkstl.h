@@ -62,6 +62,7 @@ public:
         CheckStl checkStl(tokenizer, settings, errorLogger);
         checkStl.erase();
         checkStl.if_find();
+        checkStl.checkFindInsert();
         checkStl.iterators();
         checkStl.mismatchingContainers();
         checkStl.missingComparison();
@@ -131,6 +132,8 @@ public:
 
     /** if (a.find(x)) - possibly incorrect condition */
     void if_find();
+
+    void checkFindInsert();
 
     /**
      * Suggest using empty() instead of checking size() against zero for containers.
@@ -202,6 +205,7 @@ private:
     void invalidPointerError(const Token* tok, const std::string& func, const std::string& pointer_name);
     void stlBoundariesError(const Token* tok);
     void if_findError(const Token* tok, bool str);
+    void checkFindInsertError(const Token *tok);
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
 
@@ -239,6 +243,7 @@ private:
         c.stlBoundariesError(nullptr);
         c.if_findError(nullptr, false);
         c.if_findError(nullptr, true);
+        c.checkFindInsertError(nullptr);
         c.string_c_strError(nullptr);
         c.string_c_strReturn(nullptr);
         c.string_c_strParam(nullptr, 0);
