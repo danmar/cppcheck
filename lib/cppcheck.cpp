@@ -66,7 +66,7 @@ namespace {
         std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
             if (!endsWith(fileName, ".json", 5)) {
                 name = fileName;
-                scriptFile = Path::getPathFromFilename(exename) + "/addons/" + fileName + ".py";
+                scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
                 return "";
             }
             std::ifstream fin(fileName);
@@ -84,7 +84,7 @@ namespace {
                     args += " " + v.get<std::string>();
             }
             name = obj["script"].get<std::string>();
-            scriptFile = Path::getPathFromFilename(exename) + "/addons/" + fileName + ".py";
+            scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
             return "";
         }
     };
