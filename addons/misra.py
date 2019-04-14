@@ -2012,7 +2012,7 @@ class MisraChecker:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
-            cppcheckdata.reportErrorCli(location, severity, errmsg, 'misra', errorId)
+            cppcheckdata.reportError(location, severity, errmsg, 'misra', errorId)
 
             if not severity in self.violations:
                 self.violations[severity] = []

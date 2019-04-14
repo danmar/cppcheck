@@ -21,7 +21,7 @@ def reportError(token, severity, msg, id):
     if VERIFY:
         VERIFY_ACTUAL.append(str(token.linenr) + ':cert-' + id)
     else:
-        cppcheckdata.reportErrorCli(token, severity, msg, 'cert', id)
+        cppcheckdata.reportError(token, severity, msg, 'cert', id)
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):

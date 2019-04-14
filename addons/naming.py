@@ -35,7 +35,7 @@ for arg in sys.argv[1:]:
         validate_regex(RE_FUNCTIONNAME)
 
 def reportError(token, severity, msg, errorId):
-    cppcheckdata.reportErrorCli(token, severity, msg, 'naming', errorId)
+    cppcheckdata.reportError(token, severity, msg, 'naming', errorId)
 
 for arg in sys.argv[1:]:
     if not arg.endswith('.dump'):

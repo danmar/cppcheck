@@ -797,9 +797,11 @@ def ArgumentParser():
     return parser
 
 
-def reportErrorCli(location, severity, message, addon, errorId):
+def reportError(location, severity, message, addon, errorId):
     if '--cli' in sys.argv:
         errout = sys.stdout
+        loc = '[%s:%i:%i]' % (location.file, location.linenr, location.col)
     else:
         errout = sys.errout
-    errout.write('[%s:%i:%i] (%s) %s [%s-%s]\n' % (location.file, location.linenr, location.col, severity, message, addon, errorId))
+        loc = '[%s:%i]' % (location.file, location.linenr)
+    errout.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))

@@ -8,7 +8,7 @@ import cppcheckdata
 import sys
 
 def reportError(token, severity, msg, id):
-	cppcheckdata.reportErrorCli(token, severity, msg, 'threadsafety', id)
+    cppcheckdata.reportError(token, severity, msg, 'threadsafety', id)
 
 
 def checkstatic(data):
