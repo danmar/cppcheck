@@ -1003,7 +1003,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     std::list<std::string> suppressions;
     Settings temp;
 
-    guiProject.analyzeAllVsConfigs = false;
+    guiProject.analyzeAllVsConfigs.clear();
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib))
