@@ -125,4 +125,13 @@ def test_project_relative_path():
     assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
 
+def test_project_absolute_path():
+    prjpath = os.path.join(os.getcwd(), '1-helloworld')
+    ret, stdout, stderr = cppcheck('--project=%s' % (os.path.join(prjpath, 'helloworld.vcxproj')))
+    filename = os.path.join(prjpath, 'main.c')
+    assert ret == 0
+    assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
+
+
 
