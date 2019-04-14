@@ -108,7 +108,7 @@ def test_basepath_absolute_path():
     assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
-def test_project_local_path():
+def test_vs_project_local_path():
     cwd = os.getcwd()
     os.chdir('1-helloworld')
     ret, stdout, stderr = cppcheck('--project=helloworld.vcxproj')
@@ -117,7 +117,7 @@ def test_project_local_path():
     assert getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
-def test_project_relative_path():
+def test_vs_project_relative_path():
     prjpath = '1-helloworld'
     ret, stdout, stderr = cppcheck('--project=%s' % (os.path.join(prjpath, 'helloworld.vcxproj')))
     filename = os.path.join(prjpath, 'main.c')
@@ -125,7 +125,7 @@ def test_project_relative_path():
     assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
 
-def test_project_absolute_path():
+def test_vs_project_absolute_path():
     prjpath = os.path.join(os.getcwd(), '1-helloworld')
     ret, stdout, stderr = cppcheck('--project=%s' % (os.path.join(prjpath, 'helloworld.vcxproj')))
     filename = os.path.join(prjpath, 'main.c')
@@ -133,5 +133,29 @@ def test_project_absolute_path():
     assert getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
 
+def test_cppcheck_project_local_path():
+    cwd = os.getcwd()
+    os.chdir('1-helloworld')
+    ret, stdout, stderr = cppcheck('--platform=win64 --project=helloworld.cppcheck')
+    os.chdir(cwd)
+    assert ret == 0
+    assert getVsConfigs(stdout, 'main.c') == 'Debug|x64'
+    assert stderr == '[main.c:5]: (error) Division by zero.\n'
+
+def test_cppcheck_project_relative_path():
+    prjpath = '1-helloworld'
+    ret, stdout, stderr = cppcheck('--platform=win64 --project=%s' % (os.path.join(prjpath, 'helloworld.cppcheck')))
+    filename = os.path.join(prjpath, 'main.c')
+    assert ret == 0
+    assert getVsConfigs(stdout, filename) == 'Debug|x64'
+    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
+
+def test_cppcheck_project_absolute_path():
+    prjpath = os.path.join(os.getcwd(), '1-helloworld')
+    ret, stdout, stderr = cppcheck('--platform=win64 --project=%s' % (os.path.join(prjpath, 'helloworld.cppcheck')))
+    filename = os.path.join(prjpath, 'main.c')
+    assert ret == 0
+    assert getVsConfigs(stdout, filename) == 'Debug|x64'
+    assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
 
 
