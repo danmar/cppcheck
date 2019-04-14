@@ -120,6 +120,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool def = false;
     bool maxconfigs = false;
 
+    mSettings->exename = argv[0];
+
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             if (std::strcmp(argv[i], "--version") == 0) {

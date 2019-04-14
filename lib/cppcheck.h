@@ -180,12 +180,6 @@ private:
     void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
 
     /**
-     * @brief Execute a given addon
-     * @return results in std::string
-     */
-    std::string executeAddon(const std::string &addon, const std::string &args, const std::string &dumpFile);
-
-    /**
      * @brief Errors and warnings are directed here.
      *
      * @param msg Errors messages are normally in format

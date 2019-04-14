@@ -37,6 +37,32 @@ def test_absolute_path():
     assert stdout == 'Checking %s/main.c ...\n' % (prjpath)
     assert stderr == '[%s/main.c:5]: (error) Division by zero.\n' % (prjpath)
 
+def test_addon_local_path():
+    cwd = os.getcwd()
+    os.chdir('1-helloworld')
+    ret, stdout, stderr = cppcheck('--addon=misra .')
+    os.chdir(cwd)
+    assert ret == 0
+    assert stdout == 'Checking main.c ...\n'
+    assert stderr == ('[main.c:5]: (error) Division by zero.\n'
+                      '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
+
+def test_addon_absolute_path():
+    prjpath = '%s/1-helloworld' % (os.getcwd())
+    ret, stdout, stderr = cppcheck('--addon=misra %s' % (prjpath))
+    assert ret == 0
+    assert stdout == 'Checking %s/main.c ...\n' % (prjpath)
+    assert stderr == ('[%s/main.c:5]: (error) Division by zero.\n'
+                      '[%s/main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (prjpath, prjpath))
+
+def test_addon_relative_path():
+    prjpath = '1-helloworld'
+    ret, stdout, stderr = cppcheck('--addon=misra %s' % (prjpath))
+    assert ret == 0
+    assert stdout == 'Checking %s/main.c ...\n' % (prjpath)
+    assert stderr == ('[%s/main.c:5]: (error) Division by zero.\n'
+                      '[%s/main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (prjpath, prjpath))
+
 def test_basepath_relative_path():
     prjpath = '1-helloworld'
     ret, stdout, stderr = cppcheck('%s -rp=%s' % (prjpath, prjpath))

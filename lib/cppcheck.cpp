@@ -59,12 +59,14 @@ static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
 namespace {
     struct AddonInfo {
-        std::string script;
+        std::string name;
+        std::string scriptFile;
         std::string args;
 
-        std::string getAddonInfo(const std::string &fileName) {
+        std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
             if (!endsWith(fileName, ".json", 5)) {
-                script = fileName;
+                name = fileName;
+                scriptFile = Path::getPathFromFilename(exename) + "/addons/" + fileName + ".py";
                 return "";
             }
             std::ifstream fin(fileName);
@@ -81,10 +83,30 @@ namespace {
                 for (const picojson::value &v : obj["args"].get<picojson::array>())
                     args += " " + v.get<std::string>();
             }
-            script = obj["script"].get<std::string>();
+            name = obj["script"].get<std::string>();
+            scriptFile = Path::getPathFromFilename(exename) + "/addons/" + fileName + ".py";
             return "";
         }
     };
+}
+
+static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
+{
+    const std::string cmd = "python " + addonInfo.scriptFile + " --cli" + addonInfo.args + " " + dumpFile;
+
+#ifdef _WIN32
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+    if (!pipe)
+        return "";
+    char buffer[1024];
+    std::string result;
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
+        result += buffer;
+    }
+    return result;
 }
 
 static std::vector<std::string> split(const std::string &str, const std::string &sep)
@@ -553,12 +575,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             for (const std::string &addon : mSettings.addons) {
                 struct AddonInfo addonInfo;
-                const std::string errmsg = addonInfo.getAddonInfo(addon);
+                const std::string errmsg = addonInfo.getAddonInfo(addon, mSettings.exename);
                 if (!errmsg.empty()) {
                     reportOut(errmsg);
                     continue;
                 }
-                const std::string &results = executeAddon(addonInfo.script, addonInfo.args, dumpFile);
+                const std::string &results = executeAddon(addonInfo, dumpFile);
                 for (std::string::size_type pos = 0; pos < results.size();) {
                     const std::string::size_type pos2 = results.find("\n", pos);
                     if (pos2 == std::string::npos)
@@ -597,7 +619,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                         continue;
 
                     // line must end with [addon-x]
-                    const std::string::size_type id1 = line.rfind("[" + addonInfo.script + "-");
+                    const std::string::size_type id1 = line.rfind("[" + addonInfo.name + "-");
                     if (id1 == std::string::npos || id1 < sev2)
                         continue;
 
@@ -997,26 +1019,6 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 #endif
     }
 #endif
-}
-
-std::string CppCheck::executeAddon(const std::string &addon, const std::string &args, const std::string &dumpFile)
-{
-    const std::string addonFile = "addons/" + addon + ".py";
-    const std::string cmd = "python " + addonFile + " --cli" + args + " " + dumpFile;
-
-#ifdef _WIN32
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
-#else
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-#endif
-    if (!pipe)
-        return "";
-    char buffer[1024];
-    std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
-        result += buffer;
-    }
-    return result;
 }
 
 Settings &CppCheck::settings()
