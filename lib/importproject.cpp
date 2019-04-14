@@ -353,7 +353,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
                 return;
             }
         }
-        else if( obj.find( "arguments" ) != obj.end() ) {
+        else if( obj.find( "command" ) != obj.end() ) {
             if( obj[ "command" ].is< std::string >() ) {
                 comm << obj[ "command" ].get< std::string >();
             }
