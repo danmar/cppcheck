@@ -82,7 +82,7 @@ def test_gui_project_loads_compile_commands_2():
                     '  <root name="."/>'
                     '  <importproject>compile_commands.json</importproject>'
                     '  <exclude>'
-                    '    <path name="' + os.path.join(os.getcwd(), 'proj2', 'b') + '"/>'
+                    '    <path name="' + os.path.join(os.getcwd(), 'proj2', 'b').replace('\\', '/') + '"/>'
                     '    </exclude>'
                     '</project>')
     f = open('proj2/test.cppcheck', 'wt')
