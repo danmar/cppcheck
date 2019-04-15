@@ -1239,21 +1239,25 @@ void CheckStl::if_findError(const Token *tok, bool str)
 
 static std::pair<const Token*, const Token*> isMapFind(const Token * tok)
 {
-    if (!Token::simpleMatch(tok, "."))
+    if (!Token::simpleMatch(tok, "("))
         return {};
-    if (!astIsContainer(tok->astOperand1()))
+    if (!Token::simpleMatch(tok->astOperand1(), "."))
         return {};
-    if (!Token::Match(tok->astOperand2(), "find|count ("))
+    if (!astIsContainer(tok->astOperand1()->astOperand1()))
         return {};
-    if (!tok->next()->astOperand2())
+    if (!Token::Match(tok->astOperand1(), ". find|count ("))
         return {};
-    return {tok->astOperand1(), tok->next()->astOperand2()};
+    if (!tok->astOperand2())
+        return {};
+    return {tok->astOperand1()->astOperand1(), tok->astOperand2()};
 }
 
 static const Token * skipLocalVars(const Token* tok)
 {
     if (!tok)
         return tok;
+    if (Token::simpleMatch(tok, "{"))
+        return skipLocalVars(tok->next());
     const Scope * scope = tok->scope();
 
     const Token * top = tok->astTop();
@@ -1339,7 +1343,7 @@ void CheckStl::checkFindInsert()
             const Token * condTok = tok->next()->astOperand2();
             const Token * containerTok;
             const Token * keyTok;
-            std::tie(containerTok, keyTok) = isMapFind(condTok);
+            std::tie(containerTok, keyTok) = isMapFind(condTok->astOperand1());
             if (!containerTok)
                 continue;
 
@@ -1349,7 +1353,7 @@ void CheckStl::checkFindInsert()
                 continue;
 
             if (Token::simpleMatch(thenTok->link(), "} else {")) {
-                const Token * valueTok2 = findInsertValue(thenTok, containerTok, keyTok, mSettings->library);
+                const Token * valueTok2 = findInsertValue(thenTok->link()->tokAt(2), containerTok, keyTok, mSettings->library);
                 if (!valueTok2)
                     continue;
                 if (isSameExpression(true, true, valueTok, valueTok2, mSettings->library, true, true)) {
