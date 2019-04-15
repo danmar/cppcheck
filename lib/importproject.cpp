@@ -1007,9 +1007,10 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     guiProject.analyzeAllVsConfigs.clear();
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib))
+        if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib)) {
             temp.basePaths.push_back(joinRelativePath(path, node->Attribute(RootPathNameAttrib)));
-        else if (strcmp(node->Name(), BuildDirElementName) == 0)
+            temp.relativePaths = true;
+        } else if (strcmp(node->Name(), BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
         else if (strcmp(node->Name(), IncludeDirElementName) == 0)
             temp.includePaths = readXmlStringList(node, path, DirElementName, DirNameAttrib);
@@ -1050,6 +1051,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             return false;
     }
     settings->basePaths = temp.basePaths;
+    settings->relativePaths |= temp.relativePaths;
     settings->buildDir = temp.buildDir;
     settings->includePaths = temp.includePaths;
     settings->userDefines = temp.userDefines;

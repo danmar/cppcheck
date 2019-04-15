@@ -163,6 +163,7 @@ def test_suppress_project():
     assert ret == 0
     assert stderr == ''
 
+    # Absolute path
     ret, stdout, stderr = cppcheck('--project=%s' % (os.path.join(os.getcwd(), '1-helloworld', 'test.cppcheck')))
     assert ret == 0
     assert stderr == ''

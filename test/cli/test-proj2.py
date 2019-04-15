@@ -77,17 +77,41 @@ def test_gui_project_loads_compile_commands_2():
     assert stdout.find('Checking %s ...' % (file1)) >= 0
     assert stdout.find('Checking %s ...' % (file2)) < 0
 
-def test_gui_project_loads_compile_commands_2():
-    create_compile_commands()
-    exclude_path_1 = os.path.join(os.getcwd(), 'proj2', 'b').replace('\\', '/')
-    create_gui_project_file('proj2/test.cppcheck',
-                            import_project='compile_commands.json',
-                            exclude_paths=[exclude_path_1])
-    ret, stdout, stderr = cppcheck('--project=proj2/test.cppcheck')
-    cwd = os.getcwd()
-    file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
-    file2 = os.path.join(cwd, 'proj2', 'b', 'b.c') # Excluded by test.cppcheck
+
+def test_gui_project_loads_relative_vs_solution():
+    create_gui_project_file('test.cppcheck', import_project='proj2/proj2.sln')
+    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    file1 = os.path.join('proj2', 'a', 'a.c')
+    file2 = os.path.join('proj2', 'b', 'b.c')
     assert ret == 0
-    assert stdout.find('Checking %s ...' % (file1)) >= 0
-    assert stdout.find('Checking %s ...' % (file2)) < 0
+    assert stdout.find('Checking %s Debug|Win32...' % (file1)) >= 0
+    assert stdout.find('Checking %s Debug|x64...' % (file1)) >= 0
+    assert stdout.find('Checking %s Release|Win32...' % (file1)) >= 0
+    assert stdout.find('Checking %s Release|x64...' % (file1)) >= 0
+    assert stdout.find('Checking %s Debug|Win32...' % (file2)) >= 0
+    assert stdout.find('Checking %s Debug|x64...' % (file2)) >= 0
+    assert stdout.find('Checking %s Release|Win32...' % (file2)) >= 0
+    assert stdout.find('Checking %s Release|x64...' % (file2)) >= 0
+
+def test_gui_project_loads_absolute_vs_solution():
+    create_gui_project_file('test.cppcheck', import_project=os.path.join(os.getcwd(),'proj2', 'proj2.sln').replace('\\', '/'))
+    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    file1 = os.path.join(os.getcwd(), 'proj2', 'a', 'a.c')
+    file2 = os.path.join(os.getcwd(), 'proj2', 'b', 'b.c')
+    print(stdout)
+    assert ret == 0
+    assert stdout.find('Checking %s Debug|Win32...' % (file1)) >= 0
+    assert stdout.find('Checking %s Debug|x64...' % (file1)) >= 0
+    assert stdout.find('Checking %s Release|Win32...' % (file1)) >= 0
+    assert stdout.find('Checking %s Release|x64...' % (file1)) >= 0
+    assert stdout.find('Checking %s Debug|Win32...' % (file2)) >= 0
+    assert stdout.find('Checking %s Debug|x64...' % (file2)) >= 0
+    assert stdout.find('Checking %s Release|Win32...' % (file2)) >= 0
+    assert stdout.find('Checking %s Release|x64...' % (file2)) >= 0
+
+def test_gui_project_loads_relative_vs_solution():
+    create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln')
+    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    assert stderr == ('[a/a.c:1]: (error) Division by zero.\n'
+                      '[b/b.c:1]: (error) Division by zero.\n')
 
