@@ -1,27 +1,9 @@
 
 # python -m pytest test-helloworld.py
 
-import logging
 import os
 import re
-import subprocess
-
-# Run Cppcheck with args
-def cppcheck(args):
-    if os.path.isfile('../../bin/debug/cppcheck.exe'):
-        cmd = '../../bin/debug/cppcheck.exe ' + args
-    elif os.path.isfile('../../../bin/debug/cppcheck.exe'):
-        cmd = '../../../bin/debug/cppcheck.exe ' + args
-    elif os.path.isfile('../../cppcheck'):
-        cmd = '../../cppcheck ' + args
-    else:
-        cmd = '../../../cppcheck ' + args
-    logging.info(cmd)
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
-    return p.returncode, stdout, stderr
+from testutils import create_gui_project_file, cppcheck
 
 # Run Cppcheck from project path
 def cppcheck_local(args):
@@ -51,39 +33,6 @@ def getVsConfigs(stdout, filename):
             ret.append(res.group(1))
     ret.sort()
     return ' '.join(ret)
-
-# Create Cppcheck project file
-def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None):
-    cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
-                    '<project version="1">\n')
-    if root_path:
-        cppcheck_xml += '  <root name="' + root_path + '"/>\n'
-    if import_project:
-        cppcheck_xml += '  <importproject>' + import_project + '</importproject>\n'
-    if paths:
-        cppcheck_xml += '  <paths>\n'
-        for path in paths:
-            cppcheck_xml += '    <dir name="' + path + '"/>\n'
-        cppcheck_xml += '  </paths>\n'
-    if exclude_paths:
-        cppcheck_xml += '  <exclude>\n'
-        for path in exclude_paths:
-            cppcheck_xml += '    <path name="' + path + '"/>\n'
-        cppcheck_xml += '  </exclude>\n'
-    if suppressions:
-        cppcheck_xml += '  <suppressions>\n'
-        for suppression in suppressions:
-            cppcheck_xml += '    <suppression'
-            if 'fileName' in suppression:
-                cppcheck_xml += ' fileName="' + suppression['fileName'] + '"'
-            cppcheck_xml += '>' + suppression['id'] + '</suppression>\n'
-        cppcheck_xml += '  </suppressions>\n'
-    cppcheck_xml += '</project>\n'
-
-    f = open(project_file, 'wt')
-    f.write(cppcheck_xml)
-    f.close()
-
 
 def test_relative_path():
     ret, stdout, stderr = cppcheck('1-helloworld')
