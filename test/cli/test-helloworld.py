@@ -160,3 +160,39 @@ def test_cppcheck_project_absolute_path():
     assert getVsConfigs(stdout, filename) == 'Debug|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
 
+def test_suppress_command_line():
+    prjpath = getRelativeProjectPath()
+    ret, stdout, stderr = cppcheck('--suppress=zerodiv:%s %s' % (os.path.join(prjpath, 'main.c'), prjpath))
+    assert ret == 0
+    assert stderr == ''
+
+    prjpath = getAbsoluteProjectPath()
+    ret, stdout, stderr = cppcheck('--suppress=zerodiv:%s %s' % (os.path.join(prjpath, 'main.c'), prjpath))
+    assert ret == 0
+    assert stderr == ''
+
+def test_suppress_project():
+    cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>'
+                    '<project version="1">'
+                    '    <paths>'
+                    '        <dir name="."/>'
+                    '    </paths>'
+                    '    <suppressions>'
+                    '        <suppression fileName="main.c">zerodiv</suppression>'
+                    '    </suppressions>'
+                    '</project>')
+    project_file = os.path.join('1-helloworld', 'test.cppcheck')
+    f = open(project_file, 'wt')
+    f.write(cppcheck_xml)
+    f.close()
+
+    # Relative path
+    ret, stdout, stderr = cppcheck('--project=%s' % (project_file))
+    assert ret == 0
+    assert stderr == ''
+
+    ret, stdout, stderr = cppcheck('--project=%s' % (os.path.join(os.getcwd(), '1-helloworld', 'test.cppcheck')))
+    assert ret == 0
+    assert stderr == ''
+
+
