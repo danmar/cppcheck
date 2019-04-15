@@ -61,6 +61,7 @@ public:
         checkCondition.alwaysTrueFalse();
         checkCondition.duplicateCondition();
         checkCondition.checkPointerAdditionResultNotNull();
+        checkCondition.checkDuplicateConditionalAssign();
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
@@ -115,6 +116,8 @@ public:
     /** @brief Check if pointer addition result is NULL '(ptr + 1) == NULL' */
     void checkPointerAdditionResultNotNull();
 
+    void checkDuplicateConditionalAssign();
+
 private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
@@ -151,6 +154,8 @@ private:
     void invalidTestForOverflow(const Token* tok, bool result);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
 
+    void duplicateConditionalAssignError(const Token *tok);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
 
@@ -172,6 +177,7 @@ private:
         c.alwaysTrueFalseError(nullptr, nullptr);
         c.invalidTestForOverflow(nullptr, false);
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
+        c.duplicateConditionalAssignError(nullptr);
     }
 
     static std::string myName() {

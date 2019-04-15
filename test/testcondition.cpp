@@ -114,6 +114,7 @@ private:
         TEST_CASE(checkConditionIsAlwaysTrueOrFalseInsideIfWhile);
         TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
+        TEST_CASE(duplicateConditionalAssign);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -3067,6 +3068,42 @@ private:
               "  if (ptr + 1 != 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison is wrong. Result of 'ptr+1' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.\n", errout.str());
+    }
+
+    void duplicateConditionalAssign() {
+        check("void f(int& x, int y) {\n"
+              "    if (x == y)\n"
+              "        x = y;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x != y)\n"
+              "        x = y;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x == y)\n"
+              "        x = y;\n"
+              "    else\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x != y)\n"
+              "        x = y;\n"
+              "    else\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int& x, int y) {\n"
+              "    if (x == y)\n"
+              "        x = y + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
