@@ -120,3 +120,11 @@ def test_gui_project_loads_relative_vs_solution():
     ret, stdout, stderr = cppcheck('--project=test.cppcheck')
     assert stderr == '[a/a.c:1]: (error) Division by zero.\n'
 
+def test_gui_project_loads_absolute_vs_solution():
+    create_gui_project_file('test.cppcheck',
+                            root_path=os.path.join(os.getcwd(), 'proj2').replace('\\', '/'),
+                            import_project=os.path.join(os.getcwd(), 'proj2', 'proj2.sln').replace('\\', '/'))
+    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    assert stderr == ('[a/a.c:1]: (error) Division by zero.\n'
+                      '[b/b.c:1]: (error) Division by zero.\n')
+
