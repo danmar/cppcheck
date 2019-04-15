@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="1">
-    <root name="."/>
-    <importproject>compile_commands.json</importproject>
-    <exclude>
-        <path name="b"/>
-    </exclude>
-</project>
-

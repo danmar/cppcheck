@@ -75,11 +75,25 @@ def test_project_1():
 
 def test_project_2():
     create_compile_commands(os.path.join(os.getcwd(), 'proj2'))
-    ret, stdout, stderr = cppcheck('--project=proj2/proj2-exclude.cppcheck')
+
+    # create cppcheck gui project file
+    cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>'
+                    '<project version="1">'
+                    '  <root name="."/>'
+                    '  <importproject>compile_commands.json</importproject>'
+                    '  <exclude>'
+                    '    <path name="' + os.path.join(os.getcwd(), 'proj2', 'b') + '"/>'
+                    '    </exclude>'
+                    '</project>')
+    f = open('proj2/test.cppcheck', 'wt')
+    f.write(cppcheck_xml)
+    f.close()
+
+    ret, stdout, stderr = cppcheck('--project=proj2/test.cppcheck')
     cwd = os.getcwd()
     file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
-    file2 = os.path.join(cwd, 'proj2', 'b', 'b.c') # Excluded by proj2-exclude.cppcheck
+    file2 = os.path.join(cwd, 'proj2', 'b', 'b.c') # Excluded by test.cppcheck
     assert ret == 0
     assert stdout.find('Checking %s ...' % (file1)) >= 0
-    #assert stdout.find('Checking %s ...' % (file2)) < 0
+    assert stdout.find('Checking %s ...' % (file2)) < 0
 
