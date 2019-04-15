@@ -63,7 +63,7 @@ def test_absolute_path():
     assert stdout.find('Checking %s ...' % (file1)) >= 0
     assert stdout.find('Checking %s ...' % (file2)) >= 0
 
-def test_project_1():
+def test_gui_project_loads_compile_commands_1():
     create_compile_commands(os.path.join(os.getcwd(), 'proj2'))
     ret, stdout, stderr = cppcheck('--project=proj2/proj2.cppcheck')
     cwd = os.getcwd()
@@ -73,7 +73,7 @@ def test_project_1():
     assert stdout.find('Checking %s ...' % (file1)) >= 0
     assert stdout.find('Checking %s ...' % (file2)) >= 0
 
-def test_project_2():
+def test_gui_project_loads_compile_commands_2():
     create_compile_commands(os.path.join(os.getcwd(), 'proj2'))
 
     # create cppcheck gui project file
