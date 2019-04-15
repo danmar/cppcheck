@@ -1051,6 +1051,18 @@ std::vector<const Token *> getArguments(const Token *ftok)
     return arguments;
 }
 
+const Token *findLambdaStartToken(const Token *last)
+{
+    if (!last || last->str() != "}")
+        return nullptr;
+    const Token* tok = last->link();
+    if (Token::simpleMatch(tok->astParent(), "("))
+        tok = tok->astParent();
+    if (Token::simpleMatch(tok->astParent(), "["))
+        return tok->astParent();
+    return nullptr;
+}
+
 const Token *findLambdaEndToken(const Token *first)
 {
     if (!first || first->str() != "[")

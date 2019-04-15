@@ -2215,8 +2215,7 @@ private:
 
     void simplifyTypedef106() { // ticket #3619 (segmentation fault)
         const char code[] = "typedef void f ();\ntypedef { f }";
-        tok(code);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
