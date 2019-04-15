@@ -30,7 +30,7 @@
 #include <cstring>
 #include <fstream>
 #include <utility>
-
+#include <sstream>
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
@@ -340,7 +340,30 @@ void ImportProject::importCompileCommands(std::istream &istr)
             dirpath += '/';
 
         const std::string directory = dirpath;
-        const std::string command = obj["command"].get<std::string>();
+
+        std::ostringstream comm;
+        if( obj.find( "arguments" ) != obj.end() ) {
+            if( obj[ "arguments" ].is< picojson::array >() ) {
+                for( const picojson::value& arg : obj[ "arguments" ].get< picojson::array >() ) {
+                    if( arg.is< std::string >() ) {
+                        comm << arg.get< std::string >() << " ";
+                    }
+                }
+            }
+            else {
+                return;
+            }
+        }
+        else if( obj.find( "command" ) != obj.end() ) {
+            if( obj[ "command" ].is< std::string >() ) {
+                comm << obj[ "command" ].get< std::string >();
+            }
+        }
+        else {
+            return;
+        }
+
+        const std::string command = comm.str();
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
         // Accept file?
