@@ -15,6 +15,40 @@ def create_compile_commands():
     f = open(COMPILE_COMMANDS_JSON, 'wt')
     f.write(json.dumps(j))
 
+
+# Create Cppcheck project file
+def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None):
+    cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+                    '<project version="1">\n')
+    if root_path:
+        cppcheck_xml += '  <root name="' + root_path + '"/>\n'
+    if import_project:
+        cppcheck_xml += '  <importproject>' + import_project + '</importproject>\n'
+    if paths:
+        cppcheck_xml += '  <paths>\n'
+        for path in paths:
+            cppcheck_xml += '    <dir name="' + path + '"/>\n'
+        cppcheck_xml += '  </paths>\n'
+    if exclude_paths:
+        cppcheck_xml += '  <exclude>\n'
+        for path in exclude_paths:
+            cppcheck_xml += '    <path name="' + path + '"/>\n'
+        cppcheck_xml += '  </exclude>\n'
+    if suppressions:
+        cppcheck_xml += '  <suppressions>\n'
+        for suppression in suppressions:
+            cppcheck_xml += '    <suppression'
+            if 'fileName' in suppression:
+                cppcheck_xml += ' fileName="' + suppression['fileName'] + '"'
+            cppcheck_xml += '>' + suppression['id'] + '</suppression>\n'
+        cppcheck_xml += '  </suppressions>\n'
+    cppcheck_xml += '</project>\n'
+
+    f = open(project_file, 'wt')
+    f.write(cppcheck_xml)
+    f.close()
+
+
 # Run Cppcheck with args
 def cppcheck(args):
     if os.path.isfile('../../bin/debug/cppcheck.exe'):
@@ -83,20 +117,24 @@ def test_gui_project_loads_compile_commands_1():
 
 def test_gui_project_loads_compile_commands_2():
     create_compile_commands()
+    exclude_path_1 = os.path.join(os.getcwd(), 'proj2', 'b').replace('\\', '/')
+    create_gui_project_file('proj2/test.cppcheck',
+                            import_project='compile_commands.json',
+                            exclude_paths=[exclude_path_1])
+    ret, stdout, stderr = cppcheck('--project=proj2/test.cppcheck')
+    cwd = os.getcwd()
+    file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
+    file2 = os.path.join(cwd, 'proj2', 'b', 'b.c') # Excluded by test.cppcheck
+    assert ret == 0
+    assert stdout.find('Checking %s ...' % (file1)) >= 0
+    assert stdout.find('Checking %s ...' % (file2)) < 0
 
-    # create cppcheck gui project file
-    cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>'
-                    '<project version="1">'
-                    '  <root name="."/>'
-                    '  <importproject>compile_commands.json</importproject>'
-                    '  <exclude>'
-                    '    <path name="' + os.path.join(os.getcwd(), 'proj2', 'b').replace('\\', '/') + '"/>'
-                    '    </exclude>'
-                    '</project>')
-    f = open('proj2/test.cppcheck', 'wt')
-    f.write(cppcheck_xml)
-    f.close()
-
+def test_gui_project_loads_compile_commands_2():
+    create_compile_commands()
+    exclude_path_1 = os.path.join(os.getcwd(), 'proj2', 'b').replace('\\', '/')
+    create_gui_project_file('proj2/test.cppcheck',
+                            import_project='compile_commands.json',
+                            exclude_paths=[exclude_path_1])
     ret, stdout, stderr = cppcheck('--project=proj2/test.cppcheck')
     cwd = os.getcwd()
     file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')

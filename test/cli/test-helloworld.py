@@ -52,6 +52,38 @@ def getVsConfigs(stdout, filename):
     ret.sort()
     return ' '.join(ret)
 
+# Create Cppcheck project file
+def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None):
+    cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+                    '<project version="1">\n')
+    if root_path:
+        cppcheck_xml += '  <root name="' + root_path + '"/>\n'
+    if import_project:
+        cppcheck_xml += '  <importproject>' + import_project + '</importproject>\n'
+    if paths:
+        cppcheck_xml += '  <paths>\n'
+        for path in paths:
+            cppcheck_xml += '    <dir name="' + path + '"/>\n'
+        cppcheck_xml += '  </paths>\n'
+    if exclude_paths:
+        cppcheck_xml += '  <exclude>\n'
+        for path in exclude_paths:
+            cppcheck_xml += '    <path name="' + path + '"/>\n'
+        cppcheck_xml += '  </exclude>\n'
+    if suppressions:
+        cppcheck_xml += '  <suppressions>\n'
+        for suppression in suppressions:
+            cppcheck_xml += '    <suppression'
+            if 'fileName' in suppression:
+                cppcheck_xml += ' fileName="' + suppression['fileName'] + '"'
+            cppcheck_xml += '>' + suppression['id'] + '</suppression>\n'
+        cppcheck_xml += '  </suppressions>\n'
+    cppcheck_xml += '</project>\n'
+
+    f = open(project_file, 'wt')
+    f.write(cppcheck_xml)
+    f.close()
+
 
 def test_relative_path():
     ret, stdout, stderr = cppcheck('1-helloworld')
@@ -172,19 +204,10 @@ def test_suppress_command_line():
     assert stderr == ''
 
 def test_suppress_project():
-    cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>'
-                    '<project version="1">'
-                    '    <paths>'
-                    '        <dir name="."/>'
-                    '    </paths>'
-                    '    <suppressions>'
-                    '        <suppression fileName="main.c">zerodiv</suppression>'
-                    '    </suppressions>'
-                    '</project>')
     project_file = os.path.join('1-helloworld', 'test.cppcheck')
-    f = open(project_file, 'wt')
-    f.write(cppcheck_xml)
-    f.close()
+    create_gui_project_file(project_file,
+                            paths=['.'],
+                            suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
 
     # Relative path
     ret, stdout, stderr = cppcheck('--project=%s' % (project_file))
