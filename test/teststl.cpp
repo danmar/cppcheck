@@ -3846,7 +3846,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
     }
 
-    void findInsert() {
+    void findInsert()
+    {
         check("void f1(std::set<unsigned>& s, unsigned x) {\n"
               "    if (s.find(x) == s.end()) {\n"
               "        s.insert(x);\n"

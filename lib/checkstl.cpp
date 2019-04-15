@@ -1237,7 +1237,7 @@ void CheckStl::if_findError(const Token *tok, bool str)
         reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find() is an iterator, but it is not properly checked.", CWE398, false);
 }
 
-static std::pair<const Token*, const Token*> isMapFind(const Token * tok)
+static std::pair<const Token *, const Token *> isMapFind(const Token *tok)
 {
     if (!Token::simpleMatch(tok, "("))
         return {};
@@ -1252,23 +1252,23 @@ static std::pair<const Token*, const Token*> isMapFind(const Token * tok)
     return {tok->astOperand1()->astOperand1(), tok->astOperand2()};
 }
 
-static const Token * skipLocalVars(const Token* tok)
+static const Token *skipLocalVars(const Token *tok)
 {
     if (!tok)
         return tok;
     if (Token::simpleMatch(tok, "{"))
         return skipLocalVars(tok->next());
-    const Scope * scope = tok->scope();
+    const Scope *scope = tok->scope();
 
-    const Token * top = tok->astTop();
+    const Token *top = tok->astTop();
     if (!top) {
-        const Token * semi = Token::findsimplematch(tok, ";");
+        const Token *semi = Token::findsimplematch(tok, ";");
         if (!semi)
             return tok;
         if (!Token::Match(semi->previous(), "%var% ;"))
             return tok;
-        const Token * varTok = semi->previous();
-        const Variable * var = varTok->variable();
+        const Token *varTok = semi->previous();
+        const Variable *var = varTok->variable();
         if (!var)
             return tok;
         if (var->nameToken() != varTok)
@@ -1276,15 +1276,15 @@ static const Token * skipLocalVars(const Token* tok)
         return skipLocalVars(semi->next());
     }
     if (Token::Match(top, "%assign%")) {
-        const Token * varTok = top->astOperand1();
+        const Token *varTok = top->astOperand1();
         if (!Token::Match(varTok, "%var%"))
             return tok;
-        const Variable * var = varTok->variable();
+        const Variable *var = varTok->variable();
         if (!var)
             return tok;
         if (var->scope() != scope)
             return tok;
-        const Token * endTok = nextAfterAstRightmostLeaf(top);
+        const Token *endTok = nextAfterAstRightmostLeaf(top);
         if (!endTok)
             return tok;
         return skipLocalVars(endTok->next());
@@ -1292,14 +1292,14 @@ static const Token * skipLocalVars(const Token* tok)
     return tok;
 }
 
-static const Token * findInsertValue(const Token* tok, const Token * containerTok, const Token * keyTok, const Library& library)
+static const Token *findInsertValue(const Token *tok, const Token *containerTok, const Token *keyTok, const Library &library)
 {
-    const Token* startTok = skipLocalVars(tok);
-    const Token * top = startTok->astTop();
+    const Token *startTok = skipLocalVars(tok);
+    const Token *top = startTok->astTop();
 
-    const Token * icontainerTok = nullptr;
-    const Token * ikeyTok = nullptr;
-    const Token * ivalueTok = nullptr;
+    const Token *icontainerTok = nullptr;
+    const Token *ikeyTok = nullptr;
+    const Token *ivalueTok = nullptr;
     if (Token::simpleMatch(top, "=") && Token::simpleMatch(top->astOperand1(), "[")) {
         icontainerTok = top->astOperand1()->astOperand1();
         ikeyTok = top->astOperand1()->astOperand2();
@@ -1307,7 +1307,7 @@ static const Token * findInsertValue(const Token* tok, const Token * containerTo
     }
     if (Token::simpleMatch(top, "(") && Token::Match(top->astOperand1(), ". insert|emplace (")) {
         icontainerTok = top->astOperand1()->astOperand1();
-        const Token * itok = top->astOperand1()->tokAt(2)->astOperand2();
+        const Token *itok = top->astOperand1()->tokAt(2)->astOperand2();
         if (Token::simpleMatch(itok, ",")) {
             ikeyTok = itok->astOperand1();
             ivalueTok = itok->astOperand2();
@@ -1317,7 +1317,8 @@ static const Token * findInsertValue(const Token* tok, const Token * containerTo
     }
     if (!ikeyTok || !icontainerTok)
         return nullptr;
-    if (isSameExpression(true, true, containerTok, icontainerTok, library, true, false) && isSameExpression(true, true, keyTok, ikeyTok, library, true, true)) {
+    if (isSameExpression(true, true, containerTok, icontainerTok, library, true, false) &&
+        isSameExpression(true, true, keyTok, ikeyTok, library, true, true)) {
         if (ivalueTok)
             return ivalueTok;
         else
@@ -1331,29 +1332,30 @@ void CheckStl::checkFindInsert()
     if (!mSettings->isEnabled(Settings::PERFORMANCE))
         return;
 
-    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+    const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
             if (!Token::simpleMatch(tok->next()->link(), ") {"))
                 continue;
             if (!Token::Match(tok->next()->astOperand2(), "%comp%"))
                 continue;
-            const Token * condTok = tok->next()->astOperand2();
-            const Token * containerTok;
-            const Token * keyTok;
+            const Token *condTok = tok->next()->astOperand2();
+            const Token *containerTok;
+            const Token *keyTok;
             std::tie(containerTok, keyTok) = isMapFind(condTok->astOperand1());
             if (!containerTok)
                 continue;
 
-            const Token * thenTok = tok->next()->link()->next();
-            const Token * valueTok = findInsertValue(thenTok, containerTok, keyTok, mSettings->library);
+            const Token *thenTok = tok->next()->link()->next();
+            const Token *valueTok = findInsertValue(thenTok, containerTok, keyTok, mSettings->library);
             if (!valueTok)
                 continue;
 
             if (Token::simpleMatch(thenTok->link(), "} else {")) {
-                const Token * valueTok2 = findInsertValue(thenTok->link()->tokAt(2), containerTok, keyTok, mSettings->library);
+                const Token *valueTok2 =
+                    findInsertValue(thenTok->link()->tokAt(2), containerTok, keyTok, mSettings->library);
                 if (!valueTok2)
                     continue;
                 if (isSameExpression(true, true, valueTok, valueTok2, mSettings->library, true, true)) {
@@ -1368,9 +1370,9 @@ void CheckStl::checkFindInsert()
 
 void CheckStl::checkFindInsertError(const Token *tok)
 {
-    reportError(tok, Severity::performance, "stlFindInsert", "Searching before insertion is not necessary.", CWE398, false);
+    reportError(
+        tok, Severity::performance, "stlFindInsert", "Searching before insertion is not necessary.", CWE398, false);
 }
-
 
 /**
  * Is container.size() slow?
