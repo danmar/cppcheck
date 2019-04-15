@@ -47,6 +47,7 @@ private:
         TEST_CASE(importCompileCommands2); // #8563
         TEST_CASE(importCompileCommands3); // check with existing trailing / in directory
         TEST_CASE(importCompileCommands4); // only accept certain file types
+	TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json 
         TEST_CASE(importCppcheckGuiProject);
     }
@@ -137,6 +138,17 @@ private:
         TestImporter importer;
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(0, importer.fileSettings.size());
+    }
+
+    void importCompileCommandsArgumentsSection() const {
+        const char json[] = "[ { \"directory\": \"/tmp/\","
+                            "\"arguments\": [\"gcc\", \"-c\", \"src.c\"],"
+                            "\"file\": \"src.c\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
 
     void importCompileCommandsNoCommandSection() const {
