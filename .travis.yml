@@ -244,7 +244,7 @@ script:
   - cd ../../
 # Testing cli
  - cd test/cli
- - python -m pytest test-helloworld.py
+ - python -m pytest test-*.py
  - cd ../..
 
 notifications:
