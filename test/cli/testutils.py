@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # Create Cppcheck project file
-def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None):
+def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None, addon=None):
     cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
                     '<project version="1">\n')
     if root_path:
@@ -29,6 +29,10 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
                 cppcheck_xml += ' fileName="' + suppression['fileName'] + '"'
             cppcheck_xml += '>' + suppression['id'] + '</suppression>\n'
         cppcheck_xml += '  </suppressions>\n'
+    if addon:
+        cppcheck_xml += '  <addons>\n'
+        cppcheck_xml += '    <addon>%s</addon>\n' % (addon)
+        cppcheck_xml += '  </addons>\n'
     cppcheck_xml += '</project>\n'
 
     f = open(project_file, 'wt')

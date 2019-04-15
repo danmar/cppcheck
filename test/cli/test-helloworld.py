@@ -81,6 +81,16 @@ def test_addon_relative_path():
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
                       '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
+def test_addon_relative_path():
+    project_file = '1-helloworld/test.cppcheck'
+    create_gui_project_file(project_file, paths=['.'], addon='misra')
+    ret, stdout, stderr = cppcheck('--project=%s' % (project_file))
+    filename = os.path.join('1-helloworld', 'main.c')
+    assert ret == 0
+    assert stdout == 'Checking %s ...\n' % (filename)
+    assert stderr == ('[%s:5]: (error) Division by zero.\n'
+                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+
 def test_basepath_relative_path():
     prjpath = getRelativeProjectPath()
     ret, stdout, stderr = cppcheck('%s -rp=%s' % (prjpath, prjpath))
