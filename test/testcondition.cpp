@@ -3070,7 +3070,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison is wrong. Result of 'ptr+1' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.\n", errout.str());
     }
 
-    void duplicateConditionalAssign() {
+    void duplicateConditionalAssign()
+    {
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
               "        x = y;\n"

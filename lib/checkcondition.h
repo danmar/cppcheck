@@ -118,7 +118,7 @@ public:
 
     void checkDuplicateConditionalAssign();
 
-private:
+  private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
     bool diag(const Token* tok, bool insert=true);

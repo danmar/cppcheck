@@ -1544,26 +1544,28 @@ void CheckCondition::checkDuplicateConditionalAssign()
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
             if (!Token::simpleMatch(tok->next()->link(), ") {"))
                 continue;
-            const Token * blockTok = tok->next()->link()->next();
-            const Token * condTok = tok->next()->astOperand2();
+            const Token *blockTok = tok->next()->link()->next();
+            const Token *condTok = tok->next()->astOperand2();
             if (!Token::Match(condTok, "==|!="))
                 continue;
             if (condTok->str() == "!=" && Token::simpleMatch(blockTok->link(), "} else {"))
                 continue;
             if (!blockTok->next())
                 continue;
-            const Token * assignTok = blockTok->next()->astTop();
+            const Token *assignTok = blockTok->next()->astTop();
             if (!Token::simpleMatch(assignTok, "="))
                 continue;
-            if (!isSameExpression(mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
+            if (!isSameExpression(
+                    mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
                 continue;
-            if (!isSameExpression(mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
+            if (!isSameExpression(
+                    mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
                 continue;
             duplicateConditionalAssignError(condTok);
         }
@@ -1572,6 +1574,6 @@ void CheckCondition::checkDuplicateConditionalAssign()
 
 void CheckCondition::duplicateConditionalAssignError(const Token *tok)
 {
-    reportError(tok, Severity::style, "duplicateConditionalAssign", "Duplicate expression for the condition and assignment.");
+    reportError(
+        tok, Severity::style, "duplicateConditionalAssign", "Duplicate expression for the condition and assignment.");
 }
-
