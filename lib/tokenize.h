@@ -761,6 +761,16 @@ private:
                                   const unsigned int scopeStartVarId,
                                   std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers);
 
+    void setVarIdStructMembers(Token **tok1,
+                               std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
+                               unsigned int *varId);
+
+    void setVarIdClassFunction(const std::string &classname,
+                               Token * const startToken,
+                               const Token * const endToken,
+                               const std::map<std::string, unsigned int> &varlist,
+                               std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
+                               unsigned int *varId_);
 
     /**
      * Simplify e.g. 'return(strncat(temp,"a",1));' into
