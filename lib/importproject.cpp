@@ -342,24 +342,21 @@ void ImportProject::importCompileCommands(std::istream &istr)
         const std::string directory = dirpath;
 
         std::ostringstream comm;
-        if( obj.find( "arguments" ) != obj.end() ) {
-            if( obj[ "arguments" ].is< picojson::array >() ) {
-                for( const picojson::value& arg : obj[ "arguments" ].get< picojson::array >() ) {
-                    if( arg.is< std::string >() ) {
+        if (obj.find("arguments") != obj.end()) {
+            if (obj[ "arguments" ].is< picojson::array >()) {
+                for (const picojson::value& arg : obj[ "arguments" ].get< picojson::array >()) {
+                    if (arg.is< std::string >()) {
                         comm << arg.get< std::string >() << " ";
                     }
                 }
-            }
-            else {
+            } else {
                 return;
             }
-        }
-        else if( obj.find( "command" ) != obj.end() ) {
-            if( obj[ "command" ].is< std::string >() ) {
+        } else if (obj.find("command") != obj.end()) {
+            if (obj[ "command" ].is< std::string >()) {
                 comm << obj[ "command" ].get< std::string >();
             }
-        }
-        else {
+        } else {
             return;
         }
 

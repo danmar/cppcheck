@@ -47,8 +47,8 @@ private:
         TEST_CASE(importCompileCommands2); // #8563
         TEST_CASE(importCompileCommands3); // check with existing trailing / in directory
         TEST_CASE(importCompileCommands4); // only accept certain file types
-	TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
-        TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json 
+        TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
+        TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
     }
 
