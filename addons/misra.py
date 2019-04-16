@@ -2016,7 +2016,7 @@ class MisraChecker:
 
             if not severity in self.violations:
                 self.violations[severity] = []
-            self.violations[severity].append(errorId)
+            self.violations[severity].append('misra-' + errorId)
 
     def loadRuleTexts(self, filename):
         num1 = 0
@@ -2316,8 +2316,11 @@ else:
                     convert = lambda text: int(text) if text.isdigit() else text
                     misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
                     for misra_id in sorted(rules_violated.keys(), key=misra_sort):
-                        num = misra_id[len("misra-c2012-"):]
-                        num = int(num[:num.index(".")]) * 100 + int(num[num.index(".")+1:])
+                        res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
+                        if res is None:
+                            num = 0
+                        else:
+                            num = int(res.group(1)) * 100 + int(res.group(2))
                         severity = '-'
                         if num in checker.ruleTexts:
                             severity = checker.ruleTexts[num].severity
