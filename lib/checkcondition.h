@@ -189,6 +189,7 @@ public:
                "- Mismatching assignment and comparison => comparison is always true/false\n"
                "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"
                "- Detect usage of | where & should be used\n"
+               "- Duplicate condition and assignment\n"
                "- Detect matching 'if' and 'else if' conditions\n"
                "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
                "- Opposite inner condition is always false\n"
