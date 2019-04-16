@@ -1424,6 +1424,9 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     if (unknownVarId)
         return Result(FwdAnalysis::Result::Type::BAILOUT);
 
+    if (mWhat == What::Reassign && isGlobalData(expr))
+        local = false;
+
     // In unused values checking we do not want to check assignments to
     // global data.
     if (mWhat == What::UnusedValue && isGlobalData(expr))
