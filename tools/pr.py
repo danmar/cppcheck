@@ -13,7 +13,7 @@ if response.status_code == 200:
     sha = j['head']['sha']
 
     subprocess.call('git checkout -b {}-{} master'.format(login, branch).split())
-    p = subprocess.call('git pull --rebase=true https://github.com/{}/cppcheck.git {}'.format(login, branch).split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen('git pull --rebase=true https://github.com/{}/cppcheck.git {}'.format(login, branch).split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
