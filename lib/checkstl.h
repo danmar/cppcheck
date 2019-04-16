@@ -275,6 +275,7 @@ private:
                "- for vectors: using iterator/pointer after push_back has been used\n"
                "- optimisation: use empty() instead of size() to guarantee fast code\n"
                "- suspicious condition when using find\n"
+               "- unnecessary searching in associative containers\n"
                "- redundant condition\n"
                "- common mistakes when using string::c_str()\n"
                "- useless calls of string and STL functions\n"
