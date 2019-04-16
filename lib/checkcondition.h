@@ -154,7 +154,7 @@ public:
     void invalidTestForOverflow(const Token* tok, bool result);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
 
-    void duplicateConditionalAssignError(const Token *tok);
+    void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
@@ -177,7 +177,7 @@ public:
         c.alwaysTrueFalseError(nullptr, nullptr);
         c.invalidTestForOverflow(nullptr, false);
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
-        c.duplicateConditionalAssignError(nullptr);
+        c.duplicateConditionalAssignError(nullptr, nullptr);
     }
 
     static std::string myName() {

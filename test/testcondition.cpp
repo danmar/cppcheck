@@ -3076,13 +3076,13 @@ private:
               "    if (x == y)\n"
               "        x = y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"
               "        x = y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
@@ -3090,7 +3090,7 @@ private:
               "    else\n"
               "        x = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Duplicate expression for the condition and assignment.\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"

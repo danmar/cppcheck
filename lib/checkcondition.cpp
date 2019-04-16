@@ -1567,13 +1567,16 @@ void CheckCondition::checkDuplicateConditionalAssign()
             if (!isSameExpression(
                     mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
                 continue;
-            duplicateConditionalAssignError(condTok);
+            duplicateConditionalAssignError(condTok, assignTok);
         }
     }
 }
 
-void CheckCondition::duplicateConditionalAssignError(const Token *tok)
+void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok)
 {
+    ErrorPath errors;
+    errors.emplace_back(assignTok, "Assignment to same expression in condition.");
+    errors.emplace_back(condTok, "");
     reportError(
-        tok, Severity::style, "duplicateConditionalAssign", "Duplicate expression for the condition and assignment.");
+        errors, Severity::style, "duplicateConditionalAssign", "Duplicate expression for the condition and assignment.", CWE398, false);
 }
