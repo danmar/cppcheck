@@ -243,9 +243,9 @@ script:
   - make -s -j2
   - cd ../../
 # Testing cli
- - cd test/cli
- - python -m pytest test-*.py
- - cd ../..
+  - cd test/cli
+  - python -m pytest test-*.py
+  - cd ../..
 
 notifications:
   irc:
