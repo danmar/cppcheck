@@ -1575,8 +1575,15 @@ void CheckCondition::checkDuplicateConditionalAssign()
 void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok)
 {
     ErrorPath errors;
-    errors.emplace_back(assignTok, "Assignment to same expression in condition.");
-    errors.emplace_back(condTok, "");
+    if (condTok && assignTok) {
+        if (condTok->str() == "==") {
+            errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "'");
+            errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "' is redundant");
+        } else {
+            errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "'");
+            errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "' is redundant");
+        }
+    }
     reportError(
         errors, Severity::style, "duplicateConditionalAssign", "Duplicate expression for the condition and assignment.", CWE398, false);
 }
