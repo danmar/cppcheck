@@ -4234,8 +4234,7 @@ private:
                       "  using namespace bar::baz;\n"
                       "  auto func(int arg) -> bar::quux {}\n"
                       "}");
-        // bar on line 3 should not have a varid
-        TODO_ASSERT_EQUALS(2, 3, db->mVariableList.size());
+        ASSERT_EQUALS(2, db->mVariableList.size());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
