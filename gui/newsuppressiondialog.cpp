@@ -2,7 +2,7 @@
 #include "ui_newsuppressiondialog.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
-
+#include "suppressions.h"
 
 NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     QDialog(parent),
@@ -41,7 +41,8 @@ Suppressions::Suppression NewSuppressionDialog::getSuppression() const
     if (ret.errorId.empty())
         ret.errorId = "*";
     ret.fileName = mUI->mTextFileName->text().toStdString();
-    ret.lineNumber = mUI->mTextLineNumber->text().toInt();
+    if (!mUI->mTextLineNumber->text().isEmpty())
+        ret.lineNumber = mUI->mTextLineNumber->text().toInt();
     ret.symbolName = mUI->mTextSymbolName->text().toStdString();
     return ret;
 }
