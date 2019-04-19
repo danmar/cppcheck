@@ -25,7 +25,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
-#include "../externals/picojson.h"
+#include <picojson.h>
 
 #include <cstring>
 #include <fstream>
