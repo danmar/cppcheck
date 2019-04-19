@@ -4,6 +4,7 @@ DEPENDPATH += .
 INCLUDEPATH += .
 OBJECTS_DIR = ../build
 MOC_DIR = ../build
+QT += testlib
 
 include(../common.pri)
 
