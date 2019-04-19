@@ -236,6 +236,15 @@ script:
   - echo $CXXFLAGS
   - make -s -j2
   - cd ../
+# Build gui/test
+  - cd gui/test
+  - qmake
+  - make
+  - filelist/test-filelist
+  - projectfile/test-projectfile
+  - translationhandler/test-translationhandler
+  - xmlreportv2/test-xmlreportv2
+  - cd ../..
 # Build triage
   - cd ./tools/triage
   - git clean -dfx .
