@@ -242,7 +242,6 @@ script:
   - make
   - filelist/test-filelist
   - projectfile/test-projectfile
-  - translationhandler/test-translationhandler
   - xmlreportv2/test-xmlreportv2
   - cd ../..
 # Build triage

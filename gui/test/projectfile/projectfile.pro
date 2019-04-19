@@ -4,7 +4,6 @@ DEPENDPATH += .
 INCLUDEPATH += .
 OBJECTS_DIR = ../build
 MOC_DIR = ../build
-QT += widgets testlib
 
 include(../common.pri)
 

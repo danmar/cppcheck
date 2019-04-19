@@ -1,6 +1,4 @@
-Qt += testlib
-QT += widgets
-QT += printsupport
+QT += testlib
 
 INCLUDEPATH += $${PWD}/..
 
