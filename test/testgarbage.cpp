@@ -245,6 +245,7 @@ private:
         TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorCase);
         TEST_CASE(syntaxErrorFuzzerCliType1);
+        TEST_CASE(cliCode);
         TEST_CASE(enumTrailingComma);
 
         TEST_CASE(nonGarbageCode1); // #8346
@@ -1660,6 +1661,16 @@ private:
         ASSERT_THROW(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), InternalError); // #9067
         ASSERT_THROW(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), InternalError); // #9068
         ASSERT_THROW(checkCode("void f() { x= y{ } name5 y[ ] + y ^ name5 ^ name5 for ( ( y y y && y y y && name5 ++ int )); }"), InternalError); // #9069
+    }
+
+    void cliCode() {
+        // #8913
+        ASSERT_THROW(checkCode("public ref class LibCecSharp : public CecCallbackMethods {\n"
+                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {} \n"
+                               "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
+                               "bool bReturn(false);\n"
+                               "}\n"
+                               "};\n"), InternalError);
     }
 
     void enumTrailingComma() {
