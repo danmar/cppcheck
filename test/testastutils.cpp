@@ -143,10 +143,10 @@ private:
 
     void isVariableChanged() {
         // #8211 - no lhs for >> , do not crash
-        isVariableChanged("void f() {\n"
-                          "  int b;\n"
-                          "  if (b) { (int)((INTOF(8))result >> b); }\n"
-                          "}", "if", "}");
+        ASSERT_THROW(isVariableChanged("void f() {\n"
+                                       "  int b;\n"
+                                       "  if (b) { (int)((INTOF(8))result >> b); }\n"
+                                       "}", "if", "}"), InternalError);;
     }
 
     bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool *inconclusive) {
