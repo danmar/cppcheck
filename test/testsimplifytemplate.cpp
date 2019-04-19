@@ -990,7 +990,7 @@ private:
                             "    return sizeof...(args);\n"
                             "  }();\n"
                             "}";
-        tok(code);
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantiation
