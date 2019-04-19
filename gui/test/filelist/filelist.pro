@@ -8,6 +8,8 @@ QT += testlib
 
 include(../common.pri)
 
+DEFINES += SRCDIR=\\\"$$PWD\\\"
+
 # tests
 SOURCES += testfilelist.cpp \
     ../../filelist.cpp \

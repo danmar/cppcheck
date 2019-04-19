@@ -7,6 +7,8 @@ MOC_DIR = ../build
 
 include(../common.pri)
 
+DEFINES += SRCDIR=\\\"$$PWD\\\"
+
 # tests
 SOURCES += testprojectfile.cpp \
     ../../projectfile.cpp
