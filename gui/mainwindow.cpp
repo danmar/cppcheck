@@ -30,7 +30,6 @@
 #include "mainwindow.h"
 
 #include "cppcheck.h"
-#include "path.h"
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
@@ -57,19 +56,6 @@ static QString getDataDir(const QSettings *settings)
     const QString dataDir = settings->value("DATADIR", QString()).toString();
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
     return dataDir.isEmpty() ? appPath : dataDir;
-}
-
-static QList<Suppressions::Suppression> getCheckSuppressions(const ProjectFile &project)
-{
-    QList<Suppressions::Suppression> ret;
-    const std::string projectFilePath = Path::getPathFromFilename(project.getFilename().toStdString());
-    foreach (Suppressions::Suppression suppression, project.getSuppressions()) {
-        if (!suppression.fileName.empty() && suppression.fileName[0]!='*' && !Path::isAbsolute(suppression.fileName))
-            suppression.fileName = Path::simplifyPath(projectFilePath) + suppression.fileName;
-
-        ret.append(suppression);
-    }
-    return ret;
 }
 
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
@@ -458,7 +444,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
-        mThread->setSuppressions(getCheckSuppressions(*mProjectFile));
+        mThread->setSuppressions(mProjectFile->getCheckSuppressions());
     }
     mThread->setProject(p);
     mThread->check(checkSettings);
@@ -857,8 +843,7 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-
-        foreach (const Suppressions::Suppression &suppression, getCheckSuppressions(*mProjectFile)) {
+        foreach (const Suppressions::Suppression &suppression, mProjectFile->getCheckSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 

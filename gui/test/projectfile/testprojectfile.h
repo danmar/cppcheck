@@ -27,4 +27,5 @@ private slots:
     void loadSimple();
     void loadSimpleWithIgnore();
     void loadSimpleNoroot();
+    void checkSuppressions();
 };
