@@ -215,6 +215,14 @@ void invalidFunctionArg()
     usleep(1000000);
 }
 
+void invalidFunctionArg_close(int fd)
+{
+    if (fd < 0) {
+        // cppcheck-suppress invalidFunctionArg
+        (void)close(fd);
+    }
+}
+
 void uninitvar(int fd)
 {
     int x1, x2, x3, x4;
