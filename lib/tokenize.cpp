@@ -1797,7 +1797,7 @@ namespace {
             return false;
         }
 
-        if (Token::Match(tok1->tokAt(-1), "struct|union|enum")) {
+        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum")) {
             // fixme
             return false;
         }
@@ -1975,6 +1975,16 @@ bool Tokenizer::simplifyUsing()
                         tok->deleteThis();
                         tok = usingStart;
                     }
+                }
+
+                // remove 'typename' and 'template'
+                else if (start->str() == "typename") {
+                    start->deleteThis();
+                    Token *temp = start;
+                    while (Token::Match(temp, "%name% ::"))
+                        temp = temp->tokAt(2);
+                    if (Token::Match(temp, "template %name%"))
+                        temp->deleteThis();
                 }
 
                 // Unfortunately we have to start searching from the beginning
