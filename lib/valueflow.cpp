@@ -2709,6 +2709,16 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     return result;
 }
 
+static bool hasDefault(const Variable& variable) 
+{
+    return variable.hasDefault();
+}
+
+std::size_t countDefaultArguments(const std::list<Variable>& argumentList)
+{
+     return std::count_if(argumentList.begin(), argumentList.end(), hasDefault);
+}
+
 static const Token *getLifetimeToken(const Token *tok, ValueFlow::Value::ErrorPath &errorPath, int depth = 20)
 {
     if (!tok)

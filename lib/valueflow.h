@@ -240,4 +240,6 @@ const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPat
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
+std::size_t countDefaultArguments(const std::list<Variable>& argumentList);
+
 #endif // valueflowH
