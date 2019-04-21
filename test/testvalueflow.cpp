@@ -103,7 +103,7 @@ private:
 
         TEST_CASE(valueFlowGlobalVar);
 
-		TEST_CASE(valueFlowGlobalConstVar);
+        TEST_CASE(valueFlowGlobalConstVar);
 
         TEST_CASE(valueFlowGlobalStaticVar);
 
@@ -3167,15 +3167,15 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
     }
 
-	void valueFlowGlobalConstVar() {
-		const char* code;
+    void valueFlowGlobalConstVar() {
+        const char* code;
 
-		code = "const int x = 321;\n"
-			   "void f() {\n"
-			   "  a = x;\n"
-			   "}";
-		ASSERT_EQUALS(true, testValueOfX(code, 3U, 321));
-	}
+        code = "const int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 321));
+    }
 
     void valueFlowGlobalStaticVar() {
         const char *code;
