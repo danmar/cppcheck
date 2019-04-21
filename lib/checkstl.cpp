@@ -32,6 +32,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <iostream>
 #include <utility>
 
 // Register this check class (by creating a static instance of it)
@@ -1245,11 +1246,19 @@ static std::pair<const Token *, const Token *> isMapFind(const Token *tok)
         return {};
     if (!astIsContainer(tok->astOperand1()->astOperand1()))
         return {};
+    const Token * contTok = tok->astOperand1()->astOperand1();
+    std::string typeName = Token::typeStr(contTok);
+    if (typeName.empty())
+        return {};
+    if (typeName.find("multi") != std::string::npos)
+        return {};
+    if (typeName[0] == 'Q')
+        return {};
     if (!Token::Match(tok->astOperand1(), ". find|count ("))
         return {};
     if (!tok->astOperand2())
         return {};
-    return {tok->astOperand1()->astOperand1(), tok->astOperand2()};
+    return {contTok, tok->astOperand2()};
 }
 
 static const Token *skipLocalVars(const Token *tok)

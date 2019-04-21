@@ -1751,6 +1751,79 @@ void Token::type(const ::Type *t)
         tokType(eName);
 }
 
+const ::Type *Token::typeOf(const Token *tok)
+{
+    if (Token::simpleMatch(tok, "return")) {
+        const Scope *scope = tok->scope();
+        if (!scope)
+            return nullptr;
+        const Function *function = scope->function;
+        if (!function)
+            return nullptr;
+        return function->retType;
+    } else if (Token::Match(tok, "%type%")) {
+        return tok->type();
+    } else if (Token::Match(tok, "%var%")) {
+        const Variable *var = tok->variable();
+        if (!var)
+            return nullptr;
+        return var->type();
+    } else if (Token::Match(tok, "%name%")) {
+        const Function *function = tok->function();
+        if (!function)
+            return nullptr;
+        return function->retType;
+    } else if (Token::simpleMatch(tok, "=")) {
+        return Token::typeOf(tok->astOperand1());
+    } else if (Token::simpleMatch(tok, ".")) {
+        return Token::typeOf(tok->astOperand2());
+    }
+    return nullptr;
+}
+
+std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
+{
+    if (Token::simpleMatch(tok, "return")) {
+        const Scope *scope = tok->scope();
+        if (!scope)
+            return {};
+        const Function *function = scope->function;
+        if (!function)
+            return {};
+        return {function->retDef, function->returnDefEnd()};
+    } else if (Token::Match(tok, "%type%")) {
+        return {tok, tok->next()};
+    } else if (Token::Match(tok, "%var%")) {
+        const Variable *var = tok->variable();
+        if (!var)
+            return {};
+        if (!var->typeStartToken() || !var->typeEndToken())
+            return {};
+        return {var->typeStartToken(), var->typeEndToken()->next()};
+    } else if (Token::Match(tok, "%name%")) {
+        const Function *function = tok->function();
+        if (!function)
+            return {};
+        return {function->retDef, function->returnDefEnd()};
+    } else if (Token::simpleMatch(tok, "=")) {
+        return Token::typeDecl(tok->astOperand1());
+    } else if (Token::simpleMatch(tok, ".")) {
+        return Token::typeDecl(tok->astOperand2());
+    } else {
+        const ::Type * t = typeOf(tok);
+        if (!t || !t->classDef)
+            return {};
+        return {t->classDef->next(), t->classDef->tokAt(2)};
+    }
+}
+std::string Token::typeStr(const Token* tok)
+{
+    std::pair<const Token*, const Token*> r = Token::typeDecl(tok);
+    if (!r.first || !r.second)
+        return "";
+    return r.first->stringifyList(r.second, false);
+}
+
 TokenImpl::~TokenImpl()
 {
     delete mOriginalName;
