@@ -272,8 +272,10 @@ void CheckClass::checkExplicitConstructors()
             if (!func.isConstructor() || func.isDelete() || (!func.hasBody() && func.access == Private))
                 continue;
 
+            const std::size_t nonDefaultArgumentsCount = func.argCount() - countDefaultArguments(func.argumentList);
+            
             if (!func.isExplicit() &&
-                func.argCount() == 1 &&
+                nonDefaultArgumentsCount == 1 &&
                 func.type != Function::eCopyConstructor &&
                 func.type != Function::eMoveConstructor) {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
