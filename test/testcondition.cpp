@@ -1570,7 +1570,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
 
         check("void foo(const int &i);\n"
               "void bar(int i) {\n"
@@ -1580,7 +1580,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
 
         check("void foo(int i);\n"
               "void bar() {\n"
@@ -1591,7 +1591,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
 
         check("class C { void f(int &i) const; };\n" // #7028 - variable is changed by const method
               "void foo(C c, int i) {\n"
@@ -1614,7 +1614,7 @@ private:
               "       }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
 
 
         // #5874 - array
@@ -1661,6 +1661,15 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        // #8938
+        check("void Delete(SS_CELLCOORD upperleft) {\n"
+              "    if ((upperleft.Col == -1) && (upperleft.Row == -1)) {\n"
+              "        GetActiveCell(&(upperleft.Col), &(upperleft.Row));\n"
+              "        if (upperleft.Row == -1) {}\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionPointers() {
@@ -1707,7 +1716,7 @@ private:
               "    if (!fred.isValid()) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
 
         check("class Fred { public: bool isValid() const; void dostuff() const; };\n"
               "void f() {\n"
@@ -1717,7 +1726,7 @@ private:
               "    if (!fred.isValid()) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
 
         check("void f() {\n"
               "  Fred fred;\n"
@@ -2231,14 +2240,14 @@ private:
               "  if (abc) {}\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", "", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  while (abc) { y = x; }\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", "", errout.str());
 
         check("void f(int x) {\n"  // #8217 - crash for incomplete code
               "  if (x > 100) { return; }\n"
@@ -2253,7 +2262,7 @@ private:
               "  if (!num1tok) { *num1 = *num2; }\n"
               "  if (!i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition '!i', second condition is always false\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition '!i', second condition is always false\n", "", errout.str());
 
         check("void C::f(Tree &coreTree) {\n" // daca
               "  if(!coreTree.build())\n"
@@ -2270,7 +2279,7 @@ private:
               "  coreTree.dostuff();\n"
               "  if(!coreTree.build()) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Identical condition '!coreTree.build()', second condition is always false\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Identical condition '!coreTree.build()', second condition is always false\n", "", errout.str());
 
         check("void f(int x) {\n" // daca: labplot
               "  switch(type) {\n"

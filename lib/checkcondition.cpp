@@ -685,6 +685,9 @@ void CheckCondition::multiCondition2()
                         }
                     }
                 }
+                if (Token::Match(tok, "%name% ("))
+                    // TODO: This is a bailout to avoid fp
+                    break;
                 if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, mSettings->library)) // non const function call -> bailout if there are nonlocal variables
                     break;
                 if (Token::Match(tok, "case|break|continue|return|throw") && tok->scope() == endToken->scope())
