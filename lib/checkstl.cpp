@@ -32,7 +32,6 @@
 #include <map>
 #include <set>
 #include <sstream>
-#include <iostream>
 #include <utility>
 
 // Register this check class (by creating a static instance of it)
