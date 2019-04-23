@@ -2291,13 +2291,6 @@ private:
 
         check("struct Fred { int x; };\n"
               "void f() {\n"
-              "  std::shared_ptr<Fred> p(nullptr);\n"
-              "  dostuff(p->x);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
-
-        check("struct Fred { int x; };\n"
-              "void f() {\n"
               "  std::shared_ptr<Fred> p;\n"
               "  dostuff(p->x);\n"
               "}\n");
@@ -2306,6 +2299,36 @@ private:
         check("struct Fred { int x; };\n"
               "void f(std::shared_ptr<Fred> p) {\n"
               "  p.reset();\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  Fred * pp = nullptr;\n"
+              "  p.reset(pp);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(Fred& f) {\n"
+              "  std::shared_ptr<Fred> p;\n"
+              "  p.reset(&f);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  p.release();\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f() {\n"
+              "  std::shared_ptr<Fred> p(nullptr);\n"
               "  dostuff(p->x);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
