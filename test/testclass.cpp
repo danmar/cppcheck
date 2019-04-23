@@ -430,6 +430,11 @@ private:
                                   "    B(const B&) {}\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("struct A{"
+                                  "    A(int, int y=2) {}"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
