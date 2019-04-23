@@ -329,7 +329,10 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         }
 
         const Variable *var = tok->variable();
-        if (!var || !var->isPointer() || tok == var->nameToken())
+        if (!var || tok == var->nameToken())
+            continue;
+
+        if (!var->isPointer() && !var->isStlPointer())
             continue;
 
         // Can pointer be NULL?

@@ -177,20 +177,21 @@ public:
 class CPPCHECKLIB Variable {
     /** @brief flags mask used to access specific bit. */
     enum {
-        fIsMutable   = (1 << 0), /** @brief mutable variable */
-        fIsStatic    = (1 << 1), /** @brief static variable */
-        fIsConst     = (1 << 2), /** @brief const variable */
-        fIsExtern    = (1 << 3), /** @brief extern variable */
-        fIsClass     = (1 << 4), /** @brief user defined type */
-        fIsArray     = (1 << 5), /** @brief array variable */
-        fIsPointer   = (1 << 6), /** @brief pointer variable */
-        fIsReference = (1 << 7), /** @brief reference variable */
-        fIsRValueRef = (1 << 8), /** @brief rvalue reference variable */
-        fHasDefault  = (1 << 9), /** @brief function argument with default value */
-        fIsStlType   = (1 << 10), /** @brief STL type ('std::') */
-        fIsStlString = (1 << 11), /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
-        fIsFloatType = (1 << 12), /** @brief Floating point type */
-        fIsVolatile  = (1 << 13)  /** @brief volatile */
+        fIsMutable    = (1 << 0),   /** @brief mutable variable */
+        fIsStatic     = (1 << 1),   /** @brief static variable */
+        fIsConst      = (1 << 2),   /** @brief const variable */
+        fIsExtern     = (1 << 3),   /** @brief extern variable */
+        fIsClass      = (1 << 4),   /** @brief user defined type */
+        fIsArray      = (1 << 5),   /** @brief array variable */
+        fIsPointer    = (1 << 6),   /** @brief pointer variable */
+        fIsReference  = (1 << 7),   /** @brief reference variable */
+        fIsRValueRef  = (1 << 8),   /** @brief rvalue reference variable */
+        fHasDefault   = (1 << 9),   /** @brief function argument with default value */
+        fIsStlType    = (1 << 10),  /** @brief STL type ('std::') */
+        fIsStlString  = (1 << 11),  /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
+        fIsFloatType  = (1 << 12),  /** @brief Floating point type */
+        fIsVolatile   = (1 << 13),  /** @brief volatile */
+        fIsStlPointer = (1 << 14)   /** @brief std::shared_ptr|unique_ptr */
     };
 
     /**
@@ -553,6 +554,10 @@ public:
      */
     bool isStlStringType() const {
         return getFlag(fIsStlString);
+    }
+
+    bool isStlPointer() const {
+        return getFlag(fIsStlPointer);
     }
 
     /**
