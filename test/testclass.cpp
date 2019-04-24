@@ -46,6 +46,7 @@ private:
             "    <alloc init=\"false\">malloc</alloc>\n"
             "    <dealloc>free</dealloc>\n"
             "  </memory>\n"
+            "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
             "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
