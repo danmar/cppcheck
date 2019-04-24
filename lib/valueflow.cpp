@@ -836,6 +836,8 @@ static size_t getSizeOf(const ValueType &vt, const Settings *settings)
         return 1;
     else if (vt.type == ValueType::Type::SHORT)
         return settings->sizeof_short;
+    else if (vt.type == ValueType::Type::WCHAR_T)
+        return settings->sizeof_wchar_t;
     else if (vt.type == ValueType::Type::INT)
         return settings->sizeof_int;
     else if (vt.type == ValueType::Type::LONG)
@@ -1409,6 +1411,7 @@ static void valueFlowRightShift(TokenList *tokenList, const Settings* settings)
         int lhsbits;
         if ((tok->astOperand1()->valueType()->type == ValueType::Type::CHAR) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::SHORT) ||
+            (tok->astOperand1()->valueType()->type == ValueType::Type::WCHAR_T) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::BOOL) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::INT))
             lhsbits = settings->int_bit;
