@@ -342,6 +342,9 @@
                 <attribute name="string">
                   <value>std-like</value>
                 </attribute>
+                <attribute name="associative">
+                  <value>std-like</value>
+                </attribute>
               </choice>
               <empty/>
             </element>
@@ -352,14 +355,12 @@
               <zeroOrMore>
                 <element name="function">
                   <attribute name="name"><ref name="DATA-NAME"/></attribute>
-                  <choice>
-                    <attribute name="action">
-                      <ref name="CONTAINER-ACTION"/>
-                    </attribute>
-                    <attribute name="yields">
-                      <ref name="CONTAINER-YIELDS"/>
-                    </attribute>
-                  </choice>
+                  <attribute name="action">
+                    <ref name="CONTAINER-ACTION"/>
+                  </attribute>
+                  <attribute name="yields">
+                    <ref name="CONTAINER-YIELDS"/>
+                  </attribute>
                   <empty/>
                 </element>
               </zeroOrMore>
