@@ -1659,7 +1659,7 @@ void Variable::evaluate(const Settings* settings)
         setFlag(fIsClass, !lib->podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && !isReference());
         setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
         setFlag(fIsStlString, isStlType() && (Token::Match(mTypeStartToken->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(mTypeStartToken->tokAt(2), "basic_string <") && !Token::simpleMatch(mTypeStartToken->linkAt(3), "> ::"))));
-        setFlag(fIsStlPointer, isStlType() && (Token::Match(mTypeStartToken->tokAt(2), "shared_ptr|unique_ptr <") && !Token::simpleMatch(mTypeStartToken->linkAt(3), "> ::")));
+        setFlag(fIsSmartPointer, lib->isSmartPointer(mTypeStartToken));
     }
     if (mAccess == Argument) {
         tok = mNameToken;

@@ -191,7 +191,7 @@ class CPPCHECKLIB Variable {
         fIsStlString  = (1 << 11),  /** @brief std::string|wstring|basic_string&lt;T&gt;|u16string|u32string */
         fIsFloatType  = (1 << 12),  /** @brief Floating point type */
         fIsVolatile   = (1 << 13),  /** @brief volatile */
-        fIsStlPointer = (1 << 14)   /** @brief std::shared_ptr|unique_ptr */
+        fIsSmartPointer = (1 << 14)   /** @brief std::shared_ptr|unique_ptr */
     };
 
     /**
@@ -556,8 +556,8 @@ public:
         return getFlag(fIsStlString);
     }
 
-    bool isStlPointer() const {
-        return getFlag(fIsStlPointer);
+    bool isSmartPointer() const {
+        return getFlag(fIsSmartPointer);
     }
 
     /**

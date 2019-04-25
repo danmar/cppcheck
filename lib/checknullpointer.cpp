@@ -332,7 +332,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (!var || tok == var->nameToken())
             continue;
 
-        if (!var->isPointer() && !var->isStlPointer())
+        if (!var->isPointer() && !var->isSmartPointer())
             continue;
 
         // Can pointer be NULL?

@@ -3510,7 +3510,7 @@ static void valueFlowForwardAssign(Token * const               tok,
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
     }
-    if (!var->isPointer() && !var->isStlPointer())
+    if (!var->isPointer() && !var->isSmartPointer())
         values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     if (tok->astParent()) {
         for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
@@ -4978,7 +4978,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
         if (!tok->variable())
             continue;
         const Variable * var = tok->variable();
-        if (!var->isStlPointer())
+        if (!var->isSmartPointer())
             continue;
         if (var->nameToken() == tok) {
             if (Token::Match(tok, "%var% (|{") && tok->next()->astOperand2() && tok->next()->astOperand2()->str() != ",") {
