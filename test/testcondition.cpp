@@ -3113,6 +3113,15 @@ private:
               "        x = y + 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "void f(int& x, int y) {\n"
+              "    if (x == y) {\n"
+              "        x = y;\n"
+              "        g();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

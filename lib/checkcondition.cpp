@@ -1564,6 +1564,8 @@ void CheckCondition::checkDuplicateConditionalAssign()
             const Token *assignTok = blockTok->next()->astTop();
             if (!Token::simpleMatch(assignTok, "="))
                 continue;
+            if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
+                continue;
             if (!isSameExpression(
                     mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
                 continue;
