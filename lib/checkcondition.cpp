@@ -1580,15 +1580,19 @@ void CheckCondition::checkDuplicateConditionalAssign()
 void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok)
 {
     ErrorPath errors;
+    std::string msg = "Duplicate expression for the condition and assignment.";
     if (condTok && assignTok) {
         if (condTok->str() == "==") {
+            msg = "Assignment '" + assignTok->expressionString() + "' is redundant with condition '" + condTok->expressionString() + "'.";
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "'");
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "' is redundant");
         } else {
+            msg = "The statement 'if (" + condTok->expressionString() + ") " + assignTok->expressionString() + "' is logically equivalent to '" + assignTok->expressionString() + "'.";
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "'");
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "' is redundant");
         }
     }
+
     reportError(
-        errors, Severity::style, "duplicateConditionalAssign", "Duplicate expression for the condition and assignment.", CWE398, false);
+        errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, false);
 }
