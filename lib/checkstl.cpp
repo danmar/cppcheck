@@ -1246,12 +1246,10 @@ static std::pair<const Token *, const Token *> isMapFind(const Token *tok)
     if (!astIsContainer(tok->astOperand1()->astOperand1()))
         return {};
     const Token * contTok = tok->astOperand1()->astOperand1();
-    std::string typeName = Token::typeStr(contTok);
-    if (typeName.empty())
+    const Library::Container * container = contTok->valueType()->container;
+    if (!container)
         return {};
-    if (typeName.find("multi") != std::string::npos)
-        return {};
-    if (typeName[0] == 'Q')
+    if (!container->stdAssociativeLike)
         return {};
     if (!Token::Match(tok->astOperand1(), ". find|count ("))
         return {};
@@ -1313,7 +1311,7 @@ static const Token *findInsertValue(const Token *tok, const Token *containerTok,
         ikeyTok = top->astOperand1()->astOperand2();
         ivalueTok = top->astOperand2();
     }
-    if (Token::simpleMatch(top, "(") && Token::Match(top->astOperand1(), ". insert|emplace (")) {
+    if (Token::simpleMatch(top, "(") && Token::Match(top->astOperand1(), ". insert|emplace (") && !astIsIterator(top->astOperand1()->tokAt(2))) {
         icontainerTok = top->astOperand1()->astOperand1();
         const Token *itok = top->astOperand1()->tokAt(2)->astOperand2();
         if (Token::simpleMatch(itok, ",")) {

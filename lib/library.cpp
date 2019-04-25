@@ -483,6 +483,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     const char* const string = containerNode->Attribute("string");
                     if (string)
                         container.stdStringLike = std::string(string) == "std-like";
+                    const char* const associative = containerNode->Attribute("associative");
+                    if (associative)
+                        container.stdAssociativeLike = std::string(associative) == "std-like";
                 } else
                     unknown_elements.insert(containerNodeName);
             }
