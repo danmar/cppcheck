@@ -1543,6 +1543,10 @@ void CheckCondition::pointerAdditionResultNotNullError(const Token *tok, const T
 
 void CheckCondition::checkDuplicateConditionalAssign()
 {
+    // danmar: this is disabled until #9103 is fixed.
+    // the output should be clarified somehow.. see #9101
+    return;
+
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
