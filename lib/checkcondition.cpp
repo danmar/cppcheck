@@ -1543,10 +1543,6 @@ void CheckCondition::pointerAdditionResultNotNullError(const Token *tok, const T
 
 void CheckCondition::checkDuplicateConditionalAssign()
 {
-    // danmar: this is disabled until #9103 is fixed.
-    // the output should be clarified somehow.. see #9101
-    return;
-
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
 
@@ -1568,6 +1564,8 @@ void CheckCondition::checkDuplicateConditionalAssign()
             const Token *assignTok = blockTok->next()->astTop();
             if (!Token::simpleMatch(assignTok, "="))
                 continue;
+            if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
+                continue;
             if (!isSameExpression(
                     mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
                 continue;
@@ -1582,15 +1580,19 @@ void CheckCondition::checkDuplicateConditionalAssign()
 void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok)
 {
     ErrorPath errors;
+    std::string msg = "Duplicate expression for the condition and assignment.";
     if (condTok && assignTok) {
         if (condTok->str() == "==") {
+            msg = "Assignment '" + assignTok->expressionString() + "' is redundant with condition '" + condTok->expressionString() + "'.";
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "'");
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "' is redundant");
         } else {
+            msg = "The statement 'if (" + condTok->expressionString() + ") " + assignTok->expressionString() + "' is logically equivalent to '" + assignTok->expressionString() + "'.";
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "'");
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "' is redundant");
         }
     }
+
     reportError(
-        errors, Severity::style, "duplicateConditionalAssign", "Duplicate expression for the condition and assignment.", CWE398, false);
+        errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, false);
 }
