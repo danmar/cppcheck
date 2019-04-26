@@ -227,7 +227,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->progressValue() < tok2->progressValue();
 }
 
-static bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
+bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
 {
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
@@ -246,6 +246,20 @@ static bool isAliased(const Token * startTok, const Token * endTok, unsigned int
         }
     }
     return false;
+}
+
+bool isAliased(const Variable * var)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    const Token * start = var->declEndToken();
+    if (!start)
+        return false;
+    if (Token::Match(start, "; %varid% =", var->declarationId()))
+        start = start->tokAt(2);
+    return isAliased(start->next(), var->scope()->bodyEnd, var->declarationId());
 }
 
 static bool exprDependsOnThis(const Token *expr, unsigned int depth)

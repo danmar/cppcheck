@@ -135,6 +135,10 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
 
+bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid);
+
+bool isAliased(const Variable * var);
+
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
  * \return Number of arguments

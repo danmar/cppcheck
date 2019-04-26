@@ -1257,6 +1257,51 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
                 "as a const reference which is usually faster and recommended in C++.", CWE398, inconclusive);
 }
 
+void CheckOther::checkConstVariable()
+{
+    if (!mSettings->isEnabled(Settings::STYLE) || mTokenizer->isC())
+        return;
+
+    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    for (const Variable* var : symbolDatabase->variableList()) {
+        if (!var)
+            continue;
+        if (!var->isLocal())
+            continue;
+        if (!var->isReference())
+            continue;
+        if (var->isStatic())
+            continue;
+        if (var->isArray())
+            continue;
+        if (var->isEnumType())
+            continue;
+        if (var->isConst())
+            continue;
+        if (var->isVolatile())
+            continue;
+        if (isAliased(var))
+            continue;
+        if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
+            continue;
+        if (var->scope() && Function::returnsReference(var->scope()->function) && Token::findmatch(var->nameToken(), "return %varid% ;", var->scope()->bodyEnd, var->declarationId()))
+            continue;
+        constVariableError(var);
+    }
+}
+
+void CheckOther::constVariableError(const Variable* var)
+{
+    const Token * tok = nullptr;
+    std::string name = "x";
+    if (var) {
+        tok = var->nameToken();
+        name = var->name();
+    }
+    reportError(tok, Severity::style, "constVariable", "Variable '" + name + "' can be declared with const", CWE398, false);
+}
+
 //---------------------------------------------------------------------------
 // Check usage of char variables..
 //---------------------------------------------------------------------------

@@ -92,6 +92,8 @@ private:
 
         TEST_CASE(passedByValue);
         TEST_CASE(passedByValue_nonConst);
+        
+        TEST_CASE(constVariable);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -1569,7 +1571,7 @@ private:
               "    std::string& s2 = str;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
+        
         check("void f(std::string str) {\n"
               "    const std::string& s2 = str;\n"
               "}");
@@ -1689,6 +1691,39 @@ private:
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void constVariable() {
+        check("int f(std::vector<int> x) {\n"
+              "    int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+
+        check("int f(std::vector<int> x) {\n"
+              "    const int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> x) {\n"
+              "    static int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> x) {\n"
+              "    int& i = x[0];\n"
+              "    i++;\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& f(std::vector<int>& x) {\n"
+              "    int& i = x[0];\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -7734,10 +7769,10 @@ private:
 
         check("int& g();\n"
               "bool f() {\n"
-              "    int& x = g();\n"
-              "    int& y = g();\n"
-              "    int* xp = &x;\n"
-              "    int* yp = &y;\n"
+              "    const int& x = g();\n"
+              "    const int& y = g();\n"
+              "    const int* xp = &x;\n"
+              "    const int* yp = &y;\n"
               "    return xp > yp;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
