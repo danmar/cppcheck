@@ -3497,13 +3497,13 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
 }
 
 static void valueFlowForwardAssign(Token * const               tok,
-                             const Variable * const      var,
-                             std::list<ValueFlow::Value> values,
-                             const bool                  constValue,
-                             const bool                  init,
-                             TokenList * const           tokenlist,
-                             ErrorLogger * const         errorLogger,
-                             const Settings * const      settings)
+                                   const Variable * const      var,
+                                   std::list<ValueFlow::Value> values,
+                                   const bool                  constValue,
+                                   const bool                  init,
+                                   TokenList * const           tokenlist,
+                                   ErrorLogger * const         errorLogger,
+                                   const Settings * const      settings)
 {
     const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
@@ -3516,7 +3516,7 @@ static void valueFlowForwardAssign(Token * const               tok,
         for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end(); ++it) {
             const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + it->infoString();
             it->errorPath.emplace_back(tok, info);
-        }        
+        }
     }
 
     if (tokenlist->isCPP() && Token::Match(var->typeStartToken(), "bool|_Bool")) {
@@ -5014,7 +5014,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
             values.push_back(v);
             valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
         }
-    }   
+    }
 }
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
