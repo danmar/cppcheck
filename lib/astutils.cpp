@@ -965,7 +965,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         }
 
         const Token *tok2 = tok;
-        while (Token::simpleMatch(tok2->astParent(), "*"))
+        while (Token::simpleMatch(tok2->astParent(), "*") || (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1()))
             tok2 = tok2->astParent();
 
         if (Token::Match(tok2->astParent(), "++|--"))
@@ -992,19 +992,19 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
                 return true;
         }
 
-        const Token *ftok = tok;
-        while (ftok && (!Token::Match(ftok, "[({[]") || ftok->isCast()))
+        const Token *ftok = tok2;
+        while (ftok && (!Token::Match(ftok, "[({]") || ftok->isCast()))
             ftok = ftok->astParent();
 
         if (ftok && Token::Match(ftok->link(), ") !!{")) {
             bool inconclusive = false;
-            bool isChanged = isVariableChangedByFunctionCall(tok, settings, &inconclusive);
+            bool isChanged = isVariableChangedByFunctionCall(tok2, settings, &inconclusive);
             isChanged |= inconclusive;
             if (isChanged)
                 return true;
         }
 
-        const Token *parent = tok->astParent();
+        const Token *parent = tok2->astParent();
         while (Token::Match(parent, ".|::"))
             parent = parent->astParent();
         if (parent && parent->tokType() == Token::eIncDecOp)

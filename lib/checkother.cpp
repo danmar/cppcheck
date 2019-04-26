@@ -1267,9 +1267,19 @@ void CheckOther::checkConstVariable()
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var)
             continue;
-        if (!var->isLocal())
-            continue;
         if (!var->isReference())
+            continue;
+        if (var->isConst())
+            continue;
+        if (!var->scope())
+            continue;
+        const Scope * scope = var->scope();
+        if (!scope->function)
+            continue;
+        Function * function = scope->function;
+        if (var->isArgument() && function->isVirtual())
+            continue;
+        if (var->isGlobal())
             continue;
         if (var->isStatic())
             continue;
@@ -1277,15 +1287,13 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isEnumType())
             continue;
-        if (var->isConst())
-            continue;
         if (var->isVolatile())
             continue;
         if (isAliased(var))
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
-        if (var->scope() && Function::returnsReference(var->scope()->function) && Token::findmatch(var->nameToken(), "return %varid% ;", var->scope()->bodyEnd, var->declarationId()))
+        if (Function::returnsReference(function) && Token::findmatch(var->nameToken(), "return %varid% ;|[", scope->bodyEnd, var->declarationId()))
             continue;
         constVariableError(var);
     }

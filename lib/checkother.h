@@ -394,7 +394,8 @@ private:
                "- find unused 'goto' labels.\n"
                "- function declaration and definition argument names different.\n"
                "- function declaration and definition argument order different.\n"
-               "- shadow variable.\n";
+               "- shadow variable.\n"
+               "- variable can be declared const.\n";
     }
 };
 /// @}

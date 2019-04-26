@@ -1700,6 +1700,11 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
 
+        check("int f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Variable 'x' can be declared with const\n", errout.str());
+
         check("int f(std::vector<int> x) {\n"
               "    const int& i = x[0];\n"
               "    return i;\n"
@@ -1720,8 +1725,32 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("int& f(std::vector<int>& x) {\n"
+              "    x.push_back(1);\n"
               "    int& i = x[0];\n"
               "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int& f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        
+        check("int f(std::vector<int>& x) {\n"
+              "    x[0]++;\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g(int& x);\n"
+              "int f(std::vector<int>& x) {\n"
+              "    g(x[0]);\n"
+              "    return x[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -7762,7 +7791,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("bool f(int & x, int& y) {\n"
+        check("bool f(const int & x, const int& y) {\n"
               "    return &x > &y;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
