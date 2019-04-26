@@ -1754,6 +1754,25 @@ private:
               "    return x[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "T f(T& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "T f(T&& x) {\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T>\n"
+              "T f(T& x) {\n"
+              "    return x[0];\n"
+              "}\n"
+              "void h() { std::vector<int> v; h(v); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {

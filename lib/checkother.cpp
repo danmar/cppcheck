@@ -1289,6 +1289,8 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
+        if (var->isTemplate())
+            continue;
         if (isAliased(var))
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
