@@ -221,7 +221,7 @@ private:
     void cstyleCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive);
     void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
-    void constVariableError(const Variable* var);
+    void constVariableError(const Variable *var);
     void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
     void signedCharArrayIndexError(const Token *tok);
     void unknownSignCharArrayIndexError(const Token *tok);

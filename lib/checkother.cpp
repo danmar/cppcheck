@@ -1262,9 +1262,9 @@ void CheckOther::checkConstVariable()
     if (!mSettings->isEnabled(Settings::STYLE) || mTokenizer->isC())
         return;
 
-    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+    const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (const Variable* var : symbolDatabase->variableList()) {
+    for (const Variable *var : symbolDatabase->variableList()) {
         if (!var)
             continue;
         if (!var->isReference())
@@ -1273,10 +1273,10 @@ void CheckOther::checkConstVariable()
             continue;
         if (!var->scope())
             continue;
-        const Scope * scope = var->scope();
+        const Scope *scope = var->scope();
         if (!scope->function)
             continue;
-        Function * function = scope->function;
+        Function *function = scope->function;
         if (var->isArgument() && function->isVirtual())
             continue;
         if (var->isGlobal())
@@ -1293,21 +1293,23 @@ void CheckOther::checkConstVariable()
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
-        if (Function::returnsReference(function) && Token::findmatch(var->nameToken(), "return %varid% ;|[", scope->bodyEnd, var->declarationId()))
+        if (Function::returnsReference(function) &&
+            Token::findmatch(var->nameToken(), "return %varid% ;|[", scope->bodyEnd, var->declarationId()))
             continue;
         constVariableError(var);
     }
 }
 
-void CheckOther::constVariableError(const Variable* var)
+void CheckOther::constVariableError(const Variable *var)
 {
-    const Token * tok = nullptr;
+    const Token *tok = nullptr;
     std::string name = "x";
     if (var) {
         tok = var->nameToken();
         name = var->name();
     }
-    reportError(tok, Severity::style, "constVariable", "Variable '" + name + "' can be declared with const", CWE398, false);
+    reportError(
+        tok, Severity::style, "constVariable", "Variable '" + name + "' can be declared with const", CWE398, false);
 }
 
 //---------------------------------------------------------------------------

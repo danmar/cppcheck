@@ -227,7 +227,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->progressValue() < tok2->progressValue();
 }
 
-bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
+bool isAliased(const Token *startTok, const Token *endTok, unsigned int varid)
 {
     if (!precedes(startTok, endTok))
         return false;
@@ -250,13 +250,13 @@ bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
     return false;
 }
 
-bool isAliased(const Variable * var)
+bool isAliased(const Variable *var)
 {
     if (!var)
         return false;
     if (!var->scope())
         return false;
-    const Token * start = var->declEndToken();
+    const Token *start = var->declEndToken();
     if (!start)
         return false;
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
@@ -965,7 +965,8 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         }
 
         const Token *tok2 = tok;
-        while (Token::simpleMatch(tok2->astParent(), "*") || (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1()))
+        while (Token::simpleMatch(tok2->astParent(), "*") ||
+               (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1()))
             tok2 = tok2->astParent();
 
         if (Token::Match(tok2->astParent(), "++|--"))

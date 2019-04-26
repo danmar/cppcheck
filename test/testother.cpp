@@ -92,7 +92,7 @@ private:
 
         TEST_CASE(passedByValue);
         TEST_CASE(passedByValue_nonConst);
-        
+
         TEST_CASE(constVariable);
 
         TEST_CASE(switchRedundantAssignmentTest);
@@ -1571,7 +1571,7 @@ private:
               "    std::string& s2 = str;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's2' can be declared with const\n", errout.str());
-        
+
         check("void f(std::string str) {\n"
               "    const std::string& s2 = str;\n"
               "}");
@@ -1693,7 +1693,8 @@ private:
         }
     }
 
-    void constVariable() {
+    void constVariable()
+    {
         check("int f(std::vector<int> x) {\n"
               "    int& i = x[0];\n"
               "    return i;\n"
@@ -1740,7 +1741,7 @@ private:
               "    return x[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("int f(std::vector<int>& x) {\n"
               "    x[0]++;\n"
               "    return x[0];\n"
