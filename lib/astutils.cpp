@@ -229,6 +229,8 @@ bool precedes(const Token * tok1, const Token * tok2)
 
 bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
 {
+    if (!precedes(startTok, endTok))
+        return false;
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
             return true;
@@ -257,9 +259,7 @@ bool isAliased(const Variable * var)
     const Token * start = var->declEndToken();
     if (!start)
         return false;
-    if (Token::Match(start, "; %varid% =", var->declarationId()))
-        start = start->tokAt(2);
-    return isAliased(start->next(), var->scope()->bodyEnd, var->declarationId());
+    return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
 static bool exprDependsOnThis(const Token *expr, unsigned int depth)
@@ -954,6 +954,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 
 bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp)
 {
+    if (!precedes(start, end))
+        return false;
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
             if (globalvar && Token::Match(tok, "%name% ("))
