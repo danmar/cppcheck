@@ -301,19 +301,6 @@ public:
         return 0;
     }
 
-    bool isTemplate() const {
-        if (!this->typeStartToken())
-            return false;
-        if (!this->typeEndToken())
-            return false;
-        const Token * endTok = this->typeEndToken()->next();
-        for(const Token* tok = this->typeStartToken();tok != endTok;tok = tok->next()) {
-            if (tok->isTemplateArg())
-                return true;
-        }
-        return false;
-    }
-
     /**
      * Get index of variable in declared order.
      * @return variable index
@@ -855,6 +842,7 @@ public:
     AccessControl access;             ///< public/protected/private
     const Token *noexceptArg;         ///< noexcept token
     const Token *throwArg;            ///< throw token
+    const Token *templateDef;         ///< points to 'template <' before function
 
     static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, unsigned int path_length);
 

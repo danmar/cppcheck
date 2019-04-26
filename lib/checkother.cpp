@@ -1269,6 +1269,8 @@ void CheckOther::checkConstVariable()
             continue;
         if (!var->isReference())
             continue;
+        if (var->isRValueReference())
+            continue;
         if (var->isConst())
             continue;
         if (!var->scope())
@@ -1277,7 +1279,7 @@ void CheckOther::checkConstVariable()
         if (!scope->function)
             continue;
         Function *function = scope->function;
-        if (var->isArgument() && function->isVirtual())
+        if (var->isArgument() && (function->isVirtual() || function->templateDef))
             continue;
         if (var->isGlobal())
             continue;
@@ -1288,8 +1290,6 @@ void CheckOther::checkConstVariable()
         if (var->isEnumType())
             continue;
         if (var->isVolatile())
-            continue;
-        if (var->isTemplate())
             continue;
         if (isAliased(var))
             continue;

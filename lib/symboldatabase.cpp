@@ -1719,6 +1719,7 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
       access(Public),
       noexceptArg(nullptr),
       throwArg(nullptr),
+      templateDef(nullptr),
       mFlags(0)
 {
     // operator function
@@ -1771,8 +1772,10 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
         }
 
         // Function template
-        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <"))
+        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
+            templateDef = tok1->link()->previous();
             break;
+        }
     }
 
     // find the return type
