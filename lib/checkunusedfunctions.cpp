@@ -54,8 +54,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
 
     // Function declarations..
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
-        const Scope* scope = symbolDatabase->functionScopes[i];
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         const Function* func = scope->function;
         if (!func || !func->token || scope->bodyStart->fileIndex() != 0)
             continue;
@@ -361,13 +360,13 @@ CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
 std::string CheckUnusedFunctions::analyzerInfo() const
 {
     std::ostringstream ret;
-    for (std::list<FunctionDecl>::const_iterator it = mFunctionDecl.begin(); it != mFunctionDecl.end(); ++it) {
+    for (const FunctionDecl &functionDecl : mFunctionDecl) {
         ret << "    <functiondecl"
-            << " functionName=\"" << ErrorLogger::toxml(it->functionName) << '\"'
-            << " lineNumber=\"" << it->lineNumber << "\"/>\n";
+            << " functionName=\"" << ErrorLogger::toxml(functionDecl.functionName) << '\"'
+            << " lineNumber=\"" << functionDecl.lineNumber << "\"/>\n";
     }
-    for (std::set<std::string>::const_iterator it = mFunctionCalls.begin(); it != mFunctionCalls.end(); ++it) {
-        ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(*it) << "\"/>\n";
+    for (const std::string &fc : mFunctionCalls) {
+        ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(fc) << "\"/>\n";
     }
     return ret.str();
 }
