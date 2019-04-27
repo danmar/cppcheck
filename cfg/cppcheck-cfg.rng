@@ -358,9 +358,11 @@
                   <attribute name="action">
                     <ref name="CONTAINER-ACTION"/>
                   </attribute>
-                  <attribute name="yields">
-                    <ref name="CONTAINER-YIELDS"/>
-                  </attribute>
+                  <optional>
+                    <attribute name="yields">
+                      <ref name="CONTAINER-YIELDS"/>
+                    </attribute>
+                  <optional/>
                   <empty/>
                 </element>
               </zeroOrMore>
