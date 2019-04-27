@@ -267,6 +267,18 @@ void misra_13_3() {
   x = y++; // 13.3
 }
 
+#define STRING_DEF_13_4    "This is a string"
+
+typedef struct
+{
+    char string[sizeof(STRING_DEF_13_4)];
+} s13_4_t;
+
+static s13_4_t s13_4 =
+{
+    .string = STRING_DEF_13_4 // no-warning
+};
+
 void misra_13_4() {
   if (x != (y = z)) {} // 13.4
   else {}
