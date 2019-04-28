@@ -362,7 +362,7 @@
                     <attribute name="yields">
                       <ref name="CONTAINER-YIELDS"/>
                     </attribute>
-                  <optional/>
+                  </optional>
                   <empty/>
                 </element>
               </zeroOrMore>
