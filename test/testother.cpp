@@ -1773,6 +1773,11 @@ private:
               "}\n"
               "void h() { std::vector<int> v; h(v); }\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int& x) {\n"
+              "    return std::move(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
