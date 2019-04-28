@@ -590,13 +590,9 @@ void CheckBufferOverrun::bufferOverflow()
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);
                 if (bufferSize.intvalue <= 1)
                     continue;
-                bool error = true;
-                for (const Library::ArgumentChecks::MinSize &minsize : *minsizes) {
-                    if (checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings)) {
-                        error = false;
-                        break;
-                    }
-                }
+                bool error = std::none_of(minsizes->begin(), minsizes->end(), [=](const Library::ArgumentChecks::MinSize &minsize) {
+                    return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings);
+                });
                 if (error)
                     bufferOverflowError(args[argnr], &bufferSize);
             }
