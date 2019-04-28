@@ -355,9 +355,11 @@
               <zeroOrMore>
                 <element name="function">
                   <attribute name="name"><ref name="DATA-NAME"/></attribute>
-                  <attribute name="action">
-                    <ref name="CONTAINER-ACTION"/>
-                  </attribute>
+                  <optional>
+                    <attribute name="action">
+                      <ref name="CONTAINER-ACTION"/>
+                    </attribute>
+                  </optional>
                   <optional>
                     <attribute name="yields">
                       <ref name="CONTAINER-YIELDS"/>
