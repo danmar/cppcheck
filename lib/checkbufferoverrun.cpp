@@ -36,6 +36,7 @@
 #include <tinyxml2.h>
 #include <algorithm>
 #include <cstdlib>
+#include <numeric>
 #include <sstream>
 #include <stack>
 #include <utility>
@@ -344,9 +345,10 @@ static std::string stringifyIndexes(const std::string &array, const std::vector<
 
 static std::string arrayIndexMessage(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexValues, const Token *condition)
 {
-    std::string array = tok->astOperand1()->expressionString();
-    for (const Dimension &dim : dimensions)
-        array += "[" + MathLib::toString(dim.num) + "]";
+    auto add_dim = [](const std::string &s, const Dimension &dim) {
+            return s + "[" + MathLib::toString(dim.num) + "]";
+        };
+    const std::string array = std::accumulate(dimensions.begin(), dimensions.end(), tok->astOperand1()->expressionString(), add_dim);
 
     std::ostringstream errmsg;
     if (condition)
