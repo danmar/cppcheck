@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkunusedfunctions.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "settings.h"
@@ -54,8 +55,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
 
     // Function declarations..
-    for (std::size_t i = 0; i < symbolDatabase->functionScopes.size(); i++) {
-        const Scope* scope = symbolDatabase->functionScopes[i];
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         const Function* func = scope->function;
         if (!func || !func->token || scope->bodyStart->fileIndex() != 0)
             continue;
@@ -92,7 +92,13 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
+    const Token *lambdaEndToken = nullptr;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+
+        if (tok == lambdaEndToken)
+            lambdaEndToken = nullptr;
+        else if (!lambdaEndToken && tok->str() == "[")
+            lambdaEndToken = findLambdaEndToken(tok);
 
         // parsing of library code to find called functions
         if (settings->library.isexecutableblock(FileName, tok->str())) {
@@ -193,9 +199,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         const Token *funcname = nullptr;
 
-        if (tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
+        if ((lambdaEndToken || tok->scope()->isExecutable()) && Token::Match(tok, "%name% (")) {
             funcname = tok;
-        } else if (tok->scope()->isExecutable() && Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
+        } else if ((lambdaEndToken || tok->scope()->isExecutable()) && Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
             funcname = tok;
         } else if (Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
             funcname = tok->next();
@@ -361,13 +367,13 @@ CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
 std::string CheckUnusedFunctions::analyzerInfo() const
 {
     std::ostringstream ret;
-    for (std::list<FunctionDecl>::const_iterator it = mFunctionDecl.begin(); it != mFunctionDecl.end(); ++it) {
+    for (const FunctionDecl &functionDecl : mFunctionDecl) {
         ret << "    <functiondecl"
-            << " functionName=\"" << ErrorLogger::toxml(it->functionName) << '\"'
-            << " lineNumber=\"" << it->lineNumber << "\"/>\n";
+            << " functionName=\"" << ErrorLogger::toxml(functionDecl.functionName) << '\"'
+            << " lineNumber=\"" << functionDecl.lineNumber << "\"/>\n";
     }
-    for (std::set<std::string>::const_iterator it = mFunctionCalls.begin(); it != mFunctionCalls.end(); ++it) {
-        ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(*it) << "\"/>\n";
+    for (const std::string &fc : mFunctionCalls) {
+        ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(fc) << "\"/>\n";
     }
     return ret.str();
 }

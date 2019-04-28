@@ -1261,7 +1261,7 @@ class MisraChecker:
                 continue
             if token.astOperand1.str == '[' and token.astOperand1.previous.str in {'{', ','}:
                 continue
-            if not (token.astParent.str in [',', ';']):
+            if not (token.astParent.str in [',', ';', '{']):
                 self.reportError(token, 13, 4)
 
 
