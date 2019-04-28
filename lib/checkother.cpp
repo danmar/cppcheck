@@ -1306,12 +1306,15 @@ void CheckOther::constVariableError(const Variable *var)
 {
     const Token *tok = nullptr;
     std::string name = "x";
+    std::string id = "Variable";
     if (var) {
         tok = var->nameToken();
         name = var->name();
+        if (var->isArgument())
+            id = "Parameter";
     }
     reportError(
-        tok, Severity::style, "constVariable", "Variable '" + name + "' can be declared with const", CWE398, false);
+        tok, Severity::style, "const"+id, id + " '" + name + "' can be declared with const", CWE398, false);
 }
 
 //---------------------------------------------------------------------------

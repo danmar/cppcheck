@@ -1704,7 +1704,7 @@ private:
         check("int f(std::vector<int>& x) {\n"
               "    return x[0];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Variable 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
 
         check("int f(std::vector<int> x) {\n"
               "    const int& i = x[0];\n"
