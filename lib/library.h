@@ -392,6 +392,9 @@ public:
     std::set<std::string> returnuninitdata;
     std::vector<std::string> defines; // to provide some library defines
 
+    std::set<std::string> smartPointers;
+    bool isSmartPointer(const Token *tok) const;
+
     struct PodType {
         unsigned int   size;
         char           sign;

@@ -146,6 +146,8 @@ int numberOfArguments(const Token *start);
  */
 std::vector<const Token *> getArguments(const Token *ftok);
 
+const Token *findLambdaStartToken(const Token *last);
+
 /**
  * find lambda function end token
  * \param first The [ token

@@ -1797,7 +1797,7 @@ namespace {
             return false;
         }
 
-        if (Token::Match(tok1->tokAt(-1), "struct|union|enum")) {
+        if (Token::Match(tok1->tokAt(-1), "class|struct|union|enum")) {
             // fixme
             return false;
         }
@@ -1975,6 +1975,16 @@ bool Tokenizer::simplifyUsing()
                         tok->deleteThis();
                         tok = usingStart;
                     }
+                }
+
+                // remove 'typename' and 'template'
+                else if (start->str() == "typename") {
+                    start->deleteThis();
+                    Token *temp = start;
+                    while (Token::Match(temp, "%name% ::"))
+                        temp = temp->tokAt(2);
+                    if (Token::Match(temp, "template %name%"))
+                        temp->deleteThis();
                 }
 
                 // Unfortunately we have to start searching from the beginning
@@ -2948,9 +2958,9 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 }
 
 
-static void setVarIdStructMembers(Token **tok1,
-                                  std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
-                                  unsigned int *varId)
+void Tokenizer::setVarIdStructMembers(Token **tok1,
+                                      std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
+                                      unsigned int *varId)
 {
     Token *tok = *tok1;
 
@@ -2982,6 +2992,12 @@ static void setVarIdStructMembers(Token **tok1,
     }
 
     while (Token::Match(tok->next(), ")| . %name% !!(")) {
+        // Don't set varid for trailing return type
+        if (tok->strAt(1) == ")" && tok->linkAt(1)->previous()->isName() &&
+            isFunctionHead(tok->linkAt(1), "{|;")) {
+            tok = tok->tokAt(3);
+            continue;
+        }
         const unsigned int struct_varid = tok->varId();
         tok = tok->tokAt(2);
         if (struct_varid == 0)
@@ -3086,12 +3102,12 @@ void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
 
 // Update the variable ids..
 // Parse each function..
-static void setVarIdClassFunction(const std::string &classname,
-                                  Token * const startToken,
-                                  const Token * const endToken,
-                                  const std::map<std::string, unsigned int> &varlist,
-                                  std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
-                                  unsigned int *varId_)
+void Tokenizer::setVarIdClassFunction(const std::string &classname,
+                                      Token * const startToken,
+                                      const Token * const endToken,
+                                      const std::map<std::string, unsigned int> &varlist,
+                                      std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
+                                      unsigned int *varId_)
 {
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (tok2->varId() != 0 || !tok2->isName())
@@ -9134,7 +9150,7 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok, "> %cop%"))
                 continue;
         }
-        if (Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|++|--|::|sizeof|throw|decltype|typeof {|if|else|try|catch|while|do|for|return|switch|break|namespace"))
+        if (Token::Match(tok, "%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|++|--|::|sizeof|throw|decltype|typeof {|if|else|try|catch|while|do|for|return|switch|break|namespace"))
             syntaxError(tok);
         if (Token::Match(tok, "( %any% )") && tok->next()->isKeyword() && !Token::simpleMatch(tok->next(), "void"))
             syntaxError(tok);

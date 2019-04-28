@@ -802,6 +802,6 @@ def reportError(location, severity, message, addon, errorId):
         errout = sys.stdout
         loc = '[%s:%i:%i]' % (location.file, location.linenr, location.col)
     else:
-        errout = sys.errout
+        errout = sys.stderr
         loc = '[%s:%i]' % (location.file, location.linenr)
     errout.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))

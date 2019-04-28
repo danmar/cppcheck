@@ -40,6 +40,8 @@ private:
         while (!settings.library.isresource(++id));
         settings.library.setalloc("fopen", id, -1);
         settings.library.setdealloc("fclose", id, 1);
+        settings.library.smartPointers.insert("std::shared_ptr");
+        settings.library.smartPointers.insert("std::unique_ptr");
 
         // Assign
         TEST_CASE(assign1);

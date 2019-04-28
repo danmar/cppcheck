@@ -141,12 +141,18 @@ public:
     }
 
     /**
-    * @brief Get list suppressions.
+    * @brief Get "raw" suppressions.
     * @return list of suppressions.
     */
     QList<Suppressions::Suppression> getSuppressions() const {
         return mSuppressions;
     }
+
+    /**
+    * @brief Get "check" suppressions.
+    * @return list of suppressions.
+    */
+    QList<Suppressions::Suppression> getCheckSuppressions() const;
 
     /**
     * @brief Get list addons.

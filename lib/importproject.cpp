@@ -25,19 +25,20 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
-#include "../externals/picojson.h"
+#include <picojson.h>
 
 #include <cstring>
 #include <fstream>
 #include <utility>
-
+#include <sstream>
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
         for (std::string i : ipaths) {
-            i = mPath + i;
+            if (!Path::isAbsolute(i))
+                i = mPath + i;
             if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
                 ignore = true;
                 break;
@@ -339,7 +340,27 @@ void ImportProject::importCompileCommands(std::istream &istr)
             dirpath += '/';
 
         const std::string directory = dirpath;
-        const std::string command = obj["command"].get<std::string>();
+
+        std::ostringstream comm;
+        if (obj.find("arguments") != obj.end()) {
+            if (obj[ "arguments" ].is< picojson::array >()) {
+                for (const picojson::value& arg : obj[ "arguments" ].get< picojson::array >()) {
+                    if (arg.is< std::string >()) {
+                        comm << arg.get< std::string >() << " ";
+                    }
+                }
+            } else {
+                return;
+            }
+        } else if (obj.find("command") != obj.end()) {
+            if (obj[ "command" ].is< std::string >()) {
+                comm << obj[ "command" ].get< std::string >();
+            }
+        } else {
+            return;
+        }
+
+        const std::string command = comm.str();
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
         // Accept file?
@@ -1006,9 +1027,10 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     guiProject.analyzeAllVsConfigs.clear();
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib))
+        if (strcmp(node->Name(), RootPathName) == 0 && node->Attribute(RootPathNameAttrib)) {
             temp.basePaths.push_back(joinRelativePath(path, node->Attribute(RootPathNameAttrib)));
-        else if (strcmp(node->Name(), BuildDirElementName) == 0)
+            temp.relativePaths = true;
+        } else if (strcmp(node->Name(), BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
         else if (strcmp(node->Name(), IncludeDirElementName) == 0)
             temp.includePaths = readXmlStringList(node, path, DirElementName, DirNameAttrib);
@@ -1049,6 +1071,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             return false;
     }
     settings->basePaths = temp.basePaths;
+    settings->relativePaths |= temp.relativePaths;
     settings->buildDir = temp.buildDir;
     settings->includePaths = temp.includePaths;
     settings->userDefines = temp.userDefines;

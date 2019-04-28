@@ -273,7 +273,7 @@ void CheckClass::checkExplicitConstructors()
                 continue;
 
             if (!func.isExplicit() &&
-                func.argCount() == 1 &&
+                func.minArgCount() == 1 &&
                 func.type != Function::eCopyConstructor &&
                 func.type != Function::eMoveConstructor) {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
@@ -1837,8 +1837,8 @@ void CheckClass::checkConst()
                 const std::string& opName = func.tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
-            } else if (Token::simpleMatch(func.retDef, "std :: shared_ptr <")) {
-                // Don't warn if a std::shared_ptr is returned
+            } else if (mSettings->library.isSmartPointer(func.retDef)) {
+                // Don't warn if a std::shared_ptr etc is returned
                 continue;
             } else {
                 // don't warn for unknown types..

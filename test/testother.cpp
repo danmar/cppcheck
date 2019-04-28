@@ -167,6 +167,7 @@ private:
         TEST_CASE(redundantVarAssignment_lambda);
         TEST_CASE(redundantVarAssignment_for);
         TEST_CASE(redundantVarAssignment_after_switch);
+        TEST_CASE(redundantVarAssignment_pointer);
         TEST_CASE(redundantVarAssignment_pointer_parameter);
         TEST_CASE(redundantMemWrite);
 
@@ -6128,6 +6129,16 @@ private:
               "    ret = 3;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:8]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n", errout.str());
+    }
+
+    void redundantVarAssignment_pointer() {
+        check("void f(int *ptr) {\n"
+              "    int *x = ptr + 1;\n"
+              "    *x = 23;\n"
+              "    foo(ptr);\n"
+              "    *x = 32;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_pointer_parameter() {

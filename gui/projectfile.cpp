@@ -25,6 +25,8 @@
 #include "projectfile.h"
 #include "common.h"
 
+#include "path.h"
+
 static const char ProjectElementName[] = "project";
 static const char ProjectVersionAttrib[] = "version";
 static const char ProjectFileVersion[] = "1";
@@ -594,6 +596,19 @@ void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &read
             break;
         }
     } while (!allRead);
+}
+
+QList<Suppressions::Suppression> ProjectFile::getCheckSuppressions() const
+{
+    QList<Suppressions::Suppression> ret;
+    const std::string projectFilePath = Path::getPathFromFilename(mFilename.toStdString());
+    foreach (Suppressions::Suppression suppression, getSuppressions()) {
+        if (!suppression.fileName.empty() && suppression.fileName[0]!='*' && !Path::isAbsolute(suppression.fileName))
+            suppression.fileName = Path::simplifyPath(projectFilePath) + suppression.fileName;
+
+        ret.append(suppression);
+    }
+    return ret;
 }
 
 void ProjectFile::setIncludes(const QStringList &includes)

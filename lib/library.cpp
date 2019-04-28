@@ -491,6 +491,12 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
         }
 
+        else if (nodename == "smart-pointer") {
+            const char *className = node->Attribute("class-name");
+            if (className)
+                smartPointers.insert(className);
+        }
+
         else if (nodename == "podtype") {
             const char * const name = node->Attribute("name");
             if (!name)
@@ -881,7 +887,8 @@ std::string Library::getFunctionName(const Token *ftok) const
     // Lookup function name using AST..
     if (ftok->astParent()) {
         bool error = false;
-        const std::string ret = getFunctionName(ftok->next()->astOperand1(), &error);
+        const Token * tok = ftok->astParent()->isUnaryOp("&") ? ftok->astParent()->astOperand1() : ftok->next()->astOperand1();
+        const std::string ret = getFunctionName(tok, &error);
         return error ? std::string() : ret;
     }
 
@@ -1304,3 +1311,14 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
         mImporters.find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }
+
+bool Library::isSmartPointer(const Token *tok) const
+{
+    std::string typestr;
+    while (Token::Match(tok, "%name%|::")) {
+        typestr += tok->str();
+        tok = tok->next();
+    }
+    return smartPointers.find(typestr) != smartPointers.end();
+}
+

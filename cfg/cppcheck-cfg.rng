@@ -396,6 +396,10 @@
         </zeroOrMore>
       </element>
 
+      <element name="smart-pointer">
+        <attribute name="class-name"><ref name="DATA-EXTNAME"/></attribute>
+      </element>
+
       <element name="podtype">
         <attribute name="name"><ref name="DATA-EXTNAME"/></attribute>
         <optional>

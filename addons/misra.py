@@ -1261,7 +1261,7 @@ class MisraChecker:
                 continue
             if token.astOperand1.str == '[' and token.astOperand1.previous.str in {'{', ','}:
                 continue
-            if not (token.astParent.str in [',', ';']):
+            if not (token.astParent.str in [',', ';', '{']):
                 self.reportError(token, 13, 4)
 
 
@@ -2016,7 +2016,7 @@ class MisraChecker:
 
             if not severity in self.violations:
                 self.violations[severity] = []
-            self.violations[severity].append(errorId)
+            self.violations[severity].append('misra-' + errorId)
 
     def loadRuleTexts(self, filename):
         num1 = 0
@@ -2051,36 +2051,49 @@ class MisraChecker:
                 file_stream = open(filename, 'rt')
         # Parse the rule texts
         rule = None
+        state = 0 # 0=Expect "Rule X.Y", 1=Expect "Advisory|Required|Mandatory", 2=Expect "Text..", 3=Expect "..more text"
         for line in file_stream:
             line = line.replace('\r', '').replace('\n', '')
-            if len(line) == 0:
-                if rule:
-                    num1 = 0
-                    num2 = 0
-                rule = None
-                continue
             if not appendixA:
                 if line.find('Appendix A') >= 0 and line.find('Summary of guidelines') >= 10:
                     appendixA = True
                 continue
             if line.find('Appendix B') >= 0:
                 break
+            if len(line) == 0:
+                if state >= 3:
+                    state = 0
+                continue
             res = Rule_pattern.match(line)
             if res:
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
                 rule = Rule(num1, num2)
+                state = 1
                 continue
-            if Choice_pattern.match(line):
-                if rule:
+            if rule is None:
+                continue
+            if state == 1: # Expect "Advisory|Required|Mandatory"
+                if Choice_pattern.match(line):
                     rule.severity = line
-            elif xA_Z_pattern.match(line):
-                if rule:
+                    state = 2
+                else:
+                    rule = None
+                    state = 0
+            elif state == 2: # Expect "Text.."
+                if xA_Z_pattern.match(line):
+                    state = 3
                     rule.text = line
                     self.ruleTexts[rule.num] = rule
-            elif rule and a_z_pattern.match(line):
-                self.ruleTexts[rule.num].text = self.ruleTexts[rule.num].text + ' ' + line
-                continue
+                else:
+                    rule = None
+                    state = 0
+            elif state == 3: # Expect ".. more text"
+                if a_z_pattern.match(line):
+                    self.ruleTexts[rule.num].text += ' ' + line
+                else:
+                    rule = None
+                    state = 0
 
     def parseDump(self, dumpfile):
 
@@ -2316,8 +2329,11 @@ else:
                     convert = lambda text: int(text) if text.isdigit() else text
                     misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
                     for misra_id in sorted(rules_violated.keys(), key=misra_sort):
-                        num = misra_id[len("misra-c2012-"):]
-                        num = int(num[:num.index(".")]) * 100 + int(num[num.index(".")+1:])
+                        res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
+                        if res is None:
+                            num = 0
+                        else:
+                            num = int(res.group(1)) * 100 + int(res.group(2))
                         severity = '-'
                         if num in checker.ruleTexts:
                             severity = checker.ruleTexts[num].severity

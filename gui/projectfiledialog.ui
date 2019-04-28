@@ -447,7 +447,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_7">
          <property name="title">
-          <string>Exclude paths</string>
+          <string>Exclude source files in paths</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>

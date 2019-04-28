@@ -363,7 +363,7 @@ QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool tra
     // make it a relative path instead of absolute path.
     const QDir dir(rootpath);
     const QString relpath(dir.relativeFilePath(selectedDir));
-    if (!relpath.startsWith("."))
+    if (!relpath.startsWith("../.."))
         selectedDir = relpath;
 
     // Trailing slash..

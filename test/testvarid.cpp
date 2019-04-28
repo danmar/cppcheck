@@ -162,6 +162,8 @@ private:
         TEST_CASE(varid_arrayinit); // #7579
         TEST_CASE(varid_lambda_arg);
         TEST_CASE(varid_lambda_mutable);
+        TEST_CASE(varid_trailing_return1); // #8889
+        TEST_CASE(varid_trailing_return2); // #9066
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2511,6 +2513,34 @@ private:
                             "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
                             "3: dostuff ( x@1 ) ;\n"
                             "4: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return1() { // #8889
+        const char code1[] = "struct Fred {\n"
+                             "    auto foo(const Fred & other) -> Fred &;\n"
+                             "    auto bar(const Fred & other) -> Fred & {\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};\n"
+                             "auto Fred::foo(const Fred & other) -> Fred & {\n"
+                             "    return *this;\n"
+                             "}";
+        const char exp1[] = "1: struct Fred {\n"
+                            "2: auto foo ( const Fred & other@1 ) . Fred & ;\n"
+                            "3: auto bar ( const Fred & other@2 ) . Fred & {\n"
+                            "4: return * this ;\n"
+                            "5: }\n"
+                            "6: } ;\n"
+                            "7: auto Fred :: foo ( const Fred & other@3 ) . Fred & {\n"
+                            "8: return * this ;\n"
+                            "9: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return2() { // #9066
+        const char code1[] = "auto func(int arg) -> bar::quux {}";
+        const char exp1[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
     }
 

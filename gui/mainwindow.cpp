@@ -28,7 +28,9 @@
 #include <QFile>
 #include <QInputDialog>
 #include "mainwindow.h"
+
 #include "cppcheck.h"
+
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
@@ -442,7 +444,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools(), mSettings->value(SETTINGS_MISRA_FILE).toString());
         QString clangHeaders = mSettings->value(SETTINGS_VS_INCLUDE_PATHS).toString();
         mThread->setClangIncludePaths(clangHeaders.split(";"));
-        mThread->setSuppressions(mProjectFile->getSuppressions());
+        mThread->setSuppressions(mProjectFile->getCheckSuppressions());
     }
     mThread->setProject(p);
     mThread->check(checkSettings);
@@ -841,8 +843,7 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        const QList<Suppressions::Suppression> &suppressions = mProjectFile->getSuppressions();
-        foreach (const Suppressions::Suppression &suppression, suppressions) {
+        foreach (const Suppressions::Suppression &suppression, mProjectFile->getCheckSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 

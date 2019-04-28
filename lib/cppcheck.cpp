@@ -32,7 +32,7 @@
 #include "tokenlist.h"
 #include "version.h"
 
-#include "../externals/picojson.h"
+#include <picojson.h>
 #include <simplecpp.h>
 #include <tinyxml2.h>
 #include <algorithm>

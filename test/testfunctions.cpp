@@ -1168,6 +1168,21 @@ private:
                       "[test.cpp:4]: (warning) Return value of function testfunc2() is not used.\n"
                       "[test.cpp:8]: (warning) Return value of function TestStruct1.testfunc1() is not used.\n"
                       "[test.cpp:9]: (warning) Return value of function TestStruct1.testfunc2() is not used.\n", errout.str());
+
+        // #9006
+        check("template <typename... a> uint8_t b(std::tuple<uint8_t> d) {\n"
+              "  std::tuple<a...> c{std::move(d)};\n"
+              "  return std::get<0>(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "template <class... Ts>\n"
+              "A f(int x, Ts... xs) {\n"
+              "    return {std::move(x), static_cast<int>(xs)...};\n"
+              "}\n"
+              "A g() { return f(1); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void memsetZeroBytes() {

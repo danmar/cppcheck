@@ -1928,6 +1928,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void *f() {\n" // #8848
+              "    struct S { void *alloc() { return malloc(10); } };\n"
+              "}\n"
+              "void x()\n"
+              "{\n"
+              "    f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void x()\n"
               "{\n"
               "    if(!malloc(5)) fail();\n"
