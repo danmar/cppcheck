@@ -1791,7 +1791,8 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
         } else {
             if (tok1->str() == ">")
                 tok1 = tok1->next();
-            while (Token::Match(tok1, "extern|virtual|static|friend|struct|union|enum"))
+            while (Token::Match(tok1, "extern|virtual|static|friend|struct|union|enum") ||
+            (!tok1->originalName().empty() && tok1->originalName() == "constexpr"))
                 tok1 = tok1->next();
             retDef = tok1;
         }

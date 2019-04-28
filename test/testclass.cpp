@@ -79,6 +79,7 @@ private:
         TEST_CASE(operatorEq3); // ticket #3051
         TEST_CASE(operatorEq4); // ticket #3114
         TEST_CASE(operatorEq5); // ticket #3296
+        TEST_CASE(operatorEq6);
         TEST_CASE(operatorEqRetRefThis1);
         TEST_CASE(operatorEqRetRefThis2); // ticket #1323
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
@@ -1126,6 +1127,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void operatorEq6() { // (constexpr operator)
+        checkOpertorEq(
+            "class A {\n"
+            "public:\n"
+            "    constexpr A& operator=(const A&);\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+    }
     // Check that operator Equal returns reference to this
     void checkOpertorEqRetRefThis(const char code[]) {
         // Clear the error log
