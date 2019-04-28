@@ -63,11 +63,9 @@ static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After 
 
 static const ValueFlow::Value *getBufferSizeValue(const Token *tok)
 {
-    for (const ValueFlow::Value &value : tok->values()) {
-        if (value.isBufferSizeValue())
-            return &value;
-    }
-    return nullptr;
+    const std::list<ValueFlow::Value> &tokenValues = tok->values();
+    const auto it = std::find_if(tokenValues.begin(), tokenValues.end(), std::mem_fn(&ValueFlow::Value::isBufferSizeValue));
+    return it == tokenValues.end() ? nullptr : &*it;
 }
 
 static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, unsigned int formatStringArgNr)
