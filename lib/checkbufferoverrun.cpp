@@ -36,7 +36,7 @@
 #include <tinyxml2.h>
 #include <algorithm>
 #include <cstdlib>
-#include <numeric>
+#include <numeric> // std::accumulate
 #include <sstream>
 #include <stack>
 #include <utility>
@@ -346,8 +346,8 @@ static std::string stringifyIndexes(const std::string &array, const std::vector<
 static std::string arrayIndexMessage(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexValues, const Token *condition)
 {
     auto add_dim = [](const std::string &s, const Dimension &dim) {
-            return s + "[" + MathLib::toString(dim.num) + "]";
-        };
+        return s + "[" + MathLib::toString(dim.num) + "]";
+    };
     const std::string array = std::accumulate(dimensions.begin(), dimensions.end(), tok->astOperand1()->expressionString(), add_dim);
 
     std::ostringstream errmsg;
@@ -508,9 +508,9 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (!var)
         return ValueFlow::Value(-1);
 
-    MathLib::bigint dim = 1;
-    for (const Dimension &d : var->dimensions())
-        dim *= d.num;
+    MathLib::bigint dim = std::accumulate(var->dimensions().begin(), var->dimensions().end(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
+        return i1 * dim.num;
+    });
 
     ValueFlow::Value v;
     v.setKnown();
