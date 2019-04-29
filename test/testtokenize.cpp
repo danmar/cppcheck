@@ -397,6 +397,7 @@ private:
         TEST_CASE(simplifyOperatorName9); // ticket #5709 - comma operator not properly tokenized
         TEST_CASE(simplifyOperatorName10); // #8746 - using a::operator=
         TEST_CASE(simplifyOperatorName11); // #8889
+        TEST_CASE(simplifyOperatorName12); // #9110
 
         TEST_CASE(simplifyNullArray);
 
@@ -6212,6 +6213,18 @@ private:
 
         const char code4[] = "template <typename T> void g(S<&T::template operator- <double> >) {}";
         ASSERT_EQUALS("template < typename T > void g ( S < & T :: template operator- < double > > ) { }", tokenizeAndStringify(code4));
+    }
+
+    void simplifyOperatorName12() { // #9110
+        const char code[] = "namespace a {"
+                            "template <typename b> void operator+(b);"
+                            "}"
+                            "using a::operator+;";
+        ASSERT_EQUALS("namespace a { "
+                      "template < typename b > void operator+ ( b ) ; "
+                      "} "
+                      "using a :: operator+ ;",
+                      tokenizeAndStringify(code));
     }
 
     void simplifyNullArray() {
