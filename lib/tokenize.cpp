@@ -8493,7 +8493,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
 
 //---------------------------------------------------------------------------
 
-void Tokenizer::syntaxError(const Token *tok, const std::string code) const
+void Tokenizer::syntaxError(const Token *tok, const std::string &code) const
 {
     printDebugOutput(0);
     throw InternalError(tok, code.empty() ? "syntax error" : "syntax error: " + code, InternalError::SYNTAX);

@@ -3080,17 +3080,23 @@ private:
     }
 
     void duplicateConditionalAssign() {
+        setMultiline();
+
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
               "        x = y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Assignment 'x=y' is redundant with condition 'x==y'.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
+                      "test.cpp:2:note:Condition 'x==y'\n"
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"
               "        x = y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'.\n"
+                      "test.cpp:3:note:Assignment 'x=y'\n"
+                      "test.cpp:2:note:Condition 'x!=y' is redundant\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
@@ -3098,7 +3104,9 @@ private:
               "    else\n"
               "        x = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Assignment 'x=y' is redundant with condition 'x==y'.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
+                      "test.cpp:2:note:Condition 'x==y'\n"
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"

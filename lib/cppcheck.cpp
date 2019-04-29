@@ -575,9 +575,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             for (const std::string &addon : mSettings.addons) {
                 struct AddonInfo addonInfo;
-                const std::string errmsg = addonInfo.getAddonInfo(addon, mSettings.exename);
-                if (!errmsg.empty()) {
-                    reportOut(errmsg);
+                const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
+                if (!failedToGetAddonInfo.empty()) {
+                    reportOut(failedToGetAddonInfo);
                     continue;
                 }
                 const std::string &results = executeAddon(addonInfo, dumpFile);
