@@ -224,7 +224,11 @@ bool precedes(const Token * tok1, const Token * tok2)
         return false;
     if (!tok2)
         return false;
-    return tok1->progressValue() < tok2->progressValue();
+    if (tok1 == tok2)
+        return false;
+    while (tok1->progressValue() == tok2->progressValue() && tok1 != tok2)
+        tok1 = tok1->next();
+    return tok1->progressValue() <= tok2->progressValue();
 }
 
 bool isAliased(const Token *startTok, const Token *endTok, unsigned int varid)
