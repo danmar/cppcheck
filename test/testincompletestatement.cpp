@@ -86,6 +86,7 @@ private:
         TEST_CASE(redundantstmts);
         TEST_CASE(vardecl);
         TEST_CASE(archive);             // ar & x
+        TEST_CASE(ast);
     }
 
     void test1() {
@@ -378,6 +379,11 @@ private:
               "  ar & x;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
+    }
+
+    void ast() {
+        check("struct c { void a() const { for (int x=0; x;); } };", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
