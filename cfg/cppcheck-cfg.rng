@@ -337,15 +337,19 @@
         <zeroOrMore>
           <choice>
             <element name="type">
-              <choice>
+              <optional>
                 <attribute name="templateParameter"><data type="integer"/></attribute>
+              </optional>
+              <optional>
                 <attribute name="string">
                   <value>std-like</value>
                 </attribute>
+              </optional>
+              <optional>
                 <attribute name="associative">
                   <value>std-like</value>
                 </attribute>
-              </choice>
+              </optional>
               <empty/>
             </element>
             <element name="size">
