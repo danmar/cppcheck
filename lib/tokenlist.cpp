@@ -483,7 +483,7 @@ static bool iscpp11init(const Token * const tok)
         endtok = nameToken->linkAt(1)->linkAt(1);
     else
         return false;
-    if (Token::Match(nameToken, "else|try|do"))
+    if (Token::Match(nameToken, "else|try|do|const|override|volatile|&|&&"))
         return false;
     // There is no initialisation for example here: 'class Fred {};'
     if (!Token::simpleMatch(endtok, "} ;"))
