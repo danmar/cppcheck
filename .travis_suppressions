@@ -3,11 +3,16 @@ unusedPrivateFunction:test/testcmdlineparser.cpp
 redundantNextPrevious:test/testtoken.cpp
 simplePatternError:test/testtoken.cpp
 noValidConfiguration
-useStlAlgorithm
 shadowFunction
 
-# temporarily suppress missingOverride
+# temporary suppressions - fix the warnings!
 missingOverride
+shadowVar
+shiftTooManyBitsSigned
+uninitStructMember
+unsignedLessThanZero
+unusedPrivateFunction
+useStlAlgorithm
 
 *:gui/test/*
 *:test/test.cxx
