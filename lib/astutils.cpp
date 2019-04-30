@@ -840,7 +840,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const
            isVariableChangedByFunctionCall(tok->astOperand2(), varid, settings, inconclusive);
 }
 
-static bool isScopeBracket(const Token* tok)
+static bool isScopeBracket(const Token *tok)
 {
     if (!Token::Match(tok, "{|}"))
         return false;

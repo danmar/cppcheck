@@ -1257,13 +1257,13 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
                 "as a const reference which is usually faster and recommended in C++.", CWE398, inconclusive);
 }
 
-static bool isUnusedVariable(const Variable* var)
+static bool isUnusedVariable(const Variable *var)
 {
     if (!var)
         return false;
     if (!var->scope())
         return false;
-    const Token * start = var->declEndToken();
+    const Token *start = var->declEndToken();
     if (!start)
         return false;
     if (Token::Match(start, "; %varid% =", var->declarationId()))
@@ -1329,8 +1329,7 @@ void CheckOther::constVariableError(const Variable *var)
         if (var->isArgument())
             id = "Parameter";
     }
-    reportError(
-        tok, Severity::style, "const"+id, id + " '" + name + "' can be declared with const", CWE398, false);
+    reportError(tok, Severity::style, "const" + id, id + " '" + name + "' can be declared with const", CWE398, false);
 }
 
 //---------------------------------------------------------------------------

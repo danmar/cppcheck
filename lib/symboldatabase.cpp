@@ -1706,7 +1706,11 @@ void Variable::setValueType(const ValueType &valueType)
     setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
 }
 
-Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef)
+Function::Function(const Tokenizer *mTokenizer,
+                   const Token *tok,
+                   const Scope *scope,
+                   const Token *tokDef,
+                   const Token *tokArgDef)
     : tokenDef(tokDef),
       argDef(tokArgDef),
       token(nullptr),
