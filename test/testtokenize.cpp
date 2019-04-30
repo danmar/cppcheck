@@ -6983,7 +6983,7 @@ private:
 
         // Return stringified AST
         if (verbose)
-            return tokenList.list.front()->astTop()->astStringVerbose(0, 0);
+            return tokenList.list.front()->astTop()->astStringVerbose();
 
         std::string ret;
         std::set<const Token *> astTop;
