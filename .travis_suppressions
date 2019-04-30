@@ -7,7 +7,6 @@ shadowFunction
 
 # temporary suppressions - fix the warnings!
 missingOverride
-shadowVar
 shiftTooManyBitsSigned
 uninitStructMember
 unsignedLessThanZero
