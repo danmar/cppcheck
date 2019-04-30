@@ -1257,6 +1257,20 @@ void CheckOther::passedByValueError(const Token *tok, const std::string &parname
                 "as a const reference which is usually faster and recommended in C++.", CWE398, inconclusive);
 }
 
+static bool isUnusedVariable(const Variable* var)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    const Token * start = var->declEndToken();
+    if (!start)
+        return false;
+    if (Token::Match(start, "; %varid% =", var->declarationId()))
+        start = start->tokAt(2);
+    return !Token::findmatch(start->next(), "%varid%", var->scope()->bodyEnd, var->declarationId());
+}
+
 void CheckOther::checkConstVariable()
 {
     if (!mSettings->isEnabled(Settings::STYLE) || mTokenizer->isC())
@@ -1280,6 +1294,8 @@ void CheckOther::checkConstVariable()
             continue;
         Function *function = scope->function;
         if (var->isArgument() && (function->isVirtual() || function->templateDef))
+            continue;
+        if (var->isArgument() && isUnusedVariable(var))
             continue;
         if (var->isGlobal())
             continue;

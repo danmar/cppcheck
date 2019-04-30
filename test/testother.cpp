@@ -1802,6 +1802,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Perhaps unused variable should be checked as well.
+        check("void f(int& x, int& y) {\n"
+              "    y++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
