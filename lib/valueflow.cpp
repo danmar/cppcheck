@@ -1460,6 +1460,9 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
 
 static void valueFlowGlobalConstVar(TokenList* tokenList, const Settings *settings)
 {
+    // TODO: danmar: This is commented out until #9099 is fixed
+    return;
+
     // Get variable values...
     std::map<const Variable*, ValueFlow::Value> vars;
     for (const Token* tok = tokenList->front(); tok; tok = tok->next()) {
