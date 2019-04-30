@@ -982,6 +982,9 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         if (isLikelyStreamRead(cpp, tok->previous()))
             return true;
 
+        if (isLikelyStream(cpp, tok2))
+            return true;
+
         // Member function call
         if (Token::Match(tok, "%name% . %name% (")) {
             const Variable * var = tok->variable();
@@ -1099,6 +1102,23 @@ const Token *findLambdaEndToken(const Token *first)
     if (tok->astOperand1() && tok->astOperand1()->str() == "{")
         return tok->astOperand1()->link();
     return nullptr;
+}
+
+bool isLikelyStream(bool cpp, const Token *stream)
+{
+    if (!cpp)
+        return false;
+
+    if (!stream)
+        return false;
+
+    if (!Token::Match(stream->astParent(), "&|<<|>>") || !stream->astParent()->isBinaryOp())
+        return false;
+
+    if (stream->astParent()->astOperand1() != stream)
+        return false;
+
+    return !astIsIntegral(stream, false);
 }
 
 bool isLikelyStreamRead(bool cpp, const Token *op)

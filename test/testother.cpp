@@ -1779,6 +1779,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::ostream& os) {\n"
+              "    os << \"Hello\";\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"

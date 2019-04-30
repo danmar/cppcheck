@@ -159,6 +159,8 @@ const Token *findLambdaStartToken(const Token *last);
  */
 const Token *findLambdaEndToken(const Token *first);
 
+bool isLikelyStream(bool cpp, const Token *stream);
+
 /**
  * do we see a likely write of rhs through overloaded operator
  *   s >> x;
