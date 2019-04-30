@@ -840,6 +840,19 @@ bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const
            isVariableChangedByFunctionCall(tok->astOperand2(), varid, settings, inconclusive);
 }
 
+static bool isScopeBracket(const Token* tok)
+{
+    if (!Token::Match(tok, "{|}"))
+        return false;
+    if (!tok->scope())
+        return false;
+    if (tok->str() == "{")
+        return tok->scope()->bodyStart == tok;
+    if (tok->str() == "}")
+        return tok->scope()->bodyEnd == tok;
+    return false;
+}
+
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
@@ -858,7 +871,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[(,]"))
+        if (Token::Match(parent, "[(,{]"))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))
@@ -873,24 +886,24 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
 
     // goto start of function call and get argnr
     unsigned int argnr = 0;
-    while (tok && !Token::Match(tok, "[;{}]")) {
+    while (tok && !Token::simpleMatch(tok, ";") && !isScopeBracket(tok)) {
         if (tok->str() == ",")
             ++argnr;
         else if (tok->str() == ")")
             tok = tok->link();
-        else if (Token::Match(tok->previous(), "%name% ("))
+        else if (Token::Match(tok->previous(), "%name% (|{"))
             break;
-        else if (Token::simpleMatch(tok->previous(), "> (") && tok->previous()->link())
+        else if (Token::Match(tok->previous(), "> (|{") && tok->previous()->link())
             break;
         tok = tok->previous();
     }
-    if (!tok || tok->str() != "(")
+    if (!Token::Match(tok, "{|("))
         return false;
-    const bool possiblyPassedByReference = (tok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)]"));
+    const bool possiblyPassedByReference = (tok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
     tok = tok->previous();
     if (tok && tok->link() && tok->str() == ">")
         tok = tok->link()->previous();
-    if (!Token::Match(tok, "%name% [(<]"))
+    if (!Token::Match(tok, "%name% [({<]"))
         return false; // not a function => variable not changed
 
     // Constructor call
@@ -1004,7 +1017,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         while (ftok && (!Token::Match(ftok, "[({]") || ftok->isCast()))
             ftok = ftok->astParent();
 
-        if (ftok && Token::Match(ftok->link(), ") !!{")) {
+        if (ftok && Token::Match(ftok->link(), ")|} !!{")) {
             bool inconclusive = false;
             bool isChanged = isVariableChangedByFunctionCall(tok2, settings, &inconclusive);
             isChanged |= inconclusive;

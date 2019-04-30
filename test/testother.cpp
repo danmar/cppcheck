@@ -1784,6 +1784,24 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g(int*);\n"
+              "void f(int& x) {\n"
+              "    g(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(int*); };\n"
+              "A f(int& x) {\n"
+              "    return A(&x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(int*); };\n"
+              "A f(int& x) {\n"
+              "    return A{&x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
