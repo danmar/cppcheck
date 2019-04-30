@@ -189,7 +189,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 const std::string memorynodename = memorynode->Name();
                 if (memorynodename == "alloc") {
-                    AllocFunc temp;
+                    AllocFunc temp = {0};
                     temp.groupId = allocationId;
 
                     if (memorynode->Attribute("init", "false"))
@@ -227,7 +227,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
                     mAlloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
-                    AllocFunc temp;
+                    AllocFunc temp = {0};
                     temp.groupId = allocationId;
                     const char *arg = memorynode->Attribute("arg");
                     if (arg)
