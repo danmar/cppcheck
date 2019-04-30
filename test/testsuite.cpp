@@ -316,17 +316,14 @@ std::size_t TestFixture::runTests(const options& args)
     countTests = 0;
     errmsg.str("");
 
-    const std::set<std::string>& tests = args.which_test();
-    for (std::string classname : tests) {
+    for (std::string classname : args.which_test()) {
         std::string testname;
         if (classname.find("::") != std::string::npos) {
             testname = classname.substr(classname.find("::") + 2);
             classname.erase(classname.find("::"));
         }
 
-        const TestSet &tests = TestRegistry::theInstance().tests();
-
-        for (TestFixture * test : tests) {
+        for (TestFixture * test : TestRegistry::theInstance().tests()) {
             if (classname.empty() || test->classname == classname) {
                 test->processOptions(args);
                 test->run(testname);
