@@ -108,7 +108,7 @@ namespace simplecpp {
 
         void flags() {
             name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$');
-            comment = (string.compare(0, 2, "//") == 0 || string.compare(0, 2, "/*") == 0);
+            comment = string.size() > 1U && string[0] == '/' && (string[1] == '/' || string[1] == '*');
             number = std::isdigit((unsigned char)string[0]) || (string.size() > 1U && string[0] == '-' && std::isdigit((unsigned char)string[1]));
             op = (string.size() == 1U) ? string[0] : '\0';
         }
