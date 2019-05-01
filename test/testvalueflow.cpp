@@ -778,6 +778,7 @@ private:
         CHECK("short", settings.sizeof_short);
         CHECK("int", settings.sizeof_int);
         CHECK("long", settings.sizeof_long);
+        CHECK("wchar_t", settings.sizeof_wchar_t);
 #undef CHECK
 
         // array size
