@@ -3189,6 +3189,7 @@ static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, Error
                 } else {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 }
+                i++;
             }
         }
     } else if (Token::simpleMatch(tok, "{") && (astIsContainer(tok->astParent()) || astIsPointer(tok->astParent()))) {
