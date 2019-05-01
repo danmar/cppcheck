@@ -220,14 +220,14 @@ static bool isInLoopCondition(const Token * tok)
 /// If tok2 comes after tok1
 bool precedes(const Token * tok1, const Token * tok2)
 {
-    if (!tok1)
-        return false;
     if (!tok2)
-        return false;
+        return tok1;
     if (tok1 == tok2)
         return false;
-    while (tok1->progressValue() == tok2->progressValue() && tok1 != tok2)
+    while (tok1 && tok1->progressValue() == tok2->progressValue() && tok1 != tok2)
         tok1 = tok1->next();
+    if (!tok1)
+        return false;
     return tok1->progressValue() <= tok2->progressValue();
 }
 
