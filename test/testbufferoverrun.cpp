@@ -4176,6 +4176,19 @@ private:
             "    foo(p+1);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9112
+        ctu("static void get_mac_address(const u8 *strbuf)\n"
+            "{\n"
+            "    (strbuf[2]);\n"
+            "}\n"
+            "\n"
+            "static void program_mac_address(u32 mem_base)\n"
+            "{\n"
+            "    u8 macstrbuf[17] = { 0 };\n"
+            "    get_mac_address(macstrbuf);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu_variable() {
