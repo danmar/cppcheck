@@ -3564,6 +3564,30 @@ static void valueFlowForwardAssign(Token * const               tok,
     valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, constValue, false, tokenlist, errorLogger, settings);
 }
 
+static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> values, const ValueType *valueType, const Settings *settings)
+{
+    if (!valueType || !valueType->isIntegral())
+        return values;
+
+    const size_t sz = getSizeOf(*valueType, settings);
+
+    for (ValueFlow::Value &value : values) {
+        if (value.isFloatValue()) {
+            value.intvalue = value.floatValue;
+            value.valueType = ValueFlow::Value::INT;
+        }
+
+        if (value.isIntValue() && sz > 0 && sz < 8) {
+            const MathLib::biguint unsignedMaxValue = (1ULL << (sz * 8)) - 1ULL;
+            const MathLib::biguint signBit = 1ULL << (sz * 8 - 1);
+            value.intvalue &= unsignedMaxValue;
+            if (valueType->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
+                value.intvalue |= ~unsignedMaxValue;
+        }
+    }
+    return values;
+}
+
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
@@ -3593,7 +3617,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!tok->astOperand2() || tok->astOperand2()->values().empty())
                 continue;
 
-            std::list<ValueFlow::Value> values = tok->astOperand2()->values();
+            std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
             const bool constValue = tok->astOperand2()->isNumber();
             const bool init = var->nameToken() == tok->astOperand1();
             valueFlowForwardAssign(const_cast<Token *>(tok->astOperand2()), var, values, constValue, init, tokenlist, errorLogger, settings);

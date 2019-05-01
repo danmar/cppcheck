@@ -1443,6 +1443,25 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
 
+        // truncation
+        code = "int f() {\n"
+               "  int x = 1.5;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "int f() {\n"
+               "  unsigned char x = 0x123;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0x23));
+
+        code = "int f() {\n"
+               "  signed char x = 0xfe;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, -2));
+
         // function
         code = "void f() {\n"
                "    char *x = 0;\n"
