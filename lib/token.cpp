@@ -1365,7 +1365,7 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
             } else if (verbose)
-                out << tok->astStringVerbose(0,0) << std::endl;
+                out << tok->astStringVerbose() << std::endl;
             else
                 out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
@@ -1374,18 +1374,16 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
     }
 }
 
-static std::string indent(const unsigned int indent1, const unsigned int indent2)
+static void indent(std::string &str, const unsigned int indent1, const unsigned int indent2)
 {
-    std::string ret(indent1,' ');
+    for (unsigned int i = 0; i < indent1; ++i)
+        str += ' ';
     for (unsigned int i = indent1; i < indent2; i += 2)
-        ret += "| ";
-    return ret;
+        str += "| ";
 }
 
-std::string Token::astStringVerbose(const unsigned int indent1, const unsigned int indent2) const
+void Token::astStringVerboseRecursive(std::string& ret, const unsigned int indent1, const unsigned int indent2) const
 {
-    std::string ret;
-
     if (isExpandedMacro())
         ret += '$';
     ret += mStr;
@@ -1395,16 +1393,26 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
 
     if (mImpl->mAstOperand1) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
-        if (indent1==indent2 && !mImpl->mAstOperand2)
+        if (indent1 == indent2 && !mImpl->mAstOperand2)
             i1 += 2;
-        ret += indent(indent1,indent2) + (mImpl->mAstOperand2 ? "|-" : "`-") + mImpl->mAstOperand1->astStringVerbose(i1,i2);
+        indent(ret, indent1, indent2);
+        ret += mImpl->mAstOperand2 ? "|-" : "`-";
+        mImpl->mAstOperand1->astStringVerboseRecursive(ret, i1, i2);
     }
     if (mImpl->mAstOperand2) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
-        if (indent1==indent2)
+        if (indent1 == indent2)
             i1 += 2;
-        ret += indent(indent1,indent2) + "`-" + mImpl->mAstOperand2->astStringVerbose(i1,i2);
+        indent(ret, indent1, indent2);
+        ret += "`-";
+        mImpl->mAstOperand2->astStringVerboseRecursive(ret, i1, i2);
     }
+}
+
+std::string Token::astStringVerbose() const
+{
+    std::string ret;
+    astStringVerboseRecursive(ret);
     return ret;
 }
 

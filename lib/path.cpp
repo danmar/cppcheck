@@ -218,7 +218,7 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
     char absolute[_MAX_PATH];
     if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
         absolute_path = absolute;
-#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__)
+#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__) || defined(__CPPCHECK__)
     char * absolute = realpath(filePath.c_str(), nullptr);
     if (absolute)
         absolute_path = absolute;

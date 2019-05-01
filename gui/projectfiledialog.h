@@ -42,7 +42,7 @@ class ProjectFile;
 class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
-    ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = 0);
+    explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = 0);
     virtual ~ProjectFileDialog();
 
 private:
