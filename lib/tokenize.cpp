@@ -9164,7 +9164,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|, &|= ]")))
             syntaxError(tok);
-        if (Token::Match(tok, "[+-] [;,)]}]"))
+        if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
             syntaxError(tok);
     }
 

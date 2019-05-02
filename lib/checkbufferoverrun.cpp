@@ -749,7 +749,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
     const CheckBufferOverrun *c = dynamic_cast<const CheckBufferOverrun *>(check);
     if (!c)
         return false;
-    if (!argtok->valueType())
+    if (!argtok->valueType() || argtok->valueType()->typeSize(*c->mSettings) == 0)
         return false;
     const Token *indexTok = nullptr;
     if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))

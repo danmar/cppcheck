@@ -541,8 +541,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             return false;
                     }
 
-                    for (const std::string &i : mSettings->project.guiProject.excludedPaths)
-                        mIgnoredPaths.emplace_back(i);
+                    for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
+                        mIgnoredPaths.emplace_back(ignorePath);
 
                     const std::string platform(mSettings->project.guiProject.platform);
 

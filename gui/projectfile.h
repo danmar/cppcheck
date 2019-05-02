@@ -40,7 +40,7 @@ class ProjectFile : public QObject {
 
 public:
     explicit ProjectFile(QObject *parent = 0);
-    ProjectFile(const QString &filename, QObject *parent = 0);
+    explicit ProjectFile(const QString &filename, QObject *parent = 0);
 
     /**
      * @brief Read the project file.

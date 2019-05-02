@@ -397,6 +397,7 @@ private:
         TEST_CASE(simplifyOperatorName9); // ticket #5709 - comma operator not properly tokenized
         TEST_CASE(simplifyOperatorName10); // #8746 - using a::operator=
         TEST_CASE(simplifyOperatorName11); // #8889
+        TEST_CASE(simplifyOperatorName12); // #9110
 
         TEST_CASE(simplifyNullArray);
 
@@ -6214,6 +6215,18 @@ private:
         ASSERT_EQUALS("template < typename T > void g ( S < & T :: template operator- < double > > ) { }", tokenizeAndStringify(code4));
     }
 
+    void simplifyOperatorName12() { // #9110
+        const char code[] = "namespace a {"
+                            "template <typename b> void operator+(b);"
+                            "}"
+                            "using a::operator+;";
+        ASSERT_EQUALS("namespace a { "
+                      "template < typename b > void operator+ ( b ) ; "
+                      "} "
+                      "using a :: operator+ ;",
+                      tokenizeAndStringify(code));
+    }
+
     void simplifyNullArray() {
         ASSERT_EQUALS("* ( foo . bar [ 5 ] ) = x ;", tokenizeAndStringify("0[foo.bar[5]] = x;"));
     }
@@ -6970,7 +6983,7 @@ private:
 
         // Return stringified AST
         if (verbose)
-            return tokenList.list.front()->astTop()->astStringVerbose(0, 0);
+            return tokenList.list.front()->astTop()->astStringVerbose();
 
         std::string ret;
         std::set<const Token *> astTop;
@@ -7091,6 +7104,12 @@ private:
 
         // C++17: if (expr1; expr2)
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
+
+        ASSERT_EQUALS("a( forx0=x;;(", testAst("struct c { void a() const { for (int x=0; x;); } };"));
+        // TODO: We dont correctly parse ref qualifiers
+        TODO_ASSERT_EQUALS("a( forx0=x;;(", "a({&", testAst("struct c { void a() & { for (int x=0; x;); } };"));
+        TODO_ASSERT_EQUALS("a( forx0=x;;(", "a({&&", testAst("struct c { void a() && { for (int x=0; x;); } };"));
+
     }
 
     void astexpr2() { // limit for large expressions

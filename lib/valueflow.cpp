@@ -836,6 +836,8 @@ static size_t getSizeOf(const ValueType &vt, const Settings *settings)
         return 1;
     else if (vt.type == ValueType::Type::SHORT)
         return settings->sizeof_short;
+    else if (vt.type == ValueType::Type::WCHAR_T)
+        return settings->sizeof_wchar_t;
     else if (vt.type == ValueType::Type::INT)
         return settings->sizeof_int;
     else if (vt.type == ValueType::Type::LONG)
@@ -1409,6 +1411,7 @@ static void valueFlowRightShift(TokenList *tokenList, const Settings* settings)
         int lhsbits;
         if ((tok->astOperand1()->valueType()->type == ValueType::Type::CHAR) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::SHORT) ||
+            (tok->astOperand1()->valueType()->type == ValueType::Type::WCHAR_T) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::BOOL) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::INT))
             lhsbits = settings->int_bit;
@@ -1460,6 +1463,9 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
 
 static void valueFlowGlobalConstVar(TokenList* tokenList, const Settings *settings)
 {
+    // TODO: danmar: This is commented out until #9099 is fixed
+    return;
+
     // Get variable values...
     std::map<const Variable*, ValueFlow::Value> vars;
     for (const Token* tok = tokenList->front(); tok; tok = tok->next()) {
@@ -3136,39 +3142,11 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
     }
 }
 
-static const Type *getTypeOf(const Token *tok)
-{
-    if (Token::simpleMatch(tok, "return")) {
-        const Scope *scope = tok->scope();
-        if (!scope)
-            return nullptr;
-        const Function *function = scope->function;
-        if (!function)
-            return nullptr;
-        return function->retType;
-    } else if (Token::Match(tok, "%type%")) {
-        return tok->type();
-    } else if (Token::Match(tok, "%var%")) {
-        const Variable *var = tok->variable();
-        if (!var)
-            return nullptr;
-        return var->type();
-    } else if (Token::Match(tok, "%name%")) {
-        const Function *function = tok->function();
-        if (!function)
-            return nullptr;
-        return function->retType;
-    } else if (Token::simpleMatch(tok, "=")) {
-        return getTypeOf(tok->astOperand1());
-    }
-    return nullptr;
-}
-
 static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     if (!Token::Match(tok, "(|{"))
         return;
-    if (const Type *t = getTypeOf(tok->previous())) {
+    if (const Type *t = Token::typeOf(tok->previous())) {
         const Scope *scope = t->classScope;
         if (!scope)
             return;
@@ -3186,6 +3164,7 @@ static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, Error
                 } else {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 }
+                i++;
             }
         }
     } else if (Token::simpleMatch(tok, "{") && (astIsContainer(tok->astParent()) || astIsPointer(tok->astParent()))) {
@@ -3557,6 +3536,30 @@ static void valueFlowForwardAssign(Token * const               tok,
     valueFlowForward(const_cast<Token *>(nextExpression), endOfVarScope, var, var->declarationId(), values, constValue, false, tokenlist, errorLogger, settings);
 }
 
+static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> values, const ValueType *valueType, const Settings *settings)
+{
+    if (!valueType || !valueType->isIntegral())
+        return values;
+
+    const size_t sz = getSizeOf(*valueType, settings);
+
+    for (ValueFlow::Value &value : values) {
+        if (value.isFloatValue()) {
+            value.intvalue = value.floatValue;
+            value.valueType = ValueFlow::Value::INT;
+        }
+
+        if (value.isIntValue() && sz > 0 && sz < 8) {
+            const MathLib::biguint unsignedMaxValue = (1ULL << (sz * 8)) - 1ULL;
+            const MathLib::biguint signBit = 1ULL << (sz * 8 - 1);
+            value.intvalue &= unsignedMaxValue;
+            if (valueType->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
+                value.intvalue |= ~unsignedMaxValue;
+        }
+    }
+    return values;
+}
+
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
@@ -3586,7 +3589,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!tok->astOperand2() || tok->astOperand2()->values().empty())
                 continue;
 
-            std::list<ValueFlow::Value> values = tok->astOperand2()->values();
+            std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
             const bool constValue = tok->astOperand2()->isNumber();
             const bool init = var->nameToken() == tok->astOperand1();
             valueFlowForwardAssign(const_cast<Token *>(tok->astOperand2()), var, values, constValue, init, tokenlist, errorLogger, settings);

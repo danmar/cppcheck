@@ -4007,6 +4007,7 @@ static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
     return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
               (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
               (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
+              (type->str() == "wchar_t" && valuetype->type == ValueType::WCHAR_T) ||
               (type->str() == "int" && valuetype->type == ValueType::INT) ||
               ((type->str() == "long" && type->isLong()) && valuetype->type == ValueType::LONGLONG) ||
               (type->str() == "long" && valuetype->type == ValueType::LONG) ||
@@ -5353,7 +5354,7 @@ void SymbolDatabase::setValueTypeInTokenList()
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
             if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
-                valuetype.type = ValueType::Type::SHORT;
+                valuetype.type = ValueType::Type::WCHAR_T;
             }
             setValueType(tok, valuetype);
         } else if (tok->str() == "(") {
@@ -5531,6 +5532,8 @@ ValueType::Type ValueType::typeFromString(const std::string &typestr, bool longT
         return ValueType::Type::CHAR;
     if (typestr == "short")
         return ValueType::Type::SHORT;
+    if (typestr == "wchar_t")
+        return ValueType::Type::WCHAR_T;
     if (typestr == "int")
         return ValueType::Type::INT;
     if (typestr == "long")
@@ -5568,6 +5571,8 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
             type = ValueType::Type::CHAR;
         else if (platformType->mType == "short")
             type = ValueType::Type::SHORT;
+        else if (platformType->mType == "wchar_t")
+            type = ValueType::Type::WCHAR_T;
         else if (platformType->mType == "int")
             type = platformType->_long ? ValueType::Type::LONG : ValueType::Type::INT;
         else if (platformType->mType == "long")
@@ -5630,6 +5635,9 @@ std::string ValueType::dump() const
     case SHORT:
         ret << "valueType-type=\"short\"";
         break;
+    case WCHAR_T:
+        ret << "valueType-type=\"wchar_t\"";
+        break;
     case INT:
         ret << "valueType-type=\"int\"";
         break;
@@ -5691,6 +5699,8 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
         return 1;
     case ValueType::Type::SHORT:
         return platform.sizeof_short;
+    case ValueType::Type::WCHAR_T:
+        return platform.sizeof_wchar_t;
     case ValueType::Type::INT:
         return platform.sizeof_int;
     case ValueType::Type::LONG:
@@ -5727,6 +5737,8 @@ std::string ValueType::str() const
             ret += " char";
         else if (type == SHORT)
             ret += " short";
+        else if (type == WCHAR_T)
+            ret += " wchar_t";
         else if (type == INT)
             ret += " int";
         else if (type == LONG)

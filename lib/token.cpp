@@ -1365,7 +1365,7 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
             } else if (verbose)
-                out << tok->astStringVerbose(0,0) << std::endl;
+                out << tok->astStringVerbose() << std::endl;
             else
                 out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
@@ -1374,18 +1374,16 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
     }
 }
 
-static std::string indent(const unsigned int indent1, const unsigned int indent2)
+static void indent(std::string &str, const unsigned int indent1, const unsigned int indent2)
 {
-    std::string ret(indent1,' ');
+    for (unsigned int i = 0; i < indent1; ++i)
+        str += ' ';
     for (unsigned int i = indent1; i < indent2; i += 2)
-        ret += "| ";
-    return ret;
+        str += "| ";
 }
 
-std::string Token::astStringVerbose(const unsigned int indent1, const unsigned int indent2) const
+void Token::astStringVerboseRecursive(std::string& ret, const unsigned int indent1, const unsigned int indent2) const
 {
-    std::string ret;
-
     if (isExpandedMacro())
         ret += '$';
     ret += mStr;
@@ -1395,16 +1393,26 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
 
     if (mImpl->mAstOperand1) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
-        if (indent1==indent2 && !mImpl->mAstOperand2)
+        if (indent1 == indent2 && !mImpl->mAstOperand2)
             i1 += 2;
-        ret += indent(indent1,indent2) + (mImpl->mAstOperand2 ? "|-" : "`-") + mImpl->mAstOperand1->astStringVerbose(i1,i2);
+        indent(ret, indent1, indent2);
+        ret += mImpl->mAstOperand2 ? "|-" : "`-";
+        mImpl->mAstOperand1->astStringVerboseRecursive(ret, i1, i2);
     }
     if (mImpl->mAstOperand2) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
-        if (indent1==indent2)
+        if (indent1 == indent2)
             i1 += 2;
-        ret += indent(indent1,indent2) + "`-" + mImpl->mAstOperand2->astStringVerbose(i1,i2);
+        indent(ret, indent1, indent2);
+        ret += "`-";
+        mImpl->mAstOperand2->astStringVerboseRecursive(ret, i1, i2);
     }
+}
+
+std::string Token::astStringVerbose() const
+{
+    std::string ret;
+    astStringVerboseRecursive(ret);
     return ret;
 }
 
@@ -1749,6 +1757,79 @@ void Token::type(const ::Type *t)
         isEnumType(mImpl->mType->isEnumType());
     } else if (mTokType == eType)
         tokType(eName);
+}
+
+const ::Type *Token::typeOf(const Token *tok)
+{
+    if (Token::simpleMatch(tok, "return")) {
+        const Scope *scope = tok->scope();
+        if (!scope)
+            return nullptr;
+        const Function *function = scope->function;
+        if (!function)
+            return nullptr;
+        return function->retType;
+    } else if (Token::Match(tok, "%type%")) {
+        return tok->type();
+    } else if (Token::Match(tok, "%var%")) {
+        const Variable *var = tok->variable();
+        if (!var)
+            return nullptr;
+        return var->type();
+    } else if (Token::Match(tok, "%name%")) {
+        const Function *function = tok->function();
+        if (!function)
+            return nullptr;
+        return function->retType;
+    } else if (Token::simpleMatch(tok, "=")) {
+        return Token::typeOf(tok->astOperand1());
+    } else if (Token::simpleMatch(tok, ".")) {
+        return Token::typeOf(tok->astOperand2());
+    }
+    return nullptr;
+}
+
+std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
+{
+    if (Token::simpleMatch(tok, "return")) {
+        const Scope *scope = tok->scope();
+        if (!scope)
+            return {};
+        const Function *function = scope->function;
+        if (!function)
+            return {};
+        return {function->retDef, function->returnDefEnd()};
+    } else if (Token::Match(tok, "%type%")) {
+        return {tok, tok->next()};
+    } else if (Token::Match(tok, "%var%")) {
+        const Variable *var = tok->variable();
+        if (!var)
+            return {};
+        if (!var->typeStartToken() || !var->typeEndToken())
+            return {};
+        return {var->typeStartToken(), var->typeEndToken()->next()};
+    } else if (Token::Match(tok, "%name%")) {
+        const Function *function = tok->function();
+        if (!function)
+            return {};
+        return {function->retDef, function->returnDefEnd()};
+    } else if (Token::simpleMatch(tok, "=")) {
+        return Token::typeDecl(tok->astOperand1());
+    } else if (Token::simpleMatch(tok, ".")) {
+        return Token::typeDecl(tok->astOperand2());
+    } else {
+        const ::Type * t = typeOf(tok);
+        if (!t || !t->classDef)
+            return {};
+        return {t->classDef->next(), t->classDef->tokAt(2)};
+    }
+}
+std::string Token::typeStr(const Token* tok)
+{
+    std::pair<const Token*, const Token*> r = Token::typeDecl(tok);
+    if (!r.first || !r.second)
+        return "";
+    return r.first->stringifyList(r.second, false);
 }
 
 TokenImpl::~TokenImpl()

@@ -215,7 +215,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
-    bool internalErrorFound(false);
     try {
         Preprocessor preprocessor(mSettings, this);
         std::set<std::string> configurations;
@@ -538,11 +537,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  e.id,
                                                  false);
 
-                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity)) {
+                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity))
                     reportErr(errmsg);
-                    if (!mSuppressInternalErrorFound)
-                        internalErrorFound = true;
-                }
             }
         }
 
@@ -668,9 +664,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     mErrorList.clear();
-    if (internalErrorFound && (mExitCode==0)) {
-        mExitCode = 1;
-    }
 
     return mExitCode;
 }
@@ -1122,8 +1115,9 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         }
     }
 
-    if (!mSettings.nofail.isSuppressed(errorMessage) && (mUseGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))
+    if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
+    }
 
     mErrorList.push_back(errmsg);
 

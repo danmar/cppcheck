@@ -1,5 +1,5 @@
 
-# python -m pytest test-helloworld.py
+# python -m pytest test-proj2.py
 
 import json
 import os

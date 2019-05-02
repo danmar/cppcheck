@@ -1966,6 +1966,13 @@ private:
               "    return A{x, x};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int i; const int& j; };\n"
+              "A f(int& x) {\n"
+              "    int y = 0;\n"
+              "    return A{y, x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeInitList() {

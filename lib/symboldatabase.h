@@ -852,6 +852,14 @@ public:
 
     static bool returnsReference(const Function *function);
 
+    const Token* returnDefEnd() const {
+        if (this->hasTrailingReturnType()) {
+            return Token::findsimplematch(retDef, "{");
+        } else {
+            return tokenDef;
+        }
+    }
+
     /**
      * @return token to ":" if the function is a constructor
      * and it contains member initialization otherwise a nullptr is returned
@@ -1099,7 +1107,7 @@ private:
 class CPPCHECKLIB ValueType {
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
-    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
+    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
     unsigned int bits;                    ///< bitfield bitcount
     unsigned int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     unsigned int constness;               ///< bit 0=data, bit 1=*, bit 2=**
