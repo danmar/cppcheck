@@ -8,6 +8,7 @@ shadowFunction
 # temporary suppressions - fix the warnings!
 missingOverride
 shiftTooManyBitsSigned
+stlFindInsert
 unusedPrivateFunction
 useStlAlgorithm
 
