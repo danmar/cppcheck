@@ -387,6 +387,8 @@ private:
         TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
 
         TEST_CASE(unionWithConstructor);
+        TEST_CASE(constMethodReturn);
+        TEST_CASE(constexprMethodReturn);
     }
 
     void array() {
@@ -6922,6 +6924,47 @@ private:
         f = Token::findsimplematch(tokenizer.tokens(), "Fred ( float");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
     }
+
+
+    void constMethodReturn() {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "    const A& operator=(const A&);\n"
+                      "    const int get() const { return 0; }\n"
+                      "};")
+
+        ASSERT(db && errout.str().empty());
+
+        const Token *op = Token::findsimplematch(tokenizer.tokens(), "operator=");
+        ASSERT(op && op->function() && op->function()->retDef);
+        const Token *opRetDef = op->function()->retDef;
+        ASSERT(opRetDef->str() == "const" && opRetDef->tokAt(1)->str() == "A" && opRetDef->tokAt(2)->str() == "&" && opRetDef->tokAt(3) == op);
+
+        const Token *get = Token::findsimplematch(tokenizer.tokens(), "get");
+        ASSERT(get && get->function() && get->function()->retDef);
+        const Token *getRetDef = get->function()->retDef;
+        ASSERT(getRetDef->str() == "const" && getRetDef->tokAt(1)->str() == "int" && getRetDef->tokAt(2) == get);
+    }
+
+    void constexprMethodReturn() {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "    constexpr A& operator=(const A&);\n"
+                      "    constexpr int get() const { return 0; }\n"
+                      "};")
+        ASSERT(db && errout.str().empty());
+
+        const Token *op = Token::findsimplematch(tokenizer.tokens(), "operator=");
+        ASSERT(op && op->function() && op->function()->retDef);
+        const Token *opRetDef = op->function()->retDef;
+        ASSERT(opRetDef->str() == "A" && opRetDef->tokAt(1)->str() == "&" && opRetDef->tokAt(2) == op);
+
+        const Token *get = Token::findsimplematch(tokenizer.tokens(), "get");
+        ASSERT(get && get->function() && get->function()->retDef);
+        const Token *getRetDef = get->function()->retDef;
+        ASSERT(getRetDef->str() == "int" && getRetDef->tokAt(1) == get);
+    }
+
 };
 
 REGISTER_TEST(TestSymbolDatabase)
