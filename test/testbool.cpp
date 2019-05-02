@@ -1104,6 +1104,21 @@ private:
               "return 2;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f(int x) {\n"
+              "    return x & 0x4;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x, int y) {\n"
+              "    return x | y;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x) {\n"
+              "    return (x & 0x2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

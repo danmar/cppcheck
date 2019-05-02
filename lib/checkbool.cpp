@@ -474,7 +474,8 @@ void CheckBool::returnValueOfFunctionReturningBool(void)
             if (tok2)
                 tok = tok2;
             else if (Token::simpleMatch(tok, "return") && tok->astOperand1() &&
-                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)))
+                     (tok->astOperand1()->getValueGE(2, mSettings) || tok->astOperand1()->getValueLE(-1, mSettings)) &&
+                     !(tok->astOperand1()->astOperand1() && Token::Match(tok->astOperand1(), "&|%or%")))
                 returnValueBoolError(tok);
         }
     }
