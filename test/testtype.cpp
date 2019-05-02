@@ -68,28 +68,28 @@ private:
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
         // and unsigned types having already a size of 4 bytes
         {
-            const std::string type[6] = {"unsigned char", /*[unsigned]*/"char", "bool", "unsigned short", "unsigned int", "unsigned long"};
-            for (short i = 0; i < 6U; ++i) {
-                check((type[i] + " f(" + type[i] +" x) { return x << 33; }").c_str(),&settings);
+            const std::string types[] = {"unsigned char", /*[unsigned]*/"char", "bool", "unsigned short", "unsigned int", "unsigned long"};
+            for (const std::string& type : types) {
+                check((type + " f(" + type +" x) { return x << 33; }").c_str(), &settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout.str());
-                check((type[i] + " f(int x) { return (x = (" + type[i] + ")x << 32); }").c_str(),&settings);
+                check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), &settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
-                check((type[i] + " foo(" + type[i] + " x) { return x << 31; }").c_str(),&settings);
+                check((type + " foo(" + type + " x) { return x << 31; }").c_str(), &settings);
                 ASSERT_EQUALS("", errout.str());
             }
         }
         // signed types getting promoted to int sizeof(int) = 4 bytes
         // and signed types having already a size of 4 bytes
         {
-            const std::string type[8] = {"signed char", "signed short", /*[signed]*/"short", "wchar_t", /*[signed]*/"int", "signed int", /*[signed]*/"long", "signed long"};
-            for (short i = 0; i < 8U; ++i) {
-                check((type[i] + " f(" + type[i] +" x) { return x << 33; }").c_str(),&settings);
+            const std::string types[] = {"signed char", "signed short", /*[signed]*/"short", "wchar_t", /*[signed]*/"int", "signed int", /*[signed]*/"long", "signed long"};
+            for (const std::string& type : types) {
+                check((type + " f(" + type +" x) { return x << 33; }").c_str(), &settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 33 bits is undefined behaviour\n", errout.str());
-                check((type[i] + " f(int x) { return (x = (" + type[i] + ")x << 32); }").c_str(),&settings);
+                check((type + " f(int x) { return (x = (" + type + ")x << 32); }").c_str(), &settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout.str());
-                check((type[i] + " foo(" + type[i] + " x) { return x << 31; }").c_str(),&settings);
+                check((type + " foo(" + type + " x) { return x << 31; }").c_str(), &settings);
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting signed 32-bit value by 31 bits is undefined behaviour\n", errout.str());
-                check((type[i] + " foo(" + type[i] + " x) { return x << 30; }").c_str(),&settings);
+                check((type + " foo(" + type + " x) { return x << 30; }").c_str(), &settings);
                 ASSERT_EQUALS("", errout.str());
             }
         }
