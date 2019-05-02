@@ -806,6 +806,12 @@ public:
         return mTokType == eType ? mImpl->mType : nullptr;
     }
 
+    static const ::Type *typeOf(const Token *tok);
+
+    static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
+
+    static std::string typeStr(const Token* tok);
+
     /**
     * @return a pointer to the Enumerator associated with this token.
     */

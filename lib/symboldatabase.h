@@ -852,6 +852,14 @@ public:
 
     static bool returnsReference(const Function *function);
 
+    const Token* returnDefEnd() const {
+        if (this->hasTrailingReturnType()) {
+            return Token::findsimplematch(retDef, "{");
+        } else {
+            return tokenDef;
+        }
+    }
+
     /**
      * @return token to ":" if the function is a constructor
      * and it contains member initialization otherwise a nullptr is returned

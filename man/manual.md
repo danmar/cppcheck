@@ -1330,6 +1330,11 @@ The following example provides a definition for std::vector, based on the defini
       </container>
     </def>
 
+The tag `<type>` can be added as well to provide more information about the type of container. Here is some of the attributes that can be set:
+
+* `string='std-like'` can be set for containers that match `std::string` interfaces.
+* `associative='std-like'` can be set for containers that match C++'s `AssociativeContainer` interfaces.
+
 ## HTML Report
 
 You can convert the XML output from cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/)> for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.

@@ -3142,39 +3142,11 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
     }
 }
 
-static const Type *getTypeOf(const Token *tok)
-{
-    if (Token::simpleMatch(tok, "return")) {
-        const Scope *scope = tok->scope();
-        if (!scope)
-            return nullptr;
-        const Function *function = scope->function;
-        if (!function)
-            return nullptr;
-        return function->retType;
-    } else if (Token::Match(tok, "%type%")) {
-        return tok->type();
-    } else if (Token::Match(tok, "%var%")) {
-        const Variable *var = tok->variable();
-        if (!var)
-            return nullptr;
-        return var->type();
-    } else if (Token::Match(tok, "%name%")) {
-        const Function *function = tok->function();
-        if (!function)
-            return nullptr;
-        return function->retType;
-    } else if (Token::simpleMatch(tok, "=")) {
-        return getTypeOf(tok->astOperand1());
-    }
-    return nullptr;
-}
-
 static void valueFlowLifetimeConstructor(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     if (!Token::Match(tok, "(|{"))
         return;
-    if (const Type *t = getTypeOf(tok->previous())) {
+    if (const Type *t = Token::typeOf(tok->previous())) {
         const Scope *scope = t->classScope;
         if (!scope)
             return;
