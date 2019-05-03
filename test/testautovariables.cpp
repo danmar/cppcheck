@@ -1619,6 +1619,12 @@ private:
             "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning iterator to local container 'v' that will be invalid when returning.\n",
             errout.str());
 
+        check("const char * f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   return ba.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'ba' that will be invalid when returning.\n", errout.str());
+
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
               "    void f() {\n"
@@ -2016,6 +2022,14 @@ private:
               "A f() {\n"
               "   std::string ba(\"hello\");\n"
               "   return ba.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(const char *a); };\n"
+              "A f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   A bp = ba.c_str();\n"
+              "   return bp;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

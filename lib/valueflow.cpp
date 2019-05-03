@@ -2850,6 +2850,8 @@ bool isBorrowed(const Token * tok)
             if (vt && vtParent && vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE) {
                 if (vtParent->pointer > vt->pointer)
                     return true;
+                if (vtParent->pointer < vt->pointer && vtParent->isIntegral())
+                    return true;
                 if (vt->pointer != vtParent->pointer)
                     return false;
                 if (vt->type != vtParent->type) {
@@ -2898,8 +2900,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!parent->astOperand2() || parent->astOperand2()->values().empty())
             return;
 
-        if (astIsPointer(parent->astOperand2()) && !var->isPointer() &&
-            !(var->valueType() && var->valueType()->isIntegral()))
+        if (!isBorrowed(parent->astOperand2()))
             return;
 
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
