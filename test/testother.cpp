@@ -1755,6 +1755,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct A { int a(); };\n"
+              "A f(std::vector<A>& x) {\n"
+              "    x[0].a();\n"
+              "    return x[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int g(int& x);\n"
               "int f(std::vector<int>& x) {\n"
               "    g(x[0]);\n"
