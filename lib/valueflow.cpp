@@ -2837,7 +2837,7 @@ static const Variable *getLHSVariable(const Token *tok)
     return getLHSVariableRecursive(tok->astOperand1());
 }
 
-bool isBorrowed(const Token * tok)
+bool isLifetimeBorrowed(const Token * tok)
 {
     if (!tok)
         return true;
@@ -2900,7 +2900,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!parent->astOperand2() || parent->astOperand2()->values().empty())
             return;
 
-        if (!isBorrowed(parent->astOperand2()))
+        if (!isLifetimeBorrowed(parent->astOperand2()))
             return;
 
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
