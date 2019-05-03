@@ -108,7 +108,7 @@ namespace simplecpp {
 
         void flags() {
             name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$');
-            comment = (string.compare(0, 2, "//") == 0 || string.compare(0, 2, "/*") == 0);
+            comment = string.size() > 1U && string[0] == '/' && (string[1] == '/' || string[1] == '*');
             number = std::isdigit((unsigned char)string[0]) || (string.size() > 1U && string[0] == '-' && std::isdigit((unsigned char)string[1]));
             op = (string.size() == 1U) ? string[0] : '\0';
         }
@@ -181,8 +181,14 @@ namespace simplecpp {
         explicit TokenList(std::vector<std::string> &filenames);
         TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = 0);
         TokenList(const TokenList &other);
+#if __cplusplus >= 201103L
+        TokenList(TokenList &&other);
+#endif
         ~TokenList();
         TokenList &operator=(const TokenList &other);
+#if __cplusplus >= 201103L
+        TokenList &operator=(TokenList &&other);
+#endif
 
         void clear();
         bool empty() const {
@@ -259,6 +265,7 @@ namespace simplecpp {
         void constFoldQuestionOp(Token **tok1);
 
         std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList, unsigned int bom);
+        void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
 
         std::string lastLine(int maxsize=100000) const;
 

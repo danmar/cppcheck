@@ -200,6 +200,13 @@ simplecpp::TokenList::TokenList(const TokenList &other) : frontToken(NULL), back
     *this = other;
 }
 
+#if __cplusplus >= 201103L
+simplecpp::TokenList::TokenList(TokenList &&other) : frontToken(NULL), backToken(NULL), files(other.files)
+{
+    *this = std::move(other);
+}
+#endif
+
 simplecpp::TokenList::~TokenList()
 {
     clear();
@@ -215,6 +222,21 @@ simplecpp::TokenList &simplecpp::TokenList::operator=(const TokenList &other)
     }
     return *this;
 }
+
+#if __cplusplus >= 201103L
+simplecpp::TokenList &simplecpp::TokenList::operator=(TokenList &&other)
+{
+    if (this != &other) {
+        clear();
+        backToken = other.backToken;
+        other.backToken = NULL;
+        frontToken = other.frontToken;
+        other.frontToken = NULL;
+        sizeOfType = std::move(other.sizeOfType);
+    }
+    return *this;
+}
+#endif
 
 void simplecpp::TokenList::clear()
 {
@@ -390,6 +412,23 @@ static bool isStringLiteralPrefix(const std::string &str)
            str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
 }
 
+void simplecpp::TokenList::lineDirective(unsigned int fileIndex, unsigned int line, Location *location)
+{
+    if (fileIndex != location->fileIndex || line >= location->line) {
+        location->fileIndex = fileIndex;
+        location->line = line;
+        return;
+    }
+
+    if (line + 2 >= location->line) {
+        location->line = line;
+        while (cback()->op != '#')
+            deleteToken(back());
+        deleteToken(back());
+        return;
+    }
+}
+
 void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
 {
     std::stack<simplecpp::Location> loc;
@@ -446,16 +485,10 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
                     location.line = 1U;
                 } else if (lastline == "# line %num%") {
-                    loc.push(location);
-                    location.line = std::atol(cback()->str().c_str());
-                } else if (lastline == "# line %num% %str%") {
-                    loc.push(location);
-                    location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
-                    location.line = std::atol(cback()->previous->str().c_str());
-                } else if (lastline == "# %num% %str%") {
-                    loc.push(location);
-                    location.fileIndex = fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U));
-                    location.line = std::atol(cback()->previous->str().c_str());
+                    lineDirective(location.fileIndex, std::atol(cback()->str().c_str()), &location);
+                } else if (lastline == "# %num% %str%" || lastline == "# line %num% %str%") {
+                    lineDirective(fileIndex(cback()->str().substr(1U, cback()->str().size() - 2U)),
+                                  std::atol(cback()->previous->str().c_str()), &location);
                 }
                 // #endfile
                 else if (lastline == "# endfile" && !loc.empty()) {
@@ -548,7 +581,8 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         else if (ch == '\"' || ch == '\'') {
             std::string prefix;
             if (cback() && cback()->name && isStringLiteralPrefix(cback()->str()) &&
-                ((cback()->location.col + cback()->str().size()) == location.col)) {
+                ((cback()->location.col + cback()->str().size()) == location.col) &&
+                (cback()->location.line == location.line)) {
                 prefix = cback()->str();
             }
             // C++11 raw string literal
@@ -1116,9 +1150,9 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const
         if (tok->comment)
             continue;
         if (!ret.empty())
-            ret = ' ' + ret;
-        ret = (tok->str()[0] == '\"' ? std::string("%str%")
-               : tok->number ? std::string("%num%") : tok->str()) + ret;
+            ret.insert(0, 1, ' ');
+        ret.insert(0, tok->str()[0] == '\"' ? std::string("%str%")
+                   : tok->number ? std::string("%num%") : tok->str());
         if (++count > maxsize)
             return "";
     }
@@ -2016,7 +2050,7 @@ static std::string realFilename(const std::string &f)
                 continue;
             }
 
-            bool isDriveSpecification = 
+            bool isDriveSpecification =
                 (pos == 2 && subpath.size() == 2 && std::isalpha(subpath[0]) && subpath[1] == ':');
 
             // Append real filename (proper case)
@@ -2282,23 +2316,21 @@ static std::string _openHeader(std::ifstream &f, const std::string &path)
 #endif
 }
 
-static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header, bool systemheader)
+static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header)
 {
     if (isAbsolutePath(header)) {
         return _openHeader(f, header);
     }
 
-    if (!systemheader) {
-        if (sourcefile.find_first_of("\\/") != std::string::npos) {
-            const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-            std::string simplePath = _openHeader(f, s);
-            if (!simplePath.empty())
-                return simplePath;
-        } else {
-            std::string simplePath = _openHeader(f, header);
-            if (!simplePath.empty())
-                return simplePath;
-        }
+    if (sourcefile.find_first_of("\\/") != std::string::npos) {
+        const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
+        const std::string simplePath = _openHeader(f, s);
+        if (!simplePath.empty())
+            return simplePath;
+    } else {
+        const std::string simplePath = _openHeader(f, header);
+        if (!simplePath.empty())
+            return simplePath;
     }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
@@ -2407,7 +2439,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             continue;
 
         std::ifstream f;
-        const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
+        const std::string header2 = openHeader(f,dui,sourcefile,header);
         if (!f.is_open())
             continue;
 
@@ -2628,7 +2660,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 if (header2.empty()) {
                     // try to load file..
                     std::ifstream f;
-                    header2 = openHeader(f, dui, rawtok->location.file(), header, systemheader);
+                    header2 = openHeader(f, dui, rawtok->location.file(), header);
                     if (f.is_open()) {
                         TokenList *tokens = new TokenList(f, files, header2, outputList);
                         filedata[header2] = tokens;
