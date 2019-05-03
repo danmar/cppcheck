@@ -2837,6 +2837,41 @@ static const Variable *getLHSVariable(const Token *tok)
     return getLHSVariableRecursive(tok->astOperand1());
 }
 
+bool isBorrowed(const Token * tok)
+{
+    if (!tok)
+        return true;
+    if (!tok->astParent())
+        return true;
+    if (!Token::Match(tok->astParent()->previous(), "%name% (") && !Token::simpleMatch(tok->astParent(), ",")) {
+        if (!Token::simpleMatch(tok, "{")) {
+            const ValueType * vt = tok->valueType();
+            const ValueType * vtParent = tok->astParent()->valueType();
+            if (vt && vtParent && vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE) {
+                if (vtParent->pointer > vt->pointer)
+                    return true;
+                if (vt->pointer != vtParent->pointer)
+                    return false;
+                if (vt->type != vtParent->type) {
+                    if (vtParent->type == ValueType::CONTAINER)
+                        return false;
+                    if (vtParent->type == ValueType::RECORD)
+                        return false;
+                }
+            } else if (vtParent && vtParent->type == ValueType::CONTAINER) {
+                return false;
+            }
+        }
+        const Type* t = Token::typeOf(tok);
+        const Type* parentT = Token::typeOf(tok->astParent());
+        if (t && parentT && t->classDef && parentT->classDef && t->classDef != parentT->classDef) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
 
 static void valueFlowLifetimeConstructor(Token *tok,
