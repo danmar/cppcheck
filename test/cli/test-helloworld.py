@@ -8,16 +8,16 @@ from testutils import create_gui_project_file, cppcheck
 # Run Cppcheck from project path
 def cppcheck_local(args):
     cwd = os.getcwd()
-    os.chdir('1-helloworld')
+    os.chdir('helloworld')
     ret, stdout, stderr = cppcheck(args)
     os.chdir(cwd)
     return (ret, stdout, stderr)
 
 def getRelativeProjectPath():
-    return '1-helloworld'
+    return 'helloworld'
 
 def getAbsoluteProjectPath():
-    return os.path.join(os.getcwd(), '1-helloworld')
+    return os.path.join(os.getcwd(), 'helloworld')
 
 # Get Visual Studio configurations checking a file
 # Checking {file} {config}...
@@ -35,8 +35,8 @@ def getVsConfigs(stdout, filename):
     return ' '.join(ret)
 
 def test_relative_path():
-    ret, stdout, stderr = cppcheck('1-helloworld')
-    filename = os.path.join('1-helloworld', 'main.c')
+    ret, stdout, stderr = cppcheck('helloworld')
+    filename = os.path.join('helloworld', 'main.c')
     assert ret == 0
     assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == '[%s:5]: (error) Division by zero.\n' % (filename)
@@ -82,10 +82,10 @@ def test_addon_relative_path():
                       '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
 def test_addon_relative_path():
-    project_file = '1-helloworld/test.cppcheck'
+    project_file = 'helloworld/test.cppcheck'
     create_gui_project_file(project_file, paths=['.'], addon='misra')
     ret, stdout, stderr = cppcheck('--project=%s' % (project_file))
-    filename = os.path.join('1-helloworld', 'main.c')
+    filename = os.path.join('helloworld', 'main.c')
     assert ret == 0
     assert stdout == 'Checking %s ...\n' % (filename)
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
@@ -163,7 +163,7 @@ def test_suppress_command_line():
     assert stderr == ''
 
 def test_suppress_project():
-    project_file = os.path.join('1-helloworld', 'test.cppcheck')
+    project_file = os.path.join('helloworld', 'test.cppcheck')
     create_gui_project_file(project_file,
                             paths=['.'],
                             suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
@@ -174,7 +174,7 @@ def test_suppress_project():
     assert stderr == ''
 
     # Absolute path
-    ret, stdout, stderr = cppcheck('--project=%s' % (os.path.join(os.getcwd(), '1-helloworld', 'test.cppcheck')))
+    ret, stdout, stderr = cppcheck('--project=%s' % (os.path.join(os.getcwd(), 'helloworld', 'test.cppcheck')))
     assert ret == 0
     assert stderr == ''
 
