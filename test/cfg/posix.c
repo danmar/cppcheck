@@ -21,6 +21,13 @@
 #include <unistd.h>
 #include <pthread.h>
 
+void validCode()
+{
+    void *ptr;
+    if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
+        free(ptr);
+}
+
 void bufferAccessOutOfBounds(int fd)
 {
     char a[5];
