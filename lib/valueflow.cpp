@@ -1863,13 +1863,10 @@ static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symbo
 static void removeValues(std::list<ValueFlow::Value> &values, const std::list<ValueFlow::Value> &valuesToRemove)
 {
     for (std::list<ValueFlow::Value>::iterator it = values.begin(); it != values.end();) {
-        bool found = false;
-        for (const ValueFlow::Value &v2 : valuesToRemove) {
-            if (it->intvalue == v2.intvalue) {
-                found = true;
-                break;
-            }
-        }
+        const bool found = std::any_of(valuesToRemove.cbegin(), valuesToRemove.cend(),
+        [=](const ValueFlow::Value &v2) {
+            return it->intvalue == v2.intvalue;
+        });
         if (found)
             values.erase(it++);
         else
@@ -1891,13 +1888,10 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
             return;
     } else if (tok->str() == "||" && tok->astOperand1()) {
         const std::list<ValueFlow::Value> &values = tok->astOperand1()->values();
-        bool nonzero = false;
-        for (const ValueFlow::Value &v : values) {
-            if (v.intvalue != 0) {
-                nonzero = true;
-                break;
-            }
-        }
+        const bool nonzero = std::any_of(values.cbegin(), values.cend(),
+        [=](const ValueFlow::Value &v) {
+            return v.intvalue != 0;
+        });
         if (!nonzero)
             return;
         ProgramMemory pm;
@@ -2075,16 +2069,14 @@ static bool valueFlowForward(Token * const               startToken,
 
         else if (Token::simpleMatch(tok2, "else {")) {
             // Should scope be skipped because variable value is checked?
-            bool skipelse = false;
             const Token *condition = tok2->linkAt(-1);
             condition = condition ? condition->linkAt(-1) : nullptr;
             condition = condition ? condition->astOperand2() : nullptr;
-            for (const ValueFlow::Value &v : values) {
-                if (conditionIsTrue(condition, getProgramMemory(tok2, varid, v))) {
-                    skipelse = true;
-                    break;
-                }
-            }
+
+            const bool skipelse = std::any_of(values.cbegin(), values.cend(),
+            [=](const ValueFlow::Value &v) {
+                return conditionIsTrue(condition, getProgramMemory(tok2, varid, v));
+            });
             if (skipelse) {
                 tok2 = tok2->linkAt(1);
                 continue;
