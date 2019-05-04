@@ -2032,6 +2032,15 @@ private:
               "   return bp;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(const char *a); };\n"
+              "std::vector<A> f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   std::vector<A> v;\n"
+              "   v.push_back(ba.c_str());\n"
+              "   return v;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {

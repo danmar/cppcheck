@@ -619,7 +619,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
                     continue;
-                if (!isLifetimeBorrowed(tok))
+                if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
                 if (isInScope(val.tokvalue->variable()->nameToken(), scope)) {
                     errorReturnDanglingLifetime(tok, &val);
