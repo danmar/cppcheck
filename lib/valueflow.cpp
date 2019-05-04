@@ -2902,6 +2902,8 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
                astIsContainer(tok->astParent()->tokAt(-3))) {
         const ValueType *vt = tok->valueType();
         const ValueType *vtCont = tok->astParent()->tokAt(-3)->valueType();
+        if (!vtCont->containerTypeToken)
+            return true;
         ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
         if (isLifetimeBorrowed(vt, &vtParent))
             return true;
@@ -3157,8 +3159,6 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         }
     } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
                astIsContainer(tok->tokAt(-2))) {
-        const Token *containerTypeTok = tok->tokAt(-2)->valueType()->containerTypeToken;
-        const Token *endTypeTok = endTemplateArgument(containerTypeTok);
         Token *vartok = tok->tokAt(-2);
         std::vector<const Token *> args = getArguments(tok);
         std::size_t n = args.size();
