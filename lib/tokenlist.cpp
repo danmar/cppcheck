@@ -363,7 +363,7 @@ struct AST_state {
     bool cpp;
     unsigned int assign;
     bool inCase; // true from case to :
-    explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_), assign(0U), inCase(false) {}
+    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0U), inCase(false) {}
 };
 
 static Token * skipDecl(Token *tok)
