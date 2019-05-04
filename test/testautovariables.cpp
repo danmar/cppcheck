@@ -1623,7 +1623,9 @@ private:
               "   std::string ba(\"hello\");\n"
               "   return ba.c_str();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'ba' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'ba' that will be invalid when returning.\n",
+            errout.str());
 
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
@@ -2017,7 +2019,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void danglingLifetimeImplicitConversion() {
+    void danglingLifetimeImplicitConversion()
+    {
         check("struct A { A(const char *a); };\n"
               "A f() {\n"
               "   std::string ba(\"hello\");\n"

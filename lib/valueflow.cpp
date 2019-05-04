@@ -2837,7 +2837,7 @@ static const Variable *getLHSVariable(const Token *tok)
     return getLHSVariableRecursive(tok->astOperand1());
 }
 
-static bool isLifetimeOwned(const ValueType* vt, const ValueType* vtParent)
+static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
 {
     if (!vtParent)
         return false;
@@ -2860,7 +2860,7 @@ static bool isLifetimeOwned(const ValueType* vt, const ValueType* vtParent)
     return false;
 }
 
-static bool isLifetimeBorrowed(const ValueType* vt, const ValueType* vtParent)
+static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
 {
     if (!vtParent)
         return false;
@@ -2876,7 +2876,7 @@ static bool isLifetimeBorrowed(const ValueType* vt, const ValueType* vtParent)
     return false;
 }
 
-bool isLifetimeBorrowed(const Token * tok, const Settings* settings)
+bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
 {
     if (!tok)
         return true;
@@ -2886,21 +2886,22 @@ bool isLifetimeBorrowed(const Token * tok, const Settings* settings)
         return true;
     if (!Token::Match(tok->astParent()->previous(), "%name% (") && !Token::simpleMatch(tok->astParent(), ",")) {
         if (!Token::simpleMatch(tok, "{")) {
-            const ValueType * vt = tok->valueType();
-            const ValueType * vtParent = tok->astParent()->valueType();
+            const ValueType *vt = tok->valueType();
+            const ValueType *vtParent = tok->astParent()->valueType();
             if (isLifetimeBorrowed(vt, vtParent))
                 return true;
             if (isLifetimeOwned(vt, vtParent))
                 return false;
         }
-        const Type* t = Token::typeOf(tok);
-        const Type* parentT = Token::typeOf(tok->astParent());
+        const Type *t = Token::typeOf(tok);
+        const Type *parentT = Token::typeOf(tok->astParent());
         if (t && parentT && t->classDef && parentT->classDef && t->classDef != parentT->classDef) {
             return false;
         }
-    } else if (Token::Match(tok->astParent()->tokAt(-3), "%var% . push_back|push_front|insert|push (") && astIsContainer(tok->astParent()->tokAt(-3))) {
-        const ValueType * vt = tok->valueType();
-        const ValueType * vtCont = tok->astParent()->tokAt(-3)->valueType();
+    } else if (Token::Match(tok->astParent()->tokAt(-3), "%var% . push_back|push_front|insert|push (") &&
+               astIsContainer(tok->astParent()->tokAt(-3))) {
+        const ValueType *vt = tok->valueType();
+        const ValueType *vtCont = tok->astParent()->tokAt(-3)->valueType();
         ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
         if (isLifetimeBorrowed(vt, &vtParent))
             return true;
