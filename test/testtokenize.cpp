@@ -7105,11 +7105,7 @@ private:
         // C++17: if (expr1; expr2)
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
 
-        ASSERT_EQUALS("a( forx0=x;;(", testAst("struct c { void a() const { for (int x=0; x;); } };"));
-        // TODO: We dont correctly parse ref qualifiers
-        TODO_ASSERT_EQUALS("a( forx0=x;;(", "a({&", testAst("struct c { void a() & { for (int x=0; x;); } };"));
-        TODO_ASSERT_EQUALS("a( forx0=x;;(", "a({&&", testAst("struct c { void a() && { for (int x=0; x;); } };"));
-
+        ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
     }
 
     void astexpr2() { // limit for large expressions
