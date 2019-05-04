@@ -586,6 +586,12 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
             if (tok->str() == "<")
                 tok = tok->link()->next();
+            if (Token::Match(tok, "{ . %name% =")) {
+                const bool inArrayAssignment = state.inArrayAssignment;
+                state.inArrayAssignment = true;
+                compileBinOp(tok, state, compileExpression);
+                state.inArrayAssignment = inArrayAssignment;
+            }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             tok = skipDecl(tok);
             while (tok->next() && tok->next()->isName())
@@ -612,9 +618,8 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::Match(tok, "} ,|:")) {
+            if (Token::Match(tok, "} ,|:"))
                 tok = tok->next();
-            }
         } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
             state.op.push(tok);
             tok = tok->link()->next();
