@@ -173,6 +173,9 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 case Standards::CPP17:
                     args << "-std=c++17";
                     break;
+                case Standards::CPP20:
+                    args << "-std=c++20";
+                    break;
                 };
             }
 
