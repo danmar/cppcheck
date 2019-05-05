@@ -590,7 +590,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         return;
     bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        // Return reference form function
+        // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
@@ -619,8 +619,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
                     continue;
-                if (tok->astParent()->str() == "return" && !Token::simpleMatch(tok, "{") && !astIsContainer(tok) &&
-                    astIsContainer(tok->astParent()))
+                if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
                 if (isInScope(val.tokvalue->variable()->nameToken(), scope)) {
                     errorReturnDanglingLifetime(tok, &val);

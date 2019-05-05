@@ -2829,6 +2829,83 @@ static const Variable *getLHSVariable(const Token *tok)
     return getLHSVariableRecursive(tok->astOperand1());
 }
 
+static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
+{
+    if (!vtParent)
+        return false;
+    if (!vt) {
+        if (vtParent->type == ValueType::CONTAINER)
+            return true;
+        return false;
+    }
+    if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE) {
+        if (vt->pointer != vtParent->pointer)
+            return true;
+        if (vt->type != vtParent->type) {
+            if (vtParent->type == ValueType::RECORD)
+                return true;
+            if (vtParent->type == ValueType::CONTAINER)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
+{
+    if (!vtParent)
+        return false;
+    if (!vt)
+        return false;
+    if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE) {
+        if (vtParent->pointer > vt->pointer)
+            return true;
+        if (vtParent->pointer < vt->pointer && vtParent->isIntegral())
+            return true;
+    }
+
+    return false;
+}
+
+bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
+{
+    if (!tok)
+        return true;
+    if (Token::simpleMatch(tok, ","))
+        return true;
+    if (!tok->astParent())
+        return true;
+    if (!Token::Match(tok->astParent()->previous(), "%name% (") && !Token::simpleMatch(tok->astParent(), ",")) {
+        if (!Token::simpleMatch(tok, "{")) {
+            const ValueType *vt = tok->valueType();
+            const ValueType *vtParent = tok->astParent()->valueType();
+            if (isLifetimeBorrowed(vt, vtParent))
+                return true;
+            if (isLifetimeOwned(vt, vtParent))
+                return false;
+        }
+        const Type *t = Token::typeOf(tok);
+        const Type *parentT = Token::typeOf(tok->astParent());
+        if (t && parentT && t->classDef && parentT->classDef && t->classDef != parentT->classDef) {
+            return false;
+        }
+    } else if (Token::Match(tok->astParent()->tokAt(-3), "%var% . push_back|push_front|insert|push (") &&
+               astIsContainer(tok->astParent()->tokAt(-3))) {
+        const ValueType *vt = tok->valueType();
+        const ValueType *vtCont = tok->astParent()->tokAt(-3)->valueType();
+        if (!vtCont->containerTypeToken)
+            return true;
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
+        if (isLifetimeBorrowed(vt, &vtParent))
+            return true;
+        if (isLifetimeOwned(vt, &vtParent))
+            return false;
+    }
+
+    return true;
+}
+
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings);
 
 static void valueFlowLifetimeConstructor(Token *tok,
@@ -2855,8 +2932,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!parent->astOperand2() || parent->astOperand2()->values().empty())
             return;
 
-        if (astIsPointer(parent->astOperand2()) && !var->isPointer() &&
-            !(var->valueType() && var->valueType()->isIntegral()))
+        if (!isLifetimeBorrowed(parent->astOperand2(), settings))
             return;
 
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
@@ -3075,9 +3151,6 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         }
     } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
                astIsContainer(tok->tokAt(-2))) {
-        const Token *containerTypeTok = tok->tokAt(-2)->valueType()->containerTypeToken;
-        const Token *endTypeTok = endTemplateArgument(containerTypeTok);
-        const bool isPointer = endTypeTok && Token::simpleMatch(endTypeTok->previous(), "*");
         Token *vartok = tok->tokAt(-2);
         std::vector<const Token *> args = getArguments(tok);
         std::size_t n = args.size();
@@ -3086,7 +3159,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
               (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1]))))) {
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byDerefCopy(
                 vartok, tokenlist, errorLogger, settings);
-        } else if (!args.empty() && astIsPointer(args.back()) == isPointer) {
+        } else if (!args.empty() && isLifetimeBorrowed(args.back(), settings)) {
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byVal(
                 vartok, tokenlist, errorLogger, settings);
         }

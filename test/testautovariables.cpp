@@ -124,6 +124,7 @@ private:
         TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(danglingLifetimeAggegrateConstructor);
         TEST_CASE(danglingLifetimeInitList);
+        TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(invalidLifetime);
     }
 
@@ -1618,6 +1619,14 @@ private:
             "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning iterator to local container 'v' that will be invalid when returning.\n",
             errout.str());
 
+        check("const char * f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   return ba.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'ba' that will be invalid when returning.\n",
+            errout.str());
+
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
               "    void f() {\n"
@@ -2006,6 +2015,33 @@ private:
 
         check("std::vector<int*> f(int& x) {\n"
               "    return {&x, &x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetimeImplicitConversion()
+    {
+        check("struct A { A(const char *a); };\n"
+              "A f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   return ba.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(const char *a); };\n"
+              "A f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   A bp = ba.c_str();\n"
+              "   return bp;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(const char *a); };\n"
+              "std::vector<A> f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   std::vector<A> v;\n"
+              "   v.push_back(ba.c_str());\n"
+              "   return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
