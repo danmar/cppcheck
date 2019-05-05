@@ -1226,14 +1226,14 @@ void CheckStl::if_find()
 
 void CheckStl::if_findError(const Token *tok, bool str)
 {
-    if (str)
+    if (str && mSettings->standards.cpp >= Standards::CPP20)
         reportError(tok, Severity::performance, "stlIfStrFind",
-                    "Inefficient usage of string::find() in condition; string::compare() would be faster.\n"
-                    "Either inefficient or wrong usage of string::find(). string::compare() will be faster if "
+                    "Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n"
+                    "Either inefficient or wrong usage of string::find(). string::starts_with() will be faster if "
                     "string::find's result is compared with 0, because it will not scan the whole "
                     "string. If your intention is to check that there are no findings in the string, "
                     "you should compare with std::string::npos.", CWE597, false);
-    else
+    if (!str)
         reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find() is an iterator, but it is not properly checked.", CWE398, false);
 }
 
@@ -1396,7 +1396,7 @@ void CheckStl::size()
     if (!mSettings->isEnabled(Settings::PERFORMANCE))
         return;
 
-    if (mSettings->standards.cpp == Standards::CPP11)
+    if (mSettings->standards.cpp >= Standards::CPP11)
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
