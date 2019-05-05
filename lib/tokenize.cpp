@@ -4784,7 +4784,7 @@ void Tokenizer::simplifyHeaders()
     // Maybe if --dump is used we want to have _everything_.
 
     if (mSettings->checkHeaders && mSettings->checkUnusedTemplates)
-        // Default=full analysis. All information in the headers are kept.
+        // Full analysis. All information in the headers are kept.
         return;
 
     const bool checkHeaders = mSettings->checkHeaders;
@@ -4824,7 +4824,7 @@ void Tokenizer::simplifyHeaders()
         const bool isIncluded = (tok->fileIndex() != 0);
 
         // Remove executable code
-        if (isIncluded && mSettings->checkHeaders && tok->str() == "{") {
+        if (isIncluded && !mSettings->checkHeaders && tok->str() == "{") {
             // TODO: We probably need to keep the executable code if this function is called from the source file.
             const Token *prev = tok->previous();
             while (prev && prev->isName())

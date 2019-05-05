@@ -211,7 +211,9 @@ private:
               "template<class T> void g()\n"
               "{\n"
               "    f();\n"
-              "}");
+              "}\n"
+              "\n"
+              "void h() { g<int>(); h(); }");
         ASSERT_EQUALS("", errout.str());
     }
 
