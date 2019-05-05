@@ -2019,8 +2019,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void danglingLifetimeImplicitConversion()
-    {
+    void danglingLifetimeImplicitConversion() {
         check("struct A { A(const char *a); };\n"
               "A f() {\n"
               "   std::string ba(\"hello\");\n"

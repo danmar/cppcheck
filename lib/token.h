@@ -982,8 +982,7 @@ public:
     bool addValue(const ValueFlow::Value &value);
 
     template<class Predicate>
-    void removeValues(Predicate pred)
-    {
+    void removeValues(Predicate pred) {
         if (mImpl->mValues)
             mImpl->mValues->remove_if(pred);
     }
