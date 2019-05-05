@@ -5002,7 +5002,10 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 values.push_back(v);
                 valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
             } else {
+                tok->removeValues(std::mem_fn(&ValueFlow::Value::isIntValue));
                 const Token * inTok = tok->tokAt(3)->astOperand2();
+                if (!inTok)
+                    continue;
                 std::list<ValueFlow::Value> values = inTok->values();
                 const bool constValue = inTok->isNumber();
                 valueFlowForwardAssign(const_cast<Token *>(inTok), var, values, constValue, false, tokenlist, errorLogger, settings);

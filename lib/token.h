@@ -978,6 +978,13 @@ public:
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
 
+    template<class Predicate>
+    void removeValues(Predicate pred)
+    {
+        if (mImpl->mValues)
+            mImpl->mValues->remove_if(pred);
+    }
+
 private:
 
     void next(Token *nextToken) {
