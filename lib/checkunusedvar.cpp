@@ -1255,7 +1255,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // Bail out for template struct, members might be used in non-matching instantiations
-        if (scope.className.find("<") != std::string::npos)
+        if (scope.className.find('<') != std::string::npos)
             continue;
 
         // bail out if struct is inherited

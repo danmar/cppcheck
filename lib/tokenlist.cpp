@@ -321,8 +321,8 @@ void TokenList::createTokens(const simplecpp::TokenList *tokenList)
     }
 
     if (mSettings && mSettings->relativePaths) {
-        for (std::size_t i = 0; i < mFiles.size(); i++)
-            mFiles[i] = Path::getRelativePath(mFiles[i], mSettings->basePaths);
+        for (std::string & mFile : mFiles)
+            mFile = Path::getRelativePath(mFile, mSettings->basePaths);
     }
 
     Token::assignProgressValues(mTokensFrontBack.front);
@@ -336,11 +336,11 @@ unsigned long long TokenList::calculateChecksum() const
     for (const Token* tok = front(); tok; tok = tok->next()) {
         const unsigned int subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
         unsigned int subchecksum2 = 0;
-        for (std::size_t i = 0; i < tok->str().size(); i++)
-            subchecksum2 += (unsigned int)tok->str()[i];
+        for (char i : tok->str())
+            subchecksum2 += (unsigned int)i;
         if (!tok->originalName().empty()) {
-            for (std::size_t i = 0; i < tok->originalName().size(); i++)
-                subchecksum2 += (unsigned int) tok->originalName()[i];
+            for (char i : tok->originalName())
+                subchecksum2 += (unsigned int) i;
         }
 
         checksum ^= ((static_cast<unsigned long long>(subchecksum1) << 32) | subchecksum2);

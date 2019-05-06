@@ -104,7 +104,7 @@ void VarInfo::possibleUsageAll(const std::string &functionName)
 void CheckLeakAutoVar::leakError(const Token *tok, const std::string &varname, int type)
 {
     const CheckMemoryLeak checkmemleak(mTokenizer, mErrorLogger, mSettings);
-    if (mSettings->library.isresource(type))
+    if (Library::isresource(type))
         checkmemleak.resourceLeakError(tok, varname);
     else
         checkmemleak.memleakError(tok, varname);
@@ -140,7 +140,7 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &fu
 
 void CheckLeakAutoVar::doubleFreeError(const Token *tok, const std::string &varname, int type)
 {
-    if (mSettings->library.isresource(type))
+    if (Library::isresource(type))
         reportError(tok, Severity::error, "doubleFree", "$symbol:" + varname + "\nResource handle '$symbol' freed twice.", CWE415, false);
     else
         reportError(tok, Severity::error, "doubleFree", "$symbol:" + varname + "\nMemory pointed to by '$symbol' is freed twice.", CWE415, false);

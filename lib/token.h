@@ -901,7 +901,7 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return mImpl->mValues ? *mImpl->mValues : mImpl->mEmptyValueList;
+        return mImpl->mValues ? *mImpl->mValues : TokenImpl::mEmptyValueList;
     }
 
     /**

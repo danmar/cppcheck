@@ -623,8 +623,7 @@ std::string ErrorLogger::ErrorMessage::FileLocation::stringify() const
 std::string ErrorLogger::toxml(const std::string &str)
 {
     std::ostringstream xml;
-    for (std::size_t i = 0U; i < str.length(); i++) {
-        const unsigned char c = str[i];
+    for (const unsigned char c : str) {
         switch (c) {
         case '<':
             xml << "&lt;";
@@ -663,8 +662,8 @@ std::string ErrorLogger::plistHeader(const std::string &version, const std::vect
          << "<string>cppcheck version " << version << "</string>\r\n"
          << " <key>files</key>\r\n"
          << " <array>\r\n";
-    for (unsigned int i = 0; i < files.size(); ++i)
-        ostr << "  <string>" << ErrorLogger::toxml(files[i]) << "</string>\r\n";
+    for (const std::string & file : files)
+        ostr << "  <string>" << ErrorLogger::toxml(file) << "</string>\r\n";
     ostr       << " </array>\r\n"
                << " <key>diagnostics</key>\r\n"
                << " <array>\r\n";

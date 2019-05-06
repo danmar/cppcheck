@@ -967,7 +967,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 (tok->next()->str() == "." ||
                  (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
                 const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
-                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == 0) {
+                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == NULL) {
                     const Variable *var = mVariableList[tok->varId()];
                     if (var && var->typeScope()) {
                         // find the member variable of this variable
@@ -1214,8 +1214,8 @@ void SymbolDatabase::createSymbolDatabaseEnums()
             continue;
 
         // add enumerators to enumerator tokens
-        for (std::size_t i = 0, end = it->enumeratorList.size(); i < end; ++i)
-            const_cast<Token *>(it->enumeratorList[i].name)->enumerator(&it->enumeratorList[i]);
+        for (Enumerator & i : it->enumeratorList)
+            const_cast<Token *>(i.name)->enumerator(&i);
     }
 
     // fill in enumerator values
@@ -1225,9 +1225,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
         MathLib::bigint value = 0;
 
-        for (std::size_t i = 0, end = it->enumeratorList.size(); i < end; ++i) {
-            Enumerator & enumerator = it->enumeratorList[i];
-
+        for (Enumerator & enumerator : it->enumeratorList) {
             // look for initialization tokens that can be converted to enumerators and convert them
             if (enumerator.start) {
                 if (!enumerator.end)
@@ -2397,9 +2395,9 @@ const Function* Type::getFunction(const std::string& funcName) const
             return it->second;
     }
 
-    for (std::size_t i = 0; i < derivedFrom.size(); i++) {
-        if (derivedFrom[i].type) {
-            const Function* const func = derivedFrom[i].type->getFunction(funcName);
+    for (const BaseInfo & i : derivedFrom) {
+        if (i.type) {
+            const Function* const func = i.type->getFunction(funcName);
             if (func)
                 return func;
         }
@@ -2863,21 +2861,21 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << "    derivedFrom[" << type->derivedFrom.size() << "] = (";
         std::size_t count = type->derivedFrom.size();
-        for (std::size_t i = 0; i < type->derivedFrom.size(); ++i) {
-            if (type->derivedFrom[i].isVirtual)
+        for (const Type::BaseInfo & i : type->derivedFrom) {
+            if (i.isVirtual)
                 std::cout << "Virtual ";
 
-            std::cout << (type->derivedFrom[i].access == Public    ? " Public" :
-                          type->derivedFrom[i].access == Protected ? " Protected" :
-                          type->derivedFrom[i].access == Private   ? " Private" :
+            std::cout << (i.access == Public    ? " Public" :
+                          i.access == Protected ? " Protected" :
+                          i.access == Private   ? " Private" :
                           " Unknown");
 
-            if (type->derivedFrom[i].type)
-                std::cout << " " << type->derivedFrom[i].type;
+            if (i.type)
+                std::cout << " " << i.type;
             else
                 std::cout << " Unknown";
 
-            std::cout << " " << type->derivedFrom[i].name;
+            std::cout << " " << i.name;
             if (count-- > 1)
                 std::cout << ",";
         }
@@ -3733,8 +3731,8 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
                     return enumerator;
                 // enum
                 else {
-                    for (std::list<Scope *>::const_iterator it = scope->nestedList.begin(), end = scope->nestedList.end(); it != end; ++it) {
-                        enumerator = (*it)->findEnumerator(tokStr);
+                    for (Scope * it : scope->nestedList) {
+                        enumerator = it->findEnumerator(tokStr);
 
                         if (enumerator)
                             return enumerator;
@@ -3757,8 +3755,8 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
 
         if (scope->definedType) {
             const std::vector<Type::BaseInfo> & derivedFrom = scope->definedType->derivedFrom;
-            for (size_t i = 0, end = derivedFrom.size(); i < end; ++i) {
-                const Type *derivedFromType = derivedFrom[i].type;
+            for (const Type::BaseInfo & i : derivedFrom) {
+                const Type *derivedFromType = i.type;
                 if (derivedFromType && derivedFromType ->classScope) {
                     enumerator = derivedFromType->classScope->findEnumerator(tokStr);
 
@@ -3799,8 +3797,8 @@ const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Tok
 {
     if (scope && scope->definedType && !scope->definedType->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo> &derivedFrom = scope->definedType->derivedFrom;
-        for (std::size_t i = 0; i < derivedFrom.size(); ++i) {
-            const Type *base = derivedFrom[i].type;
+        for (const Type::BaseInfo & i : derivedFrom) {
+            const Type *base = i.type;
             if (base && base->classScope) {
                 const Type * type = base->classScope->findType(typeTok->str());
                 if (type)
@@ -3949,8 +3947,8 @@ void Scope::findFunctionInBase(const std::string & name, size_t args, std::vecto
 {
     if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo> &derivedFrom = definedType->derivedFrom;
-        for (std::size_t i = 0; i < derivedFrom.size(); ++i) {
-            const Type *base = derivedFrom[i].type;
+        for (const Type::BaseInfo & i : derivedFrom) {
+            const Type *base = i.type;
             if (base && base->classScope) {
                 if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
                     continue;
@@ -4964,9 +4962,8 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         const Token *op1 = parent->astOperand2()->astOperand1();
         while (op1 && op1->str() == "[")
             op1 = op1->astOperand1();
-        ValueType vt(valuetype);
         if (op1 && op1->variable() && op1->variable()->nameToken() == op1) {
-            setValueType(parent, vt);
+            setValueType(parent, valuetype);
             return;
         }
     }

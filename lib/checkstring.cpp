@@ -184,8 +184,7 @@ void CheckString::checkSuspiciousStringCompare()
             // Pointer addition?
             if (varTok->str() == "+" && mTokenizer->isC()) {
                 const Token * const tokens[2] = { varTok->astOperand1(), varTok->astOperand2() };
-                for (int nr = 0; nr < 2; nr++) {
-                    const Token *t = tokens[nr];
+                for (const Token * t : tokens) {
                     while (t && (t->str() == "." || t->str() == "::"))
                         t = t->astOperand2();
                     if (t && t->variable() && t->variable()->isPointer())

@@ -729,13 +729,13 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     {
         std::string arg;
 
-        for (int i = 0; i < cflag1.size(); ++i) {
-            if (cflag1.at(i) == ' ' && !arg.empty()) {
+        for (char i : cflag1) {
+            if (i == ' ' && !arg.empty()) {
                 cflags.insert(arg);
                 arg.clear();
                 continue;
             }
-            arg += cflag1.at(i);
+            arg += i;
         }
 
         if (!arg.empty()) {

@@ -183,7 +183,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (!Path::acceptFile(filename))
         mSettings.debugwarnings = false;
 
-    if (mSettings.terminated())
+    if (Settings::terminated())
         return mExitCode;
 
     if (!mSettings.quiet) {
@@ -392,7 +392,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         std::list<std::string> configurationError;
         for (const std::string &currCfg : configurations) {
             // bail out if terminated
-            if (mSettings.terminated())
+            if (Settings::terminated())
                 break;
 
             // Check only a few configurations (default 12), after that bail out, unless --force
@@ -505,7 +505,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     if (!result)
                         continue;
 
-                    if (!mSettings.terminated())
+                    if (!Settings::terminated())
                         executeRules("simple", mTokenizer);
                 }
 
@@ -578,7 +578,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 }
                 const std::string &results = executeAddon(addonInfo, dumpFile);
                 for (std::string::size_type pos = 0; pos < results.size();) {
-                    const std::string::size_type pos2 = results.find("\n", pos);
+                    const std::string::size_type pos2 = results.find('\n', pos);
                     if (pos2 == std::string::npos)
                         break;
 
@@ -598,7 +598,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                     // Line must start with [filename:line:column]: (
                     const std::string::size_type loc1 = 1;
-                    const std::string::size_type loc4 = line.find("]");
+                    const std::string::size_type loc4 = line.find(']');
                     if (loc4 + 5 >= line.size() || line.compare(loc4, 3, "] (", 0, 3) != 0)
                         continue;
                     const std::string::size_type loc3 = line.rfind(':', loc4);
@@ -610,7 +610,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                     // Then there must be a (severity)
                     const std::string::size_type sev1 = loc4 + 3;
-                    const std::string::size_type sev2 = line.find(")", sev1);
+                    const std::string::size_type sev2 = line.find(')', sev1);
                     if (sev2 == std::string::npos)
                         continue;
 
@@ -708,10 +708,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
     // call all "runChecks" in all registered Check classes
     for (Check *check : Check::instances()) {
-        if (mSettings.terminated())
+        if (Settings::terminated())
             return;
 
-        if (tokenizer.isMaxTime())
+        if (Tokenizer::isMaxTime())
             return;
 
         Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &S_timerResults);

@@ -5418,9 +5418,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowFwdAnalysis(tokenlist, settings);
 
     // Temporary hack.. run valueflow until there is nothing to update or timeout expires
-    const std::time_t timeout = std::time(0) + TIMEOUT;
+    const std::time_t timeout = std::time(NULL) + TIMEOUT;
     std::size_t values = 0;
-    while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
+    while (std::time(NULL) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);

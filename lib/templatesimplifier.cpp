@@ -1298,7 +1298,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
 
     std::string::size_type start = 0;
     std::string::size_type end = 0;
-    while ((end = templateDeclaration.scope.find(" ", start)) != std::string::npos) {
+    while ((end = templateDeclaration.scope.find(' ', start)) != std::string::npos) {
         std::string token = templateDeclaration.scope.substr(start, end - start);
         // done if scopes overlap
         if (token == tokStart->str() && tok->strAt(-1) != "::")
@@ -1782,7 +1782,7 @@ void TemplateSimplifier::expandTemplate(
                 } else if (tok3->str() == "[") {
                     brackets.push(mTokenList.back());
                 } else if (tok3->str() == "}") {
-                    assert(brackets.empty() == false && brackets.top()->str() == "{");
+                    assert(!brackets.empty() && brackets.top()->str() == "{");
                     Token::createMutualLinks(brackets.top(), mTokenList.back());
                     if (tok3->strAt(1) == ";") {
                         const Token * tokSemicolon = tok3->next();
@@ -1794,11 +1794,11 @@ void TemplateSimplifier::expandTemplate(
                         break;
                     }
                 } else if (tok3->str() == ")") {
-                    assert(brackets.empty() == false && brackets.top()->str() == "(");
+                    assert(!brackets.empty() && brackets.top()->str() == "(");
                     Token::createMutualLinks(brackets.top(), mTokenList.back());
                     brackets.pop();
                 } else if (tok3->str() == "]") {
-                    assert(brackets.empty() == false && brackets.top()->str() == "[");
+                    assert(!brackets.empty() && brackets.top()->str() == "[");
                     Token::createMutualLinks(brackets.top(), mTokenList.back());
                     brackets.pop();
                 }
@@ -2651,7 +2651,7 @@ void TemplateSimplifier::replaceTemplateUsage(
         std::set<TemplateSimplifier::TokenAndName*> & pointers = nameTok->templateSimplifierPointers();
 
         // check if instantiation matches token instantiation from pointer
-        if (pointers.size()) {
+        if (!pointers.empty()) {
             // check full name
             if (instantiation.fullName != (*pointers.begin())->fullName) {
                 // FIXME:  fallback to just matching name
@@ -2944,7 +2944,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
         unsigned int decl1Index = 0;
         for (const auto & decl1 : mTemplateDeclarations) {
             if (decl1.isSpecialization() && mapItem.first == decl1.token) {
-                bool found = 0;
+                bool found = false;
                 unsigned int decl2Index = 0;
                 for (const auto & decl2 : mTemplateDeclarations) {
                     if (mapItem.second == decl2.token) {
@@ -2979,7 +2979,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
         unsigned int decl1Index = 0;
         for (const auto & decl1 : mTemplateDeclarations) {
             if (mapItem.first == decl1.token) {
-                bool found = 0;
+                bool found = false;
                 unsigned int decl2Index = 0;
                 for (const auto & decl2 : mTemplateDeclarations) {
                     if (mapItem.second == decl2.token) {
@@ -3142,8 +3142,8 @@ void TemplateSimplifier::simplifyTemplates(
         }
 
         // remove explicit instantiations
-        for (size_t j = 0; j < mExplicitInstantiationsToDelete.size(); ++j) {
-            Token * start = mExplicitInstantiationsToDelete[j].token;
+        for (TokenAndName & j : mExplicitInstantiationsToDelete) {
+            Token * start = j.token;
             if (start) {
                 Token * end = start->next();
                 while (end && end->str() != ";")

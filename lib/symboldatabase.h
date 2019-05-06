@@ -974,9 +974,9 @@ public:
     std::vector<Enumerator> enumeratorList;
 
     const Enumerator * findEnumerator(const std::string & name) const {
-        for (std::size_t i = 0, end = enumeratorList.size(); i < end; ++i) {
-            if (enumeratorList[i].name->str() == name)
-                return &enumeratorList[i];
+        for (const Enumerator & i : enumeratorList) {
+            if (i.name->str() == name)
+                return &i;
         }
         return nullptr;
     }

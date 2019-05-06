@@ -97,8 +97,8 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
         // Relative filename
         std::string relativeFilename(tok->location.file());
         if (mSettings.relativePaths) {
-            for (std::size_t j = 0U; j < mSettings.basePaths.size(); ++j) {
-                const std::string bp = mSettings.basePaths[j] + "/";
+            for (const std::string & basePath : mSettings.basePaths) {
+                const std::string bp = basePath + "/";
                 if (relativeFilename.compare(0,bp.size(),bp)==0) {
                     relativeFilename = relativeFilename.substr(bp.size());
                 }

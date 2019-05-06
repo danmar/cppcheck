@@ -1240,7 +1240,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             return Result(Result::Type::BAILOUT);
         }
 
-        if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find("<") != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
+        if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find('<') != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
             return Result(Result::Type::BAILOUT);
 
 

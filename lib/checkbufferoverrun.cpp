@@ -313,8 +313,8 @@ void CheckBufferOverrun::arrayIndex()
         // Negative index
         bool neg = false;
         std::vector<const ValueFlow::Value *> negativeIndexes;
-        for (size_t i = 0; i < indexTokens.size(); ++i) {
-            const ValueFlow::Value *negativeValue = indexTokens[i]->getValueLE(-1, mSettings);
+        for (const Token * indexToken : indexTokens) {
+            const ValueFlow::Value *negativeValue = indexToken->getValueLE(-1, mSettings);
             negativeIndexes.emplace_back(negativeValue);
             if (negativeValue)
                 neg = true;

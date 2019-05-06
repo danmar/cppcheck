@@ -347,8 +347,8 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 static unsigned int encodeMultiChar(const std::string& str)
 {
     unsigned int retval = 0;
-    for (std::string::const_iterator it=str.begin(); it!=str.end(); ++it) {
-        retval = (retval << 8) | *it;
+    for (char it : str) {
+        retval = (retval << 8) | it;
     }
     return retval;
 }
@@ -1338,10 +1338,10 @@ bool MathLib::isNullValue(const std::string &str)
     if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str.size() < 1 || (str[0] != '.' && str[0] != '-' && str[0] != '+'))))
         return false; // Has to be a number
 
-    for (size_t i = 0; i < str.size(); i++) {
-        if (std::isdigit(static_cast<unsigned char>(str[i])) && str[i] != '0') // May not contain digits other than 0
+    for (char i : str) {
+        if (std::isdigit(static_cast<unsigned char>(i)) && i != '0') // May not contain digits other than 0
             return false;
-        if (str[i] == 'E' || str[i] == 'e')
+        if (i == 'E' || i == 'e')
             return true;
     }
     return true;

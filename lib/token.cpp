@@ -183,8 +183,8 @@ bool Token::isUpperCaseName() const
 {
     if (!isName())
         return false;
-    for (size_t i = 0; i < mStr.length(); ++i) {
-        if (std::islower(mStr[i]))
+    for (char i : mStr) {
+        if (std::islower(i))
             return false;
     }
     return true;
@@ -1044,18 +1044,18 @@ void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro)
     if (macro && isExpandedMacro())
         os << "$";
     if (isName() && mStr.find(' ') != std::string::npos) {
-        for (std::size_t i = 0U; i < mStr.size(); ++i) {
-            if (mStr[i] != ' ')
-                os << mStr[i];
+        for (char i : mStr) {
+            if (i != ' ')
+                os << i;
         }
     } else if (mStr[0] != '\"' || mStr.find('\0') == std::string::npos)
         os << mStr;
     else {
-        for (std::size_t i = 0U; i < mStr.size(); ++i) {
-            if (mStr[i] == '\0')
+        for (char i : mStr) {
+            if (i == '\0')
                 os << "\\0";
             else
-                os << mStr[i];
+                os << i;
         }
     }
     if (varid && mImpl->mVarId != 0)

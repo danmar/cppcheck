@@ -457,7 +457,7 @@ void CheckBool::assignBoolToFloatError(const Token *tok)
                 "Boolean value assigned to floating point variable.", CWE704, false);
 }
 
-void CheckBool::returnValueOfFunctionReturningBool(void)
+void CheckBool::returnValueOfFunctionReturningBool()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
         return;
