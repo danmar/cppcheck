@@ -993,7 +993,8 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             start = const_cast<Token*>(mTokenizer->list.front());
             end = const_cast<Token*>(mTokenizer->list.back());
         }
-        assert(start && end);
+        assert(start);
+        assert(end);
 
         end->scope(&*it);
 
