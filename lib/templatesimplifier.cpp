@@ -2541,8 +2541,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         const std::string newName(templateDeclaration.name + " < " + typeForNewName + " >");
         const std::string newFullName(templateDeclaration.scope + (templateDeclaration.scope.empty() ? "" : " :: ") + newName);
 
-        if (expandedtemplates.find(newFullName) == expandedtemplates.end()) {
-            expandedtemplates.insert(newFullName);
+        if (expandedtemplates.insert(newFullName).second) {
             expandTemplate(templateDeclaration, instantiation, typeParametersInDeclaration, newName, !specialized && !isVar);
             instantiated = true;
         }
@@ -2607,8 +2606,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         const std::string newName(templateDeclaration.name + " < " + typeForNewName + " >");
         const std::string newFullName(templateDeclaration.scope + (templateDeclaration.scope.empty() ? "" : " :: ") + newName);
 
-        if (expandedtemplates.find(newFullName) == expandedtemplates.end()) {
-            expandedtemplates.insert(newFullName);
+        if (expandedtemplates.insert(newFullName).second) {
             expandTemplate(templateDeclaration, templateDeclaration, typeParametersInDeclaration, newName, !specialized && !isVar);
             instantiated = true;
         }
