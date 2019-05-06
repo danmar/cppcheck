@@ -3397,12 +3397,9 @@ private:
                             "IntrusivePtr<Vertex<int>> p;";
         const char expected[] = "; "
                                 "class Vertex<int> ; "
-                                "boost :: intrusive_ptr < Vertex<int> > p ;"
+                                "boost :: intrusive_ptr < Vertex<int> > p ; "
                                 "class Vertex<int> { } ;";
-        const char actual[] = "; "
-                              "template < class T > class Vertex { } ; "
-                              "boost :: intrusive_ptr < T > p ;";
-        TODO_ASSERT_EQUALS(expected, actual, tok(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     unsigned int instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {

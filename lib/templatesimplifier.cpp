@@ -1119,7 +1119,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
             }
             tok2 = aliasUsage.token->next(); // the '<'
             const Token * const endToken1 = templateAlias.token->next()->findClosingBracket();
-            const Token * const endToken2 = TokenList::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false);
+            const Token * const endToken2 = TokenList::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false)->next();
             for (const Token *tok1 = templateAlias.token->next(); tok2 != endToken2; tok1 = tok1->next(), tok2 = tok2->next()) {
                 if (!tok2->isName())
                     continue;
@@ -1147,7 +1147,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
             endToken = endToken1->next();
 
             // Remove alias usage code (parameters)
-            Token::eraseTokens(tok2, args.back().second);
+            Token::eraseTokens(tok2->previous(), args.back().second);
         }
         if (endToken) {
             // Remove all template instantiations in template alias
