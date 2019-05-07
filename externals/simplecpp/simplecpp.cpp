@@ -149,17 +149,17 @@ void simplecpp::Location::adjust(const std::string &str)
 
 bool simplecpp::Token::isOneOf(const char ops[]) const
 {
-    return (op != '\0') && (std::strchr(ops, op) != 0);
+    return (op != '\0') && (std::strchr(ops, op) != NULL);
 }
 
 bool simplecpp::Token::startsWithOneOf(const char c[]) const
 {
-    return std::strchr(c, string[0]) != 0;
+    return std::strchr(c, string[0]) != NULL;
 }
 
 bool simplecpp::Token::endsWithOneOf(const char c[]) const
 {
-    return std::strchr(c, string[string.size() - 1U]) != 0;
+    return std::strchr(c, string[string.size() - 1U]) != NULL;
 }
 
 void simplecpp::Token::printAll() const
@@ -2316,21 +2316,23 @@ static std::string _openHeader(std::ifstream &f, const std::string &path)
 #endif
 }
 
-static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header)
+static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header, bool systemheader)
 {
     if (isAbsolutePath(header)) {
         return _openHeader(f, header);
     }
 
-    if (sourcefile.find_first_of("\\/") != std::string::npos) {
-        const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
-        const std::string simplePath = _openHeader(f, s);
-        if (!simplePath.empty())
-            return simplePath;
-    } else {
-        const std::string simplePath = _openHeader(f, header);
-        if (!simplePath.empty())
-            return simplePath;
+    if (!systemheader) {
+        if (sourcefile.find_first_of("\\/") != std::string::npos) {
+            const std::string s = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
+            std::string simplePath = _openHeader(f, s);
+            if (!simplePath.empty())
+                return simplePath;
+        } else {
+            std::string simplePath = _openHeader(f, header);
+            if (!simplePath.empty())
+                return simplePath;
+        }
     }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
@@ -2439,7 +2441,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             continue;
 
         std::ifstream f;
-        const std::string header2 = openHeader(f,dui,sourcefile,header);
+        const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
         if (!f.is_open())
             continue;
 
@@ -2660,7 +2662,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 if (header2.empty()) {
                     // try to load file..
                     std::ifstream f;
-                    header2 = openHeader(f, dui, rawtok->location.file(), header);
+                    header2 = openHeader(f, dui, rawtok->location.file(), header, systemheader);
                     if (f.is_open()) {
                         TokenList *tokens = new TokenList(f, files, header2, outputList);
                         filedata[header2] = tokens;
@@ -2685,7 +2687,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 } else if (pragmaOnce.find(header2) == pragmaOnce.end()) {
                     includetokenstack.push(gotoNextLine(rawtok));
                     const TokenList *includetokens = filedata.find(header2)->second;
-                    rawtok = includetokens ? includetokens->cfront() : 0;
+                    rawtok = includetokens ? includetokens->cfront() : NULL;
                     continue;
                 }
             } else if (rawtok->str() == IF || rawtok->str() == IFDEF || rawtok->str() == IFNDEF || rawtok->str() == ELIF) {

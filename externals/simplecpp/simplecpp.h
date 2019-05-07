@@ -179,7 +179,7 @@ namespace simplecpp {
     class SIMPLECPP_LIB TokenList {
     public:
         explicit TokenList(std::vector<std::string> &filenames);
-        TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = 0);
+        TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = NULL);
         TokenList(const TokenList &other);
 #if __cplusplus >= 201103L
         TokenList(TokenList &&other);
@@ -199,7 +199,7 @@ namespace simplecpp {
         void dump() const;
         std::string stringify() const;
 
-        void readfile(std::istream &istr, const std::string &filename=std::string(), OutputList *outputList = 0);
+        void readfile(std::istream &istr, const std::string &filename=std::string(), OutputList *outputList = NULL);
         void constFold();
 
         void removeComments();
@@ -264,7 +264,7 @@ namespace simplecpp {
         void constFoldLogicalOp(Token *tok);
         void constFoldQuestionOp(Token **tok1);
 
-        std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList, unsigned int bom);
+        std::string readUntil(std::istream &istr, const Location &location, char start, char end, OutputList *outputList, unsigned int bom);
         void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
 
         std::string lastLine(int maxsize=100000) const;
@@ -297,7 +297,7 @@ namespace simplecpp {
         std::list<std::string> includes;
     };
 
-    SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = 0);
+    SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = NULL);
 
     /**
      * Preprocess
@@ -310,7 +310,7 @@ namespace simplecpp {
      * @param outputList output: list that will receive output messages
      * @param macroUsage output: macro usage
      */
-    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = 0, std::list<MacroUsage> *macroUsage = 0);
+    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = NULL, std::list<MacroUsage> *macroUsage = NULL);
 
     /**
      * Deallocate data
