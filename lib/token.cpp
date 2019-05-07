@@ -743,7 +743,8 @@ std::size_t Token::getStrLength(const Token *tok)
 
 std::size_t Token::getStrSize(const Token *tok)
 {
-    assert(tok != nullptr && tok->tokType() == eString);
+    assert(tok != nullptr);
+    assert(tok->tokType() == eString);
     const std::string &str = tok->str();
     unsigned int sizeofstring = 1U;
     for (unsigned int i = 1U; i < str.size() - 1U; i++) {
