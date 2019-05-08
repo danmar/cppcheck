@@ -537,8 +537,7 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
         if (functionCall) {
             if (functionCallPtr)
                 *functionCallPtr = functionCall;
-            for (const ErrorLogger::ErrorMessage::FileLocation &loc : functionCall->callValuePath)
-                locationList.push_back(loc);
+            std::copy(functionCall->callValuePath.cbegin(), functionCall->callValuePath.cend(), std::back_inserter(locationList));
         }
 
         ErrorLogger::ErrorMessage::FileLocation fileLoc;
