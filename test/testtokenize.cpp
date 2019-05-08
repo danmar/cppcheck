@@ -398,6 +398,7 @@ private:
         TEST_CASE(simplifyOperatorName10); // #8746 - using a::operator=
         TEST_CASE(simplifyOperatorName11); // #8889
         TEST_CASE(simplifyOperatorName12); // #9110
+        TEST_CASE(simplifyOperatorName13); // user defined literal
 
         TEST_CASE(simplifyNullArray);
 
@@ -6224,6 +6225,12 @@ private:
                       "template < typename b > void operator+ ( b ) ; "
                       "} "
                       "using a :: operator+ ;",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName13() { // user defined literal
+        const char code[] = "unsigned long operator""_numch(const char *ch, unsigned long size);";
+        ASSERT_EQUALS("unsigned long operator""_numch ( const char * ch , unsigned long size ) ;",
                       tokenizeAndStringify(code));
     }
 
