@@ -22,6 +22,7 @@
 #include "astutils.h"
 #include "symboldatabase.h"
 #include <tinyxml2.h>
+#include <iterator>  // back_inserter
 //---------------------------------------------------------------------------
 
 static const char ATTR_CALL_ID[] = "call-id";
