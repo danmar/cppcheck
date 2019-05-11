@@ -4768,6 +4768,15 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT_EQUALS(true, Token::simpleMatch(tokenizer.tokens()->next()->link(), "> void"));
         }
+
+        {
+            // #9094
+            const char code[] = "a = f(x%x<--a==x>x);";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr == Token::findsimplematch(tokenizer.tokens(), "<")->link());
+        }
     }
 
     void simplifyString() {

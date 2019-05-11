@@ -3792,6 +3792,9 @@ void Tokenizer::createLinks2()
     const Token * templateToken = nullptr;
     bool isStruct = false;
 
+    std::map<std::string, bool> templateNames;
+    templateNames["template"] = true;
+
     std::stack<Token*> type;
     for (Token *token = list.front(); token; token = token->next()) {
         if (Token::Match(token, "%name%|> %name% [:<]"))
@@ -3848,6 +3851,28 @@ void Tokenizer::createLinks2()
             while (!type.empty() && type.top()->str() == "<")
                 type.pop();
         } else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {
+            if (!Token::simpleMatch(token->tokAt(-2), "::")) {
+                std::map<std::string, bool>::const_iterator it = templateNames.find(token->previous()->str());
+                if (it == templateNames.end()) {
+                    const std::string &name = token->previous()->str();
+                    bool isTemplateType = true;
+                    for (const Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
+                        if (!tok2->isName() || tok2->str() != name)
+                            continue;
+                        if (Token::Match(tok2->previous(), "class|struct"))
+                            break;
+                        if (!Token::Match(tok2->next(), "[<:({]")) {
+                            isTemplateType = false;
+                            break;
+                        }
+                    }
+                    templateNames[name] = isTemplateType;
+                    if (!isTemplateType)
+                        continue;
+                } else if (!it->second) {
+                    continue;
+                }
+            }
             type.push(token);
             if (!templateToken && (token->previous()->str() == "template"))
                 templateToken = token;
