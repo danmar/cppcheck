@@ -1365,7 +1365,7 @@ private:
         );
 
         // #3449
-        ASSERT_EQUALS("template < typename T > struct A ;\n"
+        ASSERT_EQUALS(";\n"
                       "struct B { template < typename T > struct C } ;\n"
                       "{ } ;",
                       checkCode("template<typename T> struct A;\n"

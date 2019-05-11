@@ -47,6 +47,10 @@ private:
     void run() OVERRIDE {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
+        settings0.checkUnusedTemplates = true;
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize3);

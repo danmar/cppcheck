@@ -43,7 +43,9 @@ private:
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
         settings0.addEnabled("portability");
+        settings0.checkUnusedTemplates = true;
         settings1.addEnabled("style");
+        settings1.checkUnusedTemplates = true;
         settings_windows.addEnabled("portability");
 
         // Make sure the Tokenizer::simplifyTokenList works.

@@ -67,7 +67,6 @@ private:
         TEST_CASE(nullpointer24); // #5082 fp: chained assignment
         TEST_CASE(nullpointer25); // #5061
         TEST_CASE(nullpointer26); // #3589
-        TEST_CASE(nullpointer27); // #6568
         TEST_CASE(nullpointer28); // #6491
         TEST_CASE(nullpointer30); // #6392
         TEST_CASE(nullpointer31); // #8482
@@ -1320,20 +1319,6 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void nullpointer27() { // #6568
-        check("template<class Type>\n"
-              "class Foo {\n"
-              "    Foo<Type>& operator = ( Type* );\n"
-              "};\n"
-              "template<class Type>\n"
-              "Foo<Type>& Foo<Type>::operator = ( Type* pointer_ ) {\n"
-              "    pointer_=NULL;\n"
-              "    *pointer_=0;\n"
-              "    return *this;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Null pointer dereference: pointer_\n", errout.str());
     }
 
     void nullpointer28() { // #6491

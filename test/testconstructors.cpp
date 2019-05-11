@@ -347,16 +347,6 @@ private:
               "    int x;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
-
-        check("template <class T> struct A {\n"
-              "    A<T>() : x(0) { }\n"
-              "    A<T>(const T & t) : x(t.x) { }\n"
-              "private:\n"
-              "    int x;\n"
-              "    int y;\n"
-              "};");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Member variable 'A::y' is not initialized in the constructor.\n"
-                      "[test.cpp:3]: (warning) Member variable 'A::y' is not initialized in the constructor.\n", errout.str());
     }
 
     void simple7() { // ticket #4531

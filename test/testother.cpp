@@ -5005,11 +5005,6 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
-        check("template<int n> void foo(unsigned int x) {\n"
-              "if (x <= 0);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
-
         // #8836
         check("uint32_t value = 0xFUL;\n"
               "void f() {\n"
@@ -7457,12 +7452,11 @@ private:
     }
 
     void forwardAndUsed() {
-        check("template<typename T>\n"
-              "void f(T && t) {\n"
-              "    g(std::forward<T>(t));\n"
-              "    T s = t;\n"
+        check("void f(Foo && foo) {\n"
+              "    g(std::forward<Foo>(foo));\n"
+              "    Foo s = foo;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Access of forwarded variable 'foo'.\n", errout.str());
     }
 
     void funcArgNamesDifferent() {

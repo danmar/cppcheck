@@ -41,6 +41,9 @@ private:
     void run() OVERRIDE {
         settings0.addEnabled("style");
         settings2.addEnabled("style");
+        settings0.checkUnusedTemplates = true;
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
 
         TEST_CASE(simplifyUsing1);
         TEST_CASE(simplifyUsing2);
@@ -489,7 +492,8 @@ private:
                            "class c { "
                            "int i ; i = 0 ; "
                            "c ( ) { i -- ; } "
-                           "} ;";
+                           "} ; "
+                           "template < class T > class s { } ;";
 
         ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
     }

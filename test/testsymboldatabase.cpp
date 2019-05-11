@@ -106,6 +106,7 @@ private:
 
     void run() OVERRIDE {
         LOAD_LIB_2(settings1.library, "std.cfg");
+        settings1.checkUnusedTemplates = true;
         settings2.platform(Settings::Unspecified);
 
         TEST_CASE(array);
