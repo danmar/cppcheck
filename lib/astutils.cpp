@@ -999,7 +999,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             return true;
 
         // Member function call
-        if (Token::Match(tok, "%name% . %name% (")) {
+        if (tok->variable() && Token::Match(tok2->astParent(), ". %name% (") && tok2->astParent()->astOperand1() == tok2) {
             const Variable * var = tok->variable();
             bool isConst = var && var->isConst();
             if (!isConst && var) {
