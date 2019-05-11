@@ -431,6 +431,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // -E
             else if (std::strcmp(argv[i], "-E") == 0) {
                 mSettings->preprocessOnly = true;
+                mSettings->quiet = true;
             }
 
             // Include paths
