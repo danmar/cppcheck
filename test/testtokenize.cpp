@@ -7395,6 +7395,8 @@ private:
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
         ASSERT_EQUALS("abc::(=", testAst("a = (b::c)();"));
+
+        ASSERT_EQUALS("pcharnew(=", testAst("p = (void *)(new char);"));
     }
 
     void astlambda() {

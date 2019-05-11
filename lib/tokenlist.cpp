@@ -403,7 +403,7 @@ static bool iscast(const Token *tok)
     if (Token::Match(tok, "( (| typeof (") && Token::Match(tok->link(), ") %num%"))
         return true;
 
-    if (Token::Match(tok->link(), ") }|)|]"))
+    if (Token::Match(tok->link(), ") }|)|]|;"))
         return false;
 
     if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~]"))
