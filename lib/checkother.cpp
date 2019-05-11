@@ -1314,6 +1314,9 @@ void CheckOther::checkConstVariable()
         if (Function::returnsReference(function) &&
             Token::findmatch(var->nameToken(), "return %varid% ;|[", scope->bodyEnd, var->declarationId()))
             continue;
+        // Skip if address is taken
+        if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
+            continue;
         constVariableError(var);
     }
 }

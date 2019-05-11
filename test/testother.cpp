@@ -1822,6 +1822,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct A {\n"
+              "    explicit A(int& y) : x(&y) {}\n"
+              "    int * x = nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
