@@ -444,7 +444,7 @@ if __name__ == '__main__':
     # Make sure that the report directory is created if it doesn't exist.
     print('Creating %s directory' % options.report_dir)
     if not os.path.exists(options.report_dir):
-        os.mkdir(options.report_dir)
+        os.makedirs(options.report_dir)
 
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
