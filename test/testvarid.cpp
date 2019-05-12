@@ -93,6 +93,7 @@ private:
         TEST_CASE(varid60); // #7267 cast '(unsigned x)10'
         TEST_CASE(varid61); // #4988 inline function
         TEST_CASE(varid62);
+        TEST_CASE(varid63);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -1113,6 +1114,12 @@ private:
                             "}";
         // Ensure that there is only one variable id for "x"
         ASSERT_EQUALS("same varid", compareVaridsForVariable(code, "x"));
+    }
+
+    void varid63() {
+        const char code[] = "void f(boost::optional<int> const& x) {}";
+        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
     }
 
     void varid_cpp_keywords_in_c_code() {
