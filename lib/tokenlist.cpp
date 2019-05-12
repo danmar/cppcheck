@@ -1199,7 +1199,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     if (Token::simpleMatch(tok, "( {"))
         return tok;
 
-    if (Token::Match(tok, "%type% <") && !Token::Match(tok->linkAt(1), "> [({]"))
+    if (Token::Match(tok, "%type% <") && tok->linkAt(1) && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
 
     if (Token::Match(tok, "%type% %name%|*|&|::") && tok->str() != "return") {

@@ -447,6 +447,7 @@ private:
         TEST_CASE(astcast);
         TEST_CASE(astlambda);
         TEST_CASE(astcase);
+        TEST_CASE(astvardecl);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -6939,8 +6940,6 @@ private:
         ASSERT_EQUALS("template < class T > int f ( ) { }",
                       tokenizeAndStringify("template <class T> [[noreturn]] int f(){}", false, true, Settings::Native, "test.cpp", true));
 
-        ASSERT_EQUALS("template < class T > [ [ noreturn ] ] int f ( ) { }",
-                      tokenizeAndStringify("template <class T> [[noreturn]] int f(){}", false, true, Settings::Native, "test.cpp", false));
         ASSERT_EQUALS("int f ( int i ) ;",
                       tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", false, true, Settings::Native, "test.cpp", true));
 
@@ -7116,11 +7115,6 @@ private:
         ASSERT_EQUALS("DerivedDerived::(", testAst("Derived::~Derived() {}"));
 
         ASSERT_EQUALS("ifCA_FarReadfilenew(,sizeofobjtype(,(!(", testAst("if (!CA_FarRead(file, (void far *)new, sizeof(objtype)))")); // #5910 - don't hang if C code is parsed as C++
-
-        // Variable declaration
-        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
-        ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
-        ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
 
         // C++17: if (expr1; expr2)
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
@@ -7331,6 +7325,19 @@ private:
         ASSERT_EQUALS("ab0[=", testAst("a=(b)[0];"));
         ASSERT_EQUALS("abc.0[=", testAst("a=b.c[0];"));
         ASSERT_EQUALS("ab0[1[=", testAst("a=b[0][1];"));
+    }
+
+    void astvardecl() {
+        // Variable declaration
+        ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
+        ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
+        ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
+
+        // #9127
+        const char code1[] = "using uno::Ref;\n"
+                             "Ref<X> r;\n"
+                             "int x(0);";
+        ASSERT_EQUALS("unoRef:: RefX<r> x0(", testAst(code1));
     }
 
     void astunaryop() { // unary operators
