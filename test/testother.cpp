@@ -1828,6 +1828,14 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct A {\n"
+              "    std::vector<int> v;\n"
+              "    void swap(A& a) {\n"
+              "        v.swap(a.v);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"

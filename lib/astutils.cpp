@@ -1009,8 +1009,8 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
 
             const Token *ftok = tok->tokAt(2);
             const Function * fun = ftok->function();
-            if (!isConst && (!fun || !fun->isConst()))
-                return true;
+            return (!isConst && (!fun || !fun->isConst()));
+                // return true;
         }
 
         const Token *ftok = tok2;
@@ -1018,8 +1018,11 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             ftok = ftok->astParent();
 
         if (ftok && Token::Match(ftok->link(), ")|} !!{")) {
+            const Token * ptok = tok2;
+            while (Token::Match(ptok->astParent(), ".|::|["))
+                ptok = ptok->astParent();
             bool inconclusive = false;
-            bool isChanged = isVariableChangedByFunctionCall(tok2, settings, &inconclusive);
+            bool isChanged = isVariableChangedByFunctionCall(ptok, settings, &inconclusive);
             isChanged |= inconclusive;
             if (isChanged)
                 return true;
