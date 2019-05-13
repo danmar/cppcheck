@@ -1836,6 +1836,28 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::vector<int>& v) {\n"
+              "    for(auto&& x:v)\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    for(auto x:v)\n"
+              "        x = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    for(auto& x:v) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    for(const auto& x:v) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"

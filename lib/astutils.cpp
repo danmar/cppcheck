@@ -1009,8 +1009,10 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
 
             const Token *ftok = tok->tokAt(2);
             const Function * fun = ftok->function();
-            return (!isConst && (!fun || !fun->isConst()));
-                // return true;
+            if (!isConst && (!fun || !fun->isConst()))
+                return true;
+            else
+                continue;
         }
 
         const Token *ftok = tok2;
@@ -1033,6 +1035,18 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             parent = parent->astParent();
         if (parent && parent->tokType() == Token::eIncDecOp)
             return true;
+
+        if (Token::simpleMatch(tok2->astParent(), ":") && tok2->astParent()->astParent() && Token::simpleMatch(tok2->astParent()->astParent()->previous(), "for (")) {
+            const Token * varTok = tok2->astParent()->previous();
+            if (!varTok)
+                continue;
+            const Variable * loopVar = varTok->variable();
+            if (!loopVar)
+                continue;
+            if (!loopVar->isConst() && loopVar->isReference() && isVariableChanged(loopVar, settings, cpp))
+                return true;
+            continue;
+        }
     }
     return false;
 }
