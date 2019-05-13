@@ -176,6 +176,17 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+bool isFunctionCall(const Token* tok)
+{
+    if (Token::Match(tok, "%name% ("))
+        return true;
+    if (Token::Match(tok, "%name% <") && Token::Match(tok->next()->link(), "> ("))
+        return true;
+    if (Token::Match(tok, "%name% ::"))
+        return isFunctionCall(tok->tokAt(2));
+    return false;
+}
+
 static bool hasToken(const Token * startTok, const Token * stopTok, const Token * tok)
 {
     for (const Token * tok2 = startTok; tok2 != stopTok; tok2 = tok2->next()) {
@@ -999,7 +1010,7 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
             return true;
 
         // Member function call
-        if (tok->variable() && Token::Match(tok2->astParent(), ". %name% (") && tok2->astParent()->astOperand1() == tok2) {
+        if (tok->variable() && Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) && tok2->astParent()->astOperand1() == tok2) {
             const Variable * var = tok->variable();
             bool isConst = var && var->isConst();
             if (!isConst && var) {

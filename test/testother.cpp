@@ -1836,6 +1836,17 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct A {\n"
+              "    template<class T>\n"
+              "    void f();\n"
+              "    template<class T>\n"
+              "    void f() const;\n"
+              "};\n"
+              "void g(A& a) {\n"
+              "    a.f<int>();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(std::vector<int>& v) {\n"
               "    for(auto&& x:v)\n"
               "        x = 1;\n"
