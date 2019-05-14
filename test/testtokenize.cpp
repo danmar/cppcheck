@@ -4771,12 +4771,21 @@ private:
         }
 
         {
-            // #9094
+            // #9094 - template usage or comparison?
             const char code[] = "a = f(x%x<--a==x>x);";
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT(nullptr == Token::findsimplematch(tokenizer.tokens(), "<")->link());
+        }
+
+        {
+            // #9131 - template usage or comparison?
+            const char code[] = "using std::list; list<t *> l;";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "<")->link());
         }
     }
 
@@ -7337,7 +7346,7 @@ private:
         const char code1[] = "using uno::Ref;\n"
                              "Ref<X> r;\n"
                              "int x(0);";
-        ASSERT_EQUALS("unoRef:: RefX<r> x0(", testAst(code1));
+        ASSERT_EQUALS("unoRef:: x0(", testAst(code1));
     }
 
     void astunaryop() { // unary operators
