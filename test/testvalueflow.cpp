@@ -3194,7 +3194,16 @@ private:
                "void f() {\n"
                "  a = x;\n"
                "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 321));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 321));
+
+        code = "void f(const int x = 1) {\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 1));
+
+        code = "volatile const int x = 42;\n"
+               "void f(){ int a = x; }\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 42));
     }
 
     void valueFlowGlobalStaticVar() {
