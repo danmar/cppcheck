@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class ErrorLogger;
@@ -197,7 +198,7 @@ public:
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    static int getTemplateNamePosition(const Token *tok);
+    int getTemplateNamePosition(const Token *tok);
 
     /**
      * Get function template name position
@@ -417,6 +418,7 @@ private:
     std::list<TokenAndName> mMemberFunctionsToDelete;
     std::vector<TokenAndName> mExplicitInstantiationsToDelete;
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
+    std::unordered_map<const Token*, int> mTemplateNamePos;
 };
 
 /// @}

@@ -1303,6 +1303,10 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
 
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
+    auto it = mTemplateNamePos.find(tok);
+    if (it != mTemplateNamePos.end()) {
+        return it->second;
+    }
     // get the position of the template name
     int namepos = 0;
     if (Token::Match(tok, "> class|struct|union %type% :|<|;|{"))
@@ -1312,8 +1316,8 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
     else if (getTemplateNamePositionTemplateVariable(tok, namepos))
         ;
     else if (!getTemplateNamePositionTemplateFunction(tok, namepos))
-        return -1; // Name not found
-
+        namepos = -1; // Name not found
+    mTemplateNamePos[tok] = namepos;
     return namepos;
 }
 
