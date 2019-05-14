@@ -2978,6 +2978,14 @@ private:
               "  if (b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8993
+        check("void f(const std::string& x) {\n"
+              "  auto y = x;\n"
+              "  if (x.empty()) y = \"1\";\n"
+              "  if (y.empty()) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
