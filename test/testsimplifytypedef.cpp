@@ -41,9 +41,6 @@ private:
     void run() OVERRIDE {
         settings0.addEnabled("style");
         settings2.addEnabled("style");
-        settings0.checkUnusedTemplates = true;
-        settings1.checkUnusedTemplates = true;
-        settings2.checkUnusedTemplates = true;
 
         TEST_CASE(simplifyTypedef1)
         TEST_CASE(simplifyTypedef2)
@@ -2530,8 +2527,7 @@ private:
                             "template <long, class> struct c; "
                             "template <int g> struct d { enum { e = c<g, b>::f }; };";
         const char exp [] = "class a ; "
-                            "template < long , class > struct c ; "
-                            "template < int g > struct d { enum Anonymous0 { e = c < g , int ( a :: * ) > :: f } ; } ;";
+                            "template < long , class > struct c ;";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 

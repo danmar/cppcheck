@@ -4467,8 +4467,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         // this function will just fix so that the syntax is corrected.
         validate(); // #6847 - invalid code
         mTemplateSimplifier->cleanupAfterSimplify();
-        if (!mSettings->checkUnusedTemplates)
-            mTemplateSimplifier->removeTemplates();
     }
 
     // Simplify pointer to standard types (C only)
