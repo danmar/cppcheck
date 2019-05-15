@@ -4787,6 +4787,18 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "<")->link());
         }
+
+        {
+            const char code[] = "using std::set;\n"
+                                "void foo()\n"
+                                "{\n"
+                                "    for (set<ParticleSource*>::iterator i = sources.begin(); i != sources.end(); ++i) {}\n"
+                                "}";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "<")->link());
+        }
     }
 
     void simplifyString() {

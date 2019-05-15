@@ -3863,7 +3863,7 @@ void Tokenizer::createLinks2()
             const bool isScoped = Token::simpleMatch(token->tokAt(-2), "::") ||
                                   (Token::Match(token->tokAt(-2), "; %name% <") && usingNames.count(token->previous()->str()));
             const bool isTemplateDecl = isScoped || Token::Match(token->tokAt(-2), "%name% %name% <");
-            const bool isTemplateArgPointerType = Token::Match(token, "< %name%| %type% * >");
+            const bool isTemplateArgPointerType = Token::Match(token, "< %type% * >");
             if (!isTemplateDecl && !isTemplateArgPointerType) {
                 std::map<std::string, bool>::const_iterator it = templateNames.find(token->previous()->str());
                 if (it == templateNames.end()) {
