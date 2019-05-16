@@ -3792,24 +3792,12 @@ void Tokenizer::createLinks2()
     const Token * templateToken = nullptr;
     bool isStruct = false;
 
-    std::set<std::string> usingNames;
-    std::map<std::string, bool> templateNames;
-    templateNames["template"] = true;
-
     std::stack<Token*> type;
     for (Token *token = list.front(); token; token = token->next()) {
         if (Token::Match(token, "%name%|> %name% [:<]"))
             isStruct = true;
         else if (Token::Match(token, "[;{}]"))
             isStruct = false;
-
-        if (Token::Match(token, "using %name% ::")) {
-            const Token *tok2 = token->tokAt(3);
-            while (Token::Match(tok2, "%name% ::"))
-                tok2 = tok2->tokAt(2);
-            if (Token::Match(tok2, "%name% ;"))
-                usingNames.insert(tok2->str());
-        }
 
         if (token->link()) {
             if (Token::Match(token, "{|[|("))
@@ -3860,32 +3848,6 @@ void Tokenizer::createLinks2()
             while (!type.empty() && type.top()->str() == "<")
                 type.pop();
         } else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {
-            const bool isScoped = Token::simpleMatch(token->tokAt(-2), "::") ||
-                                  (Token::Match(token->tokAt(-2), "; %name% <") && usingNames.count(token->previous()->str()));
-            const bool isTemplateDecl = isScoped || Token::Match(token->tokAt(-2), "%name% %name% <");
-            const bool isTemplateArgPointerType = Token::Match(token, "< %type% * >");
-            if (!isTemplateDecl && !isTemplateArgPointerType) {
-                std::map<std::string, bool>::const_iterator it = templateNames.find(token->previous()->str());
-                if (it == templateNames.end()) {
-                    const std::string &name = token->previous()->str();
-                    bool isTemplateType = true;
-                    for (const Token *tok2 = list.front(); tok2; tok2 = tok2->next()) {
-                        if (!tok2->isName() || tok2->str() != name)
-                            continue;
-                        if (Token::Match(tok2->previous(), "class|struct"))
-                            break;
-                        if (!Token::Match(tok2->next(), "[<:({]")) {
-                            isTemplateType = false;
-                            break;
-                        }
-                    }
-                    templateNames[name] = isTemplateType;
-                    if (!isTemplateType)
-                        continue;
-                } else if (!it->second) {
-                    continue;
-                }
-            }
             type.push(token);
             if (!templateToken && (token->previous()->str() == "template"))
                 templateToken = token;
@@ -3924,6 +3886,8 @@ void Tokenizer::createLinks2()
                     templateToken = nullptr;
             } else {
                 type.pop();
+                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <"))
+                    continue;
                 Token::createMutualLinks(top1, token);
                 if (top1 == templateToken)
                     templateToken = nullptr;
