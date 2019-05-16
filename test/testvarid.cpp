@@ -200,7 +200,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.checkUnusedTemplates = true;
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
@@ -220,7 +219,6 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.checkUnusedTemplates = true;
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;

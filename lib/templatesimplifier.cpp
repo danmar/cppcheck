@@ -212,39 +212,6 @@ void TemplateSimplifier::cleanupAfterSimplify()
     }
 }
 
-void TemplateSimplifier::removeTemplates()
-{
-    for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "template <"))
-            continue;
-        if (tok->previous() && !Token::Match(tok->previous(), "[;}]"))
-            continue;
-        Token *endToken = tok;
-        while (nullptr != (endToken = endToken->next())) {
-            if (endToken->str() == ";")
-                break;
-            if (Token::Match(endToken, "[})]]")) {
-                endToken = nullptr;
-                break;
-            }
-            if (Token::Match(endToken, "[<([]") && endToken->link())
-                endToken = endToken->link();
-            else if (endToken->str() == "{") {
-                endToken = endToken->link();
-                break;
-            }
-        }
-        if (!endToken)
-            continue;
-        Token::eraseTokens(tok, endToken);
-        tok = endToken;
-        tok->deletePrevious();
-        if (tok->str() == "}") {
-            tok->str(";");
-            tok->link(nullptr);
-        }
-    }
-}
 
 void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
 {

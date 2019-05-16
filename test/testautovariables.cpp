@@ -1869,9 +1869,8 @@ private:
               "    std::vector<int> v;\n"
               "    return by_value(v.begin());\n"
               "}\n");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:7] -> [test.cpp:7] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
-            "",
             errout.str());
 
         check("auto by_ref(int& x) {\n"

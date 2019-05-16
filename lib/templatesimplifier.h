@@ -54,12 +54,6 @@ public:
     void cleanupAfterSimplify();
 
     /**
-     * Remove templates, can be used after the simplifications to remove
-     * the templates that failed to be expanded.
-     */
-    void removeTemplates();
-
-    /**
      */
     void checkComplicatedSyntaxErrorsInTemplates();
 
