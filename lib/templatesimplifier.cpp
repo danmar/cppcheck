@@ -1304,7 +1304,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
     auto it = mTemplateNamePos.find(tok);
-    if (it != mTemplateNamePos.end()) {
+    if (!mSettings->debugtemplate && it != mTemplateNamePos.end()) {
         return it->second;
     }
     // get the position of the template name
@@ -1318,6 +1318,9 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
     else if (!getTemplateNamePositionTemplateFunction(tok, namepos))
         namepos = -1; // Name not found
     mTemplateNamePos[tok] = namepos;
+    if (mSettings->debugtemplate && it != mTemplateNamePos.end() && it->second != namepos) {
+        printOut("### Error: Invalid namepos cache: " + std::to_string(it->second) + " != " + std::to_string(namepos) + " ###");
+    }
     return namepos;
 }
 
@@ -3094,6 +3097,7 @@ void TemplateSimplifier::simplifyTemplates(
             mInstantiatedTemplates.clear();
             mExplicitInstantiationsToDelete.clear();
         }
+        mTemplateNamePos.clear();
 
         bool hasTemplates = getTemplateDeclarations();
 
