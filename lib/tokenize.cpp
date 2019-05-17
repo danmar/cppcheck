@@ -3847,7 +3847,7 @@ void Tokenizer::createLinks2()
 
             while (!type.empty() && type.top()->str() == "<")
                 type.pop();
-        } else if (token->str() == "<" && token->previous() && token->previous()->isName() && !token->previous()->varId()) {
+        } else if (token->str() == "<" && ((token->previous() && token->previous()->isName() && !token->previous()->varId()) || Token::simpleMatch(token->next(), ">"))) {
             type.push(token);
             if (!templateToken && (token->previous()->str() == "template"))
                 templateToken = token;

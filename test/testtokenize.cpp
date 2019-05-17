@@ -455,6 +455,7 @@ private:
         // The TestGarbage ensures that there are true positives
         TEST_CASE(findGarbageCode);
         TEST_CASE(checkEnableIf);
+        TEST_CASE(emptyAngleBrackets);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -7581,6 +7582,17 @@ private:
                             "    int x = a < b ? b : a;"
                             "};\n"))
 
+    }
+
+    void emptyAngleBrackets() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <typename = void> struct a {\n"
+                            "  void c();\n"
+                            "};\n"
+                            "void f() {\n"
+                            "  a<> b;\n"
+                            "  b.a<>::c();\n"
+                            "}\n"))
     }
 
     void noCrash1() {
