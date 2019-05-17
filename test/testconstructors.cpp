@@ -194,8 +194,8 @@ private:
         TEST_CASE(uninitAssignmentWithOperator);  // ticket #7429
         TEST_CASE(uninitCompoundAssignment);      // ticket #7429
         TEST_CASE(uninitComparisonAssignment);    // ticket #7429
-        
-        TEST_CASE(uninitTemplate1);    // ticket #7372
+
+        TEST_CASE(uninitTemplate1); // ticket #7372
     }
 
 
@@ -2183,7 +2183,9 @@ private:
               "        double bitsInData_;\n"
               "    } obj;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n",
+            errout.str());
 
         check("struct copy_protected;\n"
               "Object::MemFunc() {\n"
@@ -2194,7 +2196,9 @@ private:
               "        double bitsInData_;\n"
               "    } obj;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n",
+            errout.str());
     }
 
     void uninitVar21() { // ticket #2947
@@ -3854,7 +3858,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninitTemplate1() {
+    void uninitTemplate1()
+    {
         check("template <class A, class T> class C;\n"
               "template <class A>\n"
               "class C<A, void> {\n"

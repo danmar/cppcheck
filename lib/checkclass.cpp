@@ -147,7 +147,7 @@ void CheckClass::constructors()
 
             // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
             if (func.type == Function::eConstructor) {
-                const Token * initList = func.constructorMemberInitialization();
+                const Token *initList = func.constructorMemberInitialization();
                 if (Token::Match(initList, ": %name% (") && initList->next()->tokType() == Token::eName)
                     break;
             }
