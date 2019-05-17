@@ -136,20 +136,20 @@ void resourceLeak_fdopen(int fd)
 
 void resourceLeak_mkstemp(char *template)
 {
-	// cppcheck-suppress unreadVariable
-	int fp = mkstemp(template);
-	// cppcheck-suppress resourceLeak
+    // cppcheck-suppress unreadVariable
+    int fp = mkstemp(template);
+    // cppcheck-suppress resourceLeak
 }
 
 void no_resourceLeak_mkstemp_01(char *template)
 {
-	int fp = mkstemp(template);
-	close(fp);
+    int fp = mkstemp(template);
+    close(fp);
 }
 
 int no_resourceLeak_mkstemp_02(char *template)
 {
-	return mkstemp(template);
+    return mkstemp(template);
 }
 
 void resourceLeak_fdopendir(int fd)
