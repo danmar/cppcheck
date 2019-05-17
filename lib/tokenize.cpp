@@ -3849,7 +3849,7 @@ void Tokenizer::createLinks2()
                 type.pop();
         } else if (token->str() == "<" &&
                    ((token->previous() && token->previous()->isName() && !token->previous()->varId()) ||
-                    Token::simpleMatch(token->next(), ">"))) {
+                    Token::Match(token->next(), ">|>>"))) {
             type.push(token);
             if (!templateToken && (token->previous()->str() == "template"))
                 templateToken = token;
