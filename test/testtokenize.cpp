@@ -7584,15 +7584,15 @@ private:
 
     }
 
-    void emptyAngleBrackets() {
-        ASSERT_NO_THROW(tokenizeAndStringify(
-                            "template <typename = void> struct a {\n"
-                            "  void c();\n"
-                            "};\n"
-                            "void f() {\n"
-                            "  a<> b;\n"
-                            "  b.a<>::c();\n"
-                            "}\n"))
+    void emptyAngleBrackets()
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename = void> struct a {\n"
+                                             "  void c();\n"
+                                             "};\n"
+                                             "void f() {\n"
+                                             "  a<> b;\n"
+                                             "  b.a<>::c();\n"
+                                             "}\n"))
     }
 
     void noCrash1() {
