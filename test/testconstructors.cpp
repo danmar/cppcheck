@@ -194,6 +194,8 @@ private:
         TEST_CASE(uninitAssignmentWithOperator);  // ticket #7429
         TEST_CASE(uninitCompoundAssignment);      // ticket #7429
         TEST_CASE(uninitComparisonAssignment);    // ticket #7429
+        
+        TEST_CASE(uninitTemplate1);    // ticket #7372
     }
 
 
@@ -3847,6 +3849,24 @@ private:
               "    }\n"
               "    int SetValue() { return x = 1; }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitTemplate1() {
+        check("template <class A, class T> class C;\n"
+              "template <class A>\n"
+              "class C<A, void> {\n"
+              "  public:\n"
+              "    C() : b(0) { }\n"
+              "    C(A* a) : b(a) { }\n"
+              "  private:\n"
+              "    A* b;\n"
+              "};\n"
+              "template <class A, class T>\n"
+              "class C {\n"
+              "  private:\n"
+              "    A* b;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
