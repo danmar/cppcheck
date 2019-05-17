@@ -145,6 +145,13 @@ void CheckClass::constructors()
             if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
 
+            // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
+            if (func.type == Function::eConstructor) {
+                const Token * initList = func.constructorMemberInitialization();
+                if (Token::Match(initList, ": %name% (") && initList->next()->tokType() == Token::eName)
+                    break;
+            }
+
             // Mark all variables not used
             clearAllVar(usage);
 
@@ -218,6 +225,7 @@ void CheckClass::constructors()
                     if (classNameUsed)
                         operatorEqVarError(func.token, scope->className, var.name(), inconclusive);
                 } else if (func.access != Private || mSettings->standards.cpp >= Standards::CPP11) {
+                    // If constructor is not in scope then we maybe using a oonstructor from a different template specialization
                     if (!precedes(scope->bodyStart, func.tokenDef))
                         continue;
                     const Scope *varType = var.typeScope();

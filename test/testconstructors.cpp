@@ -2174,7 +2174,8 @@ private:
               "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
 
-        check("Object::MemFunc() {\n"
+        check("struct copy_protected;\n"
+              "Object::MemFunc() {\n"
               "    class LocalClass : public copy_protected {\n"
               "    public:\n"
               "        LocalClass() : copy_protected(1), dataLength_(0) {}\n"
@@ -2182,9 +2183,10 @@ private:
               "        double bitsInData_;\n"
               "    } obj;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
 
-        check("Object::MemFunc() {\n"
+        check("struct copy_protected;\n"
+              "Object::MemFunc() {\n"
               "    class LocalClass : ::copy_protected {\n"
               "    public:\n"
               "        LocalClass() : copy_protected(1), dataLength_(0) {}\n"
@@ -2192,7 +2194,7 @@ private:
               "        double bitsInData_;\n"
               "    } obj;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'LocalClass::bitsInData_' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVar21() { // ticket #2947
@@ -3867,6 +3869,18 @@ private:
               "  private:\n"
               "    A* b;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class T> class A{};\n"
+              "template<class T1, class T2> class B{};\n"
+              "template<class T1, class T2>\n"
+              "class A<B<T1, T2>> {\n"
+              "  public:\n"
+              "    A();\n"
+              "    bool m_value;\n"
+              "};\n"
+              "template<class T1, class T2>\n"
+              "A<B<T1, T2>>::A() : m_value(false) {}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
