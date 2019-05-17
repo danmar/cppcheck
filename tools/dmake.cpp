@@ -290,7 +290,6 @@ int main(int argc, char **argv)
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
-                                "-Wabi "
                                 "-Wcast-qual "
 //                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
                                 "-Wno-deprecated-declarations "
@@ -302,6 +301,7 @@ int main(int argc, char **argv)
 //                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
+                                "-Wundef "
                                 "-Wno-shadow "
 //                                "-Wsign-conversion "
 //                                "-Wsign-promo "

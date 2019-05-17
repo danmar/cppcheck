@@ -3121,19 +3121,6 @@ struct LifetimeStore {
     }
 };
 
-static const Token *endTemplateArgument(const Token *tok)
-{
-    for (; tok; tok = tok->next()) {
-        if (Token::Match(tok, ">|,"))
-            return tok;
-        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
-            tok = tok->link();
-        else if (Token::simpleMatch(tok, ";"))
-            return nullptr;
-    }
-    return nullptr;
-}
-
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     if (!Token::Match(tok, "%name% ("))
