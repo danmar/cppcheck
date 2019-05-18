@@ -455,6 +455,7 @@ private:
         // The TestGarbage ensures that there are true positives
         TEST_CASE(findGarbageCode);
         TEST_CASE(checkEnableIf);
+        TEST_CASE(checkTemplates);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -7581,6 +7582,22 @@ private:
                             "    int x = a < b ? b : a;"
                             "};\n"))
 
+    }
+
+    void checkTemplates() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "namespace {\n"
+                            "template <typename> struct a;\n"
+                            "template <typename> struct b {};\n"
+                            "}\n"
+                            "namespace {\n"
+                            "template <typename> struct c;\n"
+                            "template <typename d> struct e {\n"
+                            "  using f = a< b<typename c<d>::g> >;\n"
+                            "  bool h = f::h;\n"
+                            "};\n"
+                            "template <typename i> using j = typename e<i>::g;\n"
+                            "}\n"))
     }
 
     void noCrash1() {

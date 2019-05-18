@@ -2404,7 +2404,8 @@ std::string TemplateSimplifier::getNewName(
 {
     std::string typeForNewName;
     unsigned int indentlevel = 0;
-    for (Token *tok3 = tok2->tokAt(2); tok3 && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
+    const Token * endToken = tok2->next()->findClosingBracket();
+    for (Token *tok3 = tok2->tokAt(2); tok3 != endToken && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
         // #2648 - unhandled parentheses => bail out
         // #2721 - unhandled [ => bail out
         if (Token::Match(tok3, "(|[")) {
@@ -2672,10 +2673,11 @@ void TemplateSimplifier::replaceTemplateUsage(
 
         // match parameters
         Token * tok2 = nameTok->tokAt(2);
+        const Token * endToken = nameTok->next()->findClosingBracket();
         unsigned int typeCountInInstantiation = 1U; // There is always at least one type
         const Token *typetok = (!mTypesUsedInTemplateInstantiation.empty()) ? mTypesUsedInTemplateInstantiation[0].token : nullptr;
         unsigned int indentlevel2 = 0;  // indentlevel for tokgt
-        while (tok2 && (indentlevel2 > 0 || tok2->str() != ">")) {
+        while (tok2 != endToken && (indentlevel2 > 0 || tok2->str() != ">")) {
             if (tok2->str() == "<" && templateParameters(tok2) > 0)
                 ++indentlevel2;
             else if (indentlevel2 > 0 && Token::Match(tok2, "> [,>]"))
