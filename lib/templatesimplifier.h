@@ -270,6 +270,12 @@ private:
     void useDefaultArgumentValues();
 
     /**
+     * simplify template instantiations (use default argument values)
+     * @param template1 template declaration or forward declaration
+     */
+    void useDefaultArgumentValues(TemplateSimplifier::TokenAndName &template1);
+
+    /**
      * Try to locate a matching declaration for each user defined
      * specialization.
      */
