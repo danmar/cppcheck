@@ -2609,6 +2609,62 @@ private:
                                 "class thv_table_c<void*,void*,DefaultMemory<Key,Val>> { } ;";
             TODO_ASSERT_EQUALS(exp, curr, tok(code));
         }
+        {
+            // #8890
+            const char code[] = "template <typename = void> struct a {\n"
+                                "  void c();\n"
+                                "};\n"
+                                "void f() {\n"
+                                "  a<> b;\n"
+                                "  b.a<>::c();\n"
+                                "}";
+            ASSERT_EQUALS("struct a<void> ; "
+                          "void f ( ) { "
+                          "a<void> b ; "
+                          "b . a<void> :: c ( ) ; "
+                          "} "
+                          "struct a<void> { "
+                          "void c ( ) ; "
+                          "} ;", tok(code));
+        }
+        {
+            // #8890
+            const char code[] = "template< typename T0 = void > class A;\n"
+                                "template<>\n"
+                                "class A< void > {\n"
+                                "    public:\n"
+                                "        A() { }\n"
+                                "        ~A() { }\n"
+                                "        void Print() { std::cout << \"A\" << std::endl; }\n"
+                                "};\n"
+                                "class B : public A<> {\n"
+                                "    public:\n"
+                                "        B() { }\n"
+                                "        ~B() { }\n"
+                                "};\n"
+                                "int main( int argc, char* argv[] ) {\n"
+                                "    B b;\n"
+                                "    b.A<>::Print();\n"
+                                "    return 0;\n"
+                                "}";
+            ASSERT_EQUALS("template < typename T0 > class A ; "
+                          "class A<void> { "
+                          "public: "
+                          "A<void> ( ) { } "
+                          "~ A<void> ( ) { } "
+                          "void Print ( ) { std :: cout << \"A\" << std :: endl ; } "
+                          "} ; "
+                          "class B : public A<void> { "
+                          "public: "
+                          "B ( ) { } "
+                          "~ B ( ) { } "
+                          "} ; "
+                          "int main ( int argc , char * argv [ ] ) { "
+                          "B b ; "
+                          "b . A<void> :: Print ( ) ; "
+                          "return 0 ; "
+                          "}", tok(code));
+        }
     }
 
     void template_forward_declared_default_parameter() {
