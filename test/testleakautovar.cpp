@@ -104,6 +104,7 @@ private:
         TEST_CASE(ifelse11); // #8365 - if (NULL == (p = malloc(4)))
         TEST_CASE(ifelse12); // #8340 - if ((*p = malloc(4)) == NULL)
         TEST_CASE(ifelse13); // #8392
+        TEST_CASE(ifelse14); // #9130 - if (x == (char*)NULL)
 
         // switch
         TEST_CASE(switch1);
@@ -1201,6 +1202,16 @@ private:
               "    return 0;\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4] memory leak", "", errout.str());
+    }
+
+    void ifelse14() { // #9130
+        check("char* f() {\n"
+              "    char* buf = malloc(10);\n"
+              "    if (buf == (char*)NULL)\n"
+              "        return NULL;\n"
+              "    return buf;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switch1() {
