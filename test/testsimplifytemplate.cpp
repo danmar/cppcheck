@@ -2609,6 +2609,24 @@ private:
                                 "class thv_table_c<void*,void*,DefaultMemory<Key,Val>> { } ;";
             TODO_ASSERT_EQUALS(exp, curr, tok(code));
         }
+        {
+            // #8890
+            const char code[] = "template <typename = void> struct a {\n"
+                                "  void c();\n"
+                                "};\n"
+                                "void f() {\n"
+                                "  a<> b;\n"
+                                "  b.a<>::c();\n"
+                                "}";
+            ASSERT_EQUALS("struct a<void> ; "
+                          "void f ( ) { "
+                          "a<void> b ; "
+                          "b . a<void> :: c ( ) ; "
+                          "} "
+                          "struct a<void> { "
+                          "void c ( ) ; "
+                          "} ;", tok(code));
+        }
     }
 
     void template_forward_declared_default_parameter() {

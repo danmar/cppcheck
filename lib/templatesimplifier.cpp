@@ -835,7 +835,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             }
 
             // Add outer template..
-            if (templateParameters(tok->next())) {
+            if (templateParameters(tok->next()) || tok->strAt(2) == ">") {
                 const std::string scopeName1(scopeName);
                 while (true) {
                     const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") +
@@ -971,8 +971,10 @@ void TemplateSimplifier::useDefaultArgumentValues()
                     ++it;
                 while (it != eq.end()) {
                     int indentlevel = 0;
-                    tok->insertToken(",");
-                    tok = tok->next();
+                    if (usedpar) {
+                        tok->insertToken(",");
+                        tok = tok->next();
+                    }
                     const Token *from = (*it)->next();
                     std::stack<Token *> links;
                     while (from && (!links.empty() || indentlevel || !Token::Match(from, ",|>"))) {
