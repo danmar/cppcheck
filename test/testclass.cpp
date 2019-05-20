@@ -1479,6 +1479,18 @@ private:
             "A &A::operator =(int *other) { return (*this); };\n"
             "A &A::operator =(long *other) { return this->operator = (*(int *)other); };");
         ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis( // #9045
+            "class V {\n"
+            "public:\n"
+            "    V& operator=(const V& r) {\n"
+            "        if (this == &r) {\n"
+            "            return ( *this );\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEqRetRefThis4() {
