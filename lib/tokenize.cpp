@@ -7779,6 +7779,10 @@ bool Tokenizer::simplifyRedundantParentheses()
         if (tok->str() != "(")
             continue;
 
+        if (isCPP() && Token::simpleMatch(tok->previous(), "} (") && 
+            Token::Match(tok->previous()->link()->previous(), "%name%|> {"))
+            continue;
+
         if (Token::simpleMatch(tok, "( {"))
             continue;
 
