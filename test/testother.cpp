@@ -7637,6 +7637,15 @@ private:
               "    f(x[0]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };"
+              "void g(int);\n"
+              "void f(int x) {\n"
+              "    A y;\n"
+              "    y.x = 1;\n"
+              "    g(y.x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparePointers() {
