@@ -7662,7 +7662,7 @@ private:
                             "template <bool> using c = int;\n"
                             "template <bool b> c<b> d;\n"
                             "template <> struct a<int> {\n"
-                              "template <typename e> constexpr auto g() { d<0 || e::f>; return 0; }\n"
+                            "template <typename e> constexpr auto g() { d<0 || e::f>; return 0; }\n"
                             "};\n"))
     }
 

@@ -289,13 +289,13 @@ private:
     void cpp11init3() {
         check("struct A { void operator()(int); };\n"
               "void f() {\n"
-                  "A{}(0);\n"
+              "A{}(0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("template<class> struct A { void operator()(int); };\n"
               "void f() {\n"
-                  "A<int>{}(0);\n"
+              "A<int>{}(0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

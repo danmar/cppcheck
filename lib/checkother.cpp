@@ -2825,7 +2825,7 @@ static bool isVariableExpression(const Token* tok)
     if (Token::Match(tok, "%var%"))
         return true;
     if (Token::simpleMatch(tok, "."))
-        return isVariableExpression(tok->astOperand1()) && 
+        return isVariableExpression(tok->astOperand1()) &&
                isVariableExpression(tok->astOperand2());
     return false;
 }
