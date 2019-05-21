@@ -22,6 +22,7 @@
 #include "astutils.h"
 #include "symboldatabase.h"
 #include <tinyxml2.h>
+#include <iterator>  // back_inserter
 //---------------------------------------------------------------------------
 
 static const char ATTR_CALL_ID[] = "call-id";
@@ -537,8 +538,7 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
         if (functionCall) {
             if (functionCallPtr)
                 *functionCallPtr = functionCall;
-            for (const ErrorLogger::ErrorMessage::FileLocation &loc : functionCall->callValuePath)
-                locationList.push_back(loc);
+            std::copy(functionCall->callValuePath.cbegin(), functionCall->callValuePath.cend(), std::back_inserter(locationList));
         }
 
         ErrorLogger::ErrorMessage::FileLocation fileLoc;

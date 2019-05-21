@@ -363,7 +363,7 @@ struct AST_state {
     bool cpp;
     unsigned int assign;
     bool inCase; // true from case to :
-    explicit AST_state(bool cpp_) : depth(0), inArrayAssignment(0), cpp(cpp_), assign(0U), inCase(false) {}
+    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0U), inCase(false) {}
 };
 
 static Token * skipDecl(Token *tok)
@@ -403,7 +403,7 @@ static bool iscast(const Token *tok)
     if (Token::Match(tok, "( (| typeof (") && Token::Match(tok->link(), ") %num%"))
         return true;
 
-    if (Token::Match(tok->link(), ") }|)|]"))
+    if (Token::Match(tok->link(), ") }|)|]|;"))
         return false;
 
     if (Token::Match(tok->link(), ") %cop%") && !Token::Match(tok->link(), ") [&*+-~]"))
@@ -482,6 +482,8 @@ static bool iscpp11init(const Token * const tok)
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
     else
+        return false;
+    if (Token::Match(nameToken, "else|try|do|const|override|volatile|&|&&"))
         return false;
     // There is no initialisation for example here: 'class Fred {};'
     if (!Token::simpleMatch(endtok, "} ;"))
@@ -584,6 +586,12 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
             if (tok->str() == "<")
                 tok = tok->link()->next();
+            if (Token::Match(tok, "{ . %name% =")) {
+                const bool inArrayAssignment = state.inArrayAssignment;
+                state.inArrayAssignment = true;
+                compileBinOp(tok, state, compileExpression);
+                state.inArrayAssignment = inArrayAssignment;
+            }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             tok = skipDecl(tok);
             while (tok->next() && tok->next()->isName())
@@ -610,9 +618,8 @@ static void compileTerm(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::Match(tok, "} ,|:")) {
+            if (Token::Match(tok, "} ,|:"))
                 tok = tok->next();
-            }
         } else if (!state.inArrayAssignment && !Token::simpleMatch(prev, "=")) {
             state.op.push(tok);
             tok = tok->link()->next();
@@ -1159,10 +1166,40 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         return endPar;
     }
 
+    if (cpp && Token::Match(tok, "if|switch (")) {
+        Token *semicolon = nullptr;
+        Token *tok2;
+        for (tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
+            if (tok2->str() == ";") {
+                if (semicolon)
+                    break;
+                semicolon = tok2;
+            }
+            if (tok2->str() == "(")
+                tok2 = tok2->link();
+        }
+        if (semicolon && tok2 == tok->linkAt(1)) {
+            tok2 = skipDecl(tok->tokAt(2));
+            Token *init1 = tok2;
+            AST_state state1(cpp);
+            compileExpression(tok2, state1);
+
+            tok2 = semicolon->next();
+            Token *expr1 = tok2;
+            AST_state state2(cpp);
+            compileExpression(tok2, state2);
+
+            semicolon->astOperand1(findAstTop(init1, semicolon->previous()));
+            semicolon->astOperand2(findAstTop(expr1, tok2));
+            tok->next()->astOperand1(tok);
+            tok->next()->astOperand2(semicolon);
+        }
+    }
+
     if (Token::simpleMatch(tok, "( {"))
         return tok;
 
-    if (Token::Match(tok, "%type% <") && !Token::Match(tok->linkAt(1), "> [({]"))
+    if (Token::Match(tok, "%type% <") && tok->linkAt(1) && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
 
     if (Token::Match(tok, "%type% %name%|*|&|::") && tok->str() != "return") {
@@ -1191,6 +1228,12 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         createAstAtTokenInner(tok1->next(), endToken, cpp);
 
         return endToken->previous();
+    }
+
+    if (cpp && tok->str() == "{" && iscpp11init(tok)) {
+        AST_state state(cpp);
+        compileExpression(tok, state);
+        return tok;
     }
 
     return tok;

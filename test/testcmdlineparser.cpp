@@ -103,7 +103,6 @@ private:
         TEST_CASE(maxConfigsInvalid);
         TEST_CASE(maxConfigsTooSmall);
         TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
-        TEST_CASE(stdposix);
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
         TEST_CASE(platform);
@@ -692,14 +691,6 @@ private:
         settings.reportProgress = false;
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT(settings.reportProgress);
-    }
-
-    void stdposix() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--std=posix", "file.cpp"};
-        settings.standards.posix = false;
-        ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT(settings.standards.posix);
     }
 
     void stdc99() {

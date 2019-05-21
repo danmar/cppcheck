@@ -40,7 +40,7 @@ class ProjectFile : public QObject {
 
 public:
     explicit ProjectFile(QObject *parent = 0);
-    ProjectFile(const QString &filename, QObject *parent = 0);
+    explicit ProjectFile(const QString &filename, QObject *parent = 0);
 
     /**
      * @brief Read the project file.
@@ -64,12 +64,24 @@ public:
         return mImportProject;
     }
 
-    QString getVSCheckConfig() const{
-        return mVSCheckConfig;
-    }
-
     bool getAnalyzeAllVsConfigs() const {
         return mAnalyzeAllVsConfigs;
+    }
+
+    bool getCheckHeaders() const {
+        return mCheckHeaders;
+    }
+
+    void setCheckHeaders(bool b) {
+        mCheckHeaders = b;
+    }
+
+    bool getCheckUnusedTemplates() const {
+        return mCheckUnusedTemplates;
+    }
+
+    void setCheckUnusedTemplates(bool b) {
+        mCheckUnusedTemplates = b;
     }
 
     /**
@@ -129,12 +141,18 @@ public:
     }
 
     /**
-    * @brief Get list suppressions.
+    * @brief Get "raw" suppressions.
     * @return list of suppressions.
     */
     QList<Suppressions::Suppression> getSuppressions() const {
         return mSuppressions;
     }
+
+    /**
+    * @brief Get "check" suppressions.
+    * @return list of suppressions.
+    */
+    QList<Suppressions::Suppression> getCheckSuppressions() const;
 
     /**
     * @brief Get list addons.
@@ -168,6 +186,14 @@ public:
 
     QStringList getTags() const {
         return mTags;
+    }
+
+    int getMaxCtuDepth() const {
+        return mMaxCtuDepth;
+    }
+
+    void setMaxCtuDepth(int maxCtuDepth) {
+        mMaxCtuDepth = maxCtuDepth;
     }
 
     /**
@@ -290,9 +316,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    void readVSCheckConfig(QXmlStreamReader &reader);
+    bool readBool(QXmlStreamReader &reader);
 
-    void readAnalyzeAllVsConfigs(QXmlStreamReader &reader);
+    int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -375,14 +401,18 @@ private:
     /** Visual studio project/solution , compile database */
     QString mImportProject;
 
-    /** Visual studio configuration to analyze */
-    QString mVSCheckConfig;
     /**
      * Should all visual studio configurations be analyzed?
      * If this is false then only the Debug configuration
      * for the set platform is analyzed.
      */
     bool mAnalyzeAllVsConfigs;
+
+    /** Check code in headers */
+    bool mCheckHeaders;
+
+    /** Check code in unused templates */
+    bool mCheckUnusedTemplates;
 
     /**
      * @brief List of include directories used to search include files.
@@ -439,6 +469,9 @@ private:
      * @brief Warning tags
      */
     QStringList mTags;
+
+    /** Max CTU depth */
+    int mMaxCtuDepth;
 };
 /// @}
 #endif  // PROJECT_FILE_H

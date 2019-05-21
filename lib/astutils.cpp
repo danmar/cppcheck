@@ -131,7 +131,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (tok->isName() && !tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (!tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }
@@ -739,30 +739,22 @@ bool isUniqueExpression(const Token* tok)
         // Iterate over the variables in scope and the parameters of the function if possible
         const Function * fun = scope->function;
         const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
-        if (varType) {
-            for (const std::list<Variable>* vars:setOfVars) {
-                if (!vars)
-                    continue;
-                for (const Variable& v:*vars) {
-                    if (v.type() && v.type()->name() == varType->name() && v.name() != var->name()) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            for (const std::list<Variable>* vars:setOfVars) {
-                if (!vars)
-                    continue;
-                for (const Variable& v:*vars) {
-                    if (v.isFloatingType() == var->isFloatingType() &&
-                        v.isEnumType() == var->isEnumType() &&
-                        v.isClass() == var->isClass() &&
-                        v.isArray() == var->isArray() &&
-                        v.isPointer() == var->isPointer() &&
-                        v.name() != var->name())
-                        return false;
-                }
-            }
+
+        for (const std::list<Variable>* vars:setOfVars) {
+            if (!vars)
+                continue;
+            bool other = std::any_of(vars->cbegin(), vars->cend(), [=](const Variable &v) {
+                if (varType)
+                    return v.type() && v.type()->name() == varType->name() && v.name() != var->name();
+                return v.isFloatingType() == var->isFloatingType() &&
+                       v.isEnumType() == var->isEnumType() &&
+                       v.isClass() == var->isClass() &&
+                       v.isArray() == var->isArray() &&
+                       v.isPointer() == var->isPointer() &&
+                       v.name() != var->name();
+            });
+            if (other)
+                return false;
         }
     } else if (!isUniqueExpression(tok->astOperand1())) {
         return false;
@@ -1049,6 +1041,18 @@ std::vector<const Token *> getArguments(const Token *ftok)
         startTok = tok->astOperand1();
     getArgumentsRecursive(startTok, &arguments, 0);
     return arguments;
+}
+
+const Token *findLambdaStartToken(const Token *last)
+{
+    if (!last || last->str() != "}")
+        return nullptr;
+    const Token* tok = last->link();
+    if (Token::simpleMatch(tok->astParent(), "("))
+        tok = tok->astParent();
+    if (Token::simpleMatch(tok->astParent(), "["))
+        return tok->astParent();
+    return nullptr;
 }
 
 const Token *findLambdaEndToken(const Token *first)
@@ -1411,6 +1415,9 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
 
     if (unknownVarId)
         return Result(FwdAnalysis::Result::Type::BAILOUT);
+
+    if (mWhat == What::Reassign && isGlobalData(expr))
+        local = false;
 
     // In unused values checking we do not want to check assignments to
     // global data.

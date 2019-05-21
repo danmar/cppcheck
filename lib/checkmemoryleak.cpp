@@ -153,7 +153,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return New;
         }
 
-        if (mSettings_->standards.posix) {
+        if (mSettings_->posix()) {
             if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
@@ -255,7 +255,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
                 if (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )"))
                     return Malloc;
 
-                if (mSettings_->standards.posix) {
+                if (mSettings_->posix()) {
                     if (tok->str() == "close")
                         return Fd;
                     if (tok->str() == "pclose")
@@ -363,6 +363,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
     for (const Token *tok2 = func->functionScope->bodyStart; tok2 != func->functionScope->bodyEnd; tok2 = tok2->next()) {
         if (const Token *endOfLambda = findLambdaEndToken(tok2))
             tok2 = endOfLambda;
+        if (tok2->str() == "{" && !tok2->scope()->isExecutable())
+            tok2 = tok2->link();
         if (tok2->str() == "return") {
             const AllocType allocType = getAllocationType(tok2->next(), 0, callstack);
             if (allocType != No)

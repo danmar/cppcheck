@@ -239,14 +239,10 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setUndefines(projectFile->getUndefines());
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
-
-    if(!projectFile->getVSCheckConfig().isEmpty()){
-        mUI.mChkAllVsConfigs->setChecked(false);
-        mUI.mChkAllVsConfigs->setEnabled(false);
-        setVSCheckConfig(projectFile->getVSCheckConfig());
-    }
-
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
+    mUI.mCheckHeaders->setChecked(projectFile->getCheckHeaders());
+    mUI.mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
+    mUI.mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     const QString platform = projectFile->getPlatform();
@@ -311,6 +307,9 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setBuildDir(getBuildDir());
     projectFile->setImportProject(getImportProject());
     projectFile->setAnalyzeAllVsConfigs(mUI.mChkAllVsConfigs->isChecked());
+    projectFile->setCheckHeaders(mUI.mCheckHeaders->isChecked());
+    projectFile->setCheckUnusedTemplates(mUI.mCheckUnusedTemplates->isChecked());
+    projectFile->setMaxCtuDepth(mUI.mMaxCtuDepth->value());
     projectFile->setIncludes(getIncludePaths());
     projectFile->setDefines(getDefines());
     projectFile->setUndefines(getUndefines());
@@ -364,7 +363,7 @@ QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool tra
     // make it a relative path instead of absolute path.
     const QDir dir(rootpath);
     const QString relpath(dir.relativeFilePath(selectedDir));
-    if (!relpath.startsWith("."))
+    if (!relpath.startsWith("../.."))
         selectedDir = relpath;
 
     // Trailing slash..
@@ -399,7 +398,6 @@ void ProjectFileDialog::updatePathsAndDefines()
     mUI.mBtnIncludeUp->setEnabled(!importProject);
     mUI.mBtnIncludeDown->setEnabled(!importProject);
     mUI.mChkAllVsConfigs->setEnabled(fileName.endsWith(".sln") || fileName.endsWith(".vcxproj"));
-    mUI.mEditVSCheckConfig->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }
 
 void ProjectFileDialog::clearImportProject()
@@ -528,9 +526,6 @@ void ProjectFileDialog::setBuildDir(const QString &buildDir)
 void ProjectFileDialog::setImportProject(const QString &importProject)
 {
     mUI.mEditImportProject->setText(importProject);
-void ProjectFileDialog::setVSCheckConfig(const QString &vsCheckConfig)
-{
-    mUI.mEditVSCheckConfig->setText(vsCheckConfig);
 }
 
 void ProjectFileDialog::setIncludepaths(const QStringList &includes)
@@ -723,10 +718,4 @@ void ProjectFileDialog::browseMisraFile()
         mUI.mAddonMisra->setEnabled(true);
         updateAddonCheckBox(mUI.mAddonMisra, nullptr, settings.value("DATADIR", QString()).toString(), "misra");
     }
-}
-
-void ProjectFileDialog::on_mChkAllVsConfigs_stateChanged(int arg1)
-{
-    mUI.mLabelVSCheckConfig->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
-    mUI.mEditVSCheckConfig->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }

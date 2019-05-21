@@ -8,7 +8,7 @@ import cppcheckdata
 import sys
 
 def reportError(token, severity, msg, id):
-	cppcheckdata.reportErrorCli(token, severity, msg, 'threadsafety', id)
+    cppcheckdata.reportError(token, severity, msg, 'threadsafety', id)
 
 
 def checkstatic(data):
@@ -25,6 +25,8 @@ def checkstatic(data):
                 reportError(var.typeStartToken, 'warning', 'Local static ' + type + ': ' + var.nameToken.str, 'threadsafety')
 
 for arg in sys.argv[1:]:
+    if arg.startswith('-'):
+        continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
     for cfg in data.configurations:

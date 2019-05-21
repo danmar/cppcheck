@@ -144,6 +144,7 @@ private:
         TEST_CASE(template104); // #9021
         TEST_CASE(template105); // #9076
         TEST_CASE(template106);
+        TEST_CASE(template107); // #8663
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -385,8 +386,7 @@ private:
 
         // The expected result..
         const char expected[] = "class A<int> ; "
-                                "void f ( ) { A<int> a ; } "
-                                "template < typename T > class B { void g ( ) { A < T > b ; b = A < T > :: h ( ) ; } } ; "
+                                "void f ( ) { A<int> a ; } ; "
                                 "class A<int> { } ;";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -990,7 +990,7 @@ private:
                             "    return sizeof...(args);\n"
                             "  }();\n"
                             "}";
-        tok(code);
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void template43() { // #5097 - Assert due to '>>' in 'B<A<C>>' not being treated as end of template instantiation
@@ -1385,7 +1385,6 @@ private:
                             "template <class T, unsigned S> C3<T, S>::C3(const C3<T, S> &v) { C1<T *> c1; }\n"
                             "C3<int,6> c3;";
         const char exp[] = "struct C1<int*> ; "
-                           "template < class T > void f ( ) { x = y ? ( C1 < int > :: allocate ( 1 ) ) : 0 ; } "
                            "class C3<int,6> ; "
                            "C3<int,6> c3 ; "
                            "class C3<int,6> { } ; "
@@ -2393,7 +2392,6 @@ private:
                             "template <typename T> class Fred {};\n"
                             "ObjectCache<Fred> _cache;";
         const char exp[] = "class ObjectCache<Fred> ; "
-                           "template < typename T > class Fred { } ; "
                            "ObjectCache<Fred> _cache ; "
                            "class ObjectCache<Fred> { } ;";
         ASSERT_EQUALS(exp, tok(code));
@@ -2417,6 +2415,34 @@ private:
                            "public: "
                            "int x ; "
                            "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template107() { // #8663
+        const char code[] = "template <class T1, class T2>\n"
+                            "void f() {\n"
+                            "  using T3 = typename T1::template T3<T2>;\n"
+                            "  T3 t;\n"
+                            "}\n"
+                            "struct C3 {\n"
+                            "  template <typename T>\n"
+                            "  class T3\n"
+                            "  {};\n"
+                            "};\n"
+                            "void foo() {\n"
+                            "  f<C3, long>();\n"
+                            "}";
+        const char exp[] = "void f<C3,long> ( ) ; "
+                           "struct C3 { "
+                           "class T3<long> ; "
+                           "} ; "
+                           "void foo ( ) { "
+                           "f<C3,long> ( ) ; "
+                           "} "
+                           "void f<C3,long> ( ) { "
+                           "C3 :: T3<long> t ; "
+                           "} "
+                           "class C3 :: T3<long> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -2473,8 +2499,7 @@ private:
                             "template < class T > struct Unconst < const T & > { } ; "
                             "template < class T > struct Unconst < T * const > { } ; "
                             "template < class T1 , class T2 > struct type_equal { enum Anonymous0 { value = 0 } ; } ; "
-                            "template < class T > struct type_equal < T , T > { enum Anonymous1 { value = 1 } ; } ; "
-                            "template < class T > struct template_is_const { enum Anonymous2 { value = ! type_equal < T , Unconst < T > :: type > :: value } ; } ;";
+                            "template < class T > struct type_equal < T , T > { enum Anonymous1 { value = 1 } ; } ;";
         ASSERT_EQUALS(exp1, tok(code1));
     }
 
@@ -2583,6 +2608,62 @@ private:
                                 "thv_table_c<void*,void*,DefaultMemory<Key,Val>> id_table_m ; "
                                 "class thv_table_c<void*,void*,DefaultMemory<Key,Val>> { } ;";
             TODO_ASSERT_EQUALS(exp, curr, tok(code));
+        }
+        {
+            // #8890
+            const char code[] = "template <typename = void> struct a {\n"
+                                "  void c();\n"
+                                "};\n"
+                                "void f() {\n"
+                                "  a<> b;\n"
+                                "  b.a<>::c();\n"
+                                "}";
+            ASSERT_EQUALS("struct a<void> ; "
+                          "void f ( ) { "
+                          "a<void> b ; "
+                          "b . a<void> :: c ( ) ; "
+                          "} "
+                          "struct a<void> { "
+                          "void c ( ) ; "
+                          "} ;", tok(code));
+        }
+        {
+            // #8890
+            const char code[] = "template< typename T0 = void > class A;\n"
+                                "template<>\n"
+                                "class A< void > {\n"
+                                "    public:\n"
+                                "        A() { }\n"
+                                "        ~A() { }\n"
+                                "        void Print() { std::cout << \"A\" << std::endl; }\n"
+                                "};\n"
+                                "class B : public A<> {\n"
+                                "    public:\n"
+                                "        B() { }\n"
+                                "        ~B() { }\n"
+                                "};\n"
+                                "int main( int argc, char* argv[] ) {\n"
+                                "    B b;\n"
+                                "    b.A<>::Print();\n"
+                                "    return 0;\n"
+                                "}";
+            ASSERT_EQUALS("template < typename T0 > class A ; "
+                          "class A<void> { "
+                          "public: "
+                          "A<void> ( ) { } "
+                          "~ A<void> ( ) { } "
+                          "void Print ( ) { std :: cout << \"A\" << std :: endl ; } "
+                          "} ; "
+                          "class B : public A<void> { "
+                          "public: "
+                          "B ( ) { } "
+                          "~ B ( ) { } "
+                          "} ; "
+                          "int main ( int argc , char * argv [ ] ) { "
+                          "B b ; "
+                          "b . A<void> :: Print ( ) ; "
+                          "return 0 ; "
+                          "}", tok(code));
         }
     }
 
@@ -2714,7 +2795,7 @@ private:
         const char code[] = "class Fred {\n"
                             "    template<class T> explicit Fred(T t) { }\n"
                             "}";
-        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } }", tok(code));
+        ASSERT_EQUALS("class Fred { }", tok(code));
 
         // #3532
         const char code2[] = "class Fred {\n"
@@ -3372,12 +3453,9 @@ private:
                             "IntrusivePtr<Vertex<int>> p;";
         const char expected[] = "; "
                                 "class Vertex<int> ; "
-                                "boost :: intrusive_ptr < Vertex<int> > p ;"
+                                "boost :: intrusive_ptr < Vertex<int> > p ; "
                                 "class Vertex<int> { } ;";
-        const char actual[] = "; "
-                              "template < class T > class Vertex { } ; "
-                              "boost :: intrusive_ptr < T > p ;";
-        TODO_ASSERT_EQUALS(expected, actual, tok(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     unsigned int instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {

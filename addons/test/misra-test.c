@@ -267,6 +267,18 @@ void misra_13_3() {
   x = y++; // 13.3
 }
 
+#define STRING_DEF_13_4    "This is a string"
+
+typedef struct
+{
+    char string[sizeof(STRING_DEF_13_4)];
+} s13_4_t;
+
+static s13_4_t s13_4 =
+{
+    .string = STRING_DEF_13_4 // no-warning
+};
+
 void misra_13_4() {
   if (x != (y = z)) {} // 13.4
   else {}
@@ -497,6 +509,12 @@ union misra_19_2 { }; // 19.2
 
 #define int short // 20.4
 #undef X  // 20.5
+
+#define M_20_7_1(A)  (A+1) // 20.7
+#define M_20_7_2(A,B)  (1+AB+2) // no warning
+#define M_20_7_3(A)  ((A)+A) // 20.7
+
+#define STRINGIFY(a) (#a) // 20.7 20.10
 
 #else1 // 20.13
 

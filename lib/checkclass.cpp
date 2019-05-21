@@ -145,6 +145,13 @@ void CheckClass::constructors()
             if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
 
+            // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
+            if (func.type == Function::eConstructor) {
+                const Token *initList = func.constructorMemberInitialization();
+                if (Token::Match(initList, ": %name% (") && initList->next()->tokType() == Token::eName)
+                    break;
+            }
+
             // Mark all variables not used
             clearAllVar(usage);
 
@@ -218,6 +225,9 @@ void CheckClass::constructors()
                     if (classNameUsed)
                         operatorEqVarError(func.token, scope->className, var.name(), inconclusive);
                 } else if (func.access != Private || mSettings->standards.cpp >= Standards::CPP11) {
+                    // If constructor is not in scope then we maybe using a oonstructor from a different template specialization
+                    if (!precedes(scope->bodyStart, func.tokenDef))
+                        continue;
                     const Scope *varType = var.typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
                         if (func.type == Function::eConstructor &&
@@ -273,7 +283,7 @@ void CheckClass::checkExplicitConstructors()
                 continue;
 
             if (!func.isExplicit() &&
-                func.argCount() == 1 &&
+                func.minArgCount() == 1 &&
                 func.type != Function::eCopyConstructor &&
                 func.type != Function::eMoveConstructor) {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
@@ -1406,6 +1416,13 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             continue;
 
         foundReturn = true;
+
+        const Token *retExpr = tok->astOperand1();
+        if (retExpr && retExpr->str() == "=")
+            retExpr = retExpr->astOperand1();
+        if (retExpr && retExpr->isUnaryOp("*") && Token::simpleMatch(retExpr->astOperand1(), "this"))
+            continue;
+
         std::string cast("( " + scope->className + " & )");
         if (Token::simpleMatch(tok->next(), cast.c_str()))
             tok = tok->tokAt(4);
@@ -1440,8 +1457,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         }
 
         // check if *this is returned
-        else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
-                   Token::simpleMatch(tok->next(), "operator= (") ||
+        else if (!(Token::simpleMatch(tok->next(), "operator= (") ||
                    Token::simpleMatch(tok->next(), "this . operator= (") ||
                    (Token::Match(tok->next(), "%type% :: operator= (") &&
                     tok->next()->str() == scope->className)))
@@ -1837,8 +1853,8 @@ void CheckClass::checkConst()
                 const std::string& opName = func.tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
-            } else if (Token::simpleMatch(func.retDef, "std :: shared_ptr <")) {
-                // Don't warn if a std::shared_ptr is returned
+            } else if (mSettings->library.isSmartPointer(func.retDef)) {
+                // Don't warn if a std::shared_ptr etc is returned
                 continue;
             } else {
                 // don't warn for unknown types..

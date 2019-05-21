@@ -103,6 +103,8 @@ private:
 
         TEST_CASE(valueFlowGlobalVar);
 
+        TEST_CASE(valueFlowGlobalConstVar);
+
         TEST_CASE(valueFlowGlobalStaticVar);
 
         TEST_CASE(valueFlowInlineAssembly);
@@ -776,6 +778,7 @@ private:
         CHECK("short", settings.sizeof_short);
         CHECK("int", settings.sizeof_int);
         CHECK("long", settings.sizeof_long);
+        CHECK("wchar_t", settings.sizeof_wchar_t);
 #undef CHECK
 
         // array size
@@ -1439,6 +1442,25 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        // truncation
+        code = "int f() {\n"
+               "  int x = 1.5;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "int f() {\n"
+               "  unsigned char x = 0x123;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0x23));
+
+        code = "int f() {\n"
+               "  signed char x = 0xfe;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, -2));
 
         // function
         code = "void f() {\n"
@@ -3163,6 +3185,25 @@ private:
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
+    }
+
+    void valueFlowGlobalConstVar() {
+        const char* code;
+
+        code = "const int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 321));
+
+        code = "void f(const int x = 1) {\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 1));
+
+        code = "volatile const int x = 42;\n"
+               "void f(){ int a = x; }\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 42));
     }
 
     void valueFlowGlobalStaticVar() {

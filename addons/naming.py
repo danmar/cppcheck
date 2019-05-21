@@ -20,7 +20,6 @@ def validate_regex(expr):
         exit(1)
 
 
-CLI = ('--cli' in sys.argv)
 RE_VARNAME = None
 RE_PRIVATE_MEMBER_VARIABLE = None
 RE_FUNCTIONNAME = None
@@ -35,20 +34,11 @@ for arg in sys.argv[1:]:
         RE_FUNCTIONNAME = arg[11:]
         validate_regex(RE_FUNCTIONNAME)
 
-
-FoundError = False
-
 def reportError(token, severity, msg, errorId):
-    global FoundError
-    FoundError = True
-    msg = '[' + token.file + ':' + str(token.linenr) + ']: (' + severity + ') ' + msg + ' [naming-' + errorId + ']'
-    if CLI:
-        print(msg)
-    else:
-        sys.stderr.write(msg + '\n')
+    cppcheckdata.reportError(token, severity, msg, 'naming', errorId)
 
 for arg in sys.argv[1:]:
-    if not arg[-5:] == '.dump':
+    if not arg.endswith('.dump'):
         continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
@@ -77,8 +67,4 @@ for arg in sys.argv[1:]:
                     if not res:
                         reportError(
                             scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention', 'functionName')
-
-if FoundError and not CLI:
-    print('FoundError')
-    sys.exit(1)
 

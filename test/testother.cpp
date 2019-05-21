@@ -167,6 +167,7 @@ private:
         TEST_CASE(redundantVarAssignment_lambda);
         TEST_CASE(redundantVarAssignment_for);
         TEST_CASE(redundantVarAssignment_after_switch);
+        TEST_CASE(redundantVarAssignment_pointer);
         TEST_CASE(redundantVarAssignment_pointer_parameter);
         TEST_CASE(redundantMemWrite);
 
@@ -300,7 +301,7 @@ private:
     void checkposix(const char code[]) {
         static Settings settings;
         settings.addEnabled("warning");
-        settings.standards.posix = true;
+        settings.libraries.push_back("posix");
 
         check(code,
               nullptr, // filename
@@ -1371,9 +1372,8 @@ private:
                                 "    delete [] (double*)f;\n"
                                 "    delete [] (long double const*)(new float[10]);\n"
                                 "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n"
-                           "[test.cpp:4]: (portability) Casting between float* and const long double* which have an incompatible binary data representation.\n",
-                           "[test.cpp:3]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (portability) Casting between float* and double* which have an incompatible binary data representation.\n"
+                      "[test.cpp:4]: (portability) Casting between float* and const long double* which have an incompatible binary data representation.\n", errout.str());
 
         checkInvalidPointerCast("void test(const float* f) {\n"
                                 "    double *d = (double*)f;\n"
@@ -6130,6 +6130,16 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:8]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
+    void redundantVarAssignment_pointer() {
+        check("void f(int *ptr) {\n"
+              "    int *x = ptr + 1;\n"
+              "    *x = 23;\n"
+              "    foo(ptr);\n"
+              "    *x = 32;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void redundantVarAssignment_pointer_parameter() {
         check("void f(int *p) {\n"
               "    *p = 1;\n"
@@ -7625,6 +7635,15 @@ private:
               "void g() {\n"
               "    int x[] = { 10, 10 };\n"
               "    f(x[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };"
+              "void g(int);\n"
+              "void f(int x) {\n"
+              "    A y;\n"
+              "    y.x = 1;\n"
+              "    g(y.x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -104,6 +104,13 @@ void arrayIndexOutOfBounds()
     free(pAlloc1);
 }
 
+void resourceLeak_tmpfile(void)
+{
+    // cppcheck-suppress unreadVariable
+    FILE * fp = tmpfile();
+    // cppcheck-suppress resourceLeak
+}
+
 // memory leak
 
 void ignoreleak(void)

@@ -245,6 +245,7 @@ private:
         TEST_CASE(syntaxErrorLastToken); // Make sure syntax errors are detected and reported
         TEST_CASE(syntaxErrorCase);
         TEST_CASE(syntaxErrorFuzzerCliType1);
+        TEST_CASE(cliCode);
         TEST_CASE(enumTrailingComma);
 
         TEST_CASE(nonGarbageCode1); // #8346
@@ -679,7 +680,7 @@ private:
     }
 
     void garbageCode58() { // #6732, #6762
-        checkCode("{ }> {= ~A()^{} }P { }");
+        ASSERT_THROW(checkCode("{ }> {= ~A()^{} }P { }"), InternalError);
         ASSERT_THROW(checkCode("{= ~A()^{} }P { } { }> is"), InternalError);
     }
 
@@ -1153,19 +1154,19 @@ private:
     }
 
     void garbageCode147() { // #7082
-        checkCode("free(3();\n"
-                  "$  vWrongAllocp1) test1<int, -!>() ^ {\n"
-                  "    int *p<ynew int[n];\n"
-                  "    delete[]p;\n"
-                  "    int *p1 = (int*)malloc(n*sizeof(int));\n"
-                  "    free(p1);\n"
-                  "}\n"
-                  "void est2() {\n"
-                  "    for (int ui = 0; ui < 1z; ui++)\n"
-                  "        ;\n"
-                  "}");
+        ASSERT_THROW(checkCode("free(3();\n"
+                               "$  vWrongAllocp1) test1<int, -!>() ^ {\n"
+                               "    int *p<ynew int[n];\n"
+                               "    delete[]p;\n"
+                               "    int *p1 = (int*)malloc(n*sizeof(int));\n"
+                               "    free(p1);\n"
+                               "}\n"
+                               "void est2() {\n"
+                               "    for (int ui = 0; ui < 1z; ui++)\n"
+                               "        ;\n"
+                               "}"), InternalError);
 
-        checkCode("; void f ^ { return } int main ( ) { }"); // #4941
+        ASSERT_THROW(checkCode("; void f ^ { return } int main ( ) { }"), InternalError); // #4941
     }
 
     void garbageCode148() { // #7090
@@ -1660,6 +1661,18 @@ private:
         ASSERT_THROW(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), InternalError); // #9067
         ASSERT_THROW(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), InternalError); // #9068
         ASSERT_THROW(checkCode("void f() { x= y{ } name5 y[ ] + y ^ name5 ^ name5 for ( ( y y y && y y y && name5 ++ int )); }"), InternalError); // #9069
+    }
+
+    void cliCode() {
+        // #8913
+        /*
+        ASSERT_THROW(checkCode("public ref class LibCecSharp : public CecCallbackMethods {\n"
+                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {} \n"
+                               "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
+                               "bool bReturn(false);\n"
+                               "}\n"
+                               "};\n"), InternalError);
+                               */
     }
 
     void enumTrailingComma() {

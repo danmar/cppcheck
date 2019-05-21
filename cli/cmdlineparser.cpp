@@ -120,6 +120,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool def = false;
     bool maxconfigs = false;
 
+    mSettings->exename = argv[0];
+
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             if (std::strcmp(argv[i], "--version") == 0) {
@@ -157,16 +159,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // dump cppcheck data
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings->dump = true;
-
-            // TODO: These options are about removing code. Instead of having lots of different options
-            // can we create one option that is customizable somehow.
-            // --check-headers=no
-            else if (std::strcmp(argv[i], "--check-headers=no") == 0)
-                mSettings->checkHeaders = false;
-            else if (std::strcmp(argv[i], "--remove-unused-templates") == 0)
-                mSettings->removeUnusedTemplates = true;
-            else if (std::strcmp(argv[i], "--remove-unused-included-templates") == 0)
-                mSettings->removeUnusedIncludedTemplates = true;
 
             // max ctu depth
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
@@ -439,6 +431,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // -E
             else if (std::strcmp(argv[i], "-E") == 0) {
                 mSettings->preprocessOnly = true;
+                mSettings->quiet = true;
             }
 
             // Include paths
@@ -537,22 +530,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 std::string lib(argv[i] + 10);
                 mSettings->libraries.push_back(lib);
             }
-            // --vscfg
-            else if (std::strncmp(argv[i], "--vscfg=", 8) == 0) {
-                mVSConfig = argv[i] + 8;
-                if (!mVSConfig.empty() && (mSettings->project.mType == ImportProject::Type::VS_SLN || mSettings->project.mType == ImportProject::Type::VS_VCXPROJ))
-                    mSettings->project.ignoreOtherConfigs(mVSConfig);
-            }
+
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 const std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
-
-                mSettings->project.mType = projType;
-                if (!mVSConfig.empty() && (projType== ImportProject::Type::VS_SLN || projType== ImportProject::Type::VS_VCXPROJ)){
-                    mSettings->project.ignoreOtherConfigs(mVSConfig);
-                }
-
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
                     for (const std::string &lib : mSettings->project.guiProject.libraries) {
@@ -560,8 +542,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             return false;
                     }
 
-                    for (const std::string &i : mSettings->project.guiProject.excludedPaths)
-                        mIgnoredPaths.emplace_back(i);
+                    for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
+                        mIgnoredPaths.emplace_back(ignorePath);
 
                     const std::string platform(mSettings->project.guiProject.platform);
 
@@ -577,8 +559,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Unix64);
                     else if (platform == "native")
                         mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified")
-                        mSettings->platform(Settings::Unspecified);
+                    else if (platform == "unspecified" || platform == "Unspecified" || platform == "")
+                        ;
                     else if (!mSettings->loadPlatformFile(argv[0], platform)) {
                         std::string message("cppcheck: error: unrecognized platform: \"");
                         message += platform;
@@ -588,13 +570,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     }
 
                     if (!mSettings->project.guiProject.projectFile.empty())
-                    {
                         projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
-                        if (!mSettings->project.guiProject.vsConfig.empty() && (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ))
-                            mSettings->project.ignoreOtherConfigs(mSettings->project.guiProject.vsConfig);
-                    }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
+                    if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
+                        mSettings->project.selectOneVsConfig(mSettings->platformType);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
@@ -618,7 +598,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --std
             else if (std::strcmp(argv[i], "--std=posix") == 0) {
-                mSettings->standards.posix = true;
+                printMessage("cppcheck: Option --std=posix is deprecated and will be removed in 1.95.");
             } else if (std::strcmp(argv[i], "--std=c89") == 0) {
                 mSettings->standards.c = Standards::C89;
             } else if (std::strcmp(argv[i], "--std=c99") == 0) {
@@ -631,6 +611,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->standards.cpp = Standards::CPP11;
             } else if (std::strcmp(argv[i], "--std=c++14") == 0) {
                 mSettings->standards.cpp = Standards::CPP14;
+            } else if (std::strcmp(argv[i], "--std=c++17") == 0) {
+                mSettings->standards.cpp = Standards::CPP17;
+            } else if (std::strcmp(argv[i], "--std=c++20") == 0) {
+                mSettings->standards.cpp = Standards::CPP20;
             }
 
             // Output formatter
@@ -946,8 +930,6 @@ void CmdLineParser::printHelp()
               "                         incremental analysis, distributed analysis.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
-              "    --check-headers=no   Turn off checking of included files, to make the\n"
-              "                         analysis faster.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
               "    --config-exclude=<dir>\n"
@@ -1066,10 +1048,6 @@ void CmdLineParser::printHelp()
               "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
               "                         include paths, defines, platform and undefines in\n"
               "                         the specified file will be used.\n"
-              "    --vscfg=<config>     If used together with a Visual Studio Solution (*.sln)\n"
-              "                         or Visual Studio Project (*.vcxproj) you can limit \n"
-              "                         the configuration cppcheck should check.\n"
-              "                         For example: --vscfg=""Release|Win32"""
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"
@@ -1107,10 +1085,6 @@ void CmdLineParser::printHelp()
               "                         using e.g. ~ for home folder does not work. It is\n"
               "                         currently only possible to apply the base paths to\n"
               "                         files that are on a lower level in the directory tree.\n"
-              "    --remove-unused-templates\n"
-              "                         Remove unused templates.\n"
-              "    --remove-unused-included-templates\n"
-              "                         Remove unused templates in included files.\n"
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"
@@ -1119,8 +1093,6 @@ void CmdLineParser::printHelp()
 #endif
               "    --std=<id>           Set standard.\n"
               "                         The available options are:\n"
-              "                          * posix\n"
-              "                                 POSIX compatible code\n"
               "                          * c89\n"
               "                                 C code is C89 compatible\n"
               "                          * c99\n"
@@ -1132,9 +1104,11 @@ void CmdLineParser::printHelp()
               "                          * c++11\n"
               "                                 C++ code is C++11 compatible\n"
               "                          * c++14\n"
-              "                                 C++ code is C++14 compatible (default)\n"
-              "                         More than one --std can be used:\n"
-              "                           'cppcheck --std=c99 --std=posix file.c'\n"
+              "                                 C++ code is C++14 compatible\n"
+              "                          * c++17\n"
+              "                                 C++ code is C++17 compatible\n"
+              "                          * c++20\n"
+              "                                 C++ code is C++20 compatible (default)\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

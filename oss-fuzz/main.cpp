@@ -30,8 +30,13 @@ public:
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 {
     if (dataSize < 10000) {
+        const std::string code = generateCode2(data, dataSize);
+        //std::ofstream fout("code.cpp");
+        //fout << code;
+        //fout.close();
+
         CppcheckExecutor cppcheckExecutor;
-        cppcheckExecutor.run(generateCode2(data, dataSize));
+        cppcheckExecutor.run(code);
     }
     return 0;
 }

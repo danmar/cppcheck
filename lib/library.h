@@ -181,6 +181,7 @@ public:
             size_templateArgNo(-1),
             arrayLike_indexOp(false),
             stdStringLike(false),
+            stdAssociativeLike(false),
             opLessAllowed(true) {
         }
 
@@ -202,6 +203,7 @@ public:
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;
+        bool stdAssociativeLike;
         bool opLessAllowed;
 
         Action getAction(const std::string& function) const {
@@ -389,6 +391,9 @@ public:
 
     std::set<std::string> returnuninitdata;
     std::vector<std::string> defines; // to provide some library defines
+
+    std::set<std::string> smartPointers;
+    bool isSmartPointer(const Token *tok) const;
 
     struct PodType {
         unsigned int   size;

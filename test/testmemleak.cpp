@@ -1789,7 +1789,7 @@ private:
 
     void run() OVERRIDE {
         settings.inconclusive = true;
-        settings.standards.posix = true;
+        settings.libraries.push_back("posix");
         settings.addEnabled("warning");
 
         LOAD_LIB_2(settings.library, "std.cfg");
@@ -1921,6 +1921,15 @@ private:
         check("void f()\n" // #8100
               "{\n"
               "    auto lambda = [](){return malloc(10);};\n"
+              "}\n"
+              "void x()\n"
+              "{\n"
+              "    f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void *f() {\n" // #8848
+              "    struct S { void *alloc() { return malloc(10); } };\n"
               "}\n"
               "void x()\n"
               "{\n"

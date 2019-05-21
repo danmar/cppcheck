@@ -42,7 +42,7 @@ class ProjectFile;
 class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
-    ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = 0);
+    explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = 0);
     virtual ~ProjectFileDialog();
 
 private:
@@ -117,8 +117,6 @@ private:
     void setBuildDir(const QString &buildDir);
 
     void setImportProject(const QString &importProject);
-
-    void setVSCheckConfig(const QString &vsCheckConfig);
 
     /**
     * @brief Set include paths to dialog control.
@@ -295,9 +293,6 @@ protected:
      * @return index of matching suppression, -1 if not found
      */
     int getSuppressionIndex(const QString &shortText) const;
-
-private slots:
-    void on_mChkAllVsConfigs_stateChanged(int arg1);
 
 private:
     Ui::ProjectFile mUI;

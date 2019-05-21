@@ -21,6 +21,13 @@
 #include <unistd.h>
 #include <pthread.h>
 
+void validCode()
+{
+    void *ptr;
+    if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
+        free(ptr);
+}
+
 void bufferAccessOutOfBounds(int fd)
 {
     char a[5];
@@ -127,6 +134,24 @@ void resourceLeak_fdopen(int fd)
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_mkstemp(char *template)
+{
+    // cppcheck-suppress unreadVariable
+    int fp = mkstemp(template);
+    // cppcheck-suppress resourceLeak
+}
+
+void no_resourceLeak_mkstemp_01(char *template)
+{
+    int fp = mkstemp(template);
+    close(fp);
+}
+
+int no_resourceLeak_mkstemp_02(char *template)
+{
+    return mkstemp(template);
+}
+
 void resourceLeak_fdopendir(int fd)
 {
     // cppcheck-suppress unreadVariable
@@ -213,6 +238,14 @@ void invalidFunctionArg()
     // cppcheck-suppress invalidFunctionArg
     // cppcheck-suppress usleepCalled
     usleep(1000000);
+}
+
+void invalidFunctionArg_close(int fd)
+{
+    if (fd < 0) {
+        // cppcheck-suppress invalidFunctionArg
+        (void)close(fd);
+    }
 }
 
 void uninitvar(int fd)
