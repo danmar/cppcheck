@@ -22,6 +22,12 @@ typedef unsigned long long u64;
 //   // 3.1
 ////
 
+void misra_4_1(void)
+{
+    const char *s1 = "\x41g";       // 4.1
+    int c1 = '\141t';               // 4.1
+}
+
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
 
