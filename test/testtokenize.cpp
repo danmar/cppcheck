@@ -7597,6 +7597,7 @@ private:
     }
 
     void checkTemplates() {
+        // #9109
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "namespace {\n"
                             "template <typename> struct a;\n"
@@ -7619,6 +7620,19 @@ private:
                             "  a<> b;\n"
                             "  b.a<>::c();\n"
                             "}\n"))
+
+        // #9144
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "namespace a {\n"
+                            "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c;\n"
+                            "}\n"
+                            "namespace boost {\n"
+                            "using a::c;\n"
+                            "}\n"
+                            "namespace d = boost;\n"
+                            "using d::c;\n"
+                            "template <typename...> struct e {};\n"
+                            "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), \"\");\n"))
     }
 
     void noCrash1() {
