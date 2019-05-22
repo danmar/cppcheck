@@ -80,6 +80,7 @@ private:
         TEST_CASE(increment);           // #3251 : FP for increment
         TEST_CASE(cpp11init);           // #5493 : int i{1};
         TEST_CASE(cpp11init2);          // #8449
+        TEST_CASE(cpp11init3);          // #8995
         TEST_CASE(block);               // ({ do_something(); 0; })
         TEST_CASE(mapindex);
         TEST_CASE(commaoperator);
@@ -282,6 +283,20 @@ private:
         check("x<string> handlers{\n"
               "  { \"mode2\", []() { return 2; } },\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cpp11init3() {
+        check("struct A { void operator()(int); };\n"
+              "void f() {\n"
+              "A{}(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class> struct A { void operator()(int); };\n"
+              "void f() {\n"
+              "A<int>{}(0);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

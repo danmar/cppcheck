@@ -2820,6 +2820,16 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, bool shado
     reportError(errorPath, Severity::style, id, message, CWE398, false);
 }
 
+static bool isVariableExpression(const Token* tok)
+{
+    if (Token::Match(tok, "%var%"))
+        return true;
+    if (Token::simpleMatch(tok, "."))
+        return isVariableExpression(tok->astOperand1()) &&
+               isVariableExpression(tok->astOperand2());
+    return false;
+}
+
 void CheckOther::checkConstArgument()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
@@ -2844,7 +2854,7 @@ void CheckOther::checkConstArgument()
             const Token * tok2 = tok;
             if (isCPPCast(tok2))
                 tok2 = tok2->astOperand2();
-            if (Token::Match(tok2, "%var%"))
+            if (isVariableExpression(tok2))
                 continue;
             constArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
         }

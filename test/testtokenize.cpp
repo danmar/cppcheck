@@ -4594,6 +4594,30 @@ private:
         }
 
         {
+            // bool f = a < b || c > d
+            const char code[] = "bool f = a < b || c > d;";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->linkAt(4) == nullptr);
+        }
+
+        {
+            // template
+            const char code[] = "a < b || c > d;";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+
+            ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(5));
+        }
+
+        {
             // if (a < ... > d) { }
             const char code[] = "if (a < b || c == 3 || d > e);";
             errout.str("");
@@ -4807,6 +4831,32 @@ private:
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ::")->link());
+        }
+
+        {
+            // #9136
+            const char code[] = "template <char> char * a;\n"
+                                "template <char... b> struct c {\n"
+                                "  void d() { a<b...>[0]; }\n"
+                                "};\n";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> [")->link());
+        }
+
+        {
+            // #9057
+            const char code[] = "template <bool> struct a;\n"
+                                "template <bool b, typename> using c = typename a<b>::d;\n"
+                                "template <typename e> using f = c<e() && sizeof(int), int>;\n"
+                                "template <typename e, typename = f<e>> struct g {};\n"
+                                "template <typename e> using baz = g<e>;\n";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> > ;")->link());
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ;")->link());
         }
     }
 
@@ -7620,6 +7670,15 @@ private:
                             "  a<> b;\n"
                             "  b.a<>::c();\n"
                             "}\n"))
+
+        // #9138
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <typename> struct a;\n"
+                            "template <bool> using c = int;\n"
+                            "template <bool b> c<b> d;\n"
+                            "template <> struct a<int> {\n"
+                            "template <typename e> constexpr auto g() { d<0 || e::f>; return 0; }\n"
+                            "};\n"))
 
         // #9144
         ASSERT_NO_THROW(tokenizeAndStringify(

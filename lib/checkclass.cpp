@@ -1416,6 +1416,13 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             continue;
 
         foundReturn = true;
+
+        const Token *retExpr = tok->astOperand1();
+        if (retExpr && retExpr->str() == "=")
+            retExpr = retExpr->astOperand1();
+        if (retExpr && retExpr->isUnaryOp("*") && Token::simpleMatch(retExpr->astOperand1(), "this"))
+            continue;
+
         std::string cast("( " + scope->className + " & )");
         if (Token::simpleMatch(tok->next(), cast.c_str()))
             tok = tok->tokAt(4);
@@ -1450,8 +1457,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         }
 
         // check if *this is returned
-        else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
-                   Token::simpleMatch(tok->next(), "operator= (") ||
+        else if (!(Token::simpleMatch(tok->next(), "operator= (") ||
                    Token::simpleMatch(tok->next(), "this . operator= (") ||
                    (Token::Match(tok->next(), "%type% :: operator= (") &&
                     tok->next()->str() == scope->className)))
