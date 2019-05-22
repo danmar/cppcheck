@@ -631,7 +631,7 @@ class MisraChecker:
 
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
-            if token.str[0] != '"':
+            if ((token.str[0] != '"') and (token.str[0] != '\'')):
                 continue
             pos = 1
             while pos < len(token.str) - 2:
