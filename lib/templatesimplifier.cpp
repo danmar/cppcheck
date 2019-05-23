@@ -2676,6 +2676,7 @@ void TemplateSimplifier::replaceTemplateUsage(
             if (nameTok->str() != instantiation.name)
                 continue;
         }
+
         if (!matchTemplateParameters(nameTok, typeStringsUsedInTemplateInstantiation))
             continue;
 
