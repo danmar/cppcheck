@@ -2538,7 +2538,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         std::list<std::string> typeStringsUsedInTemplateInstantiation;
         std::string typeForNewName = getNewName(tok2, typeStringsUsedInTemplateInstantiation);
 
-        if ((typeForNewName.empty() && !Token::Match(templateDeclaration.token->tokAt(2), "typename| . . .")) ||
+        if ((typeForNewName.empty() && !Token::Match(templateDeclaration.token->tokAt(2), "typename|class| . . .")) ||
             (!typeParametersInDeclaration.empty() && typeParametersInDeclaration.size() != mTypesUsedInTemplateInstantiation.size())) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
