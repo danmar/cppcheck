@@ -192,6 +192,8 @@ private:
         TEST_CASE(templateTypeDeduction2);
 
         TEST_CASE(simplifyTemplateArgs);
+
+        TEST_CASE(template_variadic_1); // #9144
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -3641,6 +3643,15 @@ private:
         ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < 0 ? true : false >;"));
         ASSERT_EQUALS("foo<true> = true ; foo<true> ;", tok("template<bool N> foo = N; foo < (1 + 1 ) ? true : false >;"));
         ASSERT_EQUALS("foo<false> = false ; foo<false> ;", tok("template<bool N> foo = N; foo < ( 1 - 1) ? true : false >;"));
+    }
+
+    void template_variadic_1() { // #9144
+        const char code[] = "template <typename...> struct e {};\n"
+                            "static_assert(sizeof(e<>) == sizeof(e<int,int>), \"\");";
+        const char expected[] = "struct e<> ; struct e<int,int> ; "
+                                "static_assert ( sizeof ( e<> ) == sizeof ( e<int,int> ) , \"\" ) ; "
+                                "struct e<> { } ; struct e<int,int> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
 };
