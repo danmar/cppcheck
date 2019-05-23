@@ -2450,27 +2450,85 @@ private:
     }
 
     void template108() { // #9109
-        const char code[] = "template <typename> struct a;\n"
-                            "template <typename> struct b {};\n"
-                            "template <typename> struct c;\n"
-                            "template <typename d> struct e {\n"
-                            "  using f = a<b<typename c<d>::g>>;\n"
-                            "  bool h = f::h;\n"
-                            "};\n"
-                            "struct i {\n"
-                            "  e<int> j();\n"
-                            "};\n";
-        const char exp[] = "template < typename > struct a ; "
-                           "struct b<c<int>::g> ; "
-                           "template < typename > struct c ; "
-                           "struct e<int> ; "
-                           "struct i { e<int> j ( ) ; "
-                           "} ; "
-                           "struct e<int> { bool h ; "
-                           "h = a < b<c<int>::g> > :: h ; "
-                           "} ; "
-                           "struct b<c<int>::g> { } ;";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "template <typename> struct a;\n"
+                                "template <typename> struct b {};\n"
+                                "template <typename> struct c;\n"
+                                "template <typename d> struct e {\n"
+                                "  using f = a<b<typename c<d>::g>>;\n"
+                                "  bool h = f::h;\n"
+                                "};\n"
+                                "struct i {\n"
+                                "  e<int> j();\n"
+                                "};\n";
+            const char exp[] = "template < typename > struct a ; "
+                               "struct b<c<int>::g> ; "
+                               "template < typename > struct c ; "
+                               "struct e<int> ; "
+                               "struct i { e<int> j ( ) ; "
+                               "} ; "
+                               "struct e<int> { bool h ; "
+                               "h = a < b<c<int>::g> > :: h ; "
+                               "} ; "
+                               "struct b<c<int>::g> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "namespace {\n"
+                                "template <typename> struct a;\n"
+                                "template <typename> struct b {};\n"
+                                "}\n"
+                                "namespace {\n"
+                                "template <typename> struct c;\n"
+                                "template <typename d> struct e {\n"
+                                "  using f = a<b<typename c<d>::g>>;\n"
+                                "  bool h = f::h;\n"
+                                "};\n"
+                                "template <typename i> using j = typename e<i>::g;\n"
+                                "}";
+            const char exp[] = "namespace { "
+                               "template < typename > struct a ; "
+                               "template < typename > struct b { } ; "
+                               "} "
+                               "namespace { "
+                               "template < typename > struct c ; "
+                               "template < typename d > struct e { "
+                               "using f = a < b < c < d > :: g > > ; "
+                               "bool h ; h = f :: h ; "
+                               "} ; "
+                               "template < typename i > using j = typename e < i > :: g ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "namespace {\n"
+                                "template <typename> struct a;\n"
+                                "template <typename> struct b {};\n"
+                                "}\n"
+                                "namespace {\n"
+                                "template <typename> struct c;\n"
+                                "template <typename d> struct e {\n"
+                                "  using f = a<b<typename c<d>::g>>;\n"
+                                "  bool h = f::h;\n"
+                                "};\n"
+                                "template <typename i> using j = typename e<i>::g;\n"
+                                "}\n"
+                                "j<int> foo;";
+            const char exp[] = "namespace { "
+                               "template < typename > struct a ; "
+                               "struct b<c<int>::g> ; "
+                               "} "
+                               "namespace { "
+                               "template < typename > struct c ; "
+                               "struct e<int> ; "
+                               "} "
+                               "e<int> foo ; "
+                               "struct e<int> { "
+                               "bool h ; h = a < b<c<int>::g> > :: h ; "
+                               "} ; "
+                               "struct b<c<int>::g> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

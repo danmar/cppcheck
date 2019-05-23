@@ -1056,8 +1056,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
 
 void TemplateSimplifier::simplifyTemplateAliases()
 {
-    std::list<TokenAndName>::iterator it1, it2;
+    std::list<TokenAndName>::iterator it1, it2, it3;
     for (it1 = mTemplateInstantiations.begin(); it1 != mTemplateInstantiations.end();) {
+        it3 = it1;
         TokenAndName &templateAlias = *it1;
         ++it1;
         Token *startToken = templateAlias.token;
@@ -1065,13 +1066,15 @@ void TemplateSimplifier::simplifyTemplateAliases()
             continue;
         while (Token::Match(startToken->tokAt(-2), "%name% :: %name%"))
             startToken = startToken->tokAt(-2);
-        if (!Token::Match(startToken->tokAt(-4), "> using %name% = %name% ::|<"))
+        if (!(Token::Match(startToken->tokAt(-4), "> using %name% = %name% ::|<") ||
+              Token::Match(startToken->tokAt(-5), "> using %name% = typename %name% ::|<")))
             continue;
-        const std::string aliasName(startToken->strAt(-2));
+        const bool hasTypename(startToken->strAt(-1) == "typename");
+        const std::string aliasName(startToken->strAt(hasTypename ? -3 : -2));
         const Token * const aliasToken1 = startToken;
 
         // Get start token for alias
-        startToken = startToken->tokAt(-5);
+        startToken = startToken->tokAt(hasTypename ? -6 : -5);
         while (Token::Match(startToken, "%name%|<|>|>>|,"))
             startToken = startToken->previous();
         // handle case where 'template' is first token
@@ -1158,6 +1161,8 @@ void TemplateSimplifier::simplifyTemplateAliases()
             }
 
             endToken = endToken1->next();
+            while (endToken->str() != ";")
+                endToken = endToken->next();
 
             // Remove alias usage code (parameters)
             Token::eraseTokens(tok2->previous(), args.back().second);
@@ -1180,7 +1185,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
             }
 
             // find declaration
-            const std::list<TokenAndName>::iterator it3 = std::find_if(mTemplateDeclarations.begin(),
+            const std::list<TokenAndName>::iterator it4 = std::find_if(mTemplateDeclarations.begin(),
                     mTemplateDeclarations.end(),
                     FindToken(startToken ? startToken->next() : mTokenList.front()));
 
@@ -1192,9 +1197,10 @@ void TemplateSimplifier::simplifyTemplateAliases()
             }
 
             // remove declaration
-            if (it3 != mTemplateDeclarations.end())
-                mTemplateDeclarations.erase(it3);
-        }
+            if (it4 != mTemplateDeclarations.end())
+                mTemplateDeclarations.erase(it4);
+        } else
+            mTemplateInstantiations.erase(it3);
     }
 }
 
