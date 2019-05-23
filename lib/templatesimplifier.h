@@ -106,6 +106,7 @@ public:
             fIsSpecialization        = (1 << 4), // user specialized template
             fIsPartialSpecialization = (1 << 5), // user partial specialized template
             fIsForwardDeclaration    = (1 << 6), // forward declaration
+            fIsVariadic              = (1 << 7), // variadic template
         };
 
         bool isClass() const {
@@ -155,6 +156,13 @@ public:
         }
         void isForwardDeclaration(bool state) {
             setFlag(fIsForwardDeclaration, state);
+        }
+
+        bool isVariadic() const {
+            return getFlag(fIsVariadic);
+        }
+        void isVariadic(bool state) {
+            setFlag(fIsVariadic, state);
         }
 
         /**

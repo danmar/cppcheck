@@ -82,6 +82,10 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
         isPartialSpecialization(!isSpecialization() && nameToken->strAt(1) == "<");
         isAlias(paramEnd->strAt(1) == "using");
         isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;"));
+        if (token->strAt(1) == "<" && !isSpecialization()) {
+            const Token *end = token->next()->findClosingBracket();
+            isVariadic(end && Token::findmatch(token->tokAt(2), "typename|class . . .", end));
+        }
         const Token *tok1 = nameToken->next();
         if (tok1->str() == "<") {
             const Token *closing = tok1->findClosingBracket();
@@ -2538,7 +2542,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         std::list<std::string> typeStringsUsedInTemplateInstantiation;
         std::string typeForNewName = getNewName(tok2, typeStringsUsedInTemplateInstantiation);
 
-        if (typeForNewName.empty() || (!typeParametersInDeclaration.empty() && typeParametersInDeclaration.size() != mTypesUsedInTemplateInstantiation.size())) {
+        if ((typeForNewName.empty() && !templateDeclaration.isVariadic()) ||
+            (!typeParametersInDeclaration.empty() && typeParametersInDeclaration.size() != mTypesUsedInTemplateInstantiation.size())) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
                 mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
@@ -2681,7 +2686,7 @@ void TemplateSimplifier::replaceTemplateUsage(
 
         // match parameters
         Token * tok2 = nameTok->tokAt(2);
-        unsigned int typeCountInInstantiation = 1U; // There is always at least one type
+        unsigned int typeCountInInstantiation = tok2->str() == ">" ? 0U : 1U;
         const Token *typetok = (!mTypesUsedInTemplateInstantiation.empty()) ? mTypesUsedInTemplateInstantiation[0].token : nullptr;
         unsigned int indentlevel2 = 0;  // indentlevel for tokgt
         while (tok2 && (indentlevel2 > 0 || tok2->str() != ">")) {
@@ -2895,6 +2900,8 @@ void TemplateSimplifier::printOut(const TokenAndName &tokenAndName, const std::s
         std::cout << " isPartialSpecialization";
     if (tokenAndName.isForwardDeclaration())
         std::cout << " isForwardDeclaration";
+    if (tokenAndName.isVariadic())
+        std::cout << " isVariadic";
     std::cout << std::endl;
     if (tokenAndName.token && !tokenAndName.paramEnd && tokenAndName.token->strAt(1) == "<") {
         const Token *end = tokenAndName.token->next()->findClosingBracket();
