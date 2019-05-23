@@ -145,6 +145,7 @@ private:
         TEST_CASE(template105); // #9076
         TEST_CASE(template106);
         TEST_CASE(template107); // #8663
+        TEST_CASE(template108); // #9109
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2443,6 +2444,30 @@ private:
                            "C3 :: T3<long> t ; "
                            "} "
                            "class C3 :: T3<long> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template108() { // #9109
+        const char code[] = "template <typename> struct a;\n"
+                            "template <typename> struct b {};\n"
+                            "template <typename> struct c;\n"
+                            "template <typename d> struct e {\n"
+                            "  using f = a<b<typename c<d>::g>>;\n"
+                            "  bool h = f::h;\n"
+                            "};\n"
+                            "struct i {\n"
+                            "  e<int> j();\n"
+                            "};\n";
+        const char exp[] = "template < typename > struct a ; "
+                           "struct b<c<int>::g> ; "
+                           "template < typename > struct c ; "
+                           "struct e<int> ; "
+                           "struct i { e<int> j ( ) ; "
+                           "} ; "
+                           "struct e<int> { bool h ; "
+                           "h = a < b<c<int>::g> > :: h ; "
+                           "} ; "
+                           "struct b<c<int>::g> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
