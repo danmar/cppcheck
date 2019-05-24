@@ -7647,6 +7647,21 @@ private:
     }
 
     void checkTemplates() {
+        // #9109
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "namespace {\n"
+                            "template <typename> struct a;\n"
+                            "template <typename> struct b {};\n"
+                            "}\n"
+                            "namespace {\n"
+                            "template <typename> struct c;\n"
+                            "template <typename d> struct e {\n"
+                            "  using f = a< b<typename c<d>::g> >;\n"
+                            "  bool h = f::h;\n"
+                            "};\n"
+                            "template <typename i> using j = typename e<i>::g;\n"
+                            "}\n"))
+
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "template <typename = void> struct a {\n"
                             "  void c();\n"
@@ -7665,7 +7680,6 @@ private:
                             "template <typename e> constexpr auto g() { d<0 || e::f>; return 0; }\n"
                             "};\n"))
     }
-
 
     void noCrash1() {
         ASSERT_NO_THROW(tokenizeAndStringify(
