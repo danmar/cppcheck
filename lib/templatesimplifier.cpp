@@ -1700,6 +1700,7 @@ void TemplateSimplifier::expandTemplate(
                 // replace type with given type..
                 if (itype < typeParametersInDeclaration.size()) {
                     unsigned int typeindentlevel = 0;
+                    std::stack<Token *> brackets1; // holds "(", "[" and "{" tokens
                     for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token;
                          typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>"));
                          typetok = typetok->next()) {
@@ -1713,7 +1714,30 @@ void TemplateSimplifier::expandTemplate(
                             --typeindentlevel;
                         if (copy) {
                             mTokenList.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
-                            mTokenList.back()->isTemplateArg(true);
+                            Token *back = mTokenList.back();
+                            if (back->str() == "{") {
+                                brackets1.push(back);
+                            } else if (back->str() == "(") {
+                                brackets1.push(back);
+                            } else if (back->str() == "[") {
+                                brackets1.push(back);
+                            } else if (back->str() == "}") {
+                                assert(brackets1.empty() == false);
+                                assert(brackets1.top()->str() == "{");
+                                Token::createMutualLinks(brackets1.top(), back);
+                                brackets1.pop();
+                            } else if (tok3->str() == ")") {
+                                assert(brackets1.empty() == false);
+                                assert(brackets1.top()->str() == "(");
+                                Token::createMutualLinks(brackets1.top(), mTokenList.back());
+                                brackets1.pop();
+                            } else if (back->str() == "]") {
+                                assert(brackets1.empty() == false);
+                                assert(brackets1.top()->str() == "[");
+                                Token::createMutualLinks(brackets1.top(), back);
+                                brackets1.pop();
+                            }
+                            back->isTemplateArg(true);
                         }
                     }
                     continue;
@@ -2426,8 +2450,7 @@ std::string TemplateSimplifier::getNewName(
     const Token * endToken = tok2->next()->findClosingBracket();
     for (Token *tok3 = tok2->tokAt(2); tok3 != endToken && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
         // #2648 - unhandled parentheses => bail out
-        // #2721 - unhandled [ => bail out
-        if (Token::Match(tok3, "(|[")) {
+        if (tok3->str() == "(") {
             typeForNewName.clear();
             break;
         }

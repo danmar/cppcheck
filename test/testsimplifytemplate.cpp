@@ -761,8 +761,7 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void template26() {
-        // #2721
+    void template26() { // #2721
         const char code[] = "template<class T>\n"
                             "class A { public: T x; };\n"
                             "\n"
@@ -770,8 +769,12 @@ private:
                             "class C: public A<char[M]> {};\n"
                             "\n"
                             "C<2> a;\n";
-        // TODO: expand A also
-        ASSERT_EQUALS("template < class T > class A { public: T x ; } ; class C<2> ; C<2> a ; class C<2> : public A < char [ 2 ] > { } ;", tok(code));
+        const char expected[] = "class A<char[2]> ; "
+                                "class C<2> ; "
+                                "C<2> a ; "
+                                "class C<2> : public A<char[2]> { } ; "
+                                "class A<char[2]> { public: char [ 2 ] x ; } ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template27() {
