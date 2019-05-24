@@ -299,6 +299,7 @@ class Scope:
     nestedInId = None
     nestedIn = None
     type = None
+    isExecutable = None
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -310,6 +311,7 @@ class Scope:
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
+        self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do', 'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
 
     def setId(self, IdMap):
         self.bodyStart = IdMap[self.bodyStartId]

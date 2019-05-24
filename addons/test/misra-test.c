@@ -63,6 +63,8 @@ int misra_5_2_field_hides_field1_31y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
+int c41_3         = '\141t'; // 4.1
+int c41_4         = '\141\t';
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
@@ -217,7 +219,7 @@ void misra_11_7(int *p, float f) {
 }
 
 char * misra_11_8(const char *str) {
-  misra_11_8(str); // no-warning
+  (void)misra_11_8(str); // no-warning
   return (char *)str; // 11.8
 }
 
@@ -489,6 +491,11 @@ void misra_17_1() {
 
 void misra_17_6(int x[static 20]) {} // 17.6
 
+int calculation(int x) { return x + 1; }
+void misra_17_7(void) {
+  calculation(123); // 17.7
+}
+
 void misra_17_8(int x) {
   x = 3; // 17.8
 }
@@ -534,20 +541,20 @@ void misra_21_3() {
 }
 
 void misra_21_7() {
-  atof(str); // 21.7
-  atoi(str); // 21.7
-  atol(str); // 21.7
-  atoll(str); // 21.7
+  (void)atof(str); // 21.7
+  (void)atoi(str); // 21.7
+  (void)atol(str); // 21.7
+  (void)atoll(str); // 21.7
 }
 
 void misra_21_8() {
   abort(); // 21.8
-  getenv("foo"); // 21.8
-  system(""); // 21.8
+  (void)getenv("foo"); // 21.8
+  (void)system(""); // 21.8
   exit(-1); // 21.8
 }
 
 void misra_21_9() {
-  bsearch(key,base,num,size,cmp); // 21.9
+  (void)bsearch(key,base,num,size,cmp); // 21.9
   qsort(base,num,size,cmp); // 21.9
 }

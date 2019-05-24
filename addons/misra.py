@@ -631,7 +631,7 @@ class MisraChecker:
 
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
-            if token.str[0] != '"':
+            if ((token.str[0] != '"') and (token.str[0] != '\'')):
                 continue
             pos = 1
             while pos < len(token.str) - 2:
@@ -1528,6 +1528,21 @@ class MisraChecker:
                 self.reportError(token, 17, 6)
 
 
+    def misra_17_7(self, data):
+        for token in data.tokenlist:
+            if not token.scope.isExecutable:
+                continue
+            if token.str != '(' or token.astParent:
+                continue
+            if not token.previous.isName or token.previous.varId:
+                continue
+            if token.valueType is None:
+                continue
+            if token.valueType.type == 'void' and token.valueType.pointer == 0:
+                continue
+            self.reportError(token, 17, 7)
+
+
     def misra_17_8(self, data):
         for token in data.tokenlist:
             if not (token.isAssignmentOp or (token.str in {'++', '--'})):
@@ -2186,6 +2201,7 @@ class MisraChecker:
             self.misra_17_1(cfg)
             if cfgNumber == 1:
                 self.misra_17_6(data.rawTokens)
+            self.misra_17_7(cfg)
             self.misra_17_8(cfg)
             self.misra_18_5(cfg)
             self.misra_18_8(cfg)
