@@ -60,7 +60,7 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::collapseAllResults, mUI.mTree, &ResultsTree::collapseAll);
     connect(this, &ResultsView::expandAllResults, mUI.mTree, &ResultsTree::expandAll);
     connect(this, &ResultsView::showHiddenResults, mUI.mTree, &ResultsTree::showHiddenResults);
-
+    connect(mUI.mCheckerListWidget, &QListWidget::itemClicked, mUI.mTree, &ResultsTree::on_mCheckerListWidget_itemClicked);
     mUI.mListLog->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
@@ -342,9 +342,34 @@ void ResultsView::readErrorsXml(const QString &filename)
         msgBox.exec();
     }
 
+    mUI.mCheckerListWidget->clear();
     ErrorItem item;
     foreach (item, errors) {
         mUI.mTree->addErrorItem(item);
+        bool found=false;
+        for(int i=0;i<mUI.mCheckerListWidget->count();i++){
+            QListWidgetItem *lItem = mUI.mCheckerListWidget->item(i);
+            if(lItem->text()==item.errorId){
+                found=true;
+                break;
+            }
+        }
+        if(!found){
+            QListWidgetItem *listItem = new QListWidgetItem();
+            listItem->setData(Qt::DisplayRole, item.errorId);
+            listItem->setData(Qt::CheckStateRole, Qt::Checked);
+            mUI.mCheckerListWidget->addItem(listItem);
+        }
+    }
+    for(int i=0;i<mUI.mCheckerListWidget->count();i++){
+        int count=0;
+        QListWidgetItem *lItem = mUI.mCheckerListWidget->item(i);
+
+        foreach(item, errors)        {
+            if(item.errorId==lItem->text())
+                count++;
+        }
+        lItem->setText(lItem->text()+" ("+QString::number(count)+")");
     }
 
     QString dir;
@@ -464,3 +489,4 @@ void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
 
     contextMenu.exec(globalPos);
 }
+

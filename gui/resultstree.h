@@ -25,6 +25,7 @@
 #include <QStandardItem>
 #include <QSettings>
 #include <QContextMenuEvent>
+#include <QListWidget>
 #include "errorlogger.h" // Severity
 #include "showtypes.h"
 
@@ -68,6 +69,12 @@ public:
     *
     */
     void clear();
+
+    /**
+     * @brief Hide a given item by error ID
+     * @param errorId
+     */
+    void hideId(QString errorId);
 
     /**
      * @brief Clear errors for a specific file from the tree
@@ -235,6 +242,8 @@ public slots:
     * @param show Should specified errors be shown (true) or hidden (false)
     */
     void showClangResults(bool show);
+
+    void ResultsTree::on_mCheckerListWidget_itemClicked(QListWidgetItem *item);
 
 protected slots:
     /**

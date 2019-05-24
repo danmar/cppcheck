@@ -34,6 +34,7 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QListWidget>
 #include <QUrl>
 #include <QContextMenuEvent>
 #include <QModelIndex>
@@ -871,6 +872,35 @@ void ResultsTree::copy()
     clipboard->setText(text);
 }
 
+void ResultsTree::hideId(QString errorId)
+{
+    int filecount = mModel.rowCount();
+    for (int i = 0; i < filecount; i++) {
+        //Get file i
+        QStandardItem *file = mModel.item(i, 0);
+        if (!file) {
+            continue;
+        }
+
+        //Get the amount of errors this file contains
+        int errorcount = file->rowCount();
+
+        for (int j = 0; j < errorcount; j++) {
+            //Get the error itself
+            QStandardItem *child = file->child(j, 0);
+            if (!child) {
+                continue;
+            }
+
+            QVariantMap userdata = child->data().toMap();
+            if (userdata["id"].toString() == errorId) {
+                userdata["hide"] = true;
+                child->setData(QVariant(userdata));
+            }
+        }
+    }
+    refreshTree();
+}
 void ResultsTree::hideResult()
 {
     if (!mSelectionModel)
@@ -1364,4 +1394,11 @@ void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &
 {
     QTreeView::currentChanged(current, previous);
     emit selectionChanged(current);
+}
+
+void ResultsTree::on_mCheckerListWidget_itemClicked(QListWidgetItem *item)
+{
+    QMessageBox msg(QMessageBox::Information, tr("Cppcheck"), item->text(), QMessageBox::Ok, this);
+
+    hideId(item->text());
 }
