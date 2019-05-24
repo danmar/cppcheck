@@ -247,7 +247,10 @@ class Token:
         self.astOperand2 = None
         self.file = element.get('file')
         self.linenr = int(element.get('linenr'))
-        self.col = int(element.get('col'))
+        if element.get('col'):
+            self.col = int(element.get('col'))
+        else:
+            self.col = 0
 
     def setId(self, IdMap):
         self.scope = IdMap[self.scopeId]
