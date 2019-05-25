@@ -21,6 +21,38 @@
 #include <unistd.h>
 #include <pthread.h>
 
+void memleak_scandir(void)
+{
+    struct dirent **namelist;
+    int n = scandir(".", &namelist, NULL, alphasort);
+    if (n == -1) {
+        return;
+    }
+
+    // http://man7.org/linux/man-pages/man3/scandir.3.html
+    /* The scandir() function scans the directory dirp, calling filter() on
+       each directory entry.  Entries for which filter() returns nonzero are
+       stored in strings allocated via malloc(3), sorted using qsort(3) with
+       the comparison function compar(), and collected in array namelist
+       which is allocated via malloc(3).  If filter is NULL, all entries are
+       selected.*/
+
+    // TODO: cppcheck-suppress memleak
+}
+
+void no_memleak_scandir(void)
+{
+    struct dirent **namelist;
+    int n = scandir(".", &namelist, NULL, alphasort);
+    if (n == -1) {
+        return;
+    }
+    while (n--) {
+        free(namelist[n]);
+    }
+    free(namelist);
+}
+
 void validCode()
 {
     void *ptr;
