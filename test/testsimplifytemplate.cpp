@@ -146,6 +146,7 @@ private:
         TEST_CASE(template106);
         TEST_CASE(template107); // #8663
         TEST_CASE(template108); // #9109
+        TEST_CASE(template109); // #9144
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2527,6 +2528,52 @@ private:
                                "bool h ; h = a < b<c<int>::g> > :: h ; "
                                "} ; "
                                "struct b<c<int>::g> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void template109() { // #9144
+        {
+            const char code[] = "namespace a {\n"
+                                "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c;\n"
+                                "}\n"
+                                "namespace boost {\n"
+                                "using a::c;\n"
+                                "}\n"
+                                "namespace d = boost;\n"
+                                "using d::c;\n"
+                                "template <typename...> struct e {};\n"
+                                "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), \"\");\n";
+            const char exp[] = "namespace a { "
+                               "template < typename b , bool = std :: is_empty < b > { } && std :: is_final < b > { } > struct c ; "
+                               "} "
+                               "namespace boost { "
+                               "using a :: c ; "
+                               "} using boost :: c ; "
+                               "struct e<> ; "
+                               "struct e<c<int>,c<int>,int> ; "
+                               "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int>,c<int>,int> ) , \"\" ) ; "
+                               "struct e<> { } ; "
+                               "struct e<c<int>,c<int>,int> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c;\n"
+                                "template <typename...> struct e {};\n"
+                                "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), "");\n";
+            const char exp[] = "template < typename b , bool = std :: is_empty < b > { } && std :: is_final < b > { } > struct c ; "
+                               "struct e<> ; "
+                               "struct e<c<int>,c<int>,int> ; "
+                               "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int>,c<int>,int> ) , ) ; "
+                               "struct e<> { } ; "
+                               "struct e<c<int>,c<int>,int> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c{};\n"
+                                "c<int> cc;\n";
+            const char exp[] = "template < typename b , bool = std :: is_empty < b > { } && std :: is_final < b > { } > struct c { } ; "
+                               "c < int > cc ;";
             ASSERT_EQUALS(exp, tok(code));
         }
     }

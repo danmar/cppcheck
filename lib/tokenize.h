@@ -508,6 +508,8 @@ public:
     void simplifyExternC();
 
     void simplifyRoundCurlyParentheses();
+    
+    void simplifyTypeIntrinsics();
 
     void simplifySQL();
 
