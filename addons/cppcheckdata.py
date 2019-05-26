@@ -373,6 +373,7 @@ class Variable:
         isArray         Is this variable an array?
         isClass         Is this variable a class or struct?
         isConst         Is this variable a const variable?
+        isGlobal        Is this variable a global variable?
         isExtern        Is this variable an extern variable?
         isLocal         Is this variable a local variable?
         isPointer       Is this variable a pointer
@@ -396,6 +397,7 @@ class Variable:
     isClass = False
     isConst = False
     isExtern = False
+    isGlobal = False
     isLocal = False
     isPointer = False
     isReference = False
@@ -417,6 +419,7 @@ class Variable:
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
         self.isConst = element.get('isConst') == 'true'
+        self.isGlobal = element.get('access') == 'Global'
         self.isExtern = element.get('isExtern') == 'true'
         self.isLocal = element.get('isLocal') == 'true'
         self.isPointer = element.get('isPointer') == 'true'

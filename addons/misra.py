@@ -209,6 +209,10 @@ def isFunctionCall(expr):
     return True
 
 
+def hasExternalLinkage(var):
+     return var.isGlobal and not var.isStatic
+
+
 def countSideEffects(expr):
     if not expr or expr.str in {',', ';'}:
         return 0
@@ -665,33 +669,31 @@ class MisraChecker:
 
 
     def misra_5_1(self, data):
-        scopeVars = {}
+        varnames = []
         for var in data.variables:
-            if var.isArgument:
+            if var.nameToken is None:
                 continue
-            if var.nameToken.scope not in scopeVars:
-                scopeVars[var.nameToken.scope] = []
-            scopeVars[var.nameToken.scope].append(var)
-        for scope in scopeVars:
-            for i, variable1 in enumerate(scopeVars[scope]):
-                for variable2 in scopeVars[scope][i + 1:]:
-                    if (variable1.isExtern and variable2.isExtern and
-                        variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
-                            variable1.Id != variable2.Id):
-                        if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
-                            self.reportError(variable1.nameToken, 5, 1)
-                        else:
-                            self.reportError(variable2.nameToken, 5, 1)
+            if len(var.nameToken.str) <= 31:
+                continue
+            if not hasExternalLinkage(var):
+                continue
+            if var.nameToken.str[:31] in varnames:
+                self.reportError(var.nameToken, 5, 1)
+            else:
+                varnames.append(var.nameToken.str[:31])
 
 
     def misra_5_2(self, data):
         scopeVars = {}
         for var in data.variables:
-            if var.nameToken is not None:
-                if var.nameToken.scope not in scopeVars:
-                    scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
-                    scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
-                scopeVars[var.nameToken.scope]["varlist"].append(var)
+            if var.nameToken is None:
+                continue
+            if len(var.nameToken.str) <= 31:
+                continue
+            if var.nameToken.scope not in scopeVars:
+                scopeVars.setdefault(var.nameToken.scope, {})["varlist"] = []
+                scopeVars.setdefault(var.nameToken.scope, {})["scopelist"] = []
+            scopeVars[var.nameToken.scope]["varlist"].append(var)
         for scope in data.scopes:
             if scope.nestedIn and scope.className:
                 if scope.nestedIn not in scopeVars:
@@ -705,7 +707,7 @@ class MisraChecker:
                 for variable2 in scopeVars[scope]["varlist"][i + 1:]:
                     if variable1.isArgument and variable2.isArgument:
                         continue
-                    if variable1.isExtern or variable2.isExtern:
+                    if hasExternalLinkage(variable1) or hasExternalLinkage(variable2):
                         continue
                     if (variable1.nameToken.str[:31] == variable2.nameToken.str[:31] and
                             variable1.Id != variable2.Id):
