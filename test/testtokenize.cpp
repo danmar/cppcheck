@@ -4858,6 +4858,21 @@ private:
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> > ;")->link());
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ;")->link());
         }
+
+        {
+            // #9141
+            const char code[] = "struct a {\n"
+                                "  typedef int b;\n"
+                                "  operator b();\n"
+                                "};\n"
+                                "template <int> using c = a;\n"
+                                "template <int d> c<d> e;\n"
+                                "auto f = -e<1> == 0;\n";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ==")->link());
+        }
     }
 
     void simplifyString() {
