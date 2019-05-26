@@ -4436,7 +4436,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove redundant parentheses
     simplifyRedundantParentheses();
 
-    simplifyTypeIntrinsics();
+    if (isCPP())
+        simplifyTypeIntrinsics();
 
     if (!isC()) {
         // Handle templates..
@@ -7941,7 +7942,7 @@ bool Tokenizer::simplifyRedundantParentheses()
 
 void Tokenizer::simplifyTypeIntrinsics()
 {
-    static std::unordered_map<std::string, std::string> intrinsics = {
+    static const std::unordered_map<std::string, std::string> intrinsics = {
         { "__has_nothrow_assign", "has_nothrow_assign" },
         { "__has_nothrow_constructor", "has_nothrow_constructor" },
         { "__has_nothrow_copy", "has_nothrow_copy" },
