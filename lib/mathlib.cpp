@@ -1335,7 +1335,7 @@ bool MathLib::isLessEqual(const std::string &first, const std::string &second)
  **/
 bool MathLib::isNullValue(const std::string &str)
 {
-    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str.size() < 1 || (str[0] != '.' && str[0] != '-' && str[0] != '+'))))
+    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str[0] != '.' && str[0] != '-' && str[0] != '+') ))
         return false; // Has to be a number
 
     for (size_t i = 0; i < str.size(); i++) {
