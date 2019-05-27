@@ -173,9 +173,9 @@ You should use a platform configuration that match your target.
 
 By default Cppcheck uses native platform configuration that works well if your code is compiled and executed locally.
 
-Cppcheck has builtin configurations for unix and windows targets. You can easily use these with the --platform command line flag.
+Cppcheck has builtin configurations for Unix and Windows targets. You can easily use these with the --platform command line flag.
 
-You can also create your own custom platform configuration in a xml file. Here is an example:
+You can also create your own custom platform configuration in a XML file. Here is an example:
 
     <?xml version="1"?>
     <platform>
@@ -294,7 +294,7 @@ You can specify suppressions in a XML file. Example file:
       </suppress>
     </suppressions>
 
-The xml format is extensible and may be extended with further attributes in the future.
+The XML format is extensible and may be extended with further attributes in the future.
 
 You can use the suppressions file like this:
 
@@ -667,31 +667,68 @@ The speedup you get can be remarkable.
 
 TBD
 
-## Misra
+## Addons
 
-Cppcheck has an addon that checks for MISRA C 2012 compliance.
+Addons are scripts with extra checks. Cppcheck is distributed with a few addons. You can easily write your own custom addon.
 
-### Requirements
+If an addon does not need any arguments, you can run it directly on the cppcheck command line. For instance you can run the addon "misc" like this:
 
-You need:
+    cppcheck --addon=misc somefile.c
 
-Python 2.X or 3.X
+If an addon need additional arguments, you can not execute it directly on the command line. Create a json file with the addon configuration:
 
-The MISRA C 2012 PDF. You can buy this from <http://www.misra.org.uk> (costs 15-20 pounds)
+    {
+        "script": "misra",
+        "args": [ "--rule-texts=misra.txt" ]
+    }
 
-#### MISRA Text file
+And then such configuration can be executed on the cppcheck command line:
 
-It is not allowed to publish the MISRA rule texts. Therefore the MISRA rule texts are not available directly in the addon. We can not publish the rule texts. Instead, you must provide the rule texts; the addon can read the rule texts from a text file. If you copy/paste all text in "Appendix A Summary of guidelines" from the MISRA pdf, then you have all the rule texts.
+    cppcheck --addon=misra.json somefile.c
 
-If you have installed xpdf, such text file can be generated on the command line (using pdftotext that is included in xpdf):
+### CERT
 
-    pdftotext misra-c-2012.pdf output.txt
+Check CERT coding rules. No configuration is needed.
 
-The output might not be 100% perfect so you might need to make minor tweaks manually.
+Example usage:
 
-Other pdf-to-text utilities might work also.
+    cppcheck --addon=cert somefile.c
 
-To create the text file manually, copy paste Appendix A "Summary of guidelines" from the MISRA PDF. Format:
+### Findcasts
+
+Will just locate C-style casts in the code. No configuration is needed.
+
+Example usage:
+
+    cppcheck --addon=findcasts somefile.c
+
+### Misc
+
+Misc checks. No configuration is needed.
+
+These are checks that we thought would be useful, however it could sometimes warn for coding style that is by intention. For instance it warns about missing comma
+between string literals in array initializer.. that could be a mistake but maybe you use string concatenation by intention.
+
+Example usage:
+
+    cppcheck --addon=misc somefile.c
+
+### Misra
+
+Check that your code is Misra C 2012 compliant.
+
+To run the Misra addon you need to write a configuration file, because the addon require parameters.
+
+To run this addon you need to have a text file with the misra rule texts. You copy/paste these rule texts from the Misra C 2012 PDF, buy this PDF from <http://www.misra.org.uk> (costs 15-20 pounds)
+
+This is an example misra configuration file:
+
+    {
+        "script": "misra",
+        "args": [ "--rule-texts=misra.txt" ]
+    }
+
+The file misra.txt contains the text from "Appendix A Summary of guidelines" in the Misra C 2012 PDF.
 
     Appendix A Summary of guidelines
     Rule 1.1
@@ -700,7 +737,58 @@ To create the text file manually, copy paste Appendix A "Summary of guidelines" 
     Rule text
     ...
 
-Rules that you want to disable does not need to have a rule text. Rules that don't have rule text will be suppressed by the addon.
+Usage:
+
+    cppcheck --addon=my-misra-config.json somefile.c
+
+### Naming
+
+Check naming conventions. You specify your naming conventions for variables/functions/etc using regular expressions.
+
+Example configuration (variable names must start with lower case, function names must start with upper case):
+
+    {
+        "script": "naming",
+        "args": [
+            "--var=[a-z].*",
+            "--function=[A-Z].*"
+        ]
+    }
+
+Usage:
+
+    cppcheck --addon=my-naming.json somefile.c
+
+### Namingng
+
+Check naming conventions. You specify the naming conventions using regular expressions in a json file.
+
+Example addon configuration:
+
+    {
+        "script": "namingng",
+        args: [ "--configfile=ROS_naming.json" ]
+    }
+
+Usage:
+
+    cppcheck --addon=namingng-ros.json somefile.c
+
+### Threadsafety
+
+This will warn if you have local static objects that are not threadsafe. No configuration is needed.
+
+Example usage:
+
+    cppcheck --addon=threadsafety somefile.c
+
+### Y2038
+
+Check for the Y2038 bug. No configuration is needed.
+
+Example usage:
+
+    cppcheck --addon=y2038 somefile.c
 
 ## Library configuration
 
@@ -1241,6 +1329,11 @@ The following example provides a definition for std::vector, based on the defini
         </access>
       </container>
     </def>
+
+The tag `<type>` can be added as well to provide more information about the type of container. Here is some of the attributes that can be set:
+
+* `string='std-like'` can be set for containers that match `std::string` interfaces.
+* `associative='std-like'` can be set for containers that match C++'s `AssociativeContainer` interfaces.
 
 ## HTML Report
 

@@ -189,7 +189,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 const std::string memorynodename = memorynode->Name();
                 if (memorynodename == "alloc") {
-                    AllocFunc temp;
+                    AllocFunc temp = {0};
                     temp.groupId = allocationId;
 
                     if (memorynode->Attribute("init", "false"))
@@ -227,7 +227,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
                     mAlloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
-                    AllocFunc temp;
+                    AllocFunc temp = {0};
                     temp.groupId = allocationId;
                     const char *arg = memorynode->Attribute("arg");
                     if (arg)
@@ -381,8 +381,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
 
             const char* const startPattern = node->Attribute("startPattern");
-            if (startPattern)
+            if (startPattern) {
                 container.startPattern = startPattern;
+                container.startPattern2 = container.startPattern + " !!::";
+            }
             const char* const endPattern = node->Attribute("endPattern");
             if (endPattern)
                 container.endPattern = endPattern;
@@ -481,9 +483,18 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     const char* const string = containerNode->Attribute("string");
                     if (string)
                         container.stdStringLike = std::string(string) == "std-like";
+                    const char* const associative = containerNode->Attribute("associative");
+                    if (associative)
+                        container.stdAssociativeLike = std::string(associative) == "std-like";
                 } else
                     unknown_elements.insert(containerNodeName);
             }
+        }
+
+        else if (nodename == "smart-pointer") {
+            const char *className = node->Attribute("class-name");
+            if (className)
+                smartPointers.insert(className);
         }
 
         else if (nodename == "podtype") {
@@ -876,7 +887,8 @@ std::string Library::getFunctionName(const Token *ftok) const
     // Lookup function name using AST..
     if (ftok->astParent()) {
         bool error = false;
-        const std::string ret = getFunctionName(ftok->next()->astOperand1(), &error);
+        const Token * tok = ftok->astParent()->isUnaryOp("&") ? ftok->astParent()->astOperand1() : ftok->next()->astOperand1();
+        const std::string ret = getFunctionName(tok, &error);
         return error ? std::string() : ret;
     }
 
@@ -1012,10 +1024,7 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
         if (container.startPattern.empty())
             continue;
 
-        if (!endsWith(container.startPattern, '<')) {
-            if (!Token::Match(typeStart, (container.startPattern + " !!::").c_str()))
-                continue;
-        } else if (!Token::Match(typeStart, (container.startPattern + " !!::").c_str()))
+        if (!Token::Match(typeStart, container.startPattern2.c_str()))
             continue;
 
         if (!iterator && container.endPattern.empty()) // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
@@ -1302,3 +1311,14 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
         mImporters.find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }
+
+bool Library::isSmartPointer(const Token *tok) const
+{
+    std::string typestr;
+    while (Token::Match(tok, "%name%|::")) {
+        typestr += tok->str();
+        tok = tok->next();
+    }
+    return smartPointers.find(typestr) != smartPointers.end();
+}
+

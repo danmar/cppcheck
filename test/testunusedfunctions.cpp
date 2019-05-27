@@ -211,7 +211,9 @@ private:
               "template<class T> void g()\n"
               "{\n"
               "    f();\n"
-              "}");
+              "}\n"
+              "\n"
+              "void h() { g<int>(); h(); }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -335,6 +337,17 @@ private:
               "    A() : m_i(foo())\n"
               "    {}\n"
               "int m_i;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8580
+        check("int foo() { return 12345; }\n"
+              "int bar(std::function<int()> func) { return func(); }\n"
+              "\n"
+              "class A {\n"
+              "public:\n"
+              "  A() : a(bar([] { return foo(); })) {}\n"
+              "  const int a;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }

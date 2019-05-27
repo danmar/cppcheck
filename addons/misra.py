@@ -35,6 +35,7 @@ typeBits = {
 VERIFY = False
 QUIET = False
 SHOW_SUMMARY = True
+CLI = False  # Executed by Cppcheck binary?
 
 def printStatus(*args, **kwargs):
     if not QUIET:
@@ -128,8 +129,8 @@ def getEssentialCategorylist(operand1, operand2):
     if (operand1.str in {'++', '--'} or
             operand2.str in {'++', '--'}):
         return None, None
-    if (operand1.valueType.pointer or
-            operand2.valueType.pointer):
+    if ((operand1.valueType and operand1.valueType.pointer) or
+            (operand2.valueType and operand2.valueType.pointer)):
         return None, None
     e1 = getEssentialTypeCategory(operand1)
     e2 = getEssentialTypeCategory(operand2)
@@ -443,8 +444,12 @@ def getArguments(ftok):
     return arguments
 
 
+def isalnum(c):
+    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')
+
+
 def isHexDigit(c):
-    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c >= 'F')
+    return (c >= '0' and c <= '9') or (c >= 'a' and c <= 'f') or (c >= 'A' and c <= 'F')
 
 
 def isOctalDigit(c):
@@ -466,6 +471,20 @@ def isNoReturnScope(tok):
     if prev and prev.next.str in ['throw', 'return']:
         return True
     return False
+
+
+class Define:
+    def __init__(self, directive):
+        self.args = []
+        self.expansionList = ''
+
+        res = re.match(r'#define [A-Za-z0-9_]+\(([A-Za-z0-9_,]+)\)[ ]+(.*)', directive.str)
+        if res is None:
+            return
+
+        self.args = res.group(1).split(',')
+        self.expansionList = res.group(2)
+
 
 def generateTable():
     numberOfRules = {}
@@ -564,7 +583,7 @@ class Rule:
     def __repr__(self):
         return "%d.%d %s" % (self.num1, self.num2, self.severity)
 
-    SEVERITY_MAP = { 'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'information' }
+    SEVERITY_MAP = { 'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'style', 'style': 'style' }
 
 class MisraChecker:
 
@@ -612,7 +631,7 @@ class MisraChecker:
 
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
-            if token.str[0] != '"':
+            if ((token.str[0] != '"') and (token.str[0] != '\'')):
                 continue
             pos = 1
             while pos < len(token.str) - 2:
@@ -1242,7 +1261,7 @@ class MisraChecker:
                 continue
             if token.astOperand1.str == '[' and token.astOperand1.previous.str in {'{', ','}:
                 continue
-            if not (token.astParent.str in [',', ';']):
+            if not (token.astParent.str in [',', ';', '{']):
                 self.reportError(token, 13, 4)
 
 
@@ -1509,6 +1528,21 @@ class MisraChecker:
                 self.reportError(token, 17, 6)
 
 
+    def misra_17_7(self, data):
+        for token in data.tokenlist:
+            if not token.scope.isExecutable:
+                continue
+            if token.str != '(' or token.astParent:
+                continue
+            if not token.previous.isName or token.previous.varId:
+                continue
+            if token.valueType is None:
+                continue
+            if token.valueType.type == 'void' and token.valueType.pointer == 0:
+                continue
+            self.reportError(token, 17, 7)
+
+
     def misra_17_8(self, data):
         for token in data.tokenlist:
             if not (token.isAssignmentOp or (token.str in {'++', '--'})):
@@ -1607,14 +1641,50 @@ class MisraChecker:
                 self.reportError(directive, 20, 5)
 
 
+    def misra_20_7(self, data):
+        for directive in data.directives:
+            d = Define(directive)
+            exp = '(' + d.expansionList + ')'
+            for arg in d.args:
+                pos = 0
+                while pos < len(exp):
+                    pos = exp.find(arg, pos)
+                    if pos < 0:
+                        break
+                    pos1 = pos - 1
+                    pos2 = pos + len(arg)
+                    pos = pos2
+                    if isalnum(exp[pos1]) or exp[pos1]=='_':
+                        continue
+                    if isalnum(exp[pos2]) or exp[pos2]=='_':
+                        continue
+                    while exp[pos1] == ' ':
+                        pos1 -= 1
+                    if exp[pos1] != '(' and exp[pos1] != '[':
+                        self.reportError(directive, 20, 7);
+                        break
+                    while exp[pos2] == ' ':
+                        pos2 += 1
+                    if exp[pos2] != ')' and exp[pos2] != ']':
+                        self.reportError(directive, 20, 7);
+                        break
+
+
+    def misra_20_10(self, data):
+        for directive in data.directives:
+            d = Define(directive)
+            if d.expansionList.find('#') >= 0:
+                self.reportError(directive, 20, 10);
+
     def misra_20_13(self, data):
+        dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
         for directive in data.directives:
             dir = directive.str
-            for sep in ' (<':
-                if dir.find(sep) > 0:
-                    dir = dir[:dir.find(sep)]
-            if dir not in ['#define', '#elif', '#else', '#endif', '#error', '#if', '#ifdef', '#ifndef', '#include',
-                        '#pragma', '#undef', '#warning']:
+            mo = dir_pattern.match(dir)
+            if mo:
+                dir = mo.group(1)
+            if dir not in ['define', 'elif', 'else', 'endif', 'error', 'if', 'ifdef', 'ifndef', 'include',
+                        'pragma', 'undef', 'warning']:
                 self.reportError(directive, 20, 13)
 
 
@@ -1948,27 +2018,20 @@ class MisraChecker:
             self.suppressionStats[ruleNum].append(location)
             return
         else:
-            id = 'misra-c2012-' + str(num1) + '.' + str(num2)
+            errorId = 'c2012-' + str(num1) + '.' + str(num2)
             severity = 'style'
             if ruleNum in self.ruleTexts:
-                errmsg = self.ruleTexts[ruleNum].text + ' [' + id + ']'
+                errmsg = self.ruleTexts[ruleNum].text
                 severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
-                errmsg = 'misra violation (use --rule-texts=<file> to get proper output) [' + id + ']'
+                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
-            formattedMsg = cppcheckdata.reportError(args.template,
-                                                    callstack=[(location.file, location.linenr)],
-                                                    severity=severity,
-                                                    message = errmsg,
-                                                    errorId = id,
-                                                    suppressions = self.dumpfileSuppressions)
-            if formattedMsg:
-                sys.stderr.write(formattedMsg)
-                sys.stderr.write('\n')
-                if not severity in self.violations:
-                    self.violations[severity] = []
-                self.violations[severity].append(id)
+            cppcheckdata.reportError(location, severity, errmsg, 'misra', errorId)
+
+            if not severity in self.violations:
+                self.violations[severity] = []
+            self.violations[severity].append('misra-' + errorId)
 
     def loadRuleTexts(self, filename):
         num1 = 0
@@ -2003,36 +2066,49 @@ class MisraChecker:
                 file_stream = open(filename, 'rt')
         # Parse the rule texts
         rule = None
+        state = 0 # 0=Expect "Rule X.Y", 1=Expect "Advisory|Required|Mandatory", 2=Expect "Text..", 3=Expect "..more text"
         for line in file_stream:
             line = line.replace('\r', '').replace('\n', '')
-            if len(line) == 0:
-                if rule:
-                    num1 = 0
-                    num2 = 0
-                rule = None
-                continue
             if not appendixA:
                 if line.find('Appendix A') >= 0 and line.find('Summary of guidelines') >= 10:
                     appendixA = True
                 continue
             if line.find('Appendix B') >= 0:
                 break
+            if len(line) == 0:
+                if state >= 3:
+                    state = 0
+                continue
             res = Rule_pattern.match(line)
             if res:
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
                 rule = Rule(num1, num2)
+                state = 1
                 continue
-            if Choice_pattern.match(line):
-                if rule:
+            if rule is None:
+                continue
+            if state == 1: # Expect "Advisory|Required|Mandatory"
+                if Choice_pattern.match(line):
                     rule.severity = line
-            elif xA_Z_pattern.match(line):
-                if rule:
+                    state = 2
+                else:
+                    rule = None
+                    state = 0
+            elif state == 2: # Expect "Text.."
+                if xA_Z_pattern.match(line):
+                    state = 3
                     rule.text = line
                     self.ruleTexts[rule.num] = rule
-            elif rule and a_z_pattern.match(line):
-                self.ruleTexts[rule.num].text = self.ruleTexts[rule.num].text + ' ' + line
-                continue
+                else:
+                    rule = None
+                    state = 0
+            elif state == 3: # Expect ".. more text"
+                if a_z_pattern.match(line):
+                    self.ruleTexts[rule.num].text += ' ' + line
+                else:
+                    rule = None
+                    state = 0
 
     def parseDump(self, dumpfile):
 
@@ -2125,6 +2201,7 @@ class MisraChecker:
             self.misra_17_1(cfg)
             if cfgNumber == 1:
                 self.misra_17_6(data.rawTokens)
+            self.misra_17_7(cfg)
             self.misra_17_8(cfg)
             self.misra_18_5(cfg)
             self.misra_18_8(cfg)
@@ -2135,6 +2212,8 @@ class MisraChecker:
                 self.misra_20_3(data.rawTokens)
             self.misra_20_4(cfg)
             self.misra_20_5(cfg)
+            self.misra_20_7(cfg)
+            self.misra_20_10(cfg)
             self.misra_20_13(cfg)
             self.misra_20_14(cfg)
             self.misra_21_3(cfg)
@@ -2193,6 +2272,7 @@ parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_tru
 parser.add_argument("dumpfile", nargs='*', help="Path of dump file from cppcheck")
 parser.add_argument("--show-suppressed-rules", help="Print rule suppression list", action="store_true")
 parser.add_argument("-P", "--file-prefix", type=str, help="Prefix to strip when matching suppression file rules")
+parser.add_argument("--cli", help="Addon is executed from Cppcheck", action="store_true")
 args = parser.parse_args()
 
 checker = MisraChecker()
@@ -2215,6 +2295,10 @@ else:
     if args.file_prefix:
         checker.setFilePrefix(args.file_prefix)
 
+    if args.cli:
+        CLI = True
+        QUIET = True
+        SHOW_SUMMARY = False
     if args.quiet:
         QUIET = True
     if args.no_summary:
@@ -2253,6 +2337,23 @@ else:
 
                 if SHOW_SUMMARY:
                     print("\nMISRA rule violations found: %s\n" % ("\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
+                    rules_violated = {}
+                    for severity, ids in checker.get_violations():
+                        for misra_id in ids:
+                            rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
+                    print("Misra rules violated:")
+                    convert = lambda text: int(text) if text.isdigit() else text
+                    misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
+                    for misra_id in sorted(rules_violated.keys(), key=misra_sort):
+                        res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
+                        if res is None:
+                            num = 0
+                        else:
+                            num = int(res.group(1)) * 100 + int(res.group(2))
+                        severity = '-'
+                        if num in checker.ruleTexts:
+                            severity = checker.ruleTexts[num].severity
+                        print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
 
         if args.show_suppressed_rules:
             checker.showSuppressedRules()

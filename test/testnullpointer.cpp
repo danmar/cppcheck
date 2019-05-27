@@ -90,6 +90,7 @@ private:
         TEST_CASE(nullpointerExit);
         TEST_CASE(nullpointerStdString);
         TEST_CASE(nullpointerStdStream);
+        TEST_CASE(nullpointerSmartPointer);
         TEST_CASE(functioncall);
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(functioncallDefaultArguments);
@@ -2257,6 +2258,87 @@ private:
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    void nullpointerSmartPointer() {
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  if (p) {}\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  p = nullptr;\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::unique_ptr<Fred> p) {\n"
+              "  if (p) {}\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::unique_ptr<Fred> p) {\n"
+              "  p = nullptr;\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f() {\n"
+              "  std::shared_ptr<Fred> p;\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  p.reset();\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  Fred * pp = nullptr;\n"
+              "  p.reset(pp);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(Fred& f) {\n"
+              "  std::shared_ptr<Fred> p;\n"
+              "  p.reset(&f);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  p.release();\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f() {\n"
+              "  std::shared_ptr<Fred> p(nullptr);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct A {};\n"
+              "void f(int n) {\n"
+              "    std::unique_ptr<const A*[]> p;\n"
+              "    p.reset(new const A*[n]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls

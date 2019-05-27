@@ -80,6 +80,27 @@ static const Token* skipScopeIdentifiers(const Token* tok)
     return tok;
 }
 
+static bool isExecutableScope(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    const Token * tok2 = tok->link()->previous();
+    if (Token::simpleMatch(tok2, "; }"))
+        return true;
+    if (Token::Match(tok2, "{|} }")) {
+        const Token* startTok = tok2->str() == "{" ? tok2 : tok2->link();
+        if (Token::Match(startTok->previous(), "do|try|else {"))
+            return true;
+        if (Token::simpleMatch(startTok->previous(), ") {"))
+            return !findLambdaStartToken(tok2);
+        if (tok->str() == "{")
+            return false;
+        else
+            return isExecutableScope(startTok);
+    }
+    return false;
+}
+
 void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 {
     // create global scope
@@ -650,7 +671,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope = &scopeList.back();
                 tok = lambdaStartToken;
             } else if (tok->str() == "{") {
-                if (!Token::Match(tok->previous(), "=|,|(|return") && !(tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "=|,|(|return"))) {
+                if (isExecutableScope(tok)) {
                     scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
@@ -972,7 +993,8 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             start = const_cast<Token*>(mTokenizer->list.front());
             end = const_cast<Token*>(mTokenizer->list.back());
         }
-        assert(start && end);
+        assert(start);
+        assert(end);
 
         end->scope(&*it);
 
@@ -1638,6 +1660,7 @@ void Variable::evaluate(const Settings* settings)
         setFlag(fIsClass, !lib->podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && !isReference());
         setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
         setFlag(fIsStlString, isStlType() && (Token::Match(mTypeStartToken->tokAt(2), "string|wstring|u16string|u32string !!::") || (Token::simpleMatch(mTypeStartToken->tokAt(2), "basic_string <") && !Token::simpleMatch(mTypeStartToken->linkAt(3), "> ::"))));
+        setFlag(fIsSmartPointer, lib->isSmartPointer(mTypeStartToken));
     }
     if (mAccess == Argument) {
         tok = mNameToken;
@@ -3984,6 +4007,7 @@ static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
     return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
               (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
               (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
+              (type->str() == "wchar_t" && valuetype->type == ValueType::WCHAR_T) ||
               (type->str() == "int" && valuetype->type == ValueType::INT) ||
               ((type->str() == "long" && type->isLong()) && valuetype->type == ValueType::LONGLONG) ||
               (type->str() == "long" && valuetype->type == ValueType::LONG) ||
@@ -4901,6 +4925,8 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                         vt2_.pointer = 1;
                     if ((vt.constness & (1 << vt2->pointer)) != 0)
                         vt2_.constness |= (1 << vt2->pointer);
+                    if (!Token::Match(autoTok->tokAt(1), "*|&"))
+                        vt2_.constness = vt.constness;
                     var->setValueType(vt2_);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
                         var->type(vt2->typeScope->definedType);
@@ -5330,7 +5356,7 @@ void SymbolDatabase::setValueTypeInTokenList()
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
             if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
-                valuetype.type = ValueType::Type::SHORT;
+                valuetype.type = ValueType::Type::WCHAR_T;
             }
             setValueType(tok, valuetype);
         } else if (tok->str() == "(") {
@@ -5508,6 +5534,8 @@ ValueType::Type ValueType::typeFromString(const std::string &typestr, bool longT
         return ValueType::Type::CHAR;
     if (typestr == "short")
         return ValueType::Type::SHORT;
+    if (typestr == "wchar_t")
+        return ValueType::Type::WCHAR_T;
     if (typestr == "int")
         return ValueType::Type::INT;
     if (typestr == "long")
@@ -5545,6 +5573,8 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
             type = ValueType::Type::CHAR;
         else if (platformType->mType == "short")
             type = ValueType::Type::SHORT;
+        else if (platformType->mType == "wchar_t")
+            type = ValueType::Type::WCHAR_T;
         else if (platformType->mType == "int")
             type = platformType->_long ? ValueType::Type::LONG : ValueType::Type::INT;
         else if (platformType->mType == "long")
@@ -5607,6 +5637,9 @@ std::string ValueType::dump() const
     case SHORT:
         ret << "valueType-type=\"short\"";
         break;
+    case WCHAR_T:
+        ret << "valueType-type=\"wchar_t\"";
+        break;
     case INT:
         ret << "valueType-type=\"int\"";
         break;
@@ -5668,6 +5701,8 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
         return 1;
     case ValueType::Type::SHORT:
         return platform.sizeof_short;
+    case ValueType::Type::WCHAR_T:
+        return platform.sizeof_wchar_t;
     case ValueType::Type::INT:
         return platform.sizeof_int;
     case ValueType::Type::LONG:
@@ -5704,6 +5739,8 @@ std::string ValueType::str() const
             ret += " char";
         else if (type == SHORT)
             ret += " short";
+        else if (type == WCHAR_T)
+            ret += " wchar_t";
         else if (type == INT)
             ret += " int";
         else if (type == LONG)

@@ -66,6 +66,9 @@ private:
         TEST_CASE(pointerArithBool1);
 
         TEST_CASE(returnNonBool);
+        TEST_CASE(returnNonBoolLambda);
+        TEST_CASE(returnNonBoolLogicalOp);
+        TEST_CASE(returnNonBoolClass);
     }
 
     void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
@@ -1080,30 +1083,85 @@ private:
               "    return;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void returnNonBoolLambda() {
         check("bool f(void) {\n"
-              "auto x = [](void) { return -1; };\n"
-              "return false;\n"
+              "    auto x = [](void) { return -1; };\n"
+              "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("bool f(void) {\n"
-              "auto x = [](void) { return -1; };\n"
-              "return 2;\n"
+              "    auto x = [](void) { return -1; };\n"
+              "    return 2;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
 
         check("bool f(void) {\n"
-              "auto x = [](void) -> int { return -1; };\n"
-              "return false;\n"
+              "    auto x = [](void) -> int { return -1; };\n"
+              "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("bool f(void) {\n"
-              "auto x = [](void) -> int { return -1; };\n"
-              "return 2;\n"
+              "    auto x = [](void) -> int { return -1; };\n"
+              "    return 2;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+    }
+
+    void returnNonBoolLogicalOp() {
+        check("bool f(int x) {\n"
+              "    return x & 0x4;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x, int y) {\n"
+              "    return x | y;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(int x) {\n"
+              "    return (x & 0x2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnNonBoolClass() {
+        check("class X {\n"
+              "    public:\n"
+              "        bool f() { return -1;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+
+        check("bool f() {\n"
+              "    struct X {\n"
+              "        public:\n"
+              "            int f() { return -1;}\n"
+              "    };\n"
+              "    return false;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    class X {\n"
+              "        public:\n"
+              "            int f() { return -1;}\n"
+              "    };\n"
+              "    return false;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    class X {\n"
+              "        public:\n"
+              "            bool f() { return -1;}\n"
+              "    };\n"
+              "    return -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Non-boolean value returned from function returning bool\n"
+                      "[test.cpp:4]: (style) Non-boolean value returned from function returning bool\n", errout.str());
     }
 };
 

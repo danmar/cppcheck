@@ -37,7 +37,7 @@ ${CPPCHECK} ${CPPCHECK_OPT} --library=posix  ${DIR}posix.c
 
 # gnu.c
 ${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
-${CPPCHECK} ${CPPCHECK_OPT} --library=gnu ${DIR}gnu.c
+${CPPCHECK} ${CPPCHECK_OPT} --library=posix,gnu ${DIR}gnu.c
 
 # qt.cpp
 set +e

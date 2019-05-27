@@ -93,6 +93,7 @@ private:
         TEST_CASE(varid60); // #7267 cast '(unsigned x)10'
         TEST_CASE(varid61); // #4988 inline function
         TEST_CASE(varid62);
+        TEST_CASE(varid63);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -162,6 +163,8 @@ private:
         TEST_CASE(varid_arrayinit); // #7579
         TEST_CASE(varid_lambda_arg);
         TEST_CASE(varid_lambda_mutable);
+        TEST_CASE(varid_trailing_return1); // #8889
+        TEST_CASE(varid_trailing_return2); // #9066
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -1109,6 +1112,12 @@ private:
                             "}";
         // Ensure that there is only one variable id for "x"
         ASSERT_EQUALS("same varid", compareVaridsForVariable(code, "x"));
+    }
+
+    void varid63() {
+        const char code[] = "void f(boost::optional<int> const& x) {}";
+        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code, false));
     }
 
     void varid_cpp_keywords_in_c_code() {
@@ -2511,6 +2520,34 @@ private:
                             "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
                             "3: dostuff ( x@1 ) ;\n"
                             "4: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return1() { // #8889
+        const char code1[] = "struct Fred {\n"
+                             "    auto foo(const Fred & other) -> Fred &;\n"
+                             "    auto bar(const Fred & other) -> Fred & {\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};\n"
+                             "auto Fred::foo(const Fred & other) -> Fred & {\n"
+                             "    return *this;\n"
+                             "}";
+        const char exp1[] = "1: struct Fred {\n"
+                            "2: auto foo ( const Fred & other@1 ) . Fred & ;\n"
+                            "3: auto bar ( const Fred & other@2 ) . Fred & {\n"
+                            "4: return * this ;\n"
+                            "5: }\n"
+                            "6: } ;\n"
+                            "7: auto Fred :: foo ( const Fred & other@3 ) . Fred & {\n"
+                            "8: return * this ;\n"
+                            "9: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return2() { // #9066
+        const char code1[] = "auto func(int arg) -> bar::quux {}";
+        const char exp1[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
     }
 

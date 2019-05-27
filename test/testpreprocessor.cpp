@@ -246,8 +246,6 @@ private:
         TEST_CASE(testDirectiveIncludeTypes);
         TEST_CASE(testDirectiveIncludeLocations);
         TEST_CASE(testDirectiveIncludeComments);
-
-        TEST_CASE(testSameLine);  // #7912
     }
 
     void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
@@ -2372,20 +2370,6 @@ private:
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
     }
-
-    void testSameLine() { // Ticket #7912
-        const char code[] = "#line 1 \"bench/btl/libs/BLAS/blas_interface_impl.hh\" \n"
-                            "template < > class blas_interface < float > : public c_interface_base < float > \n"
-                            "{ } ;\n"
-                            "#line 1 \"bench/btl/libs/BLAS/blas_interface_impl.hh\" \n"
-                            "template < > class blas_interface < double > : public c_interface_base < double > \n"
-                            "{ } ;";
-        const char exp[]  = "template < > class blas_interface < float > : public c_interface_base < float >\n"
-                            "{ } ; template < > class blas_interface < double > : public c_interface_base < double > { } ;";
-        Preprocessor preprocessor(settings0, this);
-        ASSERT_EQUALS(exp, preprocessor.getcode(code, "", "test.cpp"));
-    }
-
 };
 
 REGISTER_TEST(TestPreprocessor)

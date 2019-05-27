@@ -46,6 +46,7 @@ private:
             "    <alloc init=\"false\">malloc</alloc>\n"
             "    <dealloc>free</dealloc>\n"
             "  </memory>\n"
+            "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
             "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
@@ -430,6 +431,11 @@ private:
                                   "    B(const B&) {}\n"
                                   "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("struct A{"
+                                  "    A(int, int y=2) {}"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
     }
 
     void checkDuplInheritedMembers(const char code[]) {
@@ -1472,6 +1478,18 @@ private:
             "};\n"
             "A &A::operator =(int *other) { return (*this); };\n"
             "A &A::operator =(long *other) { return this->operator = (*(int *)other); };");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis( // #9045
+            "class V {\n"
+            "public:\n"
+            "    V& operator=(const V& r) {\n"
+            "        if (this == &r) {\n"
+            "            return ( *this );\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

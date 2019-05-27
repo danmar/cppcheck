@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class ErrorLogger;
@@ -106,6 +107,7 @@ public:
             fIsSpecialization        = (1 << 4), // user specialized template
             fIsPartialSpecialization = (1 << 5), // user partial specialized template
             fIsForwardDeclaration    = (1 << 6), // forward declaration
+            fIsVariadic              = (1 << 7), // variadic template
         };
 
         bool isClass() const {
@@ -157,6 +159,13 @@ public:
             setFlag(fIsForwardDeclaration, state);
         }
 
+        bool isVariadic() const {
+            return getFlag(fIsVariadic);
+        }
+        void isVariadic(bool state) {
+            setFlag(fIsVariadic, state);
+        }
+
         /**
          * Get specified flag state.
          * @param flag flag to get state of
@@ -191,7 +200,7 @@ public:
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    static int getTemplateNamePosition(const Token *tok);
+    int getTemplateNamePosition(const Token *tok);
 
     /**
      * Get function template name position
@@ -268,6 +277,12 @@ private:
      * simplify template instantiations (use default argument values)
      */
     void useDefaultArgumentValues();
+
+    /**
+     * simplify template instantiations (use default argument values)
+     * @param template1 template declaration or forward declaration
+     */
+    void useDefaultArgumentValues(TemplateSimplifier::TokenAndName &template1);
 
     /**
      * Try to locate a matching declaration for each user defined
@@ -411,6 +426,7 @@ private:
     std::list<TokenAndName> mMemberFunctionsToDelete;
     std::vector<TokenAndName> mExplicitInstantiationsToDelete;
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
+    std::unordered_map<const Token*, int> mTemplateNamePos;
 };
 
 /// @}

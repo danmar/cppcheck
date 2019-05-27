@@ -60,7 +60,7 @@ http://software-download.name/pcre-library-windows/
 
 ### GNU make
 
-単純で最適かしないビルド(依存関係なし):
+単純で最適化しないビルド(依存関係なし):
 
 ```shell
 make
@@ -91,13 +91,13 @@ cppcheckの設定ファイル(.cfg)を置くディレクトリを指定します
 依存関係なく Cppcheckをビルドしたい場合、次のコマンドを利用できます。
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 ```
 
 `--rule` や `--rule-file` を利用する場合、依存ライブラリが必要です。
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 ```
 
 ### MinGW

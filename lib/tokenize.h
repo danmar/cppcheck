@@ -597,7 +597,7 @@ private:
 public:
 
     /** Syntax error */
-    void syntaxError(const Token *tok, const std::string code = "") const;
+    void syntaxError(const Token *tok, const std::string &code = "") const;
 
     /** Syntax error. Unmatched character. */
     void unmatchedToken(const Token *tok) const;
@@ -632,7 +632,7 @@ private:
     void findGarbageCode() const;
 
     /** Detect garbage expression */
-    static bool isGarbageExpr(const Token *start, const Token *end);
+    static bool isGarbageExpr(const Token *start, const Token *end, bool allowSemicolon);
 
     /**
      * Remove __declspec()
@@ -761,6 +761,16 @@ private:
                                   const unsigned int scopeStartVarId,
                                   std::map<unsigned int, std::map<std::string,unsigned int> >& structMembers);
 
+    void setVarIdStructMembers(Token **tok1,
+                               std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
+                               unsigned int *varId);
+
+    void setVarIdClassFunction(const std::string &classname,
+                               Token * const startToken,
+                               const Token * const endToken,
+                               const std::map<std::string, unsigned int> &varlist,
+                               std::map<unsigned int, std::map<std::string, unsigned int> >& structMembers,
+                               unsigned int *varId_);
 
     /**
      * Simplify e.g. 'return(strncat(temp,"a",1));' into

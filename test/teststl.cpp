@@ -156,9 +156,10 @@ private:
         TEST_CASE(loopAlgoIncrement);
         TEST_CASE(loopAlgoConditional);
         TEST_CASE(loopAlgoMinMax);
+        TEST_CASE(findInsert);
     }
 
-    void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPP11) {
+    void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPPLatest) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1880,8 +1881,8 @@ private:
         check("void f()\n"
               "{\n"
               "    vector<int> v;\n"
-              "    vector.push_back(1);\n"
-              "    vector.push_back(2);\n"
+              "    v.push_back(1);\n"
+              "    v.push_back(2);\n"
               "    for (vector<int>::iterator it = v.begin(); it != v.end(); ++it)\n"
               "    {\n"
               "        if (*it == 1)\n"
@@ -2390,35 +2391,35 @@ private:
               "{\n"
               "    if (s.find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::compare() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
 
         // error (pointer)
         check("void f(const std::string *s)\n"
               "{\n"
               "    if ((*s).find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::compare() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
 
         // error (pointer)
         check("void f(const std::string *s)\n"
               "{\n"
               "    if (s->find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::compare() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
 
         // error (vector)
         check("void f(const std::vector<std::string> &s)\n"
               "{\n"
               "    if (s[0].find(\"abc\")) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::compare() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
 
         // #3162
         check("void f(const std::string& s1, const std::string& s2)\n"
               "{\n"
               "    if ((!s1.empty()) && (0 == s1.find(s2))) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::compare() would be faster.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Inefficient usage of string::find() in condition; string::starts_with() would be faster.\n", errout.str());
 
         // #4102
         check("void f(const std::string &define) {\n"
@@ -3843,6 +3844,228 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+    }
+
+    void findInsert() {
+        check("void f1(std::set<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f2(std::map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.find(x) == m.end()) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f3(std::map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f4(std::set<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f5(std::map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f6(std::map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f1(std::unordered_set<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f2(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.find(x) == m.end()) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f3(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f4(std::unordered_set<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f5(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void f6(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+
+        check("void g1(std::map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.find(x) == m.end()) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 2;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g1(std::map<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 2;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(QSet<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(std::multiset<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f2(std::multimap<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.find(x) == m.end()) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f3(std::multimap<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f4(std::multiset<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f5(std::multimap<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f1(std::unordered_multiset<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f2(std::unordered_multimap<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.find(x) == m.end()) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f3(std::unordered_multimap<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f4(std::unordered_multiset<unsigned>& s, unsigned x) {\n"
+              "    if (s.find(x) == s.end()) {\n"
+              "        s.insert(x);\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f5(std::unordered_multimap<unsigned, unsigned>& m, unsigned x) {\n"
+              "    if (m.count(x) == 0) {\n"
+              "        m.emplace(x, 1);\n"
+              "    } else {\n"
+              "        m[x] = 1;\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

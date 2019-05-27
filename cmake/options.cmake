@@ -37,6 +37,7 @@ endif()
 
 option(BUILD_TESTS          "Build tests"                                                   OFF)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
+option(WITH_QCHART          "When building GUI(need BUILD_GUI=ON), use Qt5 Charts"          OFF)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 

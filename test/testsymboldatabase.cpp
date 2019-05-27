@@ -294,7 +294,6 @@ private:
         TEST_CASE(symboldatabase70);
         TEST_CASE(symboldatabase71);
         TEST_CASE(symboldatabase72); // #8600
-        TEST_CASE(symboldatabase73); // #8603
         TEST_CASE(symboldatabase74); // #8838 - final
         TEST_CASE(symboldatabase75);
         TEST_CASE(symboldatabase76); // #9056
@@ -4161,26 +4160,6 @@ private:
         ASSERT(f && f->function() && f->function()->type == Function::eCopyConstructor);
     }
 
-    void symboldatabase73() { // #8603
-        GET_SYMBOL_DB("namespace swizzle {\n"
-                      "  template <comp> void swizzle(tvec2<f16>) {}\n"
-                      "  template <comp x, comp y> void swizzle(tvec2<f16> v) {}\n"
-                      "}");
-
-        ASSERT_EQUALS(4, db->scopeList.size());
-        ASSERT_EQUALS(2, db->functionScopes.size());
-
-        const Scope *f1 = db->functionScopes[0];
-        ASSERT_EQUALS(2, f1->bodyStart->linenr());
-        ASSERT_EQUALS(2, f1->bodyEnd->linenr());
-        ASSERT_EQUALS(2, f1->function->token->linenr());
-
-        const Scope *f2 = db->functionScopes[1];
-        ASSERT_EQUALS(3, f2->bodyStart->linenr());
-        ASSERT_EQUALS(3, f2->bodyEnd->linenr());
-        ASSERT_EQUALS(3, f2->function->token->linenr());
-    }
-
     void symboldatabase74() { // #8838 - final
         GET_SYMBOL_DB("class Base { virtual int f() const = 0; };\n"
                       "class Derived : Base { virtual int f() const final { return 6; } };");
@@ -4234,8 +4213,7 @@ private:
                       "  using namespace bar::baz;\n"
                       "  auto func(int arg) -> bar::quux {}\n"
                       "}");
-        // bar on line 3 should not have a varid
-        TODO_ASSERT_EQUALS(2, 3, db->mVariableList.size());
+        ASSERT_EQUALS(2, db->mVariableList.size());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
@@ -5961,7 +5939,7 @@ private:
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
         ASSERT_EQUALS("const char",  typeOf("\"hello\"[1];", "["));
         ASSERT_EQUALS("const char",  typeOf(";*\"hello\";", "*"));
-        ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1;", "+"));
+        ASSERT_EQUALS("const wchar_t *", typeOf("L\"hello\" + 1;", "+"));
 
         // Variable calculations
         ASSERT_EQUALS("void *", typeOf("void *p; a = p + 1;", "+"));
@@ -6109,10 +6087,22 @@ private:
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
         {
+            // PlatformType - wchar_t
+            Settings settingsWin64;
+            settingsWin64.platformType = Settings::Win64;
+            Library::PlatformType lpctstr;
+            lpctstr.mType = "wchar_t";
+            settingsWin64.library.mPlatforms[settingsWin64.platformString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            ValueType vt;
+            ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
+            ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
+        }
+        {
             // Container
             Settings sC;
             Library::Container c;
             c.startPattern = "C";
+            c.startPattern2 = "C !!::";
             sC.library.containers["C"] = c;
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
@@ -6122,6 +6112,7 @@ private:
             Settings set;
             Library::Container vector;
             vector.startPattern = "Vector";
+            vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
             set.library.containers["Vector"] = vector;

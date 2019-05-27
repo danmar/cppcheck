@@ -36,6 +36,7 @@
 #include <tinyxml2.h>
 #include <algorithm>
 #include <cstdlib>
+#include <numeric> // std::accumulate
 #include <sstream>
 #include <stack>
 #include <utility>
@@ -63,11 +64,9 @@ static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After 
 
 static const ValueFlow::Value *getBufferSizeValue(const Token *tok)
 {
-    for (const ValueFlow::Value &value : tok->values()) {
-        if (value.isBufferSizeValue())
-            return &value;
-    }
-    return nullptr;
+    const std::list<ValueFlow::Value> &tokenValues = tok->values();
+    const auto it = std::find_if(tokenValues.begin(), tokenValues.end(), std::mem_fn(&ValueFlow::Value::isBufferSizeValue));
+    return it == tokenValues.end() ? nullptr : &*it;
 }
 
 static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, unsigned int formatStringArgNr)
@@ -346,9 +345,10 @@ static std::string stringifyIndexes(const std::string &array, const std::vector<
 
 static std::string arrayIndexMessage(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexValues, const Token *condition)
 {
-    std::string array = tok->astOperand1()->expressionString();
-    for (const Dimension &dim : dimensions)
-        array += "[" + MathLib::toString(dim.num) + "]";
+    auto add_dim = [](const std::string &s, const Dimension &dim) {
+        return s + "[" + MathLib::toString(dim.num) + "]";
+    };
+    const std::string array = std::accumulate(dimensions.begin(), dimensions.end(), tok->astOperand1()->expressionString(), add_dim);
 
     std::ostringstream errmsg;
     if (condition)
@@ -508,9 +508,9 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (!var)
         return ValueFlow::Value(-1);
 
-    MathLib::bigint dim = 1;
-    for (const Dimension &d : var->dimensions())
-        dim *= d.num;
+    MathLib::bigint dim = std::accumulate(var->dimensions().begin(), var->dimensions().end(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
+        return i1 * dim.num;
+    });
 
     ValueFlow::Value v;
     v.setKnown();
@@ -592,13 +592,9 @@ void CheckBufferOverrun::bufferOverflow()
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);
                 if (bufferSize.intvalue <= 1)
                     continue;
-                bool error = true;
-                for (const Library::ArgumentChecks::MinSize &minsize : *minsizes) {
-                    if (checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings)) {
-                        error = false;
-                        break;
-                    }
-                }
+                bool error = std::none_of(minsizes->begin(), minsizes->end(), [=](const Library::ArgumentChecks::MinSize &minsize) {
+                    return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings);
+                });
                 if (error)
                     bufferOverflowError(args[argnr], &bufferSize);
             }
@@ -693,7 +689,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             // Is the buffer zero terminated after the call?
             bool isZeroTerminated = false;
             for (const Token *tok2 = tok->next()->link(); tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-                if (!Token::Match(tok2, "] ="))
+                if (!Token::simpleMatch(tok2, "] ="))
                     continue;
                 const Token *rhs = tok2->next()->astOperand2();
                 if (!rhs || !rhs->hasKnownIntValue() || rhs->getKnownIntValue() != 0)
@@ -753,7 +749,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
     const CheckBufferOverrun *c = dynamic_cast<const CheckBufferOverrun *>(check);
     if (!c)
         return false;
-    if (!argtok->valueType())
+    if (!argtok->valueType() || argtok->valueType()->typeSize(*c->mSettings) == 0)
         return false;
     const Token *indexTok = nullptr;
     if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))

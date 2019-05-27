@@ -238,6 +238,8 @@ namespace ValueFlow {
 
 const Variable *getLifetimeVariable(const Token *tok, ValueFlow::Value::ErrorPath &errorPath);
 
+bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
+
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 ValueFlow::Value getLifetimeObjValue(const Token *tok);

@@ -591,9 +591,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // Check smart pointer
-        else if (Token::Match(ftok, "auto_ptr|unique_ptr|shared_ptr < %type%")) {
-
-
+        else if (Token::Match(ftok, "%name% <") && mSettings->library.isSmartPointer(tok)) {
             const Token * typeEndTok = ftok->linkAt(1);
             if (!Token::Match(typeEndTok, "> %var% {|( %var% ,|)|}"))
                 continue;
@@ -746,6 +744,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                 arg = arg->tokAt(5);
         }
 
+        const Token * const argTypeStartTok = arg;
+
         while (Token::Match(arg, "%name% .|:: %name%"))
             arg = arg->tokAt(2);
 
@@ -761,7 +761,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                 changeAllocStatus(varInfo, allocation, tokName, arg);
         }
         // Check smart pointer
-        else if (Token::Match(arg, "auto_ptr|unique_ptr|shared_ptr < %type%")) {
+        else if (Token::Match(arg, "%name% < %type%") && mSettings->library.isSmartPointer(argTypeStartTok)) {
             const Token * typeEndTok = arg->linkAt(1);
             if (!Token::Match(typeEndTok, "> {|( %var% ,|)|}"))
                 continue;

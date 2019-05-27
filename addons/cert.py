@@ -19,10 +19,9 @@ VERIFY_ACTUAL = []
 
 def reportError(token, severity, msg, id):
     if VERIFY:
-        VERIFY_ACTUAL.append(str(token.linenr) + ':' + id)
+        VERIFY_ACTUAL.append(str(token.linenr) + ':cert-' + id)
     else:
-        sys.stderr.write(
-            '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
+        cppcheckdata.reportError(token, severity, msg, 'cert', id)
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -117,7 +116,7 @@ def exp05(data):
             const1 = token.valueType.constness
             const2 = token.astOperand1.valueType.constness
             if (const1 % 2) < (const2 % 2):
-                reportError(token, 'style', "Attempt to cast away const", 'cert-EXP05-C')
+                reportError(token, 'style', "Attempt to cast away const", 'EXP05-C')
 
         elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
             function = token.astOperand1.function
@@ -136,7 +135,7 @@ def exp05(data):
                     continue
                 const2 = arguments[argnr - 1].valueType.constness
                 if (const2 % 2) == 1:
-                    reportError(token, 'style', "Attempt to cast away const", 'cert-EXP05-C')
+                    reportError(token, 'style', "Attempt to cast away const", 'EXP05-C')
 
 
 # EXP42-C
@@ -156,7 +155,7 @@ def exp42(data):
         if isLocalUnpackedStruct(arg1) or isLocalUnpackedStruct(arg2):
             reportError(
                 token, 'style', "Comparison of struct padding data " +
-                "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'cert-EXP42-C')
+                "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'EXP42-C')
 
 
 # EXP46-C
@@ -166,7 +165,7 @@ def exp46(data):
     for token in data.tokenlist:
         if isBitwiseOp(token) and (isComparisonOp(token.astOperand1) or isComparisonOp(token.astOperand2)):
             reportError(
-                token, 'style', 'Bitwise operator is used with a Boolean-like operand', 'cert-EXP46-c')
+                token, 'style', 'Bitwise operator is used with a Boolean-like operand', 'EXP46-c')
 
 # INT31-C
 # Ensure that integer conversions do not result in lost or misinterpreted data
@@ -200,7 +199,7 @@ def int31(data, platform):
                         token,
                         'style',
                         'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to unsigned ' + token.valueType.type + ')',
-                        'cert-INT31-c')
+                        'INT31-c')
                 break
             if found:
                 continue
@@ -225,7 +224,7 @@ def int31(data, platform):
                     token,
                     'style',
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
-                    'cert-INT31-c')
+                    'INT31-c')
                 break
 
 # MSC30-C
@@ -233,11 +232,13 @@ def int31(data, platform):
 def msc30(data):
     for token in data.tokenlist:
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
-            reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'cert-MSC30-c')
+            reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
+        continue
+    if arg == '--cli':
         continue
     print('Checking ' + arg + '...')
     data = cppcheckdata.parsedump(arg)
