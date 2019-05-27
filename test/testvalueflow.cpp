@@ -32,6 +32,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstdint>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -101,6 +102,8 @@ private:
         TEST_CASE(valueFlowSizeofForwardDeclaredEnum);
 
         TEST_CASE(valueFlowGlobalVar);
+
+        TEST_CASE(valueFlowGlobalConstVar);
 
         TEST_CASE(valueFlowGlobalStaticVar);
 
@@ -752,6 +755,15 @@ private:
         const char *code;
         std::list<ValueFlow::Value> values;
 
+        // array size
+        code  = "void f() {\n"
+                "    char a[10];"
+                "    x = sizeof(*a);\n"
+                "}";
+        values = tokenValues(code,"( *");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
+
 #define CHECK(A, B)                              \
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
@@ -766,6 +778,7 @@ private:
         CHECK("short", settings.sizeof_short);
         CHECK("int", settings.sizeof_int);
         CHECK("long", settings.sizeof_long);
+        CHECK("wchar_t", settings.sizeof_wchar_t);
 #undef CHECK
 
         // array size
@@ -915,6 +928,12 @@ private:
         CHECK(": wchar_t", settings.sizeof_wchar_t);
         CHECK(": size_t", settings.sizeof_size_t);
 #undef CHECK
+
+        code = "uint16_t arr[10];\n"
+               "x = sizeof(arr);";
+        values = tokenValues(code,"( arr )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(10 * sizeof(std::uint16_t), values.back().intvalue);
     }
 
     void valueFlowErrorPath() {
@@ -1423,6 +1442,25 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        // truncation
+        code = "int f() {\n"
+               "  int x = 1.5;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+
+        code = "int f() {\n"
+               "  unsigned char x = 0x123;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0x23));
+
+        code = "int f() {\n"
+               "  signed char x = 0xfe;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, -2));
 
         // function
         code = "void f() {\n"
@@ -2312,6 +2350,12 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 5));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 5));
+
+        code = "int f(int *p) {\n" // #9008 - gcc ternary ?:
+               "  if (p) return;\n"
+               "  x = *p ? : 1;\n" // <- no explicit expr0
+               "}";
+        testValueOfX(code, 1U, 0); // do not crash
     }
 
     void valueFlowForwardLambda() {
@@ -2542,6 +2586,13 @@ private:
                "        a[x] = 0;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
+
+        code = "void f() {\n"
+               "    for (int x = 0; x < 5; x += 2)\n"
+               "        a[x] = 0;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 4));
 
         code = "void f() {\n"
                "    for (int x = 0; x < 10; x = x + 2)\n"
@@ -3136,6 +3187,25 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 42));
     }
 
+    void valueFlowGlobalConstVar() {
+        const char* code;
+
+        code = "const int x = 321;\n"
+               "void f() {\n"
+               "  a = x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 321));
+
+        code = "void f(const int x = 1) {\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 1));
+
+        code = "volatile const int x = 42;\n"
+               "void f(){ int a = x; }\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 42));
+    }
+
     void valueFlowGlobalStaticVar() {
         const char *code;
 
@@ -3354,6 +3424,25 @@ private:
         ASSERT_EQUALS(true, values.front().isUninitValue() || values.back().isUninitValue());
         ASSERT_EQUALS(true, values.front().isPossible() || values.back().isPossible());
         ASSERT_EQUALS(true, values.front().intvalue == 0 || values.back().intvalue == 0);
+
+        code = "void f() {\n" // sqlite
+               "  int szHdr;\n"
+               "  idx = (A<0x80) ? (szHdr = 0) : dostuff(A, (int *)&(szHdr));\n"
+               "  d = szHdr;\n" // szHdr can be 0.
+               "}";
+        values = tokenValues(code, "szHdr ; }");
+        TODO_ASSERT_EQUALS(1, 0, values.size());
+        if (values.size() == 1) {
+            ASSERT_EQUALS(false, values.front().isUninitValue());
+        }
+
+        code = "void f () {\n"
+               "  int szHdr;\n"
+               "  idx = ((aKey<0x80) ? ((szHdr)=aKey), 1 : sqlite3GetVarint32(&(szHdr)));\n"
+               "  d = szHdr;\n"
+               "}";
+        values = tokenValues(code, "szHdr ; }");
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowTerminatingCond() {

@@ -34,6 +34,22 @@
 #include <stack>
 #include <utility>
 
+static const std::string literal_prefix[4] = {"u8", "u", "U", "L"};
+
+static bool isStringCharLiteral(const std::string &str, char q)
+{
+
+    if (!endsWith(str, q))
+        return false;
+    if (str[0] == q && str.length() > 1)
+        return true;
+
+    for (const std::string & p: literal_prefix) {
+        if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, (p + q)) == 0))
+            return true;
+    }
+    return false;
+}
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
@@ -73,6 +89,10 @@ void Token::update_property_info()
     if (!mStr.empty()) {
         if (mStr == "true" || mStr == "false")
             tokType(eBoolean);
+        else if (isStringCharLiteral(mStr, '\"'))
+            tokType(eString);
+        else if (isStringCharLiteral(mStr, '\''))
+            tokType(eChar);
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
@@ -80,10 +100,6 @@ void Token::update_property_info()
                 tokType(eName);
         } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1])))
             tokType(eNumber);
-        else if (mStr.length() > 1 && mStr[0] == '"' && endsWith(mStr,'"'))
-            tokType(eString);
-        else if (mStr.length() > 1 && mStr[0] == '\'' && endsWith(mStr,'\''))
-            tokType(eChar);
         else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                  (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
@@ -118,6 +134,7 @@ void Token::update_property_info()
         tokType(eNone);
     }
 
+    update_property_char_string_literal();
     update_property_isStandardType();
 }
 
@@ -147,6 +164,20 @@ void Token::update_property_isStandardType()
     }
 }
 
+void Token::update_property_char_string_literal()
+{
+    if (!(mTokType == Token::eString || mTokType == Token::eChar)) // Token has already been updated
+        return;
+
+    for (const std::string & p : literal_prefix) {
+        if (((mTokType == Token::eString) && mStr.compare(0, p.size() + 1, p + "\"") == 0) ||
+            ((mTokType == Token::eChar) && (mStr.compare(0, p.size() +  1, p + "\'") == 0))) {
+            mStr = mStr.substr(p.size());
+            isLong(p != "u8");
+            break;
+        }
+    }
+}
 
 bool Token::isUpperCaseName() const
 {
@@ -712,7 +743,8 @@ std::size_t Token::getStrLength(const Token *tok)
 
 std::size_t Token::getStrSize(const Token *tok)
 {
-    assert(tok != nullptr && tok->tokType() == eString);
+    assert(tok != nullptr);
+    assert(tok->tokType() == eString);
     const std::string &str = tok->str();
     unsigned int sizeofstring = 1U;
     for (unsigned int i = 1U; i < str.size() - 1U; i++) {
@@ -1329,11 +1361,12 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
             printed.insert(tok);
 
             if (xml) {
-                out << "<ast scope=\"" << tok->scope() << "\" fileIndex=\"" << tok->fileIndex() << "\" linenr=\"" << tok->linenr() << "\">" << std::endl;
+                out << "<ast scope=\"" << tok->scope() << "\" fileIndex=\"" << tok->fileIndex() << "\" linenr=\"" << tok->linenr()
+                    << "\" col=\"" << tok->col() << "\">" << std::endl;
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
             } else if (verbose)
-                out << tok->astStringVerbose(0,0) << std::endl;
+                out << tok->astStringVerbose() << std::endl;
             else
                 out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
@@ -1342,18 +1375,16 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
     }
 }
 
-static std::string indent(const unsigned int indent1, const unsigned int indent2)
+static void indent(std::string &str, const unsigned int indent1, const unsigned int indent2)
 {
-    std::string ret(indent1,' ');
+    for (unsigned int i = 0; i < indent1; ++i)
+        str += ' ';
     for (unsigned int i = indent1; i < indent2; i += 2)
-        ret += "| ";
-    return ret;
+        str += "| ";
 }
 
-std::string Token::astStringVerbose(const unsigned int indent1, const unsigned int indent2) const
+void Token::astStringVerboseRecursive(std::string& ret, const unsigned int indent1, const unsigned int indent2) const
 {
-    std::string ret;
-
     if (isExpandedMacro())
         ret += '$';
     ret += mStr;
@@ -1363,16 +1394,26 @@ std::string Token::astStringVerbose(const unsigned int indent1, const unsigned i
 
     if (mImpl->mAstOperand1) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
-        if (indent1==indent2 && !mImpl->mAstOperand2)
+        if (indent1 == indent2 && !mImpl->mAstOperand2)
             i1 += 2;
-        ret += indent(indent1,indent2) + (mImpl->mAstOperand2 ? "|-" : "`-") + mImpl->mAstOperand1->astStringVerbose(i1,i2);
+        indent(ret, indent1, indent2);
+        ret += mImpl->mAstOperand2 ? "|-" : "`-";
+        mImpl->mAstOperand1->astStringVerboseRecursive(ret, i1, i2);
     }
     if (mImpl->mAstOperand2) {
         unsigned int i1 = indent1, i2 = indent2 + 2;
-        if (indent1==indent2)
+        if (indent1 == indent2)
             i1 += 2;
-        ret += indent(indent1,indent2) + "`-" + mImpl->mAstOperand2->astStringVerbose(i1,i2);
+        indent(ret, indent1, indent2);
+        ret += "`-";
+        mImpl->mAstOperand2->astStringVerboseRecursive(ret, i1, i2);
     }
+}
+
+std::string Token::astStringVerbose() const
+{
+    std::string ret;
+    astStringVerboseRecursive(ret);
     return ret;
 }
 
@@ -1419,6 +1460,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::UNINIT:
                     out << "uninit=\"1\"";
                     break;
+                case ValueFlow::Value::BUFFER_SIZE:
+                    out << "buffer-size=\"" << value.intvalue << "\"";
+                    break;
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
@@ -1459,6 +1503,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::UNINIT:
                     out << "Uninit";
                     break;
+                case ValueFlow::Value::BUFFER_SIZE:
                 case ValueFlow::Value::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
                     break;
@@ -1713,6 +1758,79 @@ void Token::type(const ::Type *t)
         isEnumType(mImpl->mType->isEnumType());
     } else if (mTokType == eType)
         tokType(eName);
+}
+
+const ::Type *Token::typeOf(const Token *tok)
+{
+    if (Token::simpleMatch(tok, "return")) {
+        const Scope *scope = tok->scope();
+        if (!scope)
+            return nullptr;
+        const Function *function = scope->function;
+        if (!function)
+            return nullptr;
+        return function->retType;
+    } else if (Token::Match(tok, "%type%")) {
+        return tok->type();
+    } else if (Token::Match(tok, "%var%")) {
+        const Variable *var = tok->variable();
+        if (!var)
+            return nullptr;
+        return var->type();
+    } else if (Token::Match(tok, "%name%")) {
+        const Function *function = tok->function();
+        if (!function)
+            return nullptr;
+        return function->retType;
+    } else if (Token::simpleMatch(tok, "=")) {
+        return Token::typeOf(tok->astOperand1());
+    } else if (Token::simpleMatch(tok, ".")) {
+        return Token::typeOf(tok->astOperand2());
+    }
+    return nullptr;
+}
+
+std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
+{
+    if (Token::simpleMatch(tok, "return")) {
+        const Scope *scope = tok->scope();
+        if (!scope)
+            return {};
+        const Function *function = scope->function;
+        if (!function)
+            return {};
+        return {function->retDef, function->returnDefEnd()};
+    } else if (Token::Match(tok, "%type%")) {
+        return {tok, tok->next()};
+    } else if (Token::Match(tok, "%var%")) {
+        const Variable *var = tok->variable();
+        if (!var)
+            return {};
+        if (!var->typeStartToken() || !var->typeEndToken())
+            return {};
+        return {var->typeStartToken(), var->typeEndToken()->next()};
+    } else if (Token::Match(tok, "%name%")) {
+        const Function *function = tok->function();
+        if (!function)
+            return {};
+        return {function->retDef, function->returnDefEnd()};
+    } else if (Token::simpleMatch(tok, "=")) {
+        return Token::typeDecl(tok->astOperand1());
+    } else if (Token::simpleMatch(tok, ".")) {
+        return Token::typeDecl(tok->astOperand2());
+    } else {
+        const ::Type * t = typeOf(tok);
+        if (!t || !t->classDef)
+            return {};
+        return {t->classDef->next(), t->classDef->tokAt(2)};
+    }
+}
+std::string Token::typeStr(const Token* tok)
+{
+    std::pair<const Token*, const Token*> r = Token::typeDecl(tok);
+    if (!r.first || !r.second)
+        return "";
+    return r.first->stringifyList(r.second, false);
 }
 
 TokenImpl::~TokenImpl()

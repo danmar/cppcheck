@@ -145,6 +145,13 @@ void CheckClass::constructors()
             if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
 
+            // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
+            if (func.type == Function::eConstructor) {
+                const Token *initList = func.constructorMemberInitialization();
+                if (Token::Match(initList, ": %name% (") && initList->next()->tokType() == Token::eName)
+                    break;
+            }
+
             // Mark all variables not used
             clearAllVar(usage);
 
@@ -218,6 +225,9 @@ void CheckClass::constructors()
                     if (classNameUsed)
                         operatorEqVarError(func.token, scope->className, var.name(), inconclusive);
                 } else if (func.access != Private || mSettings->standards.cpp >= Standards::CPP11) {
+                    // If constructor is not in scope then we maybe using a oonstructor from a different template specialization
+                    if (!precedes(scope->bodyStart, func.tokenDef))
+                        continue;
                     const Scope *varType = var.typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
                         if (func.type == Function::eConstructor &&
@@ -273,7 +283,7 @@ void CheckClass::checkExplicitConstructors()
                 continue;
 
             if (!func.isExplicit() &&
-                func.argCount() == 1 &&
+                func.minArgCount() == 1 &&
                 func.type != Function::eCopyConstructor &&
                 func.type != Function::eMoveConstructor) {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
@@ -308,7 +318,7 @@ static bool isNonCopyable(const Scope *scope, bool *unknown)
 
 void CheckClass::copyconstructors()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
@@ -435,7 +445,7 @@ void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *all
 
 void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
 {
-    reportError(tok, Severity::style, "copyCtorPointerCopying",
+    reportError(tok, Severity::warning, "copyCtorPointerCopying",
                 "$symbol:" + varname + "\nValue of pointer '$symbol', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, false);
 }
 
@@ -461,17 +471,17 @@ static std::string noMemberErrorMessage(const Scope *scope, const char function[
 
 void CheckClass::noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
-    reportError(alloc, Severity::style, "noCopyConstructor", noMemberErrorMessage(scope, "copy constructor", isdefault), CWE398, inconclusive);
+    reportError(alloc, Severity::warning, "noCopyConstructor", noMemberErrorMessage(scope, "copy constructor", isdefault), CWE398, inconclusive);
 }
 
 void CheckClass::noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
-    reportError(alloc, Severity::style, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, inconclusive);
+    reportError(alloc, Severity::warning, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, inconclusive);
 }
 
 void CheckClass::noDestructorError(const Scope *scope, bool isdefault, const Token *alloc)
 {
-    reportError(alloc, Severity::style, "noDestructor", noMemberErrorMessage(scope, "destructor", isdefault), CWE398, false);
+    reportError(alloc, Severity::warning, "noDestructor", noMemberErrorMessage(scope, "destructor", isdefault), CWE398, false);
 }
 
 bool CheckClass::canNotCopy(const Scope *scope)
@@ -1135,7 +1145,6 @@ void CheckClass::checkMemset()
                     // 3 arguments.
                     continue;
 
-
                 const Token *typeTok = nullptr;
                 const Scope *type = nullptr;
                 if (Token::Match(arg3, "sizeof ( %type% ) )"))
@@ -1237,12 +1246,23 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
             const Token *tok1 = var.typeStartToken();
             const Scope *typeScope = var.typeScope();
 
+            std::string typeName;
+            if (Token::Match(tok1, "%type% ::")) {
+                const Token *typeTok = tok1;
+                while (Token::Match(typeTok, "%type% ::")) {
+                    typeName += typeTok->str() + "::";
+                    typeTok = typeTok->tokAt(2);
+                }
+                typeName += typeTok->str();
+            }
+
             // check for std:: type
-            if (var.isStlType() && tok1->strAt(2) != "array" && !mSettings->library.podtype(tok1->strAt(2)))
+            if (var.isStlType() && typeName != "std::array" && !mSettings->library.podtype(typeName)) {
                 if (allocation)
-                    mallocOnClassError(tok, tok->str(), type->classDef, "'std::" + tok1->strAt(2) + "'");
+                    mallocOnClassError(tok, tok->str(), type->classDef, "'" + typeName + "'");
                 else
-                    memsetError(tok, tok->str(), "'std::" + tok1->strAt(2) + "'", type->classDef->str());
+                    memsetError(tok, tok->str(), "'" + typeName + "'", type->classDef->str());
+            }
 
             // check for known type
             else if (typeScope && typeScope != type)
@@ -1396,6 +1416,13 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             continue;
 
         foundReturn = true;
+
+        const Token *retExpr = tok->astOperand1();
+        if (retExpr && retExpr->str() == "=")
+            retExpr = retExpr->astOperand1();
+        if (retExpr && retExpr->isUnaryOp("*") && Token::simpleMatch(retExpr->astOperand1(), "this"))
+            continue;
+
         std::string cast("( " + scope->className + " & )");
         if (Token::simpleMatch(tok->next(), cast.c_str()))
             tok = tok->tokAt(4);
@@ -1430,8 +1457,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         }
 
         // check if *this is returned
-        else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
-                   Token::simpleMatch(tok->next(), "operator= (") ||
+        else if (!(Token::simpleMatch(tok->next(), "operator= (") ||
                    Token::simpleMatch(tok->next(), "this . operator= (") ||
                    (Token::Match(tok->next(), "%type% :: operator= (") &&
                     tok->next()->str() == scope->className)))
@@ -1827,8 +1853,8 @@ void CheckClass::checkConst()
                 const std::string& opName = func.tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
                     continue;
-            } else if (Token::simpleMatch(func.retDef, "std :: shared_ptr <")) {
-                // Don't warn if a std::shared_ptr is returned
+            } else if (mSettings->library.isSmartPointer(func.retDef)) {
+                // Don't warn if a std::shared_ptr etc is returned
                 continue;
             } else {
                 // don't warn for unknown types..

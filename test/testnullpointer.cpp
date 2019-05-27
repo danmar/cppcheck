@@ -40,19 +40,7 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        // Load std.cfg configuration
-        {
-            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-            "<def>\n"
-            "  <function name=\"strcpy\">\n"
-            "    <arg nr=\"1\"><not-null/></arg>\n"
-            "    <arg nr=\"2\"><not-null/></arg>\n"
-            "  </function>\n"
-            "</def>";
-            tinyxml2::XMLDocument doc;
-            doc.Parse(xmldata, sizeof(xmldata));
-            settings.library.load(doc);
-        }
+        LOAD_LIB_2(settings.library, "std.cfg");
         settings.addEnabled("warning");
 
         TEST_CASE(nullpointerAfterLoop);
@@ -102,6 +90,7 @@ private:
         TEST_CASE(nullpointerExit);
         TEST_CASE(nullpointerStdString);
         TEST_CASE(nullpointerStdStream);
+        TEST_CASE(nullpointerSmartPointer);
         TEST_CASE(functioncall);
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(functioncallDefaultArguments);
@@ -128,10 +117,6 @@ private:
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
         checkNullPointer.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-
-        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[]) {
@@ -158,10 +143,6 @@ private:
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
         checkNullPointer.runChecks(&tokenizer, &settings, this);
-
-        tokenizer.simplifyTokenList2();
-
-        checkNullPointer.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
 
@@ -1098,6 +1079,22 @@ private:
                   "}");
             ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
         }
+
+        // ticket #8831 - FP triggered by if/return/else sequence
+        {
+            check("void f(int *p, int *q) {\n"
+                  "    if (p == NULL)\n"
+                  "        return;\n"
+                  "    else if (q == NULL)\n"
+                  "        return;\n"
+                  "    *q = 0;\n"
+                  "}\n"
+                  "\n"
+                  "void g() {\n"
+                  "    f(NULL, NULL);\n"
+                  "}", true);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     // Ticket #2350
@@ -1417,8 +1414,7 @@ private:
               "    }\n"
               "    return p;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n"
-                      "[test.cpp:7]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer_cast() { // #4692
@@ -2264,6 +2260,87 @@ private:
 
     }
 
+    void nullpointerSmartPointer() {
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  if (p) {}\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  p = nullptr;\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::unique_ptr<Fred> p) {\n"
+              "  if (p) {}\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::unique_ptr<Fred> p) {\n"
+              "  p = nullptr;\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f() {\n"
+              "  std::shared_ptr<Fred> p;\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  p.reset();\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  Fred * pp = nullptr;\n"
+              "  p.reset(pp);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(Fred& f) {\n"
+              "  std::shared_ptr<Fred> p;\n"
+              "  p.reset(&f);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f(std::shared_ptr<Fred> p) {\n"
+              "  p.release();\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct Fred { int x; };\n"
+              "void f() {\n"
+              "  std::shared_ptr<Fred> p(nullptr);\n"
+              "  dostuff(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct A {};\n"
+              "void f(int n) {\n"
+              "    std::unique_ptr<const A*[]> p;\n"
+              "    p.reset(new const A*[n]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void functioncall() {    // #3443 - function calls
         // dereference pointer and then check if it's null
         {
@@ -2520,7 +2597,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int *p = 0) {\n"
-              "    printf(\"%d\", p);\n"
+              "    printf(\"%p\", p);\n"
               "    *p = 0;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());

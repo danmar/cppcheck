@@ -161,8 +161,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
-        for (std::vector<std::string>::const_iterator iter = pathnames.begin(); iter != pathnames.end(); ++iter)
-            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(*iter), _settings->library.markupExtensions(), matcher);
+        for (const std::string &pathname : pathnames)
+            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(pathname), _settings->library.markupExtensions(), matcher);
     }
 
     if (_files.empty() && settings.project.fileSettings.empty()) {
@@ -811,8 +811,19 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     Settings& settings = cppcheck.settings();
     _settings = &settings;
     const bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
+
+    for (const std::string &lib : settings.libraries) {
+        if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
+            const std::string msg("Failed to load the library " + lib);
+            const std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+            ErrorLogger::ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", false);
+            reportErr(errmsg);
+            return EXIT_FAILURE;
+        }
+    }
+
     bool posix = true;
-    if (settings.standards.posix)
+    if (settings.posix())
         posix = tryLoadLibrary(settings.library, argv[0], "posix.cfg");
     bool windows = true;
     if (settings.isWindowsPlatform())
@@ -866,24 +877,27 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
         std::size_t processedsize = 0;
         unsigned int c = 0;
-        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
-            if (!_settings->library.markupFile(i->first)
-                || !_settings->library.processMarkupAfterCode(i->first)) {
-                returnValue += cppcheck.check(i->first);
-                processedsize += i->second;
-                if (!settings.quiet)
-                    reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
-                c++;
+        if (settings.project.fileSettings.empty()) {
+            for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+                if (!_settings->library.markupFile(i->first)
+                    || !_settings->library.processMarkupAfterCode(i->first)) {
+                    returnValue += cppcheck.check(i->first);
+                    processedsize += i->second;
+                    if (!settings.quiet)
+                        reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                    c++;
+                }
             }
-        }
+        } else {
 
-        // filesettings
-        c = 0;
-        for (std::list<ImportProject::FileSettings>::const_iterator fs = settings.project.fileSettings.begin(); fs != settings.project.fileSettings.end(); ++fs) {
-            returnValue += cppcheck.check(*fs);
-            ++c;
-            if (!settings.quiet)
-                reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+            // filesettings
+            c = 0;
+            for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
+                returnValue += cppcheck.check(fs);
+                ++c;
+                if (!settings.quiet)
+                    reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
+            }
         }
 
         // second loop to parse all markup files which may not work until all

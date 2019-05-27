@@ -120,6 +120,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool def = false;
     bool maxconfigs = false;
 
+    mSettings->exename = argv[0];
+
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             if (std::strcmp(argv[i], "--version") == 0) {
@@ -127,6 +129,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mExitAfterPrint = true;
                 return true;
             }
+
+            else if (std::strncmp(argv[i], "--addon=", 8) == 0)
+                mSettings->addons.emplace_back(argv[i]+8);
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 mSettings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
@@ -160,9 +165,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
 
             else if (std::strcmp(argv[i], "--experimental-fast") == 0)
-                // Skip slow simplifications and see how that affect the results, the
-                // goal is to remove the simplifications.
-                mSettings->experimentalFast = true;
+                // TODO: Reomve this flag!
+                ;
 
             // (Experimental) exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0)
@@ -427,6 +431,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // -E
             else if (std::strcmp(argv[i], "-E") == 0) {
                 mSettings->preprocessOnly = true;
+                mSettings->quiet = true;
             }
 
             // Include paths
@@ -522,8 +527,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --library
             else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-                if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], argv[i]+10))
-                    return false;
+                std::string lib(argv[i] + 10);
+                mSettings->libraries.push_back(lib);
             }
 
             // --project
@@ -536,6 +541,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], lib.c_str()))
                             return false;
                     }
+
+                    for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
+                        mIgnoredPaths.emplace_back(ignorePath);
 
                     const std::string platform(mSettings->project.guiProject.platform);
 
@@ -551,8 +559,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Unix64);
                     else if (platform == "native")
                         mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified")
-                        mSettings->platform(Settings::Unspecified);
+                    else if (platform == "unspecified" || platform == "Unspecified" || platform == "")
+                        ;
                     else if (!mSettings->loadPlatformFile(argv[0], platform)) {
                         std::string message("cppcheck: error: unrecognized platform: \"");
                         message += platform;
@@ -565,6 +573,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
+                    if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
+                        mSettings->project.selectOneVsConfig(mSettings->platformType);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
@@ -588,7 +598,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --std
             else if (std::strcmp(argv[i], "--std=posix") == 0) {
-                mSettings->standards.posix = true;
+                printMessage("cppcheck: Option --std=posix is deprecated and will be removed in 1.95.");
             } else if (std::strcmp(argv[i], "--std=c89") == 0) {
                 mSettings->standards.c = Standards::C89;
             } else if (std::strcmp(argv[i], "--std=c99") == 0) {
@@ -601,6 +611,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->standards.cpp = Standards::CPP11;
             } else if (std::strcmp(argv[i], "--std=c++14") == 0) {
                 mSettings->standards.cpp = Standards::CPP14;
+            } else if (std::strcmp(argv[i], "--std=c++17") == 0) {
+                mSettings->standards.cpp = Standards::CPP17;
+            } else if (std::strcmp(argv[i], "--std=c++20") == 0) {
+                mSettings->standards.cpp = Standards::CPP20;
             }
 
             // Output formatter
@@ -908,6 +922,8 @@ void CmdLineParser::printHelp()
               "If a directory is given instead of a filename, *.cpp, *.cxx, *.cc, *.c++, *.c,\n"
               "*.tpp, and *.txx files are checked recursively from the given directory.\n\n"
               "Options:\n"
+              "    --addon=<addon>\n"
+              "                         Execute addon. i.e. cert.\n"
               "    --cppcheck-build-dir=<dir>\n"
               "                         Analysis output directory. Useful for various data.\n"
               "                         Some possible usages are; whole program analysis,\n"
@@ -923,6 +939,7 @@ void CmdLineParser::printHelp()
               "                         be considered for evaluation.\n"
               "    --config-excludes-file=<file>\n"
               "                         A file that contains a list of config-excludes\n"
+              "    --doc                Print a list of all available checks.\n"
               "    --dump               Dump xml data for each translation unit. The dump\n"
               "                         files have the extension .dump and contain ast,\n"
               "                         tokenlist, symboldatabase, valueflow.\n"
@@ -967,7 +984,6 @@ void CmdLineParser::printHelp()
               "                         provided. Note that your operating system can modify\n"
               "                         this value, e.g. '256' can become '0'.\n"
               "    --errorlist          Print a list of all the error messages in XML format.\n"
-              "    --doc                Print a list of all available checks.\n"
               "    --exitcode-suppressions=<file>\n"
               "                         Used when certain messages should be displayed but\n"
               "                         should not cause a non-zero exitcode.\n"
@@ -1077,8 +1093,6 @@ void CmdLineParser::printHelp()
 #endif
               "    --std=<id>           Set standard.\n"
               "                         The available options are:\n"
-              "                          * posix\n"
-              "                                 POSIX compatible code\n"
               "                          * c89\n"
               "                                 C code is C89 compatible\n"
               "                          * c99\n"
@@ -1090,9 +1104,11 @@ void CmdLineParser::printHelp()
               "                          * c++11\n"
               "                                 C++ code is C++11 compatible\n"
               "                          * c++14\n"
-              "                                 C++ code is C++14 compatible (default)\n"
-              "                         More than one --std can be used:\n"
-              "                           'cppcheck --std=c99 --std=posix file.c'\n"
+              "                                 C++ code is C++14 compatible\n"
+              "                          * c++17\n"
+              "                                 C++ code is C++17 compatible\n"
+              "                          * c++20\n"
+              "                                 C++ code is C++20 compatible (default)\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

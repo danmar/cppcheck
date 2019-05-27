@@ -213,7 +213,7 @@ void CheckString::checkSuspiciousStringCompare()
             const bool ischar(litTok->tokType() == Token::eChar);
             if (litTok->tokType() == Token::eString) {
                 if (mTokenizer->isC() || (var && var->isArrayOrPointer()))
-                    suspiciousStringCompareError(tok, varname);
+                    suspiciousStringCompareError(tok, varname, litTok->isLong());
             } else if (ischar && var && var->isPointer()) {
                 suspiciousStringCompareError_char(tok, varname);
             }
@@ -221,10 +221,11 @@ void CheckString::checkSuspiciousStringCompare()
     }
 }
 
-void CheckString::suspiciousStringCompareError(const Token* tok, const std::string& var)
+void CheckString::suspiciousStringCompareError(const Token* tok, const std::string& var, bool isLong)
 {
+    const std::string cmpFunc = isLong ? "wcscmp" : "strcmp";
     reportError(tok, Severity::warning, "literalWithCharPtrCompare",
-                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use strcmp() instead?", CWE595, false);
+                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use " + cmpFunc + "() instead?", CWE595, false);
 }
 
 void CheckString::suspiciousStringCompareError_char(const Token* tok, const std::string& var)
@@ -240,7 +241,7 @@ void CheckString::suspiciousStringCompareError_char(const Token* tok, const std:
 
 static bool isChar(const Variable* var)
 {
-    return (var && !var->isPointer() && !var->isArray() && var->typeStartToken()->str() == "char");
+    return (var && !var->isPointer() && !var->isArray() && (var->typeStartToken()->str() == "char" || var->typeStartToken()->str() == "wchar_t"));
 }
 
 void CheckString::strPlusChar()
@@ -260,7 +261,12 @@ void CheckString::strPlusChar()
 
 void CheckString::strPlusCharError(const Token *tok)
 {
-    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type 'char' is added to a string literal.", CWE665, false);
+    std::string charType = "char";
+    if (tok && tok->astOperand2() && tok->astOperand2()->variable())
+        charType = tok->astOperand2()->variable()->typeStartToken()->str();
+    else if (tok && tok->astOperand2() && tok->astOperand2()->tokType() == Token::eChar && tok->astOperand2()->isLong())
+        charType = "wchar_t";
+    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type '" + charType +"' is added to a string literal.", CWE665, false);
 }
 
 //---------------------------------------------------------------------------
@@ -309,7 +315,8 @@ void CheckString::checkIncorrectStringCompare()
                 incorrectStringBooleanError(tok->next(), tok->strAt(1));
             } else if (Token::Match(tok, "if|while ( %str%|%char% )") && !tok->tokAt(2)->getValue(0)) {
                 incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
-            }
+            } else if (tok->str() == "?" && Token::Match(tok->astOperand1(), "%str%|%char%"))
+                incorrectStringBooleanError(tok->astOperand1(), tok->astOperand1()->str());
         }
     }
 }
@@ -380,9 +387,9 @@ void CheckString::overlappingStrcmp()
 
             for (const Token *eq0 : equals0) {
                 for (const Token * ne0 : notEquals0) {
-                    if (!Token::simpleMatch(eq0->previous(), "strcmp ("))
+                    if (!Token::Match(eq0->previous(), "strcmp|wcscmp ("))
                         continue;
-                    if (!Token::simpleMatch(ne0->previous(), "strcmp ("))
+                    if (!Token::Match(ne0->previous(), "strcmp|wcscmp ("))
                         continue;
                     const std::vector<const Token *> args1 = getArguments(eq0->previous());
                     const std::vector<const Token *> args2 = getArguments(ne0->previous());
@@ -428,28 +435,39 @@ void CheckString::sprintfOverlappingData()
 
             const int formatString = Token::simpleMatch(tok, "sprintf") ? 1 : 2;
             for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {
+                const Token *dest = args[0];
+                if (dest->isCast())
+                    dest = dest->astOperand2() ? dest->astOperand2() : dest->astOperand1();
+                const Token *arg = args[argnr];
+                if (!arg->valueType() || arg->valueType()->pointer != 1)
+                    continue;
+                if (arg->isCast())
+                    arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();
+
                 const bool same = isSameExpression(mTokenizer->isCPP(),
                                                    false,
-                                                   args[0],
-                                                   args[argnr],
+                                                   dest,
+                                                   arg,
                                                    mSettings->library,
                                                    true,
                                                    false);
                 if (same) {
-                    sprintfOverlappingDataError(args[argnr], args[argnr]->expressionString());
+                    sprintfOverlappingDataError(tok, args[argnr], args[argnr]->expressionString());
                 }
             }
         }
     }
 }
 
-void CheckString::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
+void CheckString::sprintfOverlappingDataError(const Token *funcTok, const Token *tok, const std::string &varname)
 {
+    const std::string func = funcTok ? funcTok->str() : "s[n]printf";
+
     reportError(tok, Severity::error, "sprintfOverlappingData",
                 "$symbol:" + varname + "\n"
-                "Undefined behavior: Variable '$symbol' is used as parameter and destination in s[n]printf().\n"
-                "The variable '$symbol' is used both as a parameter and as destination in "
-                "s[n]printf(). The origin and destination buffers overlap. Quote from glibc (C-library) "
+                "Undefined behavior: Variable '$symbol' is used as parameter and destination in " + func + "().\n" +
+                "The variable '$symbol' is used both as a parameter and as destination in " +
+                func + "(). The origin and destination buffers overlap. Quote from glibc (C-library) "
                 "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
                 "\"If copying takes place between objects that overlap as a result of a call "
                 "to sprintf() or snprintf(), the results are undefined.\"", CWE628, false);

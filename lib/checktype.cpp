@@ -78,6 +78,7 @@ void CheckType::checkTooBigBitwiseShift()
         int lhsbits;
         if ((lhstype->type == ValueType::Type::CHAR) ||
             (lhstype->type == ValueType::Type::SHORT) ||
+            (lhstype->type == ValueType::Type::WCHAR_T) ||
             (lhstype->type == ValueType::Type::BOOL) ||
             (lhstype->type == ValueType::Type::INT))
             lhsbits = mSettings->int_bit;

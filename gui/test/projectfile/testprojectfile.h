@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest>
+#include <QtTest/QtTest>
 #include <QObject>
 
 class TestProjectFile: public QObject {
@@ -27,4 +27,5 @@ private slots:
     void loadSimple();
     void loadSimpleWithIgnore();
     void loadSimpleNoroot();
+    void checkSuppressions();
 };

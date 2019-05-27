@@ -89,6 +89,30 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     if (!datadir.isEmpty())
         searchPaths << datadir << datadir + "/cfg";
     QStringList libs;
+    // Search the std.cfg first since other libraries could depend on it
+    QString stdLibraryFilename;
+    foreach (const QString sp, searchPaths) {
+        QDir dir(sp);
+        dir.setSorting(QDir::Name);
+        dir.setNameFilters(QStringList("*.cfg"));
+        dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+        foreach (QFileInfo item, dir.entryInfoList()) {
+            QString library = item.fileName();
+            if (library.compare("std.cfg", Qt::CaseInsensitive) != 0)
+                continue;
+            Library lib;
+            const QString fullfilename = sp + "/" + library;
+            const Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
+            if (err.errorcode != Library::OK)
+                continue;
+            // Working std.cfg found
+            stdLibraryFilename = fullfilename;
+            break;
+        }
+        if (!stdLibraryFilename.isEmpty())
+            break;
+    }
+    // Search other libraries
     foreach (const QString sp, searchPaths) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
@@ -99,7 +123,12 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
             {
                 Library lib;
                 const QString fullfilename = sp + "/" + library;
-                const Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
+                Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
+                if (err.errorcode != Library::OK) {
+                    // Some libraries depend on std.cfg so load it first and test again
+                    lib.load(nullptr, stdLibraryFilename.toLatin1());
+                    err = lib.load(nullptr, fullfilename.toLatin1());
+                }
                 if (err.errorcode != Library::OK)
                     continue;
             }
@@ -111,11 +140,11 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
         }
     }
     qSort(libs);
-    foreach (const QString library, libs) {
-        QCheckBox *checkbox = new QCheckBox(this);
-        checkbox->setText(library);
-        mUI.mLayoutLibraries->addWidget(checkbox);
-        mLibraryCheckboxes << checkbox;
+    mUI.mLibraries->clear();
+    for (const QString &lib : libs) {
+        QListWidgetItem* item = new QListWidgetItem(lib, mUI.mLibraries);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
+        item->setCheckState(Qt::Unchecked); // AND initialize check state
     }
 
     // Platforms..
@@ -211,6 +240,9 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     setCheckPaths(projectFile->getCheckPaths());
     setImportProject(projectFile->getImportProject());
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
+    mUI.mCheckHeaders->setChecked(projectFile->getCheckHeaders());
+    mUI.mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
+    mUI.mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     const QString platform = projectFile->getPlatform();
@@ -275,6 +307,9 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setBuildDir(getBuildDir());
     projectFile->setImportProject(getImportProject());
     projectFile->setAnalyzeAllVsConfigs(mUI.mChkAllVsConfigs->isChecked());
+    projectFile->setCheckHeaders(mUI.mCheckHeaders->isChecked());
+    projectFile->setCheckUnusedTemplates(mUI.mCheckUnusedTemplates->isChecked());
+    projectFile->setMaxCtuDepth(mUI.mMaxCtuDepth->value());
     projectFile->setIncludes(getIncludePaths());
     projectFile->setDefines(getDefines());
     projectFile->setUndefines(getUndefines());
@@ -328,7 +363,7 @@ QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool tra
     // make it a relative path instead of absolute path.
     const QDir dir(rootpath);
     const QString relpath(dir.relativeFilePath(selectedDir));
-    if (!relpath.startsWith("."))
+    if (!relpath.startsWith("../.."))
         selectedDir = relpath;
 
     // Trailing slash..
@@ -470,9 +505,10 @@ QStringList ProjectFileDialog::getExcludedPaths() const
 QStringList ProjectFileDialog::getLibraries() const
 {
     QStringList libraries;
-    foreach (const QCheckBox *checkbox, mLibraryCheckboxes) {
-        if (checkbox->isChecked())
-            libraries << checkbox->text();
+    for (int row = 0; row < mUI.mLibraries->count(); ++row) {
+        QListWidgetItem *item = mUI.mLibraries->item(row);
+        if (item->checkState() == Qt::Checked)
+            libraries << item->text();
     }
     return libraries;
 }
@@ -525,9 +561,9 @@ void ProjectFileDialog::setExcludedPaths(const QStringList &paths)
 
 void ProjectFileDialog::setLibraries(const QStringList &libraries)
 {
-    for (int i = 0; i < mLibraryCheckboxes.size(); i++) {
-        QCheckBox *checkbox = mLibraryCheckboxes[i];
-        checkbox->setChecked(libraries.contains(checkbox->text()));
+    for (int row = 0; row < mUI.mLibraries->count(); ++row) {
+        QListWidgetItem *item = mUI.mLibraries->item(row);
+        item->setCheckState(libraries.contains(item->text()) ? Qt::Checked : Qt::Unchecked);
     }
 }
 

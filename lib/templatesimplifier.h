@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class ErrorLogger;
@@ -106,6 +107,7 @@ public:
             fIsSpecialization        = (1 << 4), // user specialized template
             fIsPartialSpecialization = (1 << 5), // user partial specialized template
             fIsForwardDeclaration    = (1 << 6), // forward declaration
+            fIsVariadic              = (1 << 7), // variadic template
         };
 
         bool isClass() const {
@@ -157,6 +159,13 @@ public:
             setFlag(fIsForwardDeclaration, state);
         }
 
+        bool isVariadic() const {
+            return getFlag(fIsVariadic);
+        }
+        void isVariadic(bool state) {
+            setFlag(fIsVariadic, state);
+        }
+
         /**
          * Get specified flag state.
          * @param flag flag to get state of
@@ -191,7 +200,7 @@ public:
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    static int getTemplateNamePosition(const Token *tok);
+    int getTemplateNamePosition(const Token *tok);
 
     /**
      * Get function template name position
@@ -234,12 +243,24 @@ public:
      */
     bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr);
 
+    /** Simplify template instantiation arguments.
+     * @param start first token of arguments
+     * @param end token following last argument token
+     */
+    void simplifyTemplateArgs(Token *start, Token *end);
+
 private:
     /**
      * Get template declarations
      * @return true if code has templates.
      */
     bool getTemplateDeclarations();
+
+    /** Add template instantiation.
+     * @param token first token of instantiation
+     * @param scope scope of instantiation
+     */
+    void addInstantiation(Token *token, const std::string &scope);
 
     /**
      * Get template instantiations
@@ -256,6 +277,12 @@ private:
      * simplify template instantiations (use default argument values)
      */
     void useDefaultArgumentValues();
+
+    /**
+     * simplify template instantiations (use default argument values)
+     * @param template1 template declaration or forward declaration
+     */
+    void useDefaultArgumentValues(TemplateSimplifier::TokenAndName &template1);
 
     /**
      * Try to locate a matching declaration for each user defined
@@ -384,8 +411,6 @@ private:
         const std::string &indent = "    ") const;
     void printOut(const std::string &text = "") const;
 
-    bool simplifyUsing();
-
     Tokenizer *mTokenizer;
     TokenList &mTokenList;
     const Settings *mSettings;
@@ -401,6 +426,7 @@ private:
     std::list<TokenAndName> mMemberFunctionsToDelete;
     std::vector<TokenAndName> mExplicitInstantiationsToDelete;
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
+    std::unordered_map<const Token*, int> mTemplateNamePos;
 };
 
 /// @}

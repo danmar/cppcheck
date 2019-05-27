@@ -80,8 +80,6 @@ private:
         TEST_CASE(simplifyTypedef36); // ticket #1434
         TEST_CASE(simplifyTypedef37); // ticket #1449
         TEST_CASE(simplifyTypedef38);
-        TEST_CASE(simplifyTypedef39);
-        TEST_CASE(simplifyTypedef40);
         TEST_CASE(simplifyTypedef43); // ticket #1588
         TEST_CASE(simplifyTypedef44);
         TEST_CASE(simplifyTypedef45); // ticket #1613
@@ -165,6 +163,7 @@ private:
         TEST_CASE(simplifyTypedef125); // #8749 - typedef char A[10]; p = new A[1];
         TEST_CASE(simplifyTypedef126); // ticket #5953
         TEST_CASE(simplifyTypedef127); // ticket #8878
+        TEST_CASE(simplifyTypedef128); // ticket #9053
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -1189,23 +1188,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef39() {
-        const char code[] = "typedef int A;\n"
-                            "template <const A, volatile A> struct S{};";
-        const char expected[] = "template < const int , volatile int > struct S { } ;";
-        ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void simplifyTypedef40() {
-        const char code[] = "typedef int A;\n"
-                            "typedef int B;\n"
-                            "template <class A, class B> class C { };";
-        const char expected[] = "template < class A , class B > class C { } ;";
-        ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void simplifyTypedef43() {
         // ticket #1588
         {
@@ -2214,8 +2196,7 @@ private:
 
     void simplifyTypedef106() { // ticket #3619 (segmentation fault)
         const char code[] = "typedef void f ();\ntypedef { f }";
-        tok(code);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(tok(code), InternalError);
     }
 
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
@@ -2546,8 +2527,18 @@ private:
                             "template <long, class> struct c; "
                             "template <int g> struct d { enum { e = c<g, b>::f }; };";
         const char exp [] = "class a ; "
-                            "template < long , class > struct c ; "
-                            "template < int g > struct d { enum Anonymous0 { e = c < g , int ( a :: * ) > :: f } ; } ;";
+                            "template < long , class > struct c ;";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyTypedef128() { // #9053
+        const char code[] = "typedef int d[4];\n"
+                            "void f() {\n"
+                            "    dostuff((const d){1,2,3,4});\n"
+                            "}";
+        const char exp [] = "void f ( ) { "
+                            "dostuff ( ( const int [ 4 ] ) { 1 , 2 , 3 , 4 } ) ; "
+                            "}";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 

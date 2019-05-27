@@ -61,8 +61,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    /** Checks that uses the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         if (tokenizer->isC())
             return;
 

@@ -61,11 +61,7 @@ public:
         checkCondition.alwaysTrueFalse();
         checkCondition.duplicateCondition();
         checkCondition.checkPointerAdditionResultNotNull();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckCondition checkCondition(tokenizer, settings, errorLogger);
+        checkCondition.checkDuplicateConditionalAssign();
         checkCondition.assignIf();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
@@ -120,6 +116,8 @@ public:
     /** @brief Check if pointer addition result is NULL '(ptr + 1) == NULL' */
     void checkPointerAdditionResultNotNull();
 
+    void checkDuplicateConditionalAssign();
+
 private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
@@ -156,6 +154,8 @@ private:
     void invalidTestForOverflow(const Token* tok, bool result);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
 
+    void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
 
@@ -177,6 +177,7 @@ private:
         c.alwaysTrueFalseError(nullptr, nullptr);
         c.invalidTestForOverflow(nullptr, false);
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
+        c.duplicateConditionalAssignError(nullptr, nullptr);
     }
 
     static std::string myName() {
@@ -188,6 +189,7 @@ private:
                "- Mismatching assignment and comparison => comparison is always true/false\n"
                "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"
                "- Detect usage of | where & should be used\n"
+               "- Duplicate condition and assignment\n"
                "- Detect matching 'if' and 'else if' conditions\n"
                "- Mismatching bitand (a &= 0xf0; a &= 1; => a = 0)\n"
                "- Opposite inner condition is always false\n"

@@ -21,6 +21,13 @@
 #include <unistd.h>
 #include <pthread.h>
 
+void validCode()
+{
+    void *ptr;
+    if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
+        free(ptr);
+}
+
 void bufferAccessOutOfBounds(int fd)
 {
     char a[5];
@@ -127,6 +134,24 @@ void resourceLeak_fdopen(int fd)
     // cppcheck-suppress resourceLeak
 }
 
+void resourceLeak_mkstemp(char *template)
+{
+    // cppcheck-suppress unreadVariable
+    int fp = mkstemp(template);
+    // cppcheck-suppress resourceLeak
+}
+
+void no_resourceLeak_mkstemp_01(char *template)
+{
+    int fp = mkstemp(template);
+    close(fp);
+}
+
+int no_resourceLeak_mkstemp_02(char *template)
+{
+    return mkstemp(template);
+}
+
 void resourceLeak_fdopendir(int fd)
 {
     // cppcheck-suppress unreadVariable
@@ -215,20 +240,28 @@ void invalidFunctionArg()
     usleep(1000000);
 }
 
+void invalidFunctionArg_close(int fd)
+{
+    if (fd < 0) {
+        // cppcheck-suppress invalidFunctionArg
+        (void)close(fd);
+    }
+}
+
 void uninitvar(int fd)
 {
-    int x;
+    int x1, x2, x3, x4;
     char buf[2];
     int decimal, sign;
     double d;
     void *p;
-    pthread_mutex_t mutex;
+    pthread_mutex_t mutex, mutex1, mutex2, mutex3;
     // cppcheck-suppress uninitvar
-    write(x,"ab",2);
+    write(x1,"ab",2);
     // TODO cppcheck-suppress uninitvar
     write(fd,buf,2); // #6325
     // cppcheck-suppress uninitvar
-    write(fd,"ab",x);
+    write(fd,"ab",x2);
     // cppcheck-suppress uninitvar
     write(fd,p,2);
 
@@ -236,12 +269,12 @@ void uninitvar(int fd)
     /* int regcomp(regex_t *restrict preg, const char *restrict pattern, int cflags); */
     regex_t reg;
     const char * pattern;
-    int cflags;
+    int cflags1, cflags2;
     // cppcheck-suppress uninitvar
-    regcomp(&reg, pattern, cflags);
+    regcomp(&reg, pattern, cflags1);
     pattern="";
     // cppcheck-suppress uninitvar
-    regcomp(&reg, pattern, cflags);
+    regcomp(&reg, pattern, cflags2);
     regerror(0, &reg, 0, 0);
 #ifndef __CYGWIN__
     // cppcheck-suppress uninitvar
@@ -264,12 +297,12 @@ void uninitvar(int fd)
 
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress uninitvar
-    int access_ret = access("file", x);
+    int access_ret = access("file", x3);
 
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
-    fdopen(x, "rw");
+    fdopen(x4, "rw");
 
     char *strtok_arg1;
     // cppcheck-suppress strtokCalled
@@ -277,11 +310,11 @@ void uninitvar(int fd)
     strtok(strtok_arg1, ";");
 
     // cppcheck-suppress uninitvar
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex1);
     // cppcheck-suppress uninitvar
-    pthread_mutex_trylock(&mutex);
+    pthread_mutex_trylock(&mutex2);
     // cppcheck-suppress uninitvar
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex3);
     // after initialization it must be OK to call lock, trylock and unlock for this mutex
     pthread_mutex_init(&mutex, NULL);
     pthread_mutex_lock(&mutex);
@@ -306,26 +339,26 @@ void uninitvar_types(void)
     b + 1;
 
     struct dirent d;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     d.d_ino + 1;
 }
 
 void timet_h(struct timespec* ptp1)
 {
-    clockid_t clk_id;
+    clockid_t clk_id1, clk_id2, clk_id3;
     struct timespec* ptp;
     // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, ptp);
     // cppcheck-suppress uninitvar
-    clock_settime(clk_id, ptp);
+    clock_settime(clk_id1, ptp);
     // cppcheck-suppress uninitvar
-    clock_settime(clk_id, ptp1);
+    clock_settime(clk_id2, ptp1);
 
     struct timespec tp;
     // TODO cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
     // cppcheck-suppress uninitvar
-    clock_settime(clk_id, &tp);
+    clock_settime(clk_id3, &tp);
 
     time_t clock = time(0);
     char buf[26];
@@ -349,4 +382,66 @@ void dl(const char* libname, const char* func)
     // cppcheck-suppress uninitvar
     dlclose(uninit);
     // cppcheck-suppress resourceLeak
+}
+
+void asctime_r_test(struct tm * tm, char * bufSizeUnknown)
+{
+    struct tm tm_uninit_data;
+    struct tm * tm_uninit_pointer;
+    char bufSize5[5];
+    char bufSize25[25];
+    char bufSize26[26];
+    char bufSize100[100];
+
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    asctime_r(tm, bufSize5);
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    asctime_r(tm, bufSize25);
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSize26);
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSize100);
+
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress uninitvar
+    asctime_r(&tm_uninit_data, bufSize100);
+    // cppcheck-suppress asctime_rCalled
+    // cppcheck-suppress uninitvar
+    asctime_r(tm_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress asctime_rCalled
+    asctime_r(tm, bufSizeUnknown);
+}
+
+void ctime_r_test(time_t * timep, char * bufSizeUnknown)
+{
+    time_t time_t_uninit_data;
+    time_t * time_t_uninit_pointer;
+    char bufSize5[5];
+    char bufSize25[25];
+    char bufSize26[26];
+    char bufSize100[100];
+
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    ctime_r(timep, bufSize5);
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress bufferAccessOutOfBounds
+    ctime_r(timep, bufSize25);
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSize26);
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSize100);
+
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress uninitvar
+    ctime_r(&time_t_uninit_data, bufSize100);
+    // cppcheck-suppress ctime_rCalled
+    // cppcheck-suppress uninitvar
+    ctime_r(time_t_uninit_pointer, bufSize100);
+
+    // cppcheck-suppress ctime_rCalled
+    ctime_r(timep, bufSizeUnknown);
 }

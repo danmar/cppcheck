@@ -100,7 +100,7 @@ div.verbose div.content {
     margin-top: 5px;
     padding-left: 5px;
     text-align: left;
-    width: 200px;
+    width: 300px;
     height: 75%;
     position: fixed;
     overflow: auto;
@@ -150,7 +150,7 @@ div.verbose div.content {
     margin-left: 10px;
     padding: 0 10px 10px 10px;
     width: 80%;
-    padding-left: 200px;
+    padding-left: 300px;
 }
 
 .linenos {
@@ -226,6 +226,15 @@ HTML_HEAD = """
         var box = document.getElementById(id);
         set_class_display(id, box.checked ? '' : 'none');
       }
+      function toggle_all(){
+        var elts = document.getElementsByTagName("input");
+        for (var i = 1; i < elts.length; i++) {           
+          var el = elts[i];
+          el.checked ? el.checked=false : el.checked=true;
+          toggle_class_visibility(el.id);        
+        }            
+      }
+
     </script>
   </head>
   <body onload="init_expandables()">
@@ -444,7 +453,7 @@ if __name__ == '__main__':
     # Make sure that the report directory is created if it doesn't exist.
     print('Creating %s directory' % options.report_dir)
     if not os.path.exists(options.report_dir):
-        os.mkdir(options.report_dir)
+        os.makedirs(options.report_dir)
 
     # Generate a HTML file with syntax highlighted source code for each
     # file that contains one or more errors.
@@ -568,6 +577,7 @@ if __name__ == '__main__':
         output_file.write(HTML_HEAD.replace('id="menu" dir="rtl"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
         output_file.write('       <table>')
         output_file.write('           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
+        output_file.write('<label><input type="checkbox" onclick="toggle_all()" checked/> Toggle all</label>')
         output_file.write(''.join(stat_html))
         output_file.write('           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
         output_file.write('       </table>')

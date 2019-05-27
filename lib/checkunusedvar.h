@@ -61,13 +61,6 @@ public:
         checkUnusedVar.checkFunctionVariableUsage();
     }
 
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        (void)tokenizer;
-        (void)settings;
-        (void)errorLogger;
-    }
-
     /** @brief %Check for unused function variables */
     void checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables);
     void checkFunctionVariableUsage();

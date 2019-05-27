@@ -215,6 +215,7 @@ private:
         TEST_CASE(functionArgs11);
         TEST_CASE(functionArgs12); // #7661
         TEST_CASE(functionArgs13); // #7697
+        TEST_CASE(functionArgs14); // #9055
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -293,9 +294,9 @@ private:
         TEST_CASE(symboldatabase70);
         TEST_CASE(symboldatabase71);
         TEST_CASE(symboldatabase72); // #8600
-        TEST_CASE(symboldatabase73); // #8603
         TEST_CASE(symboldatabase74); // #8838 - final
         TEST_CASE(symboldatabase75);
+        TEST_CASE(symboldatabase76); // #9056
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -357,6 +358,7 @@ private:
 
         TEST_CASE(lambda); // #5867
         TEST_CASE(lambda2); // #7473
+        TEST_CASE(lambda3);
 
         TEST_CASE(circularDependencies); // #6298
 
@@ -380,6 +382,8 @@ private:
         TEST_CASE(auto8);
         TEST_CASE(auto9); // #8044 (segmentation fault)
         TEST_CASE(auto10); // #8020
+        TEST_CASE(auto11); // #8964 - const auto startX = x;
+        TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
 
         TEST_CASE(unionWithConstructor);
     }
@@ -399,15 +403,19 @@ private:
         ASSERT_EQUALS(12U, v->dimension(0));
     }
 
-    void stlarray() const {
-        std::istringstream code("std::array<int, 20> arr;");
-        TokenList list(nullptr);
-        list.createTokens(code, "test.c");
-        list.front()->tokAt(3)->link(list.front()->tokAt(7));
-        Variable v(list.front()->next(), list.front(), list.back(), 0, Public, nullptr, nullptr, &settings1);
-        ASSERT(v.isArray());
-        ASSERT_EQUALS(1U, v.dimensions().size());
-        ASSERT_EQUALS(20U, v.dimension(0));
+    void stlarray() {
+        GET_SYMBOL_DB("std::array<int, (16 + 4)> arr;");
+        ASSERT(db != nullptr);
+        if (!db)
+            return;
+        ASSERT(db->variableList().size() == 2); // the first one is not used
+        const Variable * v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+        if (!v)
+            return;
+        ASSERT(v->isArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(20U, v->dimension(0));
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -2212,6 +2220,14 @@ private:
         }
     }
 
+    void functionArgs14() { // #7697
+        GET_SYMBOL_DB("void f(int (&a)[10], int (&b)[10]);");
+        (void)db;
+        const Function *func = tokenizer.tokens()->next()->function();
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(2, func ? func->argCount() : 0);
+    }
+
     void functionImplicitlyVirtual() {
         GET_SYMBOL_DB("class base { virtual void f(); };\n"
                       "class derived : base { void f(); };\n"
@@ -2418,7 +2434,7 @@ private:
               "public:\n"
               "    int f() { return C< ::D,int>::f(); }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (debug) Failed to instantiate template \"C\". The checking continues anyway.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void symboldatabase8() {
@@ -4144,26 +4160,6 @@ private:
         ASSERT(f && f->function() && f->function()->type == Function::eCopyConstructor);
     }
 
-    void symboldatabase73() { // #8603
-        GET_SYMBOL_DB("namespace swizzle {\n"
-                      "  template <comp> void swizzle(tvec2<f16>) {}\n"
-                      "  template <comp x, comp y> void swizzle(tvec2<f16> v) {}\n"
-                      "}");
-
-        ASSERT_EQUALS(4, db->scopeList.size());
-        ASSERT_EQUALS(2, db->functionScopes.size());
-
-        const Scope *f1 = db->functionScopes[0];
-        ASSERT_EQUALS(2, f1->bodyStart->linenr());
-        ASSERT_EQUALS(2, f1->bodyEnd->linenr());
-        ASSERT_EQUALS(2, f1->function->token->linenr());
-
-        const Scope *f2 = db->functionScopes[1];
-        ASSERT_EQUALS(3, f2->bodyStart->linenr());
-        ASSERT_EQUALS(3, f2->bodyEnd->linenr());
-        ASSERT_EQUALS(3, f2->function->token->linenr());
-    }
-
     void symboldatabase74() { // #8838 - final
         GET_SYMBOL_DB("class Base { virtual int f() const = 0; };\n"
                       "class Derived : Base { virtual int f() const final { return 6; } };");
@@ -4210,6 +4206,14 @@ private:
         ASSERT(f->function->isConst());
         ASSERT(f->function->hasTrailingReturnType());
         ASSERT(f->function->hasLvalRefQualifier());
+    }
+
+    void symboldatabase76() { // #9056
+        GET_SYMBOL_DB("namespace foo {\n"
+                      "  using namespace bar::baz;\n"
+                      "  auto func(int arg) -> bar::quux {}\n"
+                      "}");
+        ASSERT_EQUALS(2, db->mVariableList.size());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
@@ -5810,6 +5814,24 @@ private:
             ASSERT_EQUALS(Scope::eLambda, scope->type);
         }
     }
+
+
+    void lambda3() {
+        GET_SYMBOL_DB("void func() {\n"
+                      "    auto f = []() mutable {}\n"
+                      "}");
+
+        ASSERT(db && db->scopeList.size() == 3);
+        if (db && db->scopeList.size() == 3) {
+            std::list<Scope>::const_iterator scope = db->scopeList.begin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eFunction, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eLambda, scope->type);
+        }
+    }
+
     // #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"
     void circularDependencies() {
         check("template<template<class> class E,class D> class C : E<D> {\n"
@@ -5917,7 +5939,7 @@ private:
         ASSERT_EQUALS("const char *", typeOf("\"hello\" + 1;", "+"));
         ASSERT_EQUALS("const char",  typeOf("\"hello\"[1];", "["));
         ASSERT_EQUALS("const char",  typeOf(";*\"hello\";", "*"));
-        ASSERT_EQUALS("const short *", typeOf("L\"hello\" + 1;", "+"));
+        ASSERT_EQUALS("const wchar_t *", typeOf("L\"hello\" + 1;", "+"));
 
         // Variable calculations
         ASSERT_EQUALS("void *", typeOf("void *p; a = p + 1;", "+"));
@@ -5957,10 +5979,12 @@ private:
         ASSERT_EQUALS("const char *", typeOf("int x; double y; a = (b ? \"a\" : \"b\");", "?"));
         ASSERT_EQUALS("", typeOf("int x; double y; a = (b ? \"a\" : std::string(\"b\"));", "?"));
 
-        // Boolean operators
+        // Boolean operators/literals
         ASSERT_EQUALS("bool", typeOf("a > b;", ">"));
         ASSERT_EQUALS("bool", typeOf(";!b;", "!"));
         ASSERT_EQUALS("bool", typeOf("c = a && b;", "&&"));
+        ASSERT_EQUALS("bool", typeOf("a = false;", "false"));
+        ASSERT_EQUALS("bool", typeOf("a = true;", "true"));
 
         // shift => result has same type as lhs
         ASSERT_EQUALS("signed int", typeOf("int x; a = x << 1U;", "<<"));
@@ -5989,6 +6013,7 @@ private:
         ASSERT_EQUALS("long double", typeOf("a = (long double)32;", "("));
         ASSERT_EQUALS("char", typeOf("a = static_cast<char>(32);", "("));
         ASSERT_EQUALS("", typeOf("a = (unsigned x)0;", "("));
+        ASSERT_EQUALS("unsigned int", typeOf("a = unsigned(123);", "("));
 
         // sizeof..
         ASSERT_EQUALS("char", typeOf("sizeof(char);", "char"));
@@ -6062,10 +6087,22 @@ private:
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
         {
+            // PlatformType - wchar_t
+            Settings settingsWin64;
+            settingsWin64.platformType = Settings::Win64;
+            Library::PlatformType lpctstr;
+            lpctstr.mType = "wchar_t";
+            settingsWin64.library.mPlatforms[settingsWin64.platformString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            ValueType vt;
+            ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
+            ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
+        }
+        {
             // Container
             Settings sC;
             Library::Container c;
             c.startPattern = "C";
+            c.startPattern2 = "C !!::";
             sC.library.containers["C"] = c;
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new","test.cpp",&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(","test.cpp",&sC));
@@ -6075,6 +6112,7 @@ private:
             Settings set;
             Library::Container vector;
             vector.startPattern = "Vector";
+            vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
             set.library.containers["Vector"] = vector;
@@ -6093,6 +6131,7 @@ private:
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (std::nothrow) int[100];", "data"));
         ASSERT_EQUALS("const signed short", typeOf("short values[10]; void f() { for (const auto *x : values); }", "x"));
         ASSERT_EQUALS("signed int *", typeOf("MACRO(test) void test() { auto x = (int*)y; }", "x")); // #7931 (garbage?)
+        ASSERT_EQUALS("const signed int", typeOf("; const auto x = 3;", "x"));
 
         // Variable declaration
         ASSERT_EQUALS("char *", typeOf("; char abc[] = \"abc\";", "["));
@@ -6590,7 +6629,7 @@ private:
         autotok = Token::findsimplematch(autotok, "auto v3");
         ASSERT(db && autotok && autotok->valueType());
         if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, autotok->valueType()->constness);
+            ASSERT_EQUALS(1, autotok->valueType()->constness);
             ASSERT_EQUALS(1, autotok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
@@ -6598,7 +6637,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v3 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6616,7 +6655,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v4 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6634,7 +6673,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v5 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6680,7 +6719,7 @@ private:
         autotok = Token::findsimplematch(autotok, "auto v8");
         ASSERT(db && autotok && autotok->valueType());
         if (db && autotok && autotok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, autotok->valueType()->constness);
+            ASSERT_EQUALS(1, autotok->valueType()->constness);
             ASSERT_EQUALS(1, autotok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
@@ -6688,7 +6727,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v8 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6706,7 +6745,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v9 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6724,7 +6763,7 @@ private:
         vartok = Token::findsimplematch(autotok, "v10 =");
         ASSERT(db && vartok && vartok->valueType());
         if (db && vartok && vartok->valueType()) {
-            TODO_ASSERT_EQUALS(1, 0, vartok->valueType()->constness);
+            ASSERT_EQUALS(1, vartok->valueType()->constness);
             ASSERT_EQUALS(1, vartok->valueType()->pointer);
             ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
             ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -6813,6 +6852,37 @@ private:
             ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
             ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
         }
+    }
+
+    void auto11() {
+        GET_SYMBOL_DB("void f() {\n"
+                      "  const auto v1 = 3;\n"
+                      "  const auto *v2 = 0;\n"
+                      "}");
+
+        (void)db;
+
+        const Token *v1tok = Token::findsimplematch(tokenizer.tokens(), "v1");
+        ASSERT(v1tok && v1tok->variable() && v1tok->variable()->isConst());
+
+        const Token *v2tok = Token::findsimplematch(tokenizer.tokens(), "v2");
+        ASSERT(v2tok && v2tok->variable() && !v2tok->variable()->isConst());
+    }
+
+    void auto12() {
+        GET_SYMBOL_DB("void f(const std::string &x) {\n"
+                      "  auto y = x;\n"
+                      "  if (y.empty()) {}\n"
+                      "}");
+        (void)db;
+
+        const Token *tok;
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "y =");
+        ASSERT(tok && tok->valueType() && tok->valueType()->container);
+
+        tok = Token::findsimplematch(tokenizer.tokens(), "y .");
+        ASSERT(tok && tok->valueType() && tok->valueType()->container);
     }
 
     void unionWithConstructor() {

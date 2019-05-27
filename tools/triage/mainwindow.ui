@@ -51,6 +51,40 @@
       <item>
        <widget class="QListWidget" name="results"/>
       </item>
+      <item>
+       <widget class="QCheckBox" name="random100">
+        <property name="text">
+         <string>Show 100 random results</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Version</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="version"/>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
      </layout>
     </item>
     <item>
@@ -96,7 +130,7 @@
      <x>0</x>
      <y>0</y>
      <width>1057</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
@@ -168,10 +202,44 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>version</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>filter(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>98</x>
+     <y>489</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>493</x>
+     <y>39</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>random100</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>refreshResults()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>30</x>
+     <y>464</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>3</x>
+     <y>460</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>loadFile()</slot>
   <slot>showResult(QListWidgetItem*)</slot>
   <slot>loadFromClipboard()</slot>
+  <slot>filter(QString)</slot>
+  <slot>refreshResults()</slot>
  </slots>
 </ui>

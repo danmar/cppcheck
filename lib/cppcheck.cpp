@@ -32,6 +32,7 @@
 #include "tokenlist.h"
 #include "version.h"
 
+#include <picojson.h>
 #include <simplecpp.h>
 #include <tinyxml2.h>
 #include <algorithm>
@@ -40,6 +41,8 @@
 #include <set>
 #include <stdexcept>
 #include <vector>
+#include <memory>
+#include <iostream> // <- TEMPORARY
 
 #ifdef HAVE_RULES
 #define PCRE_STATIC
@@ -53,6 +56,58 @@ static TimerResults S_timerResults;
 
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
+
+namespace {
+    struct AddonInfo {
+        std::string name;
+        std::string scriptFile;
+        std::string args;
+
+        std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
+            if (!endsWith(fileName, ".json", 5)) {
+                name = fileName;
+                scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
+                return "";
+            }
+            std::ifstream fin(fileName);
+            if (!fin.is_open())
+                return "Failed to open " + fileName;
+            picojson::value json;
+            fin >> json;
+            if (!json.is<picojson::object>())
+                return "Loading " + fileName + " failed. Bad json.";
+            picojson::object obj = json.get<picojson::object>();
+            if (obj.count("args")) {
+                if (!obj["args"].is<picojson::array>())
+                    return "Loading " + fileName + " failed. args must be array.";
+                for (const picojson::value &v : obj["args"].get<picojson::array>())
+                    args += " " + v.get<std::string>();
+            }
+            name = obj["script"].get<std::string>();
+            scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
+            return "";
+        }
+    };
+}
+
+static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
+{
+    const std::string cmd = "python " + addonInfo.scriptFile + " --cli" + addonInfo.args + " " + dumpFile;
+
+#ifdef _WIN32
+    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+#else
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+#endif
+    if (!pipe)
+        return "";
+    char buffer[1024];
+    std::string result;
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
+        result += buffer;
+    }
+    return result;
+}
 
 static std::vector<std::string> split(const std::string &str, const std::string &sep)
 {
@@ -160,7 +215,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
-    bool internalErrorFound(false);
     try {
         Preprocessor preprocessor(mSettings, this);
         std::set<std::string> configurations;
@@ -216,9 +270,16 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         // write dump file xml prolog
         std::ofstream fdump;
-        if (mSettings.dump) {
-            const std::string dumpfile(mSettings.dumpFile.empty() ? (filename + ".dump") : mSettings.dumpFile);
-            fdump.open(dumpfile);
+        std::string dumpFile;
+        if (mSettings.dump || !mSettings.addons.empty()) {
+            if (!mSettings.dumpFile.empty())
+                dumpFile = mSettings.dumpFile;
+            else if (!mSettings.dump && !mSettings.buildDir.empty())
+                dumpFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, filename, "") + ".dump";
+            else
+                dumpFile = filename + ".dump";
+
+            fdump.open(dumpFile);
             if (fdump.is_open()) {
                 fdump << "<?xml version=\"1.0\"?>" << std::endl;
                 fdump << "<dumps>" << std::endl;
@@ -238,6 +299,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "    <tok "
                           << "fileIndex=\"" << tok->location.fileIndex << "\" "
                           << "linenr=\"" << tok->location.line << "\" "
+                          << "col=\"" << tok->location.col << "\" "
                           << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
                           << "/>" << std::endl;
                 }
@@ -247,7 +309,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1);
-        if (mSettings.dump && fdump.is_open()) {
+        if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
             mSettings.nomsg.dump(fdump);
         }
         tokens1.removeComments();
@@ -409,7 +471,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     continue;
 
                 // dump xml if --dump
-                if (mSettings.dump && fdump.is_open()) {
+                if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
                     fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
                     preprocessor.dump(fdump);
                     mTokenizer.dump(fdump);
@@ -435,18 +497,16 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     checkUnusedFunctions.parseTokens(mTokenizer, filename.c_str(), &mSettings);
 
                 // simplify more if required, skip rest of iteration if failed
-                if (mSimplify) {
-                    if (!mSettings.experimentalFast) {
-                        // if further simplification fails then skip rest of iteration
-                        Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
-                        result = mTokenizer.simplifyTokenList2();
-                        timer3.Stop();
-                        if (!result)
-                            continue;
-                    }
+                if (mSimplify && hasRule("simple")) {
+                    // if further simplification fails then skip rest of iteration
+                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &S_timerResults);
+                    result = mTokenizer.simplifyTokenList2();
+                    timer3.Stop();
+                    if (!result)
+                        continue;
 
-                    // Check simplified tokens
-                    checkSimplifiedTokens(mTokenizer);
+                    if (!mSettings.terminated())
+                        executeRules("simple", mTokenizer);
                 }
 
             } catch (const simplecpp::Output &o) {
@@ -477,11 +537,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  e.id,
                                                  false);
 
-                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity)) {
+                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity))
                     reportErr(errmsg);
-                    if (!mSuppressInternalErrorFound)
-                        internalErrorFound = true;
-                }
             }
         }
 
@@ -506,8 +563,87 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // dumped all configs, close root </dumps> element now
-        if (mSettings.dump && fdump.is_open())
+        if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open())
             fdump << "</dumps>" << std::endl;
+
+        if (!mSettings.addons.empty()) {
+            fdump.close();
+
+            for (const std::string &addon : mSettings.addons) {
+                struct AddonInfo addonInfo;
+                const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
+                if (!failedToGetAddonInfo.empty()) {
+                    reportOut(failedToGetAddonInfo);
+                    continue;
+                }
+                const std::string &results = executeAddon(addonInfo, dumpFile);
+                for (std::string::size_type pos = 0; pos < results.size();) {
+                    const std::string::size_type pos2 = results.find("\n", pos);
+                    if (pos2 == std::string::npos)
+                        break;
+
+                    const std::string::size_type pos1 = pos;
+                    pos = pos2 + 1;
+
+                    if (pos1 + 5 > pos2)
+                        continue;
+                    if (results[pos1] != '[')
+                        continue;
+                    if (results[pos2-1] != ']')
+                        continue;
+
+                    // Example line:
+                    // [test.cpp:123]: (style) some problem [abc-someProblem]
+                    const std::string line = results.substr(pos1, pos2-pos1);
+
+                    // Line must start with [filename:line:column]: (
+                    const std::string::size_type loc1 = 1;
+                    const std::string::size_type loc4 = line.find("]");
+                    if (loc4 + 5 >= line.size() || line.compare(loc4, 3, "] (", 0, 3) != 0)
+                        continue;
+                    const std::string::size_type loc3 = line.rfind(':', loc4);
+                    if (loc3 == std::string::npos)
+                        continue;
+                    const std::string::size_type loc2 = line.rfind(':', loc3 - 1);
+                    if (loc2 == std::string::npos)
+                        continue;
+
+                    // Then there must be a (severity)
+                    const std::string::size_type sev1 = loc4 + 3;
+                    const std::string::size_type sev2 = line.find(")", sev1);
+                    if (sev2 == std::string::npos)
+                        continue;
+
+                    // line must end with [addon-x]
+                    const std::string::size_type id1 = line.rfind("[" + addonInfo.name + "-");
+                    if (id1 == std::string::npos || id1 < sev2)
+                        continue;
+
+                    ErrorLogger::ErrorMessage errmsg;
+
+                    const std::string filename = line.substr(loc1, loc2-loc1);
+                    const int lineNumber = std::atoi(line.c_str() + loc2 + 1);
+                    const int column = std::atoi(line.c_str() + loc3 + 1);
+                    errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+                    errmsg._callStack.back().col = column;
+
+                    errmsg._id = line.substr(id1+1, line.size()-id1-2);
+                    std::string text = line.substr(sev2 + 2, id1 - sev2 - 2);
+                    if (text[0] == ' ')
+                        text = text.substr(1);
+                    if (endsWith(text, " ", 1))
+                        text = text.erase(text.size() - 1);
+                    errmsg.setmsg(text);
+                    const std::string sev = line.substr(sev1, sev2-sev1);
+                    errmsg._severity = Severity::fromString(sev);
+                    if (errmsg._severity == Severity::SeverityType::none)
+                        continue;
+                    errmsg.file0 = filename;
+
+                    reportErr(errmsg);
+                }
+            }
+        }
 
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
@@ -528,9 +664,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     mErrorList.clear();
-    if (internalErrorFound && (mExitCode==0)) {
-        mExitCode = 1;
-    }
 
     return mExitCode;
 }
@@ -605,27 +738,20 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 }
 
 //---------------------------------------------------------------------------
-// CppCheck - A function that checks a simplified token list
-//---------------------------------------------------------------------------
 
-void CppCheck::checkSimplifiedTokens(const Tokenizer &tokenizer)
+bool CppCheck::hasRule(const std::string &tokenlist) const
 {
-    // call all "runSimplifiedChecks" in all registered Check classes
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
-        if (mSettings.terminated())
-            return;
-
-        if (tokenizer.isMaxTime())
-            return;
-
-        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", mSettings.showtime, &S_timerResults);
-        (*it)->runSimplifiedChecks(&tokenizer, &mSettings, this);
-        timerSimpleChecks.Stop();
+#ifdef HAVE_RULES
+    for (const Settings::Rule &rule : mSettings.rules) {
+        if (rule.tokenlist == tokenlist)
+            return true;
     }
-
-    if (!mSettings.terminated())
-        executeRules("simple", tokenizer);
+#else
+    (void)tokenlist;
+#endif
+    return false;
 }
+
 
 #ifdef HAVE_RULES
 
@@ -767,15 +893,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
     (void)tokenizer;
 
 #ifdef HAVE_RULES
-    // Are there rules to execute?
-    bool isrule = false;
-    for (std::list<Settings::Rule>::const_iterator it = mSettings.rules.begin(); it != mSettings.rules.end(); ++it) {
-        if (it->tokenlist == tokenlist)
-            isrule = true;
-    }
-
     // There is no rule to execute
-    if (isrule == false)
+    if (!hasRule(tokenlist))
         return;
 
     // Write all tokens in a string that can be parsed by pcre
@@ -784,8 +903,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         ostr << " " << tok->str();
     const std::string str(ostr.str());
 
-    for (std::list<Settings::Rule>::const_iterator it = mSettings.rules.begin(); it != mSettings.rules.end(); ++it) {
-        const Settings::Rule &rule = *it;
+    for (const Settings::Rule &rule : mSettings.rules) {
         if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
 
@@ -997,8 +1115,9 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         }
     }
 
-    if (!mSettings.nofail.isSuppressed(errorMessage) && (mUseGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))
+    if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
+    }
 
     mErrorList.push_back(errmsg);
 

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest>
 #include <QObject>
 #include "testprojectfile.h"
 #include "projectfile.h"
@@ -93,6 +92,20 @@ void TestProjectFile::loadSimpleNoroot()
     QStringList defines = pfile.getDefines();
     QCOMPARE(defines.size(), 1);
     QCOMPARE(defines[0], QString("FOO"));
+}
+
+void TestProjectFile::checkSuppressions()
+{
+    ProjectFile projectFile("/foo/bar/test.cppcheck");
+    QList<Suppressions::Suppression> suppressions;
+    suppressions.append(Suppressions::Suppression("id", "file.c"));
+    suppressions.append(Suppressions::Suppression("id", "/abc/file.c"));
+    projectFile.setSuppressions(suppressions);
+
+    const QList<Suppressions::Suppression> s = projectFile.getCheckSuppressions();
+    QCOMPARE(s.size(), 2);
+    QCOMPARE(s[0].fileName, std::string("/foo/bar/file.c"));
+    QCOMPARE(s[1].fileName, std::string("/abc/file.c"));
 }
 
 QTEST_MAIN(TestProjectFile)

@@ -66,11 +66,6 @@ public:
 
         // --check-library : functions with nonmatching configuration
         checkFunctions.checkLibraryMatchFunctions();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
         checkFunctions.checkProhibitedFunctions();
         checkFunctions.invalidFunctionUsage();

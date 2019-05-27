@@ -83,25 +83,17 @@ public:
         checkOther.checkFuncArgNamesDifferent();
         checkOther.checkShadowVariables();
         checkOther.checkConstArgument();
+        checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
-    }
-
-    /** @brief Run checks against the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckOther checkOther(tokenizer, settings, errorLogger);
-
-        // Checks
-        checkOther.clarifyCalculation();
-        checkOther.clarifyStatement();
-        checkOther.checkPassByReference();
-        checkOther.checkCastIntToCharAndBack();
-
-        checkOther.checkMisusedScopedObject();
         checkOther.checkPipeParameterSize();
-
-        checkOther.checkInvalidFree();
         checkOther.checkRedundantCopy();
+        checkOther.clarifyCalculation();
+        checkOther.checkPassByReference();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
+        checkOther.checkInvalidFree();
+        checkOther.clarifyStatement();
+        checkOther.checkCastIntToCharAndBack();
+        checkOther.checkMisusedScopedObject();
         checkOther.checkAccessOfMovedVariable();
     }
 
@@ -168,7 +160,7 @@ public:
 
     /** @brief %Check for free() operations on invalid memory locations */
     void checkInvalidFree();
-    void invalidFreeError(const Token *tok, bool inconclusive);
+    void invalidFreeError(const Token *tok, const std::string &allocation, bool inconclusive);
 
     /** @brief %Check for code creating redundant copies */
     void checkRedundantCopy();
@@ -213,6 +205,8 @@ public:
     void checkShadowVariables();
 
     void checkConstArgument();
+
+    void checkComparePointers();
 
 private:
     // Error messages..
@@ -267,6 +261,7 @@ private:
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
     void shadowError(const Token *var, const Token *shadowed, bool shadowVar);
     void constArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value);
+    void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);
@@ -281,7 +276,7 @@ private:
         c.negativeBitwiseShiftError(nullptr, 2);
         c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
         c.raceAfterInterlockedDecrementError(nullptr);
-        c.invalidFreeError(nullptr, false);
+        c.invalidFreeError(nullptr, "malloc", false);
 
         //performance
         c.redundantCopyError(nullptr,  "varname");
@@ -331,6 +326,7 @@ private:
         c.shadowError(nullptr, nullptr, false);
         c.shadowError(nullptr, nullptr, true);
         c.constArgumentError(nullptr, nullptr, nullptr);
+        c.comparePointersError(nullptr, nullptr, nullptr);
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);

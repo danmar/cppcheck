@@ -1254,6 +1254,10 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (!scope.functionList.empty())
             continue;
 
+        // Bail out for template struct, members might be used in non-matching instantiations
+        if (scope.className.find("<") != std::string::npos)
+            continue;
+
         // bail out if struct is inherited
         bool bailout = false;
         for (const Scope &derivedScope : symbolDatabase->scopeList) {

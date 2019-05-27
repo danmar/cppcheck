@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest>
 #include <QObject>
 #include "testxmlreportv2.h"
 #include "xmlreportv2.h"

@@ -60,37 +60,34 @@ public:
         }
 
         CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.erase();
+        checkStl.if_find();
+        checkStl.checkFindInsert();
+        checkStl.iterators();
+        checkStl.mismatchingContainers();
+        checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
-    }
-
-    /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
-        if (!tokenizer->isCPP()) {
-            return;
-        }
-
-        CheckStl checkStl(tokenizer, settings, errorLogger);
+        checkStl.pushback();
+        checkStl.redundantCondition();
+        checkStl.string_c_str();
+        checkStl.uselessCalls();
+        checkStl.useStlAlgorithm();
 
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
+
         checkStl.iterators();
         checkStl.invalidContainer();
         checkStl.mismatchingContainers();
-        checkStl.erase();
+        // checkStl.erase();
         // checkStl.pushback();
+        
         checkStl.stlBoundaries();
-        checkStl.if_find();
-        checkStl.string_c_str();
-        checkStl.checkAutoPointer();
-        checkStl.uselessCalls();
         checkStl.checkDereferenceInvalidIterator();
 
         // Style check
         checkStl.size();
-        checkStl.redundantCondition();
-        checkStl.missingComparison();
-        checkStl.useStlAlgorithm();
     }
 
     /** Accessing container out of bounds using ValueFlow */
@@ -145,6 +142,8 @@ public:
     /** if (a.find(x)) - possibly incorrect condition */
     void if_find();
 
+    void checkFindInsert();
+
     /**
      * Suggest using empty() instead of checking size() against zero for containers.
      * Item 4 from Scott Meyers book "Effective STL".
@@ -166,9 +165,6 @@ public:
 
     /** Check for common mistakes when using the function string::c_str() */
     void string_c_str();
-
-    /** @brief %Check for use and copy auto pointer */
-    void checkAutoPointer();
 
     /** @brief %Check calls that using them is useless */
     void uselessCalls();
@@ -201,7 +197,7 @@ private:
     void string_c_strReturn(const Token* tok);
     void string_c_strParam(const Token* tok, unsigned int number);
 
-    void outOfBoundsError(const Token *tok, const ValueFlow::Value *containerSize, const ValueFlow::Value *index);
+    void outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue);
     void outOfBoundsIndexExpressionError(const Token *tok, const Token *index);
     void stlOutOfBoundsError(const Token* tok, const std::string& num, const std::string& var, bool at);
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
@@ -218,14 +214,10 @@ private:
     void invalidPointerError(const Token* tok, const std::string& func, const std::string& pointer_name);
     void stlBoundariesError(const Token* tok);
     void if_findError(const Token* tok, bool str);
+    void checkFindInsertError(const Token *tok);
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
     void invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath);
-
-    void autoPointerError(const Token* tok);
-    void autoPointerContainerError(const Token* tok);
-    void autoPointerArrayError(const Token* tok);
-    void autoPointerMallocError(const Token* tok, const std::string& allocFunction);
 
     void uselessCallsReturnValueError(const Token* tok, const std::string& varname, const std::string& function);
     void uselessCallsSwapError(const Token* tok, const std::string& varname);
@@ -244,7 +236,7 @@ private:
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
-        c.outOfBoundsError(nullptr, nullptr, nullptr);
+        c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
         c.invalidIteratorError(nullptr, "iterator");
         c.iteratorsError(nullptr, "container1", "container2");
         c.iteratorsError(nullptr, nullptr, "container0", "container1");
@@ -263,6 +255,7 @@ private:
         c.stlBoundariesError(nullptr);
         c.if_findError(nullptr, false);
         c.if_findError(nullptr, true);
+        c.checkFindInsertError(nullptr);
         c.string_c_strError(nullptr);
         c.string_c_strReturn(nullptr);
         c.string_c_strParam(nullptr, 0);
@@ -270,10 +263,6 @@ private:
         c.sizeError(nullptr);
         c.missingComparisonError(nullptr, nullptr);
         c.redundantIfRemoveError(nullptr);
-        c.autoPointerError(nullptr);
-        c.autoPointerContainerError(nullptr);
-        c.autoPointerArrayError(nullptr);
-        c.autoPointerMallocError(nullptr, "malloc");
         c.uselessCallsReturnValueError(nullptr, "str", "find");
         c.uselessCallsSwapError(nullptr, "str");
         c.uselessCallsSubstrError(nullptr, false);
@@ -298,9 +287,9 @@ private:
                "- for vectors: using iterator/pointer after push_back has been used\n"
                "- optimisation: use empty() instead of size() to guarantee fast code\n"
                "- suspicious condition when using find\n"
+               "- unnecessary searching in associative containers\n"
                "- redundant condition\n"
                "- common mistakes when using string::c_str()\n"
-               "- using auto pointer (auto_ptr)\n"
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
                "- reading from empty STL container\n"

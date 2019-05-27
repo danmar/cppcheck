@@ -12,6 +12,7 @@
 #include <QtPlugin>
 #include <QFile>
 #include <cstdio>
+#include <QCoreApplication>
 
 
 void QString1(QString s)
@@ -38,6 +39,31 @@ public:
     explicit MacroTest1(QObject *parent = 0);
     ~MacroTest1();
 };
+
+class MacroTest2 {
+    Q_DECLARE_TR_FUNCTIONS(MacroTest2)
+
+public:
+    MacroTest2();
+    ~MacroTest2();
+};
+
+void MacroTest2_test()
+{
+    // TODO: remove suppression when #9002 is fixed
+    // cppcheck-suppress checkLibraryFunction
+    QString str = MacroTest2::tr("hello");
+    QByteArray ba = str.toLatin1();
+    printf(ba.data());
+
+#ifndef QT_NO_DEPRECATED
+    // TODO: remove suppression when #9002 is fixed
+    // cppcheck-suppress checkLibraryFunction
+    str = MacroTest2::trUtf8("test2");
+    ba = str.toLatin1();
+    printf(ba.data());
+#endif
+}
 
 void validCode(int * pIntPtr)
 {

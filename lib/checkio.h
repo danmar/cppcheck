@@ -54,12 +54,6 @@ public:
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
-    }
-
-    /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        CheckIO checkIO(tokenizer, settings, errorLogger);
-
         checkIO.checkCoutCerrMisusage();
         checkIO.checkFileUsage();
         checkIO.invalidScanf();

@@ -33,7 +33,7 @@
 namespace CTU {
     class CPPCHECKLIB FileInfo : public Check::FileInfo {
     public:
-        enum InvalidValueType { null, uninit };
+        enum InvalidValueType { null, uninit, bufferOverflow };
 
         std::string toString() const OVERRIDE;
 
@@ -47,11 +47,12 @@ namespace CTU {
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(const std::string &myId, unsigned int myArgNr, const std::string &myArgumentName, const Location &location) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location) {}
+            UnsafeUsage(const std::string &myId, unsigned int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
             std::string myId;
             unsigned int myArgNr;
             std::string myArgumentName;
             Location location;
+            MathLib::bigint value;
             std::string toString() const;
         };
 
@@ -126,7 +127,7 @@ namespace CTU {
     /** @brief Parse current TU and extract file info */
     CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer *tokenizer);
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value));
 
     CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }

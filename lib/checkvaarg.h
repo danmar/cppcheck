@@ -48,7 +48,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckVaarg check(tokenizer, settings, errorLogger);
         check.va_start_argument();
         check.va_list_usage();

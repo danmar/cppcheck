@@ -42,7 +42,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         message(FATAL_ERROR "${PROJECT_NAME} c++11 support requires g++ 4.6 or greater, but it is ${GCC_VERSION}")
     endif ()
 
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wabi")
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wcast-qual")                # Cast for removing type qualifiers
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wconversion")               # Implicit conversions that may alter a value
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wfloat-equal")              # Floating values used in equality comparisons

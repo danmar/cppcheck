@@ -54,6 +54,30 @@ static const struct CWE CWE676(676U);
 static const struct CWE CWE908(908U);
 static const struct CWE CWE825(825U);
 
+// get ast parent, skip possible address-of and casts
+static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok, bool *unknown)
+{
+    if (unknown)
+        *unknown = false;
+    if (!vartok)
+        return nullptr;
+    const Token *parent = vartok->astParent();
+    while (Token::Match(parent, ".|::"))
+        parent = parent->astParent();
+    if (!parent)
+        return nullptr;
+    if (parent->isUnaryOp("&"))
+        parent = parent->astParent();
+    else if (parent->str() == "&" && vartok == parent->astOperand2() && Token::Match(parent->astOperand1()->previous(), "( %type% )")) {
+        parent = parent->astParent();
+        if (unknown)
+            *unknown = true;
+    }
+    while (parent && parent->isCast())
+        parent = parent->astParent();
+    return parent;
+}
+
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -619,19 +643,15 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 // variable is seen..
                 if (tok->varId() == var.declarationId()) {
                     if (!membervar.empty()) {
-                        if (Token::Match(tok, "%name% . %name% ;|%cop%") && tok->strAt(2) == membervar)
+                        if (!suppressErrors && Token::Match(tok, "%name% . %name% ;|%cop%") && tok->strAt(2) == membervar)
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
-                        else
-                            return true;
                     }
 
                     // Use variable
                     else if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc))
                         uninitvarError(tok, tok->str(), *alloc);
 
-                    else
-                        // assume that variable is assigned
-                        return true;
+                    return true;
                 }
 
                 else if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
@@ -699,16 +719,20 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                if (isMemberVariableUsage(tok, var.isPointer(), *alloc, membervar))
+                if (isMemberVariableUsage(tok, var.isPointer(), *alloc, membervar)) {
                     uninitStructMemberError(tok, tok->str() + "." + membervar);
+                    return true;
+                }
 
                 else if (Token::Match(tok->previous(), "[(,] %name% [,)]"))
                     return true;
 
             } else {
                 // Use variable
-                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc))
+                if (!suppressErrors && isVariableUsage(tok, var.isPointer(), *alloc)) {
                     uninitvarError(tok, tok->str(), *alloc);
+                    return true;
+                }
 
                 else {
                     if (tok->strAt(1) == "=")
@@ -901,19 +925,11 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     // Accessing Rvalue member using "." or "->"
     if (Token::Match(vartok->previous(), "!!& %var% .")) {
         // Is struct member passed to function?
-        if (!pointer && Token::Match(vartok->previous(), "[,(] %name% . %name%")) {
-            // TODO: there are FN currently:
-            // - should only return false if struct member is (or might be) array.
-            // - should only return false if function argument is (or might be) non-const pointer or reference
-            const Token *tok2 = vartok->next();
-            do {
-                tok2 = tok2->tokAt(2);
-            } while (Token::Match(tok2, ". %name%"));
-            if (Token::Match(tok2, "[,)]"))
-                return false;
-        } else if (pointer && alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% (")) {
+        if (!pointer)
+            return false;
+
+        if (pointer && alloc != CTOR_CALL && Token::Match(vartok, "%name% . %name% ("))
             return true;
-        }
 
         bool assignment = false;
         const Token* parent = vartok->astParent();
@@ -935,10 +951,20 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
     }
 
     // Passing variable to function..
-    if (Token::Match(vartok->previous(), "[(,] %name% [,)]") || Token::Match(vartok->tokAt(-2), "[(,] & %name% [,)]")) {
-        const int use = isFunctionParUsage(vartok, pointer, alloc);
-        if (use >= 0)
-            return (use>0);
+    {
+        bool unknown = false;
+        const Token *possibleParent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
+        if (Token::Match(possibleParent, "[(,]")) {
+            if (unknown)
+                return false; // TODO: output some info message?
+            const int use = isFunctionParUsage(vartok, pointer, alloc);
+            if (use >= 0)
+                return (use>0);
+        }
+
+        else if (!pointer && Token::simpleMatch(possibleParent, "=") && vartok->astParent()->str() == "&") {
+            return false;
+        }
     }
 
     if (Token::Match(vartok->previous(), "++|--|%cop%")) {
@@ -1051,7 +1077,9 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
  */
 int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc) const
 {
-    if (!Token::Match(vartok->previous(), "[(,]") && !Token::Match(vartok->tokAt(-2), "[(,] &"))
+    bool unknown = false;
+    const Token *parent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
+    if (unknown || !Token::Match(parent, "[(,]"))
         return -1;
 
     // locate start parentheses in function call..
@@ -1159,6 +1187,16 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
             if (Token::Match(ftok, "%name% (")) {
                 // check how function handle uninitialized data arguments..
                 const Function *function = ftok->function();
+
+                if (!function && mSettings) {
+                    // Function definition not seen, check if direction is specified in the library configuration
+                    const Library::ArgumentChecks::Direction argDirection = mSettings->library.getArgDirection(ftok, 1 + argumentNumber);
+                    if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
+                        return false;
+                    else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT)
+                        return true;
+                }
+
                 const Variable *arg      = function ? function->getArgumentVar(argumentNumber) : nullptr;
                 const Token *argStart    = arg ? arg->typeStartToken() : nullptr;
                 while (argStart && argStart->previous() && argStart->previous()->isName())
@@ -1304,8 +1342,9 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
     return checker.getFileInfo();
 }
 
-static bool isVariableUsage(const Check *check, const Token *vartok)
+static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
+    (void)value;
     const CheckUninitVar *c = dynamic_cast<const CheckUninitVar *>(check);
     return c && c->isVariableUsage(vartok, true, CheckUninitVar::Alloc::ARRAY);
 }
