@@ -1882,16 +1882,16 @@ private:
         // ticket #735
         check("void f()\n"
               "{\n"
-              "    vector<int> v;\n"
+              "    std::vector<int> v;\n"
               "    v.push_back(1);\n"
               "    v.push_back(2);\n"
-              "    for (vector<int>::iterator it = v.begin(); it != v.end(); ++it)\n"
+              "    for (std::vector<int>::iterator it = v.begin(); it != v.end(); ++it)\n"
               "    {\n"
               "        if (*it == 1)\n"
               "            v.push_back(10);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) After push_back(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:6] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:8]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
 
         check("void f()\n"
               "{\n"
