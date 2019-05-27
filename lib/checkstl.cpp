@@ -246,6 +246,7 @@ void CheckStl::outOfBoundsIndexExpressionError(const Token *tok, const Token *in
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
+    return;
     reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, false);
 }
 
@@ -1164,6 +1165,7 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
+    return;
     reportError(tok, Severity::error, "invalidIterator2",
                 "$symbol:" + func + "\n"
                 "$symbol:" + iterator_name + "\n"
@@ -1174,6 +1176,7 @@ void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, c
 // Error message for bad iterator usage..
 void CheckStl::invalidPointerError(const Token *tok, const std::string &func, const std::string &pointer_name)
 {
+    return;
     reportError(tok, Severity::error, "invalidPointer",
                 "$symbol:" + func + "\n"
                 "$symbol:" + pointer_name + "\n"

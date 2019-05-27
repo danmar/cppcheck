@@ -77,12 +77,9 @@ public:
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
 
-        checkStl.iterators();
         checkStl.invalidContainer();
         checkStl.mismatchingContainers();
-        // checkStl.erase();
-        // checkStl.pushback();
-        
+
         checkStl.stlBoundaries();
         checkStl.checkDereferenceInvalidIterator();
 
