@@ -4436,6 +4436,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove redundant parentheses
     simplifyRedundantParentheses();
 
+    if (isCPP())
+        simplifyTypeIntrinsics();
+
     if (!isC()) {
         // Handle templates..
         if (mTimerResults) {
@@ -7935,6 +7938,56 @@ bool Tokenizer::simplifyRedundantParentheses()
         }
     }
     return ret;
+}
+
+void Tokenizer::simplifyTypeIntrinsics()
+{
+    static const std::unordered_map<std::string, std::string> intrinsics = {
+        { "__has_nothrow_assign", "has_nothrow_assign" },
+        { "__has_nothrow_constructor", "has_nothrow_constructor" },
+        { "__has_nothrow_copy", "has_nothrow_copy" },
+        { "__has_trivial_assign", "has_trivial_assign" },
+        { "__has_trivial_constructor", "has_trivial_constructor" },
+        { "__has_trivial_copy", "has_trivial_copy" },
+        { "__has_trivial_destructor", "has_trivial_destructor" },
+        { "__has_virtual_destructor", "has_virtual_destructor" },
+        { "__is_abstract", "is_abstract" },
+        { "__is_aggregate", "is_aggregate" },
+        { "__is_assignable", "is_assignable" },
+        { "__is_base_of", "is_base_of" },
+        { "__is_class", "is_class" },
+        { "__is_constructible", "is_constructible" },
+        { "__is_convertible_to", "is_convertible_to" },
+        { "__is_destructible", "is_destructible" },
+        { "__is_empty", "is_empty" },
+        { "__is_enum", "is_enum" },
+        { "__is_final", "is_final" },
+        { "__is_nothrow_assignable", "is_nothrow_assignable" },
+        { "__is_nothrow_constructible", "is_nothrow_constructible" },
+        { "__is_nothrow_destructible", "is_nothrow_destructible" },
+        { "__is_pod", "is_pod" },
+        { "__is_polymorphic", "is_polymorphic" },
+        { "__is_trivially_assignable", "is_trivially_assignable" },
+        { "__is_trivially_constructible", "is_trivially_constructible" },
+        { "__is_union", "is_union" },
+    };
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        auto p = intrinsics.find(tok->str());
+        if (p == intrinsics.end())
+            continue;
+        Token * end = tok->next()->link();
+        Token * prev = tok->previous();
+        tok->str(p->second);
+        prev->insertToken("::");
+        prev->insertToken("std");
+        tok->next()->str("<");
+        end->str(">");
+        end->insertToken("}");
+        end->insertToken("{");
+        Token::createMutualLinks(end->tokAt(1), end->tokAt(2));
+    }
 }
 
 void Tokenizer::simplifyCharAt()
