@@ -2007,8 +2007,7 @@ private:
               "        *it;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) After insert(), the iterator 'it' may be invalid.\n"
-                      "[test.cpp:9]: (error) After insert(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:9]: (error) Using iterator to local container 'vec' that may be invalid.\n", errout.str());
     }
 
     void pushback13() {
@@ -2075,8 +2074,8 @@ private:
               "        i = bars.insert(i, bar);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) After insert(), the iterator 'i' may be invalid.\n"
-                      "[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Using iterator to local container 'bars' that may be invalid.\n"
+                      "[test.cpp:2] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:3]: (error) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
 
         check("void* f(const std::vector<Bar>& bars) {\n"
               "    std::vector<Bar>::iterator i = bars.begin();\n"
