@@ -81,6 +81,7 @@ private:
 
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowAfterConditionSeveralNot);
         TEST_CASE(valueFlowForwardCompoundAssign);
         TEST_CASE(valueFlowForwardCorrelatedVariables);
         TEST_CASE(valueFlowForwardModifiedVariables);
@@ -2242,6 +2243,37 @@ private:
                "  }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 0));
+    }
+
+    void valueFlowAfterConditionSeveralNot() {
+        const char *code;
+
+        code = "int f(int x, int y) {\n"
+               "    if (x!=0) {}\n"
+               "      return y/x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+         code = "int f(int x, int y) {\n"
+               "    if (!!(x != 0)) {\n"
+               "      return y/x;\n"
+               "}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "int f(int x, int y) {\n"
+               "    if (!!!(x != 0)) {\n"
+               "      return y/x;\n"
+               "}\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "int f(int x, int y) {\n"
+               "    if (!!!!(x != 0)) {\n"
+               "      return y/x;\n"
+               "}\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowForwardCompoundAssign() {

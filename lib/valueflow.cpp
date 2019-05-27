@@ -3749,12 +3749,16 @@ struct ValueFlowConditionHandler {
 
                     // if astParent is "!" we need to invert codeblock
                     {
-                        const Token *parent = tok->astParent();
-                        while (parent && parent->str() == "&&")
-                            parent = parent->astParent();
-                        if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
-                            check_if = !check_if;
-                            check_else = !check_else;
+                        const Token *tok2 = tok;
+                        while(tok2->astParent()){
+                            const Token *parent = tok2->astParent();
+                            while (parent && parent->str() == "&&")
+                                parent = parent->astParent();
+                            if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
+                                check_if = !check_if;
+                                check_else = !check_else;
+                            }
+                            tok2 = parent;
                         }
                     }
 
