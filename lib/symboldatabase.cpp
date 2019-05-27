@@ -4889,7 +4889,7 @@ static void setAutoTokenProperties(Token * const autoTok)
 void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 {
     tok->setValueType(new ValueType(valuetype));
-    Token *parent = const_cast<Token *>(tok->astParent());
+    Token *parent = tok->astParent();
     if (!parent || parent->valueType())
         return;
     if (!parent->astOperand1())
@@ -5019,7 +5019,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
-        Token * const autoToken = const_cast<Token *>(parent->astParent()->tokAt(isconst ? 2 : 1));
+        Token * const autoToken = parent->astParent()->tokAt(isconst ? 2 : 1);
         if (vt2->pointer) {
             ValueType autovt(*vt2);
             autovt.pointer--;
@@ -5091,7 +5091,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     if (ternary) {
         if (vt2 && vt1->pointer == vt2->pointer && vt1->type == vt2->type && vt1->sign == vt2->sign)
             setValueType(parent, *vt2);
-        parent = const_cast<Token*>(parent->astParent());
+        parent = parent->astParent();
     }
 
     if (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eIncDecOp) {

@@ -402,7 +402,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (value.isUninitValue())
         return;
 
-    Token *parent = const_cast<Token*>(tok->astParent());
+    Token *parent = tok->astParent();
     if (!parent)
         return;
 
@@ -436,12 +436,12 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             if (yields == Library::Container::Yield::SIZE) {
                 ValueFlow::Value v(value);
                 v.valueType = ValueFlow::Value::ValueType::INT;
-                setTokenValue(const_cast<Token *>(parent->astParent()), v, settings);
+                setTokenValue(parent->astParent(), v, settings);
             } else if (yields == Library::Container::Yield::EMPTY) {
                 ValueFlow::Value v(value);
                 v.intvalue = !v.intvalue;
                 v.valueType = ValueFlow::Value::ValueType::INT;
-                setTokenValue(const_cast<Token *>(parent->astParent()), v, settings);
+                setTokenValue(parent->astParent(), v, settings);
             }
         }
 
@@ -1879,7 +1879,7 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
         return;
     if (tok->varId() == varid)
         setTokenValue(tok, value, settings);
-    valueFlowAST(const_cast<Token*>(tok->astOperand1()), varid, value, settings);
+    valueFlowAST(tok->astOperand1(), varid, value, settings);
     if (tok->str() == "&&" && tok->astOperand1() && tok->astOperand1()->getValue(0)) {
         ProgramMemory pm;
         pm.setValue(varid,value);
@@ -1898,7 +1898,7 @@ static void valueFlowAST(Token *tok, unsigned int varid, const ValueFlow::Value 
         if (conditionIsTrue(tok->astOperand1(), pm))
             return;
     }
-    valueFlowAST(const_cast<Token*>(tok->astOperand2()), varid, value, settings);
+    valueFlowAST(tok->astOperand2(), varid, value, settings);
 }
 
 /** if known variable is changed in loop body, change it to a possible value */
@@ -2405,7 +2405,7 @@ static bool valueFlowForward(Token * const               startToken,
         // If a ? is seen and it's known that the condition is true/false..
         else if (tok2->str() == "?") {
             const Token *condition = tok2->astOperand1();
-            const Token *op2 = tok2->astOperand2();
+            Token *op2 = tok2->astOperand2();
             if (!condition || !op2) // Ticket #6713
                 continue;
 
@@ -2420,11 +2420,11 @@ static bool valueFlowForward(Token * const               startToken,
                 for (const ValueFlow::Value &v : values) {
                     const ProgramMemory programMemory(getProgramMemory(tok2, varid, v));
                     if (conditionIsTrue(condition, programMemory))
-                        valueFlowAST(const_cast<Token*>(op2->astOperand1()), varid, v, settings);
+                        valueFlowAST(op2->astOperand1(), varid, v, settings);
                     else if (conditionIsFalse(condition, programMemory))
-                        valueFlowAST(const_cast<Token*>(op2->astOperand2()), varid, v, settings);
+                        valueFlowAST(op2->astOperand2(), varid, v, settings);
                     else
-                        valueFlowAST(const_cast<Token*>(op2), varid, v, settings);
+                        valueFlowAST(op2, varid, v, settings);
                 }
 
                 const Token * const expr0 = op2->astOperand1() ? op2->astOperand1() : tok2->astOperand1();
@@ -2449,9 +2449,9 @@ static bool valueFlowForward(Token * const               startToken,
             const Token * const questionToken = tok2;
             while (tok2->astOperand1() || tok2->astOperand2()) {
                 if (tok2->astOperand2())
-                    tok2 = const_cast<Token*>(tok2->astOperand2());
+                    tok2 = tok2->astOperand2();
                 else if (tok2->isUnaryPreOp())
-                    tok2 = const_cast<Token*>(tok2->astOperand1());
+                    tok2 = tok2->astOperand1();
                 else
                     break;
             }
@@ -2499,7 +2499,7 @@ static bool valueFlowForward(Token * const               startToken,
             else if (Token::Match(tok2->previous(), "!!* %name% %assign%")) {
                 // simplify rhs
                 std::stack<Token *> rhs;
-                rhs.push(const_cast<Token *>(tok2->next()->astOperand2()));
+                rhs.push(tok2->next()->astOperand2());
                 while (!rhs.empty()) {
                     Token *rtok = rhs.top();
                     rhs.pop();
@@ -2513,8 +2513,8 @@ static bool valueFlowForward(Token * const               startToken,
                         for (const ValueFlow::Value &v : values)
                             setTokenValue(rtok, v, settings);
                     }
-                    rhs.push(const_cast<Token *>(rtok->astOperand1()));
-                    rhs.push(const_cast<Token *>(rtok->astOperand2()));
+                    rhs.push(rtok->astOperand1());
+                    rhs.push(rtok->astOperand2());
                 }
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "assignment of " + tok2->str());
@@ -2537,7 +2537,7 @@ static bool valueFlowForward(Token * const               startToken,
                             "no simplification of " + tok2->str() + " within " + (Token::Match(parent,"[?:]") ? "?:" : parent->str()) + " expression");
                 const Token *astTop = parent->astTop();
                 if (Token::simpleMatch(astTop->astOperand1(), "for ("))
-                    tok2 = const_cast<Token*>(astTop->link());
+                    tok2 = astTop->link();
 
                 // bailout if address of var is taken..
                 if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
@@ -3666,7 +3666,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
             const bool constValue = tok->astOperand2()->isNumber();
             const bool init = var->nameToken() == tok->astOperand1();
-            valueFlowForwardAssign(const_cast<Token *>(tok->astOperand2()), var, values, constValue, init, tokenlist, errorLogger, settings);
+            valueFlowForwardAssign(tok->astOperand2(), var, values, constValue, init, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -3714,22 +3714,22 @@ struct ValueFlowConditionHandler {
                 }
 
                 if (Token::Match(tok->astParent(), "%oror%|&&")) {
-                    Token *parent = const_cast<Token *>(tok->astParent());
+                    Token *parent = tok->astParent();
                     const std::string &op(parent->str());
 
                     if (parent->astOperand1() == tok && ((op == "&&" && Token::Match(tok, "==|>=|<=|!")) ||
                                                          (op == "||" && Token::Match(tok, "%name%|!=")))) {
-                        for (; parent && parent->str() == op; parent = const_cast<Token *>(parent->astParent())) {
+                        for (; parent && parent->str() == op; parent = parent->astParent()) {
                             std::stack<Token *> tokens;
-                            tokens.push(const_cast<Token *>(parent->astOperand2()));
+                            tokens.push(parent->astOperand2());
                             bool assign = false;
                             while (!tokens.empty()) {
                                 Token *rhstok = tokens.top();
                                 tokens.pop();
                                 if (!rhstok)
                                     continue;
-                                tokens.push(const_cast<Token *>(rhstok->astOperand1()));
-                                tokens.push(const_cast<Token *>(rhstok->astOperand2()));
+                                tokens.push(rhstok->astOperand1());
+                                tokens.push(rhstok->astOperand2());
                                 if (rhstok->varId() == varid)
                                     setTokenValue(rhstok, cond.true_values.front(), settings);
                                 else if (Token::Match(rhstok, "++|--|=") &&
@@ -3741,7 +3741,7 @@ struct ValueFlowConditionHandler {
                             if (assign)
                                 break;
                             while (parent->astParent() && parent == parent->astParent()->astOperand2())
-                                parent = const_cast<Token *>(parent->astParent());
+                                parent = parent->astParent();
                         }
                     }
                 }

@@ -1071,9 +1071,9 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 tok = createAstAtToken(tok, cpp);
         } else if (tok->str() == "[") {
             if (isLambdaCaptureList(tok)) {
-                tok = const_cast<Token *>(tok->astOperand1());
+                tok = tok->astOperand1();
                 if (tok->str() == "(")
-                    tok = const_cast<Token *>(tok->astOperand1());
+                    tok = tok->astOperand1();
                 const Token * const endToken2 = tok->link();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
@@ -1086,7 +1086,7 @@ static Token * findAstTop(Token *tok1, Token *tok2)
 {
     for (Token *tok = tok1; tok && (tok != tok2); tok = tok->next()) {
         if (tok->astParent() || tok->astOperand1() || tok->astOperand2())
-            return const_cast<Token *>(tok->astTop());
+            return tok->astTop();
         if (Token::simpleMatch(tok, "( {"))
             tok = tok->link();
     }
@@ -1149,7 +1149,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         compileExpression(tok2, state3);
 
         if (init != semicolon1)
-            semicolon1->astOperand1(const_cast<Token*>(init->astTop()));
+            semicolon1->astOperand1(init->astTop());
         tok2 = findAstTop(semicolon1->next(), semicolon2);
         if (tok2)
             semicolon2->astOperand1(tok2);
@@ -1157,7 +1157,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (tok2)
             semicolon2->astOperand2(tok2);
         else if (!state3.op.empty())
-            semicolon2->astOperand2(const_cast<Token*>(state3.op.top()));
+            semicolon2->astOperand2(state3.op.top());
 
         semicolon1->astOperand2(semicolon2);
         tok->next()->astOperand1(tok);
