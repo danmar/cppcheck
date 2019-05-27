@@ -364,8 +364,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (!tok)
             return 0;
 
-        // Skip casts
-        if (tok->str() == "(") {
+        // Skip links
+        if (Token::Match(tok, "(|{")) {
             tok = tok->link();
             if (tok)
                 tok = tok->next();
@@ -996,9 +996,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
                         --indentlevel;
                     tok->insertToken(from->str(), from->originalName());
                     tok = tok->next();
-                    if (Token::Match(tok, "(|["))
+                    if (Token::Match(tok, "(|[|{"))
                         links.push(tok);
-                    else if (!links.empty() && Token::Match(tok, ")|]")) {
+                    else if (!links.empty() && Token::Match(tok, ")|]|}")) {
                         Token::createMutualLinks(links.top(), tok);
                         links.pop();
                     }

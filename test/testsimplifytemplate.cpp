@@ -2545,36 +2545,59 @@ private:
                                 "template <typename...> struct e {};\n"
                                 "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), \"\");\n";
             const char exp[] = "namespace a { "
-                               "template < typename b , bool = std :: is_empty < b > { } && std :: is_final < b > { } > struct c ; "
+                               "template < typename b , bool > struct c ; "
                                "} "
                                "namespace boost { "
                                "using a :: c ; "
-                               "} using boost :: c ; "
+                               "} "
+                               "using boost :: c ; "
                                "struct e<> ; "
-                               "struct e<c<int>,c<int>,int> ; "
-                               "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int>,c<int>,int> ) , \"\" ) ; "
+                               "struct e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> ; "
+                               "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> ) , \"\" ) ; "
                                "struct e<> { } ; "
-                               "struct e<c<int>,c<int>,int> { } ;";
-            ASSERT_EQUALS(exp, tok(code));
+                               "struct e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> { } ;";
+            const char actual[] = "namespace a { "
+                                  "template < typename b , bool > struct c ; "
+                                  "} "
+                                  "namespace boost { "
+                                  "using a :: c ; "
+                                  "} "
+                                  "using boost :: c ; "
+                                  "struct e<> ; "
+                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ; "
+                                  "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ) , \"\" ) ; "
+                                  "struct e<> { } ; "
+                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> { } ;";
+            TODO_ASSERT_EQUALS(exp, actual, tok(code));
         }
         {
             const char code[] = "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c;\n"
                                 "template <typename...> struct e {};\n"
-                                "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), "");\n";
-            const char exp[] = "template < typename b , bool = std :: is_empty < b > { } && std :: is_final < b > { } > struct c ; "
+                                "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), \"\");\n";
+            const char exp[] = "template < typename b , bool > struct c ; "
                                "struct e<> ; "
-                               "struct e<c<int>,c<int>,int> ; "
-                               "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int>,c<int>,int> ) , ) ; "
+                               "struct e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> ; "
+                               "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> ) , \"\" ) ; "
                                "struct e<> { } ; "
-                               "struct e<c<int>,c<int>,int> { } ;";
-            ASSERT_EQUALS(exp, tok(code));
+                               "struct e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> { } ;";
+            const char actual[] = "template < typename b , bool > struct c ; "
+                                  "struct e<> ; "
+                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ; "
+                                  "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ) , \"\" ) ; "
+                                  "struct e<> { } ; "
+                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> { } ;";
+            TODO_ASSERT_EQUALS(exp, actual, tok(code));
         }
         {
             const char code[] = "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c{};\n"
                                 "c<int> cc;\n";
-            const char exp[] = "template < typename b , bool = std :: is_empty < b > { } && std :: is_final < b > { } > struct c { } ; "
-                               "c < int > cc ;";
-            ASSERT_EQUALS(exp, tok(code));
+            const char exp[] = "struct c<int,std::is_empty<int>{}&&std::is_final<int>{}> ; "
+                               "c<int,std::is_empty<b>{}&&std::is_final<b>{}> cc ; "
+                               "struct c<int,std::is_empty<int>{}&&std::is_final<int>{}> { } ;";
+            const char actual[] = "struct c<int,std::is_empty<b>{}&&std::is_final<b>{}> ; "
+                                  "c<int,std::is_empty<b>{}&&std::is_final<b>{}> cc ; "
+                                  "struct c<int,std::is_empty<b>{}&&std::is_final<b>{}> { } ;";
+            TODO_ASSERT_EQUALS(exp, actual, tok(code));
         }
     }
 
