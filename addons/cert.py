@@ -157,6 +157,17 @@ def exp42(data):
                 token, 'style', "Comparison of struct padding data " +
                 "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'EXP42-C')
 
+# EXP15-C
+# Do not place a semicolon on the same line as an if, for or while statement
+def exp15(data):
+    for scope in data.scopes:
+        if scope.type == 'If' or scope.type == 'For' or scope.type == 'While':
+            token = scope.bodyStart.next 
+            if not token:
+                continue
+            if token.str==';':
+                reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
+
 
 # EXP46-C
 # Do not use a bitwise operator with a Boolean-like operand
@@ -234,6 +245,61 @@ def msc30(data):
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
             reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
+# STR03-C
+# Do not inadvertently truncate a string
+def str03(data):
+    for token in data.tokenlist:
+        if token.str=='strncpy':
+            nextToken = token.astParent
+            while(nextToken):
+                if nextToken.str=='sizeof':
+                    reportError(nextToken, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
+                nextToken = nextToken.next
+
+# MSC24-C
+# Do not use deprecated or obsolescent functions
+def msc24(data):
+    for token in data.tokenlist:
+        if token.str == 'asctime':
+            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+        elif token.str == 'atof':
+            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+        elif token.str == 'atoi':
+            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+        elif token.str == 'atol':
+            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+        elif token.str == 'atoll':
+            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+        elif token.str == 'ctime':
+            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+        elif token.str == 'fopen':
+            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+        elif token.str == 'freopen':
+            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+        elif token.str == 'rewind':
+            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+        elif token.str == 'setbuf':
+            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
+
+
+# MSC25-C
+# Do not use insecure or weak cryptographic algorithms
+# this checker will only report known weak algorithms if the well known function names are used.
+def msc25(data):
+    for func in data.functions:
+        if 'md4_init' in func.name.lower() or 'md4_update' in func.name.lower() or 'md4_final' in func.name.lower():
+            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms MD4', 'MSC25-C')
+        elif 'md5_init' in func.name.lower() or 'md5_update' in func.name.lower() or 'md5_final' in func.name.lower():
+            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms MD5', 'MSC25-C')
+        elif 'des_encrypt' in func.name.lower() or 'des_decrypt' in func.name.lower():
+            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms DES', 'MSC25-C')
+        elif 'rc4' in func.name.lower():
+            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms RC4', 'MSC25-C')
+        elif 'sha_init' in func.name.lower() or 'sha_update' in func.name.lower() or 'sha_final' in func.name.lower():
+            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms SHA', 'MSC25-C')
+        elif 'sha1_init' in func.name.lower() or 'sha1_update' in func.name.lower() or 'sha1_final' in func.name.lower():
+            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms SHA1', 'MSC25-C')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -258,7 +324,11 @@ for arg in sys.argv[1:]:
         exp05(cfg)
         exp42(cfg)
         exp46(cfg)
+        exp15(cfg)
         int31(cfg, data.platform)
+        str03(cfg)
+        msc24(cfg)
+        msc25(cfg)
         msc30(cfg)
 
     if VERIFY:
