@@ -1721,7 +1721,7 @@ private:
               "    ints.erase(iter);\n"
               "    ints.erase(iter);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Invalid iterator: iter\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6]: (error) Using iterator to local container 'ints' that may be invalid.\n", errout.str());
     }
 
     void eraseByValue() {
@@ -1794,14 +1794,14 @@ private:
               "    m_ImplementationMap.erase(something(unknown));\n" // All iterators become invalidated when erasing from std::vector
               "    m_ImplementationMap.erase(aIt);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) After erase(), the iterator 'aIt' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
 
         check("void f(const std::vector<int>& m_ImplementationMap) {\n"
               "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
               "    m_ImplementationMap.erase(*aIt);\n" // All iterators become invalidated when erasing from std::vector
               "    m_ImplementationMap.erase(aIt);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Invalid iterator: aIt\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
 
         check("void f(const std::vector<int>& m_ImplementationMap) {\n"
               "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle1 );\n"
@@ -1809,7 +1809,7 @@ private:
               "    m_ImplementationMap.erase(*bIt);\n" // All iterators become invalidated when erasing from std::vector
               "    aIt = m_ImplementationMap.erase(aIt);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) After erase(), the iterator 'aIt' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
     }
 
     void pushback1() {
@@ -1819,7 +1819,7 @@ private:
               "    foo.push_back(123);\n"
               "    *it;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) After push_back(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'foo' that may be invalid.\n", errout.str());
     }
 
     void pushback2() {
@@ -1846,7 +1846,7 @@ private:
               "        foo.push_back(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:8] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'foo' that may be invalid.\n", errout.str());
     }
 
     void pushback4() {
@@ -1858,7 +1858,7 @@ private:
               "    ints.push_back(2);\n"
               "    *first;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Invalid pointer 'first' after push_back().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:7]: (error) Using pointer to local variable 'ints' that may be invalid.\n", errout.str());
     }
 
     void pushback5() {
@@ -1904,7 +1904,7 @@ private:
               "            v.push_back(10);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) After push_back(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:6] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:8]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
     }
 
     void pushback7() {
@@ -1918,7 +1918,7 @@ private:
               "        foo.push_back(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:8] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'foo' that may be invalid.\n", errout.str());
     }
 
     void pushback8() {
@@ -1934,7 +1934,7 @@ private:
               "        sum += *it;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back(), the iterator 'end' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:8]: (error) Using iterator to local container 'ints' that may be invalid.\n", errout.str());
     }
 
     void pushback9() {
@@ -1964,7 +1964,7 @@ private:
               "    foo.reserve(100);\n"
               "    *it = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) After reserve(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'foo' that may be invalid.\n", errout.str());
 
         // in loop
         check("void f()\n"
@@ -1977,7 +1977,7 @@ private:
               "        foo.reserve(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) After reserve(), the iterator 'it' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:8] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'foo' that may be invalid.\n", errout.str());
     }
 
     void pushback11() {
@@ -2028,7 +2028,7 @@ private:
               "    ints.insert(ints.begin(), 1);\n"
               "    ++iter;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) After insert(), the iterator 'iter' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'ints' that may be invalid.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -2045,7 +2045,7 @@ private:
               "    ints.insert(iter, 1);\n"
               "    ints.insert(iter, 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) After insert(), the iterator 'iter' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'ints' that may be invalid.\n", errout.str());
 
         check("void* f(const std::vector<Bar>& bars) {\n"
               "    std::vector<Bar>::iterator i = bars.begin();\n"
@@ -2053,14 +2053,14 @@ private:
               "    void* v = &i->foo;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
 
         check("Foo f(const std::vector<Bar>& bars) {\n"
               "    std::vector<Bar>::iterator i = bars.begin();\n"
               "    bars.insert(Bar());\n"
               "    return i->foo;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
 
         check("void f(const std::vector<Bar>& bars) {\n"
               "    for(std::vector<Bar>::iterator i = bars.begin(); i != bars.end(); ++i) {\n"
@@ -3855,7 +3855,7 @@ private:
               "    std::cout << *v0 << std::endl;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator to local container 'v' that is invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
     }
 
     void findInsert() {
