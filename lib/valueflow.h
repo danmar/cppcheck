@@ -166,7 +166,7 @@ namespace ValueFlow {
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
 
-        enum LifetimeKind {Object, Lambda, Iterator} lifetimeKind;
+        enum LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 
         enum LifetimeScope { Local, Argument } lifetimeScope;
 

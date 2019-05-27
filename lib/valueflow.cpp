@@ -2697,6 +2697,7 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
         result = "iterator";
         break;
     case ValueFlow::Value::Object:
+    case ValueFlow::Value::Address:
         if (astIsPointer(tok))
             result = "pointer";
         else
@@ -3357,6 +3358,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             value.lifetimeScope = ValueFlow::Value::Local;
             value.tokvalue = lifeTok;
             value.errorPath = errorPath;
+            if (astIsPointer(lifeTok) || !Token::Match(lifeTok->astParent(), ".|["))
+                value.lifetimeKind = ValueFlow::Value::Address;
             setTokenValue(tok, value, tokenlist->getSettings());
 
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);

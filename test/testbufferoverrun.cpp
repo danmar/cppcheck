@@ -4252,6 +4252,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int* f(std::vector<int>& i) { \n"
+              "    return &(i[1]); \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct A { int i; int j; };\n"
               "int f() { \n"
               "    A x;\n"
