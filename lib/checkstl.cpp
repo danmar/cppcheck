@@ -800,6 +800,10 @@ void CheckStl::invalidContainer()
                 continue;
             if (!isInvalidMethod(tok))
                 continue;
+            // Skip if the variable is assigned to
+            unsigned int skipVarId = 0;
+            if (Token::Match(tok->astTop(), "%assign%") && Token::Match(tok->astTop()->previous(), "%var%"))
+                skipVarId = tok->astTop()->previous()->varId();
             const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
             if (!endToken)
                 endToken = tok->next();
@@ -807,6 +811,8 @@ void CheckStl::invalidContainer()
             ErrorPath errorPath;
             PathAnalysis::Info info = PathAnalysis{endToken, library}.ForwardFind([&](const PathAnalysis::Info& info) {
                 if (!info.tok->variable())
+                    return false;
+                if (info.tok->varId() == skipVarId)
                     return false;
                 for (const ValueFlow::Value& val:info.tok->values()) {
                     if (!val.isLocalLifetimeValue())
