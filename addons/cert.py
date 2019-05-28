@@ -262,6 +262,8 @@ def str05(data):
     for token in data.tokenlist:
         if token.isString:
             parent = token.astParent
+            if parent is None:
+                continue
             parentOp1 = parent.astOperand1
             if parent.isAssignmentOp and not parentOp1.valueType is None:
                 if (parentOp1.valueType.type =='char' or parentOp1.valueType.type =='wchar_t') and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
@@ -274,6 +276,8 @@ def str07(data):
     for token in data.tokenlist:
         if token.str=='strcpy' or token.str=='strcat' or token.str=='fputs':
             parent = token.astParent
+            if parent is None:
+                continue
             if not parent.astParent :
                 reportError(token, 'style', 'Use the bounds-checking interfaces for string manipulation', 'STR07-C')
 
@@ -284,6 +288,8 @@ def str11(data):
         if token.isString:
             strlen = token.strlen
             parent = token.astParent
+            if parent is None:
+                continue
             parentOp1 = parent.astOperand1
             if parent.isAssignmentOp and not parentOp1.valueType is None:
                 valueToken = parentOp1.astOperand2
