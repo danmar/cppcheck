@@ -2556,19 +2556,7 @@ private:
                                "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> ) , \"\" ) ; "
                                "struct e<> { } ; "
                                "struct e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> { } ;";
-            const char actual[] = "namespace a { "
-                                  "template < typename b , bool > struct c ; "
-                                  "} "
-                                  "namespace boost { "
-                                  "using a :: c ; "
-                                  "} "
-                                  "using boost :: c ; "
-                                  "struct e<> ; "
-                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ; "
-                                  "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ) , \"\" ) ; "
-                                  "struct e<> { } ; "
-                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> { } ;";
-            TODO_ASSERT_EQUALS(exp, actual, tok(code));
+            ASSERT_EQUALS(exp, tok(code));
         }
         {
             const char code[] = "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c;\n"
@@ -2580,24 +2568,15 @@ private:
                                "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> ) , \"\" ) ; "
                                "struct e<> { } ; "
                                "struct e<c<int,std::is_empty<int>{}&&std::is_final<int>{}>,c<int,std::is_empty<int>{}&&std::is_final<int>{}>,int> { } ;";
-            const char actual[] = "template < typename b , bool > struct c ; "
-                                  "struct e<> ; "
-                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ; "
-                                  "static_assert ( sizeof ( e<> ) == sizeof ( e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> ) , \"\" ) ; "
-                                  "struct e<> { } ; "
-                                  "struct e<c<int,std::is_empty<b>{}&&std::is_final<b>{}>,c<int,std::is_empty<b>{}&&std::is_final<b>{}>,int> { } ;";
-            TODO_ASSERT_EQUALS(exp, actual, tok(code));
+            ASSERT_EQUALS(exp, tok(code));
         }
         {
             const char code[] = "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c{};\n"
                                 "c<int> cc;\n";
             const char exp[] = "struct c<int,std::is_empty<int>{}&&std::is_final<int>{}> ; "
-                               "c<int,std::is_empty<b>{}&&std::is_final<b>{}> cc ; "
+                               "c<int,std::is_empty<int>{}&&std::is_final<int>{}> cc ; "
                                "struct c<int,std::is_empty<int>{}&&std::is_final<int>{}> { } ;";
-            const char actual[] = "struct c<int,std::is_empty<b>{}&&std::is_final<b>{}> ; "
-                                  "c<int,std::is_empty<b>{}&&std::is_final<b>{}> cc ; "
-                                  "struct c<int,std::is_empty<b>{}&&std::is_final<b>{}> { } ;";
-            TODO_ASSERT_EQUALS(exp, actual, tok(code));
+            ASSERT_EQUALS(exp, tok(code));
         }
     }
 
@@ -2756,13 +2735,10 @@ private:
                                 "template<class Key, class Val, class Mem=DefaultMemory<Key,Val> > class thv_table_c  {}; "
                                 "thv_table_c<void *,void *> id_table_m;";
             const char exp [] = "template < class T , class U > class DefaultMemory { } ; "
-                                "thv_table_c<void * , void * , DefaultMemory < void * , void *>> id_table_m ; "
-                                "class thv_table_c<void * , void * , DefaultMemory < void * , void * >> { } ;";
-            const char curr[] = "template < class T , class U > class DefaultMemory { } ; "
-                                "class thv_table_c<void*,void*,DefaultMemory<Key,Val>> ; "
-                                "thv_table_c<void*,void*,DefaultMemory<Key,Val>> id_table_m ; "
-                                "class thv_table_c<void*,void*,DefaultMemory<Key,Val>> { } ;";
-            TODO_ASSERT_EQUALS(exp, curr, tok(code));
+                                "class thv_table_c<void*,void*,DefaultMemory<void*,void*>> ; "
+                                "thv_table_c<void*,void*,DefaultMemory<void*,void*>> id_table_m ; "
+                                "class thv_table_c<void*,void*,DefaultMemory<void*,void*>> { } ;";
+            ASSERT_EQUALS(exp, tok(code));
         }
         {
             // #8890

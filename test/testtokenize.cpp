@@ -5214,7 +5214,7 @@ private:
                            "template < class T , T t >\n"
                            "struct S\n"
                            "{ } ;\n"
-                           "S < int , ( T ) 0 > s ;",     // current result
+                           "S < int , ( int ) 0 > s ;",     // current result
                            tokenizeAndStringify(code));
     }
 

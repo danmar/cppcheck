@@ -894,15 +894,21 @@ void TemplateSimplifier::getTemplateInstantiations()
 
 void TemplateSimplifier::useDefaultArgumentValues()
 {
-    for (TokenAndName &template1 : mTemplateDeclarations)
-        useDefaultArgumentValues(template1);
+    for (TokenAndName &declaration : mTemplateDeclarations)
+        useDefaultArgumentValues(declaration);
 
-    for (TokenAndName &template1 : mTemplateForwardDeclarations)
-        useDefaultArgumentValues(template1);
+    for (TokenAndName &declaration : mTemplateForwardDeclarations)
+        useDefaultArgumentValues(declaration);
 }
 
-void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndName &template1)
+void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 {
+    // Ticket #5762: Skip specialization tokens
+    // FIXME: should be: if (declaration.isSpecialization() || declaration.isAlias())
+    // but there is a problem with functions
+    if (!declaration.isClass())
+        return;
+
     // template parameters with default value has syntax such as:
     //     x = y
     // this list will contain all the '=' tokens for such arguments
@@ -916,19 +922,12 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
     // parameter depth
     std::size_t templateParmDepth = 0;
 
-    // the template classname. This will be empty for template functions
-    std::string classname;
+    // map type parameter name to index
+    std::map<std::string, unsigned int> typeParameterNames;
 
     // Scan template declaration..
-    for (Token *tok = template1.token; tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "template < >")) { // Ticket #5762: Skip specialization tokens
-            tok = tok->tokAt(2);
-            if (0 == templateParmDepth)
-                break;
-            continue;
-        }
-
-        if (tok->str() == "(") { // Ticket #6835
+    for (Token *tok = declaration.token; tok; tok = tok->next()) {
+        if (tok->link()) { // Ticket #6835
             tok = tok->link();
             continue;
         }
@@ -938,13 +937,15 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
 
         // end of template parameters?
         if (tok->str() == ">") {
-            if (Token::Match(tok, "> class|struct|union %name%"))
-                classname = tok->strAt(2);
             if (templateParmDepth<2)
                 break;
             else
                 --templateParmDepth;
         }
+
+        // map type parameter name to index
+        if (Token::Match(tok, "typename|class %name% ,|>"))
+            typeParameterNames[tok->strAt(1)] = templatepar - 1;
 
         // next template parameter
         if (tok->str() == "," && (1 == templateParmDepth)) // Ticket #5823: Properly count parameters
@@ -961,15 +962,42 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
             }
         }
     }
-    if (eq.empty() || classname.empty())
+    if (eq.empty())
         return;
 
     // iterate through all template instantiations
-    for (const TokenAndName &templateInst : mTemplateInstantiations) {
-        Token *tok = templateInst.token;
+    for (const TokenAndName &instantiation : mTemplateInstantiations) {
+        Token *tok = instantiation.token;
 
-        if (!Token::simpleMatch(tok, (classname + " <").c_str()))
+        if (!Token::simpleMatch(tok, (declaration.name + " <").c_str()))
             continue;
+
+        // instantiation arguments..
+        std::vector<std::vector<const Token *>> instantiationArgs;
+        std::size_t index = 0;
+        instantiationArgs.resize(1);
+        const Token *end = instantiation.token->next()->findClosingBracket();
+        if (!end)
+            continue;
+        for (const Token *tok1 = instantiation.token->tokAt(2); tok1 && tok1!= end; tok1 = tok1->next()) {
+            if (tok1->link()) {
+                const Token *endLink = tok1->link();
+                do {
+                    instantiationArgs[index].push_back(tok1);
+                    tok1 = tok1->next();
+                } while (tok1 && tok1 != endLink);
+            } else if (tok1->str() == "<") {
+                const Token *endLink = tok1->findClosingBracket();
+                do {
+                    instantiationArgs[index].push_back(tok1);
+                    tok1 = tok1->next();
+                } while (tok1 && tok1 != endLink);
+            } else if (tok1->str() == ",") {
+                ++index;
+                instantiationArgs.resize(index + 1);
+            } else
+                instantiationArgs[index].push_back(tok1);
+        }
 
         // count the parameters..
         tok = tok->next();
@@ -983,7 +1011,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
                 ++it;
             while (it != eq.end()) {
                 int indentlevel = 0;
-                if (usedpar) {
+                if (usedpar && usedpar <= instantiationArgs.size()) {
                     tok->insertToken(",");
                     tok = tok->next();
                 }
@@ -994,8 +1022,16 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
                         ++indentlevel;
                     else if (from->str() == ">")
                         --indentlevel;
-                    tok->insertToken(from->str(), from->originalName());
-                    tok = tok->next();
+                    auto entry = typeParameterNames.find(from->str());
+                    if (entry != typeParameterNames.end() && entry->second < instantiationArgs.size()) {
+                        for (const Token *tok1 : instantiationArgs[entry->second]) {
+                            tok->insertToken(tok1->str(), tok1->originalName());
+                            tok = tok->next();
+                        }
+                    } else {
+                        tok->insertToken(from->str(), from->originalName());
+                        tok = tok->next();
+                    }
                     if (Token::Match(tok, "(|[|{"))
                         links.push(tok);
                     else if (!links.empty() && Token::Match(tok, ")|]|}")) {
@@ -1041,7 +1077,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
         // don't strip args from uninstantiated templates
         std::list<TokenAndName>::iterator ti2 = std::find_if(mTemplateInstantiations.begin(),
                                                 mTemplateInstantiations.end(),
-                                                FindName(template1.name));
+                                                FindName(declaration.name));
 
         if (ti2 == mTemplateInstantiations.end())
             continue;
@@ -1050,7 +1086,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TemplateSimplifier::TokenAndNa
         eqtok->deleteThis();
 
         // update parameter end pointer
-        template1.paramEnd = template1.token->next()->findClosingBracket();
+        declaration.paramEnd = declaration.token->next()->findClosingBracket();
     }
 }
 
@@ -2360,6 +2396,8 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
     const Token * tok,
     std::vector<const Token *> & typeParametersInDeclaration)
 {
+    assert(tok->strAt(-1) == "<");
+
     typeParametersInDeclaration.clear();
     const Token *end = tok->previous()->findClosingBracket();
     for (; tok && tok!= end; tok = tok->next()) {
@@ -2367,9 +2405,9 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
             const Token *closing = tok->next()->findClosingBracket();
             if (closing)
                 tok = closing->next();
-        }
-
-        if (Token::Match(tok, "%name% ,|>|="))
+        } else if (tok->link())
+            tok = tok->link();
+        else if (Token::Match(tok, "%name% ,|>|="))
             typeParametersInDeclaration.push_back(tok);
     }
     return tok;
