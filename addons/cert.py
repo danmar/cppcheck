@@ -256,6 +256,42 @@ def str03(data):
                     reportError(nextToken, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
                 nextToken = nextToken.next
 
+# STR05-C
+# Use pointers to const when referring to string literals
+def str05(data):
+    for token in data.tokenlist:
+        if token.isString:
+            parent = token.astParent
+            parentOp1 = parent.astOperand1
+            if parent.isAssignmentOp and not parentOp1.valueType is None:
+                if (parentOp1.valueType.type =='char' or parentOp1.valueType.type =='wchar_t') and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
+                    reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
+                
+
+# STR07-C
+# Use the bounds-checking interfaces for string manipulation
+def str07(data):
+    for token in data.tokenlist:
+        if token.str=='strcpy' or token.str=='strcat' or token.str=='fputs':
+            parent = token.astParent
+            if not parent.astParent :
+                reportError(token, 'style', 'Use the bounds-checking interfaces for string manipulation', 'STR07-C')
+
+# STR11-C
+# Do not specify the bound of a character array initialized with a string literal
+def str11(data):
+    for token in data.tokenlist:
+        if token.isString:
+            strlen = token.strlen
+            parent = token.astParent
+            parentOp1 = parent.astOperand1
+            if parent.isAssignmentOp and not parentOp1.valueType is None:
+                valueToken = parentOp1.astOperand2
+                if valueToken is None:
+                    continue
+                if valueToken.isNumber and int(valueToken.str)==strlen:
+                    reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
+
 # MSC24-C
 # Do not use deprecated or obsolescent functions
 def msc24(data):
@@ -286,19 +322,17 @@ def msc24(data):
 # Do not use insecure or weak cryptographic algorithms
 # this checker will only report known weak algorithms if the well known function names are used.
 def msc25(data):
-    for func in data.functions:
-        if 'md4_init' in func.name.lower() or 'md4_update' in func.name.lower() or 'md4_final' in func.name.lower():
-            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms MD4', 'MSC25-C')
-        elif 'md5_init' in func.name.lower() or 'md5_update' in func.name.lower() or 'md5_final' in func.name.lower():
-            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms MD5', 'MSC25-C')
-        elif 'des_encrypt' in func.name.lower() or 'des_decrypt' in func.name.lower():
-            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms DES', 'MSC25-C')
-        elif 'rc4' in func.name.lower():
-            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms RC4', 'MSC25-C')
-        elif 'sha_init' in func.name.lower() or 'sha_update' in func.name.lower() or 'sha_final' in func.name.lower():
-            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms SHA', 'MSC25-C')
-        elif 'sha1_init' in func.name.lower() or 'sha1_update' in func.name.lower() or 'sha1_final' in func.name.lower():
-            reportError(func.tokenDef, 'style','Do not use insecure or weak cryptographic algorithms SHA1', 'MSC25-C')
+    for token in data.tokenlist:
+        if 'md4_init' in token.str.lower() or 'md4_update' in token.str.lower() or 'md4_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms MD4', 'MSC25-C')
+        elif 'md5_init' in token.str.lower() or 'md5_update' in token.str.lower() or 'md5_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms MD5', 'MSC25-C')
+        elif 'des_encrypt' in token.str.lower() or 'des_decrypt' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms DES', 'MSC25-C')
+        elif 'sha_init' in token.str.lower() or 'sha_update' in token.str.lower() or 'sha_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms SHA', 'MSC25-C')
+        elif 'sha1_init' in token.str.lower() or 'sha1_update' in token.str.lower() or 'sha1_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms SHA1', 'MSC25-C')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
@@ -327,6 +361,9 @@ for arg in sys.argv[1:]:
         exp15(cfg)
         int31(cfg, data.platform)
         str03(cfg)
+        str05(cfg)
+        str07(cfg)
+        str11(cfg)
         msc24(cfg)
         msc25(cfg)
         msc30(cfg)
