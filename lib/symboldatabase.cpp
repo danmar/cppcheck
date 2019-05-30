@@ -4310,7 +4310,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
         // check if all arguments matched
         if (same == hasToBe) {
-            if (constFallback)
+            if (constFallback || (!requireConst && func->isConst()))
                 fallback1Func = func;
             else
                 return func;

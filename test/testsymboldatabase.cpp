@@ -336,6 +336,7 @@ private:
         TEST_CASE(findFunction18);
         TEST_CASE(findFunction19);
         TEST_CASE(findFunction20); // #8280
+        TEST_CASE(findFunction21);
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -5406,6 +5407,25 @@ private:
 
         f = Token::findsimplematch(tokenizer.tokens(), "copy ( * f ) ;");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 12);
+    }
+
+    void findFunction21() { // # 8558
+        GET_SYMBOL_DB("struct foo {\n"
+                      "    int GetThing( ) const { return m_thing; }\n"
+                      "    int* GetThing( ) { return &m_thing; }\n"
+                      "};\n"
+                      "\n"
+                      "void f(foo *myFoo) {\n"
+                      "    int* myThing = myFoo->GetThing();\n"
+                      "}");
+
+        ASSERT(db != nullptr);
+
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "myFoo . GetThing ( ) ;");
+
+        const Function *f = tok1 && tok1->tokAt(2) ? tok1->tokAt(2)->function() : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT_EQUALS(true, f && f->tokenDef->linenr() == 3);
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
