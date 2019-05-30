@@ -5454,7 +5454,6 @@ void SymbolDatabase::setValueTypeInTokenList()
                 std::istringstream istr(typestr+";");
                 if (tokenList.createTokens(istr)) {
                     ValueType vt;
-                    assert(tokenList.front());
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &vt, mDefaultSignedness, mSettings)) {
