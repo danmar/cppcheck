@@ -3750,7 +3750,7 @@ struct ValueFlowConditionHandler {
                     // if astParent is "!" we need to invert codeblock
                     {
                         const Token *tok2 = tok;
-                        while(tok2->astParent()){
+                        while (tok2->astParent()) {
                             const Token *parent = tok2->astParent();
                             while (parent && parent->str() == "&&")
                                 parent = parent->astParent();

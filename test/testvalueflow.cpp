@@ -2254,7 +2254,7 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
 
-         code = "int f(int x, int y) {\n"
+        code = "int f(int x, int y) {\n"
                "    if (!!(x != 0)) {\n"
                "      return y/x;\n"
                "}\n"
