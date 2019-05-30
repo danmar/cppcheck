@@ -4873,6 +4873,25 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ==")->link());
         }
+
+        {
+            // #9145
+            const char code[] = "template <typename a, a> struct b {\n"
+                                "  template <typename c> constexpr void operator()(c &&) const;\n"
+                                "};\n"
+                                "template <int d> struct e { b<int, d> f; };\n"
+                                "template <int g> using h = e<g>;\n"
+                                "template <int g> h<g> i;\n"
+                                "template <typename a, a d>\n"
+                                "template <typename c>\n"
+                                "constexpr void b<a, d>::operator()(c &&) const {\n"
+                                "  i<3>.f([] {});\n"
+                                "}\n";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> . f (")->link());
+        }
     }
 
     void simplifyString() {
