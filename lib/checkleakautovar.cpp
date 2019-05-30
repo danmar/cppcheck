@@ -188,6 +188,8 @@ static bool isVarUsedInTree(const Token *tok, unsigned int varid)
         return false;
     if (tok->varId() == varid)
         return true;
+    if (tok->str() == "(" && Token::simpleMatch(tok->astOperand1(), "sizeof"))
+        return false;
     return isVarUsedInTree(tok->astOperand1(), varid) || isVarUsedInTree(tok->astOperand2(), varid);
 }
 

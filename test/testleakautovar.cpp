@@ -299,6 +299,18 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
+    void assign15() {
+        // #8120
+        check("void f() {\n"
+              "   baz *p;\n"
+              "   p = malloc(sizeof *p);\n"
+              "   free(p);\n"
+              "   p = malloc(sizeof *p);\n"
+              "   free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void deallocuse1() {
         check("void f(char *p) {\n"
               "    free(p);\n"
