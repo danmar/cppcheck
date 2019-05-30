@@ -4057,8 +4057,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         const Function * func = matches[i];
         size_t same = 0;
 
-        if (requireConst && !func->isConst())
+        if (requireConst && !func->isConst()) {
+            i++;
             continue;
+        }
 
         if (!requireConst || !func->isConst()) {
             // get the function this call is in
