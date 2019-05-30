@@ -1457,6 +1457,8 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
 
 bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
 {
+    if (isEscapedAlias(expr))
+        return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
@@ -1511,6 +1513,25 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
             if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
                 return true;
+        }
+    }
+    return false;
+}
+
+bool FwdAnalysis::isEscapedAlias(const Token* expr)
+{
+    for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
+        for (const ValueFlow::Value &val : subexpr->values()) {
+            if (!val.isLocalLifetimeValue())
+                continue;
+            const Variable* var = val.tokvalue->variable();
+            if (!var)
+                continue;
+            if (!var->isLocal())
+                return true;
+            if (var->isArgument())
+                return true;
+            
         }
     }
     return false;
