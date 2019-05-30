@@ -525,8 +525,8 @@ if __name__ == '__main__':
                 lexer = guess_lexer_for_filename(source_filename, '')
             except:
                 sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
-                output_file.write("\n <tr><td colspan='4'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
-                output_file.write("\n <tr><td colspan='4'> Sorry about this.</td></tr>")
+                output_file.write("\n <tr><td colspan='5'> Could not generated content because pygments failed to retrieve the determine code type.</td></tr>")
+                output_file.write("\n <tr><td colspan='5'> Sorry about this.</td></tr>")
                 continue
 
             if options.source_encoding:
@@ -589,16 +589,16 @@ if __name__ == '__main__':
             '       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
-                output_file.write("\n       <tr><td colspan='4'>%s</td></tr>" % (filename))
-                output_file.write("\n       <tr><td colspan='4'> Could not generated due to UnicodeDecodeError</td></tr>")
+                output_file.write("\n       <tr><td colspan='5'>%s</td></tr>" % (filename))
+                output_file.write("\n       <tr><td colspan='5'> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
                 if filename.endswith('*'):  # assume unmatched suppression
                     output_file.write(
-                        "\n       <tr><td colspan='4'>%s</td></tr>" %
+                        "\n       <tr><td colspan='5'>%s</td></tr>" %
                         (filename))
                 else:
                     output_file.write(
-                        "\n       <tr><td colspan='4'><a href='%s'>%s</a></td></tr>" %
+                        "\n       <tr><td colspan='5'><a href='%s'>%s</a></td></tr>" %
                         (data['htmlfile'], filename))
 
                 for error in sorted(data['errors'], key=lambda k: k['line']):
