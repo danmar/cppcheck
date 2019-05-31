@@ -1283,6 +1283,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
+            } else if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1()) {
+                return Result(Result::Type::READ);
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 continue;
             } else {
