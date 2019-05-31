@@ -1531,7 +1531,7 @@ bool FwdAnalysis::isEscapedAlias(const Token* expr)
                 return true;
             if (var->isArgument())
                 return true;
-            
+
         }
     }
     return false;
