@@ -22,5 +22,6 @@ add_subdirectory(lib)   # CppCheck Library
 add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
 ADD_SUBDIRECTORY(gui)   # Graphical application
+ADD_SUBDIRECTORY(tools/triage)   # Triage tool
 
 include(cmake/printInfo.cmake REQUIRED)
