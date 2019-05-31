@@ -3236,6 +3236,10 @@ private:
         code = "volatile const int x = 42;\n"
                "void f(){ int a = x; }\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 42));
+
+        code = "static const int x = 42;\n"
+               "void f(){ int a = x; }\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 42));
     }
 
     void valueFlowGlobalStaticVar() {
