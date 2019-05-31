@@ -678,6 +678,7 @@ static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
+            case ValueFlow::Value::Address:
                 if (type == "pointer")
                     msg += " to local variable";
                 else
