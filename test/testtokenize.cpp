@@ -5229,12 +5229,12 @@ private:
                            "struct S\n"
                            "{};\n"
                            "S<int> s;\n";
-        TODO_ASSERT_EQUALS("S<int,(int)0> s ; struct S<int,(int)0> { } ;",   // wanted result
-                           "template < class T , T t >\n"
-                           "struct S\n"
-                           "{ } ;\n"
-                           "S < int , ( int ) 0 > s ;",     // current result
-                           tokenizeAndStringify(code));
+        ASSERT_EQUALS("struct S<int,(int)0> ;\n"
+                      "\n"
+                      "\n"
+                      "S<int,(int)0> s ; struct S<int,(int)0>\n"
+                      "{ } ;",
+                      tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate4() { // #6181, #6354, #6414

@@ -2192,8 +2192,7 @@ private:
     void varid_templateUsing() { // #5781 #7273
         const char code[] = "template<class T> using X = Y<T,4>;\n"
                             "X<int> x;";
-        ASSERT_EQUALS("1: ;\n"
-                      "2: Y < int , 4 > x@1 ;\n",
+        ASSERT_EQUALS("2: Y < int , 4 > x@1 ;\n",
                       tokenize(code));
     }
 
