@@ -1711,6 +1711,15 @@ private:
               "    std::map< S, B > m2;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int*> v;\n"
+              "    int x;\n"
+              "    void f() {\n"
+              "        v.push_back(&x);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
