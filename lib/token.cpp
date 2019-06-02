@@ -1831,7 +1831,7 @@ std::string Token::typeStr(const Token* tok)
         const ValueType * vt = tok->valueType();
         std::string ret = vt->str();
         if (!ret.empty())
-            return ret;   
+            return ret;
     }
     std::pair<const Token*, const Token*> r = Token::typeDecl(tok);
     if (!r.first || !r.second)
