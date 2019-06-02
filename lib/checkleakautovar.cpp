@@ -374,6 +374,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = f->groupId;
                             varAlloc.status = VarInfo::ALLOC;
+                        } else {
+                            // Fixme: warn about leak
+                            alloctype.erase(innerTok->varId());
                         }
                     } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();
