@@ -1,5 +1,5 @@
 #!/bin/sh
 
-xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl manual.docbook
+pandoc manual.md  -o manual.pdf -s --pdf-engine=pdflatex --number-sections
+pandoc manual.md  -o manual.html -s --number-sections
 
-docbook2pdf manual.docbook
