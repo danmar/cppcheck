@@ -149,6 +149,7 @@ private:
         TEST_CASE(template109); // #9144
         TEST_CASE(template110);
         TEST_CASE(template111); // crash
+        TEST_CASE(template112); // #9146 syntax error
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2626,6 +2627,18 @@ private:
                             "template<typename T> using cell = pair<T*, cell<T>*>;";
         const char exp[] = "template < typename T , typename U > struct pair ; "
                            "template < typename T > using cell = pair < T * , cell < T > * > ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template112() { // #9146 syntax error
+        const char code[] = "template <int> struct a;\n"
+                            "template <class, class b> using c = typename a<int{b::d}>::e;\n"
+                            "template <class> struct f;\n"
+                            "template <class b> using g = typename f<c<int, b>>::e;";
+        const char exp[] = "template < int > struct a ; "
+                           "template < class , class b > using c = typename a < int { b :: d } > :: e ; "
+                           "template < class > struct f ; "
+                           "template < class b > using g = typename f < c < int , b > > :: e ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
