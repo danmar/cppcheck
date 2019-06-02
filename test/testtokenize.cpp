@@ -7726,6 +7726,50 @@ private:
                             "using d::c;\n"
                             "template <typename...> struct e {};\n"
                             "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), \"\");\n"))
+
+        // #9146
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <int> struct a;\n"
+                            "template <class, class b> using c = typename a<int{b::d}>::e;\n"
+                            "template <class> struct f;\n"
+                            "template <class b> using g = typename f<c<int, b>>::e;\n"))
+
+        // #9153
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "namespace {\n"
+                            "template <class> struct a;\n"
+                            "}\n"
+                            "namespace {\n"
+                            "namespace b {\n"
+                            "template <int c> struct B { using B<c / 2>::d; };\n"
+                            "}\n"
+                            "template <class, class> using e = typename b::B<int{}>;\n"
+                            "namespace b {\n"
+                            "template <class> struct f;\n"
+                            "}\n"
+                            "template <class c> using g = b::f<e<int, c>>;\n"
+                            "}\n"))
+
+        // #9154
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <bool> using a = int;\n"
+                            "template <class b> using aa = a<b::c>;\n"
+                            "template <class...> struct A;\n"
+                            "template <class> struct d;\n"
+                            "template <class... f> using e = typename d<f...>::g;\n"
+                            "template <class> struct h;\n"
+                            "template <class, class... b> using i = typename h<b...>::g;\n"
+                            "template <class f, template <class> class j> using k = typename f::g;\n"
+                            "template <class... b> using l = a<k<A<b...>, aa>::c>;\n"
+                            "template <int> struct m;\n"
+                            "template <class, class n> using o = typename m<int{n::c}>::g;\n"
+                            "template <class> struct p;\n"
+                            "template <class, class n> using q = typename p<o<A<>, n>>::g;\n"
+                            "template <class f, class r, class... b> using c = e<i<q<f, r>, b...>>;\n"
+                            "template <class, class> struct s;\n"
+                            "template <template <class> class t, class... w, template <class> class x,\n"
+                            "          class... u>\n"
+                            "struct s<t<w...>, x<u...>>;\n"))
     }
 
     void noCrash1() {
