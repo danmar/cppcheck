@@ -169,6 +169,7 @@ private:
         TEST_CASE(template129);
         TEST_CASE(template130); // #9246
         TEST_CASE(template131); // #9249
+        TEST_CASE(template132); // #9143 use after free
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -3127,6 +3128,29 @@ private:
                                "struct b<1,true> { } ;";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template132() { // #9143 use after free
+        const char code[] = "template <template <typename...> class> struct a;\n"
+                            "template <template <typename> class b> a<b> c;\n"
+                            "template <template <typename...> class i> auto d = c<i>;\n"
+                            "template <typename> struct e;\n"
+                            "template <typename> void declval();\n"
+                            "template <typename> class decay;\n"
+                            "template <typename f> e<typename decay<decltype(true ?: declval<f>)>::g> l;\n"
+                            "template <template <typename...> class> struct a {};\n"
+                            "template <typename> struct j;\n"
+                            "void h() { d<j>; }\n";
+        const char exp[] = "template < template < typename . . . > class > struct a ; "
+                           "template < template < typename > class b > a < b > c ; "
+                           "auto d<j> ; d<j> = c < j > ; "
+                           "template < typename > struct e ; "
+                           "template < typename > void declval ( ) ; "
+                           "template < typename > class decay ; "
+                           "template < typename f > e < decay < bool > :: g > l ; "
+                           "template < template < typename . . . > class > struct a { } ; "
+                           "template < typename > struct j ; void h ( ) { d<j> ; }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
