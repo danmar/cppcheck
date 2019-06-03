@@ -249,12 +249,19 @@ def msc30(data):
 # Do not inadvertently truncate a string
 def str03(data):
     for token in data.tokenlist:
-        if token.str=='strncpy':
-            nextToken = token.astParent
-            while(nextToken):
-                if nextToken.str=='sizeof':
-                    reportError(nextToken, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
-                nextToken = nextToken.next
+        if simpleMatch(token, 'strncpy ('): # now search if the 3rd parameter is a sizeof()
+            paramToken = token.astParent
+            if paramToken is None:
+                continue
+            if not paramToken.astOperand2 is None:
+                nextOp2 = paramToken.astOperand2
+                if nextOp2.astOperand2 is None:
+                    continue
+                lengthOp2 = nextOp2.astOperand2
+                if lengthOp2 is None:
+                    continue
+                if simpleMatch(lengthOp2.astOperand1, 'sizeof ('):  
+                    reportError(token, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
 
 # STR05-C
 # Use pointers to const when referring to string literals
@@ -266,7 +273,7 @@ def str05(data):
                 continue
             parentOp1 = parent.astOperand1
             if parent.isAssignmentOp and not parentOp1.valueType is None:
-                if (parentOp1.valueType.type =='char' or parentOp1.valueType.type =='wchar_t') and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
+                if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
                     reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
                 
 
@@ -274,7 +281,7 @@ def str05(data):
 # Use the bounds-checking interfaces for string manipulation
 def str07(data):
     for token in data.tokenlist:
-        if token.str=='strcpy' or token.str=='strcat' or token.str=='fputs':
+        if token.str in('strcpy', 'strcat', 'fputs'):
             parent = token.astParent
             if parent is None:
                 continue
@@ -288,10 +295,22 @@ def str11(data):
         if token.isString:
             strlen = token.strlen
             parent = token.astParent
+
             if parent is None:
                 continue
             parentOp1 = parent.astOperand1
-            if parent.isAssignmentOp and not parentOp1.valueType is None:
+            if parentOp1 is None or not parentOp1.str=='[':
+                continue
+
+            if parent.isAssignmentOp:
+                varToken = parentOp1.astOperand1
+                if varToken is None or not varToken.isName:
+                    continue
+                startToken = varToken.variable.typeStartToken   
+                endToken = varToken.variable.typeEndToken # check if it's the core variable declaration
+                if startToken != endToken:
+                    continue
+
                 valueToken = parentOp1.astOperand2
                 if valueToken is None:
                     continue
