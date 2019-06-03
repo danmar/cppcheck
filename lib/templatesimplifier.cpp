@@ -1560,6 +1560,7 @@ void TemplateSimplifier::expandTemplate(
             if (itype < typeParametersInDeclaration.size() &&
                 (!isVariable || !Token::Match(typeParametersInDeclaration[itype]->previous(), "<|, %type% >|,"))) {
                 typeindentlevel = 0;
+                std::stack<Token *> brackets1; // holds "(" and "{" tokens
                 for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token;
                      typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                      typetok = typetok->next()) {
@@ -1572,10 +1573,26 @@ void TemplateSimplifier::expandTemplate(
                     else if (typeindentlevel > 0 && typetok->str() == ">")
                         --typeindentlevel;
                     dst->insertToken(typetok->str(), typetok->originalName(), true);
-                    dst->previous()->isTemplateArg(true);
-                    dst->previous()->isSigned(typetok->isSigned());
-                    dst->previous()->isUnsigned(typetok->isUnsigned());
-                    dst->previous()->isLong(typetok->isLong());
+                    Token *previous = dst->previous();
+                    previous->isTemplateArg(true);
+                    previous->isSigned(typetok->isSigned());
+                    previous->isUnsigned(typetok->isUnsigned());
+                    previous->isLong(typetok->isLong());
+                    if (previous->str() == "{") {
+                        brackets1.push(previous);
+                    } else if (previous->str() == "(") {
+                        brackets1.push(previous);
+                    } else if (previous->str() == "}") {
+                        assert(brackets1.empty() == false);
+                        assert(brackets1.top()->str() == "{");
+                        Token::createMutualLinks(brackets1.top(), previous);
+                        brackets1.pop();
+                    } else if (previous->str() == ")") {
+                        assert(brackets1.empty() == false);
+                        assert(brackets1.top()->str() == "(");
+                        Token::createMutualLinks(brackets1.top(), previous);
+                        brackets1.pop();
+                    }
                 }
             } else {
                 if (isSpecialization && !copy && !scope.empty() && Token::Match(start, (scope + templateDeclarationNameToken->str()).c_str())) {
