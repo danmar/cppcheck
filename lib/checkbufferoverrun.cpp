@@ -877,3 +877,53 @@ bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const st
     return true;
 }
 
+void CheckBufferOverrun::objectIndex()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *functionScope : symbolDatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "["))
+                continue;
+            const Token *obj = tok->astOperand1();
+            const Token *idx = tok->astOperand2();
+            if (!idx || !obj)
+                continue;
+            if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
+                continue;
+
+            ValueFlow::Value v = getLifetimeObjValue(obj);
+            if (!v.isLocalLifetimeValue())
+                continue;
+            if (v.lifetimeKind != ValueFlow::Value::Address)
+                continue;
+            const Variable *var = v.tokvalue->variable();
+            if (var->isReference())
+                continue;
+            if (var->isRValueReference())
+                continue;
+            if (var->isArray())
+                continue;
+            if (var->isPointer())
+                continue;
+            objectIndexError(tok, &v, idx->hasKnownIntValue());
+        }
+    }
+}
+
+void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known)
+{
+    ErrorPath errorPath;
+    std::string name;
+    if (v) {
+        name = v->tokvalue->variable()->name();
+        errorPath = v->errorPath;
+    }
+    errorPath.emplace_back(tok, "");
+    std::string verb = known ? "is" : "might be";
+    reportError(errorPath,
+                known ? Severity::error : Severity::warning,
+                "objectIndex",
+                "The address of local variable '" + name + "' " + verb + " accessed at non-zero index.",
+                CWE758,
+                false);
+}

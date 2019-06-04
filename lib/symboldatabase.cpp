@@ -58,8 +58,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseNeedInitialization();
     createSymbolDatabaseVariableSymbolTable();
     createSymbolDatabaseSetScopePointers();
-    createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetVariablePointers();
+    createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
 }
@@ -4057,6 +4057,11 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         const Function * func = matches[i];
         size_t same = 0;
 
+        if (requireConst && !func->isConst()) {
+            i++;
+            continue;
+        }
+
         if (!requireConst || !func->isConst()) {
             // get the function this call is in
             const Scope * scope = tok->scope();
@@ -4310,7 +4315,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
         // check if all arguments matched
         if (same == hasToBe) {
-            if (constFallback)
+            if (constFallback || (!requireConst && func->isConst()))
                 fallback1Func = func;
             else
                 return func;
@@ -4419,7 +4424,14 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         if (Token::Match(tok1, "%var% .")) {
             const Variable *var = getVariableFromVarId(tok1->varId());
             if (var && var->typeScope())
-                return var->typeScope()->findFunction(tok, var->isConst());
+                return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
+        } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
+            const Token *castTok = tok->previous()->astOperand1();
+            if (castTok->isCast()) {
+                ValueType vt = ValueType::parseDecl(castTok->next(),mSettings);
+                if (vt.typeScope)
+                    return vt.typeScope->findFunction(tok, vt.constness == 1);
+            }
         }
     }
 
@@ -5442,7 +5454,6 @@ void SymbolDatabase::setValueTypeInTokenList()
                 std::istringstream istr(typestr+";");
                 if (tokenList.createTokens(istr)) {
                     ValueType vt;
-                    assert(tokenList.front());
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &vt, mDefaultSignedness, mSettings)) {

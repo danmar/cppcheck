@@ -183,6 +183,31 @@ public:
         void setFlag(unsigned int flag, bool state) {
             flags = state ? flags | flag : flags & ~flag;
         }
+
+        /**
+         * Get alias start token.
+         * template < ... > using X = foo < ... >;
+         *                            ^
+         * @return alias start token
+         */
+        const Token * aliasStartToken() const;
+
+        /**
+         * Get alias end token.
+         * template < ... > using X = foo < ... >;
+         *                                       ^
+         * @return alias end token
+         */
+        const Token * aliasEndToken() const;
+
+        /**
+         * Is token an alias token?
+         * template < ... > using X = foo < ... >;
+         *                                   ^
+         * @param tok token to check
+         * @return true if alias token, false if not
+         */
+        bool isAliasToken(const Token *tok) const;
     };
 
     /**
@@ -282,7 +307,7 @@ private:
      * simplify template instantiations (use default argument values)
      * @param template1 template declaration or forward declaration
      */
-    void useDefaultArgumentValues(TemplateSimplifier::TokenAndName &template1);
+    void useDefaultArgumentValues(TokenAndName &declaration);
 
     /**
      * Try to locate a matching declaration for each user defined

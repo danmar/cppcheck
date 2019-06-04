@@ -6138,6 +6138,16 @@ private:
               "    *x = 32;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8997
+        check("void f() {\n"
+              "  char x[2];\n"
+              "  char* p = x;\n"
+              "  *p = 1;\n"
+              "  p += 1;\n"
+              "  *p = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_pointer_parameter() {

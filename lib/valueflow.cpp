@@ -2697,12 +2697,33 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
         result = "iterator";
         break;
     case ValueFlow::Value::Object:
+    case ValueFlow::Value::Address:
         if (astIsPointer(tok))
             result = "pointer";
         else
             result = "object";
         break;
     }
+    return result;
+}
+
+ValueFlow::Value getLifetimeObjValue(const Token *tok)
+{
+    ValueFlow::Value result;
+    auto pred = [](const ValueFlow::Value &v) {
+        if (!v.isLocalLifetimeValue())
+            return false;
+        if (!v.tokvalue->variable())
+            return false;
+        return true;
+    };
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), pred);
+    if (it == tok->values().end())
+        return result;
+    result = *it;
+    // There should only be one lifetime
+    if (std::find_if(std::next(it), tok->values().end(), pred) != tok->values().end())
+        return result;
     return result;
 }
 
@@ -3140,7 +3161,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         Token *vartok = tok->tokAt(-2);
         std::vector<const Token *> args = getArguments(tok);
         std::size_t n = args.size();
-        if (n > 1 && astCanonicalType(args[n - 2]) == astCanonicalType(args[n - 1]) &&
+        if (n > 1 && Token::typeStr(args[n - 2]) == Token::typeStr(args[n - 1]) &&
             (((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) ||
               (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1]))))) {
             LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::Object} .byDerefCopy(
@@ -3337,12 +3358,14 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             value.lifetimeScope = ValueFlow::Value::Local;
             value.tokvalue = lifeTok;
             value.errorPath = errorPath;
+            if (astIsPointer(lifeTok) || !Token::Match(lifeTok->astParent(), ".|["))
+                value.lifetimeKind = ValueFlow::Value::Address;
             setTokenValue(tok, value, tokenlist->getSettings());
 
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
-        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str (")) {
+        else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find (")) {
             ErrorPath errorPath;
             const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
             if (!container)
@@ -3749,12 +3772,16 @@ struct ValueFlowConditionHandler {
 
                     // if astParent is "!" we need to invert codeblock
                     {
-                        const Token *parent = tok->astParent();
-                        while (parent && parent->str() == "&&")
-                            parent = parent->astParent();
-                        if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
-                            check_if = !check_if;
-                            check_else = !check_else;
+                        const Token *tok2 = tok;
+                        while (tok2->astParent()) {
+                            const Token *parent = tok2->astParent();
+                            while (parent && parent->str() == "&&")
+                                parent = parent->astParent();
+                            if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
+                                check_if = !check_if;
+                                check_else = !check_else;
+                            }
+                            tok2 = parent;
                         }
                     }
 

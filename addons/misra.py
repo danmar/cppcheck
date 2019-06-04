@@ -517,7 +517,7 @@ def generateTable():
 
     # what rules are handled by this addon?
     addon = []
-    compiled = re.compile(r'[ ]+misra_([0-9]+)_([0-9]+)[(].*')
+    compiled = re.compile(r'.*def[ ]+misra_([0-9]+)_([0-9]+)[(].*')
     for line in open(__file__):
         res = compiled.match(line)
         if res is None:
@@ -865,15 +865,19 @@ class MisraChecker:
 
     def misra_8_12(self, data):
         for scope in data.scopes:
-            enum_values = []
-            implicit_enum_values = []
             if scope.type != 'Enum':
                 continue
+            enum_values = []
+            implicit_enum_values = []
             e_token = scope.bodyStart.next
             while e_token != scope.bodyEnd:
-                if e_token.isName and \
-                e_token.values and \
-                e_token.valueType and e_token.valueType.typeScope == scope:
+                if e_token.str == '(':
+                    e_token.str == e_token.link
+                    continue
+                if not e_token.previous.str in ',{':
+                    e_token = e_token.next
+                    continue
+                if e_token.isName and e_token.values and e_token.valueType and e_token.valueType.typeScope == scope:
                     token_values = [v.intvalue for v in e_token.values]
                     enum_values += token_values
                     if e_token.next.str != "=":

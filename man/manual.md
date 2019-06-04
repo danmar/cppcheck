@@ -1,7 +1,13 @@
+---
+title: Cppcheck manual
+subtitle: Version 1.88
+author: Cppcheck team
+lang: en
+toc: true
+documentclass: report
+---
 
-# Cppcheck 1.88 dev
-
-## Introduction
+# Introduction
 
 Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code (i.e. have very few false positives).
 
@@ -18,9 +24,9 @@ You will find more bugs in your software by testing your software carefully, tha
 more bugs in your software by instrumenting your software, than by using Cppcheck. But Cppcheck can still detect some
 of the bugs that you miss when testing and instrumenting your software.
 
-## Getting started
+# Getting started
 
-### GUI
+## GUI
 
 It is not required but creating a new project file is a good first step. There are a few options you can tweak to get
 good results.
@@ -34,9 +40,9 @@ feature if you can. Cppcheck can import:
 
 When you have filled out the project settings and click on OK; the Cppcheck analysis will start.
 
-### Command line
+## Command line
 
-#### First test
+### First test
 
 Here is a simple code
 
@@ -56,7 +62,7 @@ The output from cppcheck will then be:
     Checking file1.c...
     [file1.c:4]: (error) Array 'a[10]' index 10 out of bounds
 
-#### Checking all files in a folder
+### Checking all files in a folder
 
 Normally a program has many source files. And you want to check them all. Cppcheck can check all source files in a directory:
 
@@ -69,7 +75,7 @@ If "path" is a folder then cppcheck will recursively check all source files in t
     Checking path/file2.cpp...
     2/2 files checked 100% done
 
-#### Check files manually or use project file
+### Check files manually or use project file
 
 With Cppcheck you can check files manually, by specifying files/paths to check and settings. Or you can use a project file (cmake/visual studio/etc).
 
@@ -77,7 +83,7 @@ We don't know which approach (project file or manual configuration) will give yo
 
 Later chapters will describe this in more detail.
 
-#### Excluding a file or folder from checking
+### Excluding a file or folder from checking
 
 To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to check.
 
@@ -93,7 +99,7 @@ This option does not currently work with the `--project` option and is only vali
 
     cppcheck -isrc/b -isrc/c
 
-### Severities
+## Severities
 
 The possible severities for messages are:
 
@@ -121,17 +127,17 @@ portability warnings. 64-bit portability. code might work different on different
 
 Configuration problems. The recommendation is to only enable these during configuration.
 
-## Importing project
+# Importing project
 
 You can import some project files and build configurations into Cppcheck.
 
-### Cppcheck GUI project
+## Cppcheck GUI project
 
 You can import and use Cppcheck GUI project files in the command line tool:
 
     cppcheck --project=foobar.cppcheck
 
-### CMake
+## CMake
 
 Generate a compile database:
 
@@ -141,7 +147,7 @@ The file `compile_commands.json` is created in the current folder. Now run Cppch
 
     cppcheck --project=compile_commands.json
 
-### Visual Studio
+## Visual Studio
 
 You can run Cppcheck on individual project files (\*.vcxproj) or on a whole solution (\*.sln)
 
@@ -153,13 +159,13 @@ Running Cppcheck on a Visual Studio project:
 
     cppcheck --project=foobar.vcxproj
 
-### C++ Builder 6
+## C++ Builder 6
 
 Running Cppcheck on a C++ Builder 6 project:
 
     cppcheck --project=foobar.bpr
 
-### Other
+## Other
 
 If you can generate a compile database then it's possible to import that in Cppcheck.
 
@@ -167,7 +173,7 @@ In Linux you can use for instance the `bear` (build ear) utility to generate a c
 
     bear make
 
-## Platform
+# Platform
 
 You should use a platform configuration that match your target.
 
@@ -195,11 +201,11 @@ You can also create your own custom platform configuration in a XML file. Here i
       </sizeof>
     </platform>
 
-## Preprocessor Settings
+# Preprocessor Settings
 
 If you use `--project` then Cppcheck will use the preprocessor settings from the imported project. Otherwise you'll probably want to configure the include paths, defines, etc.
 
-### Defines
+## Defines
 
 Here is a file that has 2 preprocessor configurations (with A defined and without A defined):
 
@@ -231,7 +237,7 @@ Another useful flag might be `-U`. It tells Cppcheck that a macro is not defined
 
 That will mean that X is not defined. Cppcheck will not check what happens when X is defined.
 
-### Include paths
+## Include paths
 
 To add an include path, use `-I`, followed by the path.
 
@@ -239,13 +245,13 @@ Cppcheck's preprocessor basically handles includes like any other preprocessor. 
 
 The purpose of this behaviour is that cppcheck is meant to work without necessarily seeing the entire code. Actually, it is recommended to not give all include paths. While it is useful for cppcheck to see the declaration of a class when checking the implementation of its members, passing standard library headers is highly discouraged because it will result in worse results and longer checking time. For such cases, .cfg files (see below) are the better way to provide information about the implementation of functions and types to cppcheck.
 
-## Suppressions
+# Suppressions
 
 If you want to filter out certain errors you can suppress these.
 
 Please note that if you see a false positive then we (the Cppcheck team) want that you report it so we can fix it.
 
-### Plain text suppressions
+## Plain text suppressions
 
 You can suppress certain types of errors. The format for such a suppression is one of:
 
@@ -257,13 +263,13 @@ The `error id` is the id that you want to suppress. The easiest way to get it is
 
 The filename may include the wildcard characters \* or ?, which match any sequence of characters or any single character respectively. It is recommended that you use "/" as path separator on all operating systems.
 
-### Command line suppression
+## Command line suppression
 
 The `--suppress=` command line option is used to specify suppressions on the command line. Example:
 
     cppcheck --suppress=memleak:src/file1.cpp src/
 
-### Suppressions in a file
+## Suppressions in a file
 
 You can create a suppressions file. Example:
 
@@ -280,7 +286,7 @@ You can use the suppressions file like this:
 
     cppcheck --suppressions-list=suppressions.txt src/
 
-### XML suppressions
+## XML suppressions
 
 You can specify suppressions in a XML file. Example file:
 
@@ -300,7 +306,7 @@ You can use the suppressions file like this:
 
     cppcheck --suppress-xml=suppressions.xml src/
 
-### Inline suppressions
+## Inline suppressions
 
 Suppressions can also be added directly in the code by adding comments that contain special keywords. Before adding such comments, consider that the code readability is sacrificed a little.
 
@@ -338,7 +344,7 @@ You can write comments for the suppress, however is recommended to use ; or // t
     // cppcheck-suppress arrayIndexOutOfBounds ; some comment
     // cppcheck-suppress arrayIndexOutOfBounds // some comment
 
-## XML output
+# XML output
 
 Cppcheck can generate output in XML format. Use `--xml` to enable this format.
 
@@ -359,7 +365,7 @@ Here is a sample report:
       </errors>
     </results>
 
-### The `<error>` element
+## The `<error>` element
 
 Each error is reported in a `<error>` element. Attributes:
 
@@ -387,7 +393,7 @@ this attribute is only used when the error message is inconclusive
 
 CWE ID for the problem. This attribute is only used when the CWE ID for the message is known.
 
-### The `<location>` element
+## The `<location>` element
 
 All locations related to an error are listed with `<location>` elements. The primary location is listed first.
 
@@ -409,11 +415,11 @@ line number
 
 short information for each location (optional)
 
-## Reformatting the text output
+# Reformatting the text output
 
 If you want to reformat the output so it looks different you can use templates.
 
-### Predefined output formats
+## Predefined output formats
 
 To get Visual Studio compatible output you can use --template=vs:
 
@@ -435,7 +441,7 @@ The output will look like this:
     a[2] = 0;
       ^
 
-### User defined output format (single line)
+## User defined output format (single line)
 
 You can write your own pattern. For instance, to get warning messages that are formatted like old gcc such format can be used:
 
@@ -455,7 +461,7 @@ The output will look like this:
     Checking samples/arrayIndexOutOfBounds/bad.c ...
     samples/arrayIndexOutOfBounds/bad.c,6,error,arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.
 
-### User defined output format (multi line)
+## User defined output format (multi line)
 
 Many warnings have multiple locations. Example code:
 
@@ -497,7 +503,7 @@ The first line in the warning is formatted by the --template format.
 
 The other lines in the warning are formatted by the --template-location format.
 
-#### Format specifiers for --template
+### Format specifiers for --template
 
 The available specifiers for --template are:
 
@@ -537,19 +543,19 @@ Warning id
 
 The real code.
 
-**\t**
+**\\t**
 
 Tab
 
-**\n**
+**\\n**
 
 Newline
 
-**\r**
+**\\r**
 
 Carriage return
 
-#### Format specifiers for --template-location
+### Format specifiers for --template-location
 
 The available specifiers for `--template-location` are:
 
@@ -573,23 +579,23 @@ Information message about current location
 
 The real code.
 
-**\t**
+**\\t**
 
 Tab
 
-**\t**
+**\\n**
 
 Newline
 
-**\r**
+**\\r**
 
 Carriage return
 
-## Speeding up Cppcheck
+# Speeding up Cppcheck
 
 It is possible to speed up Cppcheck analysis in a few different ways.
 
-### Preprocessor configurations
+## Preprocessor configurations
 
 Imagine this source code:
 
@@ -625,7 +631,7 @@ Now if you want you can limit the analysis. You probably know what the target co
     Checking test.c ...
     Checking test.c: __GNUC__=1...
 
-### Unused templates
+## Unused templates
 
 If you think Cppcheck is slow and you are using templates, then you should try how it works to remove unused templates.
 
@@ -663,11 +669,11 @@ This lost message is in theory not critical, since `Bar` is not instantiated the
 
 The speedup you get can be remarkable.
 
-### Check headers
+## Check headers
 
 TBD
 
-## Addons
+# Addons
 
 Addons are scripts with extra checks. Cppcheck is distributed with a few addons. You can easily write your own custom addon.
 
@@ -686,7 +692,7 @@ And then such configuration can be executed on the cppcheck command line:
 
     cppcheck --addon=misra.json somefile.c
 
-### CERT
+## CERT
 
 Check CERT coding rules. No configuration is needed.
 
@@ -694,7 +700,7 @@ Example usage:
 
     cppcheck --addon=cert somefile.c
 
-### Findcasts
+## Findcasts
 
 Will just locate C-style casts in the code. No configuration is needed.
 
@@ -702,7 +708,7 @@ Example usage:
 
     cppcheck --addon=findcasts somefile.c
 
-### Misc
+## Misc
 
 Misc checks. No configuration is needed.
 
@@ -713,7 +719,7 @@ Example usage:
 
     cppcheck --addon=misc somefile.c
 
-### Misra
+## Misra
 
 Check that your code is Misra C 2012 compliant.
 
@@ -741,7 +747,7 @@ Usage:
 
     cppcheck --addon=my-misra-config.json somefile.c
 
-### Naming
+## Naming
 
 Check naming conventions. You specify your naming conventions for variables/functions/etc using regular expressions.
 
@@ -759,7 +765,7 @@ Usage:
 
     cppcheck --addon=my-naming.json somefile.c
 
-### Namingng
+## Namingng
 
 Check naming conventions. You specify the naming conventions using regular expressions in a json file.
 
@@ -774,7 +780,7 @@ Usage:
 
     cppcheck --addon=namingng-ros.json somefile.c
 
-### Threadsafety
+## Threadsafety
 
 This will warn if you have local static objects that are not threadsafe. No configuration is needed.
 
@@ -782,7 +788,7 @@ Example usage:
 
     cppcheck --addon=threadsafety somefile.c
 
-### Y2038
+## Y2038
 
 Check for the Y2038 bug. No configuration is needed.
 
@@ -790,13 +796,13 @@ Example usage:
 
     cppcheck --addon=y2038 somefile.c
 
-## Library configuration
+# Library configuration
 
 When external libraries are used, such as WinAPI, POSIX, gtk, Qt, etc, Cppcheck doesn't know how the external functions behave. Cppcheck then fails to detect various problems such as leaks, buffer overflows, possible null pointer dereferences, etc. But this can be fixed with configuration files.
 
 Cppcheck already contains configurations for several libraries. They can be loaded as described below. Note that the configuration for the standard libraries of C and C++, std.cfg, is always loaded by cppcheck. If you create or update a configuration file for a popular library, we would appreciate if you upload it to us.
 
-### Using your own custom .cfg file
+## Using your own custom .cfg file
 
 You can create and use your own .cfg files for your projects. Use `--check-library` and `--enable=information` to get hints about what you should configure.
 
@@ -808,11 +814,11 @@ The command line cppcheck will try to load custom .cfg files from the working pa
 
 The cppcheck GUI will try to load custom .cfg files from the project file path. The custom .cfg files should be shown in the Edit Project File dialog that you open from the `File` menu.
 
-### Memory and resource leaks
+## Memory and resource leaks
 
 Cppcheck has configurable checking for leaks, e.g. you can specify which functions allocate and free memory or resources and which functions do not affect the allocation at all.
 
-#### `<alloc>` and `<dealloc>`
+### `<alloc>` and `<dealloc>`
 
 Here is an example program:
 
@@ -844,7 +850,7 @@ Here is a minimal windows.cfg file:
 
 The allocation and deallocation functions are organized in groups. Each group is defined in a `<resource>` or `<memory>` tag and is identified by its `<dealloc>` functions. This means, groups with overlapping `<dealloc>` tags are merged.
 
-#### `<leak-ignore>` and `<use>`
+### `<leak-ignore>` and `<use>`
 
 Often the allocated pointer is passed to functions. Example:
 
@@ -878,15 +884,15 @@ If instead `dostuff` takes care of the memory then this can be configured with:
 
 The `<use>` configuration has no logical purpose. You will get the same warnings without it. Use it to silence --check-library information messages.
 
-### Function behavior
+## Function behavior
 
 To specify the behaviour of functions and how they should be used, `<function>` tags can be used. Functions are identified by their name, specified in the name attribute and their number of arguments. The name is a comma-separated list of function names. For functions in namespaces or classes, just provide their fully qualified name. For example: `<function name="memcpy,std::memcpy">`. If you have template functions then provide their instantiated names `<function name="dostuff<int>">`.
 
-#### Function arguments
+### Function arguments
 
 The arguments a function takes can be specified by `<arg>` tags. Each of them takes the number of the argument (starting from 1) in the nr attribute, `nr="any"` for arbitrary arguments, or `nr="variadic"` for variadic arguments. Optional arguments can be specified by providing a default value: `default="value"`. The specifications for individual arguments override this setting.
 
-##### Not bool
+#### Not bool
 
 Here is an example program with misplaced comparison:
 
@@ -919,7 +925,7 @@ Here is the minimal notbool.cfg
       </function>
     </def>
 
-##### Uninitialized memory
+#### Uninitialized memory
 
 Here is an example program:
 
@@ -956,7 +962,7 @@ Here is the minimal windows.cfg:
       </function>
     </def>
 
-##### Null pointers
+#### Null pointers
 
 Cppcheck assumes it's ok to pass NULL pointers to functions. Here is an example program:
 
@@ -991,7 +997,7 @@ Here is a minimal windows.cfg file:
       </function>
     </def>
 
-##### Format string
+#### Format string
 
 You can define that a function takes a format string. Example:
 
@@ -1029,7 +1035,7 @@ printf - format string follows the printf rules
 
 scanf - format string follows the scanf rules
 
-##### Value range
+#### Value range
 
 The valid values can be defined. Imagine:
 
@@ -1069,7 +1075,7 @@ Some example expressions you can use in the valid element:
 0,2:32  =>  the value 0 and all values between 2 and 32 are valid
 -1.5:5.6  =>  all values between -1.5 and 5.6 are valid
 
-##### `<minsize>`
+#### `<minsize>`
 
 Some function arguments take a buffer. With minsize you can configure the min size of the buffer (in bytes, not elements). Imagine:
 
@@ -1128,7 +1134,7 @@ With this you can say that an argument must be a zero-terminated string.
       </function>
     </def>
 
-##### `<noreturn>`
+#### `<noreturn>`
 
 Cppcheck doesn't assume that functions always return. Here is an example code:
 
@@ -1170,7 +1176,7 @@ Here is a minimal windows.cfg file:
       </function>
     </def>
 
-##### `<use-retval>`
+#### `<use-retval>`
 
 As long as nothing else is specified, cppcheck assumes that ignoring the return value of a function is ok:
 
@@ -1202,7 +1208,7 @@ Here is a minimal lib.cfg file:
       </function>
     </def>
 
-##### `<pure>` and `<const>`
+#### `<pure>` and `<const>`
 
 These correspond to the GCC function attributes `<pure>` and `<const>`.
 
@@ -1243,7 +1249,7 @@ Here is a minimal const.cfg file:
       </function>
     </def>
 
-##### Example configuration for strcpy()
+#### Example configuration for strcpy()
 
 The proper configuration for the standard strcpy() function would be:
 
@@ -1268,7 +1274,7 @@ The first argument that the function takes is a pointer. It must not be a null p
 
 The second argument the function takes is a pointer. It must not be null. And it must point at initialized data. Using `<not-null>` and `<not-uninit>` is correct. Moreover it must point at a zero-terminated string so `<strz>` is also used.
 
-### `<define>`
+## `<define>`
 
 Libraries can be used to define preprocessor macros as well. For example:
 
@@ -1279,7 +1285,7 @@ Libraries can be used to define preprocessor macros as well. For example:
 
 Each occurrence of "NULL_VALUE" in the code would then be replaced by "0" at preprocessor stage.
 
-### `<podtype>`
+## `<podtype>`
 
 Use this for integer/float/bool/pointer types. Not for structs/unions.
 
@@ -1307,7 +1313,7 @@ The size of the type is specified in bytes. Possible values for the "sign" attri
     Checking unusedvar.cpp...
     [unusedvar.cpp:2]: (style) Unused variable: a
 
-### `<container>`
+## `<container>`
 
 A lot of C++ libraries, among those the STL itself, provide containers with very similar functionality. Libraries can be used to tell cppcheck about their behaviour. Each container needs a unique ID. It can optionally have a startPattern, which must be a valid Token::Match pattern and an endPattern that is compared to the linked token of the first token with such a link. The optional attribute "inherits" takes an ID from a previously defined container.
 
@@ -1335,7 +1341,7 @@ The tag `<type>` can be added as well to provide more information about the type
 * `string='std-like'` can be set for containers that match `std::string` interfaces.
 * `associative='std-like'` can be set for containers that match C++'s `AssociativeContainer` interfaces.
 
-## HTML Report
+# HTML Report
 
 You can convert the XML output from cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/)> for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
 

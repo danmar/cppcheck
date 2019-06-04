@@ -149,6 +149,7 @@ extern int a811[]; // 8.11
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
 enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
+enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
 
 void misra_8_14(char * restrict str) {} // 8.14
 

@@ -1283,6 +1283,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
+            } else if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1()) {
+                return Result(Result::Type::READ);
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 continue;
             } else {
@@ -1457,6 +1459,8 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
 
 bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
 {
+    if (isEscapedAlias(expr))
+        return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
@@ -1511,6 +1515,25 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
             if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
                 return true;
+        }
+    }
+    return false;
+}
+
+bool FwdAnalysis::isEscapedAlias(const Token* expr)
+{
+    for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
+        for (const ValueFlow::Value &val : subexpr->values()) {
+            if (!val.isLocalLifetimeValue())
+                continue;
+            const Variable* var = val.tokvalue->variable();
+            if (!var)
+                continue;
+            if (!var->isLocal())
+                return true;
+            if (var->isArgument())
+                return true;
+
         }
     }
     return false;

@@ -206,6 +206,8 @@ public:
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
+    bool isEscapedAlias(const Token* expr);
+
     static bool isNullOperand(const Token *expr);
 private:
     /** Result of forward analysis */
