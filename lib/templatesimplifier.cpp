@@ -1578,9 +1578,7 @@ void TemplateSimplifier::expandTemplate(
                     previous->isSigned(typetok->isSigned());
                     previous->isUnsigned(typetok->isUnsigned());
                     previous->isLong(typetok->isLong());
-                    if (previous->str() == "{") {
-                        brackets1.push(previous);
-                    } else if (previous->str() == "(") {
+                    if (Token::Match(previous, "{|(|[")) {
                         brackets1.push(previous);
                     } else if (previous->str() == "}") {
                         assert(brackets1.empty() == false);
@@ -1590,6 +1588,11 @@ void TemplateSimplifier::expandTemplate(
                     } else if (previous->str() == ")") {
                         assert(brackets1.empty() == false);
                         assert(brackets1.top()->str() == "(");
+                        Token::createMutualLinks(brackets1.top(), previous);
+                        brackets1.pop();
+                    } else if (previous->str() == "]") {
+                        assert(brackets1.empty() == false);
+                        assert(brackets1.top()->str() == "[");
                         Token::createMutualLinks(brackets1.top(), previous);
                         brackets1.pop();
                     }
@@ -1785,9 +1788,7 @@ void TemplateSimplifier::expandTemplate(
                                         --typeindentlevel;
                                     mTokenList.addtoken(typetok, tok5->linenr(), tok5->fileIndex());
                                     Token *back = mTokenList.back();
-                                    if (back->str() == "{") {
-                                        brackets1.push(back);
-                                    } else if (back->str() == "(") {
+                                    if (Token::Match(back, "{|(|[")) {
                                         brackets1.push(back);
                                     } else if (back->str() == "}") {
                                         assert(brackets1.empty() == false);
@@ -1797,6 +1798,11 @@ void TemplateSimplifier::expandTemplate(
                                     } else if (back->str() == ")") {
                                         assert(brackets1.empty() == false);
                                         assert(brackets1.top()->str() == "(");
+                                        Token::createMutualLinks(brackets1.top(), back);
+                                        brackets1.pop();
+                                    } else if (back->str() == "]") {
+                                        assert(brackets1.empty() == false);
+                                        assert(brackets1.top()->str() == "[");
                                         Token::createMutualLinks(brackets1.top(), back);
                                         brackets1.pop();
                                     }
@@ -1864,7 +1870,7 @@ void TemplateSimplifier::expandTemplate(
                         if (copy) {
                             mTokenList.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
                             Token *back = mTokenList.back();
-                            if (back->str() == "{") {
+                            if (Token::Match(back, "{|(|[")) {
                                 brackets1.push(back);
                             } else if (back->str() == "(") {
                                 brackets1.push(back);
@@ -1876,6 +1882,11 @@ void TemplateSimplifier::expandTemplate(
                             } else if (back->str() == ")") {
                                 assert(brackets1.empty() == false);
                                 assert(brackets1.top()->str() == "(");
+                                Token::createMutualLinks(brackets1.top(), back);
+                                brackets1.pop();
+                            } else if (back->str() == "]") {
+                                assert(brackets1.empty() == false);
+                                assert(brackets1.top()->str() == "[");
                                 Token::createMutualLinks(brackets1.top(), back);
                                 brackets1.pop();
                             }
