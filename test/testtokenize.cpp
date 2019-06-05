@@ -399,6 +399,7 @@ private:
         TEST_CASE(simplifyOperatorName11); // #8889
         TEST_CASE(simplifyOperatorName12); // #9110
         TEST_CASE(simplifyOperatorName13); // user defined literal
+        TEST_CASE(simplifyOperatorName14); // std::complex operator "" if
 
         TEST_CASE(simplifyNullArray);
 
@@ -6357,9 +6358,22 @@ private:
     }
 
     void simplifyOperatorName13() { // user defined literal
-        const char code[] = "unsigned long operator""_numch(const char *ch, unsigned long size);";
-        ASSERT_EQUALS("unsigned long operator""_numch ( const char * ch , unsigned long size ) ;",
+        const char code[] = "unsigned long operator\"\"_numch(const char *ch, unsigned long size);";
+        ASSERT_EQUALS("unsigned long operator\"\"_numch ( const char * ch , unsigned long size ) ;",
                       tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName14() { // std::complex operator "" if
+        {
+            const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num);";
+            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num) { }";
+            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) { }",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void simplifyNullArray() {

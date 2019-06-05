@@ -198,7 +198,7 @@ signals:
     *
     * @param current Model index to specify new selected item.
     */
-    void selectionChanged(const QModelIndex &current);
+    void treeSelectionChanged(const QModelIndex &current);
 
     /**
      * Selected item(s) has been tagged
