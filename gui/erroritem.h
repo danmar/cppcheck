@@ -101,7 +101,7 @@ public:
     static bool sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
 };
 
-Q_DECLARE_METATYPE(ErrorItem);
+Q_DECLARE_METATYPE(ErrorItem)
 
 /**
 * @brief A class containing error data for one shown error line.
