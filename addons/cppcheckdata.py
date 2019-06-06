@@ -802,6 +802,14 @@ def ArgumentParser():
     return parser
 
 
+def simpleMatch(token, pattern):
+    for p in pattern.split(' '):
+        if not token or token.str != p:
+            return False
+        token = token.next
+    return True
+
+
 def reportError(location, severity, message, addon, errorId):
     if '--cli' in sys.argv:
         errout = sys.stdout
