@@ -5,6 +5,7 @@
 #include <QPlainTextEdit>
 #include <QObject>
 #include <QRegularExpression>
+#include "codeeditorstyle.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -18,7 +19,8 @@ class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT
 
 public:
-    explicit Highlighter(QTextDocument *parent);
+    explicit Highlighter( QTextDocument *parent,
+                          CodeEditorStyle *widgetStyle );
 
     void setSymbols(const QStringList &symbols);
 
@@ -42,13 +44,16 @@ private:
     QTextCharFormat mMultiLineCommentFormat;
     QTextCharFormat mQuotationFormat;
     QTextCharFormat mSymbolFormat;
+
+    CodeEditorStyle *mWidgetStyle;
 };
 
 class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 
 public:
-    explicit CodeEditor(QWidget *parent);
+    explicit CodeEditor( QWidget *parent,
+                         CodeEditorStyle *widgetStyle = nullptr );
     CodeEditor(const CodeEditor &) = delete;
     CodeEditor &operator=(const CodeEditor &) = delete;
 
@@ -74,6 +79,7 @@ private slots:
 private:
     QWidget *mLineNumberArea;
     Highlighter *mHighlighter;
+    CodeEditorStyle *mWidgetStyle;
     int mErrorPosition;
 };
 

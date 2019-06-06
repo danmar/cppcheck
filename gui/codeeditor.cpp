@@ -3,13 +3,15 @@
 #include "codeeditor.h"
 
 
-Highlighter::Highlighter(QTextDocument *parent)
-    : QSyntaxHighlighter(parent)
+Highlighter::Highlighter( QTextDocument *parent,
+                          CodeEditorStyle *widgetStyle ) :
+    QSyntaxHighlighter( parent ),
+    mWidgetStyle( widgetStyle )
 {
     HighlightingRule rule;
 
-    mKeywordFormat.setForeground(Qt::darkBlue);
-    mKeywordFormat.setFontWeight(QFont::Bold);
+    mKeywordFormat.setForeground( mWidgetStyle->keywordColor );
+    mKeywordFormat.setFontWeight( mWidgetStyle->keywordWeight );
     QStringList keywordPatterns;
     keywordPatterns << "bool"
                     << "break"
@@ -57,28 +59,32 @@ Highlighter::Highlighter(QTextDocument *parent)
         mHighlightingRules.append(rule);
     }
 
-    mClassFormat.setFontWeight(QFont::Bold);
-    mClassFormat.setForeground(Qt::darkMagenta);
+    mClassFormat.setForeground( mWidgetStyle->classColor );
+    mClassFormat.setFontWeight( mWidgetStyle->classWeight );
     rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
     rule.format = mClassFormat;
     mHighlightingRules.append(rule);
 
-    mQuotationFormat.setForeground(Qt::darkGreen);
+    mQuotationFormat.setForeground( mWidgetStyle->quoteColor );
+    mQuotationFormat.setFontWeight( mWidgetStyle->quoteWeight );
     rule.pattern = QRegularExpression("\".*\"");
     rule.format = mQuotationFormat;
     mHighlightingRules.append(rule);
 
-    mSingleLineCommentFormat.setForeground(Qt::gray);
+    mSingleLineCommentFormat.setForeground( mWidgetStyle->commentColor );
+    mSingleLineCommentFormat.setFontWeight( mWidgetStyle->commentWeight );
     rule.pattern = QRegularExpression("//[^\n]*");
     rule.format = mSingleLineCommentFormat;
     mHighlightingRules.append(rule);
 
     mHighlightingRulesWithSymbols = mHighlightingRules;
 
-    mMultiLineCommentFormat.setForeground(Qt::gray);
+    mMultiLineCommentFormat.setForeground( mWidgetStyle->commentColor );
+    mMultiLineCommentFormat.setFontWeight( mWidgetStyle->commentWeight );
 
-    mSymbolFormat.setForeground(Qt::red);
-    mSymbolFormat.setBackground(QColor(220,220,255));
+    mSymbolFormat.setForeground( mWidgetStyle->symbolFGColor );
+    mSymbolFormat.setBackground( mWidgetStyle->symbolBGColor );
+    mSymbolFormat.setFontWeight( mWidgetStyle->symbolWeight );
 
     mCommentStartExpression = QRegularExpression("/\\*");
     mCommentEndExpression = QRegularExpression("\\*/");
@@ -128,11 +134,31 @@ void Highlighter::highlightBlock(const QString &text)
 }
 
 
-CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
+CodeEditor::CodeEditor( QWidget *parent,
+                        CodeEditorStyle *widgetStyle /*= nullptr*/ ) :
+    QPlainTextEdit(parent)
 {
+    if( widgetStyle ) mWidgetStyle = widgetStyle;
+    else mWidgetStyle = new CodeEditorStyle( defaultStyle );
+
     mLineNumberArea = new LineNumberArea(this);
-    mHighlighter = new Highlighter(this->document());
+    mHighlighter = new Highlighter(this->document(), mWidgetStyle);
     mErrorPosition = -1;
+
+    // set widget coloring by overriding widget style sheet
+    QString bgcolor = QString("background:rgb(%1,%2,%3);")
+            .arg(mWidgetStyle->widgetBGColor.red())
+            .arg(mWidgetStyle->widgetBGColor.green())
+            .arg(mWidgetStyle->widgetBGColor.blue());
+    QString fgcolor = QString("color:rgb(%1,%2,%3);")
+            .arg(mWidgetStyle->widgetFGColor.red())
+            .arg(mWidgetStyle->widgetFGColor.green())
+            .arg(mWidgetStyle->widgetFGColor.blue());
+    QString style = QString("%1 %2")
+            .arg(bgcolor)
+            .arg(fgcolor);
+    setObjectName("CodeEditor");
+    setStyleSheet(style);
 
     setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
@@ -213,9 +239,7 @@ void CodeEditor::highlightErrorLine()
 
     QTextEdit::ExtraSelection selection;
 
-    QColor lineColor = QColor(255,220,220);
-
-    selection.format.setBackground(lineColor);
+    selection.format.setBackground( mWidgetStyle->highlightBGColor );
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = QTextCursor(document());
     selection.cursor.setPosition(mErrorPosition);
@@ -228,7 +252,7 @@ void CodeEditor::highlightErrorLine()
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    painter.fillRect(event->rect(), QColor(240,240,240));
+    painter.fillRect(event->rect(), mWidgetStyle->lineNumBGColor );
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -238,7 +262,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
-            painter.setPen(Qt::black);
+            painter.setPen( mWidgetStyle->lineNumFGColor );
             painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
         }
