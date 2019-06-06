@@ -6,6 +6,8 @@
 #include <QFont>
 
 class CodeEditorStyle {
+private:
+    CodeEditorStyle(){};
 public:
     CodeEditorStyle(
         const QColor& CtrlFGColor, const QColor& CtrlBGColor,
@@ -34,17 +36,6 @@ public:
     symbolBGColor( SymbBGColor ),
     symbolWeight( SymbWeight )
     {}
-
-    // delete empty constructor
-    CodeEditorStyle() = delete;
-    // default copy constructor and copy operator=
-    CodeEditorStyle( const CodeEditorStyle& rhs ) = default;
-    CodeEditorStyle& operator=( const CodeEditorStyle& rhs ) = default;
-    // default move constructor and move operator=
-    CodeEditorStyle( CodeEditorStyle&& rhs ) = default;
-    CodeEditorStyle& operator=( CodeEditorStyle&& rhs ) = default;
-    // default destructor
-    ~CodeEditorStyle() = default;
 
 public:
     QColor          widgetFGColor;
