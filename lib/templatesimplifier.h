@@ -208,6 +208,18 @@ public:
          * @return true if alias token, false if not
          */
         bool isAliasToken(const Token *tok) const;
+
+        /**
+         * Is declaration the same family (class, function or variable).
+         *
+         * @param decl declaration to compare to
+         * @return true if same family, false if different family
+         */
+        bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
+            // maks sure a family flag is set and matches
+            return (flags & (fIsClass | fIsFunction | fIsVariable)) &
+                   (decl.flags & (fIsClass | fIsFunction | fIsVariable));
+        }
     };
 
     /**

@@ -2922,6 +2922,17 @@ void TemplateSimplifier::replaceTemplateUsage(
     }
 }
 
+static bool specMatch(
+    const TemplateSimplifier::TokenAndName &spec,
+    const TemplateSimplifier::TokenAndName &decl)
+{
+    // make sure decl is really a declaration
+    if (decl.isPartialSpecialization() || decl.isSpecialization() || decl.isAlias())
+        return false;
+
+    return spec.isSameFamily(decl);
+}
+
 void TemplateSimplifier::getSpecializations()
 {
     // try to locate a matching declaration for each user defined specialization
@@ -2929,7 +2940,7 @@ void TemplateSimplifier::getSpecializations()
         if (spec.isSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (decl.isSpecialization())
+                if (!specMatch(spec, decl))
                     continue;
 
                 // make sure the scopes and names match
@@ -2942,6 +2953,9 @@ void TemplateSimplifier::getSpecializations()
 
             if (!found) {
                 for (auto & decl : mTemplateForwardDeclarations) {
+                    if (!specMatch(spec, decl))
+                        continue;
+
                     // make sure the scopes and names match
                     if (spec.fullName == decl.fullName) {
                         // @todo make sure function parameters also match
@@ -2960,7 +2974,7 @@ void TemplateSimplifier::getPartialSpecializations()
         if (spec.isPartialSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (decl.isPartialSpecialization())
+                if (!specMatch(spec, decl))
                     continue;
 
                 // make sure the scopes and names match
@@ -2973,6 +2987,9 @@ void TemplateSimplifier::getPartialSpecializations()
 
             if (!found) {
                 for (auto & decl : mTemplateForwardDeclarations) {
+                    if (!specMatch(spec, decl))
+                        continue;
+
                     // make sure the scopes and names match
                     if (spec.fullName == decl.fullName) {
                         // @todo make sure function parameters also match
