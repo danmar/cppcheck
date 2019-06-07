@@ -2644,12 +2644,22 @@ private:
     }
 
     void template113() {
-        const char code[] = "template <class> class A { void f(); };\n"
-                            "A<int> a;";
-        const char exp[] = "class A<int> ; "
-                           "A<int> a ; "
-                           "class A<int> { void f ( ) ; } ;";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "template <class> class A { void f(); };\n"
+                                "A<int> a;";
+            const char exp[] = "class A<int> ; "
+                               "A<int> a ; "
+                               "class A<int> { void f ( ) ; } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <struct> struct A { void f(); };\n"
+                                "A<int> a;";
+            const char exp[] = "struct A<int> ; "
+                               "A<int> a ; "
+                               "struct A<int> { void f ( ) ; } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
