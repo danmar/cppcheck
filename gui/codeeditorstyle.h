@@ -7,7 +7,7 @@
 
 class CodeEditorStyle {
 private:
-    CodeEditorStyle(){};
+    CodeEditorStyle() {};
 public:
     CodeEditorStyle(
         const QColor& CtrlFGColor, const QColor& CtrlBGColor,
@@ -18,23 +18,23 @@ public:
         const QColor& QteFGColor, const QFont::Weight& QteWeight,
         const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
         const QColor& SymbFGColor, const QColor& SymbBGColor,
-        const QFont::Weight& SymbWeight ) :
-    widgetFGColor( CtrlFGColor ),
-    widgetBGColor( CtrlBGColor ),
-    highlightBGColor( HiLiBGColor ),
-    lineNumFGColor( LnNumFGColor ),
-    lineNumBGColor( LnNumBGColor ),
-    keywordColor( KeyWdFGColor ),
-    keywordWeight( KeyWdWeight ),
-    classColor( ClsFGColor ),
-    classWeight( ClsWeight ),
-    quoteColor( QteFGColor ),
-    quoteWeight( QteWeight ),
-    commentColor( CmtFGColor ),
-    commentWeight( CmtWeight ),
-    symbolFGColor( SymbFGColor ),
-    symbolBGColor( SymbBGColor ),
-    symbolWeight( SymbWeight )
+        const QFont::Weight& SymbWeight) :
+        widgetFGColor(CtrlFGColor),
+        widgetBGColor(CtrlBGColor),
+        highlightBGColor(HiLiBGColor),
+        lineNumFGColor(LnNumFGColor),
+        lineNumBGColor(LnNumBGColor),
+        keywordColor(KeyWdFGColor),
+        keywordWeight(KeyWdWeight),
+        classColor(ClsFGColor),
+        classWeight(ClsWeight),
+        quoteColor(QteFGColor),
+        quoteWeight(QteWeight),
+        commentColor(CmtFGColor),
+        commentWeight(CmtWeight),
+        symbolFGColor(SymbFGColor),
+        symbolBGColor(SymbBGColor),
+        symbolWeight(SymbWeight)
     {}
 
 public:
@@ -57,13 +57,14 @@ public:
 };
 
 static const CodeEditorStyle defaultStyle({
-/* editor FG/BG */          Qt::black, QColor( 240, 240, 240 ),
-/* highlight BG */          QColor( 255, 220, 220 ),
-/* line number FG/BG */     Qt::black, QColor( 240, 240, 240 ),
-/* keyword FG/Weight */     Qt::darkBlue, QFont::Bold,
-/* class FG/Weight */       Qt::darkMagenta, QFont::Bold,
-/* quote FG/Weight */       Qt::darkGreen, QFont::Normal,
-/* comment FG/Weight */     Qt::gray, QFont::Normal,
-/* Symbol FG/BG/Weight */   Qt::red, QColor( 220, 220, 255 ), QFont::Normal });
+    /* editor FG/BG */          Qt::black, QColor(240, 240, 240),
+    /* highlight BG */          QColor(255, 220, 220),
+    /* line number FG/BG */     Qt::black, QColor(240, 240, 240),
+    /* keyword FG/Weight */     Qt::darkBlue, QFont::Bold,
+    /* class FG/Weight */       Qt::darkMagenta, QFont::Bold,
+    /* quote FG/Weight */       Qt::darkGreen, QFont::Normal,
+    /* comment FG/Weight */     Qt::gray, QFont::Normal,
+    /* Symbol FG/BG/Weight */   Qt::red, QColor(220, 220, 255), QFont::Normal
+});
 
 #endif /* CODEEDITORSTYLE_H */

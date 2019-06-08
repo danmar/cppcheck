@@ -19,8 +19,8 @@ class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT
 
 public:
-    explicit Highlighter( QTextDocument *parent,
-                          CodeEditorStyle *widgetStyle );
+    explicit Highlighter(QTextDocument *parent,
+                         CodeEditorStyle *widgetStyle);
 
     void setSymbols(const QStringList &symbols);
 
@@ -52,8 +52,8 @@ class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 
 public:
-    explicit CodeEditor( QWidget *parent,
-                         CodeEditorStyle *widgetStyle = nullptr );
+    explicit CodeEditor(QWidget *parent,
+                        CodeEditorStyle *widgetStyle = nullptr);
     CodeEditor(const CodeEditor &) = delete;
     CodeEditor &operator=(const CodeEditor &) = delete;
 

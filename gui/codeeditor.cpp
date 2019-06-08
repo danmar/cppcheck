@@ -3,15 +3,15 @@
 #include "codeeditor.h"
 
 
-Highlighter::Highlighter( QTextDocument *parent,
-                          CodeEditorStyle *widgetStyle ) :
-    QSyntaxHighlighter( parent ),
-    mWidgetStyle( widgetStyle )
+Highlighter::Highlighter(QTextDocument *parent,
+                         CodeEditorStyle *widgetStyle) :
+    QSyntaxHighlighter(parent),
+    mWidgetStyle(widgetStyle)
 {
     HighlightingRule rule;
 
-    mKeywordFormat.setForeground( mWidgetStyle->keywordColor );
-    mKeywordFormat.setFontWeight( mWidgetStyle->keywordWeight );
+    mKeywordFormat.setForeground(mWidgetStyle->keywordColor);
+    mKeywordFormat.setFontWeight(mWidgetStyle->keywordWeight);
     QStringList keywordPatterns;
     keywordPatterns << "bool"
                     << "break"
@@ -59,32 +59,32 @@ Highlighter::Highlighter( QTextDocument *parent,
         mHighlightingRules.append(rule);
     }
 
-    mClassFormat.setForeground( mWidgetStyle->classColor );
-    mClassFormat.setFontWeight( mWidgetStyle->classWeight );
+    mClassFormat.setForeground(mWidgetStyle->classColor);
+    mClassFormat.setFontWeight(mWidgetStyle->classWeight);
     rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
     rule.format = mClassFormat;
     mHighlightingRules.append(rule);
 
-    mQuotationFormat.setForeground( mWidgetStyle->quoteColor );
-    mQuotationFormat.setFontWeight( mWidgetStyle->quoteWeight );
+    mQuotationFormat.setForeground(mWidgetStyle->quoteColor);
+    mQuotationFormat.setFontWeight(mWidgetStyle->quoteWeight);
     rule.pattern = QRegularExpression("\".*\"");
     rule.format = mQuotationFormat;
     mHighlightingRules.append(rule);
 
-    mSingleLineCommentFormat.setForeground( mWidgetStyle->commentColor );
-    mSingleLineCommentFormat.setFontWeight( mWidgetStyle->commentWeight );
+    mSingleLineCommentFormat.setForeground(mWidgetStyle->commentColor);
+    mSingleLineCommentFormat.setFontWeight(mWidgetStyle->commentWeight);
     rule.pattern = QRegularExpression("//[^\n]*");
     rule.format = mSingleLineCommentFormat;
     mHighlightingRules.append(rule);
 
     mHighlightingRulesWithSymbols = mHighlightingRules;
 
-    mMultiLineCommentFormat.setForeground( mWidgetStyle->commentColor );
-    mMultiLineCommentFormat.setFontWeight( mWidgetStyle->commentWeight );
+    mMultiLineCommentFormat.setForeground(mWidgetStyle->commentColor);
+    mMultiLineCommentFormat.setFontWeight(mWidgetStyle->commentWeight);
 
-    mSymbolFormat.setForeground( mWidgetStyle->symbolFGColor );
-    mSymbolFormat.setBackground( mWidgetStyle->symbolBGColor );
-    mSymbolFormat.setFontWeight( mWidgetStyle->symbolWeight );
+    mSymbolFormat.setForeground(mWidgetStyle->symbolFGColor);
+    mSymbolFormat.setBackground(mWidgetStyle->symbolBGColor);
+    mSymbolFormat.setFontWeight(mWidgetStyle->symbolWeight);
 
     mCommentStartExpression = QRegularExpression("/\\*");
     mCommentEndExpression = QRegularExpression("\\*/");
@@ -134,12 +134,12 @@ void Highlighter::highlightBlock(const QString &text)
 }
 
 
-CodeEditor::CodeEditor( QWidget *parent,
-                        CodeEditorStyle *widgetStyle /*= nullptr*/ ) :
+CodeEditor::CodeEditor(QWidget *parent,
+                       CodeEditorStyle *widgetStyle /*= nullptr*/) :
     QPlainTextEdit(parent)
 {
-    if( widgetStyle ) mWidgetStyle = widgetStyle;
-    else mWidgetStyle = new CodeEditorStyle( defaultStyle );
+    if (widgetStyle) mWidgetStyle = widgetStyle;
+    else mWidgetStyle = new CodeEditorStyle(defaultStyle);
 
     mLineNumberArea = new LineNumberArea(this);
     mHighlighter = new Highlighter(this->document(), mWidgetStyle);
@@ -147,16 +147,16 @@ CodeEditor::CodeEditor( QWidget *parent,
 
     // set widget coloring by overriding widget style sheet
     QString bgcolor = QString("background:rgb(%1,%2,%3);")
-            .arg(mWidgetStyle->widgetBGColor.red())
-            .arg(mWidgetStyle->widgetBGColor.green())
-            .arg(mWidgetStyle->widgetBGColor.blue());
+                      .arg(mWidgetStyle->widgetBGColor.red())
+                      .arg(mWidgetStyle->widgetBGColor.green())
+                      .arg(mWidgetStyle->widgetBGColor.blue());
     QString fgcolor = QString("color:rgb(%1,%2,%3);")
-            .arg(mWidgetStyle->widgetFGColor.red())
-            .arg(mWidgetStyle->widgetFGColor.green())
-            .arg(mWidgetStyle->widgetFGColor.blue());
+                      .arg(mWidgetStyle->widgetFGColor.red())
+                      .arg(mWidgetStyle->widgetFGColor.green())
+                      .arg(mWidgetStyle->widgetFGColor.blue());
     QString style = QString("%1 %2")
-            .arg(bgcolor)
-            .arg(fgcolor);
+                    .arg(bgcolor)
+                    .arg(fgcolor);
     setObjectName("CodeEditor");
     setStyleSheet(style);
 
@@ -239,7 +239,7 @@ void CodeEditor::highlightErrorLine()
 
     QTextEdit::ExtraSelection selection;
 
-    selection.format.setBackground( mWidgetStyle->highlightBGColor );
+    selection.format.setBackground(mWidgetStyle->highlightBGColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = QTextCursor(document());
     selection.cursor.setPosition(mErrorPosition);
@@ -252,7 +252,7 @@ void CodeEditor::highlightErrorLine()
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
-    painter.fillRect(event->rect(), mWidgetStyle->lineNumBGColor );
+    painter.fillRect(event->rect(), mWidgetStyle->lineNumBGColor);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -262,7 +262,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
-            painter.setPen( mWidgetStyle->lineNumFGColor );
+            painter.setPen(mWidgetStyle->lineNumFGColor);
             painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(),
                              Qt::AlignRight, number);
         }
