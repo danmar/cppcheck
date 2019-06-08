@@ -90,6 +90,7 @@ HEADERS += aboutdialog.h \
            applicationlist.h \
            checkstatistics.h \
            checkthread.h \
+           codeeditorstyle.h \
            codeeditor.h \
            common.h \
            csvreport.h \
