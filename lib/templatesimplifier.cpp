@@ -1763,7 +1763,7 @@ void TemplateSimplifier::expandTemplate(
                     }
                 } else if (copy) {
                     bool added = false;
-                    if (tok5->isName()) {
+                    if (tok5->isName() && !Token::Match(tok5, "class|typename|struct")) {
                         // search for this token in the type vector
                         unsigned int itype = 0;
                         while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok5->str())
@@ -1838,9 +1838,8 @@ void TemplateSimplifier::expandTemplate(
         // FIXME use full name matching somehow
         const std::string lastName = (templateInstantiation.name.find(' ') != std::string::npos) ? templateInstantiation.name.substr(templateInstantiation.name.rfind(' ')+1) : templateInstantiation.name;
 
-
         for (; tok3; tok3 = tok3->next()) {
-            if (tok3->isName()) {
+            if (tok3->isName() && !Token::Match(tok3, "class|typename|struct")) {
                 // search for this token in the type vector
                 unsigned int itype = 0;
                 while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok3->str())
