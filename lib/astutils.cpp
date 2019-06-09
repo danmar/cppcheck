@@ -1131,6 +1131,35 @@ bool isConstVarExpression(const Token *tok)
     return false;
 }
 
+static const Variable *getLHSVariableRecursive(const Token *tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "*|&|&&|[")) {
+        const Variable *var1 = getLHSVariableRecursive(tok->astOperand1());
+        if (var1 || Token::simpleMatch(tok, "["))
+            return var1;
+        const Variable *var2 = getLHSVariableRecursive(tok->astOperand2());
+        return var2;
+    }
+    if (Token::Match(tok->previous(), "this . %var%"))
+        return getLHSVariableRecursive(tok->next());
+    if (!tok->variable())
+        return nullptr;
+    return tok->variable();
+}
+
+const Variable *getLHSVariable(const Token *tok)
+{
+    if (!Token::Match(tok, "%assign%"))
+        return nullptr;
+    if (!tok->astOperand1())
+        return nullptr;
+    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
+        return tok->astOperand1()->variable();
+    return getLHSVariableRecursive(tok->astOperand1());
+}
+
 static bool nonLocal(const Variable* var, bool deref)
 {
     return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();

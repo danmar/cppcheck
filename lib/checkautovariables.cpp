@@ -628,11 +628,26 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             } else if (isDeadScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
                 errorInvalidLifetime(tok, &val);
                 break;
-            } else if (tok->variable() && tok->variable()->declarationId() == tok->varId() &&
-                       !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
-                       isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
-                errorDanglngLifetime(tok, &val);
-                break;
+            } else if (isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
+                const Variable * var = nullptr;
+                const Token * tok2 = tok;
+                if (Token::simpleMatch(tok->astParent(), "=")) {
+                    if (tok->astParent()->astOperand2() == tok) {
+                        var = getLHSVariable(tok->astParent());
+                        tok2 = tok->astParent()->astOperand1();
+                    }
+                }
+                else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
+                    var = tok->variable();
+                }
+                else if (Token::simpleMatch(tok->astParent(), "=") && tok->astParent()->astOperand2() == tok) {
+                    var = getLHSVariable(tok->astParent());
+                    tok2 = tok->astParent()->astOperand1();
+                }
+                if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
+                    errorDanglngLifetime(tok2, &val);
+                    break;
+                }
             }
         }
         const Token *lambdaEndToken = findLambdaEndToken(tok);
@@ -716,7 +731,7 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
 void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)
 {
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
-    std::string tokName = tok ? tok->str() : "x";
+    std::string tokName = tok ? tok->expressionString() : "x";
     std::string msg = "Non-local variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, false);
