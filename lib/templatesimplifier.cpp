@@ -89,7 +89,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
             throw InternalError(tok, "explicit specialization of alias templates is not permitted", InternalError::SYNTAX);
         }
 
-        isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;"));
+        isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;|::"));
         if (token->strAt(1) == "<" && !isSpecialization()) {
             const Token *end = token->next()->findClosingBracket();
             isVariadic(end && Token::findmatch(token->tokAt(2), "typename|class . . .", end));
@@ -113,8 +113,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
             if (tok1)
                 isForwardDeclaration(tok1->str() == ";");
         }
-        // check for member function and adjust scope
-        if (isFunction() && nameToken->strAt(-1) == "::") {
+        // check for member class or function and adjust scope
+        if ((isFunction() || isClass()) && nameToken->strAt(-1) == "::") {
             const Token * start = nameToken;
 
             while (Token::Match(start->tokAt(-2), "%name% ::") ||
@@ -1397,16 +1397,48 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
     return false;
 }
 
+bool TemplateSimplifier::getTemplateNamePositionTemplateClass(const Token *tok, int &namepos)
+{
+    if (Token::Match(tok, "> class|struct|union %type% :|<|;|{|::")) {
+        namepos = 2;
+        tok = tok->tokAt(2);
+        while (Token::Match(tok, "%type% :: %type%") ||
+               (Token::Match(tok, "%type% <") && Token::Match(tok->next()->findClosingBracket(), "> :: %type%"))) {
+            if (tok->strAt(1) == "::") {
+                tok = tok->tokAt(2);
+                namepos += 2;
+            } else {
+                const Token *end = tok->next()->findClosingBracket();
+                if (!end || !end->tokAt(2)) {
+                    // syntax error
+                    namepos = -1;
+                    return true;
+                }
+                end = end->tokAt(2);
+                do {
+                    tok = tok->next();
+                    namepos += 1;
+                } while (tok && tok != end);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
+    // FIXME: tok == ">>" is a tokenizer bug that needs to be fixed
+    assert(tok && (tok->str() == ">" || tok->str() == ">>"));
+
     auto it = mTemplateNamePos.find(tok);
     if (!mSettings->debugtemplate && it != mTemplateNamePos.end()) {
         return it->second;
     }
     // get the position of the template name
     int namepos = 0;
-    if (Token::Match(tok, "> class|struct|union %type% :|<|;|{"))
-        namepos = 2;
+    if (getTemplateNamePositionTemplateClass(tok, namepos))
+        ;
     else if (Token::Match(tok, "> using %name% ="))
         namepos = 2;
     else if (getTemplateNamePositionTemplateVariable(tok, namepos))
@@ -1500,7 +1532,9 @@ void TemplateSimplifier::expandTemplate(
         templateDeclaration.token->insertToken(templateDeclarationToken->strAt(1), "", true);
         templateDeclaration.token->insertToken(newName, "", true);
         templateDeclaration.token->insertToken(";", "", true);
-    } else if ((isFunction && (copy || isSpecialization)) || (isVariable && !isSpecialization)) {
+    } else if ((isFunction && (copy || isSpecialization)) ||
+               (isVariable && !isSpecialization) ||
+               (isClass && isSpecialization && mTemplateSpecializationMap.find(templateDeclaration.token) != mTemplateSpecializationMap.end())) {
         Token * dst = templateDeclaration.token;
         Token * dstStart = dst->previous();
         bool isStatic = false;
