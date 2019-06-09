@@ -2955,6 +2955,9 @@ void TemplateSimplifier::replaceTemplateUsage(
                     }
                 }
             }
+            // Fix crash in #9007
+            if (Token::simpleMatch(nameTok->previous(), ">"))
+                mTemplateNamePos.erase(nameTok->previous());
             removeTokens.emplace_back(nameTok, tok2->next());
         }
 

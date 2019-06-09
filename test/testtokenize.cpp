@@ -460,6 +460,7 @@ private:
 
         // #9052
         TEST_CASE(noCrash1);
+        TEST_CASE(noCrash2);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -7806,6 +7807,23 @@ private:
                             "  A( const std::string &name = "" );\n"
                             "};\n"
                             "A::A( const std::string &name ) { return; }\n"))
+    }
+
+    // #9007
+    void noCrash2() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "class a {\n"
+                            "public:\n"
+                            "  enum b {};\n"
+                            "};\n"
+                            "struct c;\n"
+                            "template <class> class d {\n"
+                            "  d(const int &, a::b, double, double);\n"
+                            "  d(const d &);\n"
+                            "};\n"
+                            "template <> d<int>::d(const int &, a::b, double, double);\n"
+                            "template <> d<int>::d(const d &) {}\n"
+                            "template <> d<c>::d(const d &) {}\n"))
     }
 
     void checkConfig(const char code[]) {
