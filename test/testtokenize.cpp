@@ -457,6 +457,7 @@ private:
         TEST_CASE(findGarbageCode);
         TEST_CASE(checkEnableIf);
         TEST_CASE(checkTemplates);
+        TEST_CASE(checkNamespaces);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -7784,6 +7785,10 @@ private:
                             "template <template <class> class t, class... w, template <class> class x,\n"
                             "          class... u>\n"
                             "struct s<t<w...>, x<u...>>;\n"))
+    }
+
+    void checkNamespaces() {
+        ASSERT_NO_THROW(tokenizeAndStringify("namespace x { namespace y { namespace z {}}}"))
     }
 
     void noCrash1() {
