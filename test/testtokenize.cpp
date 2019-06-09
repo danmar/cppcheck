@@ -7784,6 +7784,20 @@ private:
                             "template <template <class> class t, class... w, template <class> class x,\n"
                             "          class... u>\n"
                             "struct s<t<w...>, x<u...>>;\n"))
+
+        // #9156
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <typename> struct a;\n"
+                            "template <bool> struct b;\n"
+                            "template <class k, class> using d = typename b<k::c>::e;\n"
+                            "template <class> struct f;\n"
+                            "template <template <class> class, class... g> using i = typename f<g...>::e;\n"
+                            "template <template <class> class h, class... g> using ab = d<i<h, g...>, int>;\n"
+                            "template <template <class> class h, class... g> struct j {\n"
+                            "  template <class... ag> using ah = typename ab<h, ag..., g...>::e;\n"
+                            "};\n"
+                            "template <class> struct F;\n"
+                            "int main() { using T = void (*)(a<j<F, char[]>>); }\n"))
     }
 
     void noCrash1() {
