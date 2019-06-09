@@ -240,8 +240,16 @@ public:
     int getTemplateNamePosition(const Token *tok);
 
     /**
-     * Get function template name position
+     * Get class template name position
      * @param tok The ">" token e.g. before "class"
+     * @param namepos return offset to name
+     * @return true if name found, false if not
+     * */
+    static bool getTemplateNamePositionTemplateClass(const Token *tok, int &namepos);
+
+    /**
+     * Get function template name position
+     * @param tok The ">" token
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */

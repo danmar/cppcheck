@@ -976,7 +976,12 @@ private:
                             "  template<typename T> struct X { T t; };"
                             "};"
                             "template<> struct A::X<int> { int *t; };";
-        ASSERT_EQUALS("struct A { struct X<int> ; } ; struct A :: X<int> { int t ; } ;", tok(code));
+        const char expected[] = "struct A { "
+                                "struct X<int> ; "
+                                "template < typename T > struct X { T t ; } ; "
+                                "} ; "
+                                "struct A :: X<int> { int * t ; } ;";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void template41() { // #4710 - const in template instantiation not handled perfectly
@@ -1021,6 +1026,7 @@ private:
                             "    return 0;\n"
                             "}";
         const char expected[] = "struct E<void*> ; "
+                                "struct C<B<A>> ; "
                                 "struct C<A> ; "
                                 "struct D<B<A>> ; "
                                 "int f2<B<A>> ( ) ; "
@@ -1215,7 +1221,8 @@ private:
                             "  enum { value = 1 }; "
                             "};"
                             "const int x = Factorial<4>::value;";
-        const char expected[] = "struct Factorial<4> ; "
+        const char expected[] = "struct Factorial<0> ; "
+                                "struct Factorial<4> ; "
                                 "struct Factorial<3> ; "
                                 "struct Factorial<2> ; "
                                 "struct Factorial<1> ; "
@@ -1342,7 +1349,8 @@ private:
                             "int main () {\n"
                             "    return diagonalGroupTest<4>();\n"
                             "}";
-        const char exp[] = "struct Factorial<4> ; "
+        const char exp[] = "struct Factorial<0> ; "
+                           "struct Factorial<4> ; "
                            "struct Factorial<3> ; "
                            "struct Factorial<2> ; "
                            "struct Factorial<1> ; "
@@ -1576,13 +1584,22 @@ private:
                             "   void foo() { }\n"
                             "};";
         const char exp [] = "template < typename T , typename V , int KeySize = 0 > class Bar ; "
+                            "class Bar<void,void> ; "
                             "class Bar<void,void> { "
                             "} ; "
                             "template < typename K , typename V , int KeySize = 0 > "
                             "class Bar : private Bar<void,void> { "
                             "void foo ( ) { } "
                             "} ;";
-        ASSERT_EQUALS(exp, tok(code));
+        const char act [] = "template < typename T , typename V , int KeySize = 0 > class Bar ; "
+                            "class Bar<void,void> { "
+                            "} ; "
+                            "class Bar<void,void> ; "
+                            "template < typename K , typename V , int KeySize = 0 > "
+                            "class Bar : private Bar<void,void> { "
+                            "void foo ( ) { } "
+                            "} ;";
+        TODO_ASSERT_EQUALS(exp, act, tok(code));
     }
 
     void template71() { // #8821
@@ -1679,7 +1696,8 @@ private:
                             "    std::cout << is_void<char>::value << std::endl;\n"
                             "    std::cout << is_void<void>::value << std::endl;\n"
                             "}";
-        const char exp[] = "struct is_void<char> ; "
+        const char exp[] = "struct is_void<void> ; "
+                           "struct is_void<char> ; "
                            "struct is_void<void> : std :: true_type { } ; "
                            "int main ( ) { "
                            "std :: cout << is_void<char> :: value << std :: endl ; "
@@ -2846,7 +2864,8 @@ private:
                                 "    b.A<>::Print();\n"
                                 "    return 0;\n"
                                 "}";
-            ASSERT_EQUALS("template < typename T0 > class A ; "
+            ASSERT_EQUALS("class A<void> ; "
+                          "template < typename T0 > class A ; "
                           "class A<void> { "
                           "public: "
                           "A<void> ( ) { } "
@@ -3261,6 +3280,7 @@ private:
                             "template class Fred<1>;\n"
                             "}\n";
         ASSERT_EQUALS("namespace NS { "
+                      "struct Barney<1> ; "
                       "template < int type > struct Barney ; "
                       "struct Barney<1> { } ; "
                       "class Fred<1> ; "
@@ -3577,7 +3597,8 @@ private:
             const char code[] = "template<typename T> class C { };\n"
                                 "template<> class C<char> { };\n"
                                 "map<int> m;\n";
-            const char expected[] = "template < typename T > class C { } ; "
+            const char expected[] = "class C<char> ; "
+                                    "template < typename T > class C { } ; "
                                     "class C<char> { } ; "
                                     "map < int > m ;";
             ASSERT_EQUALS(expected, tok(code));
@@ -3587,7 +3608,8 @@ private:
                                 "template<> class C<char> { };\n"
                                 "map<int> m;\n"
                                 "C<int> i;";
-            const char expected[] = "class C<int> ; "
+            const char expected[] = "class C<char> ; "
+                                    "class C<int> ; "
                                     "class C<char> { } ; "
                                     "map < int > m ; "
                                     "C<int> i ; "
@@ -3600,7 +3622,8 @@ private:
                                 "map<int> m;\n"
                                 "C<int> i;\n"
                                 "C<char> c;";
-            const char expected[] = "class C<int> ; "
+            const char expected[] = "class C<char> ; "
+                                    "class C<int> ; "
                                     "class C<char> { } ; "
                                     "map < int > m ; "
                                     "C<int> i ; "
