@@ -602,6 +602,7 @@ void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
         return;
 
     while (begin->next() && begin->next() != end) {
+        mDeletedTokens.insert(begin->next());
         begin->deleteNext();
     }
 }
@@ -2081,7 +2082,8 @@ void TemplateSimplifier::expandTemplate(
 
     // add new instantiations
     for (const auto & inst : newInstantiations)
-        addInstantiation(inst.token, inst.scope);
+        if (mDeletedTokens.find(inst.token) == mDeletedTokens.end())
+            addInstantiation(inst.token, inst.scope);
 }
 
 static bool isLowerThanLogicalAnd(const Token *lower)
@@ -2372,7 +2374,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
                             else if (endTok->str() == ">" && !end)
                                 ;
                             else {
-                                Token::eraseTokens(colon->tokAt(-2), endTok);
+                                eraseTokens(colon->tokAt(-2), endTok);
                                 again = true;
                                 break;
                             }

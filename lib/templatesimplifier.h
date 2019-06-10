@@ -430,7 +430,7 @@ private:
     /**
      * Remove a specific "template < ..." template class/function
      */
-    static bool removeTemplate(Token *tok);
+    bool removeTemplate(Token *tok);
 
     /** Syntax error */
     static void syntaxError(const Token *tok);
@@ -445,7 +445,7 @@ private:
      * @param begin Tokens after this will be erased.
      * @param end Tokens before this will be erased.
      */
-    static void eraseTokens(Token *begin, const Token *end);
+    void eraseTokens(Token *begin, const Token *end);
 
     /**
      * Delete specified token without invalidating pointer to following token.
@@ -486,6 +486,7 @@ private:
     std::vector<TokenAndName> mExplicitInstantiationsToDelete;
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
     std::unordered_map<const Token*, int> mTemplateNamePos;
+    std::set<Token *> mDeletedTokens;
 };
 
 /// @}
