@@ -4858,7 +4858,6 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> > ;")->link());
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ;")->link());
         }
 
