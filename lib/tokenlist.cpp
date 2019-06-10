@@ -485,6 +485,8 @@ static bool iscpp11init(const Token * const tok)
         return false;
     if (Token::Match(nameToken, "else|try|do|const|override|volatile|&|&&"))
         return false;
+    if (Token::simpleMatch(nameToken->previous(), "namespace"))
+        return false;
     // There is no initialisation for example here: 'class Fred {};'
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
