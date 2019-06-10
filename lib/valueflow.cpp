@@ -853,30 +853,30 @@ static size_t getSizeOf(const ValueType &vt, const Settings *settings)
 }
 
 // Handle various constants..
-static Token * valueFlowSetConstantValue(const Token *tok, const Settings *settings, bool cpp)
+static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(const_cast<Token *>(tok), value, settings);
+        setTokenValue(tok, value, settings);
     } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {
         ValueFlow::Value value;
         value.valueType = ValueFlow::Value::FLOAT;
         value.floatValue = MathLib::toDoubleNumber(tok->str());
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(const_cast<Token *>(tok), value, settings);
+        setTokenValue(tok, value, settings);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(const_cast<Token *>(tok), value, settings);
+        setTokenValue(tok, value, settings);
     } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
         ValueFlow::Value value(0);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(const_cast<Token *>(tok), value, settings);
+        setTokenValue(tok, value, settings);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         const Token *tok2 = tok->tokAt(2);
         // skip over tokens to find variable or type
@@ -893,7 +893,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+                setTokenValue(tok->next(), value, settings);
             }
         } else if (tok2->enumerator() && tok2->enumerator()->scope) {
             long long size = settings->sizeof_int;
@@ -904,8 +904,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             ValueFlow::Value value(size);
             if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                 value.setKnown();
-            setTokenValue(const_cast<Token *>(tok), value, settings);
-            setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            setTokenValue(tok, value, settings);
+            setTokenValue(tok->next(), value, settings);
         } else if (tok2->type() && tok2->type()->isEnumType()) {
             long long size = settings->sizeof_int;
             if (tok2->type()->classScope) {
@@ -917,8 +917,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
             ValueFlow::Value value(size);
             if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                 value.setKnown();
-            setTokenValue(const_cast<Token *>(tok), value, settings);
-            setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+            setTokenValue(tok, value, settings);
+            setTokenValue(tok->next(), value, settings);
         } else if (Token::Match(tok, "sizeof ( %var% ) / sizeof (") && tok->next()->astParent() == tok->tokAt(4)) {
             // Get number of elements in array
             const Token *sz1 = tok->tokAt(2);
@@ -933,7 +933,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 ValueFlow::Value value(sz1->variable()->dimension(0));
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->tokAt(4)), value, settings);
+                setTokenValue(tok->tokAt(4), value, settings);
             }
         } else if (Token::Match(tok2, "%var% )")) {
             const Variable *var = tok2->variable();
@@ -962,8 +962,8 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                     ValueFlow::Value value(count * size);
                     if (settings->platformType != cppcheck::Platform::Unspecified)
                         value.setKnown();
-                    setTokenValue(const_cast<Token *>(tok), value, settings);
-                    setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+                    setTokenValue(tok, value, settings);
+                    setTokenValue(tok->next(), value, settings);
                 }
             }
         } else if (!tok2->type()) {
@@ -973,7 +973,7 @@ static Token * valueFlowSetConstantValue(const Token *tok, const Settings *setti
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
-                setTokenValue(const_cast<Token *>(tok->next()), value, settings);
+                setTokenValue(tok->next(), value, settings);
             }
         }
         // skip over enum
@@ -1447,14 +1447,14 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
             tok2 = tok2->linkAt(1);
             if (!Token::simpleMatch(tok2, "} else { if ("))
                 break;
-            const Token *ifOpenBraceTok = tok2->tokAt(4);
-            const Token *cond2 = ifOpenBraceTok->astOperand2();
+            Token *ifOpenBraceTok = tok2->tokAt(4);
+            Token *cond2 = ifOpenBraceTok->astOperand2();
             if (!cond2 || !cond2->isComparisonOp())
                 continue;
             if (isOppositeCond(true, cpp, cond1, cond2, settings->library, true, true)) {
                 ValueFlow::Value value(1);
                 value.setKnown();
-                setTokenValue(const_cast<Token*>(cond2), value, settings);
+                setTokenValue(cond2, value, settings);
             }
             tok2 = ifOpenBraceTok->link();
         }
@@ -5395,7 +5395,7 @@ std::string ValueFlow::Value::infoString() const
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
 
-const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(const Token *expr, const Settings *settings)
+const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings *settings)
 {
     if (expr && expr->values().empty()) {
         valueFlowConstantFoldAST(expr->astOperand1(), settings);

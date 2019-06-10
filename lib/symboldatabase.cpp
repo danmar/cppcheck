@@ -1243,7 +1243,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
                 // look for possible constant folding expressions
                 // rhs of operator:
-                const Token *rhs = enumerator.start->previous()->astOperand2();
+                Token *rhs = enumerator.start->previous()->astOperand2();
 
                 // constant folding of expression:
                 ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
@@ -2469,7 +2469,7 @@ bool Variable::arrayDimensions(const Settings* settings)
                 while (tok->astParent() && !Token::Match(tok->astParent(), "[,<>]"))
                     tok = tok->astParent();
                 dimension_.tok = tok;
-                ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+                ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
                 if (tok->hasKnownIntValue()) {
                     dimension_.num = tok->getKnownIntValue();
                     dimension_.known = true;
@@ -2500,7 +2500,7 @@ bool Variable::arrayDimensions(const Settings* settings)
         // check for empty array dimension []
         if (dim->next()->str() != "]") {
             dimension_.tok = dim->astOperand2();
-            ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+            ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
             if (dimension_.tok && dimension_.tok->hasKnownIntValue()) {
                 dimension_.num = dimension_.tok->getKnownIntValue();
                 dimension_.known = true;
