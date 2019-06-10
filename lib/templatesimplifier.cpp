@@ -1505,6 +1505,7 @@ void TemplateSimplifier::expandTemplate(
     const std::string &newName,
     bool copy)
 {
+    mDeletedTokens.clear();
     bool inTemplateDefinition = false;
     const Token *startOfTemplateDeclaration = nullptr;
     const Token *endOfTemplateDefinition = nullptr;
