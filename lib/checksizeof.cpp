@@ -123,12 +123,12 @@ void CheckSizeof::checkSizeofForPointerSize()
             // Once leaving those tests, it is mandatory to have:
             // - variable matching the used pointer
             // - tokVar pointing on the argument where sizeof may be used
-            if (Token::Match(tok->tokAt(2), "malloc|alloca|calloc (")) {
+            if (Token::Match(tok->tokAt(2), "malloc|alloca|calloc|realloc (")) {
                 if (Token::Match(tok, "%var% ="))
                     variable = tok;
                 else if (tok->strAt(1) == ")" && Token::Match(tok->linkAt(1)->tokAt(-2), "%var% ="))
                     variable = tok->linkAt(1)->tokAt(-2);
-                else if (tok->link() && Token::Match(tok, "> ( malloc|alloca|calloc (") && Token::Match(tok->link()->tokAt(-3), "%var% ="))
+                else if (tok->link() && Token::Match(tok, "> ( malloc|alloca|calloc|realloc (") && Token::Match(tok->link()->tokAt(-3), "%var% ="))
                     variable = tok->link()->tokAt(-3);
                 tokSize = tok->tokAt(4);
                 tokFunc = tok->tokAt(2);
@@ -149,7 +149,7 @@ void CheckSizeof::checkSizeofForPointerSize()
                 continue;
             }
 
-            if (tokSize && tokFunc->str() == "calloc")
+            if (tokSize && (tokFunc->str() == "calloc" || tokFunc->str() == "realloc"))
                 tokSize = tokSize->nextArgument();
 
             if (tokSize) {
