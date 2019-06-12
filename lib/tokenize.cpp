@@ -45,6 +45,9 @@
 #include <vector>
 //---------------------------------------------------------------------------
 
+// A list of the scopes calculated for the token list so they can be deleted when no longer needed.
+std::list<ScopeInfo2*> gScopeInfos;
+
 namespace {
     // local struct used in setVarId
     // in order to store information about the scope
@@ -2810,7 +2813,93 @@ void Tokenizer::simplifyCaseRange()
     }
 }
 
+void Tokenizer::calculateScopes()
+{
+    // Build up the next scope name as we go and then reset it when we use it
+    std::string nextScopeNameAddition = "";
 
+    // The first token has a blank scope, which may have usingNamespaces later
+    ScopeInfo2* primaryScope = new ScopeInfo2("", list.back());
+    gScopeInfos.push_back(primaryScope);
+    list.front()->scopeInfo(primaryScope);
+
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        // If the token doesn't have a scope already, give it the current scope
+        if (!tok->scopeInfo()) tok->scopeInfo(tok->previous()->scopeInfo());
+
+        // Check if we need to record a new namespace name or add a using
+        if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<|;")) {
+            if (Token::simpleMatch(tok->previous(), "using namespace")) {
+                const Token* namespaceNameToken = tok->next();
+                std::string usingNamespaceName = "";
+                for (namespaceNameToken = namespaceNameToken; !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
+                    usingNamespaceName += namespaceNameToken->str();
+                    usingNamespaceName += " ";
+                }
+                // Remove the trailing space and add the namespace name
+                if (usingNamespaceName.length() > 0) usingNamespaceName = usingNamespaceName.substr(0, usingNamespaceName.length() - 1);
+                tok->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
+            } else {
+                for (Token* nameTok = tok->next(); nameTok && !Token::Match(nameTok, "{|:|<"); nameTok = nameTok->next()) {
+                    nextScopeNameAddition.append(nameTok->str());
+                    nextScopeNameAddition.append(" ");
+                }
+                // Remove the trailing space and record this as the next namespace name
+                if (nextScopeNameAddition.length() > 0) nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
+            }
+        }
+
+        // An opening brace always opens a new scope
+        if (Token::simpleMatch(tok, "{"))
+        {
+            // This might be the opening of a member function, backtrack to find any namespace names we need to add
+            Token *tok1 = tok;
+            while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                tok1 = tok1->previous();
+            if (tok1 && tok1->previous() && tok1->strAt(-1) == ")") {
+                tok1 = tok1->linkAt(-1);
+                if (Token::Match(tok1->previous(), "throw|noexcept")) {
+                    tok1 = tok1->previous();
+                    while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
+                        tok1 = tok1->previous();
+                    if (tok1->strAt(-1) != ")")
+                        return;
+                }
+                else if (Token::Match(tok->tokAt(-2), ":|, %name%")) {
+                    tok1 = tok1->tokAt(-2);
+                    if (tok1->strAt(-1) != ")")
+                        return;
+                }
+                if (tok1->strAt(-1) == ">")
+                    tok1 = tok1->previous()->findOpeningBracket();
+                if (tok1 && Token::Match(tok1->tokAt(-3), "%name% :: %name%")) {
+                    tok1 = tok1->tokAt(-2);
+                    std::string scope = tok1->strAt(-1);
+                    while (Token::Match(tok1->tokAt(-2), ":: %name%")) {
+                        scope = tok1->strAt(-3) + " :: " + scope;
+                        tok1 = tok1->tokAt(-2);
+                    }
+
+                    if (nextScopeNameAddition.length() > 0) nextScopeNameAddition += " :: ";
+                    nextScopeNameAddition += scope;
+                }
+            }
+
+            // New scope created and added here
+            ScopeInfo2* newScopeInfo = new ScopeInfo2(tok->scopeInfo()->name, tok->link(), tok->scopeInfo()->usingNamespaces);
+
+            if (newScopeInfo->name != "") newScopeInfo->name.append(" :: ");
+            newScopeInfo->name.append(nextScopeNameAddition);
+            nextScopeNameAddition = "";
+
+            // The token after the new scope closes gets the current scope, we don't have to maintain a stack because links are already established
+            if (tok->link() && tok->link()->next()) tok->link()->next()->scopeInfo(tok->scopeInfo());
+            // Then the opening and closing braces get the new scope
+            tok->scopeInfo(newScopeInfo);
+            if (tok->link()) tok->link()->scopeInfo(tok->scopeInfo());
+        }
+    }
+}
 
 void Tokenizer::simplifyTemplates()
 {
@@ -2828,6 +2917,8 @@ void Tokenizer::simplifyTemplates()
         }
     }
 
+    calculateScopes();
+
     mTemplateSimplifier->simplifyTemplates(
 #ifdef MAXTIME
         mMaxTime,
@@ -2835,6 +2926,8 @@ void Tokenizer::simplifyTemplates()
         0, // ignored
 #endif
         mCodeWithTemplates);
+    
+    gScopeInfos.clear();
 }
 //---------------------------------------------------------------------------
 
@@ -3437,12 +3530,6 @@ namespace {
         std::list<const Token *> usingnamespaces;
         std::list<std::string> scope;
         Token *tok;
-    };
-
-    struct ScopeInfo2 {
-        ScopeInfo2(const std::string &name_, const Token *bodyEnd_) : name(name_), bodyEnd(bodyEnd_) {}
-        const std::string name;
-        const Token * const bodyEnd;
     };
 }
 
