@@ -151,6 +151,7 @@ private:
         TEST_CASE(template111); // crash
         TEST_CASE(template112); // #9146 syntax error
         TEST_CASE(template113);
+        TEST_CASE(template114); // #9155
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -188,6 +189,7 @@ private:
         TEST_CASE(templateAlias2);
         TEST_CASE(templateAlias3); // #8315
         TEST_CASE(templateAlias4); // #9070
+        TEST_CASE(templateAlias5);
 
         // Test TemplateSimplifier::instantiateMatch
         TEST_CASE(instantiateMatch);
@@ -2555,7 +2557,7 @@ private:
                                "template < typename > struct c ; "
                                "struct e<int> ; "
                                "} "
-                               "e<int> foo ; "
+                               "e<int> :: g foo ; "
                                "struct e<int> { "
                                "bool h ; h = a < b<c<int>::g> > :: h ; "
                                "} ; "
@@ -2678,6 +2680,20 @@ private:
                                "struct A<int> { void f ( ) ; } ;";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template114() { // #9155
+        const char code[] = "template <typename a, a> struct b {};\n"
+                            "template <typename> struct c;\n"
+                            "template <typename> struct d : b<bool, std::is_polymorphic<int>{}> {};\n"
+                            "template <bool> struct e;\n"
+                            "template <typename a> using f = typename e<c<d<a>>::g>::h;";
+        const char exp[] = "template < typename a , a > struct b { } ; "
+                           "template < typename > struct c ; "
+                           "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
+                           "template < bool > struct e ; "
+                           "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
@@ -3675,6 +3691,16 @@ private:
         const char expected[] = "class Vertex<int> ; "
                                 "boost :: intrusive_ptr < Vertex<int> > p ; "
                                 "class Vertex<int> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void templateAlias5() {
+        const char code[] = "template<typename T> using A = int;\n"
+                            "template<typename T> using B = T;\n"
+                            "A<char> a;\n"
+                            "B<char> b;";
+        const char expected[] = "int a ; "
+                                "char b ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
