@@ -89,7 +89,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
             throw InternalError(tok, "explicit specialization of alias templates is not permitted", InternalError::SYNTAX);
         }
 
-        isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;"));
+        isClass(Token::Match(paramEnd->next(), "class|struct|union %name% <|{|:|;|::"));
         if (token->strAt(1) == "<" && !isSpecialization()) {
             const Token *end = token->next()->findClosingBracket();
             isVariadic(end && Token::findmatch(token->tokAt(2), "typename|class . . .", end));
@@ -113,8 +113,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
             if (tok1)
                 isForwardDeclaration(tok1->str() == ";");
         }
-        // check for member function and adjust scope
-        if (isFunction() && nameToken->strAt(-1) == "::") {
+        // check for member class or function and adjust scope
+        if ((isFunction() || isClass()) && nameToken->strAt(-1) == "::") {
             const Token * start = nameToken;
 
             while (Token::Match(start->tokAt(-2), "%name% ::") ||
@@ -771,7 +771,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                 const Token *tok2 = Token::findmatch(tok, "{|;");
                 if (tok2 && tok2->str() == "{")
                     tok = tok2->link();
-                else if (!isUsing && tok2 && tok2->str() == ";")
+                else if (tok2 && tok2->str() == ";")
                     tok = const_cast<Token *>(tok2);
             }
         } else if (Token::Match(tok, "template using %name% <")) {
@@ -1150,39 +1150,13 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 
 void TemplateSimplifier::simplifyTemplateAliases()
 {
-    std::list<TokenAndName>::iterator it1, it2, it3;
-    for (it1 = mTemplateInstantiations.begin(); it1 != mTemplateInstantiations.end();) {
-        it3 = it1;
-        TokenAndName &templateAlias = *it1;
-        ++it1;
-        Token *startToken = templateAlias.token;
-        if (!startToken)
-            continue;
-        while (Token::Match(startToken->tokAt(-2), "%name% :: %name%"))
-            startToken = startToken->tokAt(-2);
-        if (!(Token::Match(startToken->tokAt(-4), "> using %name% = %name% ::|<") ||
-              Token::Match(startToken->tokAt(-5), "> using %name% = typename %name% ::|<")))
-            continue;
-        const bool hasTypename(startToken->strAt(-1) == "typename");
+    for (std::list<TokenAndName>::iterator it1 = mTemplateDeclarations.begin(); it1 != mTemplateDeclarations.end();) {
+        TokenAndName &aliasDeclaration = *it1;
 
-        // Get start token for alias
-        startToken = startToken->tokAt(hasTypename ? -6 : -5);
-        while (Token::Match(startToken, "%name%|<|>|>>|,"))
-            startToken = startToken->previous();
-        // handle case where 'template' is first token
-        if (!startToken) {
-            if (!Token::simpleMatch(mTokenList.front(), "template <"))
-                continue;
-        } else if (!Token::Match(startToken, "[;{}] template <"))
+        if (!aliasDeclaration.isAlias()) {
+            ++it1;
             continue;
-
-        std::list<TokenAndName>::iterator it5 = std::find_if(mTemplateDeclarations.begin(),
-                                                mTemplateDeclarations.end(),
-                                                FindToken(!startToken ? mTokenList.front() : startToken->next()));
-        if (it5 == mTemplateDeclarations.end())
-            continue;
-
-        TokenAndName &aliasDeclaration = *it5;
+        }
 
         // alias parameters..
         std::vector<const Token *> aliasParameters;
@@ -1192,15 +1166,19 @@ void TemplateSimplifier::simplifyTemplateAliases()
             aliasParameterNames[aliasParameters[argnr]->str()] = argnr;
 
         // Look for alias usages..
-        const Token *endToken = nullptr;
-        for (it2 = it1; it2 != mTemplateInstantiations.end(); ++it2) {
+        bool found = false;
+        for (std::list<TokenAndName>::iterator it2 = mTemplateInstantiations.begin(); it2 != mTemplateInstantiations.end();) {
             TokenAndName &aliasUsage = *it2;
-            if (!aliasUsage.token || aliasUsage.fullName != aliasDeclaration.fullName)
+            if (!aliasUsage.token || aliasUsage.fullName != aliasDeclaration.fullName) {
+                ++it2;
                 continue;
+            }
 
             // don't recurse
-            if (aliasDeclaration.isAliasToken(aliasUsage.token))
+            if (aliasDeclaration.isAliasToken(aliasUsage.token)) {
+                ++it2;
                 continue;
+            }
 
             std::vector<std::pair<Token *, Token *>> args;
             Token *tok2 = aliasUsage.token->tokAt(2);
@@ -1221,37 +1199,32 @@ void TemplateSimplifier::simplifyTemplateAliases()
                     break;
                 }
             }
-            if (!tok2 || tok2->str() != ">" || args.size() != aliasParameters.size())
+            if (!tok2 || tok2->str() != ">" || args.size() != aliasParameters.size()) {
+                ++it2;
                 continue;
-
-            // Replace template alias code..
-            aliasUsage.name = templateAlias.name;
-            aliasUsage.fullName = templateAlias.fullName;
-            aliasUsage.scope = templateAlias.scope;
-            const Token *temp = aliasDeclaration.aliasStartToken();
-            if (temp->str() == "typename")
-                temp = temp->next();
-            std::stack<Token *> links;
-            while (temp && temp != templateAlias.token) {
-                aliasUsage.token->insertToken(temp->str(), "", true);
-
-                Token * previous = aliasUsage.token->previous();
-                if (Token::Match(previous, "(|[|{"))
-                    links.push(previous);
-                else if (!links.empty() && Token::Match(previous, ")|]|}")) {
-                    Token::createMutualLinks(links.top(), previous);
-                    links.pop();
-                }
-
-                temp = temp->next();
             }
-            aliasUsage.token->str(templateAlias.token->str());
 
-            tok2 = aliasUsage.token->next(); // the '<'
-            const Token * const endToken1 = templateAlias.token->next()->findClosingBracket();
-            const Token * const endToken2 = TokenList::copyTokens(tok2, templateAlias.token->tokAt(2), endToken1->previous(), false)->next();
-            for (const Token *tok1 = templateAlias.token->next(); tok2 != endToken2; tok1 = tok1->next(), tok2 = tok2->next()) {
-                if (!tok2->isName())
+            // copy template-id from declaration to after instantiation
+            Token * dst = aliasUsage.token->next()->findClosingBracket();
+            Token * end = TokenList::copyTokens(dst, aliasDeclaration.aliasStartToken(), aliasDeclaration.aliasEndToken()->previous(), false)->next();
+
+            // replace parameters
+            for (Token *tok1 = dst->next(); tok1 != end; tok1 = tok1->next()) {
+                if (!tok1->isName())
+                    continue;
+                if (aliasParameterNames.find(tok1->str()) != aliasParameterNames.end()) {
+                    const unsigned int argnr = aliasParameterNames[tok1->str()];
+                    const Token * const fromStart = args[argnr].first;
+                    const Token * const fromEnd   = args[argnr].second->previous();
+                    TokenList::copyTokens(tok1, fromStart, fromEnd, true);
+                    tok1->deleteThis();
+                } else if (tok1->str() == "typename")
+                    tok1->deleteThis();
+            }
+
+            // add new instantiations
+            for (Token *tok1 = dst->next(); tok1 != end; tok1 = tok1->next()) {
+                if (!tok1->isName())
                     continue;
                 if (aliasParameterNames.find(tok2->str()) == aliasParameterNames.end()) {
                     // Create template instance..
@@ -1262,53 +1235,32 @@ void TemplateSimplifier::simplifyTemplateAliases()
                         if (it != mTemplateInstantiations.end())
                             addInstantiation(tok2, it->scope);
                     }
-                    continue;
                 }
-                const unsigned int argnr = aliasParameterNames[tok2->str()];
-                const Token * const fromStart = args[argnr].first;
-                const Token * const fromEnd   = args[argnr].second->previous();
-                Token * const destToken = tok2;
-                tok2 = TokenList::copyTokens(tok2, fromStart, fromEnd, true);
-                if (tok2 == destToken->next())
-                    tok2 = destToken;
-                destToken->deleteThis();
             }
 
-            endToken = endToken1->next();
-            while (endToken->str() != ";")
-                endToken = endToken->next();
+            // erase the instantiation tokens
+            eraseTokens(aliasUsage.token->previous(), dst->next());
+            found = true;
 
-            // Remove alias usage code (parameters)
-            Token::eraseTokens(tok2->previous(), args.back().second);
+            // erase this instantiation
+            it2 = mTemplateInstantiations.erase(it2);
         }
-        if (endToken) {
-            // Remove all template instantiations in template alias
-            for (const Token *tok = aliasDeclaration.paramEnd->tokAt(4); tok != endToken; tok = tok->next()) {
-                if (!Token::Match(tok, "%name% <"))
-                    continue;
-                std::list<TokenAndName>::iterator it = std::find_if(mTemplateInstantiations.begin(),
-                                                       mTemplateInstantiations.end(),
-                                                       FindToken(tok));
-                if (it == mTemplateInstantiations.end())
-                    continue;
-                std::list<TokenAndName>::iterator next = it;
-                ++next;
-                if (it == it1)
-                    it1 = next;
-                mTemplateInstantiations.erase(it,next);
-            }
 
-            if (startToken)
-                eraseTokens(startToken, endToken->next() ? endToken->next() : endToken);
+        if (found) {
+            Token *end = const_cast<Token *>(aliasDeclaration.aliasEndToken());
+
+            // remove declaration tokens
+            if (aliasDeclaration.token->previous())
+                eraseTokens(aliasDeclaration.token->previous(), end->next() ? end->next() : end);
             else {
-                eraseTokens(mTokenList.front(), endToken->next() ? endToken->next() : endToken);
+                eraseTokens(mTokenList.front(), end->next() ? end->next() : end);
                 deleteToken(mTokenList.front());
             }
 
             // remove declaration
-            mTemplateDeclarations.erase(it5);
+            it1 = mTemplateDeclarations.erase(it1);
         } else
-            mTemplateInstantiations.erase(it3);
+            ++it1;
     }
 }
 
@@ -1397,16 +1349,48 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
     return false;
 }
 
+bool TemplateSimplifier::getTemplateNamePositionTemplateClass(const Token *tok, int &namepos)
+{
+    if (Token::Match(tok, "> class|struct|union %type% :|<|;|{|::")) {
+        namepos = 2;
+        tok = tok->tokAt(2);
+        while (Token::Match(tok, "%type% :: %type%") ||
+               (Token::Match(tok, "%type% <") && Token::Match(tok->next()->findClosingBracket(), "> :: %type%"))) {
+            if (tok->strAt(1) == "::") {
+                tok = tok->tokAt(2);
+                namepos += 2;
+            } else {
+                const Token *end = tok->next()->findClosingBracket();
+                if (!end || !end->tokAt(2)) {
+                    // syntax error
+                    namepos = -1;
+                    return true;
+                }
+                end = end->tokAt(2);
+                do {
+                    tok = tok->next();
+                    namepos += 1;
+                } while (tok && tok != end);
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
+    // FIXME: tok == ">>" is a tokenizer bug that needs to be fixed
+    assert(tok && (tok->str() == ">" || tok->str() == ">>"));
+
     auto it = mTemplateNamePos.find(tok);
     if (!mSettings->debugtemplate && it != mTemplateNamePos.end()) {
         return it->second;
     }
     // get the position of the template name
     int namepos = 0;
-    if (Token::Match(tok, "> class|struct|union %type% :|<|;|{"))
-        namepos = 2;
+    if (getTemplateNamePositionTemplateClass(tok, namepos))
+        ;
     else if (Token::Match(tok, "> using %name% ="))
         namepos = 2;
     else if (getTemplateNamePositionTemplateVariable(tok, namepos))
@@ -1500,7 +1484,9 @@ void TemplateSimplifier::expandTemplate(
         templateDeclaration.token->insertToken(templateDeclarationToken->strAt(1), "", true);
         templateDeclaration.token->insertToken(newName, "", true);
         templateDeclaration.token->insertToken(";", "", true);
-    } else if ((isFunction && (copy || isSpecialization)) || (isVariable && !isSpecialization)) {
+    } else if ((isFunction && (copy || isSpecialization)) ||
+               (isVariable && !isSpecialization) ||
+               (isClass && isSpecialization && mTemplateSpecializationMap.find(templateDeclaration.token) != mTemplateSpecializationMap.end())) {
         Token * dst = templateDeclaration.token;
         Token * dstStart = dst->previous();
         bool isStatic = false;
@@ -1578,9 +1564,7 @@ void TemplateSimplifier::expandTemplate(
                     previous->isSigned(typetok->isSigned());
                     previous->isUnsigned(typetok->isUnsigned());
                     previous->isLong(typetok->isLong());
-                    if (previous->str() == "{") {
-                        brackets1.push(previous);
-                    } else if (previous->str() == "(") {
+                    if (Token::Match(previous, "{|(|[")) {
                         brackets1.push(previous);
                     } else if (previous->str() == "}") {
                         assert(brackets1.empty() == false);
@@ -1590,6 +1574,11 @@ void TemplateSimplifier::expandTemplate(
                     } else if (previous->str() == ")") {
                         assert(brackets1.empty() == false);
                         assert(brackets1.top()->str() == "(");
+                        Token::createMutualLinks(brackets1.top(), previous);
+                        brackets1.pop();
+                    } else if (previous->str() == "]") {
+                        assert(brackets1.empty() == false);
+                        assert(brackets1.top()->str() == "[");
                         Token::createMutualLinks(brackets1.top(), previous);
                         brackets1.pop();
                     }
@@ -1763,7 +1752,7 @@ void TemplateSimplifier::expandTemplate(
                     }
                 } else if (copy) {
                     bool added = false;
-                    if (tok5->isName()) {
+                    if (tok5->isName() && !Token::Match(tok5, "class|typename|struct")) {
                         // search for this token in the type vector
                         unsigned int itype = 0;
                         while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok5->str())
@@ -1785,9 +1774,7 @@ void TemplateSimplifier::expandTemplate(
                                         --typeindentlevel;
                                     mTokenList.addtoken(typetok, tok5->linenr(), tok5->fileIndex());
                                     Token *back = mTokenList.back();
-                                    if (back->str() == "{") {
-                                        brackets1.push(back);
-                                    } else if (back->str() == "(") {
+                                    if (Token::Match(back, "{|(|[")) {
                                         brackets1.push(back);
                                     } else if (back->str() == "}") {
                                         assert(brackets1.empty() == false);
@@ -1797,6 +1784,11 @@ void TemplateSimplifier::expandTemplate(
                                     } else if (back->str() == ")") {
                                         assert(brackets1.empty() == false);
                                         assert(brackets1.top()->str() == "(");
+                                        Token::createMutualLinks(brackets1.top(), back);
+                                        brackets1.pop();
+                                    } else if (back->str() == "]") {
+                                        assert(brackets1.empty() == false);
+                                        assert(brackets1.top()->str() == "[");
                                         Token::createMutualLinks(brackets1.top(), back);
                                         brackets1.pop();
                                     }
@@ -1838,9 +1830,8 @@ void TemplateSimplifier::expandTemplate(
         // FIXME use full name matching somehow
         const std::string lastName = (templateInstantiation.name.find(' ') != std::string::npos) ? templateInstantiation.name.substr(templateInstantiation.name.rfind(' ')+1) : templateInstantiation.name;
 
-
         for (; tok3; tok3 = tok3->next()) {
-            if (tok3->isName()) {
+            if (tok3->isName() && !Token::Match(tok3, "class|typename|struct")) {
                 // search for this token in the type vector
                 unsigned int itype = 0;
                 while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok3->str())
@@ -1864,7 +1855,7 @@ void TemplateSimplifier::expandTemplate(
                         if (copy) {
                             mTokenList.addtoken(typetok, tok3->linenr(), tok3->fileIndex());
                             Token *back = mTokenList.back();
-                            if (back->str() == "{") {
+                            if (Token::Match(back, "{|(|[")) {
                                 brackets1.push(back);
                             } else if (back->str() == "(") {
                                 brackets1.push(back);
@@ -1876,6 +1867,11 @@ void TemplateSimplifier::expandTemplate(
                             } else if (back->str() == ")") {
                                 assert(brackets1.empty() == false);
                                 assert(brackets1.top()->str() == "(");
+                                Token::createMutualLinks(brackets1.top(), back);
+                                brackets1.pop();
+                            } else if (back->str() == "]") {
+                                assert(brackets1.empty() == false);
+                                assert(brackets1.top()->str() == "[");
                                 Token::createMutualLinks(brackets1.top(), back);
                                 brackets1.pop();
                             }
@@ -2911,6 +2907,9 @@ void TemplateSimplifier::replaceTemplateUsage(
                     }
                 }
             }
+            // Fix crash in #9007
+            if (Token::simpleMatch(nameTok->previous(), ">"))
+                mTemplateNamePos.erase(nameTok->previous());
             removeTokens.emplace_back(nameTok, tok2->next());
         }
 
@@ -2922,6 +2921,17 @@ void TemplateSimplifier::replaceTemplateUsage(
     }
 }
 
+static bool specMatch(
+    const TemplateSimplifier::TokenAndName &spec,
+    const TemplateSimplifier::TokenAndName &decl)
+{
+    // make sure decl is really a declaration
+    if (decl.isPartialSpecialization() || decl.isSpecialization() || decl.isAlias())
+        return false;
+
+    return spec.isSameFamily(decl);
+}
+
 void TemplateSimplifier::getSpecializations()
 {
     // try to locate a matching declaration for each user defined specialization
@@ -2929,7 +2939,7 @@ void TemplateSimplifier::getSpecializations()
         if (spec.isSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (decl.isSpecialization())
+                if (!specMatch(spec, decl))
                     continue;
 
                 // make sure the scopes and names match
@@ -2942,6 +2952,9 @@ void TemplateSimplifier::getSpecializations()
 
             if (!found) {
                 for (auto & decl : mTemplateForwardDeclarations) {
+                    if (!specMatch(spec, decl))
+                        continue;
+
                     // make sure the scopes and names match
                     if (spec.fullName == decl.fullName) {
                         // @todo make sure function parameters also match
@@ -2960,7 +2973,7 @@ void TemplateSimplifier::getPartialSpecializations()
         if (spec.isPartialSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (decl.isPartialSpecialization())
+                if (!specMatch(spec, decl))
                     continue;
 
                 // make sure the scopes and names match
@@ -2973,6 +2986,9 @@ void TemplateSimplifier::getPartialSpecializations()
 
             if (!found) {
                 for (auto & decl : mTemplateForwardDeclarations) {
+                    if (!specMatch(spec, decl))
+                        continue;
+
                     // make sure the scopes and names match
                     if (spec.fullName == decl.fullName) {
                         // @todo make sure function parameters also match
@@ -3234,7 +3250,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    // TODO: 2 is not the ideal number of loops.
+    // TODO: 3 is not the ideal number of loops.
     // We should loop until the number of declarations is 0 but we can't
     // do that until we instantiate unintstantiated templates with their symbolic types.
     // That will allow the uninstantiated template code to be removed from the symbol database.
@@ -3242,7 +3258,7 @@ void TemplateSimplifier::simplifyTemplates(
     // the uninstantiated template code in the symbol database can't be removed until #8768
     // is fixed.
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 3; ++i) {
         if (i) {
             // it may take more than one pass to simplify type aliases
             while (mTokenizer->simplifyUsing())

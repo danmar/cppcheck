@@ -1363,5 +1363,5 @@ void ResultsTree::showInconclusiveColumn(bool show)
 void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &previous)
 {
     QTreeView::currentChanged(current, previous);
-    emit selectionChanged(current);
+    emit treeSelectionChanged(current);
 }

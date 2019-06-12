@@ -208,6 +208,18 @@ public:
          * @return true if alias token, false if not
          */
         bool isAliasToken(const Token *tok) const;
+
+        /**
+         * Is declaration the same family (class, function or variable).
+         *
+         * @param decl declaration to compare to
+         * @return true if same family, false if different family
+         */
+        bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
+            // maks sure a family flag is set and matches
+            return (flags & (fIsClass | fIsFunction | fIsVariable)) &
+                   (decl.flags & (fIsClass | fIsFunction | fIsVariable));
+        }
     };
 
     /**
@@ -228,8 +240,16 @@ public:
     int getTemplateNamePosition(const Token *tok);
 
     /**
-     * Get function template name position
+     * Get class template name position
      * @param tok The ">" token e.g. before "class"
+     * @param namepos return offset to name
+     * @return true if name found, false if not
+     * */
+    static bool getTemplateNamePositionTemplateClass(const Token *tok, int &namepos);
+
+    /**
+     * Get function template name position
+     * @param tok The ">" token
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */

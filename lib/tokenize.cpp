@@ -5441,7 +5441,7 @@ Token *Tokenizer::simplifyAddBracesToCommand(Token *tok)
                     syntaxError(tok);
             }
         }
-    } else if (tok->str()=="if") {
+    } else if (tok->str()=="if" && !Token::simpleMatch(tok->tokAt(-2), "operator \"\"")) {
         tokEnd=simplifyAddBracesPair(tok,true);
         if (!tokEnd)
             return nullptr;
@@ -9118,8 +9118,10 @@ void Tokenizer::findGarbageCode() const
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
-            if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,"))
-                syntaxError(tok);
+            if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|(|)|,")) {
+                if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if"))
+                    syntaxError(tok);
+            }
             if (Token::Match(tok->previous(), "[(,]"))
                 continue;
             if (!Token::Match(tok->next(), "( !!)"))
@@ -9150,8 +9152,10 @@ void Tokenizer::findGarbageCode() const
         const Token *prev = tok;
         while (prev && prev->isName())
             prev = prev->previous();
-        if (Token::Match(prev, "%op%|%num%|%str%|%char%"))
-            syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
+        if (Token::Match(prev, "%op%|%num%|%str%|%char%")) {
+            if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if"))
+                syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
+        }
     }
 
     // case keyword must be inside switch

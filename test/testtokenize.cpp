@@ -399,6 +399,7 @@ private:
         TEST_CASE(simplifyOperatorName11); // #8889
         TEST_CASE(simplifyOperatorName12); // #9110
         TEST_CASE(simplifyOperatorName13); // user defined literal
+        TEST_CASE(simplifyOperatorName14); // std::complex operator "" if
 
         TEST_CASE(simplifyNullArray);
 
@@ -456,9 +457,11 @@ private:
         TEST_CASE(findGarbageCode);
         TEST_CASE(checkEnableIf);
         TEST_CASE(checkTemplates);
+        TEST_CASE(checkNamespaces);
 
         // #9052
         TEST_CASE(noCrash1);
+        TEST_CASE(noCrash2);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -4855,7 +4858,6 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> > ;")->link());
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ;")->link());
         }
 
@@ -6357,9 +6359,22 @@ private:
     }
 
     void simplifyOperatorName13() { // user defined literal
-        const char code[] = "unsigned long operator""_numch(const char *ch, unsigned long size);";
-        ASSERT_EQUALS("unsigned long operator""_numch ( const char * ch , unsigned long size ) ;",
+        const char code[] = "unsigned long operator\"\"_numch(const char *ch, unsigned long size);";
+        ASSERT_EQUALS("unsigned long operator\"\"_numch ( const char * ch , unsigned long size ) ;",
                       tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName14() { // std::complex operator "" if
+        {
+            const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num);";
+            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num) { }";
+            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) { }",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void simplifyNullArray() {
@@ -7770,6 +7785,24 @@ private:
                             "template <template <class> class t, class... w, template <class> class x,\n"
                             "          class... u>\n"
                             "struct s<t<w...>, x<u...>>;\n"))
+
+        // #9156
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <typename> struct a;\n"
+                            "template <bool> struct b;\n"
+                            "template <class k, class> using d = typename b<k::c>::e;\n"
+                            "template <class> struct f;\n"
+                            "template <template <class> class, class... g> using i = typename f<g...>::e;\n"
+                            "template <template <class> class h, class... g> using ab = d<i<h, g...>, int>;\n"
+                            "template <template <class> class h, class... g> struct j {\n"
+                            "  template <class... ag> using ah = typename ab<h, ag..., g...>::e;\n"
+                            "};\n"
+                            "template <class> struct F;\n"
+                            "int main() { using T = void (*)(a<j<F, char[]>>); }\n"))
+    }
+
+    void checkNamespaces() {
+        ASSERT_NO_THROW(tokenizeAndStringify("namespace x { namespace y { namespace z {}}}"))
     }
 
     void noCrash1() {
@@ -7778,6 +7811,23 @@ private:
                             "  A( const std::string &name = "" );\n"
                             "};\n"
                             "A::A( const std::string &name ) { return; }\n"))
+    }
+
+    // #9007
+    void noCrash2() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "class a {\n"
+                            "public:\n"
+                            "  enum b {};\n"
+                            "};\n"
+                            "struct c;\n"
+                            "template <class> class d {\n"
+                            "  d(const int &, a::b, double, double);\n"
+                            "  d(const d &);\n"
+                            "};\n"
+                            "template <> d<int>::d(const int &, a::b, double, double);\n"
+                            "template <> d<int>::d(const d &) {}\n"
+                            "template <> d<c>::d(const d &) {}\n"))
     }
 
     void checkConfig(const char code[]) {
