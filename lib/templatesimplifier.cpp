@@ -778,7 +778,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
                 if (Token::Match(tok2, ", %name% <") &&
                     templateParameters(tok2->tokAt(2))) {
-                    addInstantiation(tok2->next(), tok->scopeInfo()->name));
+                    addInstantiation(tok2->next(), tok->scopeInfo()->name);
                 } else if (Token::Match(tok2->next(), "class|struct"))
                     const_cast<Token *>(tok2)->deleteNext();
             }
@@ -824,7 +824,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                             if (!qualification.empty())
                                 addInstantiation(tok, qualification);
                             else
-                                addInstantiation(tok, tok->scopeInfo()->name));
+                                addInstantiation(tok, tok->scopeInfo()->name);
                             break;
                         }
                         const std::string::size_type pos = scopeName.rfind(" :: ");
