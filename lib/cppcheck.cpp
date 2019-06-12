@@ -476,9 +476,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "  <standards>" << std::endl;
                     fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
                     fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
-                    if (mSettings.standards.posix) {
-                        fdump << "    <posix/>" << std::endl;
-                    }
                     fdump << "  </standards>" << std::endl;
                     preprocessor.dump(fdump);
                     mTokenizer.dump(fdump);
