@@ -306,6 +306,8 @@ def str11(data):
                 varToken = parentOp1.astOperand1
                 if varToken is None or not varToken.isName:
                     continue
+                if varToken.variable is None:
+                    continue
                 startToken = varToken.variable.typeStartToken   
                 endToken = varToken.variable.typeEndToken # check if it's the core variable declaration
                 if startToken != endToken:
