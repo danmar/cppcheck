@@ -970,6 +970,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
         newToken->mImpl->mLineNumber = mImpl->mLineNumber;
         newToken->mImpl->mFileIndex = mImpl->mFileIndex;
         newToken->mImpl->mProgressValue = mImpl->mProgressValue;
+        newToken->mImpl->mScopeInfo = mImpl->mScopeInfo;
 
         if (prepend) {
             if (this->previous()) {
@@ -1837,6 +1838,13 @@ std::string Token::typeStr(const Token* tok)
     if (!r.first || !r.second)
         return "";
     return r.first->stringifyList(r.second, false);
+}
+
+void Token::scopeInfo(ScopeInfo2* newScopeInfo) {
+    mImpl->mScopeInfo = newScopeInfo;
+}
+ScopeInfo2* Token::scopeInfo() const {
+    return mImpl->mScopeInfo;
 }
 
 TokenImpl::~TokenImpl()
