@@ -51,7 +51,7 @@ struct TokensFrontBack {
 };
 
 struct ScopeInfo2 {
-    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> usingNamespaces_ = std::set<std::string>()) 
+    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> &usingNamespaces_ = std::set<std::string>()) 
         : name(name_), 
         bodyEnd(bodyEnd_), 
         usingNamespaces(usingNamespaces_) 
