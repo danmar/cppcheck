@@ -2830,9 +2830,8 @@ void Tokenizer::calculateScopes()
         // Check if we need to record a new namespace name or add a using
         if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<|;")) {
             if (Token::simpleMatch(tok->previous(), "using namespace")) {
-                const Token* namespaceNameToken = tok->next();
                 std::string usingNamespaceName = "";
-                for (namespaceNameToken = namespaceNameToken; !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
+                for (const Token* namespaceNameToken = tok->next(); !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
                     usingNamespaceName += namespaceNameToken->str();
                     usingNamespaceName += " ";
                 }
