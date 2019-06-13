@@ -2928,7 +2928,13 @@ void Tokenizer::simplifyTemplates()
 #endif
         mCodeWithTemplates);
     
+    for(auto scope : gScopeInfos) {
+        delete scope;
+    }    
     gScopeInfos.clear();
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        tok->scopeInfo(nullptr);
+    }
 }
 //---------------------------------------------------------------------------
 
