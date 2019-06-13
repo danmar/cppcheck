@@ -2887,6 +2887,7 @@ void Tokenizer::calculateScopes()
 
             // New scope created and added here
             ScopeInfo2* newScopeInfo = new ScopeInfo2(tok->scopeInfo()->name, tok->link(), tok->scopeInfo()->usingNamespaces);
+            gScopeInfos.push_back(newScopeInfo);
 
             if (newScopeInfo->name != "") newScopeInfo->name.append(" :: ");
             newScopeInfo->name.append(nextScopeNameAddition);
