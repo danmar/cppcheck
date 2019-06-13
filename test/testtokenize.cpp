@@ -343,6 +343,7 @@ private:
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
         TEST_CASE(cpp0xtemplate4); // Ticket #6181: Mishandled C++11 syntax
+        TEST_CASE(cpp0xtemplate5); // Ticket #9154 change >> to > >
         TEST_CASE(cpp14template); // Ticket #6708
 
         TEST_CASE(arraySize);
@@ -5264,6 +5265,34 @@ private:
                              "  }; "
                              "  template<class DC> class C2 {}; "
                              "}");
+    }
+
+    void cpp0xtemplate5() { // #9154
+        {
+            const char *code = "struct s<x<u...>>;";
+            ASSERT_EQUALS("struct s < x < u . . . > > ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "template <class f> using c = e<i<q<f,r>,b...>>;";
+            ASSERT_EQUALS("template < class f > using c = e < i < q < f , r > , b . . . > > ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct s<x<u...>> { };";
+            ASSERT_EQUALS("struct s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct q : s<x<u...>> { };";
+            ASSERT_EQUALS("struct q : s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct q : private s<x<u...>> { };";
+            ASSERT_EQUALS("struct q : private s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void cpp14template() { // Ticket #6708
