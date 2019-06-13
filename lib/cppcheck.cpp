@@ -84,7 +84,7 @@ namespace {
                     args += " " + v.get<std::string>();
             }
             name = obj["script"].get<std::string>();
-            scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
+            scriptFile = Path::getPathFromFilename(exename) + "addons/" + name + ".py";
             return "";
         }
     };
