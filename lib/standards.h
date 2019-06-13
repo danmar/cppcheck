@@ -57,10 +57,15 @@ struct Standards {
         return false;
     }
     const std::string getC(void) const {
-        if (c == C89) return "c89";
-        else if (c == C99) return "c99";
-        else if (c == C11) return "c11";
-        else return "";
+        switch (c) {
+            case C89:
+                return "c89";
+            case C99:
+                return "c99";
+            case C11:
+                return "c11";
+        }
+        return "";
     }
     bool setCPP(const std::string& str) {
         if (str == "c++03" || str == "C++03") {
@@ -86,10 +91,19 @@ struct Standards {
         return false;
     }
     const std::string getCPP(void) const {
-        if (cpp == CPP03) return "c++03";
-        else if (cpp == CPP11) return "c++11";
-        else if (cpp == CPP14) return "c++14";
-        else return "";
+        switch (cpp) {
+            case CPP03:
+                return "c++03";
+            case CPP11:
+                return "c++11";
+            case CPP14:
+                return "c++14";
+            case CPP17:
+                return "c++17";
+            case CPP20:
+                return "c++20";
+        }
+        return "";
     }
 };
 
