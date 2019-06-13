@@ -2825,6 +2825,12 @@ void Tokenizer::simplifyTemplates()
                 endTok->str(">");
                 endTok->insertToken(">");
             }
+        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
+            Token *endTok = tok->tokAt(2)->findClosingBracket();
+            if (Token::Match(endTok, ">> ;|{")) {
+                endTok->str(">");
+                endTok->insertToken(">");
+            }
         }
     }
 
