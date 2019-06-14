@@ -58,12 +58,12 @@ struct Standards {
     }
     const std::string getC(void) const {
         switch (c) {
-            case C89:
-                return "c89";
-            case C99:
-                return "c99";
-            case C11:
-                return "c11";
+        case C89:
+            return "c89";
+        case C99:
+            return "c99";
+        case C11:
+            return "c11";
         }
         return "";
     }
@@ -92,16 +92,16 @@ struct Standards {
     }
     const std::string getCPP(void) const {
         switch (cpp) {
-            case CPP03:
-                return "c++03";
-            case CPP11:
-                return "c++11";
-            case CPP14:
-                return "c++14";
-            case CPP17:
-                return "c++17";
-            case CPP20:
-                return "c++20";
+        case CPP03:
+            return "c++03";
+        case CPP11:
+            return "c++11";
+        case CPP14:
+            return "c++14";
+        case CPP17:
+            return "c++17";
+        case CPP20:
+            return "c++20";
         }
         return "";
     }
