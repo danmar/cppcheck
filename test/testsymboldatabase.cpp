@@ -204,7 +204,6 @@ private:
 
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
-        TEST_CASE(functionArgs3);
         TEST_CASE(functionArgs4);
         TEST_CASE(functionArgs5); // #7650
         TEST_CASE(functionArgs6); // #7651
@@ -1914,12 +1913,6 @@ private:
         ASSERT_EQUALS(false, a->dimensions()[0].known);
         ASSERT_EQUALS(4UL, a->dimension(1));
         ASSERT_EQUALS(true, a->dimensions()[1].known);
-    }
-
-    void functionArgs3() {
-        GET_SYMBOL_DB("void f(int i,) { }"); // Don't crash
-        const Variable *a = db->getVariableFromVarId(1);
-        ASSERT_EQUALS("i", a->nameToken()->str());
     }
 
     void functionArgs4() {
