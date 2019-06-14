@@ -569,6 +569,9 @@ class Configuration:
         arguments = []
 
         for element in confignode:
+            if element.tag == "standards":
+                self.standards = Standards(element)
+
             if element.tag == 'directivelist':
                 for directive in element:
                     self.directives.append(Directive(directive))
@@ -660,6 +663,21 @@ class Platform:
         self.long_long_bit = int(platformnode.get('long_long_bit'))
         self.pointer_bit = int(platformnode.get('pointer_bit'))
 
+class Standards:
+    """
+    Standards class
+    This class contains versions of standards that were used for the cppcheck
+
+    Attributes:
+        c            C Standard used
+        cpp          C++ Standard used
+        posix        If Posix was used
+    """
+
+    def __init__(self, standardsnode):
+        self.c = standardsnode.find("c").get("version")
+        self.cpp = standardsnode.find("cpp").get("version")
+        self.posix = standardsnode.find("posix") != None
 
 class CppcheckData:
     """

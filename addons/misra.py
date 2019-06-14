@@ -591,7 +591,7 @@ class Rule:
 
 class MisraChecker:
 
-    def __init__(self):
+    def __init__(self, stdversion = "c90"):
 
         # Test validation rules lists
         self.verify_expected    = list()
@@ -624,6 +624,14 @@ class MisraChecker:
 
         # Statistics of all violations suppressed per rule
         self.suppressionStats   = dict()
+
+        self.stdversion = stdversion
+
+    def get_num_significant_naming_chars(self, cfg):
+        if cfg.standards and cfg.standards.c == "c99":
+            return 63
+        else:
+            return 31
 
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
@@ -733,6 +741,7 @@ class MisraChecker:
 
 
     def misra_5_3(self, data):
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         enum = []
         scopeVars = {}
         for var in data.variables:
@@ -759,7 +768,7 @@ class MisraChecker:
                         outerScope = outerScope.nestedIn
                         continue
                     for outerVar in scopeVars[outerScope]:
-                        if innerVar.nameToken.str[:31] == outerVar.nameToken.str[:31]:
+                        if innerVar.nameToken.str[:num_sign_chars] == outerVar.nameToken.str[:num_sign_chars]:
                             if outerVar.isArgument and outerScope.type == "Global" and not innerVar.isArgument:
                                 continue
                             if int(innerVar.nameToken.linenr) > int(outerVar.nameToken.linenr):
@@ -768,7 +777,7 @@ class MisraChecker:
                                 self.reportError(outerVar.nameToken, 5, 3)
                     outerScope = outerScope.nestedIn
                 for scope in data.scopes:
-                    if scope.className and innerVar.nameToken.str[:31] == scope.className[:31]:
+                    if scope.className and innerVar.nameToken.str[:num_sign_chars] == scope.className[:num_sign_chars]:
                         if int(innerVar.nameToken.linenr) > int(scope.bodyStart.linenr):
                             self.reportError(innerVar.nameToken, 5, 3)
                         else:
@@ -776,18 +785,19 @@ class MisraChecker:
 
                 for e in enum:
                     for scope in data.scopes:
-                        if scope.className and innerVar.nameToken.str[:31] == e[:31]:
+                        if scope.className and innerVar.nameToken.str[:num_sign_chars] == e[:num_sign_chars]:
                             if int(innerVar.nameToken.linenr) > int(innerScope.bodyStart.linenr):
                                 self.reportError(innerVar.nameToken, 5, 3)
                             else:
                                 self.reportError(innerScope.bodyStart, 5, 3)
         for e in enum:
             for scope in data.scopes:
-                if scope.className and scope.className[:31] == e[:31]:
+                if scope.className and scope.className[:num_sign_chars] == e[:num_sign_chars]:
                     self.reportError(scope.bodyStart, 5, 3)
 
 
     def misra_5_4(self, data):
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         macro = {}
         compile_name = re.compile(r'#define ([a-zA-Z0-9_]+)')
         compile_param = re.compile(r'#define ([a-zA-Z0-9_]+)[(]([a-zA-Z0-9_, ]+)[)]')
@@ -807,18 +817,18 @@ class MisraChecker:
             if len(macro[mvar]["params"]) > 0:
                 for i, macroparam1 in enumerate(macro[mvar]["params"]):
                     for j, macroparam2 in enumerate(macro[mvar]["params"]):
-                        if j > i and macroparam1[:31] == macroparam2[:31]:
+                        if j > i and macroparam1[:num_sign_chars] == macroparam2[:num_sign_chars]:
                             self.reportError(mvar, 5, 4)
 
         for x, m_var1 in enumerate(macro):
             for y, m_var2 in enumerate(macro):
-                if x < y and macro[m_var1]["name"][:31] == macro[m_var2]["name"][:31]:
+                if x < y and macro[m_var1]["name"][:num_sign_chars] == macro[m_var2]["name"][:num_sign_chars]:
                     if m_var1.linenr > m_var2.linenr:
                         self.reportError(m_var1, 5, 4)
                     else:
                         self.reportError(m_var2, 5, 4)
                 for param in macro[m_var2]["params"]:
-                    if macro[m_var1]["name"][:31] == param[:31]:
+                    if macro[m_var1]["name"][:num_sign_chars] == param[:num_sign_chars]:
                         if m_var1.linenr > m_var2.linenr:
                             self.reportError(m_var1, 5, 4)
                         else:
@@ -826,6 +836,7 @@ class MisraChecker:
 
 
     def misra_5_5(self, data):
+        num_sign_chars = self.get_num_significant_naming_chars(data)
         macroNames = []
         compiled = re.compile(r'#define ([A-Za-z0-9_]+)')
         for dir in data.directives:
@@ -835,11 +846,11 @@ class MisraChecker:
         for var in data.variables:
             for macro in macroNames:
                 if var.nameToken is not None:
-                    if var.nameToken.str[:31] == macro[:31]:
+                    if var.nameToken.str[:num_sign_chars] == macro[:num_sign_chars]:
                         self.reportError(var.nameToken, 5, 5)
         for scope in data.scopes:
             for macro in macroNames:
-                if scope.className and scope.className[:31] == macro[:31]:
+                if scope.className and scope.className[:num_sign_chars] == macro[:num_sign_chars]:
                     self.reportError(scope.bodyStart, 5, 5)
 
 
