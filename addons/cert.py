@@ -262,6 +262,18 @@ def str03(data):
                     continue
                 if simpleMatch(lengthOp2.astOperand1, 'sizeof ('):  
                     reportError(token, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
+# STR05-C
+# Use pointers to const when referring to string literals
+def str05(data):
+    for token in data.tokenlist:
+        if token.isString:
+            parent = token.astParent
+            if parent is None:
+                continue
+            parentOp1 = parent.astOperand1
+            if parent.isAssignmentOp and not parentOp1.valueType is None:
+                if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
+                    reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
