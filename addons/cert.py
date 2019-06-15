@@ -288,6 +288,7 @@ for arg in sys.argv[1:]:
         exp46(cfg)
         exp15(cfg)
         int31(cfg, data.platform)
+        str03(cfg)
         msc30(cfg)
 
     if VERIFY:
