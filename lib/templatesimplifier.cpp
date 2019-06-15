@@ -2345,7 +2345,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
         }
 
         if (validTokenEnd(bounded, tok, backToken, 5) &&
-            Token::Match(tok, "decltype ( char|short|int|long { } )")) {
+            Token::Match(tok, "decltype ( %type% { } )")) {
             tok->deleteThis();
             tok->deleteThis();
             tok->deleteNext();
