@@ -2552,6 +2552,22 @@ private:
                "}";
         values = tokenValues(code, "+");
         TODO_ASSERT_EQUALS(2U, 0U, values.size()); // should be 2
+
+        // FP: Condition '*b>0' is always true
+        code = "bool dostuff(const char *x, const char *y);\n"
+               "void fun(char *s, int *b) {\n"
+               "  for (int i = 0; i < 42; ++i) {\n"
+               "    if (dostuff(s, \"1\")) {\n"
+               "      *b = 1;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  if (*b > 0) {\n" // *b does not have known value
+               "  }\n"
+               "}";
+        values = tokenValues(code, ">");
+        ASSERT_EQUALS(true, values.empty());
+
     }
 
     void valueFlowSwitchVariable() {
