@@ -1653,7 +1653,7 @@ void TemplateSimplifier::expandTemplate(
         }
         dst->insertToken(";", "", true);
 
-        if (isVariable)
+        if (isVariable || isFunction)
             simplifyTemplateArgs(dstStart, dst);
     }
 
@@ -2342,6 +2342,27 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
         if (validTokenEnd(bounded, tok, backToken, 3) &&
             Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
             tok->str(MathLib::toString(MathLib::toLongNumber(tok->str())));
+        }
+
+        if (validTokenEnd(bounded, tok, backToken, 5) &&
+            Token::Match(tok, "decltype ( %type% { } )")) {
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+            ret = true;
+        }
+
+        if (validTokenEnd(bounded, tok, backToken, 2) &&
+            Token::Match(tok, "char|short|int|long { }")) {
+            tok->str("0"); // FIXME add type suffix
+            tok->isSigned(false);
+            tok->isUnsigned(false);
+            tok->isLong(false);
+            tok->deleteNext();
+            tok->deleteNext();
+            ret = true;
         }
 
         if (tok && tok->isNumber()) {
@@ -3250,7 +3271,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    // TODO: 3 is not the ideal number of loops.
+    // TODO: 4 is not the ideal number of loops.
     // We should loop until the number of declarations is 0 but we can't
     // do that until we instantiate unintstantiated templates with their symbolic types.
     // That will allow the uninstantiated template code to be removed from the symbol database.
@@ -3258,7 +3279,7 @@ void TemplateSimplifier::simplifyTemplates(
     // the uninstantiated template code in the symbol database can't be removed until #8768
     // is fixed.
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         if (i) {
             // it may take more than one pass to simplify type aliases
             while (mTokenizer->simplifyUsing())

@@ -152,6 +152,7 @@ private:
         TEST_CASE(template112); // #9146 syntax error
         TEST_CASE(template113);
         TEST_CASE(template114); // #9155
+        TEST_CASE(template115); // #9153
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1848,8 +1849,8 @@ private:
                             "auto d() -> typename a<decltype(b{})>::e {\n"
                             "  d<int, c, int>();\n"
                             "}";
-        const char exp[] = "auto d<int,c,int> ( ) . a < decltype ( int { } ) > :: e ; "
-                           "auto d<int,c,int> ( ) . a < decltype ( int { } ) > :: e { "
+        const char exp[] = "auto d<int,c,int> ( ) . a < int > :: e ; "
+                           "auto d<int,c,int> ( ) . a < int > :: e { "
                            "d<int,c,int> ( ) ; "
                            "}";
         ASSERT_EQUALS(exp, tok(code));
@@ -2693,6 +2694,31 @@ private:
                            "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
                            "template < bool > struct e ; "
                            "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template115() { // #9153
+        const char code[] = "namespace {\n"
+                            "    namespace b {\n"
+                            "        template <int c> struct B { using B<c / 2>::d; };\n"
+                            "    }\n"
+                            "    template <class, class> using e = typename b::B<int{}>;\n"
+                            "    namespace b {\n"
+                            "        template <class> struct f {};\n"
+                            "    }\n"
+                            "    template <class c> using g = b::f<e<int, c>>;\n"
+                            "}\n"
+                            "g<int> g1;";
+        const char exp[] = "namespace { "
+                           "namespace b { "
+                           "struct B<0> ; "
+                           "} "
+                           "namespace b { "
+                           "struct f<b::B<0>> ; "
+                           "} "
+                           "} "
+                           "b :: f<b::B<0>> g1 ; struct b :: B<0> { using B<0> :: d ; } ; "
+                           "struct b :: f<b::B<0>> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
