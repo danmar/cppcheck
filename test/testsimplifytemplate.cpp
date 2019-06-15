@@ -2683,17 +2683,30 @@ private:
     }
 
     void template114() { // #9155
-        const char code[] = "template <typename a, a> struct b {};\n"
-                            "template <typename> struct c;\n"
-                            "template <typename> struct d : b<bool, std::is_polymorphic<int>{}> {};\n"
-                            "template <bool> struct e;\n"
-                            "template <typename a> using f = typename e<c<d<a>>::g>::h;";
-        const char exp[] = "template < typename a , a > struct b { } ; "
-                           "template < typename > struct c ; "
-                           "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
-                           "template < bool > struct e ; "
-                           "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "template <typename a, a> struct b {};\n"
+                                "template <typename> struct c;\n"
+                                "template <typename> struct d : b<bool, std::is_polymorphic<int>{}> {};\n"
+                                "template <bool> struct e;\n"
+                                "template <typename a> using f = typename e<c<d<a>>::g>::h;";
+            const char exp[] =  "template < typename a , a > struct b { } ; "
+                                "template < typename > struct c ; "
+                                "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
+                                "template < bool > struct e ; "
+                                "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <typename a, a> struct b;\n"
+                                "template <bool, typename> struct c;\n"
+                                "template <typename a> struct d : b<bool, std::is_empty<a>{}> {};\n"
+                                "template <typename a> using e = typename c<std::is_final<a>{}, d<a>>::f;\n";
+            const char exp[] =  "template < typename a , a > struct b ; "
+                                "template < bool , typename > struct c ; "
+                                "struct d<a> ; "
+                                "template < typename a > using e = typename c < std :: is_final < a > { } , d<a> > :: f ; struct d<a> : b < bool , std :: is_empty < a > { } > { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

@@ -523,12 +523,15 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         }
 
         else if (tok2->str() == "{") {
-            tok2 = tok2->link()->next();
-            if (tok2 && tok2->str() == ";" && tok2->next())
+            tok2 = tok2->link();
+            if (indentlevel < 2) {
                 tok2 = tok2->next();
-            eraseTokens(tok, tok2);
-            deleteToken(tok);
-            return true;
+                if (tok2 && tok2->str() == ";" && tok2->next())
+                    tok2 = tok2->next();
+                eraseTokens(tok, tok2);
+                deleteToken(tok);
+                return true;
+            }
         } else if (tok2->str() == "}") {  // garbage code! (#3449)
             eraseTokens(tok,tok2);
             deleteToken(tok);
@@ -1971,7 +1974,7 @@ void TemplateSimplifier::expandTemplate(
                         mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->fileIndex());
                     }
                     brackets.pop();
-                    if (brackets.empty()) {
+                    if (brackets.empty() && !Token::Match(tok3, "} >|,|%cop%")) {
                         inTemplateDefinition = false;
                         break;
                     }
