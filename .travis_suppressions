@@ -23,8 +23,3 @@ useStlAlgorithm
 *:test/test.cxx
 *:test/cfg/*
 
-*:externals/*
-*:externals/*/*
-*:htmlreport/*
-*:samples/*/bad.c*
-*:samples/redundantAssignment/data.c
