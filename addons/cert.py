@@ -318,6 +318,31 @@ def str11(data):
                     continue
                 if valueToken.isNumber and int(valueToken.str)==strlen:
                     reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
+
+# MSC24-C
+# Do not use deprecated or obsolescent functions
+def msc24(data):
+    for token in data.tokenlist:
+        if token.str == 'asctime':
+            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+        elif token.str == 'atof':
+            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+        elif token.str == 'atoi':
+            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+        elif token.str == 'atol':
+            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+        elif token.str == 'atoll':
+            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+        elif token.str == 'ctime':
+            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+        elif token.str == 'fopen':
+            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+        elif token.str == 'freopen':
+            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+        elif token.str == 'rewind':
+            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+        elif token.str == 'setbuf':
+            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -348,6 +373,7 @@ for arg in sys.argv[1:]:
         str05(cfg)
         str07(cfg)
         str11(cfg)
+        msc24(cfg)
         msc30(cfg)
 
     if VERIFY:
