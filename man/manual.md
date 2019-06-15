@@ -591,210 +591,42 @@ Newline
 
 Carriage return
 
-# Speeding up Cppcheck
-
-It is possible to speed up Cppcheck analysis in a few different ways.
-
-## Preprocessor configurations
-
-Imagine this source code:
-
-    void foo()
-    {
-        int x;
-    #ifdef __GNUC__
-        x = 0;
-    #endif
-    #ifdef _MSC_VER
-        x = 1;
-    #endif
-        return x;
-    }
-
-By default Cppcheck will try to check all the configurations. There are 3 important configurations here:
-
-- Neither `__GNUC__` nor `_MSC_VER` is defined
-- `__GNUC__` is defined
-- `_MSC_VER` is defined
-
-When you run Cppcheck, the output will be something like:
-
-    $ cppcheck test.c
-    Checking test.c ...
-    [test.c:10]: (error) Uninitialized variable: x
-    Checking test.c: __GNUC__...
-    Checking test.c: _MSC_VER...
-
-Now if you want you can limit the analysis. You probably know what the target compiler is. If `-D` is supplied and you do not specify `--force` then Cppcheck will only check the configuration you give.
-
-    $ cppcheck -D __GNUC__ test.c
-    Checking test.c ...
-    Checking test.c: __GNUC__=1...
-
-## Unused templates
-
-If you think Cppcheck is slow and you are using templates, then you should try how it works to remove unused templates.
-
-Imagine this code:
-
-    template <class T> struct Foo {
-        T x = 100;
-    };
-
-    template <class T> struct Bar {
-        T x = 200 / 0;
-    };
-
-    int main() {
-        Foo<int> foo;
-        return 0;
-    }
-
-Cppcheck says:
-
-    $ cppcheck test.cpp
-    Checking test.cpp ...
-    [test.cpp:7]: (error) Division by zero.
-
-It complains about division by zero in `Bar` even though `Bar` is not instantiated.
-
-You can use the option `--remove-unused-templates` to remove unused templates from Cppcheck analysis.
-
-Example:
-
-    $ cppcheck --remove-unused-templates test.cpp
-    Checking test.cpp ...
-
-This lost message is in theory not critical, since `Bar` is not instantiated the division by zero should not occur in your real program.
-
-The speedup you get can be remarkable.
-
-## Check headers
-
-TBD
-
 # Addons
 
-Addons are scripts with extra checks. Cppcheck is distributed with a few addons. You can easily write your own custom addon.
+Addons are scripts with extra checks. Cppcheck is distributed with a few addons.
 
-If an addon does not need any arguments, you can run it directly on the cppcheck command line. For instance you can run the addon "misc" like this:
+## Running Addons
 
-    cppcheck --addon=misc somefile.c
+Addons are standalone scripts that are executed separately.
 
-If an addon need additional arguments, you can not execute it directly on the command line. Create a json file with the addon configuration:
+To manually run an addon:
+
+    cppcheck --dump somefile.c
+    python misc.py somefile.c.dump
+
+To run the same addon through Cppcheck directly:
+
+    cppcheck --addon=misc.py somefile.c
+
+Some addons need extra arguments. For example misra.py can be executed manually like this:
+
+    cppcheck --dump somefile.c
+    python misra.py --rule-texts=misra.txt somefile.c.dump
+
+You can configure how you want to execute an addon in a json file, for example put this in misra.json:
 
     {
-        "script": "misra",
+        "script": "misra.py",
         "args": [ "--rule-texts=misra.txt" ]
     }
 
-And then such configuration can be executed on the cppcheck command line:
+And then the configuration can be executed on the cppcheck command line:
 
     cppcheck --addon=misra.json somefile.c
 
-## CERT
+## Help about an addon
 
-Check CERT coding rules. No configuration is needed.
-
-Example usage:
-
-    cppcheck --addon=cert somefile.c
-
-## Findcasts
-
-Will just locate C-style casts in the code. No configuration is needed.
-
-Example usage:
-
-    cppcheck --addon=findcasts somefile.c
-
-## Misc
-
-Misc checks. No configuration is needed.
-
-These are checks that we thought would be useful, however it could sometimes warn for coding style that is by intention. For instance it warns about missing comma
-between string literals in array initializer.. that could be a mistake but maybe you use string concatenation by intention.
-
-Example usage:
-
-    cppcheck --addon=misc somefile.c
-
-## Misra
-
-Check that your code is Misra C 2012 compliant.
-
-To run the Misra addon you need to write a configuration file, because the addon require parameters.
-
-To run this addon you need to have a text file with the misra rule texts. You copy/paste these rule texts from the Misra C 2012 PDF, buy this PDF from <http://www.misra.org.uk> (costs 15-20 pounds)
-
-This is an example misra configuration file:
-
-    {
-        "script": "misra",
-        "args": [ "--rule-texts=misra.txt" ]
-    }
-
-The file misra.txt contains the text from "Appendix A Summary of guidelines" in the Misra C 2012 PDF.
-
-    Appendix A Summary of guidelines
-    Rule 1.1
-    Rule text
-    Rule 1.2
-    Rule text
-    ...
-
-Usage:
-
-    cppcheck --addon=my-misra-config.json somefile.c
-
-## Naming
-
-Check naming conventions. You specify your naming conventions for variables/functions/etc using regular expressions.
-
-Example configuration (variable names must start with lower case, function names must start with upper case):
-
-    {
-        "script": "naming",
-        "args": [
-            "--var=[a-z].*",
-            "--function=[A-Z].*"
-        ]
-    }
-
-Usage:
-
-    cppcheck --addon=my-naming.json somefile.c
-
-## Namingng
-
-Check naming conventions. You specify the naming conventions using regular expressions in a json file.
-
-Example addon configuration:
-
-    {
-        "script": "namingng",
-        args: [ "--configfile=ROS_naming.json" ]
-    }
-
-Usage:
-
-    cppcheck --addon=namingng-ros.json somefile.c
-
-## Threadsafety
-
-This will warn if you have local static objects that are not threadsafe. No configuration is needed.
-
-Example usage:
-
-    cppcheck --addon=threadsafety somefile.c
-
-## Y2038
-
-Check for the Y2038 bug. No configuration is needed.
-
-Example usage:
-
-    cppcheck --addon=y2038 somefile.c
+You can read about how to use a Cppcheck addon by looking in the addon. The comments at the top of the file should have a description.
 
 # Library configuration
 
