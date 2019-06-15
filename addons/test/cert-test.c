@@ -146,3 +146,52 @@ void msc24()
     printf ("This sentence is redirected to a file.");
     fclose (stdout);
 }
+
+//suppose we are using the openssl library
+#define MD5_LONG unsigned long
+#define MD4_LONG unsigned long
+
+typedef struct MD5state_st {
+    MD5_LONG A, B, C, D;
+    MD5_LONG Nl, Nh;
+    MD5_LONG data[MD5_LBLOCK];
+    unsigned int num;
+} MD5_CTX;
+
+typedef struct MD4state_st {
+    MD4_LONG A, B, C, D;
+    MD4_LONG Nl, Nh;
+    MD4_LONG data[MD4_LBLOCK];
+    unsigned int num;
+} MD4_CTX;
+
+typedef struct SHAstate_st {
+    unsigned long h0, h1, h2, h3, h4;
+    unsigned long Nl, Nh;
+    unsigned long data[16];
+    unsigned int num;
+} SHA_CTX; 
+
+void msc25()
+{
+    MD5_CTX c;
+    SHA_CTX shaContext;
+    char buffer[256];
+    unsigned char md[128];
+
+    MD4_Init(&c);        //cert-MSC25-C
+    MD4_Update(c, buffer, 256); //cert-MSC25-C
+    MD4_Final(md, &c); //cert-MSC25-C
+
+    MD5_Init(&c);        //cert-MSC25-C
+    MD5_Update(c, buffer, 256); //cert-MSC25-C
+    MD5_Final(md, &c); //cert-MSC25-C
+
+    SHA_Init(&shaContext); //cert-MSC25-C
+    SHA_Update(&shaContext, buffer, 256); //cert-MSC25-C
+    SHA_Final(&md, &shaContext); //cert-MSC25-C
+
+    SHA1_Init(&shaContext); //cert-MSC25-C
+    SHA1_Update(&shaContext, buffer, 256); //cert-MSC25-C
+    SHA1_Final(&md, &shaContext); //cert-MSC25-C
+}

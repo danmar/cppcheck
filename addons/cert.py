@@ -343,6 +343,24 @@ def msc24(data):
             reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
         elif token.str == 'setbuf':
             reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
+
+
+# MSC25-C
+# Do not use insecure or weak cryptographic algorithms
+# this checker will only report known weak algorithms if the well known function names are used.
+def msc25(data):
+    for token in data.tokenlist:
+        if 'md4_init' in token.str.lower() or 'md4_update' in token.str.lower() or 'md4_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms MD4', 'MSC25-C')
+        elif 'md5_init' in token.str.lower() or 'md5_update' in token.str.lower() or 'md5_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms MD5', 'MSC25-C')
+        elif 'des_encrypt' in token.str.lower() or 'des_decrypt' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms DES', 'MSC25-C')
+        elif 'sha_init' in token.str.lower() or 'sha_update' in token.str.lower() or 'sha_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms SHA', 'MSC25-C')
+        elif 'sha1_init' in token.str.lower() or 'sha1_update' in token.str.lower() or 'sha1_final' in token.str.lower():
+            reportError(token, 'style','Do not use insecure or weak cryptographic algorithms SHA1', 'MSC25-C')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -374,6 +392,7 @@ for arg in sys.argv[1:]:
         str07(cfg)
         str11(cfg)
         msc24(cfg)
+        msc25(cfg)
         msc30(cfg)
 
     if VERIFY:
