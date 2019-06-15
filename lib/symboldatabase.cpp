@@ -1317,7 +1317,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                     break;
                 };
 
-                if (bits > 0 && bits < 64) {
+                if (bits > 0 && bits <= 62) {
                     if (dimension.tok->valueType()->sign == ValueType::Sign::UNSIGNED)
                         dimension.num = 1LL << bits;
                     else
