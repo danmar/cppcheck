@@ -4,11 +4,19 @@ redundantNextPrevious:test/testtoken.cpp
 simplePatternError:test/testtoken.cpp
 noValidConfiguration
 shadowFunction
+functionConst
+functionStatic
 
 # temporary suppressions - fix the warnings!
+duplicateBranch:lib/checkunusedvar.cpp
+duplicateBranch:lib/tokenize.cpp
 missingOverride
-shiftTooManyBitsSigned
-unusedPrivateFunction
+redundantAssignment:lib/tokenlist.cpp
+unreachableCode:lib/checkbufferoverrun.cpp
+unreachableCode:lib/checkclass.cpp
+unreachableCode:test/testother.cpp
+unusedPrivateFunction:lib/checkbufferoverrun.h
+unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
 
 *:gui/test/*
@@ -19,3 +27,4 @@ useStlAlgorithm
 *:externals/*/*
 *:htmlreport/*
 *:samples/*/bad.c*
+*:samples/redundantAssignment/data.c
