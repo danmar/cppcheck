@@ -22,4 +22,4 @@ useStlAlgorithm
 *:gui/test/*
 *:test/test.cxx
 *:test/cfg/*
-
+*:externals/*/*
