@@ -287,6 +287,37 @@ def str07(data):
                 continue
             if not parent.astParent :
                 reportError(token, 'style', 'Use the bounds-checking interfaces for string manipulation', 'STR07-C')
+
+# STR11-C
+# Do not specify the bound of a character array initialized with a string literal
+def str11(data):
+    for token in data.tokenlist:
+        if token.isString:
+            strlen = token.strlen
+            parent = token.astParent
+
+            if parent is None:
+                continue
+            parentOp1 = parent.astOperand1
+            if parentOp1 is None or not parentOp1.str=='[':
+                continue
+
+            if parent.isAssignmentOp:
+                varToken = parentOp1.astOperand1
+                if varToken is None or not varToken.isName:
+                    continue
+                if varToken.variable is None:
+                    continue
+                startToken = varToken.variable.typeStartToken   
+                endToken = varToken.variable.typeEndToken # check if it's the core variable declaration
+                if startToken != endToken:
+                    continue
+
+                valueToken = parentOp1.astOperand2
+                if valueToken is None:
+                    continue
+                if valueToken.isNumber and int(valueToken.str)==strlen:
+                    reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -313,6 +344,10 @@ for arg in sys.argv[1:]:
         exp46(cfg)
         exp15(cfg)
         int31(cfg, data.platform)
+        str03(cfg)
+        str05(cfg)
+        str07(cfg)
+        str11(cfg)
         msc30(cfg)
 
     if VERIFY:

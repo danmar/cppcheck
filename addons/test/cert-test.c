@@ -88,6 +88,12 @@ void str07()
     strcat(buf,"doh"); //cert-STR07-C
     fputs(buf, stderr); //cert-STR07-C
 }
+
+void str11()
+{
+    const char str[3]="abc";    //cert-STR11-C
+    const char *x[10]; x[3]="def";
+}
 void exp15()
 {
     int x=5, y=7;
