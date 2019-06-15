@@ -79,6 +79,15 @@ void str05()
     char *str1 = "abc";         //cert-STR05-C
     wchar_t *str2  = L"hello";  //cert-STR05-C
 }
+
+void str07()
+{
+    static const *str="test";
+    char buf[128];
+    strcpy(buf, str); //cert-STR07-C
+    strcat(buf,"doh"); //cert-STR07-C
+    fputs(buf, stderr); //cert-STR07-C
+}
 void exp15()
 {
     int x=5, y=7;
