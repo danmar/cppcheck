@@ -145,13 +145,6 @@ void CheckClass::constructors()
             if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
 
-            // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
-            if (func.type == Function::eConstructor) {
-                const Token *initList = func.constructorMemberInitialization();
-                if (Token::Match(initList, ": %name% (") && initList->next()->tokType() == Token::eName)
-                    break;
-            }
-
             // Mark all variables not used
             clearAllVar(usage);
 
