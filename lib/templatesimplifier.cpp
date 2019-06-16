@@ -523,12 +523,15 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         }
 
         else if (tok2->str() == "{") {
-            tok2 = tok2->link()->next();
-            if (tok2 && tok2->str() == ";" && tok2->next())
+            tok2 = tok2->link();
+            if (indentlevel < 2) {
                 tok2 = tok2->next();
-            eraseTokens(tok, tok2);
-            deleteToken(tok);
-            return true;
+                if (tok2 && tok2->str() == ";" && tok2->next())
+                    tok2 = tok2->next();
+                eraseTokens(tok, tok2);
+                deleteToken(tok);
+                return true;
+            }
         } else if (tok2->str() == "}") {  // garbage code! (#3449)
             eraseTokens(tok,tok2);
             deleteToken(tok);
@@ -754,9 +757,9 @@ void TemplateSimplifier::getTemplateInstantiations()
             const bool isUsing = tok->strAt(1) == "using";
             if (isUsing && Token::Match(tok->tokAt(2), "%name% <")) {
                 // Cant have specialized type alias so ignore it
-                const Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
+                Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
                 if (tok2)
-                    tok = const_cast<Token *>(tok2);
+                    tok = tok2;
             } else if (tok->strAt(-1) == "<") {
                 // Don't ignore user specialization but don't consider it an instantiation.
                 // Instantiations in return type, function parameters, and executable code
@@ -768,22 +771,22 @@ void TemplateSimplifier::getTemplateInstantiations()
                 // #7914
                 // Ignore template instantiations within template definitions: they will only be
                 // handled if the definition is actually instantiated
-                const Token *tok2 = Token::findmatch(tok, "{|;");
+                Token *tok2 = Token::findmatch(tok, "{|;");
                 if (tok2 && tok2->str() == "{")
                     tok = tok2->link();
                 else if (tok2 && tok2->str() == ";")
-                    tok = const_cast<Token *>(tok2);
+                    tok = tok2;
             }
         } else if (Token::Match(tok, "template using %name% <")) {
             // Cant have specialized type alias so ignore it
-            const Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
+            Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
             if (tok2)
-                tok = const_cast<Token *>(tok2);
+                tok = tok2;
         } else if (Token::Match(tok, "using %name% <")) {
             // Cant have specialized type alias so ignore it
-            const Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
+            Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
-                tok = const_cast<Token *>(tok2);
+                tok = tok2;
         } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|, %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
@@ -876,7 +879,7 @@ void TemplateSimplifier::getTemplateInstantiations()
 
             // Add inner template instantiations first => go to the ">"
             // and then parse backwards, adding all seen instantiations
-            const Token *tok2 = tok->next()->findClosingBracket();
+            Token *tok2 = tok->next()->findClosingBracket();
 
             // parse backwards and add template instantiations
             // TODO
@@ -885,7 +888,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                     templateParameters(tok2->tokAt(2))) {
                     addInstantiation(tok2->next(), getScopeName(scopeList));
                 } else if (Token::Match(tok2->next(), "class|struct"))
-                    const_cast<Token *>(tok2)->deleteNext();
+                    tok2->deleteNext();
             }
 
             // Add outer template..
@@ -1653,7 +1656,7 @@ void TemplateSimplifier::expandTemplate(
         }
         dst->insertToken(";", "", true);
 
-        if (isVariable)
+        if (isVariable || isFunction)
             simplifyTemplateArgs(dstStart, dst);
     }
 
@@ -1971,7 +1974,7 @@ void TemplateSimplifier::expandTemplate(
                         mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->fileIndex());
                     }
                     brackets.pop();
-                    if (brackets.empty()) {
+                    if (brackets.empty() && !Token::Match(tok3, "} >|,|%cop%")) {
                         inTemplateDefinition = false;
                         break;
                     }
@@ -2342,6 +2345,27 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
         if (validTokenEnd(bounded, tok, backToken, 3) &&
             Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
             tok->str(MathLib::toString(MathLib::toLongNumber(tok->str())));
+        }
+
+        if (validTokenEnd(bounded, tok, backToken, 5) &&
+            Token::Match(tok, "decltype ( %type% { } )")) {
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+            ret = true;
+        }
+
+        if (validTokenEnd(bounded, tok, backToken, 2) &&
+            Token::Match(tok, "char|short|int|long { }")) {
+            tok->str("0"); // FIXME add type suffix
+            tok->isSigned(false);
+            tok->isUnsigned(false);
+            tok->isLong(false);
+            tok->deleteNext();
+            tok->deleteNext();
+            ret = true;
         }
 
         if (tok && tok->isNumber()) {
@@ -3250,7 +3274,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    // TODO: 3 is not the ideal number of loops.
+    // TODO: 4 is not the ideal number of loops.
     // We should loop until the number of declarations is 0 but we can't
     // do that until we instantiate unintstantiated templates with their symbolic types.
     // That will allow the uninstantiated template code to be removed from the symbol database.
@@ -3258,7 +3282,7 @@ void TemplateSimplifier::simplifyTemplates(
     // the uninstantiated template code in the symbol database can't be removed until #8768
     // is fixed.
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         if (i) {
             // it may take more than one pass to simplify type aliases
             while (mTokenizer->simplifyUsing())

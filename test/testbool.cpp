@@ -60,6 +60,9 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool4);
         TEST_CASE(checkComparisonOfFuncReturningBool5);
         TEST_CASE(checkComparisonOfFuncReturningBool6);
+        // Integration tests..
+        TEST_CASE(checkComparisonOfFuncReturningBoolIntegrationTest1); // #7798 overloaded functions
+
         TEST_CASE(checkComparisonOfBoolWithBool);
 
         // Converting pointer addition result to bool
@@ -722,6 +725,18 @@ private:
               "    if(foo.compare1(temp) > compare2(temp)){\n"
               "        printf(\"foo\");\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBoolIntegrationTest1() { // #7798
+        check("bool eval(double *) { return false; }\n"
+              "double eval(char *) { return 1.0; }\n"
+              "int main(int argc, char *argv[])\n"
+              "{\n"
+              "  if ( eval(argv[1]) > eval(argv[2]) )\n"
+              "    return 1;\n"
+              "  return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

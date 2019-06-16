@@ -22,7 +22,7 @@ public:
 public slots:
     void loadFile();
     void loadFromClipboard();
-    void filter(QString f);
+    void filter(QString filter);
     void showResult(QListWidgetItem *item);
     void refreshResults();
 

@@ -179,7 +179,7 @@ public:
     void useStlAlgorithm();
 
 private:
-    bool isContainerSize(const Token *container, const Token *expr) const;
+    bool isContainerSize(const Token *containerToken, const Token *expr) const;
     bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
 
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
@@ -221,7 +221,7 @@ private:
 
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
-    bool compareIteratorAgainstDifferentContainer(const Token* tok, const Token* containerToken, const unsigned int iteratorId, const std::map<unsigned int, const Token*>& iteratorScopeBeginInfo);
+    bool compareIteratorAgainstDifferentContainer(const Token* operatorTok, const Token* containerTok, const unsigned int iteratorId, const std::map<unsigned int, const Token*>& iteratorScopeBeginInfo);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckStl c(nullptr, settings, errorLogger);
