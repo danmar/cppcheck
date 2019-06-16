@@ -1,0 +1,40 @@
+Appendix A Summary of guidelines
+
+Arbitrary text before rule definition will be skipped.
+
+Rule 11.
+Incorrect rule definitions will be skipped.
+Rule .11
+Incorrect rule definitions will be skipped.
+
+Rule 11.9
+Rule 12.1 Advisory
+
+Rule 11.5
+One-line text.
+Rule 11.6 Required
+One-line text with specified severity.
+Rule 11.7 Mandatory
+One-line text with specified severity.
+Rule 11.8 Advisory
+One-line text with specified severity.
+
+Arbitrary text after empty line will be skipped.
+
+Rule 12.2
+Multiple
+lines
+text.
+Rule 12.3 Required
+Multiple lines
+text
+with specified severity.
+
+Rule 12.4
+the rule text must begin from [#A-Z]. This line will be skipped.
+
+Rule 13.4
+Continuing rule description always starts
+From lowercase letter. This line will be skipped.
+
+Appendix B

@@ -2055,6 +2055,7 @@ class MisraChecker:
         num2 = 0
         appendixA = False
         ruleText = False
+        expect_more = False
 
         Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
         Choice_pattern = re.compile(r'^[ ]*(Advisory|Required|Mandatory)$')
@@ -2081,9 +2082,8 @@ class MisraChecker:
             except TypeError:
                 # Python 2 does not support the errors parameter
                 file_stream = open(filename, 'rt')
-        # Parse the rule texts
+
         rule = None
-        state = 0 # 0=Expect "Rule X.Y", 1=Expect "Advisory|Required|Mandatory", 2=Expect "Text..", 3=Expect "..more text"
         for line in file_stream:
             line = line.replace('\r', '').replace('\n', '')
             if not appendixA:
@@ -2093,39 +2093,41 @@ class MisraChecker:
             if line.find('Appendix B') >= 0:
                 break
             if len(line) == 0:
-                if state >= 3:
-                    state = 0
+                expect_more = False
+                rule = None
                 continue
+
+            # Parse rule declaration.
             res = Rule_pattern.match(line)
             if res:
                 num1 = int(res.group(1))
                 num2 = int(res.group(2))
                 rule = Rule(num1, num2)
-                state = 1
+                res = Choice_pattern.match(line)
+                if res:
+                    self.ruleTexts[rule.num].severity = res.group(1)
+                expect_more = False
                 continue
             if rule is None:
                 continue
-            if state == 1: # Expect "Advisory|Required|Mandatory"
-                if Choice_pattern.match(line):
-                    rule.severity = line
-                    state = 2
-                else:
-                    rule = None
-                    state = 0
-            elif state == 2: # Expect "Text.."
-                if xA_Z_pattern.match(line):
-                    state = 3
-                    rule.text = line
-                    self.ruleTexts[rule.num] = rule
-                else:
-                    rule = None
-                    state = 0
-            elif state == 3: # Expect ".. more text"
+
+            # Parse continuing of rule text.
+            if expect_more:
                 if a_z_pattern.match(line):
                     self.ruleTexts[rule.num].text += ' ' + line
-                else:
-                    rule = None
-                    state = 0
+                    continue
+                rule = None
+                expect_more = False
+                continue
+
+            # Parse beginning of rule text.
+            if xA_Z_pattern.match(line):
+                rule.text = line
+                self.ruleTexts[rule.num] = rule
+                expect_more = True
+            else:
+                rule = None
+
 
     def parseDump(self, dumpfile):
 
