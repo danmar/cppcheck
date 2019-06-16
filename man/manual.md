@@ -137,6 +137,8 @@ You can import and use Cppcheck GUI project files in the command line tool:
 
     cppcheck --project=foobar.cppcheck
 
+The Cppcheck GUI has a few options that are not available in the command line directly. To use these options you can import a GUI project file. We want to keep the command line tool usage simple and limit the options by intention.
+
 ## CMake
 
 Generate a compile database:
@@ -158,6 +160,8 @@ Running Cppcheck on an entire Visual Studio solution:
 Running Cppcheck on a Visual Studio project:
 
     cppcheck --project=foobar.vcxproj
+
+In the `Cppcheck GUI` you have the choice to only analyze a single debug configuration. If you want to use this choice on the command line then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
 ## C++ Builder 6
 
