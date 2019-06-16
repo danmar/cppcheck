@@ -533,7 +533,6 @@ def generateTable():
                 s = 'X (Cppcheck)'
             num = num + '       '
             print(num[:8] + s)
-    sys.exit(1)
 
 
 def remove_file_prefix(file_path, prefix):
@@ -2329,6 +2328,7 @@ def main():
 
     if args.generate_table:
         generateTable()
+        sys.exit(0)
     else:
         if args.rule_texts:
             filename = os.path.normpath(args.rule_texts)
