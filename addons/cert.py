@@ -234,6 +234,17 @@ def msc30(data):
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
             reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
+# STR07-C
+# Use the bounds-checking interfaces for string manipulation
+def str07(data):
+    for token in data.tokenlist:
+        if token.str in('strcpy', 'strcat', 'fputs'):
+            parent = token.astParent
+            if parent is None:
+                continue
+            if not parent.astParent :
+                reportError(token, 'style', 'Use the bounds-checking interfaces for string manipulation', 'STR07-C')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -259,6 +270,7 @@ for arg in sys.argv[1:]:
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+        str07(cfg)
         msc30(cfg)
 
     if VERIFY:
