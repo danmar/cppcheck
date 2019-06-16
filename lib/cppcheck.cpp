@@ -83,6 +83,9 @@ namespace {
         }
 
         std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
+            if (fileName.find(".") == std::string::npos)
+                return getAddonInfo(fileName + ".py", exename);
+
             if (endsWith(fileName, ".py", 3)) {
                 scriptFile = getFullPath(fileName, exename);
                 if (scriptFile.empty())
