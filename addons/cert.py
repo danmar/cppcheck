@@ -238,32 +238,36 @@ def msc30(data):
 # Do not specify the bound of a character array initialized with a string literal
 def str11(data):
     for token in data.tokenlist:
-        if token.isString:
-            strlen = token.strlen
-            parent = token.astParent
+        if not token.isString:
+            continue
 
-            if parent is None:
-                continue
-            parentOp1 = parent.astOperand1
-            if parentOp1 is None or not parentOp1.str=='[':
-                continue
+        strlen = token.strlen
+        parent = token.astParent
 
-            if parent.isAssignmentOp:
-                varToken = parentOp1.astOperand1
-                if varToken is None or not varToken.isName:
-                    continue
-                if varToken.variable is None:
-                    continue
-                startToken = varToken.variable.typeStartToken   
-                endToken = varToken.variable.typeEndToken # check if it's the core variable declaration
-                if startToken != endToken:
-                    continue
+        if parent is None:
+            continue
+        parentOp1 = parent.astOperand1
+        if parentOp1 is None or parentOp1.str!='[':
+            continue
 
-                valueToken = parentOp1.astOperand2
-                if valueToken is None:
-                    continue
-                if valueToken.isNumber and int(valueToken.str)==strlen:
-                    reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
+        if not parent.isAssignmentOp:
+            continue
+            
+        varToken = parentOp1.astOperand1
+        if varToken is None or not varToken.isName:
+            continue
+        if varToken.variable is None:
+            continue
+        startToken = varToken.variable.typeStartToken   
+        endToken = varToken.variable.typeEndToken # check if it's the core variable declaration
+        if startToken != endToken:
+            continue
+
+        valueToken = parentOp1.astOperand2
+        if valueToken is None:
+            continue
+        if valueToken.isNumber and int(valueToken.str)==strlen:
+            reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
