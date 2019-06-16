@@ -248,6 +248,8 @@ script:
   - cd test/cli
   - python -m pytest test-*.py
   - cd ../..
+# Testing addons
+  - python -m pytest addons/test/test-*.py
 
 notifications:
   irc:
