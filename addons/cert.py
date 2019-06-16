@@ -234,6 +234,24 @@ def msc30(data):
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
             reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
+# STR03-C
+# Do not inadvertently truncate a string
+def str03(data):
+    for token in data.tokenlist:
+        if simpleMatch(token, 'strncpy ('): # now search if the 3rd parameter is a sizeof()
+            paramToken = token.astParent
+            if paramToken is None:
+                continue
+            if not paramToken.astOperand2 is None:
+                nextOp2 = paramToken.astOperand2
+                if nextOp2.astOperand2 is None:
+                    continue
+                lengthOp2 = nextOp2.astOperand2
+                if lengthOp2 is None:
+                    continue
+                if simpleMatch(lengthOp2.astOperand1, 'sizeof ('):  
+                    reportError(token, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -259,6 +277,7 @@ for arg in sys.argv[1:]:
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+        str03(cfg)
         msc30(cfg)
 
     if VERIFY:
