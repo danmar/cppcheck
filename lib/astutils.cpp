@@ -1162,6 +1162,12 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::simpleMatch(tok, "goto"))
             return Result(Result::Type::BAILOUT);
 
+        if (Token::Match(tok, "class|struct %name% {")) { 
+            // skip local class definition
+            tok = tok->tokAt(2)->link();
+            continue;
+        }
+
         if (tok->str() == "continue")
             // TODO
             return Result(Result::Type::BAILOUT);

@@ -2552,6 +2552,25 @@ private:
                "}";
         values = tokenValues(code, "+");
         TODO_ASSERT_EQUALS(2U, 0U, values.size()); // should be 2
+
+        // #9167: False Positive UnusedAssignment with local class
+        code = "int main() {\n"
+               "    const int MyInt = 1;\n"
+               "    std::vector<int> vec;\n"
+               "\n"    
+               "    class foo {\n"
+               "      public:\n"       
+               "        bool operator()(const int &uIndexA, const int &uIndexB) const {\n"
+               "            return true;\n"    
+               "        }\n"           
+               "        foo() {}\n"
+               "    };\n"
+               "\n"    
+               "    return MyInt + 0;\n"
+               "}";
+        values = tokenValues(code, "+");
+        ASSERT_EQUALS(1U, values.size());
+
     }
 
     void valueFlowSwitchVariable() {
