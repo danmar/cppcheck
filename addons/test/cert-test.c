@@ -61,3 +61,9 @@ void msc30()
     int rand = 5;
     int a = rand;
 }
+void str11()
+{
+    const char str[3]="abc";    //cert-STR11-C
+    const char *x[10]; x[3]="def";
+}
+
