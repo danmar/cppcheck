@@ -117,6 +117,8 @@ private:
         TEST_CASE(valueFlowTerminatingCond);
 
         TEST_CASE(valueFlowContainerSize);
+
+        TEST_CASE(valueFlowDynamicBufferSize);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -215,6 +217,24 @@ private:
                 std::list<ValueFlow::Value>::const_iterator it;
                 for (it = tok->values().begin(); it != tok->values().end(); ++it) {
                     if (it->valueType == type && Token::simpleMatch(it->tokvalue, value))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfX(const char code[], unsigned int linenr, int value, ValueFlow::Value::ValueType type) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.valueType == type && v.intvalue == value)
                         return true;
                 }
             }
@@ -3818,6 +3838,32 @@ private:
                "  x = s + s;\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "+"), 8));
+    }
+
+    void valueFlowDynamicBufferSize() {
+        const char *code;
+
+        LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "posix.cfg");
+
+        code = "void* f() {\n"
+               "  void* x = malloc(10);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 10,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  void* x = calloc(4, 5);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 20,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  const char* y = \"abcd\";\n"
+               "  const char* x = strdup(y);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 5,  ValueFlow::Value::BUFFER_SIZE));
     }
 };
 
