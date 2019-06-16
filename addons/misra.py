@@ -2043,7 +2043,7 @@ class MisraChecker:
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
-                return
+                errmsg = 'misra violation (rule text is missing in %s)' % args.rule_texts
             cppcheckdata.reportError(location, severity, errmsg, 'misra', errorId)
 
             if not severity in self.violations:
