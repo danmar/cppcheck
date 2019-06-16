@@ -234,6 +234,31 @@ def msc30(data):
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
             reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
+# MSC24-C
+# Do not use deprecated or obsolescent functions
+def msc24(data):
+    for token in data.tokenlist:
+        if token.str == 'asctime':
+            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+        elif token.str == 'atof':
+            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+        elif token.str == 'atoi':
+            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+        elif token.str == 'atol':
+            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+        elif token.str == 'atoll':
+            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+        elif token.str == 'ctime':
+            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+        elif token.str == 'fopen':
+            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+        elif token.str == 'freopen':
+            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+        elif token.str == 'rewind':
+            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+        elif token.str == 'setbuf':
+            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -259,6 +284,7 @@ for arg in sys.argv[1:]:
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+        msc24(cfg)
         msc30(cfg)
 
     if VERIFY:

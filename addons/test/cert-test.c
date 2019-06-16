@@ -61,3 +61,45 @@ void msc30()
     int rand = 5;
     int a = rand;
 }
+void msc24()
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+    char buffer[256];
+    int i;
+    long int li;
+    long long int lli;
+    FILE *f;
+
+    f = fopen ("myfile.txt","w+");  //cert-MSC24-C
+    setbuf ( f , buffer )   //cert-MSC24-C
+    for ( i='A' ; i<='Z' ; i++)
+        fputc ( n, f);
+    rewind (f);             //cert-MSC24-C
+    fread (buffer,1,26,f);
+    fclose (f);
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    printf ( "The current date/time is: %s", asctime (timeinfo) ); //cert-MSC24-C
+
+    strcpy(buffer, "2.5");          //cert-STR07-C
+    n = atof (buffer);              //cert-MSC24-C
+    m = sin (n*pi/180);
+
+    strcpy(buffer,"42");    //cert-STR07-C
+    i = atoi (buffer);      //cert-MSC24-C
+
+    strcpy(buffer,"424242424242");  //cert-STR07-C
+    li = atol(buffer);      //cert-MSC24-C
+
+    lli = atoll(buffer);    //cert-MSC24-C
+
+    time (&rawtime);
+    printf ("The current local time is: %s", ctime (&rawtime)); //cert-MSC24-C
+
+    freopen ("myfile.txt","w",stdout);                  //cert-MSC24-C
+    printf ("This sentence is redirected to a file.");
+    fclose (stdout);
+}
+
