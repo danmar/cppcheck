@@ -1,5 +1,7 @@
 // To test:
 // ~/cppcheck/cppcheck --dump cert-test.c && python ../cert.py -verify cert-test.c.dump
+#include <time.h>
+#include <stdlib.h>
 
 struct S {
     short a;
@@ -61,3 +63,14 @@ void msc30()
     int rand = 5;
     int a = rand;
 }
+
+void exp15()
+{
+    int x=5, y=7;
+
+    if(x==y);                            //cert-EXP15-C
+    {
+        printf("not working\n");
+    }
+}
+
