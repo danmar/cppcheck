@@ -757,9 +757,9 @@ void TemplateSimplifier::getTemplateInstantiations()
             const bool isUsing = tok->strAt(1) == "using";
             if (isUsing && Token::Match(tok->tokAt(2), "%name% <")) {
                 // Cant have specialized type alias so ignore it
-                const Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
+                Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
                 if (tok2)
-                    tok = const_cast<Token *>(tok2);
+                    tok = tok2;
             } else if (tok->strAt(-1) == "<") {
                 // Don't ignore user specialization but don't consider it an instantiation.
                 // Instantiations in return type, function parameters, and executable code
@@ -771,22 +771,22 @@ void TemplateSimplifier::getTemplateInstantiations()
                 // #7914
                 // Ignore template instantiations within template definitions: they will only be
                 // handled if the definition is actually instantiated
-                const Token *tok2 = Token::findmatch(tok, "{|;");
+                Token *tok2 = Token::findmatch(tok, "{|;");
                 if (tok2 && tok2->str() == "{")
                     tok = tok2->link();
                 else if (tok2 && tok2->str() == ";")
-                    tok = const_cast<Token *>(tok2);
+                    tok = tok2;
             }
         } else if (Token::Match(tok, "template using %name% <")) {
             // Cant have specialized type alias so ignore it
-            const Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
+            Token *tok2 = Token::findsimplematch(tok->tokAt(3), ";");
             if (tok2)
-                tok = const_cast<Token *>(tok2);
+                tok = tok2;
         } else if (Token::Match(tok, "using %name% <")) {
             // Cant have specialized type alias so ignore it
-            const Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
+            Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
-                tok = const_cast<Token *>(tok2);
+                tok = tok2;
         } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|, %name% ::|<|(") ||
                    Token::Match(tok->previous(), "%type% %name% ::|<") ||
                    Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
@@ -879,7 +879,7 @@ void TemplateSimplifier::getTemplateInstantiations()
 
             // Add inner template instantiations first => go to the ">"
             // and then parse backwards, adding all seen instantiations
-            const Token *tok2 = tok->next()->findClosingBracket();
+            Token *tok2 = tok->next()->findClosingBracket();
 
             // parse backwards and add template instantiations
             // TODO
@@ -888,7 +888,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                     templateParameters(tok2->tokAt(2))) {
                     addInstantiation(tok2->next(), getScopeName(scopeList));
                 } else if (Token::Match(tok2->next(), "class|struct"))
-                    const_cast<Token *>(tok2)->deleteNext();
+                    tok2->deleteNext();
             }
 
             // Add outer template..
