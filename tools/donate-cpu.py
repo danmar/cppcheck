@@ -260,6 +260,7 @@ def scanPackage(workPath, cppcheckPath, jobs):
                        # 'libcerror': ['<libcerror.h>'], <- Enable after release of 1.88
                        'microsoft_sal': ['<sal.h>'],
                        'motif': ['<X11/', '<Xm/'],
+                       # 'nspr': ['<prtypes.h>', '"prtypes.h"'], <- Enable after release of 1.88
                        # 'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'], <- Enable after release of 1.88
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
