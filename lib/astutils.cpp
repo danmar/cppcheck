@@ -1429,7 +1429,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
     // Break => continue checking in outer scope
-    while (result.type == FwdAnalysis::Result::Type::BREAK) {
+    while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
         const Scope *s = result.token->scope();
         while (s->type == Scope::eIf)
             s = s->nestedIn;
