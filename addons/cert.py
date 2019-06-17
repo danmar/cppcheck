@@ -163,8 +163,6 @@ def exp15(data):
     for scope in data.scopes:
         if scope.type == 'If' or scope.type == 'For' or scope.type == 'While':
             token = scope.bodyStart.next 
-            if not token:
-                continue
             if token.str==';' and token.linenr==scope.bodyStart.linenr:
                 reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
 
