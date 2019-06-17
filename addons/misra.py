@@ -591,7 +591,7 @@ class MisraSettings(object):
         """
         self.verify = False
         self.quiet = False
-        self.show_summary = False
+        self.show_summary = True
 
         if args.verify:
             self.verify = True
@@ -2329,76 +2329,76 @@ def main():
     if args.generate_table:
         generateTable()
         sys.exit(0)
-    else:
-        if args.rule_texts:
-            filename = os.path.normpath(args.rule_texts)
-            if not os.path.isfile(filename):
-                print('Fatal error: file is not found: ' + filename)
-                sys.exit(1)
-            checker.loadRuleTexts(filename)
 
-        if args.suppress_rules:
-            checker.setSuppressionList(args.suppress_rules)
+    if args.rule_texts:
+        filename = os.path.normpath(args.rule_texts)
+        if not os.path.isfile(filename):
+            print('Fatal error: file is not found: ' + filename)
+            sys.exit(1)
+        checker.loadRuleTexts(filename)
 
-        if args.file_prefix:
-            checker.setFilePrefix(args.file_prefix)
+    if args.suppress_rules:
+        checker.setSuppressionList(args.suppress_rules)
 
-        if args.dumpfile:
-            exitCode = 0
-            for item in args.dumpfile:
-                checker.parseDump(item)
+    if args.file_prefix:
+        checker.setFilePrefix(args.file_prefix)
 
-                if settings.verify:
-                    verify_expected = checker.get_verify_expected()
-                    verify_actual   = checker.get_verify_actual()
+    if args.dumpfile:
+        exitCode = 0
+        for item in args.dumpfile:
+            checker.parseDump(item)
 
-                    for expected in verify_expected:
-                        if expected not in verify_actual:
-                            print('Expected but not seen: ' + expected)
-                            exitCode = 1
-                    for actual in verify_actual:
-                        if actual not in verify_expected:
-                            print('Not expected: ' + actual)
-                            exitCode = 1
+            if settings.verify:
+                verify_expected = checker.get_verify_expected()
+                verify_actual   = checker.get_verify_actual()
 
-                    # Existing behavior of verify mode is to exit
-                    # on the first un-expected output.
-                    # TODO: Is this required? or can it be moved to after
-                    # all input files have been processed
-                    if exitCode != 0:
-                        sys.exit(exitCode)
+                for expected in verify_expected:
+                    if expected not in verify_actual:
+                        print('Expected but not seen: ' + expected)
+                        exitCode = 1
+                for actual in verify_actual:
+                    if actual not in verify_expected:
+                        print('Not expected: ' + actual)
+                        exitCode = 1
 
-            # Under normal operation exit with a non-zero exit code
-            # if there were any violations.
-            if not settings.verify:
-                number_of_violations = len(checker.get_violations())
-                if number_of_violations > 0:
-                    exitCode = 1
+                # Existing behavior of verify mode is to exit
+                # on the first un-expected output.
+                # TODO: Is this required? or can it be moved to after
+                # all input files have been processed
+                if exitCode != 0:
+                    sys.exit(exitCode)
 
-                    if settings.show_summary:
-                        print("\nMISRA rule violations found: %s\n" % ("\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
-                        rules_violated = {}
-                        for severity, ids in checker.get_violations():
-                            for misra_id in ids:
-                                rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
-                        print("Misra rules violated:")
-                        convert = lambda text: int(text) if text.isdigit() else text
-                        misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
-                        for misra_id in sorted(rules_violated.keys(), key=misra_sort):
-                            res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
-                            if res is None:
-                                num = 0
-                            else:
-                                num = int(res.group(1)) * 100 + int(res.group(2))
-                            severity = '-'
-                            if num in checker.ruleTexts:
-                                severity = checker.ruleTexts[num].severity
-                            print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
+        # Under normal operation exit with a non-zero exit code
+        # if there were any violations.
+        if not settings.verify:
+            number_of_violations = len(checker.get_violations())
+            if number_of_violations > 0:
+                exitCode = 1
 
-            if args.show_suppressed_rules:
-                checker.showSuppressedRules()
+                if settings.show_summary:
+                    print("\nMISRA rule violations found: %s\n" % ("\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
+                    rules_violated = {}
+                    for severity, ids in checker.get_violations():
+                        for misra_id in ids:
+                            rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
+                    print("Misra rules violated:")
+                    convert = lambda text: int(text) if text.isdigit() else text
+                    misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
+                    for misra_id in sorted(rules_violated.keys(), key=misra_sort):
+                        res = re.match(r'misra-c2012-([0-9]+)\\.([0-9]+)', misra_id)
+                        if res is None:
+                            num = 0
+                        else:
+                            num = int(res.group(1)) * 100 + int(res.group(2))
+                        severity = '-'
+                        if num in checker.ruleTexts:
+                            severity = checker.ruleTexts[num].severity
+                        print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
 
-            sys.exit(exitCode)
+        if args.show_suppressed_rules:
+            checker.showSuppressedRules()
+
+        sys.exit(exitCode)
 
 
 if __name__ == '__main__':
