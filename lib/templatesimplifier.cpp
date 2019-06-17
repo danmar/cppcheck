@@ -109,7 +109,14 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *tok, const std::string &s,
         else if (!isAlias()) {
             if (isFunction())
                 tok1 = tok1->link()->next();
-            tok1 = Token::findmatch(tok1, "{|;");
+            while (tok1 && !Token::Match(tok1, ";|{")) {
+                if (tok1->str() == "<")
+                    tok1 = tok1->findClosingBracket();
+                else if (Token::Match(tok1, "(|[") && tok1->link())
+                    tok1 = tok1->link();
+                if (tok1)
+                    tok1 = tok1->next();
+            }
             if (tok1)
                 isForwardDeclaration(tok1->str() == ";");
         }
@@ -771,7 +778,15 @@ void TemplateSimplifier::getTemplateInstantiations()
                 // #7914
                 // Ignore template instantiations within template definitions: they will only be
                 // handled if the definition is actually instantiated
-                Token *tok2 = Token::findmatch(tok, "{|;");
+                Token * tok2 = tok->next();
+                while (tok2 && !Token::Match(tok2, ";|{")) {
+                    if (tok2->str() == "<")
+                        tok2 = tok2->findClosingBracket();
+                    else if (Token::Match(tok2, "(|[") && tok2->link())
+                        tok2 = tok2->link();
+                    if (tok2)
+                        tok2 = tok2->next();
+                }
                 if (tok2 && tok2->str() == "{")
                     tok = tok2->link();
                 else if (tok2 && tok2->str() == ";")

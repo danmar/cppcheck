@@ -153,6 +153,7 @@ private:
         TEST_CASE(template113);
         TEST_CASE(template114); // #9155
         TEST_CASE(template115); // #9153
+        TEST_CASE(template116); // #9178
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1845,15 +1846,34 @@ private:
     }
 
     void template84() { // #8880
-        const char code[] = "template <class b, int c, class>\n"
-                            "auto d() -> typename a<decltype(b{})>::e {\n"
-                            "  d<int, c, int>();\n"
-                            "}";
-        const char exp[] = "auto d<int,c,int> ( ) . a < int > :: e ; "
-                           "auto d<int,c,int> ( ) . a < int > :: e { "
-                           "d<int,c,int> ( ) ; "
-                           "}";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "template <class b, int c, class>\n"
+                                "auto d() -> typename a<decltype(b{})>::e {\n"
+                                "  d<int, c, int>();\n"
+                                "}";
+            const char exp[] = "template < class b , int c , class > "
+                               "auto d ( ) . a < decltype ( b { } ) > :: e { "
+                               "d < int , c , int > ( ) ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <class b, int c, class>\n"
+                                "auto d() -> typename a<decltype(b{})>::e {\n"
+                                "  d<int, c, int>();\n"
+                                "}"
+                                "void foo() { d<char, 1, int>(); }";
+            const char exp[] = "auto d<char,1,int> ( ) . a < char > :: e ; "
+                               "auto d<int,1,int> ( ) . a < int > :: e ; "
+                               "void foo ( ) { d<char,1,int> ( ) ; } "
+                               "auto d<char,1,int> ( ) . a < char > :: e { "
+                               "d<int,1,int> ( ) ; "
+                               "} "
+                               "auto d<int,1,int> ( ) . a < int > :: e { "
+                               "d<int,1,int> ( ) ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template85() { // #8902 - crash
@@ -2704,8 +2724,8 @@ private:
                                 "template <typename a> using e = typename c<std::is_final<a>{}, d<a>>::f;\n";
             const char exp[] =  "template < typename a , a > struct b ; "
                                 "template < bool , typename > struct c ; "
-                                "struct d<a> ; "
-                                "template < typename a > using e = typename c < std :: is_final < a > { } , d<a> > :: f ; struct d<a> : b < bool , std :: is_empty < a > { } > { } ;";
+                                "template < typename a > struct d : b < bool , std :: is_empty < a > { } > { } ; "
+                                "template < typename a > using e = typename c < std :: is_final < a > { } , d < a > > :: f ;";
             ASSERT_EQUALS(exp, tok(code));
         }
     }
@@ -2732,6 +2752,14 @@ private:
                            "} "
                            "b :: f<b::B<0>> g1 ; struct b :: B<0> { using B<0> :: d ; } ; "
                            "struct b :: f<b::B<0>> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template116() { // #9178
+        const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
+                            "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){}";
+        const char exp[] = "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) ; "
+                           "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) { }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
