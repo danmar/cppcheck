@@ -72,5 +72,7 @@ void exp15()
     {
         printf("not working\n");
     }
+    if(x)
+        ;
 }
 
