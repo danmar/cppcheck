@@ -238,6 +238,8 @@ def msc30(data):
 # Do not use deprecated or obsolescent functions
 def msc24(data):
     for token in data.tokenlist:
+        if token.next is None or token.next.str != "(" or token != token.next.astOperand1:
+            continue
         if token.str == 'asctime':
             reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
         elif token.str == 'atof':
