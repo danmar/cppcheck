@@ -108,7 +108,7 @@ mingw32-make LDFLAGS=-lshlwapi
 
 ### Other Compiler/IDE
 
-1. Create a empty project file / makefile.
+1. Create an empty project file / makefile.
 2. Add all cpp files in the cppcheck cli and lib folders to the project file / makefile.
 3. Add all cpp files in the externals folders to the project file / makefile.
 4. Compile.
