@@ -244,7 +244,7 @@ def str05(data):
             if parent is None:
                 continue
             parentOp1 = parent.astOperand1
-            if parent.isAssignmentOp and not parentOp1.valueType is None:
+            if parent.isAssignmentOp and parentOp1.valueType:
                 if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
                     reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
                 
