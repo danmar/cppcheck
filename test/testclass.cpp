@@ -6820,6 +6820,16 @@ private:
                                  "int A::f() { return 1; }\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
 
+        checkVirtualFunctionCall("class B {\n"
+                                 "    virtual int f() = 0;\n"
+                                 "};\n"
+                                 "class A : B {\n"
+                                 "    int f();\n"
+                                 "    A() {f();}\n"
+                                 "};\n"
+                                 "int A::f() { return 1; }\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (warning) Virtual function 'f' is called from constructor 'A()' at line 6. Dynamic binding is not used.\n", errout.str());
+
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
                                  "    A() { A::f(); }\n"
