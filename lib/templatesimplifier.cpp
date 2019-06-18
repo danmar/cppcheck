@@ -1879,6 +1879,9 @@ void TemplateSimplifier::expandTemplate(
             }
         }
 
+        if (copy)
+            mTokenizer->calculateScopes();
+
         assert(brackets.empty());
     }
 
@@ -3159,6 +3162,8 @@ void TemplateSimplifier::simplifyTemplates(
             mExplicitInstantiationsToDelete.clear();
             mTemplateNamePos.clear();
         }
+
+        mTokenizer->calculateScopes();
 
         bool hasTemplates = getTemplateDeclarations();
 
