@@ -1757,7 +1757,7 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
 
         // virtual function
         else if (tok1->str() == "virtual") {
-            isVirtual(true);
+            hasVirtualSpecifier(true);
         }
 
         // static function
@@ -1809,10 +1809,9 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
             hasLvalRefQualifier(true);
         else if (tok->str() == "&&")
             hasRvalRefQualifier(true);
-        else if (tok->str() == "override") {
+        else if (tok->str() == "override")
             setFlag(fHasOverrideSpecifier, true);
-            isVirtual(true);
-        } else if (tok->str() == "final")
+        else if (tok->str() == "final")
             setFlag(fHasFinalSpecifier, true);
         else if (tok->str() == "volatile")
             isVolatile(true);
@@ -2696,7 +2695,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        hasBody: " << func->hasBody() << std::endl;
             std::cout << "        isInline: " << func->isInline() << std::endl;
             std::cout << "        isConst: " << func->isConst() << std::endl;
-            std::cout << "        isVirtual: " << func->isVirtual() << std::endl;
+            std::cout << "        hasVirtualSpecifier: " << func->hasVirtualSpecifier() << std::endl;
             std::cout << "        isPure: " << func->isPure() << std::endl;
             std::cout << "        isStatic: " << func->isStatic() << std::endl;
             std::cout << "        isStaticLocal: " << func->isStaticLocal() << std::endl;
@@ -2952,8 +2951,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                                           function->type == Function::eFunction ? "Function" :
                                           "Unknown") << '\"';
                     if (function->nestedIn->definedType) {
-                        if (function->isVirtual())
-                            out << " isVirtual=\"true\"";
+                        if (function->hasVirtualSpecifier())
+                            out << " hasVirtualSpecifier=\"true\"";
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
@@ -3145,7 +3144,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
 bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
-    if (isVirtual())
+    if (hasVirtualSpecifier()) //If it has the virtual specifier it's definitely virtual
         return true;
     bool foundAllBaseClasses = true;
     if (getOverriddenFunction(&foundAllBaseClasses))
@@ -3181,7 +3180,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         // check if function defined in base class
         for (std::multimap<std::string, const Function *>::const_iterator it = parent->functionMap.find(tokenDef->str()); it != parent->functionMap.end() && it->first == tokenDef->str(); ++it) {
             const Function * func = it->second;
-            if (func->isVirtual()) { // Base is virtual and of same name
+            if (func->hasVirtualSpecifier()) { // Base is virtual and of same name
                 const Token *temp1 = func->tokenDef->previous();
                 const Token *temp2 = tokenDef->previous();
                 bool match = true;
