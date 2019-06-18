@@ -1,8 +1,5 @@
 // To test:
 // ~/cppcheck/cppcheck --dump cert-test.c && python ../cert.py -verify cert-test.c.dump
-#include <time.h>
-#include <stdlib.h>
-
 struct S {
     short a;
     short b;

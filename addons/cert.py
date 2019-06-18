@@ -161,7 +161,7 @@ def exp42(data):
 # Do not place a semicolon on the same line as an if, for or while statement
 def exp15(data):
     for scope in data.scopes:
-        if scope.type == 'If' or scope.type == 'For' or scope.type == 'While':
+        if scope.type in ('If', 'For', 'While'):
             token = scope.bodyStart.next 
             if token.str==';' and token.linenr==scope.bodyStart.linenr:
                 reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
