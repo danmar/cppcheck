@@ -32,3 +32,10 @@ def test_loadRuleTexts_mutiple_lines(checker):
     assert(checker.ruleTexts[105].text == "Should")
     assert(checker.ruleTexts[106].text == "Should")
 
+
+def test_verifyRuleTexts(checker, capsys):
+    checker.loadRuleTexts("./addons/test/assets/misra_rules_dummy.txt")
+    checker.verifyRuleTexts()
+    captured = capsys.readouterr()
+    assert("21.3" not in captured.out)
+    assert("1.3" in captured.out)

@@ -481,7 +481,27 @@ class Define:
         self.expansionList = res.group(2)
 
 
+def getAddonRules():
+    """Returns dict of MISRA rules handled by this addon."""
+    addon_rules = []
+    compiled = re.compile(r'.*def[ ]+misra_([0-9]+)_([0-9]+)[(].*')
+    for line in open(__file__):
+        res = compiled.match(line)
+        if res is None:
+            continue
+        addon_rules.append(res.group(1) + '.' + res.group(2))
+    return addon_rules
+
+
+def getCppcheckRules():
+    """Returns list of rules handled by cppcheck."""
+    return ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6',
+            '14.3', '17.5', '18.1', '18.2', '18.3', '18.6', '20.6',
+            '22.1', '22.2', '22.4', '22.6']
+
+
 def generateTable():
+    # print table
     numberOfRules = {}
     numberOfRules[1] = 3
     numberOfRules[2] = 7
@@ -506,23 +526,11 @@ def generateTable():
     numberOfRules[21] = 12
     numberOfRules[22] = 6
 
-    # what rules are handled by this addon?
-    addon = []
-    compiled = re.compile(r'.*def[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open(__file__):
-        res = compiled.match(line)
-        if res is None:
-            continue
-        addon.append(res.group(1) + '.' + res.group(2))
-
-    # rules handled by cppcheck
-    cppcheck = ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6', '14.3', '17.5',
-                '18.1', '18.2', '18.3', '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
-
-    # rules that can be checked with compilers
+    # Rules that can be checked with compilers:
     # compiler = ['1.1', '1.2']
 
-    # print table
+    addon = getAddonRules()
+    cppcheck = getCppcheckRules()
     for i1 in range(1, 23):
         for i2 in range(1, numberOfRules[i1] + 1):
             num = str(i1) + '.' + str(i2)
@@ -2148,6 +2156,22 @@ class MisraChecker:
             else:
                 rule = None
 
+    def verifyRuleTexts(self):
+        """Prints rule numbers without rule text."""
+        rule_texts_rules = []
+        for rule_num in self.ruleTexts:
+            rule = self.ruleTexts[rule_num]
+            rule_texts_rules.append(str(rule.num1) + '.' + str(rule.num2))
+
+        all_rules = list(getAddonRules() + getCppcheckRules())
+
+        missing_rules = list(set(all_rules) - set(rule_texts_rules))
+        if len(missing_rules) == 0:
+            print("Rule texts are correct.")
+        else:
+            print("Missing rule texts: " + ', '.join(missing_rules))
+
+
     def printStatus(self, *args, **kwargs):
         if not self.settings.quiet:
             print(*args, **kwargs)
@@ -2309,6 +2333,7 @@ def get_args():
     """Generates list of command-line arguments acceptable by misra.py script."""
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
+    parser.add_argument("--verify-rule-texts", help="Verify that all supported rules texts are present in given file and exit.", action="store_true")
     parser.add_argument("--suppress-rules", type=str, help=SUPPRESS_RULES_HELP)
     parser.add_argument("--quiet", help="Only print something when there is an error", action="store_true")
     parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
@@ -2336,6 +2361,13 @@ def main():
             print('Fatal error: file is not found: ' + filename)
             sys.exit(1)
         checker.loadRuleTexts(filename)
+        if args.verify_rule_texts:
+            checker.verifyRuleTexts()
+            sys.exit(0)
+
+    if args.verify_rule_texts and not args.rule_texts:
+        print("Error: Please specify rule texts file with --rule-texts=<file>")
+        sys.exit(1)
 
     if args.suppress_rules:
         checker.setSuppressionList(args.suppress_rules)
