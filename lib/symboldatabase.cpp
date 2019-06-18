@@ -3146,12 +3146,14 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
     if (hasVirtualSpecifier()) //If it has the virtual specifier it's definitely virtual
         return true;
-    bool foundAllBaseClasses = true;
-    if (getOverriddenFunction(&foundAllBaseClasses))
+    if (hasOverrideSpecifier()) //If it has the override specifier then it's either virtual or not going to compile
         return true;
-    if (foundAllBaseClasses)
+    bool foundAllBaseClasses = true;
+    if (getOverriddenFunction(&foundAllBaseClasses)) //If it overrides a base class's method then it's virtual
+        return true;
+    if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
-    return defaultVal;
+    return defaultVal; //If we can't see all the bases classes then we can't say conclusively
 }
 
 const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
