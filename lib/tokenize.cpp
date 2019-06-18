@@ -2917,8 +2917,6 @@ void Tokenizer::simplifyTemplates()
         }
     }
 
-    calculateScopes();
-
     mTemplateSimplifier->simplifyTemplates(
 #ifdef MAXTIME
         mMaxTime,
