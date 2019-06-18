@@ -1809,9 +1809,10 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
             hasLvalRefQualifier(true);
         else if (tok->str() == "&&")
             hasRvalRefQualifier(true);
-        else if (tok->str() == "override")
+        else if (tok->str() == "override") {
             setFlag(fHasOverrideSpecifier, true);
-        else if (tok->str() == "final")
+            isVirtual(true);
+        } else if (tok->str() == "final")
             setFlag(fHasFinalSpecifier, true);
         else if (tok->str() == "volatile")
             isVolatile(true);
