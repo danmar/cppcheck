@@ -238,12 +238,17 @@ def msc30(data):
 # Use the bounds-checking interfaces for string manipulation
 def str07(data):
     for token in data.tokenlist:
-        if token.str in('strcpy', 'strcat', 'fputs'):
+        if token.str in('strcpy', 'strcat'):
             parent = token.astParent
             if parent is None:
                 continue
-            if not parent.astParent :
-                reportError(token, 'style', 'Use the bounds-checking interfaces for string manipulation', 'STR07-C')
+            if parent.astParent :
+                continue
+            astOp2 = parent.astOperand2
+            if not astOp2.astOperand2.isString and token.str=='strcpy':
+                reportError(token, 'style', 'Use the bounds-checking interfaces strcpy_s()', 'STR07-C')
+            elif not astOp2.astOperand2.isString and token.str=='strcat':
+                reportError(token, 'style', 'Use the bounds-checking interfaces strcat_s()', 'STR07-C')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':

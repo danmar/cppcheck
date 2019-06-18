@@ -66,7 +66,8 @@ void str07()
     static const *str="test";
     char buf[128];
     strcpy(buf, str); //cert-STR07-C
-    strcat(buf,"doh"); //cert-STR07-C
-    fputs(buf, stderr); //cert-STR07-C
+    strcpy(buf,"hello");
+    strcat(buf,"doh"); 
+    strcat(buf, str); //cert-STR07-C
 }
 
