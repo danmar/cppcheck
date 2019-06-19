@@ -431,7 +431,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->next();
 
         // Skip variadic types (Ticket #5774, #6059, #6172)
-        if (Token::Match(tok, ". . .")) {
+        if (Token::simpleMatch(tok, ". . .")) {
             if ((tok->previous()->isName() && !Token::Match(tok->tokAt(-2), "<|,")) ||
                 (!tok->previous()->isName() && tok->strAt(-1) != ">"))
                 return 0; // syntax error
