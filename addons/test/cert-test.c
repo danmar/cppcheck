@@ -1,5 +1,7 @@
 // To test:
 // ~/cppcheck/cppcheck --dump cert-test.c && python ../cert.py -verify cert-test.c.dump
+#include <time.h>
+#include <stdlib.h>
 
 struct S {
     short a;
@@ -61,6 +63,13 @@ void msc30()
     int rand = 5;
     int a = rand;
 }
+
+void str05()
+{
+    char *str1 = "abc";         //cert-STR05-C
+    wchar_t *str2  = L"hello";  //cert-STR05-C
+}
+
 void str07()
 {
     static const *str="test";
@@ -70,4 +79,8 @@ void str07()
     strcat(buf,"doh"); 
     strcat(buf, str); //cert-STR07-C
 }
+<<<<<<< .mine
 
+=======
+
+>>>>>>> .theirs
