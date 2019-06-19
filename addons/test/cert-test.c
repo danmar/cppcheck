@@ -64,6 +64,13 @@ void msc30()
     int a = rand;
 }
 
+void str05()
+{
+    char *str1 = "abc";         //cert-STR05-C
+    wchar_t *str2  = L"hello";  //cert-STR05-C
+}
+
+
 void str03()
 {
     char *string_data=(char*)malloc(16);

@@ -234,6 +234,21 @@ def msc30(data):
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
             reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
+
+# STR05-C
+# Use pointers to const when referring to string literals
+def str05(data):
+    for token in data.tokenlist:
+        if token.isString:
+            parent = token.astParent
+            if parent is None:
+                continue
+            parentOp1 = parent.astOperand1
+            if parent.isAssignmentOp and parentOp1.valueType:
+                if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
+                    reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
+                
+
 # STR03-C
 # Do not inadvertently truncate a string
 def str03(data):
@@ -277,6 +292,7 @@ for arg in sys.argv[1:]:
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+        str05(cfg)
         str03(cfg)
         msc30(cfg)
 
