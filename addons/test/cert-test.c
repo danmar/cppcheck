@@ -1,5 +1,7 @@
 // To test:
 // ~/cppcheck/cppcheck --dump cert-test.c && python ../cert.py -verify cert-test.c.dump
+#include <time.h>
+#include <stdlib.h>
 
 struct S {
     short a;
@@ -65,5 +67,10 @@ void str11()
 {
     const char str[3]="abc";    //cert-STR11-C
     const char *x[10]; x[3]="def";
+
+void str05()
+{
+    char *str1 = "abc";         //cert-STR05-C
+    wchar_t *str2  = L"hello";  //cert-STR05-C
 }
 
