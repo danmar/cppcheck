@@ -3885,8 +3885,7 @@ private:
               "};\n"
               "template<class T1, class T2>\n"
               "A<B<T1, T2>>::A() : m_value(false) {}\n");
-        // TODO: Avoid FP somehow
-        TODO_ASSERT_EQUALS("", "[test.cpp:10]: (warning) Member variable 'A::m_value' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
