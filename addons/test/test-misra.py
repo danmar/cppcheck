@@ -1,5 +1,24 @@
 # python -m pytest addons/test/test-misra.py
 import pytest
+import sys
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+
+class Capturing(object):
+
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        self.captured = []
+        return self
+
+    def __exit__(self, *args):
+        self.captured.extend(self._stringio.getvalue().splitlines())
+        del self._stringio  # free up some memory
+        sys.stdout = self._stdout
 
 
 @pytest.fixture
@@ -33,9 +52,10 @@ def test_loadRuleTexts_mutiple_lines(checker):
     assert(checker.ruleTexts[106].text == "Should")
 
 
-def test_verifyRuleTexts(checker, capsys):
+def test_verifyRuleTexts(checker):
     checker.loadRuleTexts("./addons/test/assets/misra_rules_dummy.txt")
-    checker.verifyRuleTexts()
-    captured = capsys.readouterr()
-    assert("21.3" not in captured.out)
-    assert("1.3" in captured.out)
+    with Capturing() as output:
+        checker.verifyRuleTexts()
+    captured = ''.join(output.captured)
+    assert("21.3" not in captured)
+    assert("1.3" in captured)
