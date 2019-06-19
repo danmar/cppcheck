@@ -151,9 +151,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isIntValue() && it->intvalue == value)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isIntValue() && v.intvalue == value)
                         return true;
                 }
             }
@@ -170,9 +169,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isFloatValue() && it->floatValue >= value - diff && it->floatValue <= value + diff)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isFloatValue() && v.floatValue >= value - diff && v.floatValue <= value + diff)
                         return true;
                 }
             }
@@ -192,11 +190,10 @@ private:
                 continue;
 
             std::ostringstream ostr;
-            std::list<ValueFlow::Value>::const_iterator it;
-            for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                for (ValueFlow::Value::ErrorPath::const_iterator ep = it->errorPath.begin(); ep != it->errorPath.end(); ++ep) {
-                    const Token *eptok = ep->first;
-                    const std::string &msg = ep->second;
+            for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value::ErrorPathItem &ep : v.errorPath) {
+                    const Token *eptok = ep.first;
+                    const std::string &msg = ep.second;
                     ostr << eptok->linenr() << ',' << msg << '\n';
                 }
             }
@@ -214,9 +211,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->valueType == type && Token::simpleMatch(it->tokvalue, value))
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.valueType == type && Token::simpleMatch(v.tokvalue, value))
                         return true;
                 }
             }
@@ -251,9 +247,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isMovedValue() && it->moveKind == moveKind)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isMovedValue() && v.moveKind == moveKind)
                         return true;
                 }
             }
@@ -270,9 +265,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isIntValue() && it->intvalue == value && it->condition)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isIntValue() && v.intvalue == value && v.condition)
                         return true;
                 }
             }
@@ -2572,6 +2566,22 @@ private:
                "}";
         values = tokenValues(code, "+");
         TODO_ASSERT_EQUALS(2U, 0U, values.size()); // should be 2
+
+        // FP: Condition '*b>0' is always true
+        code = "bool dostuff(const char *x, const char *y);\n"
+               "void fun(char *s, int *b) {\n"
+               "  for (int i = 0; i < 42; ++i) {\n"
+               "    if (dostuff(s, \"1\")) {\n"
+               "      *b = 1;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  if (*b > 0) {\n" // *b does not have known value
+               "  }\n"
+               "}";
+        values = tokenValues(code, ">");
+        ASSERT_EQUALS(true, values.empty());
+
     }
 
     void valueFlowSwitchVariable() {
@@ -2928,9 +2938,8 @@ private:
     }
 
     bool isNotKnownValues(const char code[], const char str[]) {
-        const std::list<ValueFlow::Value> values = tokenValues(code, str);
-        for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            if (it->isKnown())
+        for (const ValueFlow::Value &v : tokenValues(code, str)) {
+            if (v.isKnown())
                 return false;
         }
         return true;

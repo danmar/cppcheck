@@ -1,0 +1,21 @@
+Appendix A Summary of guidelines
+
+   
+Rule 1.1
+Add this rule and parse to next, skipping empty lines.
+       
+    
+      
+
+Rule 1.2
+Rule text.
+           
+Rule 1.3
+There is 3 rules.
+   
+
+       
+
+            
+
+
