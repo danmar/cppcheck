@@ -92,14 +92,14 @@ void msc24()
     timeinfo = localtime ( &rawtime );
     printf ( "The current date/time is: %s", asctime (timeinfo) ); //cert-MSC24-C
 
-    strcpy(buffer, "2.5");          //cert-STR07-C
+    strcpy(buffer, "2.5");          
     n = atof (buffer);              //cert-MSC24-C
     m = sin (n*pi/180);
 
-    strcpy(buffer,"42");    //cert-STR07-C
+    strcpy(buffer,"42");    
     i = atoi (buffer);      //cert-MSC24-C
 
-    strcpy(buffer,"424242424242");  //cert-STR07-C
+    strcpy(buffer,"424242424242");  
     li = atol(buffer);      //cert-MSC24-C
 
     lli = atoll(buffer);    //cert-MSC24-C
