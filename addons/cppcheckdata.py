@@ -756,6 +756,33 @@ class CppcheckData:
             if cfgnode.tag == 'dump':
                 self.configurations.append(Configuration(cfgnode))
 
+    # Get function arguments
+def getArgumentsRecursive(tok, arguments):
+    if tok is None:
+        return
+    if tok.str == ',':
+        getArgumentsRecursive(tok.astOperand1, arguments)
+        getArgumentsRecursive(tok.astOperand2, arguments)
+    else:
+        if tok.isArithmeticalOp:
+            getArgumentsRecursive(tok.astOperand2, arguments)
+        else:
+            arguments.append(tok)
+
+
+def getArguments(ftok):
+    args=[]
+
+    if not ftok.isName or ftok.astParent is None or ftok.variable:
+        return args
+    op2 = ftok.astParent.astOperand2
+    if op2 is None or ftok.astParent.str!='(':
+        return args
+
+    getArgumentsRecursive(op2, args)
+    return args
+
+
 
 def parsedump(filename):
     """

@@ -90,7 +90,10 @@ def getArgumentsRecursive(tok, arguments):
         getArgumentsRecursive(tok.astOperand1, arguments)
         getArgumentsRecursive(tok.astOperand2, arguments)
     else:
-        arguments.append(tok)
+        if tok.isArithmeticalOp:
+            getArgumentsRecursive(tok.astOperand2, arguments)
+        else:
+            arguments.append(tok)
 
 
 def getArguments(ftok):
@@ -247,22 +250,16 @@ def str05(data):
             if parent.isAssignmentOp and parentOp1.valueType:
                 if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
                     reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
-                
 
 # STR07-C
 # Use the bounds-checking interfaces for string manipulation
 def str07(data):
     for token in data.tokenlist:
         if token.str in('strcpy', 'strcat'):
-            parent = token.astParent
-            if parent is None:
-                continue
-            if parent.astParent :
-                continue
-            astOp2 = parent.astOperand2
-            if not astOp2.astOperand2.isString and token.str=='strcpy':
+            args = cppcheckdata.getArguments(token)
+            if len(args)==2 and args[1].isString and token.str=='strcpy':
                 reportError(token, 'style', 'Use the bounds-checking interfaces strcpy_s()', 'STR07-C')
-            elif not astOp2.astOperand2.isString and token.str=='strcat':
+            if len(args)==2 and args[1].isString and token.str=='strcat':
                 reportError(token, 'style', 'Use the bounds-checking interfaces strcat_s()', 'STR07-C')
 
 for arg in sys.argv[1:]:
