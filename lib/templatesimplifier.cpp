@@ -3147,6 +3147,10 @@ void TemplateSimplifier::simplifyTemplates(
     // is fixed.
 
     for (int i = 0; i < 3; ++i) {
+        // Recalculate scopes from scratch every pass, in case a scope is missing or incorrect
+        for (auto tok = mTokenizer->list.front(); tok; tok = tok->next()) tok->scopeInfo(nullptr);
+        mTokenizer->calculateScopes();
+        
         if (i) {
             // it may take more than one pass to simplify type aliases
             while (mTokenizer->simplifyUsing())
