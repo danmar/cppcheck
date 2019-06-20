@@ -63,12 +63,50 @@ namespace {
         std::string scriptFile;
         std::string args;
 
+        std::string getFullPath(const std::string &fileName, const std::string &exename) const {
+            if (Path::fileExists(fileName))
+                return fileName;
+
+            const std::string exepath = Path::getPathFromFilename(exename);
+            if (Path::fileExists(exepath + fileName))
+                return exepath + fileName;
+            if (Path::fileExists(exepath + "addons/" + fileName))
+                return exepath + "addons/" + fileName;
+
+#ifdef CFGDIR
+            if (Path::fileExists(CFGDIR + fileName))
+                return CFGDIR + fileName;
+            if (Path::fileExists(CFGDIR + ("../addons/" + fileName)))
+                return CFGDIR + ("../addons/" + fileName);
+#endif
+            return "";
+        }
+
         std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
-            if (!endsWith(fileName, ".json", 5)) {
-                name = fileName;
-                scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
+            if (fileName.find(".") == std::string::npos)
+                return getAddonInfo(fileName + ".py", exename);
+
+            if (endsWith(fileName, ".py", 3)) {
+                scriptFile = getFullPath(fileName, exename);
+                if (scriptFile.empty())
+                    return "Did not find addon " + fileName;
+
+                std::string::size_type pos1 = scriptFile.rfind("/");
+                if (pos1 == std::string::npos)
+                    pos1 = 0;
+                else
+                    pos1++;
+                std::string::size_type pos2 = scriptFile.rfind(".");
+                if (pos2 < pos1)
+                    pos2 = std::string::npos;
+                name = scriptFile.substr(pos1, pos2 - pos1);
+
                 return "";
             }
+
+            if (!endsWith(fileName, ".json", 5))
+                return "Failed to open addon " + fileName;
+
             std::ifstream fin(fileName);
             if (!fin.is_open())
                 return "Failed to open " + fileName;
@@ -83,9 +121,8 @@ namespace {
                 for (const picojson::value &v : obj["args"].get<picojson::array>())
                     args += " " + v.get<std::string>();
             }
-            name = obj["script"].get<std::string>();
-            scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
-            return "";
+
+            return getAddonInfo(obj["script"].get<std::string>(), exename);
         }
     };
 }
@@ -473,6 +510,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // dump xml if --dump
                 if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
                     fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
+                    fdump << "  <standards>" << std::endl;
+                    fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
+                    fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
+                    fdump << "  </standards>" << std::endl;
                     preprocessor.dump(fdump);
                     mTokenizer.dump(fdump);
                     fdump << "</dump>" << std::endl;

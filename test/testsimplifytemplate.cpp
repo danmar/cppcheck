@@ -152,6 +152,8 @@ private:
         TEST_CASE(template112); // #9146 syntax error
         TEST_CASE(template113);
         TEST_CASE(template114); // #9155
+        TEST_CASE(template115); // #9153
+        TEST_CASE(template116); // #9178
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1844,15 +1846,34 @@ private:
     }
 
     void template84() { // #8880
-        const char code[] = "template <class b, int c, class>\n"
-                            "auto d() -> typename a<decltype(b{})>::e {\n"
-                            "  d<int, c, int>();\n"
-                            "}";
-        const char exp[] = "auto d<int,c,int> ( ) . a < decltype ( int { } ) > :: e ; "
-                           "auto d<int,c,int> ( ) . a < decltype ( int { } ) > :: e { "
-                           "d<int,c,int> ( ) ; "
-                           "}";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "template <class b, int c, class>\n"
+                                "auto d() -> typename a<decltype(b{})>::e {\n"
+                                "  d<int, c, int>();\n"
+                                "}";
+            const char exp[] = "template < class b , int c , class > "
+                               "auto d ( ) . a < decltype ( b { } ) > :: e { "
+                               "d < int , c , int > ( ) ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <class b, int c, class>\n"
+                                "auto d() -> typename a<decltype(b{})>::e {\n"
+                                "  d<int, c, int>();\n"
+                                "}"
+                                "void foo() { d<char, 1, int>(); }";
+            const char exp[] = "auto d<char,1,int> ( ) . a < char > :: e ; "
+                               "auto d<int,1,int> ( ) . a < int > :: e ; "
+                               "void foo ( ) { d<char,1,int> ( ) ; } "
+                               "auto d<char,1,int> ( ) . a < char > :: e { "
+                               "d<int,1,int> ( ) ; "
+                               "} "
+                               "auto d<int,1,int> ( ) . a < int > :: e { "
+                               "d<int,1,int> ( ) ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template85() { // #8902 - crash
@@ -2683,16 +2704,62 @@ private:
     }
 
     void template114() { // #9155
-        const char code[] = "template <typename a, a> struct b {};\n"
-                            "template <typename> struct c;\n"
-                            "template <typename> struct d : b<bool, std::is_polymorphic<int>{}> {};\n"
-                            "template <bool> struct e;\n"
-                            "template <typename a> using f = typename e<c<d<a>>::g>::h;";
-        const char exp[] = "template < typename a , a > struct b { } ; "
-                           "template < typename > struct c ; "
-                           "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
-                           "template < bool > struct e ; "
-                           "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
+        {
+            const char code[] = "template <typename a, a> struct b {};\n"
+                                "template <typename> struct c;\n"
+                                "template <typename> struct d : b<bool, std::is_polymorphic<int>{}> {};\n"
+                                "template <bool> struct e;\n"
+                                "template <typename a> using f = typename e<c<d<a>>::g>::h;";
+            const char exp[] =  "template < typename a , a > struct b { } ; "
+                                "template < typename > struct c ; "
+                                "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
+                                "template < bool > struct e ; "
+                                "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <typename a, a> struct b;\n"
+                                "template <bool, typename> struct c;\n"
+                                "template <typename a> struct d : b<bool, std::is_empty<a>{}> {};\n"
+                                "template <typename a> using e = typename c<std::is_final<a>{}, d<a>>::f;\n";
+            const char exp[] =  "template < typename a , a > struct b ; "
+                                "template < bool , typename > struct c ; "
+                                "template < typename a > struct d : b < bool , std :: is_empty < a > { } > { } ; "
+                                "template < typename a > using e = typename c < std :: is_final < a > { } , d < a > > :: f ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void template115() { // #9153
+        const char code[] = "namespace {\n"
+                            "    namespace b {\n"
+                            "        template <int c> struct B { using B<c / 2>::d; };\n"
+                            "    }\n"
+                            "    template <class, class> using e = typename b::B<int{}>;\n"
+                            "    namespace b {\n"
+                            "        template <class> struct f {};\n"
+                            "    }\n"
+                            "    template <class c> using g = b::f<e<int, c>>;\n"
+                            "}\n"
+                            "g<int> g1;";
+        const char exp[] = "namespace { "
+                           "namespace b { "
+                           "struct B<0> ; "
+                           "} "
+                           "namespace b { "
+                           "struct f<b::B<0>> ; "
+                           "} "
+                           "} "
+                           "b :: f<b::B<0>> g1 ; struct b :: B<0> { using B<0> :: d ; } ; "
+                           "struct b :: f<b::B<0>> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template116() { // #9178
+        const char code[] = "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>);\n"
+                            "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){}";
+        const char exp[] = "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) ; "
+                           "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) { }";
         ASSERT_EQUALS(exp, tok(code));
     }
 

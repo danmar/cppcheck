@@ -219,7 +219,7 @@ script:
 # building gui generates some more files that cppcheck can check, so check the repo *after* building gui
   - cd ../
 # self check
-  - ${CPPCHECK} --template=gcc -D__CPPCHECK__ -f --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/cli -itest/synthetic -itest/testsuites -iaddons  -igui . -j 2
+  - ${CPPCHECK} --template=gcc -D__CPPCHECK__ -f --error-exitcode=1 --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --inline-suppr --suppressions-list=.travis_suppressions -itest/cli -itest/synthetic -itest/testsuites -iaddons  -igui cli lib gui test tools -j 2
 # check gui with qt settings
   - ${CPPCHECK} --template=gcc --library=qt  --error-exitcode=1  -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --enable=style,performance,portability,warning,internal  --exception-handling -j 2 gui --suppressions-list=.travis_suppressions -igui/test
 # check naming conventions
@@ -248,6 +248,8 @@ script:
   - cd test/cli
   - python -m pytest test-*.py
   - cd ../..
+# Testing addons
+  - python -m pytest addons/test/test-*.py
 
 notifications:
   irc:

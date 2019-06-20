@@ -936,7 +936,7 @@ private:
     void canFindMatchingBracketsInnerPair() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        const Token * const t = const_cast<Token*>(var.tokens()->tokAt(7))->findClosingBracket();
+        const Token * const t = var.tokens()->tokAt(7)->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(9) == t);
     }

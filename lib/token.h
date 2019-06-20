@@ -1102,15 +1102,31 @@ public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
 
+    Token * astOperand1() {
+        return mImpl->mAstOperand1;
+    }
     const Token * astOperand1() const {
         return mImpl->mAstOperand1;
+    }
+    Token * astOperand2() {
+        return mImpl->mAstOperand2;
     }
     const Token * astOperand2() const {
         return mImpl->mAstOperand2;
     }
+    Token * astParent() {
+        return mImpl->mAstParent;
+    }
     const Token * astParent() const {
         return mImpl->mAstParent;
     }
+    Token *astTop() {
+        Token *ret = this;
+        while (ret->mImpl->mAstParent)
+            ret = ret->mImpl->mAstParent;
+        return ret;
+    }
+
     const Token *astTop() const {
         const Token *ret = this;
         while (ret->mImpl->mAstParent)
