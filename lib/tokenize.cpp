@@ -4520,8 +4520,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     SimplifyNamelessRValueReferences();
 
-
     validate();
+
+    Token::assignProgressValues(list.front());
+
     return true;
 }
 
