@@ -3366,6 +3366,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         }
         // container lifetimes
         else if (tok->variable() && Token::Match(tok, "%var% . begin|cbegin|rbegin|crbegin|end|cend|rend|crend|data|c_str|find (")) {
+            if (Token::Match(tok->tokAt(2), "find") && !astIsIterator(tok->tokAt(3)))
+                continue;
             ErrorPath errorPath;
             const Library::Container * container = settings->library.detectContainer(tok->variable()->typeStartToken());
             if (!container)
