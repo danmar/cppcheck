@@ -1171,7 +1171,7 @@ public:
 
     void printValueFlow(bool xml, std::ostream &out) const;
     
-    void scopeInfo(ScopeInfo2* newScope);
+    void scopeInfo(ScopeInfo2* newScopeInfo);
     
     ScopeInfo2* scopeInfo() const;
 };
