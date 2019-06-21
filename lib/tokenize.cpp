@@ -2828,7 +2828,15 @@ void Tokenizer::calculateScopes()
         ScopeInfo2* primaryScope = new ScopeInfo2("", list.back());
         list.front()->scopeInfo(primaryScope);
 
-        if (Token::Match(list.front(), "namespace|class|struct|union %name% {|::|:|<|;")) {
+        if (Token::Match(list.front(), "using namespace %name% ::|<|;")) {
+            std::string usingNamespaceName = "";
+            for (const Token* namespaceNameToken = list.front()->tokAt(2); !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
+                usingNamespaceName += namespaceNameToken->str();
+                usingNamespaceName += " ";
+            }
+            if (usingNamespaceName.length() > 0) usingNamespaceName = usingNamespaceName.substr(0, usingNamespaceName.length() - 1);
+            list.front()->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
+        } else if (Token::Match(list.front(), "namespace|class|struct|union %name% {|::|:|<")) {
             for (Token* nameTok = list.front()->next(); nameTok && !Token::Match(nameTok, "{|:|<"); nameTok = nameTok->next()) {
                 nextScopeNameAddition.append(nameTok->str());
                 nextScopeNameAddition.append(" ");
@@ -2841,7 +2849,15 @@ void Tokenizer::calculateScopes()
         if (!tok->scopeInfo()) {
             tok->scopeInfo(tok->previous()->scopeInfo());
 
-            if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<|;")) {
+            if (Token::Match(tok, "using namespace %name% ::|<|;")) {
+                std::string usingNamespaceName = "";
+                for (const Token* namespaceNameToken = tok->tokAt(2); !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
+                    usingNamespaceName += namespaceNameToken->str();
+                    usingNamespaceName += " ";
+                }
+                if (usingNamespaceName.length() > 0) usingNamespaceName = usingNamespaceName.substr(0, usingNamespaceName.length() - 1);
+                tok->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
+            } else if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<")) {
                 if (Token::simpleMatch(tok->previous(), "using namespace")) {
                     std::string usingNamespaceName = "";
                     for (const Token* namespaceNameToken = tok->next(); !Token::simpleMatch(namespaceNameToken, ";"); namespaceNameToken = namespaceNameToken->next()) {
