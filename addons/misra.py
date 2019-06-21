@@ -566,8 +566,12 @@ def remove_file_prefix(file_path, prefix):
         result = file_path
     return result
 
-class Rule:
-    """ Class to keep rule text and metadata """
+
+class Rule(object):
+    """Class to keep rule text and metadata"""
+
+    SEVERITY_MAP = {'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'style', 'style': 'style'}
+
     def __init__(self, num1, num2):
         self.num1 = num1
         self.num2 = num2
@@ -579,13 +583,15 @@ class Rule:
         return self.num1 * 100 + self.num2
 
     @property
-    def cppcheck_severity(self):
-        return self.SEVERITY_MAP[self.severity]
+    def severity(self):
+        return self._severity
+
+    @severity.setter
+    def severity(self, val):
+        self._severity = self.SEVERITY_MAP.get(val, 'style')
 
     def __repr__(self):
         return "%d.%d %s" % (self.num1, self.num2, self.severity)
-
-    SEVERITY_MAP = { 'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'style', 'style': 'style' }
 
 
 class MisraSettings(object):
@@ -2067,7 +2073,7 @@ class MisraChecker:
             severity = 'style'
             if ruleNum in self.ruleTexts:
                 errmsg = self.ruleTexts[ruleNum].text
-                severity = self.ruleTexts[ruleNum].cppcheck_severity
+                severity = self.ruleTexts[ruleNum].severity
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
@@ -2086,7 +2092,7 @@ class MisraChecker:
         expect_more = False
 
         Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
-        Choice_pattern = re.compile(r'^[ ]*(Advisory|Required|Mandatory)$')
+        Choice_pattern = re.compile(r'.*[ ]*(Advisory|Required|Mandatory)$')
         xA_Z_pattern = re.compile(r'^[#A-Z].*')
         a_z_pattern = re.compile(r'^[a-z].*')
         # Try to detect the file encoding
@@ -2133,7 +2139,7 @@ class MisraChecker:
                 rule = Rule(num1, num2)
                 res = Choice_pattern.match(line)
                 if res:
-                    self.ruleTexts[rule.num].severity = res.group(1)
+                    rule.severity = res.group(1)
                 expect_more = False
                 continue
             if rule is None:

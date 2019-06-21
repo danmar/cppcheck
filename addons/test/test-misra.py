@@ -59,3 +59,11 @@ def test_verifyRuleTexts(checker):
     captured = ''.join(output.captured)
     assert("21.3" not in captured)
     assert("1.3" in captured)
+
+
+def test_rules_severity(checker):
+    checker.loadRuleTexts("./addons/test/assets/misra_rules_dummy.txt")
+    assert(checker.ruleTexts[1004].severity == 'error')
+    assert(checker.ruleTexts[401].severity == 'warning')
+    assert(checker.ruleTexts[1505].severity == 'style')
+    assert(checker.ruleTexts[2104].severity == 'style')
