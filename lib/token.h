@@ -76,6 +76,11 @@ struct TokenImpl {
      */
     unsigned int mProgressValue;
 
+    /**
+     * Token index. Position in token list
+     */
+    unsigned int mIndex;
+
     // original name like size_t
     std::string* mOriginalName;
 
@@ -103,6 +108,7 @@ struct TokenImpl {
         , mScope(nullptr)
         , mFunction(nullptr) // Initialize whole union
         , mProgressValue(0)
+        , mIndex(0)
         , mOriginalName(nullptr)
         , mValueType(nullptr)
         , mValues(nullptr)
@@ -853,7 +859,7 @@ public:
      */
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
-    /** Get progressValue */
+    /** Get progressValue (0 - 100) */
     unsigned int progressValue() const {
         return mImpl->mProgressValue;
     }
@@ -986,6 +992,12 @@ public:
         if (mImpl->mValues)
             mImpl->mValues->remove_if(pred);
     }
+
+    unsigned int index() const {
+        return mImpl->mIndex;
+    }
+
+    void assignIndexes();
 
 private:
 

@@ -4522,7 +4522,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     validate();
 
-    Token::assignProgressValues(list.front());
+    list.front()->assignIndexes();
 
     return true;
 }
