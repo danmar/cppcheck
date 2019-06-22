@@ -245,9 +245,10 @@ script:
   - make -s -j2
   - cd ../../
 # Testing cli
-  - cd test/cli
+  - cp -R . ../cppcheck\ 2
+  - cd ../cppcheck\ 2/test/cli # path with space
   - python -m pytest test-*.py
-  - cd ../..
+  - cd -
 # Testing addons
   - python -m pytest addons/test/test-*.py
 
