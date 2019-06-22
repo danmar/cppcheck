@@ -2849,12 +2849,12 @@ private:
 
     void suspiciousEqualityComparison() {
         check("void foo(int c) {\n"
-              "    if (c == 1) c == 0;\n"
+              "    if (x) c == 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
         check("void foo(int* c) {\n"
-              "    if (*c == 1) *c == 0;\n"
+              "    if (x) *c == 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
