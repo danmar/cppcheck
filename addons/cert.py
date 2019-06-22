@@ -257,9 +257,22 @@ def str07(data):
     for token in data.tokenlist:
         if token.str in('strcpy', 'strcat'):
             args = cppcheckdata.getArguments(token)
-            if len(args)==2 and args[1].isString and token.str=='strcpy':
+            if len(args)!=2:
+                continue
+            if args[1].variable is None:
+                continue
+
+            variableUninit=False
+            for value in args[1].values:
+                if value.uninit is None:
+                    continue
+                variableUninit = value.uninit
+                break
+
+            if args[1].isName and args[1].variable.isPointer and variableUninit and token.str=='strcpy':
                 reportError(token, 'style', 'Use the bounds-checking interfaces strcpy_s()', 'STR07-C')
-            if len(args)==2 and args[1].isString and token.str=='strcat':
+
+            if args[1].isName and args[1].variable.isPointer and variableUninit and token.str=='strcat':
                 reportError(token, 'style', 'Use the bounds-checking interfaces strcat_s()', 'STR07-C')
 
 for arg in sys.argv[1:]:

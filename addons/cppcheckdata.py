@@ -472,6 +472,7 @@ class ValueFlow:
         condition = None
         valueKind = None
         inconclusive = False
+        uninit = None
 
         def isKnown(self):
             return self.valueKind and self.valueKind == 'known'
@@ -489,6 +490,9 @@ class ValueFlow:
             self.condition = element.get('condition-line')
             if self.condition:
                 self.condition = int(self.condition)
+            self.uninit = element.get('uninit')
+            if self.uninit:
+                self.uninit = bool(self.uninit)
             if element.get('known'):
                 valueKind = 'known'
             elif element.get('possible'):
@@ -765,8 +769,9 @@ def getArgumentsRecursive(tok, arguments):
         getArgumentsRecursive(tok.astOperand2, arguments)
     else:
         if tok.isArithmeticalOp:
+            getArgumentsRecursive(tok.astOperand1, arguments)
             getArgumentsRecursive(tok.astOperand2, arguments)
-        else:
+        elif not tok.isNumber:
             arguments.append(tok)
 
 

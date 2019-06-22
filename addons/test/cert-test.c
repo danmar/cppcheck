@@ -69,10 +69,12 @@ void str05()
 
 void str07()
 {
-    static const *str="test";
+    const char *str="test";
+    const char *newBuf;
     char buf[128];
-    strcpy(buf, str); //cert-STR07-C
-    strcpy(buf,"hello");
-    strcat(buf,"doh"); 
-    strcat(buf, str); //cert-STR07-C
+
+    strcat(buf,"bla");
+    strcat(buf, str);       
+    strcat(buf, newBuf); //cert-STR07-C
+    strcpy(str, newBuf); //cert-STR07-C
 }
