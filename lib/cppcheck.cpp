@@ -129,7 +129,7 @@ namespace {
 
 static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
 {
-    const std::string cmd = "python " + addonInfo.scriptFile + " --cli" + addonInfo.args + " " + dumpFile;
+    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\"";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);

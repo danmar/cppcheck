@@ -42,16 +42,17 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
 
 # Run Cppcheck with args
 def cppcheck(args):
+    exe = None
     if os.path.isfile('../../bin/debug/cppcheck.exe'):
-        cmd = '../../bin/debug/cppcheck.exe ' + args
+        exe = '../../bin/debug/cppcheck.exe'
     elif os.path.isfile('../../../bin/debug/cppcheck.exe'):
-        cmd = '../../../bin/debug/cppcheck.exe ' + args
+        exe = '../../../bin/debug/cppcheck.exe'
     elif os.path.isfile('../../cppcheck'):
-        cmd = '../../cppcheck ' + args
+        exe = '../../cppcheck'
     else:
-        cmd = '../../../cppcheck ' + args
-    logging.info(cmd)
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        exe = '../../../cppcheck'
+    logging.info(exe + ' ' + ' '.join(args))
+    p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
