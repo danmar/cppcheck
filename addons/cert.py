@@ -82,6 +82,18 @@ def isStandardFunction(token):
                 return False
     return True
 
+# Is this a function call
+def isFunctionCall(token, function_names, number_of_arguments=None):
+    if not token.isName:
+        return False
+    if token.str not in function_names:
+        return False
+    if (token.next is None) or token.next.str != '(' or token.next != token.astParent:
+        return False
+    if number_of_arguments is None:
+        return True
+    return len(cppcheckdata.getArguments(token)) == number_of_arguments
+
 # Get function arguments
 def getArgumentsRecursive(tok, arguments):
     if tok is None:
@@ -255,25 +267,14 @@ def str05(data):
 # Use the bounds-checking interfaces for string manipulation
 def str07(data):
     for token in data.tokenlist:
-        if token.str in('strcpy', 'strcat'):
-            args = cppcheckdata.getArguments(token)
-            if len(args)!=2:
-                continue
-            if args[1].variable is None:
-                continue
-
-            variableUninit=False
-            for value in args[1].values:
-                if value.uninit is None:
-                    continue
-                variableUninit = value.uninit
-                break
-
-            if args[1].isName and args[1].variable.isPointer and variableUninit and token.str=='strcpy':
-                reportError(token, 'style', 'Use the bounds-checking interfaces strcpy_s()', 'STR07-C')
-
-            if args[1].isName and args[1].variable.isPointer and variableUninit and token.str=='strcat':
-                reportError(token, 'style', 'Use the bounds-checking interfaces strcat_s()', 'STR07-C')
+        if not isFunctionCall(token, ('strcpy', 'strcat')):
+            continue
+        args = cppcheckdata.getArguments(token)
+        if len(args)!=2:
+            continue
+        if args[1].isString:
+            continue
+        reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % (token.str), 'STR07-C')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':

@@ -74,7 +74,7 @@ void str07()
     char buf[128];
 
     strcat(buf,"bla");
-    strcat(buf, str);       
+    strcat(buf, str);    //cert-STR07-C
     strcat(buf, newBuf); //cert-STR07-C
     strcpy(str, newBuf); //cert-STR07-C
 }
