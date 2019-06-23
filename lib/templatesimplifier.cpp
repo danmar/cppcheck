@@ -197,7 +197,8 @@ bool TemplateSimplifier::TokenAndName::isAliasToken(const Token *tok) const
 }
 
 TemplateSimplifier::TemplateSimplifier(Tokenizer *tokenizer)
-    : mTokenizer(tokenizer), mTokenList(tokenizer->list), mSettings(tokenizer->mSettings), mErrorLogger(tokenizer->mErrorLogger)
+    : mTokenizer(tokenizer), mTokenList(tokenizer->list), mSettings(tokenizer->mSettings),
+      mErrorLogger(tokenizer->mErrorLogger), mChanged(false)
 {
 }
 
@@ -1221,6 +1222,8 @@ void TemplateSimplifier::simplifyTemplateAliases()
                 ++it2;
                 continue;
             }
+
+            mChanged = true;
 
             // copy template-id from declaration to after instantiation
             Token * dst = aliasUsage.token->next()->findClosingBracket();
@@ -2770,6 +2773,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (expandedtemplates.insert(newFullName).second) {
             expandTemplate(templateDeclaration, instantiation, typeParametersInDeclaration, newName, !specialized && !isVar);
             instantiated = true;
+            mChanged = true;
         }
 
         // Replace all these template usages..
@@ -2835,6 +2839,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (expandedtemplates.insert(newFullName).second) {
             expandTemplate(templateDeclaration, templateDeclaration, typeParametersInDeclaration, newName, !specialized && !isVar);
             instantiated = true;
+            mChanged = true;
         }
 
         // Replace all these template usages..
@@ -3289,20 +3294,19 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    // TODO: 4 is not the ideal number of loops.
-    // We should loop until the number of declarations is 0 but we can't
-    // do that until we instantiate unintstantiated templates with their symbolic types.
-    // That will allow the uninstantiated template code to be removed from the symbol database.
-    // Unfortunately the template simplifier doesn't handle namespaces properly so
-    // the uninstantiated template code in the symbol database can't be removed until #8768
-    // is fixed.
-
-    for (int i = 0; i < 4; ++i) {
-        if (i) {
+    unsigned int passCount = 0;
+    const unsigned int passCountMax = 10;
+    for (; passCount < passCountMax; ++passCount) {
+        if (passCount) {
             // it may take more than one pass to simplify type aliases
+            bool usingChanged = false;
             while (mTokenizer->simplifyUsing())
-                ;
+                usingChanged = true;
 
+            if (!usingChanged && !mChanged)
+                break;
+
+            mChanged = usingChanged;
             mTemplateDeclarations.clear();
             mTemplateForwardDeclarations.clear();
             mTemplateForwardDeclarationsMap.clear();
@@ -3316,7 +3320,7 @@ void TemplateSimplifier::simplifyTemplates(
 
         bool hasTemplates = getTemplateDeclarations();
 
-        if (i == 0)
+        if (passCount == 0)
             codeWithTemplates = hasTemplates;
 
         // Make sure there is something to simplify.
@@ -3341,7 +3345,7 @@ void TemplateSimplifier::simplifyTemplates(
         simplifyTemplateAliases();
 
         if (mSettings->debugtemplate)
-            printOut("### Template Simplifier pass " + std::to_string(i + 1) + " ###");
+            printOut("### Template Simplifier pass " + std::to_string(passCount + 1) + " ###");
 
         std::set<std::string> expandedtemplates;
 
@@ -3417,6 +3421,19 @@ void TemplateSimplifier::simplifyTemplates(
                     end = end->next();
                 eraseTokens(start, end);
             }
+        }
+    }
+
+    if (passCount == passCountMax) {
+        if (mSettings->debugwarnings) {
+            const std::list<const Token*> locationList(1, mTokenList.front());
+            const ErrorLogger::ErrorMessage errmsg(locationList, &mTokenizer->list,
+                                                   Severity::debug,
+                                                   "debug",
+                                                   "TemplateSimplifier: pass count limit hit before simplifications were finished.",
+                                                   false);
+            if (mErrorLogger)
+                mErrorLogger->reportErr(errmsg);
         }
     }
 }
