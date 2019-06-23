@@ -27,6 +27,7 @@ class QSettings;
 class QWidget;
 class ApplicationList;
 class TranslationHandler;
+class CodeEditorStyle;
 
 /// @addtogroup GUI
 /// @{
@@ -136,6 +137,17 @@ protected slots:
      * @brief Browse for MISRA file
      */
     void browseMisraFile();
+
+    /**
+     * @brief Set Code Editor Style to Default
+     */
+    void setCodeEditorStyleDefault();
+
+    /**
+     * @brief Edit Custom Code Editor Style
+     */
+    void editCodeEditorStyle();
+
 protected:
     /**
     * @brief Clear all applications from the list and re insert them from mTempApplications
@@ -187,6 +199,11 @@ protected:
     void initTranslationsList();
 
     /**
+     * @brief Current Code Editor Style
+     */
+    CodeEditorStyle *mCurrentStyle;
+
+    /**
     * @brief List of applications user has specified
     *
     */
@@ -211,6 +228,8 @@ protected:
     */
     Ui::Settings mUI;
 private:
+    void manageStyleControls();
+
     static const int mLangCodeRole = Qt::UserRole;
 };
 /// @}

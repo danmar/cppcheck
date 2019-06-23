@@ -13,7 +13,7 @@ env:
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
   matrix:
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
-    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" SRCDIR=build VERIFY=1
+    - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" MATCHCOMPILER=yes VERIFY=1
 
 before_install:
 # install needed deps
@@ -67,8 +67,8 @@ matrix:
         - git clean -dfx
 # check what happens if we want to install it to some other dir,
         - echo $CXXFLAGS
-        - make -s SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg -j 2
-        - sudo make SRCDIR=build CFGDIR=/usr/share/cppcheck/cfg install
+        - make -s MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg -j 2
+        - sudo make MATCHCOMPILER=yes CFGDIR=/usr/share/cppcheck/cfg install
         - sudo mkdir -p /usr/share/cppcheck/cfg
         - sudo install -D ./cfg/* -t /usr/share/cppcheck/cfg
 # check if it actually works:
@@ -133,7 +133,7 @@ matrix:
     - name: "check clang sources with cppcheck"
       compiler: clang
       script:
-        - wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & SRCDIR=build VERIFY=1 make -j 2 & wait
+        - wget "https://github.com/llvm-mirror/clang/archive/a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip" & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
         - unzip a1f8bd3778cc5a53236a53500c6ab184e945eefa.zip > /dev/null
         - touch /tmp/clang.cppcheck
         - cd ./clang-a1f8bd3778cc5a53236a53500c6ab184e945eefa
@@ -146,7 +146,7 @@ matrix:
     - name: "check llvm sources with cppcheck"
       compiler: clang
       script:
-        - wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & SRCDIR=build VERIFY=1 make -j 2 & wait
+        - wget "https://github.com/llvm-mirror/llvm/archive/6fa6453210fa34c1c28bd73a431d04734549f0d6.zip"  & MATCHCOMPILER=yes VERIFY=1 make -j 2 & wait
         - unzip 6fa6453210fa34c1c28bd73a431d04734549f0d6.zip > /dev/null
         - touch /tmp/llvm.cppcheck
         - cd ./llvm-6fa6453210fa34c1c28bd73a431d04734549f0d6
@@ -245,9 +245,10 @@ script:
   - make -s -j2
   - cd ../../
 # Testing cli
-  - cd test/cli
+  - cp -R . ../cppcheck\ 2
+  - cd ../cppcheck\ 2/test/cli # path with space
   - python -m pytest test-*.py
-  - cd ../..
+  - cd -
 # Testing addons
   - python -m pytest addons/test/test-*.py
 
