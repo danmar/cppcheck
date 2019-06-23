@@ -3,7 +3,7 @@ Rule 3.1 Required
 R3.1 text.
 Rule 4.1 Required
 R4.1 text.
-Rule 10.4 Required
+Rule 10.4 Mandatory
 R10.4 text.
 Rule 11.5 Advisory
 R11.5 text.
@@ -17,4 +17,6 @@ Rule 20.1 Advisory
 R20.1 text.
 Rule 21.3 Required
 R21.3 text.
+Rule 21.4
+R21.4 text.
 
