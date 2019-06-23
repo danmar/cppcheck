@@ -82,6 +82,18 @@ def isStandardFunction(token):
                 return False
     return True
 
+# Is this a function call
+def isFunctionCall(token, function_names, number_of_arguments=None):
+    if not token.isName:
+        return False
+    if token.str not in function_names:
+        return False
+    if (token.next is None) or token.next.str != '(' or token.next != token.astParent:
+        return False
+    if number_of_arguments is None:
+        return True
+    return len(cppcheckdata.getArguments(token)) == number_of_arguments
+
 # Get function arguments
 def getArgumentsRecursive(tok, arguments):
     if tok is None:
@@ -247,7 +259,19 @@ def str05(data):
             if parent.isAssignmentOp and parentOp1.valueType:
                 if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
                     reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
-                
+
+# STR07-C
+# Use the bounds-checking interfaces for string manipulation
+def str07(data):
+    for token in data.tokenlist:
+        if not isFunctionCall(token, ('strcpy', 'strcat')):
+            continue
+        args = cppcheckdata.getArguments(token)
+        if len(args)!=2:
+            continue
+        if args[1].isString:
+            continue
+        reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % (token.str), 'STR07-C')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
@@ -275,6 +299,7 @@ for arg in sys.argv[1:]:
         exp46(cfg)
         int31(cfg, data.platform)
         str05(cfg)
+        str07(cfg)
         msc30(cfg)
 
     if VERIFY:
