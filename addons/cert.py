@@ -94,21 +94,6 @@ def isFunctionCall(token, function_names, number_of_arguments=None):
         return True
     return len(cppcheckdata.getArguments(token)) == number_of_arguments
 
-# Get function arguments
-def getArgumentsRecursive(tok, arguments):
-    if tok is None:
-        return
-    if tok.str == ',':
-        getArgumentsRecursive(tok.astOperand1, arguments)
-        getArgumentsRecursive(tok.astOperand2, arguments)
-    else:
-        arguments.append(tok)
-
-
-def getArguments(ftok):
-    arguments = []
-    getArgumentsRecursive(ftok.astOperand2, arguments)
-    return arguments
 
 # EXP05-C
 # do not attempt to cast away const
@@ -132,7 +117,7 @@ def exp05(data):
 
         elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
             function = token.astOperand1.function
-            arguments = getArguments(token)
+            arguments = cppcheckdata.getArguments(token.previous)
             for argnr, argvar in function.argument.items():
                 if argnr < 1 or argnr > len(arguments):
                     continue
