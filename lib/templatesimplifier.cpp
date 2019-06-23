@@ -432,7 +432,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->next();
 
         // Skip variadic types (Ticket #5774, #6059, #6172)
-        if (Token::Match(tok, ". . .")) {
+        if (Token::simpleMatch(tok, ". . .")) {
             if ((tok->previous()->isName() && !Token::Match(tok->tokAt(-2), "<|,")) ||
                 (!tok->previous()->isName() && tok->strAt(-1) != ">"))
                 return 0; // syntax error
@@ -1409,7 +1409,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
             return false;
         // skip decltype(...)
         else if (Token::simpleMatch(tok->next(), "decltype (")) {
-            const Token * end = tok->next()->linkAt(1);
+            const Token * end = tok->linkAt(2);
             while (tok && tok->next() && tok != end) {
                 tok = tok->next();
                 namepos++;
