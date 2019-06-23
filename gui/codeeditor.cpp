@@ -56,6 +56,7 @@ Highlighter::Highlighter(QTextDocument *parent,
     foreach (const QString &pattern, keywordPatterns) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
         rule.format = mKeywordFormat;
+        rule.ruleRole = RuleRole::Keyword;
         mHighlightingRules.append(rule);
     }
 
@@ -63,18 +64,21 @@ Highlighter::Highlighter(QTextDocument *parent,
     mClassFormat.setFontWeight(mWidgetStyle->classWeight);
     rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
     rule.format = mClassFormat;
+    rule.ruleRole = RuleRole::Class;
     mHighlightingRules.append(rule);
 
     mQuotationFormat.setForeground(mWidgetStyle->quoteColor);
     mQuotationFormat.setFontWeight(mWidgetStyle->quoteWeight);
     rule.pattern = QRegularExpression("\".*\"");
     rule.format = mQuotationFormat;
+    rule.ruleRole = RuleRole::Quote;
     mHighlightingRules.append(rule);
 
     mSingleLineCommentFormat.setForeground(mWidgetStyle->commentColor);
     mSingleLineCommentFormat.setFontWeight(mWidgetStyle->commentWeight);
     rule.pattern = QRegularExpression("//[^\n]*");
     rule.format = mSingleLineCommentFormat;
+    rule.ruleRole = RuleRole::Comment;
     mHighlightingRules.append(rule);
 
     mHighlightingRulesWithSymbols = mHighlightingRules;
@@ -97,7 +101,32 @@ void Highlighter::setSymbols(const QStringList &symbols)
         HighlightingRule rule;
         rule.pattern = QRegularExpression("\\b" + sym + "\\b");
         rule.format = mSymbolFormat;
+        rule.ruleRole = RuleRole::Symbol;
         mHighlightingRulesWithSymbols.append(rule);
+    }
+}
+
+void Highlighter::setStyle( const CodeEditorStyle &newStyle )
+{
+    mKeywordFormat.setForeground( newStyle.keywordColor );
+    mKeywordFormat.setFontWeight( newStyle.keywordWeight );
+    mClassFormat.setForeground( newStyle.classColor );
+    mClassFormat.setFontWeight( newStyle.classWeight );
+    mSingleLineCommentFormat.setForeground( newStyle.commentColor );
+    mSingleLineCommentFormat.setFontWeight( newStyle.commentWeight );
+    mMultiLineCommentFormat.setForeground( newStyle.commentColor );
+    mMultiLineCommentFormat.setFontWeight( newStyle.commentWeight );
+    mQuotationFormat.setForeground( newStyle.quoteColor );
+    mQuotationFormat.setFontWeight( newStyle.quoteWeight );
+    mSymbolFormat.setForeground( newStyle.symbolFGColor );
+    mSymbolFormat.setBackground( newStyle.symbolBGColor );
+    mSymbolFormat.setFontWeight( newStyle.symbolWeight );
+    for( HighlightingRule& rule : mHighlightingRules ) {
+        applyFormat( rule );
+    }
+
+    for( HighlightingRule& rule : mHighlightingRulesWithSymbols ) {
+        applyFormat( rule );
     }
 }
 
@@ -133,39 +162,54 @@ void Highlighter::highlightBlock(const QString &text)
     }
 }
 
-
-CodeEditor::CodeEditor(QWidget *parent,
-                       CodeEditorStyle *widgetStyle /*= nullptr*/) :
-    QPlainTextEdit(parent)
+void Highlighter::applyFormat( HighlightingRule &rule )
 {
-    if (widgetStyle) mWidgetStyle = widgetStyle;
-    else mWidgetStyle = new CodeEditorStyle(defaultStyle);
+    switch( rule.ruleRole )
+    {
+        case RuleRole::Keyword:
+            rule.format = mKeywordFormat;
+            break;
+        case RuleRole::Class:
+            rule.format = mClassFormat;
+            break;
+        case RuleRole::Comment:
+            rule.format = mSingleLineCommentFormat;
+            break;
+        case RuleRole::Quote:
+            rule.format = mQuotationFormat;
+            break;
+        case RuleRole::Symbol:
+            rule.format = mSymbolFormat;
+            break;
+    }
+}
 
+CodeEditor::CodeEditor(QWidget *parent) :
+    QPlainTextEdit(parent),
+    mWidgetStyle( new CodeEditorStyle( defaultStyleLight ))
+{
     mLineNumberArea = new LineNumberArea(this);
-    mHighlighter = new Highlighter(this->document(), mWidgetStyle);
+    mHighlighter = new Highlighter( document(), mWidgetStyle );
     mErrorPosition = -1;
 
-    // set widget coloring by overriding widget style sheet
-    QString bgcolor = QString("background:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetBGColor.red())
-                      .arg(mWidgetStyle->widgetBGColor.green())
-                      .arg(mWidgetStyle->widgetBGColor.blue());
-    QString fgcolor = QString("color:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetFGColor.red())
-                      .arg(mWidgetStyle->widgetFGColor.green())
-                      .arg(mWidgetStyle->widgetFGColor.blue());
-    QString style = QString("%1 %2")
-                    .arg(bgcolor)
-                    .arg(fgcolor);
-    setObjectName("CodeEditor");
-    setStyleSheet(style);
+    QFont font( "Monospace" );
+    font.setStyleHint( QFont::TypeWriter );
+    setFont( font );
 
-    setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    // set widget coloring by overriding widget style sheet
+    setObjectName("CodeEditor");
+    setStyleSheet( generateStyleString() );
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
 
     updateLineNumberAreaWidth(0);
+}
+
+CodeEditor::~CodeEditor()
+{
+    // NOTE: not a Qt Object - delete manually
+    delete mWidgetStyle;
 }
 
 static int getPos(const QString &fileData, int lineNumber)
@@ -180,6 +224,16 @@ static int getPos(const QString &fileData, int lineNumber)
             return pos + 1;
     }
     return fileData.size();
+}
+
+void CodeEditor::setStyle(const CodeEditorStyle& newStyle)
+{
+    *mWidgetStyle = newStyle;
+    // apply new styling
+    setStyleSheet( generateStyleString() );
+    mHighlighter->setStyle( newStyle );
+    mHighlighter->rehighlight();
+    highlightErrorLine();
 }
 
 void CodeEditor::setError(const QString &code, int errorLine, const QStringList &symbols)
@@ -242,7 +296,11 @@ void CodeEditor::highlightErrorLine()
     selection.format.setBackground(mWidgetStyle->highlightBGColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = QTextCursor(document());
-    selection.cursor.setPosition(mErrorPosition);
+    if( mErrorPosition >= 0 ) {
+        selection.cursor.setPosition(mErrorPosition);
+    } else {
+        selection.cursor.setPosition(0);
+    }
     selection.cursor.clearSelection();
     extraSelections.append(selection);
 
@@ -272,4 +330,20 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         bottom = top + (int) blockBoundingRect(block).height();
         ++blockNumber;
     }
+}
+
+QString CodeEditor::generateStyleString()
+{
+    QString bgcolor = QString("background:rgb(%1,%2,%3);")
+                      .arg(mWidgetStyle->widgetBGColor.red())
+                      .arg(mWidgetStyle->widgetBGColor.green())
+                      .arg(mWidgetStyle->widgetBGColor.blue());
+    QString fgcolor = QString("color:rgb(%1,%2,%3);")
+                      .arg(mWidgetStyle->widgetFGColor.red())
+                      .arg(mWidgetStyle->widgetFGColor.green())
+                      .arg(mWidgetStyle->widgetFGColor.blue());
+    QString style = QString("%1 %2")
+                    .arg(bgcolor)
+                    .arg(fgcolor);
+    return style;
 }

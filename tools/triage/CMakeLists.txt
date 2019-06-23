@@ -13,7 +13,13 @@ if (BUILD_GUI AND BUILD_TESTS)
     file(GLOB uis  "*.ui")
     qt5_wrap_ui(uis_hdrs ${uis})
 
-    add_executable(triage ${hdrs} ${srcs} ${uis_hdrs} ${PROJECT_SOURCE_DIR}/gui/codeeditor.cpp)
+    add_executable(
+        triage
+        ${hdrs}
+        ${srcs}
+        ${uis_hdrs}
+        ${PROJECT_SOURCE_DIR}/gui/codeeditorstyle.cpp
+        ${PROJECT_SOURCE_DIR}/gui/codeeditor.cpp)
     target_include_directories(triage PUBLIC ${PROJECT_SOURCE_DIR}/gui/)
     target_link_libraries(triage Qt5::Core Qt5::Gui Qt5::Widgets)
 

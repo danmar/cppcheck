@@ -108,6 +108,16 @@ public:
                         bool showInconclusive);
 
     /**
+     * @brief Update Code Editor Style
+     *
+     * Function will read updated Code Editor styling from
+     * stored program settings.
+     *
+     * @param settings Pointer to QSettings Object
+     */
+    void updateStyleSetting( QSettings *settings );
+
+    /**
     * @brief Set the directory we are checking
     *
     * This is used to split error file path to relative if necessary

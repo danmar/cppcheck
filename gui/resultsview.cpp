@@ -41,6 +41,7 @@
 #include "applicationlist.h"
 #include "checkstatistics.h"
 #include "path.h"
+#include "codeeditorstyle.h"
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
@@ -68,6 +69,9 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 {
     mUI.mProgress->setMinimum(0);
     mUI.mProgress->setVisible(false);
+
+    CodeEditorStyle theStyle( CodeEditorStyle::loadSettings( settings ));
+    mUI.mCode->setStyle( theStyle );
 
     QByteArray state = settings->value(SETTINGS_MAINWND_SPLITTER_STATE).toByteArray();
     mUI.mVerticalSplitter->restoreState(state);
@@ -234,6 +238,12 @@ void ResultsView::updateSettings(bool showFullPath,
 {
     mUI.mTree->updateSettings(showFullPath, saveFullPath, saveAllErrors, showErrorId, showInconclusive);
     mShowNoErrorsMessage = showNoErrorsMessage;
+}
+
+void ResultsView::updateStyleSetting( QSettings *settings )
+{
+    CodeEditorStyle theStyle( CodeEditorStyle::loadSettings( settings ));
+    mUI.mCode->setStyle( theStyle );
 }
 
 void ResultsView::setCheckDirectory(const QString &dir)

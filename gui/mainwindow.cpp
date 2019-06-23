@@ -1000,12 +1000,14 @@ void MainWindow::programSettings()
     SettingsDialog dialog(mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted) {
         dialog.saveSettingValues();
+        mSettings->sync();
         mUI.mResults->updateSettings(dialog.showFullPath(),
                                      dialog.saveFullPath(),
                                      dialog.saveAllErrors(),
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
+        mUI.mResults->updateStyleSetting( mSettings );
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }
