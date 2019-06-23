@@ -203,6 +203,7 @@ private:
         TEST_CASE(simplifyTemplateArgs);
 
         TEST_CASE(template_variadic_1); // #9144
+        TEST_CASE(template_variadic_2);
 
         TEST_CASE(template_variable_1);
         TEST_CASE(template_variable_2);
@@ -3433,11 +3434,13 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", "");
+        tokenizer.createTokens(istr, "test.cpp");
+        tokenizer.createLinks();
+        tokenizer.mTemplateSimplifier->fixAngleBrackets();
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
-            if (tok->str() == "var1")
-                (const_cast<Token *>(tok))->varId(1);
+        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
+            if (tok1->str() == "var1")
+                (const_cast<Token *>(tok1))->varId(1);
         }
 
         return TemplateSimplifier::templateParameters(tokenizer.tokens()->next());
@@ -3459,14 +3462,17 @@ private:
         ASSERT_EQUALS(2U, templateParameters("X<class, typename... T> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<int(&)(), class> x;"));
         ASSERT_EQUALS(3U, templateParameters("X<char, int(*)(), bool> x;"));
-        TODO_ASSERT_EQUALS(1U, 0U, templateParameters("X<int...> x;")); // Mishandled valid syntax
-        TODO_ASSERT_EQUALS(2U, 0U, templateParameters("X<class, typename...> x;")); // Mishandled valid syntax
+        ASSERT_EQUALS(1U, templateParameters("X<int...> x;"));
+        ASSERT_EQUALS(2U, templateParameters("X<class, typename...> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<1, T> x;"));
         ASSERT_EQUALS(1U, templateParameters("X<i == 0> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<int, i>=0> x;"));
         ASSERT_EQUALS(3U, templateParameters("X<int, i>=0, i - 2> x;"));
         ASSERT_EQUALS(0U, templateParameters("var1<1> x;"));
         ASSERT_EQUALS(0U, templateParameters("X<1>2;"));
+        ASSERT_EQUALS(2U, templateParameters("template<typename...B,typename=SameSize<B...>> x;"));
+        ASSERT_EQUALS(2U, templateParameters("template<typename...B,typename=SameSize<B...> > x;"));
+        ASSERT_EQUALS(2U, templateParameters("template<template<typename>...Foo,template<template<template<typename>>>> x;"));
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
@@ -3474,7 +3480,9 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", emptyString);
+        tokenizer.createTokens(istr, "test.cpp");
+        tokenizer.createLinks();
+        tokenizer.mTemplateSimplifier->fixAngleBrackets();
 
         const Token *_tok = tokenizer.tokens();
         for (unsigned i = 0 ; i < offset ; ++i)
@@ -3937,6 +3945,23 @@ private:
         const char expected[] = "struct e<> ; struct e<int,int> ; "
                                 "static_assert ( sizeof ( e<> ) == sizeof ( e<int,int> ) , \"\" ) ; "
                                 "struct e<> { } ; struct e<int,int> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void template_variadic_2() {
+        const char code[] = "template<class ... Types> struct Tuple {};\n"
+                            "Tuple<> t0;\n"
+                            "Tuple<int> t1;\n"
+                            "Tuple<int, float> t2;";
+        const char expected[] = "struct Tuple<> ; "
+                                "struct Tuple<int> ; "
+                                "struct Tuple<int,float> ; "
+                                "Tuple<> t0 ; "
+                                "Tuple<int> t1 ; "
+                                "Tuple<int,float> t2 ; "
+                                "struct Tuple<> { } ; "
+                                "struct Tuple<int> { } ; "
+                                "struct Tuple<int,float> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
