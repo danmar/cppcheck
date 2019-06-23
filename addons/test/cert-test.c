@@ -1,8 +1,5 @@
 // To test:
 // ~/cppcheck/cppcheck --dump cert-test.c && python ../cert.py -verify cert-test.c.dump
-#include <time.h>
-#include <stdlib.h>
-
 struct S {
     short a;
     short b;
@@ -64,13 +61,6 @@ void msc30()
     int a = rand;
 }
 
-void str05()
-{
-    char *str1 = "abc";         //cert-STR05-C
-    wchar_t *str2  = L"hello";  //cert-STR05-C
-}
-
-
 void str03()
 {
     char *string_data=(char*)malloc(16);
@@ -80,3 +70,17 @@ void str03()
     strncpy(a, string_data, 5); d=sizeof(int);
 }
 
+void str05()
+{
+    char *str1 = "abc";         //cert-STR05-C
+    wchar_t *str2  = L"hello";  //cert-STR05-C
+}
+
+void str07(char *buf, const char *newBuf)
+{
+    const char *str="test";
+    strcat(buf,"bla");
+    strcat(buf, str);    //cert-STR07-C
+    strcat(buf, newBuf); //cert-STR07-C
+    strcpy(str, newBuf); //cert-STR07-C
+}

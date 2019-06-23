@@ -69,18 +69,18 @@ make
 The recommended release build is:
 
 ```shell
-make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 Flags:
 
-1.  `SRCDIR=build`  
-    Python is used to optimise cppcheck
+1.  `MATCHCOMPILER=yes`
+    Python is used to optimise cppcheck. The Token::Match patterns are converted into C++ code at compile time.
 
-2.  `CFGDIR=cfg`  
+2.  `CFGDIR=cfg`
     Specify folder where .cfg files are found
 
-3.  `HAVE_RULES=yes`  
+3.  `HAVE_RULES=yes`
     Enable rules (PCRE is required if this is used)
 
 4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"`

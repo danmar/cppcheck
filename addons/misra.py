@@ -481,7 +481,27 @@ class Define:
         self.expansionList = res.group(2)
 
 
+def getAddonRules():
+    """Returns dict of MISRA rules handled by this addon."""
+    addon_rules = []
+    compiled = re.compile(r'.*def[ ]+misra_([0-9]+)_([0-9]+)[(].*')
+    for line in open(__file__):
+        res = compiled.match(line)
+        if res is None:
+            continue
+        addon_rules.append(res.group(1) + '.' + res.group(2))
+    return addon_rules
+
+
+def getCppcheckRules():
+    """Returns list of rules handled by cppcheck."""
+    return ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6',
+            '14.3', '17.5', '18.1', '18.2', '18.3', '18.6', '20.6',
+            '22.1', '22.2', '22.4', '22.6']
+
+
 def generateTable():
+    # print table
     numberOfRules = {}
     numberOfRules[1] = 3
     numberOfRules[2] = 7
@@ -506,23 +526,11 @@ def generateTable():
     numberOfRules[21] = 12
     numberOfRules[22] = 6
 
-    # what rules are handled by this addon?
-    addon = []
-    compiled = re.compile(r'.*def[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open(__file__):
-        res = compiled.match(line)
-        if res is None:
-            continue
-        addon.append(res.group(1) + '.' + res.group(2))
-
-    # rules handled by cppcheck
-    cppcheck = ['1.3', '2.1', '2.2', '2.4', '2.6', '8.3', '12.2', '13.2', '13.6', '14.3', '17.5',
-                '18.1', '18.2', '18.3', '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
-
-    # rules that can be checked with compilers
+    # Rules that can be checked with compilers:
     # compiler = ['1.1', '1.2']
 
-    # print table
+    addon = getAddonRules()
+    cppcheck = getCppcheckRules()
     for i1 in range(1, 23):
         for i2 in range(1, numberOfRules[i1] + 1):
             num = str(i1) + '.' + str(i2)
@@ -558,26 +566,39 @@ def remove_file_prefix(file_path, prefix):
         result = file_path
     return result
 
-class Rule:
-    """ Class to keep rule text and metadata """
+
+class Rule(object):
+    """Class to keep rule text and metadata"""
+
+    MISRA_SEVERIY_LEVELS = ['Required', 'Mandatory', 'Advisory']
+
     def __init__(self, num1, num2):
         self.num1 = num1
         self.num2 = num2
         self.text = ''
-        self.severity = 'style'
+        self.misra_severity = ''
 
     @property
     def num(self):
         return self.num1 * 100 + self.num2
 
     @property
+    def misra_severity(self):
+        return self._misra_severity
+
+    @misra_severity.setter
+    def misra_severity(self, val):
+        if val in self.MISRA_SEVERIY_LEVELS:
+            self._misra_severity = val
+        else:
+            self._misra_severity = ''
+
+    @property
     def cppcheck_severity(self):
-        return self.SEVERITY_MAP[self.severity]
+        return 'style'
 
     def __repr__(self):
-        return "%d.%d %s" % (self.num1, self.num2, self.severity)
-
-    SEVERITY_MAP = { 'Required': 'warning', 'Mandatory': 'error', 'Advisory': 'style', 'style': 'style' }
+        return "%d.%d (%s)" % (self.num1, self.num2, self.misra_severity)
 
 
 class MisraSettings(object):
@@ -2056,19 +2077,23 @@ class MisraChecker:
             return
         else:
             errorId = 'c2012-' + str(num1) + '.' + str(num2)
-            severity = 'style'
+            misra_severity = 'Undefined'
+            cppcheck_severity = 'style'
             if ruleNum in self.ruleTexts:
                 errmsg = self.ruleTexts[ruleNum].text
-                severity = self.ruleTexts[ruleNum].cppcheck_severity
+                if self.ruleTexts[ruleNum].misra_severity:
+                    misra_severity = self.ruleTexts[ruleNum].misra_severity
+                    errmsg += ''.join((' (', self.ruleTexts[ruleNum].misra_severity, ')'))
+                cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
-            cppcheckdata.reportError(location, severity, errmsg, 'misra', errorId)
+            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId)
 
-            if not severity in self.violations:
-                self.violations[severity] = []
-            self.violations[severity].append('misra-' + errorId)
+            if not misra_severity in self.violations:
+                self.violations[misra_severity] = []
+            self.violations[misra_severity].append('misra-' + errorId)
 
     def loadRuleTexts(self, filename):
         num1 = 0
@@ -2078,7 +2103,7 @@ class MisraChecker:
         expect_more = False
 
         Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
-        Choice_pattern = re.compile(r'^[ ]*(Advisory|Required|Mandatory)$')
+        Choice_pattern = re.compile(r'.*[ ]*(Advisory|Required|Mandatory)$')
         xA_Z_pattern = re.compile(r'^[#A-Z].*')
         a_z_pattern = re.compile(r'^[a-z].*')
         # Try to detect the file encoding
@@ -2125,7 +2150,7 @@ class MisraChecker:
                 rule = Rule(num1, num2)
                 res = Choice_pattern.match(line)
                 if res:
-                    self.ruleTexts[rule.num].severity = res.group(1)
+                    rule.misra_severity = res.group(1)
                 expect_more = False
                 continue
             if rule is None:
@@ -2147,6 +2172,22 @@ class MisraChecker:
                 expect_more = True
             else:
                 rule = None
+
+    def verifyRuleTexts(self):
+        """Prints rule numbers without rule text."""
+        rule_texts_rules = []
+        for rule_num in self.ruleTexts:
+            rule = self.ruleTexts[rule_num]
+            rule_texts_rules.append(str(rule.num1) + '.' + str(rule.num2))
+
+        all_rules = list(getAddonRules() + getCppcheckRules())
+
+        missing_rules = list(set(all_rules) - set(rule_texts_rules))
+        if len(missing_rules) == 0:
+            print("Rule texts are correct.")
+        else:
+            print("Missing rule texts: " + ', '.join(missing_rules))
+
 
     def printStatus(self, *args, **kwargs):
         if not self.settings.quiet:
@@ -2309,6 +2350,7 @@ def get_args():
     """Generates list of command-line arguments acceptable by misra.py script."""
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
+    parser.add_argument("--verify-rule-texts", help="Verify that all supported rules texts are present in given file and exit.", action="store_true")
     parser.add_argument("--suppress-rules", type=str, help=SUPPRESS_RULES_HELP)
     parser.add_argument("--quiet", help="Only print something when there is an error", action="store_true")
     parser.add_argument("--no-summary", help="Hide summary of violations", action="store_true")
@@ -2336,6 +2378,13 @@ def main():
             print('Fatal error: file is not found: ' + filename)
             sys.exit(1)
         checker.loadRuleTexts(filename)
+        if args.verify_rule_texts:
+            checker.verifyRuleTexts()
+            sys.exit(0)
+
+    if args.verify_rule_texts and not args.rule_texts:
+        print("Error: Please specify rule texts file with --rule-texts=<file>")
+        sys.exit(1)
 
     if args.suppress_rules:
         checker.setSuppressionList(args.suppress_rules)
@@ -2376,12 +2425,13 @@ def main():
                 exitCode = 1
 
                 if settings.show_summary:
-                    print("\nMISRA rule violations found: %s\n" % ("\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
+                    print("\nMISRA rules violations found:\n\t%s\n" % ("\n\t".join([ "%s: %d" % (viol, len(checker.get_violations(viol))) for viol in checker.get_violation_types()])))
+
                     rules_violated = {}
                     for severity, ids in checker.get_violations():
                         for misra_id in ids:
                             rules_violated[misra_id] = rules_violated.get(misra_id, 0) + 1
-                    print("Misra rules violated:")
+                    print("MISRA rules violated:")
                     convert = lambda text: int(text) if text.isdigit() else text
                     misra_sort = lambda key: [ convert(c) for c in re.split('[\.-]([0-9]*)', key) ]
                     for misra_id in sorted(rules_violated.keys(), key=misra_sort):
@@ -2392,7 +2442,7 @@ def main():
                             num = int(res.group(1)) * 100 + int(res.group(2))
                         severity = '-'
                         if num in checker.ruleTexts:
-                            severity = checker.ruleTexts[num].severity
+                            severity = checker.ruleTexts[num].cppcheck_severity
                         print("\t%15s (%s): %d" % (misra_id, severity, rules_violated[misra_id]))
 
         if args.show_suppressed_rules:
