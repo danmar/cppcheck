@@ -460,6 +460,7 @@ private:
     TokenList &mTokenList;
     const Settings *mSettings;
     ErrorLogger *mErrorLogger;
+    bool mChanged;
 
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;
