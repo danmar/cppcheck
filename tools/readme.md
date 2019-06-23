@@ -5,7 +5,7 @@
 The matchcompiler.py is a build script that performs a few code transformations to *.cpp* files under the *lib* directory. These transformations are related to the use of `Token::Match()` function and are intended to improve code performance. The transformed files are saved on the *build* directory. This tool is silently used when building the code with `SRCDIR=build`, that is:
 ```shell
 $ cd path/to/cppcheck
-$ make SRCDIR=build
+$ make MATCHCOMPILER=yes
 ```
 Here is a simple example of the *matchcompiler.py* optimization. Suppose there is a file *example.cpp* under *lib/*:
 ```cpp
