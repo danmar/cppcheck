@@ -61,6 +61,15 @@ void msc30()
     int a = rand;
 }
 
+void str03()
+{
+    char *string_data=(char*)malloc(16);
+    char a[16];
+    int d;
+    strncpy(a, string_data, sizeof(a));     //cert-STR03-C
+    strncpy(a, string_data, 5); d=sizeof(int);
+}
+
 void str05()
 {
     char *str1 = "abc";         //cert-STR05-C
