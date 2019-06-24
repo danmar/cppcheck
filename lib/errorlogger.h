@@ -68,7 +68,7 @@ public:
     /**
      * Message severities.
      */
-    enum SeverityType {
+    enum SeverityType : unsigned int {
         /**
          * No severity (default value).
          */

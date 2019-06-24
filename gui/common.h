@@ -91,7 +91,7 @@
 #define SETTINGS_OPEN_PROJECT           "Open Project"
 
 // The maximum value for the progress bar
-#define PROGRESS_MAX                    1024.0
+#define PROGRESS_MAX                    1024
 
 #define SETTINGS_CHECKED_PLATFORM       "Checked platform"
 

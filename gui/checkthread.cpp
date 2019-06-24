@@ -197,7 +197,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
                 if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {
                     QTextStream in1(&f1);
-                    const quint16 oldchksum = in1.readAll().toInt();
+                    const quint16 oldchksum = static_cast<quint16>(in1.readAll().toUInt());
                     if (oldchksum == chksum) {
                         QFile f2(analyzerInfoFile + '.' + addon + "-results");
                         if (f2.open(QIODevice::ReadOnly | QIODevice::Text)) {

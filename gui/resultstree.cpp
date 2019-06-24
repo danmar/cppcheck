@@ -182,7 +182,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["hide"] = false;
-    data["severity"]  = ShowTypes::SeverityToShowType(item.severity);
+    data["severity"]  = static_cast<unsigned int>(ShowTypes::SeverityToShowType(item.severity));
     data["summary"] = item.summary;
     data["message"]  = item.message;
     data["file"]  = loc.file;
@@ -214,7 +214,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 
             //Add user data to that item
             QMap<QString, QVariant> child_data;
-            child_data["severity"]  = ShowTypes::SeverityToShowType(line.severity);
+            child_data["severity"]  = static_cast<unsigned int>(ShowTypes::SeverityToShowType(line.severity));
             child_data["summary"] = line.summary;
             child_data["message"]  = line.message;
             child_data["file"]  = e.file;

@@ -99,7 +99,7 @@ void StatsDialog::setNumberOfFilesScanned(int num)
 void StatsDialog::setScanDuration(double seconds)
 {
     // Factor the duration into units (days/hours/minutes/seconds)
-    int secs = seconds;
+    int secs = static_cast<int>(seconds);
     int days = secs / (24 * 60 * 60);
     secs -= days * (24 * 60 * 60);
     int hours = secs / (60 * 60);

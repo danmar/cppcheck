@@ -195,7 +195,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         platform.mActMainWindow = action;
         mPlatforms.mPlatforms[i] = platform;
         action->setText(platform.mTitle);
-        action->setData(platform.mType);
+        action->setData(static_cast<int>( platform.mType ));
         action->setCheckable(true);
         action->setActionGroup(mPlatformActions);
         mUI.mMenuAnalyze->insertAction(mUI.mActionPlatforms, action);
@@ -224,7 +224,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 #else
     const Settings::PlatformType defaultPlatform = Settings::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    int nPlatformDefault = static_cast<int>(defaultPlatform);
+    int nPlatformType = mSettings->value(SETTINGS_CHECKED_PLATFORM, nPlatformDefault).toInt();
+    Platform &platform = mPlatforms.get( static_cast<Settings::PlatformType>( nPlatformType ));
     platform.mActMainWindow->setChecked(true);
 }
 
@@ -310,7 +312,8 @@ void MainWindow::loadSettings()
     mUI.mActionToolBarFilter->setChecked(showFilterToolbar);
     mUI.mToolBarFilter->setVisible(showFilterToolbar);
 
-    Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    int nEnforcedLang = mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    Settings::Language enforcedLanguage = static_cast<Settings::Language>(nEnforcedLang);
     if (enforcedLanguage == Settings::CPP)
         mUI.mActionEnforceCpp->setChecked(true);
     else if (enforcedLanguage == Settings::C)
@@ -383,11 +386,11 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_TOOLBARS_FILTER_SHOW, mUI.mToolBarFilter->isVisible());
 
     if (mUI.mActionEnforceCpp->isChecked())
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::CPP);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, static_cast<int>(Settings::CPP));
     else if (mUI.mActionEnforceC->isChecked())
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::C);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, static_cast<int>(Settings::C));
     else
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::None);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, static_cast<int>(Settings::None));
 
     mApplications->saveSettings();
 
@@ -411,7 +414,8 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            int nPlatformType = mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            Settings::PlatformType platform = static_cast<Settings::PlatformType>(nPlatformType);
             p.selectOneVsConfig(platform);
         }
     } else {
@@ -421,7 +425,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     mUI.mResults->clear(true);
     mThread->clearFiles();
 
-    mUI.mResults->checkingStarted(p.fileSettings.size());
+    mUI.mResults->checkingStarted(static_cast<int>(p.fileSettings.size()));
 
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
@@ -910,10 +914,14 @@ Settings MainWindow::getCppcheckSettings()
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
     if (result.platformType == cppcheck::Platform::Unspecified)
-        result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
+    {
+        int nResultPlatform = mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+        result.platform(static_cast<cppcheck::Platform::PlatformType>(nResultPlatform));
+    }
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    int nResultEnforcedLang = mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    result.enforcedLang = static_cast<Settings::Language>(nResultEnforcedLang);
 
     if (result.jobs <= 1) {
         result.jobs = 1;
@@ -1725,8 +1733,8 @@ void MainWindow::selectPlatform()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
-        mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
+        // action->data() - Selected Platform Type - loaded at initialization
+        mSettings->setValue(SETTINGS_CHECKED_PLATFORM, action->data().toInt());
     }
 }
 
