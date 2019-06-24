@@ -206,6 +206,26 @@ TemplateSimplifier::~TemplateSimplifier()
 {
 }
 
+void TemplateSimplifier::fixAngleBrackets()
+{
+    for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+        // Ticket #6181: normalize C++11 template parameter list closing syntax
+        if (tok->str() == "<" && templateParameters(tok)) {
+            Token *endTok = tok->findClosingBracket();
+            if (endTok && endTok->str() == ">>") {
+                endTok->str(">");
+                endTok->insertToken(">");
+            }
+        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
+            Token *endTok = tok->tokAt(2)->findClosingBracket();
+            if (Token::Match(endTok, ">> ;|{")) {
+                endTok->str(">");
+                endTok->insertToken(">");
+            }
+        }
+    }
+}
+
 void TemplateSimplifier::cleanupAfterSimplify()
 {
     bool goback = false;
@@ -377,9 +397,27 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         // skip template template
         if (level == 0 && Token::simpleMatch(tok, "template <")) {
             const Token *closing = tok->next()->findClosingBracket();
-            if (closing)
+            if (closing) {
+                if (closing->str() == ">>") {
+                    if (level == 0)
+                        return numberOfParameters;
+                    else if (level == 1)
+                        return numberOfParameters;
+                    --level;
+                }
                 tok = closing->next();
-            else
+                if (tok->str() == ">") {
+                    if (level == 0)
+                        return numberOfParameters;
+                    --level;
+                } else if (tok->str() == ">>") {
+                    if (level == 0)
+                        return numberOfParameters;
+                    else if (level == 1)
+                        return numberOfParameters;
+                    --level;
+                }
+            } else
                 return 0;
         }
 
@@ -396,9 +434,25 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             tok = tok->next();
 
         // Skip variadic types (Ticket #5774, #6059, #6172)
-        if (Token::Match(tok, "%type% . . .")) {
-            tok = tok->tokAt(4);
-            continue;
+        if (Token::Match(tok, ". . .")) {
+            if ((tok->previous()->isName() && !Token::Match(tok->tokAt(-2), "<|,")) ||
+                (!tok->previous()->isName() && tok->strAt(-1) != ">"))
+                return 0; // syntax error
+            tok = tok->tokAt(3);
+            if (!tok)
+                return 0;
+            if (tok->str() == ">") {
+                if (level == 0)
+                    return numberOfParameters;
+                --level;
+            } else if (tok->str() == ">>") {
+                if (level == 1)
+                    return numberOfParameters;
+            } else if (tok->str() == "," && level == 0) {
+                ++numberOfParameters;
+                tok = tok->next();
+                continue;
+            }
         }
 
         // Skip '=', '?', ':'
@@ -415,6 +469,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             if (!tok)
                 return 0;
             if (tok->str() == ">" && level == 0)
+                return numberOfParameters;
+            else if (tok->str() == ">>" && level == 1)
                 return numberOfParameters;
             else if (tok->str() == "," && level == 0) {
                 ++numberOfParameters;
@@ -1410,8 +1466,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateClass(const Token *tok, 
 
 int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
 {
-    // FIXME: tok == ">>" is a tokenizer bug that needs to be fixed
-    assert(tok && (tok->str() == ">" || tok->str() == ">>"));
+    assert(tok && tok->str() == ">");
 
     auto it = mTemplateNamePos.find(tok);
     if (!mSettings->debugtemplate && it != mTemplateNamePos.end()) {
@@ -3291,6 +3346,9 @@ void TemplateSimplifier::simplifyTemplates(
     const std::time_t maxtime,
     bool &codeWithTemplates)
 {
+    // split ">>" into "> >"
+    fixAngleBrackets();
+
     // Remove "typename" unless used in template arguments or using type alias..
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "typename %name%") && !Token::Match(tok->tokAt(-3), "using %name% ="))
