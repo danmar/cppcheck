@@ -2083,13 +2083,12 @@ class MisraChecker:
                 errmsg = self.ruleTexts[ruleNum].text
                 if self.ruleTexts[ruleNum].misra_severity:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
-                    errmsg += ''.join((' (', self.ruleTexts[ruleNum].misra_severity, ')'))
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
-            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId)
+            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
 
             if not misra_severity in self.violations:
                 self.violations[misra_severity] = []
