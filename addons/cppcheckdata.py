@@ -9,6 +9,7 @@ License: No restrictions, use this as you need.
 import xml.etree.ElementTree as ET
 import argparse
 from fnmatch import fnmatch
+import json
 import sys
 
 
@@ -847,11 +848,19 @@ def simpleMatch(token, pattern):
     return True
 
 
-def reportError(location, severity, message, addon, errorId):
+def reportError(location, severity, message, addon, errorId, extra=''):
     if '--cli' in sys.argv:
-        errout = sys.stdout
-        loc = '[%s:%i:%i]' % (location.file, location.linenr, location.col)
+        msg = { 'file': location.file,
+                'linenr': location.linenr,
+                'col': location.col,
+                'severity': severity,
+                'message': message,
+                'addon': addon,
+                'errorId': errorId,
+                'extra': extra}
+        sys.stdout.write(json.dumps(msg) + '\n')
     else:
-        errout = sys.stderr
         loc = '[%s:%i]' % (location.file, location.linenr)
-    errout.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
+        if len(extra) > 0:
+            message += ' (' + extra + ')'
+        sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
