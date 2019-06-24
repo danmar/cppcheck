@@ -368,6 +368,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     if (Token::Match(tok->previous(), "%var% <"))
         return 0;
     tok = tok->next();
+    if (tok->str() == ">")
+        return 0;
 
     unsigned int level = 0;
 
@@ -900,8 +902,8 @@ void TemplateSimplifier::getTemplateInstantiations()
             // parse backwards and add template instantiations
             // TODO
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
-                if (Token::Match(tok2, ", %name% <") &&
-                    templateParameters(tok2->tokAt(2))) {
+                if (Token::Match(tok2, ",|< %name% <") &&
+                    (tok2->strAt(3) == ">" || templateParameters(tok2->tokAt(2)))) {
                     addInstantiation(tok2->next(), getScopeName(scopeList));
                 } else if (Token::Match(tok2->next(), "class|struct"))
                     tok2->deleteNext();

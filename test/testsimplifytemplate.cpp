@@ -154,6 +154,7 @@ private:
         TEST_CASE(template114); // #9155
         TEST_CASE(template115); // #9153
         TEST_CASE(template116); // #9178
+        TEST_CASE(template117);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -945,19 +946,19 @@ private:
                             "    A<A<BLA>>   gna1;\n"
                             "    A<BLA>      gna2;\n"
                             "}\n";
-        const char expected[] = "class A<A<BLA>> ; "
-                                "class A<BLA> ; "
+        const char expected[] = "class A<BLA> ; "
+                                "class A<A<BLA>> ; "
                                 "int main ( ) { "
                                 "A<A<BLA>> gna1 ; "
                                 "A<BLA> gna2 ; "
                                 "} "
-                                "class A<A<BLA>> { "
-                                "A<BLA> mT ; "
+                                "class A<BLA> { "
+                                "BLA mT ; "
                                 "public: "
                                 "void foo ( ) { } "
                                 "} ; "
-                                "class A<BLA> { "
-                                "BLA mT ; "
+                                "class A<A<BLA>> { "
+                                "A<BLA> mT ; "
                                 "public: "
                                 "void foo ( ) { } "
                                 "} ;";
@@ -2760,6 +2761,17 @@ private:
                             "template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){}";
         const char exp[] = "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) ; "
                            "template < class , class a > auto b ( ) . decltype ( a { } . template b < void ( int , int ) > ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template117() {
+        const char code[] = "template<typename T = void> struct X {};\n"
+                            "X<X<>> x;";
+        const char exp[] = "struct X<void> ; "
+                           "struct X<X<void>> ; "
+                           "X<X<void>> x ; "
+                           "struct X<void> { } ; "
+                           "struct X<X<void>> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
