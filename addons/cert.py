@@ -257,6 +257,17 @@ def msc30(data):
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
             reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
+# STR03-C
+# Do not inadvertently truncate a string
+def str03(data):
+    for token in data.tokenlist:
+        if not isFunctionCall(token, 'strncpy'):
+            continue
+        arguments = cppcheckdata.getArguments(token)
+        if len(arguments)!=3:
+            continue
+        if arguments[2].str=='(' and arguments[2].astOperand1.str=='sizeof':
+            reportError(token, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
 
 # STR05-C
 # Use pointers to const when referring to string literals
@@ -309,6 +320,7 @@ for arg in sys.argv[1:]:
         exp42(cfg)
         exp46(cfg)
         int31(cfg, data.platform)
+        str03(cfg)
         str05(cfg)
         str07(cfg)
         msc24(cfg)
