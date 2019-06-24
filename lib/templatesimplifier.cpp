@@ -1353,7 +1353,14 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
     while (tok && tok->next()) {
         if (Token::Match(tok->next(), ";|{|(|using"))
             return false;
-        else if (Token::Match(tok->next(), "%type% <")) {
+        // skip decltype(...)
+        else if (Token::simpleMatch(tok->next(), "decltype (")) {
+            const Token * end = tok->next()->linkAt(1);
+            while (tok && tok->next() && tok != end) {
+                tok = tok->next();
+                namepos++;
+            }
+        } else if (Token::Match(tok->next(), "%type% <")) {
             const Token *closing = tok->tokAt(2)->findClosingBracket();
             if (closing) {
                 if (Token::Match(closing->next(), "=|;"))
@@ -2748,7 +2755,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
 
         if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
-            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : isVar ? ";|%op%" : "*|&|::| %name%")))
+            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%")))
             continue;
 
         // New type..
@@ -2810,7 +2817,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
 
         if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
-            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : isVar ? ";|%op%" : "*|&|::| %name%")))
+            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%")))
             return false;
 
         // already simplified

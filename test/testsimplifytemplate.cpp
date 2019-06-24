@@ -208,6 +208,7 @@ private:
         TEST_CASE(template_variable_1);
         TEST_CASE(template_variable_2);
         TEST_CASE(template_variable_3);
+        TEST_CASE(template_variable_4);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -4052,6 +4053,16 @@ private:
         }
     }
 
+    void template_variable_4() {
+        const char code[] = "template<typename T> void test() { }\n"
+                            "template<typename T> decltype(test<T>)* foo = &(test<T>);\n"
+                            "void bar() { foo<int>(); }";
+        const char expected[] = "void test<int> ( ) ; "
+                                "decltype ( test<int> ) * foo<int> = & ( test<int> ) ; "
+                                "void bar ( ) { foo<int> ( ) ; } "
+                                "void test<int> ( ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
 };
 
 REGISTER_TEST(TestSimplifyTemplate)
