@@ -194,6 +194,7 @@ CodeEditor::CodeEditor(QWidget *parent) :
     QFont font("Monospace");
     font.setStyleHint(QFont::TypeWriter);
     setFont(font);
+    mLineNumberArea->setFont(font);
 
     // set widget coloring by overriding widget style sheet
     setObjectName("CodeEditor");
