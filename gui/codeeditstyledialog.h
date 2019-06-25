@@ -25,12 +25,11 @@
 #include "codeeditor.h"
 #include "codeeditorstyle.h"
 
-class StyleEditDialog : public QDialog
-{
+class StyleEditDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit StyleEditDialog( const CodeEditorStyle& newStyle,
-                              QWidget *parent = nullptr);
+    explicit StyleEditDialog(const CodeEditorStyle& newStyle,
+                             QWidget *parent = nullptr);
     virtual ~StyleEditDialog() {};
 
     CodeEditorStyle getStyle();
@@ -43,22 +42,22 @@ public slots:
     void resetStyle();
     void setStyleDefaultLight();
     void setStyleDefaultDark();
-    void colorChangedWidgetFG( QColor& newColor );
-    void colorChangedWidgetBG( QColor& newColor );
-    void colorChangedHighlightBG( QColor& newColor );
-    void colorChangedLineNumFG( QColor& newColor );
-    void colorChangedLineNumBG( QColor& newColor );
-    void colorChangedKeywordFG( QColor& newColor );
-    void weightChangedKeyword( QFont::Weight& newWeight );
-    void colorChangedClassFG( QColor& newColor );
-    void weightChangedClass( QFont::Weight& newWeight );
-    void colorChangedQuoteFG( QColor& newColor );
-    void weightChangedQuote( QFont::Weight& newWeight );
-    void colorChangedCommentFG( QColor& newColor );
-    void weightChangedComment( QFont::Weight& newWeight );
-    void colorChangedSymbolFG( QColor& newColor );
-    void colorChangedSymbolBG( QColor& newColor );
-    void weightChangedSymbol( QFont::Weight& newWeight );
+    void colorChangedWidgetFG(QColor& newColor);
+    void colorChangedWidgetBG(QColor& newColor);
+    void colorChangedHighlightBG(QColor& newColor);
+    void colorChangedLineNumFG(QColor& newColor);
+    void colorChangedLineNumBG(QColor& newColor);
+    void colorChangedKeywordFG(QColor& newColor);
+    void weightChangedKeyword(QFont::Weight& newWeight);
+    void colorChangedClassFG(QColor& newColor);
+    void weightChangedClass(QFont::Weight& newWeight);
+    void colorChangedQuoteFG(QColor& newColor);
+    void weightChangedQuote(QFont::Weight& newWeight);
+    void colorChangedCommentFG(QColor& newColor);
+    void weightChangedComment(QFont::Weight& newWeight);
+    void colorChangedSymbolFG(QColor& newColor);
+    void colorChangedSymbolBG(QColor& newColor);
+    void weightChangedSymbol(QFont::Weight& newWeight);
 
 private:
     CodeEditorStyle         mStyleIncoming;

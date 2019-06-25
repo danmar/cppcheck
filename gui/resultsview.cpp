@@ -70,8 +70,8 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
     mUI.mProgress->setMinimum(0);
     mUI.mProgress->setVisible(false);
 
-    CodeEditorStyle theStyle( CodeEditorStyle::loadSettings( settings ));
-    mUI.mCode->setStyle( theStyle );
+    CodeEditorStyle theStyle(CodeEditorStyle::loadSettings(settings));
+    mUI.mCode->setStyle(theStyle);
 
     QByteArray state = settings->value(SETTINGS_MAINWND_SPLITTER_STATE).toByteArray();
     mUI.mVerticalSplitter->restoreState(state);
@@ -240,10 +240,10 @@ void ResultsView::updateSettings(bool showFullPath,
     mShowNoErrorsMessage = showNoErrorsMessage;
 }
 
-void ResultsView::updateStyleSetting( QSettings *settings )
+void ResultsView::updateStyleSetting(QSettings *settings)
 {
-    CodeEditorStyle theStyle( CodeEditorStyle::loadSettings( settings ));
-    mUI.mCode->setStyle( theStyle );
+    CodeEditorStyle theStyle(CodeEditorStyle::loadSettings(settings));
+    mUI.mCode->setStyle(theStyle);
 }
 
 void ResultsView::setCheckDirectory(const QString &dir)

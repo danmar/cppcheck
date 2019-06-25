@@ -115,7 +115,7 @@ public:
      *
      * @param settings Pointer to QSettings Object
      */
-    void updateStyleSetting( QSettings *settings );
+    void updateStyleSetting(QSettings *settings);
 
     /**
     * @brief Set the directory we are checking
