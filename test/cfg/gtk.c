@@ -50,6 +50,9 @@ void validCode(int argInt)
     gchar * pGchar1 = g_strconcat("a", "b", NULL);
     printf("%s", pGchar1);
     g_free(pGchar1);
+
+    GError * pGerror = g_error_new(1, -2, "a %d", 1);
+    g_error_free(pGerror);
 }
 
 void g_malloc_test()
@@ -118,6 +121,22 @@ void g_try_new0_test()
     g_try_new0(struct a, 1);
 
     struct a * pNew2 = g_try_new0(struct a, 2);
+    printf("%p", pNew2);
+    // cppcheck-suppress memleak
+}
+
+void g_error_new_test()
+{
+    // valid
+    GError * pNew1 = g_error_new(1, -2, "a %d", 1);
+    printf("%p", pNew1);
+    g_error_free(pNew1);
+
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress leakReturnValNotUsed
+    g_error_new(1, -2, "a %d", 1);
+
+    GError * pNew2 = g_error_new(1, -2, "a %d", 1);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
