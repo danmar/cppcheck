@@ -61,10 +61,13 @@ void msc30()
     int a = rand;
 }
 
-void str11()
+void str03()
 {
-    const char str[3]="abc";    //cert-STR11-C
-    const char *x[10]; x[3]="def";
+    char *string_data=(char*)malloc(16);
+    char a[16];
+    int d;
+    strncpy(a, string_data, sizeof(a));     //cert-STR03-C
+    strncpy(a, string_data, 5); d=sizeof(int);
 }
 
 void str05()
@@ -81,3 +84,10 @@ void str07(char *buf, const char *newBuf)
     strcat(buf, newBuf); //cert-STR07-C
     strcpy(str, newBuf); //cert-STR07-C
 }
+
+void str11()
+{
+    const char str[3]="abc";    //cert-STR11-C
+    const char *x[10]; x[3]="def";
+}
+

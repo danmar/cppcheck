@@ -924,7 +924,7 @@ class MisraChecker:
             e_token = scope.bodyStart.next
             while e_token != scope.bodyEnd:
                 if e_token.str == '(':
-                    e_token.str == e_token.link
+                    e_token.str = e_token.link
                     continue
                 if not e_token.previous.str in ',{':
                     e_token = e_token.next
@@ -1874,7 +1874,8 @@ class MisraChecker:
         normalized_filename = None
 
         if fileName is not None:
-            normalized_filename = os.path.normpath(fileName)
+            normalized_filename = os.path.expanduser(fileName)
+            normalized_filename = os.path.normpath(normalized_filename)
 
         if lineNumber is not None or symbolName is not None:
             line_symbol = (lineNumber, symbolName)
@@ -2083,13 +2084,12 @@ class MisraChecker:
                 errmsg = self.ruleTexts[ruleNum].text
                 if self.ruleTexts[ruleNum].misra_severity:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
-                    errmsg += ''.join((' (', self.ruleTexts[ruleNum].misra_severity, ')'))
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
-            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId)
+            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
 
             if not misra_severity in self.violations:
                 self.violations[misra_severity] = []
@@ -2373,7 +2373,8 @@ def main():
         sys.exit(0)
 
     if args.rule_texts:
-        filename = os.path.normpath(args.rule_texts)
+        filename = os.path.expanduser(args.rule_texts)
+        filename = os.path.normpath(filename)
         if not os.path.isfile(filename):
             print('Fatal error: file is not found: ' + filename)
             sys.exit(1)

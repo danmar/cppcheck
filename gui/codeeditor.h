@@ -24,7 +24,7 @@ public:
 
     void setSymbols(const QStringList &symbols);
 
-    void setStyle( const CodeEditorStyle &newStyle );
+    void setStyle(const CodeEditorStyle &newStyle);
 
 protected:
     void highlightBlock(const QString &text) override;
@@ -43,7 +43,7 @@ private:
         RuleRole ruleRole;
     };
 
-    void applyFormat( HighlightingRule &rule );
+    void applyFormat(HighlightingRule &rule);
 
     QVector<HighlightingRule> mHighlightingRules;
     QVector<HighlightingRule> mHighlightingRulesWithSymbols;

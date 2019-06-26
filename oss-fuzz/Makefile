@@ -6,7 +6,7 @@
 # make CXX=clang++-6.0 CXXFLAGS="-fsanitize=address" fuzz-client
 
 CPPCHECK_DIR=..
-INCLUDE_DIR=-I ${CPPCHECK_DIR}/lib -I ${CPPCHECK_DIR}/externals/simplecpp -I ${CPPCHECK_DIR}/externals/tinyxml
+INCLUDE_DIR=-I ${CPPCHECK_DIR}/lib -I ${CPPCHECK_DIR}/externals/simplecpp -I ${CPPCHECK_DIR}/externals/tinyxml -I ${CPPCHECK_DIR}/externals
 SRC_FILES=main.cpp type2.cpp ${CPPCHECK_DIR}/externals/simplecpp/simplecpp.cpp ${CPPCHECK_DIR}/externals/tinyxml/tinyxml2.cpp ${CPPCHECK_DIR}/lib/*.cpp
 
 all:	oss-fuzz-client	translate

@@ -32,6 +32,7 @@
 #include "tokenlist.h"
 #include "version.h"
 
+#define PICOJSON_USE_INT64
 #include <picojson.h>
 #include <simplecpp.h>
 #include <tinyxml2.h>
@@ -617,66 +618,36 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     reportOut(failedToGetAddonInfo);
                     continue;
                 }
-                const std::string &results = executeAddon(addonInfo, dumpFile);
-                for (std::string::size_type pos = 0; pos < results.size();) {
-                    const std::string::size_type pos2 = results.find("\n", pos);
-                    if (pos2 == std::string::npos)
-                        break;
+                const std::string results = executeAddon(addonInfo, dumpFile);
+                std::istringstream istr(results);
+                std::string line;
 
-                    const std::string::size_type pos1 = pos;
-                    pos = pos2 + 1;
-
-                    if (pos1 + 5 > pos2)
-                        continue;
-                    if (results[pos1] != '[')
-                        continue;
-                    if (results[pos2-1] != ']')
+                while (std::getline(istr, line)) {
+                    if (line.compare(0,1,"{") != 0)
                         continue;
 
-                    // Example line:
-                    // [test.cpp:123]: (style) some problem [abc-someProblem]
-                    const std::string line = results.substr(pos1, pos2-pos1);
-
-                    // Line must start with [filename:line:column]: (
-                    const std::string::size_type loc1 = 1;
-                    const std::string::size_type loc4 = line.find("]");
-                    if (loc4 + 5 >= line.size() || line.compare(loc4, 3, "] (", 0, 3) != 0)
-                        continue;
-                    const std::string::size_type loc3 = line.rfind(':', loc4);
-                    if (loc3 == std::string::npos)
-                        continue;
-                    const std::string::size_type loc2 = line.rfind(':', loc3 - 1);
-                    if (loc2 == std::string::npos)
+                    picojson::value res;
+                    std::istringstream istr2(line);
+                    istr2 >> res;
+                    if (!res.is<picojson::object>())
                         continue;
 
-                    // Then there must be a (severity)
-                    const std::string::size_type sev1 = loc4 + 3;
-                    const std::string::size_type sev2 = line.find(")", sev1);
-                    if (sev2 == std::string::npos)
-                        continue;
+                    picojson::object obj = res.get<picojson::object>();
 
-                    // line must end with [addon-x]
-                    const std::string::size_type id1 = line.rfind("[" + addonInfo.name + "-");
-                    if (id1 == std::string::npos || id1 < sev2)
-                        continue;
+                    const std::string filename = obj["file"].get<std::string>();
+                    const int64_t lineNumber = obj["linenr"].get<int64_t>();
+                    const int64_t column = obj["col"].get<int64_t>();
 
                     ErrorLogger::ErrorMessage errmsg;
 
-                    const std::string filename = line.substr(loc1, loc2-loc1);
-                    const int lineNumber = std::atoi(line.c_str() + loc2 + 1);
-                    const int column = std::atoi(line.c_str() + loc3 + 1);
                     errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
                     errmsg._callStack.back().col = column;
 
-                    errmsg._id = line.substr(id1+1, line.size()-id1-2);
-                    std::string text = line.substr(sev2 + 2, id1 - sev2 - 2);
-                    if (text[0] == ' ')
-                        text = text.substr(1);
-                    if (endsWith(text, " ", 1))
-                        text = text.erase(text.size() - 1);
+                    errmsg._id = obj["errorId"].get<std::string>();
+                    const std::string text = obj["message"].get<std::string>();
                     errmsg.setmsg(text);
-                    const std::string sev = line.substr(sev1, sev2-sev1);
-                    errmsg._severity = Severity::fromString(sev);
+                    const std::string severity = obj["severity"].get<std::string>();
+                    errmsg._severity = Severity::fromString(severity);
                     if (errmsg._severity == Severity::SeverityType::none)
                         continue;
                     errmsg.file0 = filename;
