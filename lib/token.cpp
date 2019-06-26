@@ -1044,7 +1044,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                 }
 
                 // New scope is opening, record it here
-                ScopeInfo2* newScopeInfo = new ScopeInfo2(mImpl->mScopeInfo->name, nullptr, mImpl->mScopeInfo->usingNamespaces);
+                std::shared_ptr<ScopeInfo2> newScopeInfo = std::make_shared<ScopeInfo2>(mImpl->mScopeInfo->name, nullptr, mImpl->mScopeInfo->usingNamespaces);
 
                 if (newScopeInfo->name != "") newScopeInfo->name.append(" :: ");
                 newScopeInfo->name.append(nextScopeNameAddition);
@@ -1924,10 +1924,10 @@ std::string Token::typeStr(const Token* tok)
     return r.first->stringifyList(r.second, false);
 }
 
-void Token::scopeInfo(ScopeInfo2* newScopeInfo) {
+void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo) {
     mImpl->mScopeInfo = newScopeInfo;
 }
-ScopeInfo2* Token::scopeInfo() const {
+std::shared_ptr<ScopeInfo2> Token::scopeInfo() const {
     return mImpl->mScopeInfo;
 }
 
