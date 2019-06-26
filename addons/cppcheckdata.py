@@ -9,6 +9,7 @@ License: No restrictions, use this as you need.
 import xml.etree.ElementTree as ET
 import argparse
 from fnmatch import fnmatch
+import json
 import sys
 
 
@@ -490,11 +491,11 @@ class ValueFlow:
             if self.condition:
                 self.condition = int(self.condition)
             if element.get('known'):
-                valueKind = 'known'
+                self.valueKind = 'known'
             elif element.get('possible'):
-                valueKind = 'possible'
+                self.valueKind = 'possible'
             if element.get('inconclusive'):
-                inconclusive = 'known'
+                self.inconclusive = True
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -757,6 +758,25 @@ class CppcheckData:
                 self.configurations.append(Configuration(cfgnode))
 
 
+# Get function arguments
+def getArgumentsRecursive(tok, arguments):
+    if tok is None:
+        return
+    if tok.str == ',':
+        getArgumentsRecursive(tok.astOperand1, arguments)
+        getArgumentsRecursive(tok.astOperand2, arguments)
+    else:
+        arguments.append(tok)
+
+
+def getArguments(ftok):
+    if (not ftok.isName) or (ftok.next is None) or ftok.next.str != '(':
+        return None
+    args = []
+    getArgumentsRecursive(ftok.next.astOperand2, args)
+    return args
+
+
 def parsedump(filename):
     """
     parse a cppcheck dump file
@@ -828,11 +848,19 @@ def simpleMatch(token, pattern):
     return True
 
 
-def reportError(location, severity, message, addon, errorId):
+def reportError(location, severity, message, addon, errorId, extra=''):
     if '--cli' in sys.argv:
-        errout = sys.stdout
-        loc = '[%s:%i:%i]' % (location.file, location.linenr, location.col)
+        msg = { 'file': location.file,
+                'linenr': location.linenr,
+                'col': location.col,
+                'severity': severity,
+                'message': message,
+                'addon': addon,
+                'errorId': errorId,
+                'extra': extra}
+        sys.stdout.write(json.dumps(msg) + '\n')
     else:
-        errout = sys.stderr
         loc = '[%s:%i]' % (location.file, location.linenr)
-    errout.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
+        if len(extra) > 0:
+            message += ' (' + extra + ')'
+        sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))

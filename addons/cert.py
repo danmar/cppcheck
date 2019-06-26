@@ -82,21 +82,18 @@ def isStandardFunction(token):
                 return False
     return True
 
-# Get function arguments
-def getArgumentsRecursive(tok, arguments):
-    if tok is None:
-        return
-    if tok.str == ',':
-        getArgumentsRecursive(tok.astOperand1, arguments)
-        getArgumentsRecursive(tok.astOperand2, arguments)
-    else:
-        arguments.append(tok)
+# Is this a function call
+def isFunctionCall(token, function_names, number_of_arguments=None):
+    if not token.isName:
+        return False
+    if token.str not in function_names:
+        return False
+    if (token.next is None) or token.next.str != '(' or token.next != token.astParent:
+        return False
+    if number_of_arguments is None:
+        return True
+    return len(cppcheckdata.getArguments(token)) == number_of_arguments
 
-
-def getArguments(ftok):
-    arguments = []
-    getArgumentsRecursive(ftok.astOperand2, arguments)
-    return arguments
 
 # EXP05-C
 # do not attempt to cast away const
@@ -120,7 +117,7 @@ def exp05(data):
 
         elif token.str == '(' and token.astOperand1 and token.astOperand2 and token.astOperand1.function:
             function = token.astOperand1.function
-            arguments = getArguments(token)
+            arguments = cppcheckdata.getArguments(token.previous)
             for argnr, argvar in function.argument.items():
                 if argnr < 1 or argnr > len(arguments):
                     continue
@@ -243,6 +240,17 @@ def msc30(data):
         if simpleMatch(token, "rand ( )") and isStandardFunction(token):
             reportError(token, 'style', 'Do not use the rand() function for generating pseudorandom numbers', 'MSC30-c')
 
+# STR03-C
+# Do not inadvertently truncate a string
+def str03(data):
+    for token in data.tokenlist:
+        if not isFunctionCall(token, 'strncpy'):
+            continue
+        arguments = cppcheckdata.getArguments(token)
+        if len(arguments)!=3:
+            continue
+        if arguments[2].str=='(' and arguments[2].astOperand1.str=='sizeof':
+            reportError(token, 'style', 'Do not inadvertently truncate a string', 'STR03-C')
 
 # STR05-C
 # Use pointers to const when referring to string literals
@@ -256,7 +264,19 @@ def str05(data):
             if parent.isAssignmentOp and parentOp1.valueType:
                 if (parentOp1.valueType.type in ('char', 'wchar_t')) and parentOp1.valueType.pointer and not parentOp1.valueType.constness:
                     reportError(parentOp1, 'style', 'Use pointers to const when referring to string literals', 'STR05-C')
-                
+
+# STR07-C
+# Use the bounds-checking interfaces for string manipulation
+def str07(data):
+    for token in data.tokenlist:
+        if not isFunctionCall(token, ('strcpy', 'strcat')):
+            continue
+        args = cppcheckdata.getArguments(token)
+        if len(args)!=2:
+            continue
+        if args[1].isString:
+            continue
+        reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % (token.str), 'STR07-C')
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
@@ -284,7 +304,9 @@ for arg in sys.argv[1:]:
         exp46(cfg)
         exp15(cfg)
         int31(cfg, data.platform)
+        str03(cfg)
         str05(cfg)
+        str07(cfg)
         msc30(cfg)
 
     if VERIFY:

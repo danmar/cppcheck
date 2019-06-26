@@ -73,3 +73,32 @@ void exp15()
         ;
 }
 
+void str03()
+{
+    char *string_data=(char*)malloc(16);
+    char a[16];
+    int d;
+    strncpy(a, string_data, sizeof(a));     //cert-STR03-C
+    strncpy(a, string_data, 5); d=sizeof(int);
+}
+
+void str05()
+{
+    int x=5, y=7;
+
+    if(x==y);                            //cert-EXP15-C
+    {
+        printf("not working\n");
+    }
+    if(x)
+        ;
+}
+
+void str07(char *buf, const char *newBuf)
+{
+    const char *str="test";
+    strcat(buf,"bla");
+    strcat(buf, str);    //cert-STR07-C
+    strcat(buf, newBuf); //cert-STR07-C
+    strcpy(str, newBuf); //cert-STR07-C
+}
