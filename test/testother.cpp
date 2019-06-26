@@ -2849,12 +2849,12 @@ private:
 
     void suspiciousEqualityComparison() {
         check("void foo(int c) {\n"
-              "    if (c == 1) c == 0;\n"
+              "    if (x) c == 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
         check("void foo(int* c) {\n"
-              "    if (*c == 1) *c == 0;\n"
+              "    if (x) *c == 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
@@ -3384,28 +3384,28 @@ private:
               "    *c++;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char* f(char** c) {\n"
               "    *c[5]--;\n"
               "    return *c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a[5].v[3]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a(1, 5).v[x + y]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char* f(char* c) {\n"
               "    (*c)++;\n"
@@ -3422,13 +3422,13 @@ private:
               "    ***c++;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char** f(char*** c) {\n"
               "    **c[5]--;\n"
               "    return **c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
 
         check("char*** f(char*** c) {\n"
               "    (***c)++;\n"

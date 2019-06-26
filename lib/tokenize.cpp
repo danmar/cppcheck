@@ -4625,8 +4625,10 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     SimplifyNamelessRValueReferences();
 
-
     validate();
+
+    list.front()->assignIndexes();
+
     return true;
 }
 

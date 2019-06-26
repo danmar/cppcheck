@@ -1818,6 +1818,13 @@ void Token::assignProgressValues(Token *tok)
         tok2->mImpl->mProgressValue = count++ * 100 / total_count;
 }
 
+void Token::assignIndexes()
+{
+    unsigned int index = (mPrevious ? mPrevious->mImpl->mIndex : 0) + 1;
+    for (Token *tok = this; tok; tok = tok->next())
+        tok->mImpl->mIndex = index++;
+}
+
 void Token::setValueType(ValueType *vt)
 {
     if (vt != mImpl->mValueType) {

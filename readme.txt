@@ -58,12 +58,12 @@ Compiling
             make
 
         The recommended release build is:
-            make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+            make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes
 
         Flags:
-        SRCDIR=build   : Python is used to optimise cppcheck
-        CFGDIR=cfg     : Specify folder where .cfg files are found
-        HAVE_RULES=yes : Enable rules (pcre is required if this is used)
+        MATCHCOMPILER=yes : Python is used to optimise cppcheck at compile time
+        CFGDIR=cfg        : Specify folder where .cfg files are found
+        HAVE_RULES=yes    : Enable rules (pcre is required if this is used)
 
     g++ (for experts)
     =================
