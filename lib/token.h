@@ -108,7 +108,7 @@ struct TokenImpl {
     // Pointer to a template in the template simplifier
     std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
 
-    ScopeInfo2* mScopeInfo;
+    std::shared_ptr<ScopeInfo2> mScopeInfo;
 
     TokenImpl()
         : mVarId(0)
@@ -1183,9 +1183,9 @@ public:
 
     void printValueFlow(bool xml, std::ostream &out) const;
     
-    void scopeInfo(ScopeInfo2* newScopeInfo);
+    void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
     
-    ScopeInfo2* scopeInfo() const;
+    std::shared_ptr<ScopeInfo2> scopeInfo() const;
 };
 
 /// @}
