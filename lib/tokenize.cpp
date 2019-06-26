@@ -183,15 +183,6 @@ Tokenizer::~Tokenizer()
 {
     delete mSymbolDatabase;
     delete mTemplateSimplifier;
-
-    std::set<ScopeInfo2*> scopes;
-    for (Token* tok = list.front(); tok; tok = tok->next()) {
-        scopes.insert(tok->scopeInfo());
-        tok->scopeInfo(nullptr);
-    }
-    for (auto scope : scopes) {
-        delete scope;
-    }
 }
 
 
