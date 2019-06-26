@@ -1048,6 +1048,8 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
 
                 if (newScopeInfo->name != "") newScopeInfo->name.append(" :: ");
                 newScopeInfo->name.append(nextScopeNameAddition);
+                
+                newToken->scopeInfo(newScopeInfo);
 
             // If it's a closing brace, we need to find where the scope opened and take the scope before
             } else if (tokenStr == "}") {
