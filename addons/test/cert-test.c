@@ -61,6 +61,18 @@ void msc30()
     int a = rand;
 }
 
+void exp15()
+{
+    int x=5, y=7;
+
+    if(x==y);                            //cert-EXP15-C
+    {
+        printf("not working\n");
+    }
+    if(x)
+        ;
+}
+
 void str03()
 {
     char *string_data=(char*)malloc(16);
@@ -72,8 +84,14 @@ void str03()
 
 void str05()
 {
-    char *str1 = "abc";         //cert-STR05-C
-    wchar_t *str2  = L"hello";  //cert-STR05-C
+    int x=5, y=7;
+
+    if(x==y);                            //cert-EXP15-C
+    {
+        printf("not working\n");
+    }
+    if(x)
+        ;
 }
 
 void str07(char *buf, const char *newBuf)
