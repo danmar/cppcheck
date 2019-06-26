@@ -30,6 +30,7 @@
 #include <cstddef>
 #include <functional>
 #include <list>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
