@@ -26,26 +26,17 @@ def astyle(server_address, code):
     sock.close()
     return None
 
-
-def get_source_files(path):
-    files = []
-    for g in glob.glob(path + '*'):
-        if g.startswith('.'):
-            continue
-        if os.path.isdir(g):
-            files += get_source_files(g + '/')
-        if os.path.isfile(g) and (g.endswith('.cpp') or g.endswith('.h')):
-            files.append(g)
-    return files
-
 if __name__ == "__main__":
     server_address = ('cppcheck.osuosl.org', 18000)
 
     source_files = []
     for d in ['cli', 'gui', 'lib', 'test', 'tools']:
-        source_files += get_source_files(d + '/')
+        if not os.path.isdir(d) and os.path.isdir('../'+d):
+            d = '../' + d
+        source_files += glob.glob(d + '/*.cpp')
+        source_files += glob.glob(d + '/*.h')
 
-    for filename in source_files:
+    for filename in sorted(source_files):
         f = open(filename, 'rt')
         code = f.read()
         f.close()
