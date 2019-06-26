@@ -39,7 +39,7 @@ def get_source_files(path):
     return files
 
 if __name__ == "__main__":
-    server_address = ('localhost', 18000)
+    server_address = ('cppcheck.osuosl.org', 18000)
 
     source_files = []
     for d in ['cli', 'gui', 'lib', 'test', 'tools']:

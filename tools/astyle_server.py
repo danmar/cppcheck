@@ -29,7 +29,7 @@ def server(port):
             continue
 
         # Format
-        process = subprocess.Popen(['astyle', '--options=../.astylerc'],
+        process = subprocess.Popen(['astyle', '--options=.astylerc'],
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
