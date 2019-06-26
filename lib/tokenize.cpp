@@ -2825,7 +2825,7 @@ void Tokenizer::calculateScopes()
     // Build up the next scope name as we go and then reset it when we use it
     std::string nextScopeNameAddition = "";
     if (!list.front()->scopeInfo()) {
-        ScopeInfo2* primaryScope = new ScopeInfo2("", list.back());
+        std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", list.back());
         list.front()->scopeInfo(primaryScope);
 
         if (Token::Match(list.front(), "using namespace %name% ::|<|;")) {
@@ -2910,7 +2910,7 @@ void Tokenizer::calculateScopes()
                 }
 
                 // New scope is opening, record it here
-                ScopeInfo2* newScopeInfo = new ScopeInfo2(tok->scopeInfo()->name, tok->link(), tok->scopeInfo()->usingNamespaces);
+                std::shared_ptr<ScopeInfo2> newScopeInfo = std::make_shared<ScopeInfo2>(tok->scopeInfo()->name, tok->link(), tok->scopeInfo()->usingNamespaces);
 
                 if (newScopeInfo->name != "") newScopeInfo->name.append(" :: ");
                 newScopeInfo->name.append(nextScopeNameAddition);
