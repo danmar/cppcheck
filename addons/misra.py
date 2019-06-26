@@ -1874,7 +1874,8 @@ class MisraChecker:
         normalized_filename = None
 
         if fileName is not None:
-            normalized_filename = os.path.normpath(fileName)
+            normalized_filename = os.path.expanduser(fileName)
+            normalized_filename = os.path.normpath(normalized_filename)
 
         if lineNumber is not None or symbolName is not None:
             line_symbol = (lineNumber, symbolName)
@@ -2372,7 +2373,8 @@ def main():
         sys.exit(0)
 
     if args.rule_texts:
-        filename = os.path.normpath(args.rule_texts)
+        filename = os.path.expanduser(args.rule_texts)
+        filename = os.path.normpath(filename)
         if not os.path.isfile(filename):
             print('Fatal error: file is not found: ' + filename)
             sys.exit(1)
