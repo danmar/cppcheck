@@ -40,7 +40,7 @@ private:
         settings.library.setdealloc("free", id, 1);
         while (!settings.library.isresource(++id));
         settings.library.setalloc("fopen", id, -1);
-        settings.library.setrealloc("freopen", id, -1);
+        settings.library.setrealloc("freopen", id, -1, 3);
         settings.library.setdealloc("fclose", id, 1);
         settings.library.smartPointers.insert("std::shared_ptr");
         settings.library.smartPointers.insert("std::unique_ptr");
@@ -68,6 +68,8 @@ private:
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
         TEST_CASE(realloc3);
+        TEST_CASE(freopen1);
+        TEST_CASE(freopen2);
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -379,6 +381,23 @@ private:
               "    char *q = (char*) realloc(p, 20);\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (error) Memory leak: q\n", errout.str());
+    }
+
+    void freopen1() {
+        check("void f() {\n"
+              "    void *p = fopen(name,a);\n"
+              "    void *q = freopen(name, b, p);\n"
+              "    fclose(q)\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void freopen2() {
+        check("void f() {\n"
+              "    void *p = fopen(name,a);\n"
+              "    void *q = freopen(name, b, p);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (error) Resource leak: q\n", errout.str());
     }
 
     void deallocuse1() {

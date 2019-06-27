@@ -131,9 +131,10 @@ public:
         mDealloc[functionname].arg = arg;
     }
 
-    void setrealloc(const std::string &functionname, int id, int arg) {
+    void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
         mRealloc[functionname].groupId = id;
         mRealloc[functionname].arg = arg;
+        mRealloc[functionname].reallocArg = reallocArg;
     }
 
     /** add noreturn function setting */
