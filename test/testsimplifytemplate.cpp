@@ -3533,8 +3533,8 @@ private:
         ASSERT_EQUALS(1U, templateParameters("template<template<template<template<typename>>>> x;"));
         ASSERT_EQUALS(1U, templateParameters("template<template<template<template<template<typename>>>>> x;"));
         ASSERT_EQUALS(2U, templateParameters("template<template<typename>,int> x;"));
+        ASSERT_EQUALS(2U, templateParameters("template<template<template<typename>>,int> x;"));
         ASSERT_EQUALS(2U, templateParameters("template<template<template<template<typename>>>,int> x;"));
-        ASSERT_EQUALS(2U, templateParameters("template<template<template<template<template<typename>>>>,int> x;"));
         ASSERT_EQUALS(2U, templateParameters("template<template<template<template<template<typename>>>>,int> x;"));
         ASSERT_EQUALS(2U, templateParameters("template<template<typename>...Foo,template<template<template<typename>>>> x;"));
         ASSERT_EQUALS(3U, templateParameters("template<template<typename>...Foo,int,template<template<template<typename>>>> x;"));
