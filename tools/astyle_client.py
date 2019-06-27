@@ -1,6 +1,6 @@
-import glob
 import os
 import socket
+import sys
 import time
 
 def receive_data(conn):
@@ -29,14 +29,10 @@ def astyle(server_address, code):
 if __name__ == "__main__":
     server_address = ('cppcheck.osuosl.org', 18000)
 
-    source_files = []
-    for d in ['cli', 'gui', 'lib', 'test', 'tools']:
-        if not os.path.isdir(d) and os.path.isdir('../'+d):
-            d = '../' + d
-        source_files += glob.glob(d + '/*.cpp')
-        source_files += glob.glob(d + '/*.h')
+    for filename in sorted(sys.argv[1:]):
+        if not (filename.endswith('.cpp') or filename.endswith('.h')):
+            continue
 
-    for filename in sorted(source_files):
         f = open(filename, 'rt')
         code = f.read()
         f.close()
