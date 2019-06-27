@@ -347,9 +347,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
                     varAlloc.type = g->groupId;
                     varAlloc.status = VarInfo::ALLOC;
-                    const Token* argTok = tokRightAstOperand->next();
-                    VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
-                    argAlloc.status = VarInfo::DEALLOC;
+                    if (0 < g->reallocArg && g->reallocArg <= numberOfArguments(tokRightAstOperand->previous())) {
+                        const Token* argTok = getArguments(tokRightAstOperand->previous()).at(g->reallocArg - 1);
+                        VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
+                        argAlloc.status = VarInfo::DEALLOC;
+                    }
 
                 }
             } else if (mTokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
@@ -399,9 +401,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = g->groupId;
                             varAlloc.status = VarInfo::ALLOC;
-                            const Token* argTok = innerTok->tokAt(4);
-                            VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
-                            argAlloc.status = VarInfo::DEALLOC;
+                            if (0 < g->reallocArg && g->reallocArg <= numberOfArguments(innerTok->tokAt(2))) {
+                                const Token* argTok = getArguments(innerTok->tokAt(2)).at(g->reallocArg - 1);
+                                VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
+                                argAlloc.status = VarInfo::DEALLOC;
+                            }
                         }
                     } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();

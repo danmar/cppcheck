@@ -77,6 +77,7 @@ public:
         BufferSize bufferSize;
         int bufferSizeArg1;
         int bufferSizeArg2;
+        int reallocArg;
     };
 
     /** get allocation info for function */

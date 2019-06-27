@@ -225,6 +225,14 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
                     }
 
+                    if (memorynodename == "realloc") {
+                        const char *reallocArg =  memorynode->Attribute("realloc-arg");
+                        if (reallocArg)
+                            temp.reallocArg = atoi(reallocArg);
+                        else
+                            temp.reallocArg = 1;
+                    }
+
                     if (memorynodename != "realloc")
                         mAlloc[memorynode->GetText()] = temp;
                     else

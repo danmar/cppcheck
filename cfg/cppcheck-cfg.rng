@@ -47,6 +47,9 @@
               <optional>
                 <attribute name="buffer-size"><ref name="DATA-BUFFER-SIZE"/></attribute>
               </optional>
+              <optional>
+                <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
+              </optional>
               <ref name="DATA-NAME"/>
             </element>
             <element name="use"><ref name="DATA-EXTNAME"/></element>
@@ -80,6 +83,9 @@
               </optional>
               <optional>
                 <attribute name="arg"><ref name="ARGNO"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="realloc-arg"><ref name="ARGNO"/></attribute>
               </optional>
               <ref name="DATA-NAME"/>
             </element>
