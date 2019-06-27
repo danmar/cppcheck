@@ -155,6 +155,7 @@ private:
         TEST_CASE(template115); // #9153
         TEST_CASE(template116); // #9178
         TEST_CASE(template117);
+        TEST_CASE(template118);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2773,6 +2774,16 @@ private:
                            "X<X<void>> x ; "
                            "struct X<void> { } ; "
                            "struct X<X<void>> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template118() {
+        const char code[] = "template<int> struct S { void f(int i); };\n"
+                            "S<1> s;";
+        const char exp[] = "struct S<1> ; "
+                           "S<1> s ; struct S<1> { "
+                           "void f ( int i ) ; "
+                           "} ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
