@@ -350,6 +350,9 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 // but it is probably written this way by design.
                 continue;
 
+            if (astIsBool(numTok))
+                continue;
+
             if (numTok->isNumber()) {
                 const MathLib::bigint num = MathLib::toLongNumber(numTok->str());
                 if (num==0 &&
@@ -361,7 +364,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                      : Token::Match(tok, ">|==|!=")))
                     continue;
                 comparisonOfBoolExpressionWithIntError(tok, true);
-            } else if (isNonBoolStdType(numTok->variable()) && mTokenizer->isCPP())
+            } else if (astIsIntegral(numTok, false) && mTokenizer->isCPP())
                 comparisonOfBoolExpressionWithIntError(tok, false);
         }
     }
