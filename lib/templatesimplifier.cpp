@@ -398,24 +398,15 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         if (level == 0 && Token::simpleMatch(tok, "template <")) {
             const Token *closing = tok->next()->findClosingBracket();
             if (closing) {
-                if (closing->str() == ">>") {
-                    if (level == 0)
-                        return numberOfParameters;
-                    else if (level == 1)
-                        return numberOfParameters;
-                    --level;
-                }
+                if (closing->str() == ">>")
+                    return numberOfParameters;
                 tok = closing->next();
-                if (tok->str() == ">") {
-                    if (level == 0)
-                        return numberOfParameters;
-                    --level;
-                } else if (tok->str() == ">>") {
-                    if (level == 0)
-                        return numberOfParameters;
-                    else if (level == 1)
-                        return numberOfParameters;
-                    --level;
+                if (tok->str() == ">" || tok->str() == ">>")
+                    return numberOfParameters;
+                else if (tok->str() == ",") {
+                    ++numberOfParameters;
+                    tok = tok->next();
+                    continue;
                 }
             } else
                 return 0;
