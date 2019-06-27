@@ -156,6 +156,7 @@ private:
         TEST_CASE(template116); // #9178
         TEST_CASE(template117);
         TEST_CASE(template118);
+        TEST_CASE(template119); // #9186
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2785,6 +2786,37 @@ private:
                            "void f ( int i ) ; "
                            "} ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template119() { // #9186
+        {
+            const char code[] = "template <typename T>\n"
+                                "constexpr auto func = [](auto x){ return T(x);};\n"
+                                "template <typename T>\n"
+                                "constexpr auto funcBraced = [](auto x){ return T{x};};\n"
+                                "double f(int x) { return func<double>(x); }\n"
+                                "double fBraced(int x) { return funcBraced<int>(x); }";
+            const char exp[] = "const auto func<double> = [ ] ( auto x ) { return double ( x ) ; } ; "
+                               "const auto funcBraced<int> = [ ] ( auto x ) { return int { x } ; } ; "
+                               "double f ( int x ) { return func<double> ( x ) ; } "
+                               "double fBraced ( int x ) { return funcBraced<int> ( x ) ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "template <typename T>\n"
+                                "constexpr auto func = [](auto x){ return T(x);};\n"
+                                "void foo() {\n"
+                                "    func<int>(x);\n"
+                                "    func<double>(x);\n"
+                                "}";
+            const char exp[] = "const auto func<int> = [ ] ( auto x ) { return int ( x ) ; } ; "
+                               "const auto func<double> = [ ] ( auto x ) { return double ( x ) ; } ; "
+                               "void foo ( ) { "
+                               "func<int> ( x ) ; "
+                               "func<double> ( x ) ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};

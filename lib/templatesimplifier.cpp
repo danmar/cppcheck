@@ -1595,8 +1595,15 @@ void TemplateSimplifier::expandTemplate(
                 end = end->findClosingBracket()->next();
             if (end->str() == "(")
                 end = end->link()->next();
-            else if (isVariable && end->str() == "=")
-                end = const_cast<Token *>(Token::findsimplematch(templateDeclarationNameToken, ";"));
+            else if (isVariable && end->str() == "=") {
+                Token *temp = end->next();
+                while (temp && temp->str() != ";") {
+                    if (temp->link() && Token::Match(temp, "{|[|("))
+                        temp = temp->link();
+                    temp = temp->next();
+                }
+                end = temp;
+            }
         }
         unsigned int typeindentlevel = 0;
         while (!(typeindentlevel == 0 && Token::Match(end, ";|{|:"))) {
@@ -1752,9 +1759,17 @@ void TemplateSimplifier::expandTemplate(
         }
         if (inTemplateDefinition) {
             if (!endOfTemplateDefinition) {
-                if (isVariable)
-                    endOfTemplateDefinition = Token::findsimplematch(tok3, ";");
-                else if (tok3->str() == "{")
+                if (isVariable) {
+                    Token *temp = tok3->findClosingBracket();
+                    if (temp) {
+                        while (temp && temp->str() != ";") {
+                            if (temp->link() && Token::Match(temp, "{|[|("))
+                                temp = temp->link();
+                            temp = temp->next();
+                        }
+                        endOfTemplateDefinition = temp;
+                    }
+                } else if (tok3->str() == "{")
                     endOfTemplateDefinition = tok3->link();
             }
             if (tok3 == endOfTemplateDefinition) {
