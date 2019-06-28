@@ -301,7 +301,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             // right ast part (after `=` operator)
-            const Token* const tokRightAstOperand = tokAssignOp->astOperand2();
+            const Token* tokRightAstOperand = tokAssignOp->astOperand2();
+            while (tokRightAstOperand && tokRightAstOperand->isCast())
+                tokRightAstOperand = tokRightAstOperand->astOperand1();
 
             // is variable used in rhs?
             if (isVarUsedInTree(tokRightAstOperand, varTok->varId()))
