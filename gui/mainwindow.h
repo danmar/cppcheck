@@ -225,6 +225,9 @@ protected slots:
     /** Suppress error ids */
     void suppressIds(QStringList ids);
 
+    /** Cppcheck version received from network */
+    void networkCppcheckVersion(QString version);
+
 private:
 
     /** Get filename for last results */
