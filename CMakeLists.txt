@@ -9,6 +9,9 @@ include(cmake/findDependencies.cmake REQUIRED)
 include(cmake/compileroptions.cmake REQUIRED)
 include(cmake/compilerDefinitions.cmake REQUIRED)
 include(cmake/buildFiles.cmake REQUIRED)
+include(cmake/cxx11.cmake REQUIRED)
+
+use_cxx11()
 
 file(GLOB cfgs "cfg/*.cfg")
 

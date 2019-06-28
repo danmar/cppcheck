@@ -34,13 +34,10 @@ Compiling
     cmake
     =====
         Example, compiling Cppcheck with cmake:
-            mkdir b
-            cd b
+            mkdir build
+            cd build
             cmake ..
-            make
-
-        If you need to specify c++ standard you can do it with the option
-        -DCMAKE_CXX_STANDARD=11
+            cmake --build .
 
         If you want to compile the GUI you can use the flag
         -DBUILD_GUI=ON

@@ -47,10 +47,6 @@ static bool isBool(const Variable* var)
 {
     return (var && Token::Match(var->typeEndToken(), "bool|_Bool"));
 }
-static bool isNonBoolStdType(const Variable* var)
-{
-    return (var && var->typeEndToken()->isStandardType() && !Token::Match(var->typeEndToken(), "bool|_Bool"));
-}
 
 //---------------------------------------------------------------------------
 void CheckBool::checkIncrementBoolean()
