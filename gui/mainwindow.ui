@@ -50,28 +50,9 @@
      <height>16777215</height>
     </size>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="ResultsView" name="mResults" native="true"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="mLabelUpgradeCppcheck">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel { background-color : rgb(239, 242, 172); }</string>
-      </property>
-      <property name="text">
-       <string>This is not latest Cppcheck version. Latest Cppcheck version is 999.999</string>
-      </property>
-     </widget>
     </item>
    </layout>
   </widget>
