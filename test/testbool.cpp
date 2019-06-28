@@ -1021,7 +1021,6 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
-        fprintf(stderr, "last case\n");
         check("int Fun();\n"
               "void Test(bool expectedResult) {\n"
               "    auto res = Fun();\n"
