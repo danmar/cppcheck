@@ -1,5 +1,5 @@
 #include <QtWidgets>
-
+#include <QShortcut>
 #include "codeeditor.h"
 
 
@@ -200,8 +200,13 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
+    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
+    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
+
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(copyText, SIGNAL(activated()), this, SLOT(copy()));
+    connect(allText, SIGNAL(activated()), this, SLOT(selectAll()));
 
     updateLineNumberAreaWidth(0);
 }
