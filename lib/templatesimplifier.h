@@ -294,6 +294,11 @@ public:
      */
     void simplifyTemplateArgs(Token *start, Token *end);
 
+    /** Fix angle brackets.
+     * foo < bar < >> => foo < bar < > >
+     */
+    void fixAngleBrackets();
+
 private:
     /**
      * Get template declarations
