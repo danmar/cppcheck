@@ -297,6 +297,7 @@ private:
         TEST_CASE(symboldatabase74); // #8838 - final
         TEST_CASE(symboldatabase75);
         TEST_CASE(symboldatabase76); // #9056
+        TEST_CASE(symboldatabase77); // #8663
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4215,6 +4216,15 @@ private:
         GET_SYMBOL_DB("namespace foo {\n"
                       "  using namespace bar::baz;\n"
                       "  auto func(int arg) -> bar::quux {}\n"
+                      "}");
+        ASSERT_EQUALS(2, db->mVariableList.size());
+    }
+
+    void symboldatabase77() { // #8663
+        GET_SYMBOL_DB("template <class T1, class T2>\n"
+                      "void f() {\n"
+                      "  using T3 = typename T1::template T3<T2>;\n"
+                      "  T3 t;\n"
                       "}");
         ASSERT_EQUALS(2, db->mVariableList.size());
     }
