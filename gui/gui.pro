@@ -9,7 +9,6 @@ INCLUDEPATH += . \
     ../lib
 QT += widgets
 QT += printsupport
-QT += network
 
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
@@ -122,8 +121,7 @@ HEADERS += aboutdialog.h \
            cppchecklibrarydata.h \
            libraryaddfunctiondialog.h \
            libraryeditargdialog.h \
-           newsuppressiondialog.h \
-           networkinfo.h
+           newsuppressiondialog.h
 
 SOURCES += aboutdialog.cpp \
            application.cpp \
@@ -163,8 +161,7 @@ SOURCES += aboutdialog.cpp \
            cppchecklibrarydata.cpp \
            libraryaddfunctiondialog.cpp \
            libraryeditargdialog.cpp \
-           newsuppressiondialog.cpp \
-           networkinfo.cpp
+           newsuppressiondialog.cpp
 
 win32 {
     RC_FILE = cppcheck-gui.rc

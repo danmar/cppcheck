@@ -30,13 +30,11 @@
 #include "mainwindow.h"
 
 #include "cppcheck.h"
-#include "version.h"
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
 #include "threadhandler.h"
-#include "networkinfo.h"
 #include "fileviewdialog.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
@@ -77,11 +75,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mThread = new ThreadHandler(this);
     mThread->setDataDir(getDataDir(settings));
     mUI.mResults->initialize(mSettings, mApplications, mThread);
-
-    mUI.mLabelUpgradeCppcheck->setVisible(false);
-    NetworkInfo *networkInfo = new NetworkInfo(this);
-    connect(networkInfo, SIGNAL(cppcheckVersion(QString)), this, SLOT(networkCppcheckVersion(QString)));
-    networkInfo->start();
 
     // Filter timer to delay filtering results slightly while typing
     mFilterTimer = new QTimer(this);
@@ -1768,21 +1761,4 @@ void MainWindow::suppressIds(QStringList ids)
 
     mProjectFile->setSuppressions(suppressions);
     mProjectFile->write();
-}
-
-void MainWindow::networkCppcheckVersion(QString version)
-{
-    qDebug() << "MainWindow::networkCppcheckVersion:" << version;
-    if (!QRegExp("Cppcheck [0-9]\\.[0-9][0-9]").exactMatch(version)) {
-        mUI.mLabelUpgradeCppcheck->setVisible(false);
-        return;
-    }
-
-    version = version.mid(9,4);
-    if (version <= CPPCHECK_VERSION_STRING)
-        mUI.mLabelUpgradeCppcheck->setVisible(false);
-    else {
-        mUI.mLabelUpgradeCppcheck->setVisible(true);
-        mUI.mLabelUpgradeCppcheck->setText(tr("Newer Cppcheck version is available: %1").arg(version));
-    }
 }
