@@ -539,3 +539,8 @@ The tag `<type>` can be added as well to provide more information about the type
 
 * `string='std-like'` can be set for containers that match `std::string` interfaces.
 * `associative='std-like'` can be set for containers that match C++'s `AssociativeContainer` interfaces.
+
+# `<smart-pointer>`
+
+Specify that a class is a smart pointer by using `<smart-pointer class-name"std::shared_ptr"/>`.
+
