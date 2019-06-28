@@ -36,14 +36,11 @@ There are multiple compilation choices:
 Example, compiling Cppcheck with cmake:
 
 ```shell
-mkdir b
-cd b
+mkdir build
+cd build
 cmake ..
-make
+cmake --build .
 ```
-
-If you need to specify c++ standard you can do it with the option
--DCMAKE_CXX_STANDARD=11
 
 If you want to compile the GUI you can use the flag
 -DBUILD_GUI=ON
