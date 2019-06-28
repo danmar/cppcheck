@@ -201,7 +201,7 @@ def isFunctionCall(expr):
 
 
 def hasExternalLinkage(var):
-     return var.isGlobal and not var.isStatic
+    return var.isGlobal and not var.isStatic
 
 
 def countSideEffects(expr):
@@ -1719,12 +1719,12 @@ class MisraChecker:
                     while exp[pos1] == ' ':
                         pos1 -= 1
                     if exp[pos1] != '(' and exp[pos1] != '[':
-                        self.reportError(directive, 20, 7);
+                        self.reportError(directive, 20, 7)
                         break
                     while exp[pos2] == ' ':
                         pos2 += 1
                     if exp[pos2] != ')' and exp[pos2] != ']':
-                        self.reportError(directive, 20, 7);
+                        self.reportError(directive, 20, 7)
                         break
 
 
@@ -1732,7 +1732,7 @@ class MisraChecker:
         for directive in data.directives:
             d = Define(directive)
             if d.expansionList.find('#') >= 0:
-                self.reportError(directive, 20, 10);
+                self.reportError(directive, 20, 10)
 
     def misra_20_13(self, data):
         dir_pattern = re.compile(r'#[ ]*([^ (<]*)')

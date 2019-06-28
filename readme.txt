@@ -31,6 +31,23 @@ Compiling
       * g++ 4.6 (or later)
       * clang++
 
+    cmake
+    =====
+        Example, compiling Cppcheck with cmake:
+            mkdir build
+            cd build
+            cmake ..
+            cmake --build .
+
+        If you want to compile the GUI you can use the flag
+        -DBUILD_GUI=ON
+
+        For rules support (requires pcre) use the flag
+        -DHAVE_RULES=ON
+
+        For release builds it is recommended that you use:
+        -DUSE_MATCHCOMPILER=ON
+
     qmake
     =====
         You can use the gui/gui.pro file to build the GUI.
