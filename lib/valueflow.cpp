@@ -1470,7 +1470,6 @@ static void valueFlowGlobalConstVar(TokenList* tokenList, const Settings *settin
             continue;
         // Initialization...
         if (tok == tok->variable()->nameToken() &&
-            !tok->variable()->isStatic() &&
             !tok->variable()->isVolatile() &&
             !tok->variable()->isArgument() &&
             tok->variable()->isConst() &&
