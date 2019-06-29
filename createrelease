@@ -47,7 +47,7 @@
 # ./createrelease 1.43
 #
 # Restore the Makefile:
-# ./dmake
+# make dmake && ./dmake
 # git commit -a -m "Makefile: Set debug mode"
 #
 # Update download link on index.php main page
