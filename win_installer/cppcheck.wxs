@@ -71,18 +71,28 @@
             </Component>
             <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
               <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
+              <File Id='boost.cfg' Name='boost.cfg' Source='$(var.CfgsDir)\boost.cfg' />
               <File Id='bsd.cfg' Name='bsd.cfg' Source='$(var.CfgsDir)\bsd.cfg' />
+              <File Id='cppunit.cfg' Name='cppunit.cfg' Source='$(var.CfgsDir)\cppunit.cfg' />
               <File Id='embedded_sql.cfg' Name='embedded_sql.cfg' Source='$(var.CfgsDir)\embedded_sql.cfg' />
               <File Id='gnu.cfg' Name='gnu.cfg' Source='$(var.CfgsDir)\gnu.cfg' />
+              <File Id='googletest.cfg' Name='googletest.cfg' Source='$(var.CfgsDir)\googletest.cfg' />
               <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
+              <File Id='libcerror.cfg' Name='libcerror.cfg' Source='$(var.CfgsDir)\libcerror.cfg' />
               <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
               <File Id='motif.cfg' Name='motif.cfg' Source='$(var.CfgsDir)\motif.cfg' />
+              <File Id='nspr.cfg' Name='nspr.cfg' Source='$(var.CfgsDir)\nspr.cfg' />
+              <File Id='opengl.cfg' Name='opengl.cfg' Source='$(var.CfgsDir)\opengl.cfg' />
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
+              <File Id='python.cfg' Name='python.cfg' Source='$(var.CfgsDir)\python.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
+              <File Id='ruby.cfg' Name='ruby.cfg' Source='$(var.CfgsDir)\ruby.cfg' />
               <File Id='sdl.cfg' Name='sdl.cfg' Source='$(var.CfgsDir)\sdl.cfg' />
               <File Id='sfml.cfg' Name='sfml.cfg' Source='$(var.CfgsDir)\sfml.cfg' />
+              <File Id='sqlite3.cfg' Name='sqlite3.cfg' Source='$(var.CfgsDir)\sqlite3.cfg' />
               <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
               <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
+              <File Id='zlib.cfg' Name='zlib.cfg' Source='$(var.CfgsDir)\zlib.cfg' />
             </Component>
           </Directory>
           <Directory Id='PtfsFolder' Name='platforms'>
