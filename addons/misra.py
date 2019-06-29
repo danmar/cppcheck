@@ -468,6 +468,16 @@ def isNoReturnScope(tok):
     return False
 
 
+def isStruct(token):
+    if token.valueType is None:
+        return False
+    if token.valueType.typeScope is None:
+        return False
+    if token.valueType.typeScope.type != "Struct":
+        return False
+    return True
+
+
 class Define:
     def __init__(self, directive):
         self.args = []
@@ -1628,6 +1638,35 @@ class MisraChecker:
                 self.reportError(var.nameToken, 18, 5)
 
 
+    def misra_18_7(self, data):
+        structScopes = []
+        for token in data.tokenlist:
+            if not isStruct(token):
+                continue
+            structScopes.append(token.valueType.typeScope)
+
+        for scope in structScopes:
+            token = scope.bodyStart.next
+            while token != scope.bodyEnd and token is not None:
+                # Handle nested structures to not duplicate an error.
+                if token.str == 'struct':
+                    while not isStruct(token):
+                        token = token.next
+                    nestedStructScope = token.valueType.typeScope
+                    while not nestedStructScope.nestedInId != scope.Id:
+                        token = token.next
+                        if isStruct(token):
+                            nestedStructScope = token.valueType.typeScope
+                    token = nestedStructScope.bodyEnd.next.next.next
+                    continue
+
+                if token.str == '[' and token.next.str == ']':
+                    self.reportError(token, 18, 7)
+                    break
+                token = token.next
+
+
+
     def misra_18_8(self, data):
         for var in data.variables:
             if not var.isArray or not var.isLocal:
@@ -2287,6 +2326,7 @@ class MisraChecker:
             self.misra_17_7(cfg)
             self.misra_17_8(cfg)
             self.misra_18_5(cfg)
+            self.misra_18_7(cfg)
             self.misra_18_8(cfg)
             self.misra_19_2(cfg)
             self.misra_20_1(cfg)
