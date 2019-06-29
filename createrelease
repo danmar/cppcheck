@@ -69,22 +69,36 @@ tag=$1
 # Name of release
 releasename=cppcheck-$tag
 
-# Create archives..
-git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar.gz
-git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
-git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
+set -e
 
-scp ~/$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+cd ~/cppcheck
+
+mkdir upload
+
+# Create archives..
+git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasename.tar.gz
+git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
+git archive --format=zip -9 --prefix=$releasename/ $tag > upload/$releasename.zip
+cd upload
+wget https://www.pkeus.de/~philipp/Temp/$releasename-x64-Setup.msi
+#wget https://www.pkeus.de/~philipp/Temp/$releasename-x86-Setup.msi
+scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+rm $releasename.*
+cd ..
 
 # Generate the manual.pdf, manual.html and version.txt
-make clean && make -j4
-mkdir upload
-./cppcheck --version > version.txt
-mv version.txt upload/
-cd man && ./buildman.sh
+make -j4
+./cppcheck --version > upload/version.txt
+cd ~/cppcheck/man
+./buildman.sh
 mv manual.pdf ../upload/
 mv manual.html ../upload/
 mv reference-cfg-format.pdf ../upload/
 mv reference-cfg-format.html ../upload/
-cd ../upload && scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/ && cd .. && rm -rf upload
+
+cd ~/cppcheck/upload
+scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+
+cd ~/cppcheck
+rm -rf upload
 
