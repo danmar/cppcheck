@@ -399,27 +399,27 @@ Parameters: -l(line) (file)</source>
     <name>LogView</name>
     <message>
         <source>Checking Log</source>
-        <translation type="vanished">Лог проверки</translation>
+        <translation type="obsolete">Лог проверки</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">Очистить</translation>
+        <translation type="obsolete">Очистить</translation>
     </message>
     <message>
         <source>Save Log</source>
-        <translation type="vanished">Сохранить</translation>
+        <translation type="obsolete">Сохранить</translation>
     </message>
     <message>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="vanished">Текстовые файлы (*.txt *.log);;Все файлы (*.*)</translation>
+        <translation type="obsolete">Текстовые файлы (*.txt *.log);;Все файлы (*.*)</translation>
     </message>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="vanished">Не удалось записать в файл: &quot;%1&quot;</translation>
+        <translation type="obsolete">Не удалось записать в файл: &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -594,7 +594,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Errors</source>
-        <translation type="vanished">Ошибки</translation>
+        <translation type="obsolete">Ошибки</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="384"/>
@@ -604,11 +604,11 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="vanished">Показать блокнот</translation>
+        <translation type="obsolete">Показать блокнот</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="vanished">Предупреждения</translation>
+        <translation type="obsolete">Предупреждения</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="524"/>
@@ -618,7 +618,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="vanished">Предупреждения производительности</translation>
+        <translation type="obsolete">Предупреждения производительности</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="542"/>
@@ -644,7 +644,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Portability</source>
-        <translation type="vanished">Переносимость</translation>
+        <translation type="obsolete">Переносимость</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="583"/>
@@ -703,31 +703,31 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Platforms</source>
-        <translation type="vanished">Платформы</translation>
+        <translation type="obsolete">Платформы</translation>
     </message>
     <message>
         <source>C++11</source>
-        <translation type="vanished">C++11</translation>
+        <translation type="obsolete">C++11</translation>
     </message>
     <message>
         <source>C99</source>
-        <translation type="vanished">C99</translation>
+        <translation type="obsolete">C99</translation>
     </message>
     <message>
         <source>Posix</source>
-        <translation type="vanished">Posix</translation>
+        <translation type="obsolete">Posix</translation>
     </message>
     <message>
         <source>C11</source>
-        <translation type="vanished">C11</translation>
+        <translation type="obsolete">C11</translation>
     </message>
     <message>
         <source>C89</source>
-        <translation type="vanished">C89</translation>
+        <translation type="obsolete">C89</translation>
     </message>
     <message>
         <source>C++03</source>
-        <translation type="vanished">C++03</translation>
+        <translation type="obsolete">C++03</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="742"/>
@@ -751,7 +751,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Library Editor...</source>
-        <translation type="vanished">Редактор библиотек...</translation>
+        <translation type="obsolete">Редактор библиотек...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="761"/>
@@ -760,15 +760,15 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Auto-detect language</source>
-        <translation type="vanished">Автоопределение языка</translation>
+        <translation type="obsolete">Автоопределение языка</translation>
     </message>
     <message>
         <source>Enforce C++</source>
-        <translation type="vanished">Принудительно C++</translation>
+        <translation type="obsolete">Принудительно C++</translation>
     </message>
     <message>
         <source>Enforce C</source>
-        <translation type="vanished">Принудительно C</translation>
+        <translation type="obsolete">Принудительно C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="392"/>
@@ -998,7 +998,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="vanished">Стилистические предупреждения</translation>
+        <translation type="obsolete">Стилистические предупреждения</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="366"/>
@@ -1252,26 +1252,6 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
-        <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="567"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="568"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="569"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="572"/>
         <source>Select files to analyze</source>
         <translation type="unfinished"></translation>
@@ -1480,15 +1460,15 @@ Options:
     <name>Project</name>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not read the project file.</source>
-        <translation type="vanished">Не удалось прочитать файл проекта.</translation>
+        <translation type="obsolete">Не удалось прочитать файл проекта.</translation>
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation type="vanished">Не удалось записать файл проекта.</translation>
+        <translation type="obsolete">Не удалось записать файл проекта.</translation>
     </message>
 </context>
 <context>
@@ -1500,7 +1480,7 @@ Options:
     </message>
     <message>
         <source>Project</source>
-        <translation type="vanished">Проект</translation>
+        <translation type="obsolete">Проект</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="24"/>
@@ -1526,7 +1506,7 @@ Options:
     </message>
     <message>
         <source>Libraries:</source>
-        <translation type="vanished">Библиотеки:</translation>
+        <translation type="obsolete">Библиотеки:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="393"/>
@@ -1696,7 +1676,7 @@ Options:
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="vanished">Исключенные пути</translation>
+        <translation type="obsolete">Исключенные пути</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="500"/>
@@ -1784,21 +1764,6 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="297"/>
         <source>Clang-tidy (not found)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="415"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="416"/>
-        <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2087,7 +2052,7 @@ Options:
     </message>
     <message>
         <source>[Inconclusive]</source>
-        <translation type="vanished">[Неубедительный]</translation>
+        <translation type="obsolete">[Неубедительный]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="312"/>
@@ -2106,19 +2071,19 @@ Options:
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">Скопировать имя файла</translation>
+        <translation type="obsolete">Скопировать имя файла</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">Скопировать полный путь</translation>
+        <translation type="obsolete">Скопировать полный путь</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation type="vanished">Скопировать сообщение</translation>
+        <translation type="obsolete">Скопировать сообщение</translation>
     </message>
     <message>
         <source>Copy message id</source>
-        <translation type="vanished">Скопировать номер сообщения</translation>
+        <translation type="obsolete">Скопировать номер сообщения</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>
@@ -2191,7 +2156,7 @@ Please check the application path and parameters are correct.</source>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="vanished">Не удается найти файл:
+        <translation type="obsolete">Не удается найти файл:
 %1		
 Пожалуйста, выберите каталог, в котором находится файл.</translation>
     </message>
@@ -2294,11 +2259,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Summary</source>
-        <translation type="vanished">Кратко</translation>
+        <translation type="obsolete">Кратко</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation type="vanished">Сообщение</translation>
+        <translation type="obsolete">Сообщение</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="399"/>
@@ -2394,7 +2359,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="vanished">Пути для поиска заголовочных файлов:</translation>
+        <translation type="obsolete">Пути для поиска заголовочных файлов:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="195"/>
@@ -2531,11 +2496,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Paths</source>
-        <translation type="vanished">Пути</translation>
+        <translation type="obsolete">Пути</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">Изменить</translation>
+        <translation type="obsolete">Изменить</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2635,7 +2600,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="vanished">Выберите директорию</translation>
+        <translation type="obsolete">Выберите директорию</translation>
     </message>
 </context>
 <context>

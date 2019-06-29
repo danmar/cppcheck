@@ -21,8 +21,7 @@
     <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2019 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2018 Cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2018 Cppcheck team.</translation>
+        <translation>Copyright © 2007-2019 Cppcheck team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -371,7 +370,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>constant</source>
-        <translation type="vanished">constant(定数)</translation>
+        <translation type="obsolete">constant(定数)</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="119"/>
@@ -412,27 +411,27 @@ Parameters: -l(line) (file)</translation>
     <name>LogView</name>
     <message>
         <source>Checking Log</source>
-        <translation type="vanished">Cppcheck ログ</translation>
+        <translation type="obsolete">Cppcheck ログ</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">消去</translation>
+        <translation type="obsolete">消去</translation>
     </message>
     <message>
         <source>Save Log</source>
-        <translation type="vanished">ログ保存</translation>
+        <translation type="obsolete">ログ保存</translation>
     </message>
     <message>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="vanished">テキストファイル (*.txt *.log);;すべてのファイル(*.*)</translation>
+        <translation type="obsolete">テキストファイル (*.txt *.log);;すべてのファイル(*.*)</translation>
     </message>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="vanished">ファイルを書き込みできない</translation>
+        <translation type="obsolete">ファイルを書き込みできない</translation>
     </message>
 </context>
 <context>
@@ -612,7 +611,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="vanished">スタイル警告</translation>
+        <translation type="obsolete">スタイル警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="366"/>
@@ -622,7 +621,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Errors</source>
-        <translation type="vanished">エラー</translation>
+        <translation type="obsolete">エラー</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="384"/>
@@ -632,7 +631,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="vanished">スクラッチパッドを表示</translation>
+        <translation type="obsolete">スクラッチパッドを表示</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="767"/>
@@ -647,7 +646,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Portability</source>
-        <translation type="vanished">移植可能性</translation>
+        <translation type="obsolete">移植可能性</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="583"/>
@@ -706,31 +705,31 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Platforms</source>
-        <translation type="vanished">プラットフォーム</translation>
+        <translation type="obsolete">プラットフォーム</translation>
     </message>
     <message>
         <source>C++11</source>
-        <translation type="vanished">C++11</translation>
+        <translation type="obsolete">C++11</translation>
     </message>
     <message>
         <source>C99</source>
-        <translation type="vanished">C99</translation>
+        <translation type="obsolete">C99</translation>
     </message>
     <message>
         <source>Posix</source>
-        <translation type="vanished">Posix</translation>
+        <translation type="obsolete">Posix</translation>
     </message>
     <message>
         <source>C11</source>
-        <translation type="vanished">C11</translation>
+        <translation type="obsolete">C11</translation>
     </message>
     <message>
         <source>C89</source>
-        <translation type="vanished">C89</translation>
+        <translation type="obsolete">C89</translation>
     </message>
     <message>
         <source>C++03</source>
-        <translation type="vanished">C++03</translation>
+        <translation type="obsolete">C++03</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="742"/>
@@ -754,7 +753,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Library Editor...</source>
-        <translation type="vanished">ライブラリの編集</translation>
+        <translation type="obsolete">ライブラリの編集</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="761"/>
@@ -763,7 +762,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Auto-detect language</source>
-        <translation type="vanished">言語を自動検出</translation>
+        <translation type="obsolete">言語を自動検出</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="489"/>
@@ -782,7 +781,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="vanished">警告</translation>
+        <translation type="obsolete">警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="524"/>
@@ -792,7 +791,7 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="vanished">パフォーマンス警告</translation>
+        <translation type="obsolete">パフォーマンス警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="542"/>
@@ -1046,7 +1045,7 @@ Cppcheckの古いバージョンの設定には互換性がありません。エ
     </message>
     <message>
         <source>C/C++ Source, Compile database, Visual Studio (%1 %2 *.sln *.vcxproj)</source>
-        <translation type="vanished">C/C++ソースコード、プロジェクトファイル、Visual Studioソリューション(%1 %2 *.sln *.vcxproj)</translation>
+        <translation type="obsolete">C/C++ソースコード、プロジェクトファイル、Visual Studioソリューション(%1 %2 *.sln *.vcxproj)</translation>
     </message>
     <message>
         <source>Select directory to check</source>
@@ -1255,24 +1254,20 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation>チェック対象のファイルがみつかりません!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
         <source>C/C++ Source</source>
-        <translation>C/C++のソースコード</translation>
+        <translation type="obsolete">C/C++のソースコード</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="567"/>
         <source>Compile database</source>
-        <translation>コンパイルデータベース</translation>
+        <translation type="obsolete">コンパイルデータベース</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="568"/>
         <source>Visual Studio</source>
-        <translation>Visual Studio</translation>
+        <translation type="obsolete">Visual Studio</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="569"/>
         <source>Borland C++ Builder 6</source>
-        <translation>Borland C++ Builder 6</translation>
+        <translation type="obsolete">Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="572"/>
@@ -1470,7 +1465,7 @@ Options:
     <name>Project</name>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not read the project file.</source>
@@ -1490,7 +1485,7 @@ Options:
     </message>
     <message>
         <source>Project</source>
-        <translation type="vanished">プロジェクト</translation>
+        <translation type="obsolete">プロジェクト</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="24"/>
@@ -1516,7 +1511,7 @@ Options:
     </message>
     <message>
         <source>Libraries:</source>
-        <translation type="vanished">ライブラリ</translation>
+        <translation type="obsolete">ライブラリ</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="393"/>
@@ -1525,7 +1520,7 @@ Options:
     </message>
     <message>
         <source>Exclude paths</source>
-        <translation type="vanished">除外するパス</translation>
+        <translation type="obsolete">除外するパス</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="597"/>
@@ -1690,7 +1685,7 @@ Options:
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="vanished">除外する</translation>
+        <translation type="obsolete">除外する</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="500"/>
@@ -1699,7 +1694,7 @@ Options:
     </message>
     <message>
         <source>Suppression list:</source>
-        <translation type="vanished">抑制リスト</translation>
+        <translation type="obsolete">抑制リスト</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="511"/>
@@ -1738,11 +1733,11 @@ Options:
     </message>
     <message>
         <source>Extra Tools</source>
-        <translation type="vanished">エクストラツール</translation>
+        <translation type="obsolete">エクストラツール</translation>
     </message>
     <message>
         <source>It is common best practice to use several tools.</source>
-        <translation type="vanished">複数ツールの併用はよい結果を生みます。</translation>
+        <translation type="obsolete">複数ツールの併用はよい結果を生みます。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="645"/>
@@ -1774,7 +1769,7 @@ Options:
     </message>
     <message>
         <source>Visual Studio (*.sln *.vcxproj);;Compile database (compile_commands.json)</source>
-        <translation type="vanished">Visual Studio (*.sln *.vcxproj);;コンパイルデータベース (compile_commands.json)</translation>
+        <translation type="obsolete">Visual Studio (*.sln *.vcxproj);;コンパイルデータベース (compile_commands.json)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="606"/>
@@ -1797,19 +1792,16 @@ Options:
         <translation>Clang-tidy (みつかりません)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
         <source>Visual Studio</source>
-        <translation>Visual Studio</translation>
+        <translation type="obsolete">Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="415"/>
         <source>Compile database</source>
-        <translation>コンパイルデータベース</translation>
+        <translation type="obsolete">コンパイルデータベース</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="416"/>
         <source>Borland C++ Builder 6</source>
-        <translation>Borland C++ Builder 6</translation>
+        <translation type="obsolete">Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="417"/>
@@ -1823,11 +1815,11 @@ Options:
     </message>
     <message>
         <source>Add Suppression</source>
-        <translation type="vanished">抑制する指摘を追加</translation>
+        <translation type="obsolete">抑制する指摘を追加</translation>
     </message>
     <message>
         <source>Select error id suppress:</source>
-        <translation type="vanished">抑制するエラーID(error id)を選択してください</translation>
+        <translation type="obsolete">抑制するエラーID(error id)を選択してください</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="711"/>
@@ -2103,7 +2095,7 @@ Options:
     </message>
     <message>
         <source>[Inconclusive]</source>
-        <translation type="vanished">[結論の出ない]</translation>
+        <translation type="obsolete">[結論の出ない]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="312"/>
@@ -2122,19 +2114,19 @@ Options:
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">ファイル名をコピー</translation>
+        <translation type="obsolete">ファイル名をコピー</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">フルパスをコピー</translation>
+        <translation type="obsolete">フルパスをコピー</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation type="vanished">メッセージをコピー</translation>
+        <translation type="obsolete">メッセージをコピー</translation>
     </message>
     <message>
         <source>Copy message id</source>
-        <translation type="vanished">メッセージidをコピー</translation>
+        <translation type="obsolete">メッセージidをコピー</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>
@@ -2210,7 +2202,7 @@ Please check the application path and parameters are correct.</source>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="vanished">ファイルが見つかりません:
+        <translation type="obsolete">ファイルが見つかりません:
 %1
 ディレクトリにファイルが存在するか確認してください。</translation>
     </message>
@@ -2338,11 +2330,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Summary</source>
-        <translation type="vanished">内容</translation>
+        <translation type="obsolete">内容</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation type="vanished">メッセージ</translation>
+        <translation type="obsolete">メッセージ</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="399"/>
@@ -2412,7 +2404,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="vanished">Include ディレクトリ:</translation>
+        <translation type="obsolete">Include ディレクトリ:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="195"/>
@@ -2549,11 +2541,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Paths</source>
-        <translation type="vanished">パス</translation>
+        <translation type="obsolete">パス</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">編集</translation>
+        <translation type="obsolete">編集</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2649,7 +2641,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="vanished">include ディレクトリを選択</translation>
+        <translation type="obsolete">include ディレクトリを選択</translation>
     </message>
 </context>
 <context>

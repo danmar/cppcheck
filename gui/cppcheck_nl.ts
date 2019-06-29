@@ -21,8 +21,7 @@
     <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2019 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2018 Cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2018 het cppcheck team.</translation>
+        <translation>Copyright © 2007-2019 het cppcheck team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -399,27 +398,27 @@ Parameters: -l(lijn) (bestand)</translation>
     <name>LogView</name>
     <message>
         <source>Checking Log</source>
-        <translation type="vanished">Controleer log</translation>
+        <translation type="obsolete">Controleer log</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">Wis</translation>
+        <translation type="obsolete">Wis</translation>
     </message>
     <message>
         <source>Save Log</source>
-        <translation type="vanished">Opslaan log</translation>
+        <translation type="obsolete">Opslaan log</translation>
     </message>
     <message>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="vanished">Tekst bestanden (*.txt *.log);;Alle bestanden(*.*)</translation>
+        <translation type="obsolete">Tekst bestanden (*.txt *.log);;Alle bestanden(*.*)</translation>
     </message>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="vanished">Kan bestand: &quot;%1&quot; niet openen om te schrijven</translation>
+        <translation type="obsolete">Kan bestand: &quot;%1&quot; niet openen om te schrijven</translation>
     </message>
 </context>
 <context>
@@ -589,7 +588,7 @@ Parameters: -l(lijn) (bestand)</translation>
     </message>
     <message>
         <source>Errors</source>
-        <translation type="vanished">Fouten</translation>
+        <translation type="obsolete">Fouten</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="384"/>
@@ -599,11 +598,11 @@ Parameters: -l(lijn) (bestand)</translation>
     </message>
     <message>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="vanished">Toon S&amp;cratchpad...</translation>
+        <translation type="obsolete">Toon S&amp;cratchpad...</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="vanished">Waarschuwingen</translation>
+        <translation type="obsolete">Waarschuwingen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="524"/>
@@ -613,7 +612,7 @@ Parameters: -l(lijn) (bestand)</translation>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="vanished">Presentatie waarschuwingen</translation>
+        <translation type="obsolete">Presentatie waarschuwingen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="542"/>
@@ -639,7 +638,7 @@ Parameters: -l(lijn) (bestand)</translation>
     </message>
     <message>
         <source>Portability</source>
-        <translation type="vanished">Portabiliteit</translation>
+        <translation type="obsolete">Portabiliteit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="583"/>
@@ -949,7 +948,7 @@ Parameters: -l(lijn) (bestand)</translation>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="vanished">Stijl waarschuwingen</translation>
+        <translation type="obsolete">Stijl waarschuwingen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="366"/>
@@ -1184,26 +1183,6 @@ Wil je het controleren stoppen en Cppcheck sluiten?</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
-        <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="567"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="568"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="569"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="572"/>
         <source>Select files to analyze</source>
         <translation type="unfinished"></translation>
@@ -1411,15 +1390,15 @@ Options:
     <name>Project</name>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not read the project file.</source>
-        <translation type="vanished">Kon project bestand niet lezen.</translation>
+        <translation type="obsolete">Kon project bestand niet lezen.</translation>
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation type="vanished">Kon niet naar project bestand schrijven.</translation>
+        <translation type="obsolete">Kon niet naar project bestand schrijven.</translation>
     </message>
 </context>
 <context>
@@ -1431,7 +1410,7 @@ Options:
     </message>
     <message>
         <source>Project</source>
-        <translation type="vanished">Project</translation>
+        <translation type="obsolete">Project</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="24"/>
@@ -1623,7 +1602,7 @@ Options:
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="vanished">Exclusief</translation>
+        <translation type="obsolete">Exclusief</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="500"/>
@@ -1711,21 +1690,6 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="297"/>
         <source>Clang-tidy (not found)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="415"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="416"/>
-        <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2014,7 +1978,7 @@ Options:
     </message>
     <message>
         <source>[Inconclusive]</source>
-        <translation type="vanished">[Onduidelijk]</translation>
+        <translation type="obsolete">[Onduidelijk]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="312"/>
@@ -2033,19 +1997,19 @@ Options:
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">Kopier bestandsnaam</translation>
+        <translation type="obsolete">Kopier bestandsnaam</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">Kopieer volledig pad</translation>
+        <translation type="obsolete">Kopieer volledig pad</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation type="vanished">Kopieer bericht</translation>
+        <translation type="obsolete">Kopieer bericht</translation>
     </message>
     <message>
         <source>Copy message id</source>
-        <translation type="vanished">Kopieer bericht id</translation>
+        <translation type="obsolete">Kopieer bericht id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>
@@ -2120,7 +2084,7 @@ Gelieve te controleren of de het pad en de parameters correct zijn.</translation
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="vanished">%1
+        <translation type="obsolete">%1
 Selecteer de map waarin het bestand zich bevindt.</translation>
     </message>
     <message>
@@ -2222,11 +2186,11 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
     </message>
     <message>
         <source>Summary</source>
-        <translation type="vanished">Overzicht</translation>
+        <translation type="obsolete">Overzicht</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation type="vanished">Bericht</translation>
+        <translation type="obsolete">Bericht</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="399"/>
@@ -2322,7 +2286,7 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="vanished">Include paden:</translation>
+        <translation type="obsolete">Include paden:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="195"/>
@@ -2459,11 +2423,11 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
     </message>
     <message>
         <source>Paths</source>
-        <translation type="vanished">Paden</translation>
+        <translation type="obsolete">Paden</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">Bewerk</translation>
+        <translation type="obsolete">Bewerk</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2563,7 +2527,7 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="vanished">Selecteer include map</translation>
+        <translation type="obsolete">Selecteer include map</translation>
     </message>
 </context>
 <context>

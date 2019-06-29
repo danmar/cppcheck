@@ -21,8 +21,7 @@
     <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2019 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2018 Cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2018 el equipo de cppcheck.</translation>
+        <translation>Copyright © 2007-2019 el equipo de cppcheck.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -386,27 +385,27 @@ Parameters: -l(line) (file)</source>
     <name>LogView</name>
     <message>
         <source>Checking Log</source>
-        <translation type="vanished">Comprobando el log</translation>
+        <translation type="obsolete">Comprobando el log</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">Limpiar</translation>
+        <translation type="obsolete">Limpiar</translation>
     </message>
     <message>
         <source>Save Log</source>
-        <translation type="vanished">Guardar el log</translation>
+        <translation type="obsolete">Guardar el log</translation>
     </message>
     <message>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="vanished">Archivos de texto (*.txt *.log);;Todos los archivos(*.*)</translation>
+        <translation type="obsolete">Archivos de texto (*.txt *.log);;Todos los archivos(*.*)</translation>
     </message>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="vanished">No se pudo abrir el fichero para escritura: &quot;%1&quot;</translation>
+        <translation type="obsolete">No se pudo abrir el fichero para escritura: &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -581,7 +580,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="vanished">Advertencias de estilo</translation>
+        <translation type="obsolete">Advertencias de estilo</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="366"/>
@@ -591,7 +590,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Errors</source>
-        <translation type="vanished">Errores</translation>
+        <translation type="obsolete">Errores</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="384"/>
@@ -616,7 +615,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Portability</source>
-        <translation type="vanished">Portabilidad</translation>
+        <translation type="obsolete">Portabilidad</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="583"/>
@@ -675,31 +674,31 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Platforms</source>
-        <translation type="vanished">Plataformas</translation>
+        <translation type="obsolete">Plataformas</translation>
     </message>
     <message>
         <source>C++11</source>
-        <translation type="vanished">C++11</translation>
+        <translation type="obsolete">C++11</translation>
     </message>
     <message>
         <source>C99</source>
-        <translation type="vanished">C99</translation>
+        <translation type="obsolete">C99</translation>
     </message>
     <message>
         <source>Posix</source>
-        <translation type="vanished">Posix</translation>
+        <translation type="obsolete">Posix</translation>
     </message>
     <message>
         <source>C11</source>
-        <translation type="vanished">C11</translation>
+        <translation type="obsolete">C11</translation>
     </message>
     <message>
         <source>C89</source>
-        <translation type="vanished">C89</translation>
+        <translation type="obsolete">C89</translation>
     </message>
     <message>
         <source>C++03</source>
-        <translation type="vanished">C++03</translation>
+        <translation type="obsolete">C++03</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="742"/>
@@ -723,7 +722,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Library Editor...</source>
-        <translation type="vanished">Editor de bibliotecas...</translation>
+        <translation type="obsolete">Editor de bibliotecas...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="761"/>
@@ -968,7 +967,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="vanished">Advertencias</translation>
+        <translation type="obsolete">Advertencias</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="524"/>
@@ -978,7 +977,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="vanished">Advertencias de rendimiento</translation>
+        <translation type="obsolete">Advertencias de rendimiento</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="542"/>
@@ -1203,26 +1202,6 @@ Abrir un nuevo fichero XML eliminará los resultados actuales. ¿Desea continuar
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
-        <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="567"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="568"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="569"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="572"/>
         <source>Select files to analyze</source>
         <translation type="unfinished"></translation>
@@ -1408,15 +1387,15 @@ Options:
     <name>Project</name>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not read the project file.</source>
-        <translation type="vanished">No se ha podido leer el fichero.</translation>
+        <translation type="obsolete">No se ha podido leer el fichero.</translation>
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation type="vanished">No se ha podido escribir el fichero de proyecto.</translation>
+        <translation type="obsolete">No se ha podido escribir el fichero de proyecto.</translation>
     </message>
 </context>
 <context>
@@ -1428,7 +1407,7 @@ Options:
     </message>
     <message>
         <source>Project</source>
-        <translation type="vanished">Proyecto</translation>
+        <translation type="obsolete">Proyecto</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="24"/>
@@ -1454,7 +1433,7 @@ Options:
     </message>
     <message>
         <source>Libraries:</source>
-        <translation type="vanished">Bibliotecas:</translation>
+        <translation type="obsolete">Bibliotecas:</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="393"/>
@@ -1624,7 +1603,7 @@ Options:
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="vanished">Excluir</translation>
+        <translation type="obsolete">Excluir</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="500"/>
@@ -1716,21 +1695,6 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="297"/>
         <source>Clang-tidy (not found)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="415"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="416"/>
-        <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2021,7 +1985,7 @@ Options:
     </message>
     <message>
         <source>[Inconclusive]</source>
-        <translation type="vanished">[No concluyente]</translation>
+        <translation type="obsolete">[No concluyente]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="306"/>
@@ -2050,19 +2014,19 @@ Options:
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">Copiar nombre del archivo</translation>
+        <translation type="obsolete">Copiar nombre del archivo</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">Copiar ruta completa</translation>
+        <translation type="obsolete">Copiar ruta completa</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation type="vanished">Copiar mensaje</translation>
+        <translation type="obsolete">Copiar mensaje</translation>
     </message>
     <message>
         <source>Copy message id</source>
-        <translation type="vanished">Copiar id del mensaje</translation>
+        <translation type="obsolete">Copiar id del mensaje</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>
@@ -2138,7 +2102,7 @@ Por favor comprueba que la ruta a la aplicación y los parámetros son correctos
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="vanished">No se ha encontrado el fichero:
+        <translation type="obsolete">No se ha encontrado el fichero:
 %1
 Por favor selecciona la carpeta donde se encuentra.</translation>
     </message>
@@ -2257,11 +2221,11 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
     </message>
     <message>
         <source>Summary</source>
-        <translation type="vanished">Resumen</translation>
+        <translation type="obsolete">Resumen</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation type="vanished">Mensaje</translation>
+        <translation type="obsolete">Mensaje</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="399"/>
@@ -2443,11 +2407,11 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
     </message>
     <message>
         <source>Paths</source>
-        <translation type="vanished">Rutas</translation>
+        <translation type="obsolete">Rutas</translation>
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="vanished">Rutas incluidas:</translation>
+        <translation type="obsolete">Rutas incluidas:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="195"/>
@@ -2499,7 +2463,7 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">Editar</translation>
+        <translation type="obsolete">Editar</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2571,7 +2535,7 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="vanished">Seleccionar carpeta a incluir</translation>
+        <translation type="obsolete">Seleccionar carpeta a incluir</translation>
     </message>
 </context>
 <context>
