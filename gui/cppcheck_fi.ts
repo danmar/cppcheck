@@ -1102,26 +1102,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
-        <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="567"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="568"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="569"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="572"/>
         <source>Select files to analyze</source>
         <translation type="unfinished"></translation>
@@ -1571,21 +1551,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="415"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="416"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.cpp" line="417"/>
         <source>Import Project</source>
         <translation type="unfinished"></translation>
@@ -1886,11 +1851,11 @@ Options:
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">Kopioi tiedostonimi</translation>
+        <translation type="obsolete">Kopioi tiedostonimi</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">Kopioi tiedoston koko polku</translation>
+        <translation type="obsolete">Kopioi tiedoston koko polku</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>

@@ -21,8 +21,7 @@
     <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-2019 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2018 Cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2018 Cppcheck-Team.</translation>
+        <translation>Copyright © 2007-2019 Cppcheck-Team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -44,7 +43,12 @@ der GNU General Public License Version 3 lizenziert</translation>
 &lt;li&gt;picojson&lt;/li&gt;
 &lt;li&gt;pcre&lt;/li&gt;
 &lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;Vielen Dank für die von uns genutzten Bibliotheken:&lt;/p&gt;&lt;ul&gt;
+&lt;li&gt;tinyxml2&lt;/li&gt;
+&lt;li&gt;picojson&lt;/li&gt;
+&lt;li&gt;pcre&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -1009,26 +1013,6 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
         <translation>Sie müssen die Projektdatei schließen, bevor Sie neue Dateien oder Verzeichnisse auswählen!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
-        <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="567"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="568"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="569"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="767"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
@@ -1322,10 +1306,6 @@ Options:
         <translation>Hinweis: Legen Sie eigene .cfg-Dateien in den Ordner der Projektdatei. Dann sollten sie oben sichtbar werden.</translation>
     </message>
     <message>
-        <source>Exclude paths</source>
-        <translation type="vanished">Ausschlusspfade</translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.ui" line="557"/>
         <source>Addons and tools</source>
         <translation>Addons und Werkzeuge</translation>
@@ -1431,22 +1411,22 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="331"/>
         <source>Analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>Analyse</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="337"/>
         <source>Check code in headers  (slower analysis, more results)</source>
-        <translation type="unfinished"></translation>
+        <translation>Prüfe Code in Headern (langsamere Analyse, mehr Ergebnisse)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="347"/>
         <source>Check code in unused templates  (slower and less accurate analysis)</source>
-        <translation type="unfinished"></translation>
+        <translation>Prüfe Code in ungenutzten Templates (langsamere und weniger genaue Analyse)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="356"/>
         <source>Max CTU depth</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximale CTU-Tiefe</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="420"/>
@@ -1466,7 +1446,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="450"/>
         <source>Exclude source files in paths</source>
-        <translation type="unfinished"></translation>
+        <translation>Quelldateien in Pfaden ausschließen</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="632"/>
@@ -1565,21 +1545,6 @@ Options:
         <location filename="projectfiledialog.cpp" line="297"/>
         <source>Clang-tidy (not found)</source>
         <translation>Clang-tidy (nicht gefunden)</translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="415"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="416"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="417"/>
@@ -2246,27 +2211,27 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="425"/>
         <source>Code Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Code-Editor</translation>
     </message>
     <message>
         <location filename="settings.ui" line="431"/>
         <source>Code Editor Style</source>
-        <translation type="unfinished"></translation>
+        <translation>Code-Editor-Stil</translation>
     </message>
     <message>
         <location filename="settings.ui" line="437"/>
         <source>Default Light Style</source>
-        <translation type="unfinished"></translation>
+        <translation>Heller Standardstil</translation>
     </message>
     <message>
         <location filename="settings.ui" line="444"/>
         <source>Default Dark Style</source>
-        <translation type="unfinished"></translation>
+        <translation>Dunkler Standardstil</translation>
     </message>
     <message>
         <location filename="settings.ui" line="453"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Benutzerdefiniert</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>

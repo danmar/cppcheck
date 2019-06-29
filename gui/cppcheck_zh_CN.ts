@@ -396,27 +396,27 @@ Parameters: -l(line) (file)</source>
     <name>LogView</name>
     <message>
         <source>Checking Log</source>
-        <translation type="vanished">正在检查记录</translation>
+        <translation type="obsolete">正在检查记录</translation>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="vanished">清空</translation>
+        <translation type="obsolete">清空</translation>
     </message>
     <message>
         <source>Save Log</source>
-        <translation type="vanished">保存记录</translation>
+        <translation type="obsolete">保存记录</translation>
     </message>
     <message>
         <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="vanished">文本文件(*.txt *.log);;所有文件(*.*)</translation>
+        <translation type="obsolete">文本文件(*.txt *.log);;所有文件(*.*)</translation>
     </message>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="vanished">无法打开并写入文件: “%1”</translation>
+        <translation type="obsolete">无法打开并写入文件: “%1”</translation>
     </message>
 </context>
 <context>
@@ -591,7 +591,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="vanished">风格警告</translation>
+        <translation type="obsolete">风格警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="366"/>
@@ -601,7 +601,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Errors</source>
-        <translation type="vanished">错误</translation>
+        <translation type="obsolete">错误</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="384"/>
@@ -611,7 +611,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Show S&amp;cratchpad...</source>
-        <translation type="vanished">显示便条(&amp;C)...</translation>
+        <translation type="obsolete">显示便条(&amp;C)...</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="767"/>
@@ -626,7 +626,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Portability</source>
-        <translation type="vanished">移植可能性</translation>
+        <translation type="obsolete">移植可能性</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="583"/>
@@ -685,19 +685,19 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Platforms</source>
-        <translation type="vanished">平台</translation>
+        <translation type="obsolete">平台</translation>
     </message>
     <message>
         <source>C++11</source>
-        <translation type="vanished">C++11</translation>
+        <translation type="obsolete">C++11</translation>
     </message>
     <message>
         <source>C99</source>
-        <translation type="vanished">C99</translation>
+        <translation type="obsolete">C99</translation>
     </message>
     <message>
         <source>Posix</source>
-        <translation type="vanished">Posix</translation>
+        <translation type="obsolete">Posix</translation>
     </message>
     <message>
         <source>C11</source>
@@ -753,7 +753,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="vanished">警告</translation>
+        <translation type="obsolete">警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="524"/>
@@ -763,7 +763,7 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="vanished">性能警告</translation>
+        <translation type="obsolete">性能警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="542"/>
@@ -1223,26 +1223,6 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="566"/>
-        <source>C/C++ Source</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="567"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="568"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="569"/>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="572"/>
         <source>Select files to analyze</source>
         <translation type="unfinished"></translation>
@@ -1428,15 +1408,15 @@ Options:
     <name>Project</name>
     <message>
         <source>Cppcheck</source>
-        <translation type="vanished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
     <message>
         <source>Could not read the project file.</source>
-        <translation type="vanished">无法读取项目文件。</translation>
+        <translation type="obsolete">无法读取项目文件。</translation>
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation type="vanished">无法写入项目文件。</translation>
+        <translation type="obsolete">无法写入项目文件。</translation>
     </message>
 </context>
 <context>
@@ -1448,7 +1428,7 @@ Options:
     </message>
     <message>
         <source>Project</source>
-        <translation type="vanished">项目</translation>
+        <translation type="obsolete">项目</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="24"/>
@@ -1640,7 +1620,7 @@ Options:
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="vanished">排除</translation>
+        <translation type="obsolete">排除</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="500"/>
@@ -1728,21 +1708,6 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="297"/>
         <source>Clang-tidy (not found)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="414"/>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="415"/>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="416"/>
-        <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2029,7 +1994,7 @@ Options:
     </message>
     <message>
         <source>[Inconclusive]</source>
-        <translation type="vanished">[不确定的]</translation>
+        <translation type="obsolete">[不确定的]</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="312"/>
@@ -2048,19 +2013,19 @@ Options:
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">复制文件名</translation>
+        <translation type="obsolete">复制文件名</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">复制完整路径</translation>
+        <translation type="obsolete">复制完整路径</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation type="vanished">复制消息</translation>
+        <translation type="obsolete">复制消息</translation>
     </message>
     <message>
         <source>Copy message id</source>
-        <translation type="vanished">复制消息 ID</translation>
+        <translation type="obsolete">复制消息 ID</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>
@@ -2136,7 +2101,7 @@ Please check the application path and parameters are correct.</source>
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="vanished">无法找到文件:
+        <translation type="obsolete">无法找到文件:
 %1
 请选择文件所在目录。</translation>
     </message>
@@ -2265,11 +2230,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Summary</source>
-        <translation type="vanished">概要</translation>
+        <translation type="obsolete">概要</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation type="vanished">消息</translation>
+        <translation type="obsolete">消息</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="399"/>
@@ -2339,7 +2304,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="vanished">Include 路径:</translation>
+        <translation type="obsolete">Include 路径:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="195"/>
@@ -2476,11 +2441,11 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Paths</source>
-        <translation type="vanished">路径</translation>
+        <translation type="obsolete">路径</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">编辑</translation>
+        <translation type="obsolete">编辑</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2580,7 +2545,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <source>Select include directory</source>
-        <translation type="vanished">选择包含目录</translation>
+        <translation type="obsolete">选择包含目录</translation>
     </message>
 </context>
 <context>
