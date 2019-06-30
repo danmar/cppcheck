@@ -3635,6 +3635,11 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     return values;
 }
 
+static bool isLiteralNumber(const Token *tok, bool cpp)
+{
+    return tok->isNumber() || tok->str() == "NULL" || (cpp && Token::Match(tok, "false|true|nullptr"));
+}
+
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
@@ -3665,7 +3670,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
-            const bool constValue = tok->astOperand2()->isNumber();
+            const bool constValue = isLiteralNumber(tok->astOperand2(), tokenlist->isCPP());
             const bool init = var->nameToken() == tok->astOperand1();
             valueFlowForwardAssign(tok->astOperand2(), var, values, constValue, init, tokenlist, errorLogger, settings);
         }

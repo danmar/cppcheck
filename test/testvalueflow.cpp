@@ -3097,6 +3097,16 @@ private:
                "}";
         ASSERT(isNotKnownValues(code, "!"));
 
+        code = "void f() {\n" // #8356
+               "  bool b = false;\n"
+               "  for(int x = 3; !b && x < 10; x++) {\n" // <- b has known value
+               "    for(int y = 4; !b && y < 20; y++) {}\n"
+               "  }\n"
+               "}";
+        value = valueOfTok(code, "!");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT(value.isKnown());
+
         code = "void f() {\n"
                "  int x = 0;\n"
                "  switch (state) {\n"
