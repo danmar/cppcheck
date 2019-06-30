@@ -3918,7 +3918,7 @@ private:
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
         CheckBufferOverrun c;
-        c.getErrorMessages(this, 0);
+        c.getErrorMessages(this, nullptr);
     }
 
     void arrayIndexThenCheck() {

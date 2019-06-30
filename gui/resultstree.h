@@ -48,7 +48,7 @@ class ThreadHandler;
 class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
-    explicit ResultsTree(QWidget * parent = 0);
+    explicit ResultsTree(QWidget * parent = nullptr);
     virtual ~ResultsTree();
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 

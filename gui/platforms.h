@@ -44,7 +44,7 @@ class Platforms : public QObject {
     Q_OBJECT
 
 public:
-    explicit Platforms(QObject *parent = NULL);
+    explicit Platforms(QObject *parent = nullptr);
     void add(const QString &title, Settings::PlatformType platform);
     int getCount() const;
     void init();

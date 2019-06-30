@@ -3579,7 +3579,7 @@ static void valueFlowForwardAssign(Token * const               tok,
             if (it->isIntValue())
                 it->intvalue = (it->intvalue != 0);
             if (it->isTokValue())
-                it ->intvalue = (it->tokvalue != 0);
+                it ->intvalue = (it->tokvalue != nullptr);
         }
     }
 
@@ -5437,9 +5437,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowFwdAnalysis(tokenlist, settings);
 
     // Temporary hack.. run valueflow until there is nothing to update or timeout expires
-    const std::time_t timeout = std::time(0) + TIMEOUT;
+    const std::time_t timeout = std::time(nullptr) + TIMEOUT;
     std::size_t values = 0;
-    while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
+    while (std::time(nullptr) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);

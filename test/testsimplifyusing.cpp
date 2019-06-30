@@ -80,7 +80,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
     void simplifyUsing1() {

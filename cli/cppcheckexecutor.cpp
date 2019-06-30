@@ -227,7 +227,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
 // 32 vs. 64bit
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
     const int fd = fileno(output);
-    void *callstackArray[32]= {0}; // the less resources the better...
+    void *callstackArray[32]= {nullptr}; // the less resources the better...
     const int currentdepth = backtrace(callstackArray, (int)GetArrayLength(callstackArray));
     const int offset=2; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)

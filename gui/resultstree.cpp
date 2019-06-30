@@ -56,13 +56,13 @@ ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mSettings(nullptr),
     mApplications(nullptr),
-    mContextItem(0),
+    mContextItem(nullptr),
     mShowFullPath(false),
     mSaveFullPath(false),
     mSaveAllErrors(true),
     mShowErrorId(false),
     mVisibleErrors(false),
-    mSelectionModel(0),
+    mSelectionModel(nullptr),
     mThread(nullptr),
     mShowCppcheck(true),
     mShowClang(true)
@@ -330,7 +330,7 @@ QStandardItem *ResultsTree::findFileItem(const QString &name) const
 #endif
             return mModel.item(i, 0);
     }
-    return 0;
+    return nullptr;
 }
 
 void ResultsTree::clear()

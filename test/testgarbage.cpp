@@ -281,7 +281,7 @@ private:
 
         tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
+        return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
     }
 
     std::string getSyntaxError(const char code[]) {

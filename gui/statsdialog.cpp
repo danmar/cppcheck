@@ -149,7 +149,7 @@ void StatsDialog::pdfExport()
                          .arg(tr("Information messages"))
                          .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
-    QString fileName = QFileDialog::getSaveFileName((QWidget*)0, tr("Export PDF"), QString(), "*.pdf");
+    QString fileName = QFileDialog::getSaveFileName((QWidget*)nullptr, tr("Export PDF"), QString(), "*.pdf");
     if (QFileInfo(fileName).suffix().isEmpty()) {
         fileName.append(".pdf");
     }

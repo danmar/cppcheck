@@ -363,7 +363,7 @@ private:
 
 
     void deleteLast() const {
-        TokensFrontBack listEnds{ 0 };
+        TokensFrontBack listEnds{ nullptr };
         Token ** const tokensBack = &(listEnds.back);
         Token tok(&listEnds);
         tok.insertToken("aba");
@@ -373,7 +373,7 @@ private:
     }
 
     void deleteFirst() const {
-        TokensFrontBack listEnds{ 0 };
+        TokensFrontBack listEnds{ nullptr };
         Token ** const tokensFront = &(listEnds.front);
         Token tok(&listEnds);
 
@@ -390,7 +390,7 @@ private:
         ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(4)->nextArgument(), "3 , 4"));
 
         givenACodeSampleToTokenize example2("foo();");
-        ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == 0);
+        ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == nullptr);
 
         givenACodeSampleToTokenize example3("foo(bar(a, b), 2, 3);");
         ASSERT_EQUALS(true, Token::simpleMatch(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
@@ -402,7 +402,7 @@ private:
     void eraseTokens() const {
         givenACodeSampleToTokenize code("begin ; { this code will be removed } end", true);
         Token::eraseTokens(code.tokens()->next(), code.tokens()->tokAt(9));
-        ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS("begin ; end", code.tokens()->stringifyList(nullptr, false));
     }
 
 

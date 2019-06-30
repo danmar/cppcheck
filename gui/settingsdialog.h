@@ -41,7 +41,7 @@ class SettingsDialog : public QDialog {
 public:
     SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
-                   QWidget *parent = 0);
+                   QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
     virtual ~SettingsDialog();
     SettingsDialog &operator=(const SettingsDialog &) = delete;

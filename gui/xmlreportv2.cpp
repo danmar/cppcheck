@@ -50,8 +50,8 @@ static const QString VerboseAttribute = "verbose";
 
 XmlReportV2::XmlReportV2(const QString &filename) :
     XmlReport(filename),
-    mXmlReader(NULL),
-    mXmlWriter(NULL)
+    mXmlReader(nullptr),
+    mXmlWriter(nullptr)
 {
 }
 
