@@ -518,11 +518,6 @@ public:
     void findComplicatedSyntaxErrorsInTemplates();
 
     /**
-     * Calculate every token's scope before simplifying templates
-     */
-    void calculateScopes();
-    
-    /**
      * Simplify e.g. 'atol("0")' into '0'
      */
     void simplifyMathFunctions();
