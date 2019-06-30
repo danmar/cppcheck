@@ -976,7 +976,7 @@ public:
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
             return value.isContainerSizeValue() && value.intvalue == val;
         });
-        return it == mImpl->mValues->end() ? nullptr : &*it;;
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const Token *getValueTokenMaxStrLength() const;

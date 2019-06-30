@@ -138,7 +138,7 @@ public:
             return "information";
         case debug:
             return "debug";
-        };
+        }
         throw InternalError(nullptr, "Unknown severity");
     }
     static SeverityType fromString(const std::string &severity) {

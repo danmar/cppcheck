@@ -103,7 +103,7 @@ void MainWindow::filter(QString filter)
 {
     QStringList allErrors;
 
-    for (const QString errorItem : mAllErrors) {
+    for (const QString &errorItem : mAllErrors) {
         if (filter.isEmpty()) {
             allErrors << errorItem;
             continue;

@@ -366,3 +366,4 @@ void SettingsDialog::manageStyleControls()
     mUI.choiceCustom->setChecked(!isDefaultLight && !isDefaultDark);
     mUI.btnEditCustom->setEnabled(!isDefaultLight && !isDefaultDark);
 }
+
