@@ -79,7 +79,7 @@ public:
         /**
          * Constructor used for declarations.
          * \param tok template declaration token "template < ... >"
-         * \param scope full qualification of template
+         * \param s full qualification of template(scope)
          * \param nt template name token "template < ... > class name"
          * \param pe template parameter end token ">"
          */
