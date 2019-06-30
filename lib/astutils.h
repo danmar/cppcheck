@@ -94,7 +94,7 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
  * @param cond1  condition1
  * @param cond2  condition2
  * @param library files data
- * @param pure
+ * @param pure boolean
  */
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
