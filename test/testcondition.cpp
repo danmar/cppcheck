@@ -57,7 +57,8 @@ private:
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
         TEST_CASE(comparison);         // CheckCondition::comparison test cases
         TEST_CASE(multicompare);       // mismatching comparisons
-        TEST_CASE(duplicateIf);        // duplicate conditions in if and else-if
+        TEST_CASE(overlappingElseIfCondition);  // overlapping conditions in if and else-if
+        TEST_CASE(oppositeElseIfCondition); // opposite conditions in if and else-if
 
         TEST_CASE(checkBadBitmaskCheck);
 
@@ -518,7 +519,7 @@ private:
         checkCondition.runChecks(&tokenizer, &settings1, this);
     }
 
-    void duplicateIf() {
+    void overlappingElseIfCondition() {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
@@ -690,6 +691,28 @@ private:
               "    else if ( value & (int)Value2 ) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void oppositeElseIfCondition() {
+        setMultiline();
+
+        check("void f(int x) {\n"
+              "    if (x) {}\n"
+              "    else if (!x) {}\n"
+              "}");
+        ASSERT_EQUALS("test.cpp:3:style:Expression is always true because 'else if' condition is opposite to previous condition at line 2.\n"
+                      "test.cpp:2:note:first condition\n"
+                      "test.cpp:3:note:else if condition is opposite to first condition\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    int y = x;\n"
+              "    if (x) {}\n"
+              "    else if (!y) {}\n"
+              "}");
+        ASSERT_EQUALS("test.cpp:4:style:Expression is always true because 'else if' condition is opposite to previous condition at line 3.\n"
+                      "test.cpp:2:note:'y' is assigned value 'x' here.\n"
+                      "test.cpp:3:note:first condition\n"
+                      "test.cpp:4:note:else if condition is opposite to first condition\n", errout.str());
     }
 
     void checkBadBitmaskCheck() {

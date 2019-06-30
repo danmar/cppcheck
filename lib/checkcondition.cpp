@@ -490,8 +490,12 @@ void CheckCondition::multiCondition()
             continue;
 
         const Token * const cond1 = scope.classDef->next()->astOperand2();
+        if (!cond1)
+            continue;
 
         const Token * tok2 = scope.classDef->next();
+
+        // Check each 'else if'
         for (;;) {
             tok2 = tok2->link();
             if (!Token::simpleMatch(tok2, ") {"))
@@ -501,23 +505,38 @@ void CheckCondition::multiCondition()
                 break;
             tok2 = tok2->tokAt(4);
 
-            if (cond1 &&
-                tok2->astOperand2() &&
+            if (tok2->astOperand2() &&
                 !cond1->hasKnownIntValue() &&
-                !tok2->astOperand2()->hasKnownIntValue() &&
-                isOverlappingCond(cond1, tok2->astOperand2(), true))
-                multiConditionError(tok2, cond1->linenr());
+                !tok2->astOperand2()->hasKnownIntValue()) {
+                ErrorPath errorPath;
+                if (isOverlappingCond(cond1, tok2->astOperand2(), true))
+                    overlappingElseIfConditionError(tok2, cond1->linenr());
+                else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath))
+                    oppositeElseIfConditionError(cond1, tok2, errorPath);
+            }
         }
     }
 }
 
-void CheckCondition::multiConditionError(const Token *tok, unsigned int line1)
+void CheckCondition::overlappingElseIfConditionError(const Token *tok, unsigned int line1)
 {
     std::ostringstream errmsg;
     errmsg << "Expression is always false because 'else if' condition matches previous condition at line "
            << line1 << ".";
 
     reportError(tok, Severity::style, "multiCondition", errmsg.str(), CWE398, false);
+}
+
+void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath)
+{
+    std::ostringstream errmsg;
+    errmsg << "Expression is always true because 'else if' condition is opposite to previous condition at line "
+           << ifCond->linenr() << ".";
+
+    errorPath.emplace_back(ifCond, "first condition");
+    errorPath.emplace_back(elseIfCond, "else if condition is opposite to first condition");
+
+    reportError(errorPath, Severity::style, "multiCondition", errmsg.str(), CWE398, false);
 }
 
 //---------------------------------------------------------------------------
