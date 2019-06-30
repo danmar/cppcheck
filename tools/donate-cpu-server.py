@@ -314,12 +314,16 @@ def generate_package_diff_statistics(filename):
 def diffMessageIdReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
-    for filename in sorted(glob.glob(resultPath + '/*')):
+    for filename in sorted(glob.glob(resultPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
+        with open(filename, 'rt') as f:
+          diff_stats = f.read()
+        if not messageId in diff_stats:
+          continue
         url = None
         diff = False
-        for line in open(filename, 'rt'):
+        for line in open(filename[:-5], 'rt'):
             if line.startswith('ftp://'):
                 url = line
             elif line == 'diff:\n':
@@ -338,13 +342,19 @@ def diffMessageIdTodayReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
-    for filename in sorted(glob.glob(resultPath + '/*')):
+    for filename in sorted(glob.glob(resultPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
+        with open(filename, 'rt') as f:
+          diff_stats = f.read()
+        if not messageId in diff_stats:
+          continue
+        if not today in diff_stats:
+          continue
         url = None
         diff = False
         firstLine = True
-        for line in open(filename, 'rt'):
+        for line in open(filename[:-5], 'rt'):
             if firstLine:
                 firstLine = False
                 if not line.startswith(today):
