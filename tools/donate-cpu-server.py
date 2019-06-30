@@ -249,7 +249,8 @@ def diffReport(resultsPath):
         with open(filename, 'rt') as f:
             data = json.loads(f.read())
         uploadedToday = data['date'] == today
-        for messageId, sums in data['sums']:
+        for messageId in data['sums']:
+            sums = data['sums'][messageId]
             if messageId not in out:
                 out[messageId] = [0, 0]
             out[messageId][0] += sums[OLD_VERSION]
