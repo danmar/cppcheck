@@ -30,7 +30,6 @@
 #include <cstddef>
 #include <functional>
 #include <list>
-#include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -49,17 +48,6 @@ class Variable;
 struct TokensFrontBack {
     Token *front;
     Token *back;
-};
-
-struct ScopeInfo2 {
-    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> &usingNamespaces_ = std::set<std::string>()) 
-        : name(name_), 
-        bodyEnd(bodyEnd_), 
-        usingNamespaces(usingNamespaces_) 
-        {}
-    std::string name;
-    const Token * const bodyEnd;
-    std::set<std::string> usingNamespaces;
 };
 
 struct TokenImpl {
@@ -109,8 +97,6 @@ struct TokenImpl {
     // Pointer to a template in the template simplifier
     std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
 
-    std::shared_ptr<ScopeInfo2> mScopeInfo;
-
     TokenImpl()
         : mVarId(0)
         , mFileIndex(0)
@@ -128,7 +114,6 @@ struct TokenImpl {
         , mValues(nullptr)
         , mBits(0)
         , mTemplateSimplifierPointers()
-        , mScopeInfo(nullptr)
     {}
 
     ~TokenImpl();
@@ -1183,10 +1168,6 @@ public:
     void printAst(bool verbose, bool xml, std::ostream &out) const;
 
     void printValueFlow(bool xml, std::ostream &out) const;
-    
-    void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
-    
-    std::shared_ptr<ScopeInfo2> scopeInfo() const;
 };
 
 /// @}
