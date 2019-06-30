@@ -1646,16 +1646,8 @@ class MisraChecker:
             token = scope.bodyStart.next
             while token != scope.bodyEnd and token is not None:
                 # Handle nested structures to not duplicate an error.
-                if token.str == 'struct':
-                    while not isStruct(token):
-                        token = token.next
-                    nestedStructScope = token.valueType.typeScope
-                    while not nestedStructScope.nestedInId != scope.Id:
-                        token = token.next
-                        if isStruct(token):
-                            nestedStructScope = token.valueType.typeScope
-                    token = nestedStructScope.bodyEnd.next.next.next
-                    continue
+                if token.str == '{':
+                    token = token.link
 
                 if cppcheckdata.simpleMatch(token, "[ ]"):
                     self.reportError(token, 18, 7)
