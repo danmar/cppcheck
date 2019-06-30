@@ -33,7 +33,7 @@ class ApplicationList : public QObject {
     Q_OBJECT
 public:
 
-    explicit ApplicationList(QObject *parent = 0);
+    explicit ApplicationList(QObject *parent = nullptr);
     virtual ~ApplicationList();
 
     /**

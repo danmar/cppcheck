@@ -223,7 +223,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        return tokenizer.tokens()->stringifyList(0, true);
+        return tokenizer.tokens()->stringifyList(nullptr, true);
     }
 
     void template1() {

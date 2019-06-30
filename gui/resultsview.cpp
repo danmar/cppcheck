@@ -161,7 +161,7 @@ void ResultsView::save(const QString &filename, Report::Type type) const
         msgBox.exec();
     }
 
-    Report *report = NULL;
+    Report *report = nullptr;
 
     switch (type) {
     case Report::CSV:
@@ -185,7 +185,7 @@ void ResultsView::save(const QString &filename, Report::Type type) const
             msgBox.exec();
         }
         delete report;
-        report = NULL;
+        report = nullptr;
     } else {
         QMessageBox msgBox;
         msgBox.setText(tr("Failed to save the report."));
