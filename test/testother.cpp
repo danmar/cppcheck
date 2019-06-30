@@ -1875,7 +1875,7 @@ private:
               "    case 3:\n"
               "      strcpy(str, \"b'\");\n"
               "    }\n"
-              "}", 0, false, false, false);
+              "}", nullptr, false, false, false);
         // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(int a) {\n"
@@ -3346,7 +3346,7 @@ private:
 
         check("void f(char c) {\n"
               "    printf(\"%i\", 1 + 1 ? 1 : 2);\n" // "1+1" is simplified away
-              "}",0,false,false,false);
+              "}",nullptr,false,false,false);
         ASSERT_EQUALS("[test.cpp:2]: (style) Clarify calculation precedence for '+' and '?'.\n", errout.str());
 
         check("void f() {\n"

@@ -47,7 +47,7 @@ static void unused()
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
     mCurrentLanguage("en"),
-    mTranslator(NULL)
+    mTranslator(nullptr)
 {
     // Add our available languages
     // Keep this list sorted
@@ -90,7 +90,7 @@ bool TranslationHandler::setLanguage(const QString &code)
         if (mTranslator) {
             qApp->removeTranslator(mTranslator);
             delete mTranslator;
-            mTranslator = NULL;
+            mTranslator = nullptr;
         }
 
         mCurrentLanguage = code;

@@ -110,7 +110,7 @@ private:
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
-        const CheckMemoryLeak check(&tokenizer, 0, &settings);
+        const CheckMemoryLeak check(&tokenizer, nullptr, &settings);
         ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }
 };

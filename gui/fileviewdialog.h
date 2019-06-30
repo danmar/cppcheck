@@ -41,7 +41,7 @@ class FileViewDialog : public QDialog {
 public:
     FileViewDialog(const QString &file,
                    const QString &title,
-                   QWidget *parent = 0);
+                   QWidget *parent = nullptr);
 
 
 protected:

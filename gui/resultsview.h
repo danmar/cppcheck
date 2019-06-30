@@ -44,7 +44,7 @@ class ResultsView : public QWidget {
     Q_OBJECT
 public:
 
-    explicit ResultsView(QWidget * parent = 0);
+    explicit ResultsView(QWidget * parent = nullptr);
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     ResultsView(const ResultsView &) = delete;
     virtual ~ResultsView();

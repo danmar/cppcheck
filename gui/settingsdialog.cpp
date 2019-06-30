@@ -226,7 +226,7 @@ void SettingsDialog::removeApplication()
 void SettingsDialog::editApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    QListWidgetItem *item = 0;
+    QListWidgetItem *item = nullptr;
     foreach (item, selected) {
         int row = mUI.mListWidget->row(item);
         Application& app = mTempApplications->getApplication(row);
