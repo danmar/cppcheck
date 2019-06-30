@@ -91,7 +91,7 @@ namespace ValueFlow {
             case LIFETIME:
                 if (tokvalue != rhs.tokvalue)
                     return false;
-            };
+            }
 
             return varvalue == rhs.varvalue &&
                    condition == rhs.condition &&
