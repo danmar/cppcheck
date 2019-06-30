@@ -1639,13 +1639,10 @@ class MisraChecker:
 
 
     def misra_18_7(self, data):
-        structScopes = []
-        for token in data.tokenlist:
-            if not isStruct(token):
+        for scope in data.scopes:
+            if scope.type != 'Struct':
                 continue
-            structScopes.append(token.valueType.typeScope)
 
-        for scope in structScopes:
             token = scope.bodyStart.next
             while token != scope.bodyEnd and token is not None:
                 # Handle nested structures to not duplicate an error.
@@ -1660,7 +1657,7 @@ class MisraChecker:
                     token = nestedStructScope.bodyEnd.next.next.next
                     continue
 
-                if token.str == '[' and token.next.str == ']':
+                if cppcheckdata.simpleMatch(token, "[ ]"):
                     self.reportError(token, 18, 7)
                     break
                 token = token.next

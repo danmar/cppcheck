@@ -137,10 +137,3 @@ def test_rules_cppcheck_severity(checker):
     assert("(error)" not in captured)
     assert("(warning)" not in captured)
     assert("(style)" in captured)
-
-
-def test_misra_18_7(checker):
-    with CapturingStderr() as output:
-        checker.parseDump("./addons/test/misra-test.c.dump")
-    captured = ''.join(output.captured)
-    assert(captured.count("[misra-c2012-18.7]") == 4)

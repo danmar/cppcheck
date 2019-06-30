@@ -522,7 +522,8 @@ struct {
 } _18_7_struct;
 struct {
   uint16_t len;
-  uint8_t data[]; // 18.7
+  uint8_t data_1[ 19 ];
+  uint8_t data_2[   ]; // 18.7
 } _18_7_struct;
 
 void misra_18_8(int x) {
