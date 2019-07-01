@@ -64,7 +64,7 @@ namespace {
         std::string scriptFile;
         std::string args;
 
-        std::string getFullPath(const std::string &fileName, const std::string &exename) const {
+        static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
                 return fileName;
 

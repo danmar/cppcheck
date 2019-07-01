@@ -154,6 +154,15 @@ def exp42(data):
                 token, 'style', "Comparison of struct padding data " +
                 "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'EXP42-C')
 
+# EXP15-C
+# Do not place a semicolon on the same line as an if, for or while statement
+def exp15(data):
+    for scope in data.scopes:
+        if scope.type in ('If', 'For', 'While'):
+            token = scope.bodyStart.next 
+            if token.str==';' and token.linenr==scope.bodyStart.linenr:
+                reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
+
 
 # EXP46-C
 # Do not use a bitwise operator with a Boolean-like operand
@@ -328,6 +337,7 @@ for arg in sys.argv[1:]:
         exp05(cfg)
         exp42(cfg)
         exp46(cfg)
+        exp15(cfg)
         int31(cfg, data.platform)
         str03(cfg)
         str05(cfg)

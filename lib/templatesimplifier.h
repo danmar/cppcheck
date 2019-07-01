@@ -73,13 +73,13 @@ public:
         /**
          * Constructor used for instantiations.
          * \param tok template instantiation name token "name<...>"
-         * \param scope full qualification of template
+         * \param s full qualification of template(scope)
          */
         TokenAndName(Token *tok, const std::string &s);
         /**
          * Constructor used for declarations.
          * \param tok template declaration token "template < ... >"
-         * \param scope full qualification of template
+         * \param s full qualification of template(scope)
          * \param nt template name token "template < ... > class name"
          * \param pe template parameter end token ">"
          */
@@ -294,6 +294,11 @@ public:
      */
     void simplifyTemplateArgs(Token *start, Token *end);
 
+    /** Fix angle brackets.
+     * foo < bar < >> => foo < bar < > >
+     */
+    void fixAngleBrackets();
+
 private:
     /**
      * Get template declarations
@@ -325,7 +330,7 @@ private:
 
     /**
      * simplify template instantiations (use default argument values)
-     * @param template1 template declaration or forward declaration
+     * @param declaration template declaration or forward declaration
      */
     void useDefaultArgumentValues(TokenAndName &declaration);
 
@@ -444,7 +449,7 @@ private:
     /**
      * Get the new token name.
      * @param tok2 name token
-     * @param &typeStringsUsedInTemplateInstantiation type strings use in template instantiation
+     * @param typeStringsUsedInTemplateInstantiation type strings use in template instantiation
      * @return new token name
      */
     std::string getNewName(

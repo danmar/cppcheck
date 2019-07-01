@@ -1868,7 +1868,6 @@ bool Tokenizer::simplifyUsing()
     std::list<ScopeInfo3> scopeList;
     bool inTemplateDefinition = false;
     const Token *endOfTemplateDefinition = nullptr;
-    bool isVariable = false;
     struct Using {
         Using(Token *start, Token *end) : startTok(start), endTok(end) { }
         Token *startTok;
@@ -1892,9 +1891,7 @@ bool Tokenizer::simplifyUsing()
 
         if (inTemplateDefinition) {
             if (!endOfTemplateDefinition) {
-                if (isVariable)
-                    endOfTemplateDefinition = findSemicolon(tok);
-                else if (tok->str() == "{")
+                if (tok->str() == "{")
                     endOfTemplateDefinition = tok->link();
             }
             if (tok == endOfTemplateDefinition) {
@@ -2816,23 +2813,6 @@ void Tokenizer::simplifyTemplates()
 {
     if (isC())
         return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // Ticket #6181: normalize C++11 template parameter list closing syntax
-        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok)) {
-            Token *endTok = tok->findClosingBracket();
-            if (endTok && endTok->str() == ">>") {
-                endTok->str(">");
-                endTok->insertToken(">");
-            }
-        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
-            Token *endTok = tok->tokAt(2)->findClosingBracket();
-            if (Token::Match(endTok, ">> ;|{")) {
-                endTok->str(">");
-                endTok->insertToken(">");
-            }
-        }
-    }
 
     mTemplateSimplifier->simplifyTemplates(
 #ifdef MAXTIME

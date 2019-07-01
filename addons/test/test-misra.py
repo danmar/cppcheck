@@ -43,7 +43,7 @@ TEST_SOURCE_FILES = ['./addons/test/misra-test.c']
 def setup_module(module):
     for f in TEST_SOURCE_FILES:
         p = subprocess.Popen(["./cppcheck", "--dump", "--quiet", f])
-        p.communicate()[0]
+        p.communicate()
         if p.returncode != 0:
             raise OSError("cppcheck returns error code: %d" % p.returncode)
     subprocess.Popen(["sync"])

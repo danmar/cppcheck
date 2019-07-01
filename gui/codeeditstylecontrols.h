@@ -31,7 +31,7 @@ class SelectColorButton : public QPushButton {
     Q_OBJECT
 public:
     explicit SelectColorButton(QWidget* parent);
-    virtual ~SelectColorButton() {};
+    virtual ~SelectColorButton() {}
 
     void setColor(const QColor& color);
     const QColor& getColor();
@@ -69,3 +69,4 @@ private:
 };
 
 #endif  //CODEEDITORSTYLECONTROLS_H
+

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -226,7 +226,7 @@ void SettingsDialog::removeApplication()
 void SettingsDialog::editApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    QListWidgetItem *item = 0;
+    QListWidgetItem *item = nullptr;
     foreach (item, selected) {
         int row = mUI.mListWidget->row(item);
         Application& app = mTempApplications->getApplication(row);
@@ -366,3 +366,4 @@ void SettingsDialog::manageStyleControls()
     mUI.choiceCustom->setChecked(!isDefaultLight && !isDefaultDark);
     mUI.btnEditCustom->setEnabled(!isDefaultLight && !isDefaultDark);
 }
+

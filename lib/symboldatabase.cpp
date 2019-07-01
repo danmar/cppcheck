@@ -967,7 +967,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 (tok->next()->str() == "." ||
                  (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
                 const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
-                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == 0) {
+                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == nullptr) {
                     const Variable *var = mVariableList[tok->varId()];
                     if (var && var->typeScope()) {
                         // find the member variable of this variable
@@ -5194,7 +5194,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::INT;
     } else
         valuetype->type = ValueType::Type::RECORD;
-    while (Token::Match(type, "%name%|*|&|::") && !type->variable() && !type->function()) {
+    while (Token::Match(type, "%name%|*|&|::") && !Token::Match(type, "typename|template") &&
+           !type->variable() && !type->function()) {
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())

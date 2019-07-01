@@ -522,7 +522,7 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
 
-    const CTU::FileInfo::CallBase *path[10] = {0};
+    const CTU::FileInfo::CallBase *path[10] = {nullptr};
 
     if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path, 0, warning))
         return locationList;

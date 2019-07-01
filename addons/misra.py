@@ -201,7 +201,7 @@ def isFunctionCall(expr):
 
 
 def hasExternalLinkage(var):
-     return var.isGlobal and not var.isStatic
+    return var.isGlobal and not var.isStatic
 
 
 def countSideEffects(expr):
@@ -1628,6 +1628,24 @@ class MisraChecker:
                 self.reportError(var.nameToken, 18, 5)
 
 
+    def misra_18_7(self, data):
+        for scope in data.scopes:
+            if scope.type != 'Struct':
+                continue
+
+            token = scope.bodyStart.next
+            while token != scope.bodyEnd and token is not None:
+                # Handle nested structures to not duplicate an error.
+                if token.str == '{':
+                    token = token.link
+
+                if cppcheckdata.simpleMatch(token, "[ ]"):
+                    self.reportError(token, 18, 7)
+                    break
+                token = token.next
+
+
+
     def misra_18_8(self, data):
         for var in data.variables:
             if not var.isArray or not var.isLocal:
@@ -1719,12 +1737,12 @@ class MisraChecker:
                     while exp[pos1] == ' ':
                         pos1 -= 1
                     if exp[pos1] != '(' and exp[pos1] != '[':
-                        self.reportError(directive, 20, 7);
+                        self.reportError(directive, 20, 7)
                         break
                     while exp[pos2] == ' ':
                         pos2 += 1
                     if exp[pos2] != ')' and exp[pos2] != ']':
-                        self.reportError(directive, 20, 7);
+                        self.reportError(directive, 20, 7)
                         break
 
 
@@ -1732,7 +1750,7 @@ class MisraChecker:
         for directive in data.directives:
             d = Define(directive)
             if d.expansionList.find('#') >= 0:
-                self.reportError(directive, 20, 10);
+                self.reportError(directive, 20, 10)
 
     def misra_20_13(self, data):
         dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
@@ -2287,6 +2305,7 @@ class MisraChecker:
             self.misra_17_7(cfg)
             self.misra_17_8(cfg)
             self.misra_18_5(cfg)
+            self.misra_18_7(cfg)
             self.misra_18_8(cfg)
             self.misra_19_2(cfg)
             self.misra_20_1(cfg)

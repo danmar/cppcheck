@@ -2,6 +2,7 @@
 # Server for 'donate-cpu.py'
 
 import glob
+import json
 import os
 import socket
 import re
@@ -19,7 +20,7 @@ import operator
 # changes)
 SERVER_VERSION = "1.1.2"
 
-OLD_VERSION = '1.87'
+OLD_VERSION = '1.88'
 
 
 # Set up logging
@@ -242,36 +243,23 @@ def diffReport(resultsPath):
     outToday = {}
     today = strDateTime()[:10]
 
-    for filename in sorted(glob.glob(resultsPath + '/*')):
+    for filename in sorted(glob.glob(resultsPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
-        uploadedToday = False
-        firstLine = True
-        for line in open(filename, 'rt'):
-            if firstLine:
-                if line.startswith(today):
-                    uploadedToday = True
-                firstLine = False
-                continue
-            line = line.strip()
-            if not line.endswith(']'):
-                continue
-            index = None
-            if line.startswith(OLD_VERSION + ' '):
-                index = 0
-            elif line.startswith('head '):
-                index = 1
-            else:
-                continue
-            messageId = line[line.rfind('[')+1:len(line)-1]
-
+        with open(filename, 'rt') as f:
+            data = json.loads(f.read())
+        uploadedToday = data['date'] == today
+        for messageId in data['sums']:
+            sums = data['sums'][messageId]
             if messageId not in out:
                 out[messageId] = [0, 0]
-            out[messageId][index] += 1
+            out[messageId][0] += sums[OLD_VERSION]
+            out[messageId][1] += sums['head']
             if uploadedToday:
                 if messageId not in outToday:
                     outToday[messageId] = [0, 0]
-                outToday[messageId][index] += 1
+                outToday[messageId][0] += sums[OLD_VERSION]
+                outToday[messageId][1] += sums['head']
 
     html = '<html><head><title>Diff report</title></head><body>\n'
     html += '<h1>Diff report</h1>\n'
@@ -283,15 +271,59 @@ def diffReport(resultsPath):
     return html
 
 
+def generate_package_diff_statistics(filename):
+    is_diff = False
+
+    sums = {}
+
+    for line in open(filename, 'rt'):
+        line = line.strip()
+        if line == 'diff:':
+            is_diff = True
+            continue
+        elif not is_diff:
+            continue
+        if not line.endswith(']'):
+            continue
+
+        version = None
+        if line.startswith(OLD_VERSION + ' '):
+            version = OLD_VERSION
+        elif line.startswith('head '):
+            version = 'head'
+        else:
+            continue
+
+        messageId = line[line.rfind('[')+1:len(line)-1]
+
+        if messageId not in sums:
+            sums[messageId] = { OLD_VERSION: 0, 'head': 0 }
+
+        sums[messageId][version] += 1
+
+    output = { 'date': strDateTime()[:10], 'sums': sums }
+
+    filename_diff = filename + '.diff'
+    if sums:
+        with open(filename_diff, 'wt') as f:
+            f.write(json.dumps(output))
+    elif os.path.isfile(filename_diff):
+        os.remove(filename_diff)
+
+
 def diffMessageIdReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
-    for filename in sorted(glob.glob(resultPath + '/*')):
+    for filename in sorted(glob.glob(resultPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
+        with open(filename, 'rt') as f:
+          diff_stats = f.read()
+        if not messageId in diff_stats:
+          continue
         url = None
         diff = False
-        for line in open(filename, 'rt'):
+        for line in open(filename[:-5], 'rt'):
             if line.startswith('ftp://'):
                 url = line
             elif line == 'diff:\n':
@@ -310,13 +342,19 @@ def diffMessageIdTodayReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
-    for filename in sorted(glob.glob(resultPath + '/*')):
+    for filename in sorted(glob.glob(resultPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
+        with open(filename, 'rt') as f:
+          diff_stats = f.read()
+        if not messageId in diff_stats:
+          continue
+        if not today in diff_stats:
+          continue
         url = None
         diff = False
         firstLine = True
-        for line in open(filename, 'rt'):
+        for line in open(filename[:-5], 'rt'):
             if firstLine:
                 firstLine = False
                 if not line.startswith(today):
@@ -823,7 +861,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             if old_version_wrong:
                 continue
             print('results added for package ' + res.group(1))
-            filename = resultPath + '/' + res.group(1)
+            filename = os.path.join(resultPath, res.group(1))
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
             # track latest added results..
@@ -832,6 +870,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
             latestResults.append(filename)
             with open('latest.txt', 'wt') as f:
                 f.write(' '.join(latestResults))
+            # generate package.diff..
+            generate_package_diff_statistics(filename)
         elif cmd.startswith('write_info\nftp://'):
             # read data
             data = cmd[11:]

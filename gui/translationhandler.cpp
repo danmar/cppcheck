@@ -29,6 +29,7 @@
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
 static void unused()
 {
+// NOTE: Keeping semi-colons at end of macro for style preference
 #if ((QT_VERSION >= 0x040000)&&(QT_VERSION < 0x050000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"));
@@ -47,7 +48,7 @@ static void unused()
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
     mCurrentLanguage("en"),
-    mTranslator(NULL)
+    mTranslator(nullptr)
 {
     // Add our available languages
     // Keep this list sorted
@@ -90,7 +91,7 @@ bool TranslationHandler::setLanguage(const QString &code)
         if (mTranslator) {
             qApp->removeTranslator(mTranslator);
             delete mTranslator;
-            mTranslator = NULL;
+            mTranslator = nullptr;
         }
 
         mCurrentLanguage = code;

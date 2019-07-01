@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,7 +161,7 @@ void ResultsView::save(const QString &filename, Report::Type type) const
         msgBox.exec();
     }
 
-    Report *report = NULL;
+    Report *report = nullptr;
 
     switch (type) {
     case Report::CSV:
@@ -185,7 +185,7 @@ void ResultsView::save(const QString &filename, Report::Type type) const
             msgBox.exec();
         }
         delete report;
-        report = NULL;
+        report = nullptr;
     } else {
         QMessageBox msgBox;
         msgBox.setText(tr("Failed to save the report."));
