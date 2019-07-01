@@ -15,7 +15,7 @@ This is a reference for the .cfg file format that Cppcheck uses.
 
 Cppcheck has configurable checking for leaks, e.g. you can specify which functions allocate and free memory or resources and which functions do not affect the allocation at all.
 
-## `<alloc>` and `<dealloc>`
+## `<alloc>`, `<realloc>` and `<dealloc>`
 
 Here is an example program:
 
@@ -42,6 +42,17 @@ Here is a minimal windows.cfg file:
       <resource>
         <alloc>CreatePen</alloc>
         <dealloc>DeleteObject</dealloc>
+      </resource>
+    </def>
+
+Functions that reallocate memory can be configured using a `<realloc>` tag. The input argument which points to the memory the be reallocated can also be configured (the default is the first argument). As an example, here is a configuration file for the fopen, freopen and fclose functions from the c standard library:
+
+    <?xml version="1.0"?>
+    <def>
+      <resource>
+        <alloc>fopen</alloc>
+        <realloc realloc-arg="3">freopen</realloc>
+        <dealloc>fclose</dealloc>
       </resource>
     </def>
 
