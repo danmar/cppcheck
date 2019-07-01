@@ -1628,6 +1628,24 @@ class MisraChecker:
                 self.reportError(var.nameToken, 18, 5)
 
 
+    def misra_18_7(self, data):
+        for scope in data.scopes:
+            if scope.type != 'Struct':
+                continue
+
+            token = scope.bodyStart.next
+            while token != scope.bodyEnd and token is not None:
+                # Handle nested structures to not duplicate an error.
+                if token.str == '{':
+                    token = token.link
+
+                if cppcheckdata.simpleMatch(token, "[ ]"):
+                    self.reportError(token, 18, 7)
+                    break
+                token = token.next
+
+
+
     def misra_18_8(self, data):
         for var in data.variables:
             if not var.isArray or not var.isLocal:
@@ -2287,6 +2305,7 @@ class MisraChecker:
             self.misra_17_7(cfg)
             self.misra_17_8(cfg)
             self.misra_18_5(cfg)
+            self.misra_18_7(cfg)
             self.misra_18_8(cfg)
             self.misra_19_2(cfg)
             self.misra_20_1(cfg)

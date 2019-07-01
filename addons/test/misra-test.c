@@ -507,6 +507,25 @@ void misra_18_5() {
   int *** p;  // 18.5
 }
 
+struct {
+  uint16_t len;
+  struct {
+    uint8_t data_1[]; // 18.7
+  } nested_1;
+  struct named {
+    struct {
+      uint8_t len_1;
+      uint32_t data_2[]; // 18.7
+    } nested_2;
+    uint8_t data_3[]; // 18.7
+  } nested_3;
+} _18_7_struct;
+struct {
+  uint16_t len;
+  uint8_t data_1[ 19 ];
+  uint8_t data_2[   ]; // 18.7
+} _18_7_struct;
+
 void misra_18_8(int x) {
   int buf1[10];
   int buf2[sizeof(int)];
