@@ -302,14 +302,12 @@ def str11(data):
             continue
         if varToken.variable is None:
             continue
-        startToken = varToken.variable.typeStartToken   
-        endToken = varToken.variable.typeEndToken # check if it's the core variable declaration
-        if startToken != endToken:
+        if varToken != varToken.variable.nameToken:
             continue
-
         valueToken = parentOp1.astOperand2
         if valueToken is None:
             continue
+            
         if valueToken.isNumber and int(valueToken.str)==strlen:
             reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
 
