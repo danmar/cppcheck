@@ -157,6 +157,7 @@ private:
         TEST_CASE(template117);
         TEST_CASE(template118);
         TEST_CASE(template119); // #9186
+        TEST_CASE(template120);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2817,6 +2818,35 @@ private:
                                "}";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void template120() {
+        const char code[] = "template<typename Tuple>\n"
+                            "struct lambda_context {\n"
+                            "    template<typename Sig> struct result;\n"
+                            "    template<typename This, typename I>\n"
+                            "    struct result<This(terminal, placeholder)> : at<Tuple, I> {};\n"
+                            "};\n"
+                            "template<typename T>\n"
+                            "struct lambda {\n"
+                            "    template<typename Sig> struct result;\n"
+                            "    template<typename This>\n"
+                            "    struct result<This()> : lambda_context<tuple<> > {};\n"
+                            "};\n"
+                            "lambda<int> l;";
+        const char exp[] = "template < typename Tuple > "
+                           "struct lambda_context { "
+                           "template < typename Sig > struct result ; "
+                           "template < typename This , typename I > "
+                           "struct result < This ( terminal , placeholder ) > : at < Tuple , I > { } ; "
+                           "} ; "
+                           "struct lambda<int> ; "
+                           "lambda<int> l ; struct lambda<int> { "
+                           "template < typename Sig > struct result ; "
+                           "template < typename This > "
+                           "struct result < This ( ) > : lambda_context < tuple < > > { } ; "
+                           "} ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
