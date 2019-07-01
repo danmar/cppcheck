@@ -468,16 +468,6 @@ def isNoReturnScope(tok):
     return False
 
 
-def isStruct(token):
-    if token.valueType is None:
-        return False
-    if token.valueType.typeScope is None:
-        return False
-    if token.valueType.typeScope.type != "Struct":
-        return False
-    return True
-
-
 class Define:
     def __init__(self, directive):
         self.args = []
