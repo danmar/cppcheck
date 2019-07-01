@@ -18,7 +18,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.2"
+SERVER_VERSION = "1.1.3"
 
 OLD_VERSION = '1.88'
 
@@ -150,6 +150,13 @@ def crashReport():
         datestr = ''
         for line in open(filename, 'rt'):
             line = line.strip()
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             if not line.startswith('count:'):
@@ -419,6 +426,13 @@ def headReport(resultsPath):
                 firstLine = False
                 continue
             line = line.strip()
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line.startswith('head results:'):
                 headResults = True
                 continue
@@ -532,11 +546,21 @@ def timeReport(resultPath):
         if not os.path.isfile(filename):
             continue
         for line in open(filename, 'rt'):
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if not line.startswith('elapsed-time:'):
                 continue
             split_line = line.strip().split()
             time_base = float(split_line[2])
             time_head = float(split_line[1])
+            if time_base < 0.0 or time_head < 0.0:
+                # ignore results with crashes / errors for the time report
+                break
             total_time_base += time_base
             total_time_head += time_head
             suspicious_time_difference = False
@@ -596,6 +620,13 @@ def check_library_report(result_path, message_id):
             continue
         info_messages = False
         for line in open(filename, 'rt'):
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line == 'info messages:\n':
                 info_messages = True
             if not info_messages:
