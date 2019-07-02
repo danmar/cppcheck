@@ -266,17 +266,6 @@ void CheckAutoVariables::autoVariables()
                 errorAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAddressOfLocalVariable(tok->tokAt(4)->astOperand2())) {
                 errorAutoVariableAssignment(tok->next(), false);
-            } else if (mSettings->isEnabled(Settings::WARNING) && Token::Match(tok, "[;{}] %var% = &| %var% ;") && isGlobalPtr(tok->next())) {
-                const Token * const pointer = tok->next();
-                if (isAutoVarArray(tok->tokAt(3))) {
-                    const Token * const array = tok->tokAt(3);
-                    if (!reassignedGlobalPointer(array, pointer->varId(), mSettings, mTokenizer->isCPP()))
-                        errorAssignAddressOfLocalArrayToGlobalPointer(pointer, array);
-                } else if (isAutoVar(tok->tokAt(4))) {
-                    const Token * const variable = tok->tokAt(4);
-                    if (!reassignedGlobalPointer(variable, pointer->varId(), mSettings, mTokenizer->isCPP()))
-                        errorAssignAddressOfLocalVariableToGlobalPointer(pointer, variable);
-                }
             } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
                 // TODO: check if the parameter is only changed temporarily (#2969)
                 if (printInconclusive && isPtrArg(tok->next())) {

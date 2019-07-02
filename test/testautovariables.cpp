@@ -83,6 +83,7 @@ private:
 
         TEST_CASE(assignAddressOfLocalArrayToGlobalPointer);
         TEST_CASE(assignAddressOfLocalVariableToGlobalPointer);
+        TEST_CASE(assignAddressOfLocalVariableToMemberVariable);
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
@@ -700,7 +701,7 @@ private:
               "  int x[10];\n"
               "  p = x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local array x is assigned to global pointer p and not reassigned before x goes out of scope.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Non-local variable 'p' will use pointer to local variable 'x'.\n", errout.str());
 
         check("int *p;\n"
               "void f() {\n"
@@ -717,7 +718,7 @@ private:
               "  int x;\n"
               "  p = &x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Address of local variable x is assigned to global pointer p and not reassigned before x goes out of scope.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Non-local variable 'p' will use pointer to local variable 'x'.\n", errout.str());
 
         check("int *p;\n"
               "void f() {\n"
@@ -725,6 +726,27 @@ private:
               "  p = &x;\n"
               "  p = 0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assignAddressOfLocalVariableToMemberVariable() {
+        check("struct A {\n"
+              "  void f() {\n"
+              "    int x;\n"
+              "    ptr = &x;\n"
+              "  }\n"
+              "  int *ptr;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Non-local variable 'ptr' will use pointer to local variable 'x'.\n", errout.str());
+
+        check("struct A {\n"
+              "  void f() {\n"
+              "    int x;\n"
+              "    ptr = &x;\n"
+              "    ptr = 0;\n"
+              "  }\n"
+              "  int *ptr;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
