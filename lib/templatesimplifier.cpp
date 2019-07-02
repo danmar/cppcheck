@@ -1094,19 +1094,21 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             continue;
         if (end != instantiation.token->tokAt(2))
             instantiationArgs.resize(1);
-        for (const Token *tok1 = instantiation.token->tokAt(2); tok1 && tok1!= end; tok1 = tok1->next()) {
+        for (const Token *tok1 = instantiation.token->tokAt(2); tok1 && tok1 != end; tok1 = tok1->next()) {
             if (tok1->link() && Token::Match(tok1, "{|(|[")) {
                 const Token *endLink = tok1->link();
                 do {
                     instantiationArgs[index].push_back(tok1);
                     tok1 = tok1->next();
                 } while (tok1 && tok1 != endLink);
+                instantiationArgs[index].push_back(tok1);
             } else if (tok1->str() == "<" && (tok1->strAt(1) == ">" || templateParameters(tok1))) {
                 const Token *endLink = tok1->findClosingBracket();
                 do {
                     instantiationArgs[index].push_back(tok1);
                     tok1 = tok1->next();
                 } while (tok1 && tok1 != endLink);
+                instantiationArgs[index].push_back(tok1);
             } else if (tok1->str() == ",") {
                 ++index;
                 instantiationArgs.resize(index + 1);
