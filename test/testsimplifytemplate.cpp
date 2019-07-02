@@ -159,6 +159,7 @@ private:
         TEST_CASE(template119); // #9186
         TEST_CASE(template120);
         TEST_CASE(template121); // #9193
+        TEST_CASE(template122); // #9147
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2857,6 +2858,24 @@ private:
         const char exp[] = "class TestList<std::shared_ptr<int>,std::list<std::shared_ptr<int>>> ; "
                            "TestList<std::shared_ptr<int>,std::list<std::shared_ptr<int>>> m_test ; "
                            "class TestList<std::shared_ptr<int>,std::list<std::shared_ptr<int>>> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template122() { // #9147
+        const char code[] = "template <class...> struct a;\n"
+                            "namespace {\n"
+                            "template <class, class> struct b;\n"
+                            "template <template <class> class c, class... f, template <class...> class d>\n"
+                            "struct b<c<f...>, d<>>;\n"
+                            "}\n"
+                            "void e() { using c = a<>; }";
+        const char exp[] = "template < class . . . > struct a ; "
+                           "namespace { "
+                           "template < class , class > struct b ; "
+                           "template < template < class > class c , class . . . f , template < class . . . > class d > "
+                           "struct b < c < f . . . > , d < > > ; "
+                           "} "
+                           "void e ( ) { }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
