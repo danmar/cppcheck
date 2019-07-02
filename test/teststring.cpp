@@ -505,13 +505,11 @@ private:
               "    char filename[128];\n"
               "};\n"
               "\n"
-              "void foo()\n"
+              "void foo(struct A *a)\n"
               "{\n"
-              "    const char* filename = \"hello\";\n"
-              "    struct A a;\n"
-              "    snprintf(a.filename, 128, \"%s\", a.filename);\n"
+              "    snprintf(a->filename, 128, \"%s\", a->filename);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Undefined behavior: Variable 'a.filename' is used as parameter and destination in snprintf().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Undefined behavior: Variable 'a->filename' is used as parameter and destination in snprintf().\n", errout.str());
     }
 
     void sprintf6() {
