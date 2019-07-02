@@ -224,7 +224,7 @@ bool precedes(const Token * tok1, const Token * tok2)
         return false;
     if (!tok2)
         return false;
-    return tok1->progressValue() < tok2->progressValue();
+    return tok1->index() < tok2->index();
 }
 
 static bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
@@ -1440,6 +1440,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
+            } else if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1()) {
+                return Result(Result::Type::READ);
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 continue;
             } else {
@@ -1584,7 +1586,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
     // Break => continue checking in outer scope
-    while (result.type == FwdAnalysis::Result::Type::BREAK) {
+    while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
         const Scope *s = result.token->scope();
         while (s->type == Scope::eIf)
             s = s->nestedIn;
@@ -1614,6 +1616,8 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
 
 bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
 {
+    if (isEscapedAlias(expr))
+        return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
@@ -1668,6 +1672,25 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
             if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
                 return true;
+        }
+    }
+    return false;
+}
+
+bool FwdAnalysis::isEscapedAlias(const Token* expr)
+{
+    for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
+        for (const ValueFlow::Value &val : subexpr->values()) {
+            if (!val.isLocalLifetimeValue())
+                continue;
+            const Variable* var = val.tokvalue->variable();
+            if (!var)
+                continue;
+            if (!var->isLocal())
+                return true;
+            if (var->isArgument())
+                return true;
+
         }
     }
     return false;

@@ -33,6 +33,7 @@ private:
 
     void run() OVERRIDE {
         settings.addEnabled("style");
+        LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
         TEST_CASE(emptystruct);  // #5355 - False positive: Variable is not assigned a value.
@@ -197,6 +198,7 @@ private:
         TEST_CASE(bracesInitCpp11);// #7895 - "int var{123}" initialization
 
         TEST_CASE(argument);
+        TEST_CASE(escapeAlias); // #9150
     }
 
     void checkStructMemberUsage(const char code[]) {
@@ -4537,6 +4539,22 @@ private:
             "}"
         );
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'foo.x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void escapeAlias() {
+        functionVariableUsage(
+            "struct A {\n"
+            "    std::map<int, int> m;\n"
+            "    void f(int key, int number) {\n"
+            "        auto pos = m.find(key);\n"
+            "        if (pos == m.end())\n"
+            "            m.insert(std::map<int, int>::value_type(key, number));\n"
+            "        else\n"
+            "            (*pos).second = number;\n"
+            "    }\n"
+            "};\n"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

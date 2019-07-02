@@ -1701,6 +1701,16 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(bool b) {\n"
+              "    std::vector<int> v = {1};\n"
+              "    if (b) {\n"
+              "        int a[] = {0};\n"
+              "        v.insert(a, a+1);\n"
+              "    }\n"
+              "    return v.back() == 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("class A {\n"
               "    int f( P p ) {\n"
               "        std::vector< S > maps;\n"
@@ -1710,6 +1720,21 @@ private:
               "    std::map< S, B > m1;\n"
               "    std::map< S, B > m2;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int*> v;\n"
+              "    int x;\n"
+              "    void f() {\n"
+              "        v.push_back(&x);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f(const std::string& x) {\n"
+              "    std::string y = \"x\";\n"
+              "    return y.find(x);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

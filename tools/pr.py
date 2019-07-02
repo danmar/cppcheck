@@ -23,6 +23,10 @@ if response.status_code == 200:
         print('FAIL; There was some conflict when rebasing the changes')
         sys.exit(1)
 
+    if '-b' in sys.argv:
+        print('Done.')
+        sys.exit(1)
+
     p = subprocess.Popen(['git', 'show', '--format=%an <%ae>', sha], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
     author = comm[0].decode(encoding='utf-8', errors='ignore').split('\n')[0]

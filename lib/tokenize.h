@@ -509,6 +509,8 @@ public:
 
     void simplifyRoundCurlyParentheses();
 
+    void simplifyTypeIntrinsics();
+
     void simplifySQL();
 
     void checkForEnumsWithTypedef();

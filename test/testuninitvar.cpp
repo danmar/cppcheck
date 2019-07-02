@@ -3358,6 +3358,13 @@ private:
                       "[test.cpp:5]: (error) Uninitialized struct member: abc.b\n"
                       "[test.cpp:5]: (error) Uninitialized struct member: abc.c\n", errout.str());
 
+        checkUninitVar("struct ABC { int a; int b; int c; };\n"
+                       "void foo() {\n"
+                       "  struct ABC abc;\n"
+                       "  dostuff((uint32_t *)&abc.a);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // return
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void f(void) {\n"

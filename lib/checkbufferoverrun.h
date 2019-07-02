@@ -68,6 +68,7 @@ public:
         checkBufferOverrun.bufferOverflow();
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.stringNotZeroTerminated();
+        checkBufferOverrun.objectIndex();
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
@@ -77,6 +78,7 @@ public:
         c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr);
+        c.objectIndexError(nullptr, nullptr, true);
     }
 
     /** @brief Parse current TU and extract file info */
@@ -104,6 +106,9 @@ private:
     void terminateStrncpyError(const Token *tok, const std::string &varname);
     void bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function);
 
+    void objectIndex();
+    void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
+
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
     // CTU
@@ -121,9 +126,9 @@ private:
         std::string toString() const OVERRIDE;
     };
 
-    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *value, int type);
-    static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *value);
-    static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *value);
+    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type);
+    static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset);
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
     bool analyseWholeProgram1(const CTU::FileInfo *ctu, const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);

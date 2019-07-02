@@ -174,6 +174,7 @@ private:
         TEST_CASE(const64); // ticket #6268
         TEST_CASE(const65); // ticket #8693
         TEST_CASE(const66); // ticket #7714
+        TEST_CASE(const67); // ticket #9193
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -3320,7 +3321,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -5552,7 +5553,7 @@ private:
                    "  void set(const Key& key) {\n"
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
-                   "};\n", 0, false);
+                   "};\n", nullptr, false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5659,6 +5660,20 @@ private:
                    "    int n;\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const67() { // #9193
+        checkConst("template <class VALUE_T, class LIST_T = std::list<VALUE_T> >\n"
+                   "class TestList {\n"
+                   "public:\n"
+                   "    LIST_T m_list;\n"
+                   "};\n"
+                   "class Test {\n"
+                   "public:\n"
+                   "    const std::list<std::shared_ptr<int>>& get() { return m_test.m_list; }\n"
+                   "    TestList<std::shared_ptr<int>> m_test;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Test::get' can be const.\n", errout.str());
     }
 
     void const_handleDefaultParameters() {
@@ -6774,7 +6789,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkVirtualFunctionCall(const char code[], Settings *s = 0, bool inconclusive = true) {
+    void checkVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 

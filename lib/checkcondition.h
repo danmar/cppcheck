@@ -134,7 +134,8 @@ private:
                          MathLib::bigint value2,
                          bool result);
     void duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath);
-    void multiConditionError(const Token *tok, unsigned int line1);
+    void overlappingElseIfConditionError(const Token *tok, unsigned int line1);
+    void oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath);
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
 
@@ -165,7 +166,7 @@ private:
         c.badBitmaskCheckError(nullptr);
         c.comparisonError(nullptr, "&", 6, "==", 1, false);
         c.duplicateConditionError(nullptr, nullptr, errorPath);
-        c.multiConditionError(nullptr,1);
+        c.overlappingElseIfConditionError(nullptr, 1);
         c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
         c.oppositeInnerConditionError(nullptr, nullptr, errorPath);
         c.identicalInnerConditionError(nullptr, nullptr, errorPath);

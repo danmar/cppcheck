@@ -92,6 +92,7 @@ void CheckClass::constructors()
 
     const bool printInconclusive = mSettings->inconclusive;
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
+        const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
 
         bool usedInUnion = false;
         for (const Scope &unionScope : mSymbolDatabase->scopeList) {
@@ -146,7 +147,7 @@ void CheckClass::constructors()
                 continue;
 
             // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
-            if (func.type == Function::eConstructor) {
+            if (unusedTemplate && func.type == Function::eConstructor) {
                 const Token *initList = func.constructorMemberInitialization();
                 if (Token::Match(initList, ": %name% (") && initList->next()->tokType() == Token::eName)
                     break;

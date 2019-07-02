@@ -9,6 +9,7 @@ License: No restrictions, use this as you need.
 import xml.etree.ElementTree as ET
 import argparse
 from fnmatch import fnmatch
+import json
 import sys
 
 
@@ -373,6 +374,7 @@ class Variable:
         isArray         Is this variable an array?
         isClass         Is this variable a class or struct?
         isConst         Is this variable a const variable?
+        isGlobal        Is this variable a global variable?
         isExtern        Is this variable an extern variable?
         isLocal         Is this variable a local variable?
         isPointer       Is this variable a pointer
@@ -396,6 +398,7 @@ class Variable:
     isClass = False
     isConst = False
     isExtern = False
+    isGlobal = False
     isLocal = False
     isPointer = False
     isReference = False
@@ -417,6 +420,7 @@ class Variable:
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
         self.isConst = element.get('isConst') == 'true'
+        self.isGlobal = element.get('access') == 'Global'
         self.isExtern = element.get('isExtern') == 'true'
         self.isLocal = element.get('isLocal') == 'true'
         self.isPointer = element.get('isPointer') == 'true'
@@ -487,11 +491,11 @@ class ValueFlow:
             if self.condition:
                 self.condition = int(self.condition)
             if element.get('known'):
-                valueKind = 'known'
+                self.valueKind = 'known'
             elif element.get('possible'):
-                valueKind = 'possible'
+                self.valueKind = 'possible'
             if element.get('inconclusive'):
-                inconclusive = 'known'
+                self.inconclusive = True
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -566,6 +570,9 @@ class Configuration:
         arguments = []
 
         for element in confignode:
+            if element.tag == "standards":
+                self.standards = Standards(element)
+
             if element.tag == 'directivelist':
                 for directive in element:
                     self.directives.append(Directive(directive))
@@ -657,6 +664,21 @@ class Platform:
         self.long_long_bit = int(platformnode.get('long_long_bit'))
         self.pointer_bit = int(platformnode.get('pointer_bit'))
 
+class Standards:
+    """
+    Standards class
+    This class contains versions of standards that were used for the cppcheck
+
+    Attributes:
+        c            C Standard used
+        cpp          C++ Standard used
+        posix        If Posix was used
+    """
+
+    def __init__(self, standardsnode):
+        self.c = standardsnode.find("c").get("version")
+        self.cpp = standardsnode.find("cpp").get("version")
+        self.posix = standardsnode.find("posix") != None
 
 class CppcheckData:
     """
@@ -736,6 +758,25 @@ class CppcheckData:
                 self.configurations.append(Configuration(cfgnode))
 
 
+# Get function arguments
+def getArgumentsRecursive(tok, arguments):
+    if tok is None:
+        return
+    if tok.str == ',':
+        getArgumentsRecursive(tok.astOperand1, arguments)
+        getArgumentsRecursive(tok.astOperand2, arguments)
+    else:
+        arguments.append(tok)
+
+
+def getArguments(ftok):
+    if (not ftok.isName) or (ftok.next is None) or ftok.next.str != '(':
+        return None
+    args = []
+    getArgumentsRecursive(ftok.next.astOperand2, args)
+    return args
+
+
 def parsedump(filename):
     """
     parse a cppcheck dump file
@@ -799,11 +840,27 @@ def ArgumentParser():
     return parser
 
 
-def reportError(location, severity, message, addon, errorId):
+def simpleMatch(token, pattern):
+    for p in pattern.split(' '):
+        if not token or token.str != p:
+            return False
+        token = token.next
+    return True
+
+
+def reportError(location, severity, message, addon, errorId, extra=''):
     if '--cli' in sys.argv:
-        errout = sys.stdout
-        loc = '[%s:%i:%i]' % (location.file, location.linenr, location.col)
+        msg = { 'file': location.file,
+                'linenr': location.linenr,
+                'col': location.col,
+                'severity': severity,
+                'message': message,
+                'addon': addon,
+                'errorId': errorId,
+                'extra': extra}
+        sys.stdout.write(json.dumps(msg) + '\n')
     else:
-        errout = sys.stderr
         loc = '[%s:%i]' % (location.file, location.linenr)
-    errout.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
+        if len(extra) > 0:
+            message += ' (' + extra + ')'
+        sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))

@@ -24,6 +24,8 @@ typedef unsigned long long u64;
 
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
+int misra_5_1_var_hides_var________a;
+int misra_5_1_var_hides_var________b; //5.1
 
 extern const uint8_t misra_5_2_var1;
 const uint8_t        misra_5_2_var1 = 3; // no warning
@@ -147,6 +149,7 @@ extern int a811[]; // 8.11
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
 enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
+enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
 
 void misra_8_14(char * restrict str) {} // 8.14
 
@@ -503,6 +506,25 @@ void misra_17_8(int x) {
 void misra_18_5() {
   int *** p;  // 18.5
 }
+
+struct {
+  uint16_t len;
+  struct {
+    uint8_t data_1[]; // 18.7
+  } nested_1;
+  struct named {
+    struct {
+      uint8_t len_1;
+      uint32_t data_2[]; // 18.7
+    } nested_2;
+    uint8_t data_3[]; // 18.7
+  } nested_3;
+} _18_7_struct;
+struct {
+  uint16_t len;
+  uint8_t data_1[ 19 ];
+  uint8_t data_2[   ]; // 18.7
+} _18_7_struct;
 
 void misra_18_8(int x) {
   int buf1[10];

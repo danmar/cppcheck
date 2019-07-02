@@ -630,7 +630,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 break;
             } else if (tok->variable() && tok->variable()->declarationId() == tok->varId() &&
                        !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
-                       isInScope(val.tokvalue, tok->scope())) {
+                       isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
                 errorDanglngLifetime(tok, &val);
                 break;
             }

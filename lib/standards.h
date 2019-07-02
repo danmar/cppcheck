@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,17 @@ struct Standards {
         }
         return false;
     }
+    const std::string getC(void) const {
+        switch (c) {
+        case C89:
+            return "c89";
+        case C99:
+            return "c99";
+        case C11:
+            return "c11";
+        }
+        return "";
+    }
     bool setCPP(const std::string& str) {
         if (str == "c++03" || str == "C++03") {
             cpp = CPP03;
@@ -78,6 +89,21 @@ struct Standards {
             return true;
         }
         return false;
+    }
+    const std::string getCPP(void) const {
+        switch (cpp) {
+        case CPP03:
+            return "c++03";
+        case CPP11:
+            return "c++11";
+        case CPP14:
+            return "c++14";
+        case CPP17:
+            return "c++17";
+        case CPP20:
+            return "c++20";
+        }
+        return "";
     }
 };
 

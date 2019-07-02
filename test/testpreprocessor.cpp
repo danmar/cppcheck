@@ -46,7 +46,7 @@ public:
     class OurPreprocessor : public Preprocessor {
     public:
 
-        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = 0) {
+        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = nullptr) {
             std::istringstream istr(code);
             simplecpp::OutputList outputList;
             std::vector<std::string> files;
@@ -269,7 +269,7 @@ private:
         }
     }
 
-    std::string getConfigsStr(const char filedata[], const char *arg=NULL) {
+    std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;

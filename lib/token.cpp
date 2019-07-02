@@ -1742,6 +1742,13 @@ void Token::assignProgressValues(Token *tok)
         tok2->mImpl->mProgressValue = count++ * 100 / total_count;
 }
 
+void Token::assignIndexes()
+{
+    unsigned int index = (mPrevious ? mPrevious->mImpl->mIndex : 0) + 1;
+    for (Token *tok = this; tok; tok = tok->next())
+        tok->mImpl->mIndex = index++;
+}
+
 void Token::setValueType(ValueType *vt)
 {
     if (vt != mImpl->mValueType) {
@@ -1827,6 +1834,12 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
 }
 std::string Token::typeStr(const Token* tok)
 {
+    if (tok->valueType()) {
+        const ValueType * vt = tok->valueType();
+        std::string ret = vt->str();
+        if (!ret.empty())
+            return ret;
+    }
     std::pair<const Token*, const Token*> r = Token::typeDecl(tok);
     if (!r.first || !r.second)
         return "";

@@ -58,6 +58,8 @@ private:
         TEST_CASE(assign12); // #4236: FP. bar(&x);
         // TODO TEST_CASE(assign13); // #4237: FP. char*&ref=p; p=malloc(10); free(ref);
         TEST_CASE(assign14);
+        TEST_CASE(assign15);
+        TEST_CASE(assign16);
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -297,6 +299,27 @@ private:
               "    if (x && (p = new char[10])) { }"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void assign15() {
+        // #8120
+        check("void f() {\n"
+              "   baz *p;\n"
+              "   p = malloc(sizeof *p);\n"
+              "   free(p);\n"
+              "   p = malloc(sizeof *p);\n"
+              "   free(p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign16() {
+        check("void f() {\n"
+              "   char *p = malloc(10);\n"
+              "   free(p);\n"
+              "   if (p=dostuff()) *p = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deallocuse1() {

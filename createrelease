@@ -40,11 +40,14 @@
 # git tag 1.43
 # git push --tags
 #
+# Create a release folder on sourceforge:
+# https://sourceforge.net/projects/cppcheck/files/cppcheck/
+#
 # Create release:
 # ./createrelease 1.43
 #
 # Restore the Makefile:
-# ./dmake
+# make dmake && ./dmake
 # git commit -a -m "Makefile: Set debug mode"
 #
 # Update download link on index.php main page
@@ -66,20 +69,36 @@ tag=$1
 # Name of release
 releasename=cppcheck-$tag
 
-# Create archives..
-git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar.gz
-git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
-git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
+set -e
 
-scp ~/$releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+cd ~/cppcheck
+
+mkdir upload
+
+# Create archives..
+git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasename.tar.gz
+git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
+git archive --format=zip -9 --prefix=$releasename/ $tag > upload/$releasename.zip
+cd upload
+wget https://www.pkeus.de/~philipp/Temp/$releasename-x64-Setup.msi
+#wget https://www.pkeus.de/~philipp/Temp/$releasename-x86-Setup.msi
+scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+rm $releasename.*
+cd ..
 
 # Generate the manual.pdf, manual.html and version.txt
-make clean && make
-./cppcheck --version > version.txt
-scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
-xsltproc -xinclude -o manual.fo /usr/share/xml/docbook/stylesheet/docbook-xsl/fo/docbook.xsl man/manual.docbook
-fop manual.fo -pdf manual.pdf
-#docbook2pdf man/manual.docbook
-scp manual.pdf danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
-xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl man/manual.docbook
-scp manual.html danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+make -j4
+./cppcheck --version > upload/version.txt
+cd ~/cppcheck/man
+./buildman.sh
+mv manual.pdf ../upload/
+mv manual.html ../upload/
+mv reference-cfg-format.pdf ../upload/
+mv reference-cfg-format.html ../upload/
+
+cd ~/cppcheck/upload
+scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+
+cd ~/cppcheck
+rm -rf upload
+

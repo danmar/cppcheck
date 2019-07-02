@@ -234,6 +234,7 @@ private:
         TEST_CASE(garbageCode201); // #8873
         TEST_CASE(garbageCode202); // #8907
         TEST_CASE(garbageCode203); // #8972
+        TEST_CASE(garbageCode204);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -280,7 +281,7 @@ private:
 
         tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(false, false, false, true, false, 0, 0);
+        return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
     }
 
     std::string getSyntaxError(const char code[]) {
@@ -1591,6 +1592,10 @@ private:
         checkCode("{ > () {} }");
         checkCode("template <> a > ::b();");
         ASSERT_THROW(checkCode("{ template <a> class b { } template <> template <c> c() b<a>::e() { } template b<d>; }"), InternalError);
+    }
+
+    void garbageCode204() {
+        checkCode("template <a, = b<>()> c; template <a> a as() {} as<c<>>();");
     }
 
     void syntaxErrorFirstToken() {

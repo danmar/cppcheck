@@ -26,7 +26,16 @@ General Public License version 3</translation>
         <translation>Visitez le site Cppcheck : %1</translation>
     </message>
     <message>
-        <source>Copyright © 2007-2018 Cppcheck team.</source>
+        <source>Copyright © 2007-2019 Cppcheck team.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul&gt;
+&lt;li&gt;tinyxml2&lt;/li&gt;
+&lt;li&gt;picojson&lt;/li&gt;
+&lt;li&gt;pcre&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -487,7 +496,7 @@ Paramètres : -l(ligne) (fichier)</translation>
     </message>
     <message>
         <source>Style warnings</source>
-        <translation type="vanished">Avertissement de style</translation>
+        <translation type="obsolete">Avertissement de style</translation>
     </message>
     <message>
         <source>Show style warnings</source>
@@ -495,7 +504,7 @@ Paramètres : -l(ligne) (fichier)</translation>
     </message>
     <message>
         <source>Errors</source>
-        <translation type="vanished">Erreurs</translation>
+        <translation type="obsolete">Erreurs</translation>
     </message>
     <message>
         <source>Show errors</source>
@@ -555,7 +564,7 @@ Paramètres : -l(ligne) (fichier)</translation>
     </message>
     <message>
         <source>Warnings</source>
-        <translation type="vanished">Avertissements</translation>
+        <translation type="obsolete">Avertissements</translation>
     </message>
     <message>
         <source>Show warnings</source>
@@ -563,7 +572,7 @@ Paramètres : -l(ligne) (fichier)</translation>
     </message>
     <message>
         <source>Performance warnings</source>
-        <translation type="vanished">Avertissements de performance</translation>
+        <translation type="obsolete">Avertissements de performance</translation>
     </message>
     <message>
         <source>Show performance warnings</source>
@@ -583,7 +592,7 @@ Paramètres : -l(ligne) (fichier)</translation>
     </message>
     <message>
         <source>Portability</source>
-        <translation type="vanished">Portabilité</translation>
+        <translation type="obsolete">Portabilité</translation>
     </message>
     <message>
         <source>Show portability warnings</source>
@@ -769,7 +778,7 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
     </message>
     <message>
         <source>Auto-detect language</source>
-        <translation type="vanished">Auto-detection du langage</translation>
+        <translation type="obsolete">Auto-detection du langage</translation>
     </message>
     <message>
         <source>&amp;Recheck modified files</source>
@@ -981,19 +990,11 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>C/C++ Source</source>
+        <source>C++17</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Borland C++ Builder 6</source>
+        <source>C++20</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1055,11 +1056,11 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     <name>Project</name>
     <message>
         <source>Could not read the project file.</source>
-        <translation type="vanished">Impossible de lire le fichier projet.</translation>
+        <translation type="obsolete">Impossible de lire le fichier projet.</translation>
     </message>
     <message>
         <source>Could not write the project file.</source>
-        <translation type="vanished">Impossible d&apos;écrire dans le fichier projet.</translation>
+        <translation type="obsolete">Impossible d&apos;écrire dans le fichier projet.</translation>
     </message>
 </context>
 <context>
@@ -1078,7 +1079,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Project</source>
-        <translation type="vanished">Projet</translation>
+        <translation type="obsolete">Projet</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -1114,11 +1115,11 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Exclude</source>
-        <translation type="vanished">Exclure</translation>
+        <translation type="obsolete">Exclure</translation>
     </message>
     <message>
         <source>Libraries:</source>
-        <translation type="vanished">Bibliothèques</translation>
+        <translation type="obsolete">Bibliothèques</translation>
     </message>
     <message>
         <source>Suppressions</source>
@@ -1126,7 +1127,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Suppression list:</source>
-        <translation type="vanished">Liste de suppressions</translation>
+        <translation type="obsolete">Liste de suppressions</translation>
     </message>
     <message>
         <source>Add</source>
@@ -1221,10 +1222,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Exclude paths</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Addons and tools</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1254,6 +1251,26 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check code in headers  (slower analysis, more results)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Check code in unused templates  (slower and less accurate analysis)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Max CTU depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exclude source files in paths</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1299,18 +1316,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Misra rule texts file (%1)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Visual Studio</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Compile database</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Borland C++ Builder 6</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QDialogButtonBox</name>
@@ -1353,6 +1358,114 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source> (Not found)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Thin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ExtraLight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DemiBold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ExtraBold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Black</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editor Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editor Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Highlight Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Number Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line Number Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyword Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keyword Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Class ForegroundColor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Class Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quote Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quote Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comment Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comment Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symbol Foreground Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symbol Background Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Symbol Font Weight</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set to Default Light</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set to Default Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QPlatformTheme</name>
@@ -1393,15 +1506,15 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Copy filename</source>
-        <translation type="vanished">Copier le nom du fichier</translation>
+        <translation type="obsolete">Copier le nom du fichier</translation>
     </message>
     <message>
         <source>Copy full path</source>
-        <translation type="vanished">Copier le chemin complet</translation>
+        <translation type="obsolete">Copier le chemin complet</translation>
     </message>
     <message>
         <source>Copy message</source>
-        <translation type="vanished">Copier le message</translation>
+        <translation type="obsolete">Copier le message</translation>
     </message>
     <message>
         <source>Cppcheck</source>
@@ -1439,7 +1552,7 @@ Merci de vérifier que le chemin de l&apos;application et que les paramètres so
         <source>Could not find file:
 %1
 Please select the directory where file is located.</source>
-        <translation type="vanished">Fichier introuvable:
+        <translation type="obsolete">Fichier introuvable:
 %1
 Veuillez sélectionner le répertoire où est situé le fichier.</translation>
     </message>
@@ -1485,7 +1598,7 @@ Please select the default editor application in preferences/Applications.</sourc
     </message>
     <message>
         <source>Copy message id</source>
-        <translation type="vanished">Copier l&apos;identifiant du message</translation>
+        <translation type="obsolete">Copier l&apos;identifiant du message</translation>
     </message>
     <message>
         <source>Hide all with id</source>
@@ -1578,11 +1691,11 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Summary</source>
-        <translation type="vanished">Résumé</translation>
+        <translation type="obsolete">Résumé</translation>
     </message>
     <message>
         <source>Message</source>
-        <translation type="vanished">Message</translation>
+        <translation type="obsolete">Message</translation>
     </message>
     <message>
         <source>%p% (%1 of %2 files checked)</source>
@@ -1692,7 +1805,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Include paths:</source>
-        <translation type="vanished">Inclure les chemins</translation>
+        <translation type="obsolete">Inclure les chemins</translation>
     </message>
     <message>
         <source>Add...</source>
@@ -1716,11 +1829,11 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>Paths</source>
-        <translation type="vanished">Chemins</translation>
+        <translation type="obsolete">Chemins</translation>
     </message>
     <message>
         <source>Edit</source>
-        <translation type="vanished">Editer</translation>
+        <translation type="obsolete">Editer</translation>
     </message>
     <message>
         <source>Remove</source>
@@ -1788,6 +1901,26 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Code Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Code Editor Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Light Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Dark Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

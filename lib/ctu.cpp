@@ -169,28 +169,28 @@ static long long readAttrInt(const tinyxml2::XMLElement *e, const char *attr, bo
     return value ? std::atoi(value) : 0;
 }
 
-bool CTU::FileInfo::CallBase::loadBaseFromXml(const tinyxml2::XMLElement *e)
+bool CTU::FileInfo::CallBase::loadBaseFromXml(const tinyxml2::XMLElement *xmlElement)
 {
     bool error = false;
-    callId = readAttrString(e, ATTR_CALL_ID, &error);
-    callFunctionName = readAttrString(e, ATTR_CALL_FUNCNAME, &error);
-    callArgNr = readAttrInt(e, ATTR_CALL_ARGNR, &error);
-    location.fileName = readAttrString(e, ATTR_LOC_FILENAME, &error);
-    location.linenr = readAttrInt(e, ATTR_LOC_LINENR, &error);
+    callId = readAttrString(xmlElement, ATTR_CALL_ID, &error);
+    callFunctionName = readAttrString(xmlElement, ATTR_CALL_FUNCNAME, &error);
+    callArgNr = readAttrInt(xmlElement, ATTR_CALL_ARGNR, &error);
+    location.fileName = readAttrString(xmlElement, ATTR_LOC_FILENAME, &error);
+    location.linenr = readAttrInt(xmlElement, ATTR_LOC_LINENR, &error);
     return !error;
 }
 
-bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *e)
+bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlElement)
 {
-    if (!loadBaseFromXml(e))
+    if (!loadBaseFromXml(xmlElement))
         return false;
     bool error=false;
-    callArgumentExpression = readAttrString(e, ATTR_CALL_ARGEXPR, &error);
-    callValueType = (ValueFlow::Value::ValueType)readAttrInt(e, ATTR_CALL_ARGVALUETYPE, &error);
-    callArgValue = readAttrInt(e, ATTR_CALL_ARGVALUE, &error);
-    const char *w = e->Attribute(ATTR_WARNING);
+    callArgumentExpression = readAttrString(xmlElement, ATTR_CALL_ARGEXPR, &error);
+    callValueType = (ValueFlow::Value::ValueType)readAttrInt(xmlElement, ATTR_CALL_ARGVALUETYPE, &error);
+    callArgValue = readAttrInt(xmlElement, ATTR_CALL_ARGVALUE, &error);
+    const char *w = xmlElement->Attribute(ATTR_WARNING);
     warning = w && std::strcmp(w, "true") == 0;
-    for (const tinyxml2::XMLElement *e2 = e->FirstChildElement(); !error && e2; e2 = e2->NextSiblingElement()) {
+    for (const tinyxml2::XMLElement *e2 = xmlElement->FirstChildElement(); !error && e2; e2 = e2->NextSiblingElement()) {
         if (std::strcmp(e2->Name(), "path") != 0)
             continue;
         ErrorLogger::ErrorMessage::FileLocation loc;
@@ -201,13 +201,13 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *e)
     return !error;
 }
 
-bool CTU::FileInfo::NestedCall::loadFromXml(const tinyxml2::XMLElement *e)
+bool CTU::FileInfo::NestedCall::loadFromXml(const tinyxml2::XMLElement *xmlElement)
 {
-    if (!loadBaseFromXml(e))
+    if (!loadBaseFromXml(xmlElement))
         return false;
     bool error = false;
-    myId = readAttrString(e, ATTR_MY_ID, &error);
-    myArgNr = readAttrInt(e, ATTR_MY_ARGNR, &error);
+    myId = readAttrString(xmlElement, ATTR_MY_ID, &error);
+    myArgNr = readAttrInt(xmlElement, ATTR_MY_ARGNR, &error);
     return !error;
 }
 
@@ -522,7 +522,7 @@ std::list<ErrorLogger::ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(I
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
 
-    const CTU::FileInfo::CallBase *path[10] = {0};
+    const CTU::FileInfo::CallBase *path[10] = {nullptr};
 
     if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path, 0, warning))
         return locationList;

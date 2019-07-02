@@ -343,6 +343,7 @@ private:
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
         TEST_CASE(cpp0xtemplate4); // Ticket #6181: Mishandled C++11 syntax
+        TEST_CASE(cpp0xtemplate5); // Ticket #9154 change >> to > >
         TEST_CASE(cpp14template); // Ticket #6708
 
         TEST_CASE(arraySize);
@@ -399,6 +400,7 @@ private:
         TEST_CASE(simplifyOperatorName11); // #8889
         TEST_CASE(simplifyOperatorName12); // #9110
         TEST_CASE(simplifyOperatorName13); // user defined literal
+        TEST_CASE(simplifyOperatorName14); // std::complex operator "" if
 
         TEST_CASE(simplifyNullArray);
 
@@ -456,9 +458,11 @@ private:
         TEST_CASE(findGarbageCode);
         TEST_CASE(checkEnableIf);
         TEST_CASE(checkTemplates);
+        TEST_CASE(checkNamespaces);
 
         // #9052
         TEST_CASE(noCrash1);
+        TEST_CASE(noCrash2);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -491,7 +495,7 @@ private:
         }
 
         if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         else
             return "";
     }
@@ -521,7 +525,7 @@ private:
         }
 
         if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         else
             return "";
     }
@@ -535,7 +539,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         if (!tokenizer.tokens())
             return "";
-        return tokenizer.tokens()->stringifyList(false, true, false, true, false, 0, 0);
+        return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
     }
 
     std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -1495,7 +1499,7 @@ private:
 
         tokenizer.simplifyKnownVariables();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     void simplifyKnownVariables1() {
@@ -4477,8 +4481,8 @@ private:
             ASSERT_EQUALS(true, tok->tokAt(14) == tok->linkAt(16));
 
             // a<b && b>f
-            ASSERT_EQUALS(true, 0 == tok->linkAt(28));
-            ASSERT_EQUALS(true, 0 == tok->linkAt(32));
+            ASSERT_EQUALS(true, nullptr == tok->linkAt(28));
+            ASSERT_EQUALS(true, nullptr == tok->linkAt(32));
 
             ASSERT_EQUALS("", errout.str());
         }
@@ -4855,8 +4859,41 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> > ;")->link());
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ;")->link());
+        }
+
+        {
+            // #9141
+            const char code[] = "struct a {\n"
+                                "  typedef int b;\n"
+                                "  operator b();\n"
+                                "};\n"
+                                "template <int> using c = a;\n"
+                                "template <int d> c<d> e;\n"
+                                "auto f = -e<1> == 0;\n";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ==")->link());
+        }
+
+        {
+            // #9145
+            const char code[] = "template <typename a, a> struct b {\n"
+                                "  template <typename c> constexpr void operator()(c &&) const;\n"
+                                "};\n"
+                                "template <int d> struct e { b<int, d> f; };\n"
+                                "template <int g> using h = e<g>;\n"
+                                "template <int g> h<g> i;\n"
+                                "template <typename a, a d>\n"
+                                "template <typename c>\n"
+                                "constexpr void b<a, d>::operator()(c &&) const {\n"
+                                "  i<3>.f([] {});\n"
+                                "}\n";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> . f (")->link());
         }
     }
 
@@ -5104,7 +5141,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
         const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
@@ -5135,7 +5172,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
         const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
@@ -5195,12 +5232,12 @@ private:
                            "struct S\n"
                            "{};\n"
                            "S<int> s;\n";
-        TODO_ASSERT_EQUALS("S<int,(int)0> s ; struct S<int,(int)0> { } ;",   // wanted result
-                           "template < class T , T t >\n"
-                           "struct S\n"
-                           "{ } ;\n"
-                           "S < int , ( T ) 0 > s ;",     // current result
-                           tokenizeAndStringify(code));
+        ASSERT_EQUALS("struct S<int,(int)0> ;\n"
+                      "\n"
+                      "\n"
+                      "S<int,(int)0> s ; struct S<int,(int)0>\n"
+                      "{ } ;",
+                      tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate4() { // #6181, #6354, #6414
@@ -5228,6 +5265,34 @@ private:
                              "  }; "
                              "  template<class DC> class C2 {}; "
                              "}");
+    }
+
+    void cpp0xtemplate5() { // #9154
+        {
+            const char *code = "struct s<x<u...>>;";
+            ASSERT_EQUALS("struct s < x < u . . . > > ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "template <class f> using c = e<i<q<f,r>,b...>>;";
+            ASSERT_EQUALS("template < class f > using c = e < i < q < f , r > , b . . . > > ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct s<x<u...>> { };";
+            ASSERT_EQUALS("struct s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct q : s<x<u...>> { };";
+            ASSERT_EQUALS("struct q : s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct q : private s<x<u...>> { };";
+            ASSERT_EQUALS("struct q : private s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void cpp14template() { // Ticket #6708
@@ -6323,9 +6388,22 @@ private:
     }
 
     void simplifyOperatorName13() { // user defined literal
-        const char code[] = "unsigned long operator""_numch(const char *ch, unsigned long size);";
-        ASSERT_EQUALS("unsigned long operator""_numch ( const char * ch , unsigned long size ) ;",
+        const char code[] = "unsigned long operator\"\"_numch(const char *ch, unsigned long size);";
+        ASSERT_EQUALS("unsigned long operator\"\"_numch ( const char * ch , unsigned long size ) ;",
                       tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName14() { // std::complex operator "" if
+        {
+            const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num);";
+            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num) { }";
+            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) { }",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void simplifyNullArray() {
@@ -7679,6 +7757,81 @@ private:
                             "template <> struct a<int> {\n"
                             "template <typename e> constexpr auto g() { d<0 || e::f>; return 0; }\n"
                             "};\n"))
+
+        // #9144
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "namespace a {\n"
+                            "template <typename b, bool = __is_empty(b) && __is_final(b)> struct c;\n"
+                            "}\n"
+                            "namespace boost {\n"
+                            "using a::c;\n"
+                            "}\n"
+                            "namespace d = boost;\n"
+                            "using d::c;\n"
+                            "template <typename...> struct e {};\n"
+                            "static_assert(sizeof(e<>) == sizeof(e<c<int>, c<int>, int>), \"\");\n"))
+
+        // #9146
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <int> struct a;\n"
+                            "template <class, class b> using c = typename a<int{b::d}>::e;\n"
+                            "template <class> struct f;\n"
+                            "template <class b> using g = typename f<c<int, b>>::e;\n"))
+
+        // #9153
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "namespace {\n"
+                            "template <class> struct a;\n"
+                            "}\n"
+                            "namespace {\n"
+                            "namespace b {\n"
+                            "template <int c> struct B { using B<c / 2>::d; };\n"
+                            "}\n"
+                            "template <class, class> using e = typename b::B<int{}>;\n"
+                            "namespace b {\n"
+                            "template <class> struct f;\n"
+                            "}\n"
+                            "template <class c> using g = b::f<e<int, c>>;\n"
+                            "}\n"))
+
+        // #9154
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <bool> using a = int;\n"
+                            "template <class b> using aa = a<b::c>;\n"
+                            "template <class...> struct A;\n"
+                            "template <class> struct d;\n"
+                            "template <class... f> using e = typename d<f...>::g;\n"
+                            "template <class> struct h;\n"
+                            "template <class, class... b> using i = typename h<b...>::g;\n"
+                            "template <class f, template <class> class j> using k = typename f::g;\n"
+                            "template <class... b> using l = a<k<A<b...>, aa>::c>;\n"
+                            "template <int> struct m;\n"
+                            "template <class, class n> using o = typename m<int{n::c}>::g;\n"
+                            "template <class> struct p;\n"
+                            "template <class, class n> using q = typename p<o<A<>, n>>::g;\n"
+                            "template <class f, class r, class... b> using c = e<i<q<f, r>, b...>>;\n"
+                            "template <class, class> struct s;\n"
+                            "template <template <class> class t, class... w, template <class> class x,\n"
+                            "          class... u>\n"
+                            "struct s<t<w...>, x<u...>>;\n"))
+
+        // #9156
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <typename> struct a;\n"
+                            "template <bool> struct b;\n"
+                            "template <class k, class> using d = typename b<k::c>::e;\n"
+                            "template <class> struct f;\n"
+                            "template <template <class> class, class... g> using i = typename f<g...>::e;\n"
+                            "template <template <class> class h, class... g> using ab = d<i<h, g...>, int>;\n"
+                            "template <template <class> class h, class... g> struct j {\n"
+                            "  template <class... ag> using ah = typename ab<h, ag..., g...>::e;\n"
+                            "};\n"
+                            "template <class> struct F;\n"
+                            "int main() { using T = void (*)(a<j<F, char[]>>); }\n"))
+    }
+
+    void checkNamespaces() {
+        ASSERT_NO_THROW(tokenizeAndStringify("namespace x { namespace y { namespace z {}}}"))
     }
 
     void noCrash1() {
@@ -7687,6 +7840,23 @@ private:
                             "  A( const std::string &name = "" );\n"
                             "};\n"
                             "A::A( const std::string &name ) { return; }\n"))
+    }
+
+    // #9007
+    void noCrash2() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "class a {\n"
+                            "public:\n"
+                            "  enum b {};\n"
+                            "};\n"
+                            "struct c;\n"
+                            "template <class> class d {\n"
+                            "  d(const int &, a::b, double, double);\n"
+                            "  d(const d &);\n"
+                            "};\n"
+                            "template <> d<int>::d(const int &, a::b, double, double);\n"
+                            "template <> d<int>::d(const d &) {}\n"
+                            "template <> d<c>::d(const d &) {}\n"))
     }
 
     void checkConfig(const char code[]) {

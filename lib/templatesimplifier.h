@@ -73,13 +73,13 @@ public:
         /**
          * Constructor used for instantiations.
          * \param tok template instantiation name token "name<...>"
-         * \param scope full qualification of template
+         * \param s full qualification of template(scope)
          */
         TokenAndName(Token *tok, const std::string &s);
         /**
          * Constructor used for declarations.
          * \param tok template declaration token "template < ... >"
-         * \param scope full qualification of template
+         * \param s full qualification of template(scope)
          * \param nt template name token "template < ... > class name"
          * \param pe template parameter end token ">"
          */
@@ -183,6 +183,43 @@ public:
         void setFlag(unsigned int flag, bool state) {
             flags = state ? flags | flag : flags & ~flag;
         }
+
+        /**
+         * Get alias start token.
+         * template < ... > using X = foo < ... >;
+         *                            ^
+         * @return alias start token
+         */
+        const Token * aliasStartToken() const;
+
+        /**
+         * Get alias end token.
+         * template < ... > using X = foo < ... >;
+         *                                       ^
+         * @return alias end token
+         */
+        const Token * aliasEndToken() const;
+
+        /**
+         * Is token an alias token?
+         * template < ... > using X = foo < ... >;
+         *                                   ^
+         * @param tok token to check
+         * @return true if alias token, false if not
+         */
+        bool isAliasToken(const Token *tok) const;
+
+        /**
+         * Is declaration the same family (class, function or variable).
+         *
+         * @param decl declaration to compare to
+         * @return true if same family, false if different family
+         */
+        bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
+            // maks sure a family flag is set and matches
+            return (flags & (fIsClass | fIsFunction | fIsVariable)) &
+                   (decl.flags & (fIsClass | fIsFunction | fIsVariable));
+        }
     };
 
     /**
@@ -203,8 +240,16 @@ public:
     int getTemplateNamePosition(const Token *tok);
 
     /**
-     * Get function template name position
+     * Get class template name position
      * @param tok The ">" token e.g. before "class"
+     * @param namepos return offset to name
+     * @return true if name found, false if not
+     * */
+    static bool getTemplateNamePositionTemplateClass(const Token *tok, int &namepos);
+
+    /**
+     * Get function template name position
+     * @param tok The ">" token
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */
@@ -249,6 +294,11 @@ public:
      */
     void simplifyTemplateArgs(Token *start, Token *end);
 
+    /** Fix angle brackets.
+     * foo < bar < >> => foo < bar < > >
+     */
+    void fixAngleBrackets();
+
 private:
     /**
      * Get template declarations
@@ -280,9 +330,9 @@ private:
 
     /**
      * simplify template instantiations (use default argument values)
-     * @param template1 template declaration or forward declaration
+     * @param declaration template declaration or forward declaration
      */
-    void useDefaultArgumentValues(TemplateSimplifier::TokenAndName &template1);
+    void useDefaultArgumentValues(TokenAndName &declaration);
 
     /**
      * Try to locate a matching declaration for each user defined
@@ -399,7 +449,7 @@ private:
     /**
      * Get the new token name.
      * @param tok2 name token
-     * @param &typeStringsUsedInTemplateInstantiation type strings use in template instantiation
+     * @param typeStringsUsedInTemplateInstantiation type strings use in template instantiation
      * @return new token name
      */
     std::string getNewName(
@@ -415,6 +465,7 @@ private:
     TokenList &mTokenList;
     const Settings *mSettings;
     ErrorLogger *mErrorLogger;
+    bool mChanged;
 
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;

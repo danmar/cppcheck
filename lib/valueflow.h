@@ -91,7 +91,7 @@ namespace ValueFlow {
             case LIFETIME:
                 if (tokvalue != rhs.tokvalue)
                     return false;
-            };
+            }
 
             return varvalue == rhs.varvalue &&
                    condition == rhs.condition &&
@@ -166,7 +166,7 @@ namespace ValueFlow {
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
 
-        enum LifetimeKind {Object, Lambda, Iterator} lifetimeKind;
+        enum LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 
         enum LifetimeScope { Local, Argument } lifetimeScope;
 
@@ -228,7 +228,7 @@ namespace ValueFlow {
     };
 
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
-    const ValueFlow::Value * valueFlowConstantFoldAST(const Token *expr, const Settings *settings);
+    const ValueFlow::Value * valueFlowConstantFoldAST(Token *expr, const Settings *settings);
 
     /// Perform valueflow analysis.
     void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
@@ -243,5 +243,7 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
+
+ValueFlow::Value getLifetimeObjValue(const Token *tok);
 
 #endif // valueflowH

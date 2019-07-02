@@ -76,6 +76,11 @@ struct TokenImpl {
      */
     unsigned int mProgressValue;
 
+    /**
+     * Token index. Position in token list
+     */
+    unsigned int mIndex;
+
     // original name like size_t
     std::string* mOriginalName;
 
@@ -103,6 +108,7 @@ struct TokenImpl {
         , mScope(nullptr)
         , mFunction(nullptr) // Initialize whole union
         , mProgressValue(0)
+        , mIndex(0)
         , mOriginalName(nullptr)
         , mValueType(nullptr)
         , mValues(nullptr)
@@ -853,7 +859,7 @@ public:
      */
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
-    /** Get progressValue */
+    /** Get progressValue (0 - 100) */
     unsigned int progressValue() const {
         return mImpl->mProgressValue;
     }
@@ -970,7 +976,7 @@ public:
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
             return value.isContainerSizeValue() && value.intvalue == val;
         });
-        return it == mImpl->mValues->end() ? nullptr : &*it;;
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const Token *getValueTokenMaxStrLength() const;
@@ -986,6 +992,12 @@ public:
         if (mImpl->mValues)
             mImpl->mValues->remove_if(pred);
     }
+
+    unsigned int index() const {
+        return mImpl->mIndex;
+    }
+
+    void assignIndexes();
 
 private:
 
@@ -1088,15 +1100,31 @@ public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
 
+    Token * astOperand1() {
+        return mImpl->mAstOperand1;
+    }
     const Token * astOperand1() const {
         return mImpl->mAstOperand1;
+    }
+    Token * astOperand2() {
+        return mImpl->mAstOperand2;
     }
     const Token * astOperand2() const {
         return mImpl->mAstOperand2;
     }
+    Token * astParent() {
+        return mImpl->mAstParent;
+    }
     const Token * astParent() const {
         return mImpl->mAstParent;
     }
+    Token *astTop() {
+        Token *ret = this;
+        while (ret->mImpl->mAstParent)
+            ret = ret->mImpl->mAstParent;
+        return ret;
+    }
+
     const Token *astTop() const {
         const Token *ret = this;
         while (ret->mImpl->mAstParent)
