@@ -51,8 +51,9 @@ private:
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
         TEST_CASE(sprintf4);        // struct member
-        TEST_CASE(sprintf5);        // (char*)
-        TEST_CASE(sprintf6);        // (char*)(void*)
+        TEST_CASE(sprintf5);        // another struct member
+        TEST_CASE(sprintf6);        // (char*)
+        TEST_CASE(sprintf7);        // (char*)(void*)
         TEST_CASE(wsprintf1);       // Dangerous usage of wsprintf
 
         TEST_CASE(incorrectStringCompare);
@@ -499,6 +500,21 @@ private:
     }
 
     void sprintf5() {
+        check("struct A\n"
+              "{\n"
+              "    char filename[128];\n"
+              "};\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    const char* filename = \"hello\";\n"
+              "    struct A a;\n"
+              "    snprintf(a.filename, 128, \"%s\", a.filename);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Undefined behavior: Variable 'a.filename' is used as parameter and destination in snprintf().\n", errout.str());
+    }
+
+    void sprintf6() {
         check("void foo()\n"
               "{\n"
               "    char buf[100];\n"
@@ -507,7 +523,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behavior: Variable 'buf' is used as parameter and destination in sprintf().\n", errout.str());
     }
 
-    void sprintf6() {
+    void sprintf7() {
         check("void foo()\n"
               "{\n"
               "    char buf[100];\n"

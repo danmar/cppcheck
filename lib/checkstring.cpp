@@ -452,7 +452,7 @@ void CheckString::sprintfOverlappingData()
                                                    true,
                                                    false);
                 if (same) {
-                    sprintfOverlappingDataError(tok, args[argnr], arg->str());
+                    sprintfOverlappingDataError(tok, args[argnr], arg->expressionString());
                 }
             }
         }
