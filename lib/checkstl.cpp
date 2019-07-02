@@ -246,7 +246,6 @@ void CheckStl::outOfBoundsIndexExpressionError(const Token *tok, const Token *in
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
-    return;
     reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, false);
 }
 
@@ -378,6 +377,15 @@ static const Token* findIteratorContainer(const Token* start, const Token* end, 
     return containerToken;
 }
 
+static bool isVector(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Variable *var = tok->variable();
+    const Token *decltok = var ? var->typeStartToken() : nullptr;
+    return Token::simpleMatch(decltok, "std :: vector");
+}
+
 void CheckStl::iterators()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -440,7 +448,7 @@ void CheckStl::iterators()
             }
 
             // Is the iterator used in a insert/erase operation?
-            else if (Token::Match(tok2, "%name% . insert|erase ( *| %varid% )|,", iteratorId)) {
+            else if (Token::Match(tok2, "%name% . insert|erase ( *| %varid% )|,", iteratorId) && !isVector(tok2)) {
                 const Token* itTok = tok2->tokAt(4);
                 if (itTok->str() == "*") {
                     if (tok2->strAt(2) == "insert")
@@ -779,9 +787,7 @@ static bool isInvalidMethod(const Token * tok)
         return true;
     if (Token::Match(tok->next(), "%assign%"))
         return true;
-    const Variable *var = tok->variable();
-    const Token *decltok = var ? var->typeStartToken() : nullptr;
-    if (Token::simpleMatch(decltok, "std :: vector") && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back|reserve ("))
+    if (isVector(tok) && Token::Match(tok->next(), ". insert|emplace|emplace_back|push_back|erase|pop_back|reserve ("))
         return true;
     return false;
 }
@@ -1001,6 +1007,9 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
             continue;
         if (!Token::Match(tok->tokAt(-2), ". erase ( ++| %varid% )", var->declarationId()))
             continue;
+        // Vector erases are handled by invalidContainer check
+        if (isVector(tok->tokAt(-3)))
+            continue;
         if (Token::simpleMatch(tok->astParent(), "="))
             continue;
         // Iterator is invalid..
@@ -1171,7 +1180,6 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
-    return;
     reportError(tok, Severity::error, "invalidIterator2",
                 "$symbol:" + func + "\n"
                 "$symbol:" + iterator_name + "\n"

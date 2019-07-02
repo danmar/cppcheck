@@ -68,7 +68,7 @@ public:
         checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
-        checkStl.pushback();
+        // checkStl.pushback();
         checkStl.redundantCondition();
         checkStl.string_c_str();
         checkStl.uselessCalls();

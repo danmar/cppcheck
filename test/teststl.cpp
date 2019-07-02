@@ -1759,15 +1759,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const std::list<int>& m_ImplementationMap) {\n"
-              "    std::list<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    std::list<int>::iterator aIt = m_ImplementationMap.begin();\n"
               "    m_ImplementationMap.erase(*aIt);\n"
               "    m_ImplementationMap.erase(aIt);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Invalid iterator: aIt\n", errout.str());
 
         check("void f(const std::list<int>& m_ImplementationMap) {\n"
-              "    std::list<int>::iterator aIt = m_ImplementationMap.find( xEle1 );\n"
-              "    std::list<int>::iterator bIt = m_ImplementationMap.find( xEle2 );\n"
+              "    std::list<int>::iterator aIt = m_ImplementationMap.begin();\n"
+              "    std::list<int>::iterator bIt = m_ImplementationMap.begin();\n"
               "    m_ImplementationMap.erase(*bIt);\n"
               "    m_ImplementationMap.erase(aIt);\n"
               "}");
