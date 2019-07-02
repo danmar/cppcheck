@@ -1790,22 +1790,22 @@ private:
 
     void eraseOnVector() {
         check("void f(const std::vector<int>& m_ImplementationMap) {\n"
-              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.begin();\n"
               "    m_ImplementationMap.erase(something(unknown));\n" // All iterators become invalidated when erasing from std::vector
               "    m_ImplementationMap.erase(aIt);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
 
         check("void f(const std::vector<int>& m_ImplementationMap) {\n"
-              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle );\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.begin();\n"
               "    m_ImplementationMap.erase(*aIt);\n" // All iterators become invalidated when erasing from std::vector
               "    m_ImplementationMap.erase(aIt);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
 
         check("void f(const std::vector<int>& m_ImplementationMap) {\n"
-              "    std::vector<int>::iterator aIt = m_ImplementationMap.find( xEle1 );\n"
-              "    std::vector<int>::iterator bIt = m_ImplementationMap.find( xEle2 );\n"
+              "    std::vector<int>::iterator aIt = m_ImplementationMap.begin();\n"
+              "    std::vector<int>::iterator bIt = m_ImplementationMap.begin();\n"
               "    m_ImplementationMap.erase(*bIt);\n" // All iterators become invalidated when erasing from std::vector
               "    aIt = m_ImplementationMap.erase(aIt);\n"
               "}");
