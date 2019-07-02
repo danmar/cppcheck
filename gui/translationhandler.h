@@ -61,7 +61,7 @@ struct TranslationInfo {
 class TranslationHandler : QObject {
     Q_OBJECT
 public:
-    explicit TranslationHandler(QObject *parent = 0);
+    explicit TranslationHandler(QObject *parent = nullptr);
     virtual ~TranslationHandler();
 
     /**

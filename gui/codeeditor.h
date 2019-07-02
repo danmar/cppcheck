@@ -24,14 +24,27 @@ public:
 
     void setSymbols(const QStringList &symbols);
 
+    void setStyle(const CodeEditorStyle &newStyle);
+
 protected:
     void highlightBlock(const QString &text) override;
 
 private:
+    enum RuleRole {
+        Keyword = 1,
+        Class   = 2,
+        Comment = 3,
+        Quote   = 4,
+        Symbol  = 5
+    };
     struct HighlightingRule {
         QRegularExpression pattern;
         QTextCharFormat format;
+        RuleRole ruleRole;
     };
+
+    void applyFormat(HighlightingRule &rule);
+
     QVector<HighlightingRule> mHighlightingRules;
     QVector<HighlightingRule> mHighlightingRulesWithSymbols;
 
@@ -52,13 +65,14 @@ class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 
 public:
-    explicit CodeEditor(QWidget *parent,
-                        CodeEditorStyle *widgetStyle = nullptr);
+    explicit CodeEditor(QWidget *parent);
     CodeEditor(const CodeEditor &) = delete;
     CodeEditor &operator=(const CodeEditor &) = delete;
+    ~CodeEditor();
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    void setStyle(const CodeEditorStyle& newStyle);
 
     /**
      * Set source code to show, goto error line and highlight that line.
@@ -75,6 +89,9 @@ private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightErrorLine();
     void updateLineNumberArea(const QRect &, int);
+
+private:
+    QString generateStyleString();
 
 private:
     QWidget *mLineNumberArea;

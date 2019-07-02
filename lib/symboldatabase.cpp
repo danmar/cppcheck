@@ -967,7 +967,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 (tok->next()->str() == "." ||
                  (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
                 const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
-                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == 0) {
+                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == nullptr) {
                     const Variable *var = mVariableList[tok->varId()];
                     if (var && var->typeScope()) {
                         // find the member variable of this variable
@@ -1243,7 +1243,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
                 // look for possible constant folding expressions
                 // rhs of operator:
-                const Token *rhs = enumerator.start->previous()->astOperand2();
+                Token *rhs = enumerator.start->previous()->astOperand2();
 
                 // constant folding of expression:
                 ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
@@ -1317,7 +1317,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                     break;
                 };
 
-                if (bits > 0 && bits < 64) {
+                if (bits > 0 && bits <= 62) {
                     if (dimension.tok->valueType()->sign == ValueType::Sign::UNSIGNED)
                         dimension.num = 1LL << bits;
                     else
@@ -2469,7 +2469,7 @@ bool Variable::arrayDimensions(const Settings* settings)
                 while (tok->astParent() && !Token::Match(tok->astParent(), "[,<>]"))
                     tok = tok->astParent();
                 dimension_.tok = tok;
-                ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+                ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
                 if (tok->hasKnownIntValue()) {
                     dimension_.num = tok->getKnownIntValue();
                     dimension_.known = true;
@@ -2500,7 +2500,7 @@ bool Variable::arrayDimensions(const Settings* settings)
         // check for empty array dimension []
         if (dim->next()->str() != "]") {
             dimension_.tok = dim->astOperand2();
-            ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+            ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
             if (dimension_.tok && dimension_.tok->hasKnownIntValue()) {
                 dimension_.num = dimension_.tok->getKnownIntValue();
                 dimension_.known = true;
@@ -4889,7 +4889,7 @@ static void setAutoTokenProperties(Token * const autoTok)
 void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 {
     tok->setValueType(new ValueType(valuetype));
-    Token *parent = const_cast<Token *>(tok->astParent());
+    Token *parent = tok->astParent();
     if (!parent || parent->valueType())
         return;
     if (!parent->astOperand1())
@@ -5019,7 +5019,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
-        Token * const autoToken = const_cast<Token *>(parent->astParent()->tokAt(isconst ? 2 : 1));
+        Token * const autoToken = parent->astParent()->tokAt(isconst ? 2 : 1);
         if (vt2->pointer) {
             ValueType autovt(*vt2);
             autovt.pointer--;
@@ -5091,7 +5091,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     if (ternary) {
         if (vt2 && vt1->pointer == vt2->pointer && vt1->type == vt2->type && vt1->sign == vt2->sign)
             setValueType(parent, *vt2);
-        parent = const_cast<Token*>(parent->astParent());
+        parent = parent->astParent();
     }
 
     if (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eIncDecOp) {
@@ -5194,7 +5194,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::INT;
     } else
         valuetype->type = ValueType::Type::RECORD;
-    while (Token::Match(type, "%name%|*|&|::") && !type->variable() && !type->function()) {
+    while (Token::Match(type, "%name%|*|&|::") && !Token::Match(type, "typename|template") &&
+           !type->variable() && !type->function()) {
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())

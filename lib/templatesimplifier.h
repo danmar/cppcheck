@@ -73,13 +73,13 @@ public:
         /**
          * Constructor used for instantiations.
          * \param tok template instantiation name token "name<...>"
-         * \param scope full qualification of template
+         * \param s full qualification of template(scope)
          */
         TokenAndName(Token *tok, const std::string &s);
         /**
          * Constructor used for declarations.
          * \param tok template declaration token "template < ... >"
-         * \param scope full qualification of template
+         * \param s full qualification of template(scope)
          * \param nt template name token "template < ... > class name"
          * \param pe template parameter end token ">"
          */
@@ -240,8 +240,16 @@ public:
     int getTemplateNamePosition(const Token *tok);
 
     /**
-     * Get function template name position
+     * Get class template name position
      * @param tok The ">" token e.g. before "class"
+     * @param namepos return offset to name
+     * @return true if name found, false if not
+     * */
+    static bool getTemplateNamePositionTemplateClass(const Token *tok, int &namepos);
+
+    /**
+     * Get function template name position
+     * @param tok The ">" token
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */
@@ -286,6 +294,11 @@ public:
      */
     void simplifyTemplateArgs(Token *start, Token *end);
 
+    /** Fix angle brackets.
+     * foo < bar < >> => foo < bar < > >
+     */
+    void fixAngleBrackets();
+
 private:
     /**
      * Get template declarations
@@ -317,7 +330,7 @@ private:
 
     /**
      * simplify template instantiations (use default argument values)
-     * @param template1 template declaration or forward declaration
+     * @param declaration template declaration or forward declaration
      */
     void useDefaultArgumentValues(TokenAndName &declaration);
 
@@ -436,7 +449,7 @@ private:
     /**
      * Get the new token name.
      * @param tok2 name token
-     * @param &typeStringsUsedInTemplateInstantiation type strings use in template instantiation
+     * @param typeStringsUsedInTemplateInstantiation type strings use in template instantiation
      * @return new token name
      */
     std::string getNewName(
@@ -452,6 +465,7 @@ private:
     TokenList &mTokenList;
     const Settings *mSettings;
     ErrorLogger *mErrorLogger;
+    bool mChanged;
 
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;

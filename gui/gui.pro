@@ -90,7 +90,9 @@ HEADERS += aboutdialog.h \
            applicationlist.h \
            checkstatistics.h \
            checkthread.h \
+           codeeditstylecontrols.h \
            codeeditorstyle.h \
+           codeeditstyledialog.h \
            codeeditor.h \
            common.h \
            csvreport.h \
@@ -127,6 +129,9 @@ SOURCES += aboutdialog.cpp \
            applicationlist.cpp \
            checkstatistics.cpp \
            checkthread.cpp \
+           codeeditorstyle.cpp \
+           codeeditstylecontrols.cpp \
+           codeeditstyledialog.cpp \
            codeeditor.cpp \
            common.cpp \
            csvreport.cpp \
@@ -168,7 +173,7 @@ win32 {
 }
 
 contains(QMAKE_CC, gcc) {
-    QMAKE_CXXFLAGS += -std=c++0x -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare
+    QMAKE_CXXFLAGS += -std=c++11 -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare
 }
 
 contains(QMAKE_CXX, clang++) {

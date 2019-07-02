@@ -343,6 +343,7 @@ private:
         TEST_CASE(cpp0xtemplate2);
         TEST_CASE(cpp0xtemplate3);
         TEST_CASE(cpp0xtemplate4); // Ticket #6181: Mishandled C++11 syntax
+        TEST_CASE(cpp0xtemplate5); // Ticket #9154 change >> to > >
         TEST_CASE(cpp14template); // Ticket #6708
 
         TEST_CASE(arraySize);
@@ -457,9 +458,11 @@ private:
         TEST_CASE(findGarbageCode);
         TEST_CASE(checkEnableIf);
         TEST_CASE(checkTemplates);
+        TEST_CASE(checkNamespaces);
 
         // #9052
         TEST_CASE(noCrash1);
+        TEST_CASE(noCrash2);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -492,7 +495,7 @@ private:
         }
 
         if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         else
             return "";
     }
@@ -522,7 +525,7 @@ private:
         }
 
         if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, 0, 0);
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
         else
             return "";
     }
@@ -536,7 +539,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         if (!tokenizer.tokens())
             return "";
-        return tokenizer.tokens()->stringifyList(false, true, false, true, false, 0, 0);
+        return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
     }
 
     std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
@@ -1496,7 +1499,7 @@ private:
 
         tokenizer.simplifyKnownVariables();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     void simplifyKnownVariables1() {
@@ -4478,8 +4481,8 @@ private:
             ASSERT_EQUALS(true, tok->tokAt(14) == tok->linkAt(16));
 
             // a<b && b>f
-            ASSERT_EQUALS(true, 0 == tok->linkAt(28));
-            ASSERT_EQUALS(true, 0 == tok->linkAt(32));
+            ASSERT_EQUALS(true, nullptr == tok->linkAt(28));
+            ASSERT_EQUALS(true, nullptr == tok->linkAt(32));
 
             ASSERT_EQUALS("", errout.str());
         }
@@ -4856,7 +4859,6 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> > ;")->link());
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> ;")->link());
         }
 
@@ -5139,7 +5141,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
         const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
@@ -5170,7 +5172,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(0, false));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
         const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
         const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
@@ -5263,6 +5265,34 @@ private:
                              "  }; "
                              "  template<class DC> class C2 {}; "
                              "}");
+    }
+
+    void cpp0xtemplate5() { // #9154
+        {
+            const char *code = "struct s<x<u...>>;";
+            ASSERT_EQUALS("struct s < x < u . . . > > ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "template <class f> using c = e<i<q<f,r>,b...>>;";
+            ASSERT_EQUALS("template < class f > using c = e < i < q < f , r > , b . . . > > ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct s<x<u...>> { };";
+            ASSERT_EQUALS("struct s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct q : s<x<u...>> { };";
+            ASSERT_EQUALS("struct q : s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
+        {
+            const char *code = "struct q : private s<x<u...>> { };";
+            ASSERT_EQUALS("struct q : private s < x < u . . . > > { } ;",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void cpp14template() { // Ticket #6708
@@ -7784,6 +7814,24 @@ private:
                             "template <template <class> class t, class... w, template <class> class x,\n"
                             "          class... u>\n"
                             "struct s<t<w...>, x<u...>>;\n"))
+
+        // #9156
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <typename> struct a;\n"
+                            "template <bool> struct b;\n"
+                            "template <class k, class> using d = typename b<k::c>::e;\n"
+                            "template <class> struct f;\n"
+                            "template <template <class> class, class... g> using i = typename f<g...>::e;\n"
+                            "template <template <class> class h, class... g> using ab = d<i<h, g...>, int>;\n"
+                            "template <template <class> class h, class... g> struct j {\n"
+                            "  template <class... ag> using ah = typename ab<h, ag..., g...>::e;\n"
+                            "};\n"
+                            "template <class> struct F;\n"
+                            "int main() { using T = void (*)(a<j<F, char[]>>); }\n"))
+    }
+
+    void checkNamespaces() {
+        ASSERT_NO_THROW(tokenizeAndStringify("namespace x { namespace y { namespace z {}}}"))
     }
 
     void noCrash1() {
@@ -7792,6 +7840,23 @@ private:
                             "  A( const std::string &name = "" );\n"
                             "};\n"
                             "A::A( const std::string &name ) { return; }\n"))
+    }
+
+    // #9007
+    void noCrash2() {
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "class a {\n"
+                            "public:\n"
+                            "  enum b {};\n"
+                            "};\n"
+                            "struct c;\n"
+                            "template <class> class d {\n"
+                            "  d(const int &, a::b, double, double);\n"
+                            "  d(const d &);\n"
+                            "};\n"
+                            "template <> d<int>::d(const int &, a::b, double, double);\n"
+                            "template <> d<int>::d(const d &) {}\n"
+                            "template <> d<c>::d(const d &) {}\n"))
     }
 
     void checkConfig(const char code[]) {

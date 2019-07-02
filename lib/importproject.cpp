@@ -25,6 +25,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
+#define PICOJSON_USE_INT64
 #include <picojson.h>
 
 #include <cstring>

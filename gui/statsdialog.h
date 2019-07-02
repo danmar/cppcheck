@@ -38,7 +38,7 @@ class CheckStatistics;
 class StatsDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit StatsDialog(QWidget *parent = 0);
+    explicit StatsDialog(QWidget *parent = nullptr);
 
     /**
     * @brief Sets the project to extract statistics from

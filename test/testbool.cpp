@@ -53,6 +53,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt5);
         TEST_CASE(comparisonOfBoolWithInt6); // #4224 - integer is casted to bool
         TEST_CASE(comparisonOfBoolWithInt7); // #4846 - (!x == true)
+        TEST_CASE(comparisonOfBoolWithInt8); // #9165
 
         TEST_CASE(checkComparisonOfFuncReturningBool1);
         TEST_CASE(checkComparisonOfFuncReturningBool2);
@@ -60,6 +61,9 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool4);
         TEST_CASE(checkComparisonOfFuncReturningBool5);
         TEST_CASE(checkComparisonOfFuncReturningBool6);
+        // Integration tests..
+        TEST_CASE(checkComparisonOfFuncReturningBoolIntegrationTest1); // #7798 overloaded functions
+
         TEST_CASE(checkComparisonOfBoolWithBool);
 
         // Converting pointer addition result to bool
@@ -726,6 +730,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void checkComparisonOfFuncReturningBoolIntegrationTest1() { // #7798
+        check("bool eval(double *) { return false; }\n"
+              "double eval(char *) { return 1.0; }\n"
+              "int main(int argc, char *argv[])\n"
+              "{\n"
+              "  if ( eval(argv[1]) > eval(argv[2]) )\n"
+              "    return 1;\n"
+              "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void checkComparisonOfBoolWithBool() {
         const char code[] = "void f(){\n"
                             "    int temp = 4;\n"
@@ -979,6 +995,49 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void comparisonOfBoolWithInt8() { // #9165
+        check("bool Fun();\n"
+              "void Test(bool expectedResult) {\n"
+              "    auto res = Fun();\n"
+              "    if (expectedResult == res)\n"
+              "        throw 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int Fun();\n"
+              "void Test(bool expectedResult) {\n"
+              "    auto res = Fun();\n"
+              "    if (expectedResult == res)\n"
+              "        throw 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
+
+        check("bool Fun();\n"
+              "void Test(bool expectedResult) {\n"
+              "    auto res = Fun();\n"
+              "    if (5 + expectedResult == res)\n"
+              "        throw 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
+
+        check("int Fun();\n"
+              "void Test(bool expectedResult) {\n"
+              "    auto res = Fun();\n"
+              "    if (5 + expectedResult == res)\n"
+              "        throw 2;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int Fun();\n"
+              "void Test(bool expectedResult) {\n"
+              "    auto res = Fun();\n"
+              "    if (expectedResult == res + 5)\n"
+              "        throw 2;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
+    }
+
 
     void pointerArithBool1() { // #5126
         check("void f(char *p) {\n"

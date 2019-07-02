@@ -31,7 +31,7 @@
 static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
-        filename = "$(SRCDIR)" + filename.substr(3);
+        filename = "$(libcppdir)" + filename.substr(3);
     return filename;
 }
 
@@ -200,15 +200,21 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    // compiled patterns..
-    fout << "# folder where lib/*.cpp files are located\n";
-    makeConditionalVariable(fout, "SRCDIR", "lib");
+    // use match compiler..
+    fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
+         << "    $(warning Usage of SRCDIR to acticate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
+         << "    MATCHCOMPILER:=yes\n"
+         << "endif\n";
+    fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    ifdef VERIFY\n"
          << "        matchcompiler_S := $(shell python tools/matchcompiler.py --verify)\n"
          << "    else\n"
          << "        matchcompiler_S := $(shell python tools/matchcompiler.py)\n"
          << "    endif\n"
+         << "    libcppdir:=build\n"
+         << "else\n"
+         << "    libcppdir:=lib\n"
          << "endif\n\n";
 
     // explicit cfg dir..
@@ -376,14 +382,14 @@ int main(int argc, char **argv)
     fout << "\t./testrunner -q\n\n";
     fout << "checkcfg:\tcppcheck validateCFG\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
-    fout << "dmake:\ttools/dmake.o cli/filelister.o $(SRCDIR)/pathmatch.o $(SRCDIR)/path.o externals/simplecpp/simplecpp.o\n";
+    fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "\tg++ -isystem externals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.1\n\n";
+    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";

@@ -117,6 +117,8 @@ private:
         TEST_CASE(valueFlowTerminatingCond);
 
         TEST_CASE(valueFlowContainerSize);
+
+        TEST_CASE(valueFlowDynamicBufferSize);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -149,9 +151,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isIntValue() && it->intvalue == value)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isIntValue() && v.intvalue == value)
                         return true;
                 }
             }
@@ -168,9 +169,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isFloatValue() && it->floatValue >= value - diff && it->floatValue <= value + diff)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isFloatValue() && v.floatValue >= value - diff && v.floatValue <= value + diff)
                         return true;
                 }
             }
@@ -190,11 +190,10 @@ private:
                 continue;
 
             std::ostringstream ostr;
-            std::list<ValueFlow::Value>::const_iterator it;
-            for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                for (ValueFlow::Value::ErrorPath::const_iterator ep = it->errorPath.begin(); ep != it->errorPath.end(); ++ep) {
-                    const Token *eptok = ep->first;
-                    const std::string &msg = ep->second;
+            for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value::ErrorPathItem &ep : v.errorPath) {
+                    const Token *eptok = ep.first;
+                    const std::string &msg = ep.second;
                     ostr << eptok->linenr() << ',' << msg << '\n';
                 }
             }
@@ -212,9 +211,26 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->valueType == type && Token::simpleMatch(it->tokvalue, value))
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.valueType == type && Token::simpleMatch(v.tokvalue, value))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfX(const char code[], unsigned int linenr, int value, ValueFlow::Value::ValueType type) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.valueType == type && v.intvalue == value)
                         return true;
                 }
             }
@@ -231,9 +247,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isMovedValue() && it->moveKind == moveKind)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isMovedValue() && v.moveKind == moveKind)
                         return true;
                 }
             }
@@ -250,9 +265,8 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                std::list<ValueFlow::Value>::const_iterator it;
-                for (it = tok->values().begin(); it != tok->values().end(); ++it) {
-                    if (it->isIntValue() && it->intvalue == value && it->condition)
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isIntValue() && v.intvalue == value && v.condition)
                         return true;
                 }
             }
@@ -2552,6 +2566,22 @@ private:
                "}";
         values = tokenValues(code, "+");
         TODO_ASSERT_EQUALS(2U, 0U, values.size()); // should be 2
+
+        // FP: Condition '*b>0' is always true
+        code = "bool dostuff(const char *x, const char *y);\n"
+               "void fun(char *s, int *b) {\n"
+               "  for (int i = 0; i < 42; ++i) {\n"
+               "    if (dostuff(s, \"1\")) {\n"
+               "      *b = 1;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  if (*b > 0) {\n" // *b does not have known value
+               "  }\n"
+               "}";
+        values = tokenValues(code, ">");
+        ASSERT_EQUALS(true, values.empty());
+
     }
 
     void valueFlowSwitchVariable() {
@@ -2908,9 +2938,8 @@ private:
     }
 
     bool isNotKnownValues(const char code[], const char str[]) {
-        const std::list<ValueFlow::Value> values = tokenValues(code, str);
-        for (std::list<ValueFlow::Value>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            if (it->isKnown())
+        for (const ValueFlow::Value &v : tokenValues(code, str)) {
+            if (v.isKnown())
                 return false;
         }
         return true;
@@ -3067,6 +3096,16 @@ private:
                "  if (!x) {}\n"  // <- possible value
                "}";
         ASSERT(isNotKnownValues(code, "!"));
+
+        code = "void f() {\n" // #8356
+               "  bool b = false;\n"
+               "  for(int x = 3; !b && x < 10; x++) {\n" // <- b has known value
+               "    for(int y = 4; !b && y < 20; y++) {}\n"
+               "  }\n"
+               "}";
+        value = valueOfTok(code, "!");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT(value.isKnown());
 
         code = "void f() {\n"
                "  int x = 0;\n"
@@ -3236,6 +3275,10 @@ private:
         code = "volatile const int x = 42;\n"
                "void f(){ int a = x; }\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 42));
+
+        code = "static const int x = 42;\n"
+               "void f(){ int a = x; }\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 42));
     }
 
     void valueFlowGlobalStaticVar() {
@@ -3818,6 +3861,32 @@ private:
                "  x = s + s;\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "+"), 8));
+    }
+
+    void valueFlowDynamicBufferSize() {
+        const char *code;
+
+        LOAD_LIB_2(settings.library, "std.cfg");
+        LOAD_LIB_2(settings.library, "posix.cfg");
+
+        code = "void* f() {\n"
+               "  void* x = malloc(10);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 10,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  void* x = calloc(4, 5);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 20,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  const char* y = \"abcd\";\n"
+               "  const char* x = strdup(y);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 5,  ValueFlow::Value::BUFFER_SIZE));
     }
 };
 

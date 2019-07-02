@@ -224,7 +224,7 @@ bool precedes(const Token * tok1, const Token * tok2)
         return false;
     if (!tok2)
         return false;
-    return tok1->progressValue() < tok2->progressValue();
+    return tok1->index() < tok2->index();
 }
 
 static bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
@@ -1458,7 +1458,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
 
     // Break => continue checking in outer scope
-    while (result.type == FwdAnalysis::Result::Type::BREAK) {
+    while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
         const Scope *s = result.token->scope();
         while (s->type == Scope::eIf)
             s = s->nestedIn;
