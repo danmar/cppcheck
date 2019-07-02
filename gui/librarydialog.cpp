@@ -313,15 +313,13 @@ void LibraryDialog::editArg()
         return;
     CppcheckLibraryData::Function::Arg &arg = function->args[mUi->arguments->row(mUi->arguments->selectedItems().first())];
 
-    LibraryEditArgDialog *d = new LibraryEditArgDialog(0, arg);
-    if (d->exec() == QDialog::Accepted) {
+    LibraryEditArgDialog d(nullptr, arg);
+    if (d.exec() == QDialog::Accepted) {
         unsigned number = arg.nr;
-        arg = d->getArg();
+        arg = d.getArg();
         arg.nr = number;
         mUi->arguments->selectedItems().first()->setText(getArgText(arg));
     }
-
-    delete d;
     mUi->buttonSave->setEnabled(true);
 }
 
