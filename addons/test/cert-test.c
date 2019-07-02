@@ -102,3 +102,10 @@ void str07(char *buf, const char *newBuf)
     strcat(buf, newBuf); //cert-STR07-C
     strcpy(str, newBuf); //cert-STR07-C
 }
+
+void str11()
+{
+    const char str[3]="abc";    //cert-STR11-C
+    const char *x[10]; x[3]="def";
+}
+
