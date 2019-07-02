@@ -68,7 +68,6 @@ public:
         checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
-        // checkStl.pushback();
         checkStl.redundantCondition();
         checkStl.string_c_str();
         checkStl.uselessCalls();
@@ -124,12 +123,6 @@ public:
      */
     void erase();
     void eraseCheckLoopVar(const Scope& scope, const Variable* var);
-
-
-    /**
-     * Dangerous usage of push_back and insert
-     */
-    void pushback();
 
     /**
      * bad condition.. "it < alist.end()"
@@ -207,8 +200,6 @@ private:
     void mismatchingContainersError(const Token* tok);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
-    void invalidIteratorError(const Token* tok, const std::string& func, const std::string& iterator_name);
-    void invalidPointerError(const Token* tok, const std::string& func, const std::string& pointer_name);
     void stlBoundariesError(const Token* tok);
     void if_findError(const Token* tok, bool str);
     void checkFindInsertError(const Token *tok);
@@ -247,8 +238,6 @@ private:
         c.dereferenceErasedError(nullptr, nullptr, "iter", false);
         c.stlOutOfBoundsError(nullptr, "i", "foo", false);
         c.negativeIndexError(nullptr, ValueFlow::Value(-1));
-        c.invalidIteratorError(nullptr, "push_back|push_front|insert", "iterator");
-        c.invalidPointerError(nullptr, "push_back", "pointer");
         c.stlBoundariesError(nullptr);
         c.if_findError(nullptr, false);
         c.if_findError(nullptr, true);
