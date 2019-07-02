@@ -47,7 +47,17 @@ namespace CTU {
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(const std::string &myId, unsigned int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
+            UnsafeUsage(const std::string &myId,
+                        unsigned int myArgNr,
+                        const std::string &myArgumentName,
+                        const Location &location,
+                        MathLib::bigint value) :
+                myId(myId),
+                myArgNr(myArgNr),
+                myArgumentName(myArgumentName),
+                location(location),
+                value(value)
+            {}
             std::string myId;
             unsigned int myArgNr;
             std::string myArgumentName;
@@ -59,8 +69,14 @@ namespace CTU {
         class CallBase {
         public:
             CallBase() = default;
-            CallBase(const std::string &callId, int callArgNr, const std::string &callFunctionName, const Location &loc)
-                : callId(callId), callArgNr(callArgNr), callFunctionName(callFunctionName), location(loc)
+            CallBase(const std::string &callId,
+                     int callArgNr,
+                     const std::string &callFunctionName,
+                     const Location &location) :
+                callId(callId),
+                callArgNr(callArgNr),
+                callFunctionName(callFunctionName),
+                location(location)
             {}
             CallBase(const Tokenizer *tokenizer, const Token *callToken);
             virtual ~CallBase() {}
@@ -89,10 +105,15 @@ namespace CTU {
         public:
             NestedCall() = default;
 
-            NestedCall(const std::string &myId, unsigned int myArgNr, const std::string &callId, unsigned int callArgnr, const std::string &callFunctionName, const Location &location)
-                : CallBase(callId, callArgnr, callFunctionName, location),
-                  myId(myId),
-                  myArgNr(myArgNr) {
+            NestedCall(const std::string &myId,
+                       unsigned int myArgNr,
+                       const std::string &paramCallId,
+                       int paramCallArgnr,
+                       const std::string &paramCallFunctionName,
+                       const Location &paramLocation) :
+                CallBase(paramCallId, paramCallArgnr, paramCallFunctionName, paramLocation),
+                myId(myId),
+                myArgNr(myArgNr) {
             }
 
             NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken);
@@ -127,7 +148,10 @@ namespace CTU {
     /** @brief Parse current TU and extract file info */
     CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer *tokenizer);
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer,
+            const Settings *settings,
+            const Check *check,
+            bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value));
 
     CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }

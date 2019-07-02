@@ -3028,8 +3028,11 @@ struct LifetimeStore {
 
     LifetimeStore(const Token *argtok,
                   const std::string &message,
-                  ValueFlow::Value::LifetimeKind type = ValueFlow::Value::Object)
-        : argtok(argtok), message(message), type(type), errorPath()
+                  ValueFlow::Value::LifetimeKind type = ValueFlow::Value::Object) :
+        argtok(argtok),
+        message(message),
+        type(type),
+        errorPath()
     {}
 
     template <class Predicate>

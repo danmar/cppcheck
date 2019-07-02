@@ -508,8 +508,8 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (!var)
         return ValueFlow::Value(-1);
 
-    MathLib::bigint dim = std::accumulate(var->dimensions().begin(), var->dimensions().end(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
-        return i1 * dim.num;
+    MathLib::bigint dim = std::accumulate(var->dimensions().begin(),var->dimensions().end(),1LL,[](MathLib::bigint i1, const Dimension &paramDim) {
+        return i1 * paramDim.num;
     });
 
     ValueFlow::Value v;
@@ -529,7 +529,11 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 }
 //---------------------------------------------------------------------------
 
-static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const std::vector<const Token *> &args, const MathLib::bigint bufferSize, const Settings *settings)
+static bool checkBufferSize(const Token *ftok,
+                            const Library::ArgumentChecks::MinSize &minsize,
+                            const std::vector<const Token *> &args,
+                            const MathLib::bigint bufferSize,
+                            const Settings *settings)
 {
     const Token * const arg = (minsize.arg > 0 && minsize.arg - 1 < args.size()) ? args[minsize.arg - 1] : nullptr;
     const Token * const arg2 = (minsize.arg2 > 0 && minsize.arg2 - 1 < args.size()) ? args[minsize.arg2 - 1] : nullptr;
