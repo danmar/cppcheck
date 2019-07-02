@@ -1151,7 +1151,7 @@ private:
               "    ints.erase(iter);\n"
               "    std::cout << (*iter) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:6]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:7]: (error) Using iterator to local container 'ints' that may be invalid.\n", errout.str());
 
         // #6554 "False positive eraseDereference - erase in while() loop"
         check("typedef std::map<Packet> packetMap;\n"
@@ -1222,7 +1222,7 @@ private:
               "    ints.erase(iter);\n"
               "    std::cout << (*iter) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (error) Iterator 'iter' used after element has been erased.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'ints' that may be invalid.\n", errout.str());
 
         check("void f() {\n"
               "    auto x = *myList.begin();\n"
@@ -1633,7 +1633,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:9]: (error) Iterator 'it' used after element has been erased.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:7] -> [test.cpp:5] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:5]: (error) Using iterator to local container 'foo' that may be invalid.\n", errout.str());
     }
 
     void eraseGoto() {
@@ -2083,7 +2083,8 @@ private:
               "    void* v = &i->foo;\n"
               "    return v;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) After insert(), the iterator 'i' may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:6]: (error) Using pointer to local variable 'bars' that may be invalid.\n"
+                      "[test.cpp:4] -> [test.cpp:1] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:6]: (error) Using pointer to local variable 'bars' that may be invalid.\n", errout.str());
     }
 
     void insert2() {
