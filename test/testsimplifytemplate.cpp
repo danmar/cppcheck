@@ -158,6 +158,7 @@ private:
         TEST_CASE(template118);
         TEST_CASE(template119); // #9186
         TEST_CASE(template120);
+        TEST_CASE(template121); // #9193
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2846,6 +2847,16 @@ private:
                            "template < typename This > "
                            "struct result < This ( ) > : lambda_context < tuple < > > { } ; "
                            "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template121() { // #9193
+        const char code[] = "template <class VALUE_T, class LIST_T = std::list<VALUE_T>>\n"
+                            "class TestList { };\n"
+                            "TestList<std::shared_ptr<int>> m_test;";
+        const char exp[] = "class TestList<std::shared_ptr<int>,std::list<std::shared_ptr<int>>> ; "
+                           "TestList<std::shared_ptr<int>,std::list<std::shared_ptr<int>>> m_test ; "
+                           "class TestList<std::shared_ptr<int>,std::list<std::shared_ptr<int>>> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
