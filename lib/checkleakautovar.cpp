@@ -303,7 +303,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             // right ast part (after `=` operator)
             const Token* tokRightAstOperand = tokAssignOp->astOperand2();
             while (tokRightAstOperand && tokRightAstOperand->isCast())
-                tokRightAstOperand = tokRightAstOperand->astOperand1();
+                tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
 
             // is variable used in rhs?
             if (isVarUsedInTree(tokRightAstOperand, varTok->varId()))
@@ -373,7 +373,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     // right ast part (after `=` operator)
                     const Token* tokRightAstOperand = innerTok->next()->astOperand2();
                     while (tokRightAstOperand && tokRightAstOperand->isCast())
-                        tokRightAstOperand = tokRightAstOperand->astOperand1();
+                        tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
                     if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
                         const Library::AllocFunc* f = mSettings->library.alloc(tokRightAstOperand->previous());
                         if (f && f->arg == -1) {
