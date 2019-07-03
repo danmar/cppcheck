@@ -60,6 +60,8 @@ private:
         TEST_CASE(assign14);
         TEST_CASE(assign15);
         TEST_CASE(assign16);
+        TEST_CASE(assign17); // #9047
+        TEST_CASE(assign18);
 
         TEST_CASE(deallocuse1);
         TEST_CASE(deallocuse2);
@@ -320,6 +322,32 @@ private:
               "   if (p=dostuff()) *p = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign17() { // #9047
+        check("void f() {\n"
+              "    char *p = (char*)malloc(10);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+
+        check("void f() {\n"
+              "    char *p = (char*)(int*)malloc(10);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void assign18() {
+        check("void f(int x) {\n"
+              "    char *p;\n"
+              "    if (x && (p = (char*)malloc(10))) { }"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    char *p;\n"
+              "    if (x && (p = (char*)(int*)malloc(10))) { }"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void deallocuse1() {
