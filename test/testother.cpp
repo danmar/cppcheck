@@ -3781,13 +3781,13 @@ private:
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"
-              "    static_assert(Four == 4, "");\n"
+              "    static_assert(Four == 4, \"\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"
-              "    static_assert(4 == Four, "");\n"
+              "    static_assert(4 == Four, \"\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -3801,7 +3801,7 @@ private:
         check("void f() {\n"
               "    enum { FourInEnumOne = 4 };\n"
               "    enum { FourInEnumTwo = 4 };\n"
-              "    static_assert(FourInEnumOne == FourInEnumTwo, "");\n"
+              "    static_assert(FourInEnumOne == FourInEnumTwo, \"\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
