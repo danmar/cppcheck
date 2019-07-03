@@ -160,6 +160,7 @@ private:
         TEST_CASE(template120);
         TEST_CASE(template121); // #9193
         TEST_CASE(template122); // #9147
+        TEST_CASE(template123); // #9183
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2876,6 +2877,30 @@ private:
                            "struct b < c < f . . . > , d < > > ; "
                            "} "
                            "void e ( ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template123() { // #9183
+        const char code[] = "template <class...> struct a;\n"
+                            "namespace {\n"
+                            "template <class, class, class, class>\n"
+                            "struct b;\n"
+                            "template <template <class> class c, class... d, template <class> class e, class... f>\n"
+                            "struct b<c<d...>, e<f...>>;\n"
+                            "}\n"
+                            "void fn1() {\n"
+                            "  using c = a<>;\n"
+                            "  using e = a<>;\n"
+                            "}";
+        const char exp[] = "template < class . . . > struct a ; "
+                           "namespace { "
+                           "template < class , class , class , class > "
+                           "struct b ; "
+                           "template < template < class > class c , class . . . d , template < class > class e , class . . . f > "
+                           "struct b < c < d . . . > , e < f . . . > > ; "
+                           "} "
+                           "void fn1 ( ) { "
+                           "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
