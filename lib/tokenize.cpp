@@ -1893,6 +1893,8 @@ bool Tokenizer::simplifyUsing()
             if (!endOfTemplateDefinition) {
                 if (tok->str() == "{")
                     endOfTemplateDefinition = tok->link();
+                else if (tok->str() == ";")
+                    endOfTemplateDefinition = tok;
             }
             if (tok == endOfTemplateDefinition) {
                 inTemplateDefinition = false;
@@ -1994,6 +1996,27 @@ bool Tokenizer::simplifyUsing()
                         Token::Match(tok1, "using namespace %name% ;|::")) {
                         setScopeInfo(tok1, &scopeList1, true);
                         scope1 = getScopeName(scopeList1);
+                        continue;
+                    }
+
+                    // skip template definitions
+                    if (Token::Match(tok1, "template < !!>")) {
+                        tok1 = tok1->next()->findClosingBracket();
+                        if (tok1) {
+                            Token * tok2 = tok1->next();
+                            while (tok2 && !Token::Match(tok2, ";|{")) {
+                                if (tok2->str() == "<")
+                                    tok2 = tok2->findClosingBracket();
+                                else if (Token::Match(tok2, "(|[") && tok2->link())
+                                    tok2 = tok2->link();
+                                if (tok2)
+                                    tok2 = tok2->next();
+                            }
+                            if (tok2 && tok2->str() == "{")
+                                tok1 = tok2->link();
+                            else if (tok2 && tok2->str() == ";")
+                                tok1 = tok2;
+                        }
                         continue;
                     }
 
