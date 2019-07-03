@@ -9227,6 +9227,21 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
             syntaxError(tok);
+        if (Token::simpleMatch(tok, ",")) {
+            if (Token::Match(tok->previous(), "(|[|{|<|%assign%|%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|::|sizeof|throw|decltype|typeof"))
+                syntaxError(tok);
+            if (Token::Match(tok->next(), ")|]|>|%assign%|%or%|%oror%|==|!=|/|>=|<=|&&"))
+                syntaxError(tok);
+        }
+        if (Token::simpleMatch(tok, ".") && 
+            !Token::simpleMatch(tok->previous(), ".") && 
+            !Token::simpleMatch(tok->next(), ".") && 
+            !Token::Match(tok->previous(), "{|, . %name% =")) {
+            if (!Token::Match(tok->previous(), ")|]|>|}|%name%"))
+                syntaxError(tok);
+            if (!Token::Match(tok->next(), "template|operator|*|~|%name%"))
+                syntaxError(tok);
+        }
     }
 
     // ternary operator without :
