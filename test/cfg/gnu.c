@@ -79,7 +79,7 @@ void ignoreleak(void)
 {
     char *p = (char *)malloc(10);
     __builtin_memset(&(p[0]), 0, 10);
-    // TODO // cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 void memleak_asprintf(char **ptr, const char *fmt, const int arg)

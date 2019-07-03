@@ -107,6 +107,19 @@ void g_new_test()
     // cppcheck-suppress memleak
 }
 
+void g_new_if_test()
+{
+    struct a {
+        int b;
+    };
+
+    struct a * pNew3;
+    if (pNew3 = g_new(struct a, 6)) {
+        printf("%p", pNew3);
+    }
+    // cppcheck-suppress memleak
+}
+
 void g_try_new0_test()
 {
     struct a {
