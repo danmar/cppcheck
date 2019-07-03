@@ -1830,7 +1830,6 @@ namespace {
             tok2 = tok2->tokAt(-2);
         }
 
-        // todo: check using namespace
         std::string fullScope1 = scope1;
         if (!scope1.empty() && !qualification.empty())
             fullScope1 += " :: ";
@@ -1838,6 +1837,19 @@ namespace {
 
         if (scope == fullScope1)
             return true;
+
+        // check using namespace
+        if (!scopeList1.back().usingNamespaces.empty()) {
+            if (qualification.empty()) {
+                if (scopeList1.back().usingNamespaces.find(scope) != scopeList1.back().usingNamespaces.end())
+                    return true;
+            } else {
+                for (auto ns : scopeList1.back().usingNamespaces) {
+                    if (scope == ns + " :: " + qualification)
+                        return true;
+                }
+            }
+        }
 
         std::string newScope1 = scope1;
 
@@ -2024,9 +2036,26 @@ bool Tokenizer::simplifyUsing()
                         continue;
 
                     // remove the qualification
-                    while (tok1->strAt(-1) == "::" && tok1->strAt(-2) == scope) {
-                        tok1->deletePrevious();
-                        tok1->deletePrevious();
+                    std::string fullScope = scope;
+                    std::string::size_type idx;
+                    while (tok1->strAt(-1) == "::") {
+                        if (fullScope == tok1->strAt(-2)) {
+                            tok1->deletePrevious();
+                            tok1->deletePrevious();
+                            break;
+                        } else {
+                            idx = fullScope.rfind(" ");
+
+                            if (idx == std::string::npos)
+                                break;
+
+                            if (tok1->strAt(-2) == fullScope.substr(idx + 1)) {
+                                tok1->deletePrevious();
+                                tok1->deletePrevious();
+                                fullScope.resize(idx - 3);
+                            } else
+                                break;
+                        }
                     }
 
                     Token * arrayStart = nullptr;
