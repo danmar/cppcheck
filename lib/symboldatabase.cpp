@@ -666,9 +666,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = tok->linkAt(1);
             } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
                 const Token *lambdaStartToken = lambdaEndToken->link();
-                scopeList.emplace_back(this, tok, scope, Scope::eLambda, lambdaStartToken);
-                scope->nestedList.push_back(&scopeList.back());
-                scope = &scopeList.back();
+                const Token * argStart = lambdaStartToken->astParent();
+                const Token * funcStart = argStart->astParent();
+                const Function* const function = addGlobalFunction(scope, tok, argStart, funcStart);
                 tok = lambdaStartToken;
             } else if (tok->str() == "{") {
                 if (isExecutableScope(tok)) {
@@ -1732,6 +1732,10 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
             type = Function::eOperatorEqual;
     }
 
+    else if (tokenDef->str() == "[") {
+        type = Function::eLambda;
+    }
+
     // class constructor/destructor
     else if (tokenDef->str() == scope->className) {
         // destructor
@@ -1778,7 +1782,7 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
     }
 
     // find the return type
-    if (!isConstructor() && !isDestructor()) {
+    if (!isConstructor() && !isDestructor() && !isLambda()) {
         // @todo auto type deduction should be checked
         // @todo attributes and exception specification can also precede trailing return type
         if (Token::Match(argDef->link()->next(), "const|volatile| &|&&| .")) { // Trailing return type
@@ -2054,13 +2058,16 @@ const Token * Function::constructorMemberInitialization() const
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
 {
     Function* function = nullptr;
-    for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-        const Function *f = i->second;
-        if (f->hasBody())
-            continue;
-        if (Function::argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
-            function = const_cast<Function *>(i->second);
-            break;
+    // Lambda functions are always unique
+    if (tok->str() != "[") {
+        for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
+            const Function *f = i->second;
+            if (f->hasBody())
+                continue;
+            if (Function::argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
+                function = const_cast<Function *>(i->second);
+                break;
+            }
         }
     }
 
@@ -3294,6 +3301,8 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
             enumClass = true;
             nameTok = nameTok->next();
         }
+    } else if (classDef->str() == "[") {
+        type = Scope::eLambda;
     } else {
         type = Scope::eFunction;
     }
