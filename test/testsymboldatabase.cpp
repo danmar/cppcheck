@@ -297,6 +297,7 @@ private:
         TEST_CASE(symboldatabase75);
         TEST_CASE(symboldatabase76); // #9056
         TEST_CASE(symboldatabase77); // #8663
+        TEST_CASE(symboldatabase78); // #9147
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4220,6 +4221,18 @@ private:
                       "  T3 t;\n"
                       "}");
         ASSERT_EQUALS(2, db->mVariableList.size());
+    }
+
+    void symboldatabase78() { // #9147
+        GET_SYMBOL_DB("template <class...> struct a;\n"
+                      "namespace {\n"
+                      "template <class, class> struct b;\n"
+                      "template <template <class> class c, class... f, template <class...> class d>\n"
+                      "struct b<c<f...>, d<>>;\n"
+                      "}\n"
+                      "void e() { using c = a<>; }");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
