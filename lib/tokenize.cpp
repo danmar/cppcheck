@@ -1868,7 +1868,6 @@ bool Tokenizer::simplifyUsing()
     std::list<ScopeInfo3> scopeList;
     bool inTemplateDefinition = false;
     const Token *endOfTemplateDefinition = nullptr;
-    bool isVariable = false;
     struct Using {
         Using(Token *start, Token *end) : startTok(start), endTok(end) { }
         Token *startTok;
@@ -1892,10 +1891,10 @@ bool Tokenizer::simplifyUsing()
 
         if (inTemplateDefinition) {
             if (!endOfTemplateDefinition) {
-                if (isVariable)
-                    endOfTemplateDefinition = findSemicolon(tok);
-                else if (tok->str() == "{")
+                if (tok->str() == "{")
                     endOfTemplateDefinition = tok->link();
+                else if (tok->str() == ";")
+                    endOfTemplateDefinition = tok;
             }
             if (tok == endOfTemplateDefinition) {
                 inTemplateDefinition = false;
@@ -1997,6 +1996,27 @@ bool Tokenizer::simplifyUsing()
                         Token::Match(tok1, "using namespace %name% ;|::")) {
                         setScopeInfo(tok1, &scopeList1, true);
                         scope1 = getScopeName(scopeList1);
+                        continue;
+                    }
+
+                    // skip template definitions
+                    if (Token::Match(tok1, "template < !!>")) {
+                        tok1 = tok1->next()->findClosingBracket();
+                        if (tok1) {
+                            Token * tok2 = tok1->next();
+                            while (tok2 && !Token::Match(tok2, ";|{")) {
+                                if (tok2->str() == "<")
+                                    tok2 = tok2->findClosingBracket();
+                                else if (Token::Match(tok2, "(|[") && tok2->link())
+                                    tok2 = tok2->link();
+                                if (tok2)
+                                    tok2 = tok2->next();
+                            }
+                            if (tok2 && tok2->str() == "{")
+                                tok1 = tok2->link();
+                            else if (tok2 && tok2->str() == ";")
+                                tok1 = tok2;
+                        }
                         continue;
                     }
 
@@ -2816,23 +2836,6 @@ void Tokenizer::simplifyTemplates()
 {
     if (isC())
         return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // Ticket #6181: normalize C++11 template parameter list closing syntax
-        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok)) {
-            Token *endTok = tok->findClosingBracket();
-            if (endTok && endTok->str() == ">>") {
-                endTok->str(">");
-                endTok->insertToken(">");
-            }
-        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
-            Token *endTok = tok->tokAt(2)->findClosingBracket();
-            if (Token::Match(endTok, ">> ;|{")) {
-                endTok->str(">");
-                endTok->insertToken(">");
-            }
-        }
-    }
 
     mTemplateSimplifier->simplifyTemplates(
 #ifdef MAXTIME
@@ -9247,6 +9250,21 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
             syntaxError(tok);
+        if (Token::simpleMatch(tok, ",")) {
+            if (Token::Match(tok->previous(), "(|[|{|<|%assign%|%or%|%oror%|==|!=|+|-|/|!|>=|<=|~|^|::|sizeof|throw|decltype|typeof"))
+                syntaxError(tok);
+            if (Token::Match(tok->next(), ")|]|>|%assign%|%or%|%oror%|==|!=|/|>=|<=|&&"))
+                syntaxError(tok);
+        }
+        if (Token::simpleMatch(tok, ".") &&
+            !Token::simpleMatch(tok->previous(), ".") &&
+            !Token::simpleMatch(tok->next(), ".") &&
+            !Token::Match(tok->previous(), "{|, . %name% =")) {
+            if (!Token::Match(tok->previous(), ")|]|>|}|%name%"))
+                syntaxError(tok);
+            if (!Token::Match(tok->next(), "template|operator|*|~|%name%"))
+                syntaxError(tok);
+        }
     }
 
     // ternary operator without :

@@ -4,12 +4,6 @@
 |:--:|:--:|:--:|
 |[![Linux Build Status](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck)|[![Windows Build Status](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|
 
-## Donations
-
-If you find Cppcheck useful for you, feel free to make a donation.
-
-[![Donate](http://pledgie.com/campaigns/4127.png)](http://pledgie.com/campaigns/4127)
-
 ## About the name
 
 The original name of this program was "C++check", but it was later changed to "Cppcheck".
@@ -36,6 +30,26 @@ There are multiple compilation choices:
 * gnu make
 * g++ 4.6 (or later)
 * clang++
+
+### cmake
+
+Example, compiling Cppcheck with cmake:
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+If you want to compile the GUI you can use the flag
+-DBUILD_GUI=ON
+
+For rules support (requires pcre) use the flag
+-DHAVE_RULES=ON
+
+For release builds it is recommended that you use:
+-DUSE_MATCHCOMPILER=ON
 
 ### qmake
 

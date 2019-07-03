@@ -1470,7 +1470,6 @@ static void valueFlowGlobalConstVar(TokenList* tokenList, const Settings *settin
             continue;
         // Initialization...
         if (tok == tok->variable()->nameToken() &&
-            !tok->variable()->isStatic() &&
             !tok->variable()->isVolatile() &&
             !tok->variable()->isArgument() &&
             tok->variable()->isConst() &&
@@ -3580,7 +3579,7 @@ static void valueFlowForwardAssign(Token * const               tok,
             if (it->isIntValue())
                 it->intvalue = (it->intvalue != 0);
             if (it->isTokValue())
-                it ->intvalue = (it->tokvalue != 0);
+                it ->intvalue = (it->tokvalue != nullptr);
         }
     }
 
@@ -3636,6 +3635,11 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     return values;
 }
 
+static bool isLiteralNumber(const Token *tok, bool cpp)
+{
+    return tok->isNumber() || tok->str() == "NULL" || (cpp && Token::Match(tok, "false|true|nullptr"));
+}
+
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
@@ -3666,7 +3670,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
-            const bool constValue = tok->astOperand2()->isNumber();
+            const bool constValue = isLiteralNumber(tok->astOperand2(), tokenlist->isCPP());
             const bool init = var->nameToken() == tok->astOperand1();
             valueFlowForwardAssign(tok->astOperand2(), var, values, constValue, init, tokenlist, errorLogger, settings);
         }
@@ -5433,9 +5437,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowFwdAnalysis(tokenlist, settings);
 
     // Temporary hack.. run valueflow until there is nothing to update or timeout expires
-    const std::time_t timeout = std::time(0) + TIMEOUT;
+    const std::time_t timeout = std::time(nullptr) + TIMEOUT;
     std::size_t values = 0;
-    while (std::time(0) < timeout && values < getTotalValues(tokenlist)) {
+    while (std::time(nullptr) < timeout && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);

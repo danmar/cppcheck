@@ -19,96 +19,102 @@
 #include "codeeditstylecontrols.h"
 #include <QColorDialog>
 
-SelectColorButton::SelectColorButton( QWidget* parent ) :
-    QPushButton( parent ),
-    mColor( QColor( 255, 255, 255 ))
+SelectColorButton::SelectColorButton(QWidget* parent) :
+    QPushButton(parent),
+    mColor(QColor(255, 255, 255))
 {
     updateColor();
-    connect( this, SIGNAL( clicked() ), this, SLOT( changeColor() ));
+    connect(this, SIGNAL(clicked()), this, SLOT(changeColor()));
 }
 
-void SelectColorButton::updateColor() {
+void SelectColorButton::updateColor()
+{
     QString btnColorStyle = QString(
                                 "background-color:rgb(%1,%2,%3);"
                                 "border-style:outset;"
                                 "border-width: 1px;")
-                            .arg( mColor.red() )
-                            .arg( mColor.green() )
-                            .arg( mColor.blue() );
+                            .arg(mColor.red())
+                            .arg(mColor.green())
+                            .arg(mColor.blue());
     setObjectName("SelectColorButton");
-    setStyleSheet( btnColorStyle );
+    setStyleSheet(btnColorStyle);
 }
 
-void SelectColorButton::changeColor() {
-    QColorDialog pDlg( mColor );
-    pDlg.setModal( true );
+void SelectColorButton::changeColor()
+{
+    QColorDialog pDlg(mColor);
+    pDlg.setModal(true);
     int nResult = pDlg.exec();
-    if (nResult == QDialog::Accepted )
-    {
-        setColor( pDlg.selectedColor() );
-        emit colorChanged( mColor );
+    if (nResult == QDialog::Accepted) {
+        setColor(pDlg.selectedColor());
+        emit colorChanged(mColor);
     }
 }
 
-void SelectColorButton::setColor( const QColor& color ) {
+void SelectColorButton::setColor(const QColor& color)
+{
     mColor = color;
     updateColor();
 }
 
-const QColor& SelectColorButton::getColor() {
+const QColor& SelectColorButton::getColor()
+{
     return mColor;
 }
 
-SelectFontWeightCombo::SelectFontWeightCombo( QWidget* parent ) :
-    QComboBox( parent ),
-    mWeight( QFont::Normal )
+SelectFontWeightCombo::SelectFontWeightCombo(QWidget* parent) :
+    QComboBox(parent),
+    mWeight(QFont::Normal)
 {
-    addItem( QObject::tr( "Thin" ),
-             QVariant( static_cast<int>( QFont::Thin )));
-    addItem( QObject::tr( "ExtraLight" ),
-             QVariant( static_cast<int>( QFont::ExtraLight )));
-    addItem( QObject::tr( "Light" ),
-             QVariant( static_cast<int>( QFont::Light )));
-    addItem( QObject::tr( "Normal" ),
-             QVariant( static_cast<int>( QFont::Normal )));
-    addItem( QObject::tr( "Medium" ),
-             QVariant( static_cast<int>( QFont::Medium )));
-    addItem( QObject::tr( "DemiBold" ),
-             QVariant( static_cast<int>( QFont::DemiBold )));
-    addItem( QObject::tr( "Bold" ),
-             QVariant( static_cast<int>( QFont::Bold )));
-    addItem( QObject::tr( "ExtraBold" ),
-             QVariant( static_cast<int>( QFont::ExtraBold )));
-    addItem( QObject::tr( "Black" ),
-             QVariant( static_cast<int>( QFont::Black )));
+    addItem(QObject::tr("Thin"),
+            QVariant(static_cast<int>(QFont::Thin)));
+    addItem(QObject::tr("ExtraLight"),
+            QVariant(static_cast<int>(QFont::ExtraLight)));
+    addItem(QObject::tr("Light"),
+            QVariant(static_cast<int>(QFont::Light)));
+    addItem(QObject::tr("Normal"),
+            QVariant(static_cast<int>(QFont::Normal)));
+    addItem(QObject::tr("Medium"),
+            QVariant(static_cast<int>(QFont::Medium)));
+    addItem(QObject::tr("DemiBold"),
+            QVariant(static_cast<int>(QFont::DemiBold)));
+    addItem(QObject::tr("Bold"),
+            QVariant(static_cast<int>(QFont::Bold)));
+    addItem(QObject::tr("ExtraBold"),
+            QVariant(static_cast<int>(QFont::ExtraBold)));
+    addItem(QObject::tr("Black"),
+            QVariant(static_cast<int>(QFont::Black)));
     updateWeight();
-    connect( this, SIGNAL( currentIndexChanged( int )),
-             this, SLOT( changeWeight( int )));
+    connect(this, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(changeWeight(int)));
 }
 
-void SelectFontWeightCombo::updateWeight() {
-    int nResult = findData( QVariant( static_cast<int>( mWeight )));
+void SelectFontWeightCombo::updateWeight()
+{
+    int nResult = findData(QVariant(static_cast<int>(mWeight)));
 
-    if( nResult != -1 ) {
-        setCurrentIndex( nResult );
-    }
-    else {
-        setCurrentIndex( findData( static_cast<int>( QFont::Normal )));
-    }
-}
-
-void SelectFontWeightCombo::changeWeight( int index ) {
-    if( index != -1 ) {
-        setWeight( static_cast<QFont::Weight>( itemData( index ).toInt() ));
-        emit weightChanged( mWeight );
+    if (nResult != -1) {
+        setCurrentIndex(nResult);
+    } else {
+        setCurrentIndex(findData(static_cast<int>(QFont::Normal)));
     }
 }
 
-void SelectFontWeightCombo::setWeight( const QFont::Weight& weight ) {
+void SelectFontWeightCombo::changeWeight(int index)
+{
+    if (index != -1) {
+        setWeight(static_cast<QFont::Weight>(itemData(index).toInt()));
+        emit weightChanged(mWeight);
+    }
+}
+
+void SelectFontWeightCombo::setWeight(const QFont::Weight& weight)
+{
     mWeight = weight;
     updateWeight();
 }
 
-const QFont::Weight& SelectFontWeightCombo::getWeight() {
+const QFont::Weight& SelectFontWeightCombo::getWeight()
+{
     return mWeight;
 }

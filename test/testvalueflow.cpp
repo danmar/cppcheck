@@ -3097,6 +3097,16 @@ private:
                "}";
         ASSERT(isNotKnownValues(code, "!"));
 
+        code = "void f() {\n" // #8356
+               "  bool b = false;\n"
+               "  for(int x = 3; !b && x < 10; x++) {\n" // <- b has known value
+               "    for(int y = 4; !b && y < 20; y++) {}\n"
+               "  }\n"
+               "}";
+        value = valueOfTok(code, "!");
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT(value.isKnown());
+
         code = "void f() {\n"
                "  int x = 0;\n"
                "  switch (state) {\n"
@@ -3265,6 +3275,10 @@ private:
         code = "volatile const int x = 42;\n"
                "void f(){ int a = x; }\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 2U, 42));
+
+        code = "static const int x = 42;\n"
+               "void f(){ int a = x; }\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 2U, 42));
     }
 
     void valueFlowGlobalStaticVar() {

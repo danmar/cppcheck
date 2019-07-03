@@ -193,7 +193,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
     std::string simplifyTypedef(const char code[]) {
@@ -206,7 +206,7 @@ private:
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
-        return tokenizer.tokens()->stringifyList(0, false);
+        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
     void checkSimplifyTypedef(const char code[]) {

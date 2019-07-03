@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ class SettingsDialog : public QDialog {
 public:
     SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
-                   QWidget *parent = 0);
+                   QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
     virtual ~SettingsDialog();
     SettingsDialog &operator=(const SettingsDialog &) = delete;

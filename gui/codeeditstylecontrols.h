@@ -27,18 +27,17 @@
 #include <QColor>
 #include <QFont>
 
-class SelectColorButton : public QPushButton
-{
+class SelectColorButton : public QPushButton {
     Q_OBJECT
 public:
-    explicit SelectColorButton( QWidget* parent );
-    virtual ~SelectColorButton(){};
+    explicit SelectColorButton(QWidget* parent);
+    virtual ~SelectColorButton() {}
 
-    void setColor( const QColor& color );
+    void setColor(const QColor& color);
     const QColor& getColor();
 
 signals:
-    void colorChanged( QColor& newColor );
+    void colorChanged(QColor& newColor);
 
 public slots:
     void updateColor();
@@ -49,25 +48,25 @@ private:
 };
 
 
-class SelectFontWeightCombo : public QComboBox
-{
+class SelectFontWeightCombo : public QComboBox {
     Q_OBJECT
 public:
-    explicit SelectFontWeightCombo( QWidget* parent );
+    explicit SelectFontWeightCombo(QWidget* parent);
     virtual ~SelectFontWeightCombo() {}
 
-    void setWeight( const QFont::Weight& weight );
+    void setWeight(const QFont::Weight& weight);
     const QFont::Weight& getWeight();
 
 signals:
-    void weightChanged( QFont::Weight& newWeight );
+    void weightChanged(QFont::Weight& newWeight);
 
 public slots:
     void updateWeight();
-    void changeWeight( int index );
+    void changeWeight(int index);
 
 private:
     QFont::Weight mWeight;
 };
 
 #endif  //CODEEDITORSTYLECONTROLS_H
+

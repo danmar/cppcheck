@@ -1007,7 +1007,7 @@ void MainWindow::programSettings()
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
-        mUI.mResults->updateStyleSetting( mSettings );
+        mUI.mResults->updateStyleSetting(mSettings);
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }

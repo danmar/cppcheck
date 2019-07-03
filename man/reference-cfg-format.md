@@ -89,6 +89,8 @@ To specify the behaviour of functions and how they should be used, `<function>` 
 
 The arguments a function takes can be specified by `<arg>` tags. Each of them takes the number of the argument (starting from 1) in the nr attribute, `nr="any"` for arbitrary arguments, or `nr="variadic"` for variadic arguments. Optional arguments can be specified by providing a default value: `default="value"`. The specifications for individual arguments override this setting.
 
+You can specify if an argument is an input or output argument. For example `<arg nr="1" direction="in">`. The allowed directions are `in`, `out` and `inout`.
+
 ### Not bool
 
 Here is an example program with misplaced comparison:
@@ -537,3 +539,8 @@ The tag `<type>` can be added as well to provide more information about the type
 
 * `string='std-like'` can be set for containers that match `std::string` interfaces.
 * `associative='std-like'` can be set for containers that match C++'s `AssociativeContainer` interfaces.
+
+# `<smart-pointer>`
+
+Specify that a class is a smart pointer by using `<smart-pointer class-name"std::shared_ptr"/>`.
+

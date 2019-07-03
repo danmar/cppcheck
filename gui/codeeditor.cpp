@@ -1,5 +1,5 @@
 #include <QtWidgets>
-
+#include <QShortcut>
 #include "codeeditor.h"
 
 
@@ -106,27 +106,27 @@ void Highlighter::setSymbols(const QStringList &symbols)
     }
 }
 
-void Highlighter::setStyle( const CodeEditorStyle &newStyle )
+void Highlighter::setStyle(const CodeEditorStyle &newStyle)
 {
-    mKeywordFormat.setForeground( newStyle.keywordColor );
-    mKeywordFormat.setFontWeight( newStyle.keywordWeight );
-    mClassFormat.setForeground( newStyle.classColor );
-    mClassFormat.setFontWeight( newStyle.classWeight );
-    mSingleLineCommentFormat.setForeground( newStyle.commentColor );
-    mSingleLineCommentFormat.setFontWeight( newStyle.commentWeight );
-    mMultiLineCommentFormat.setForeground( newStyle.commentColor );
-    mMultiLineCommentFormat.setFontWeight( newStyle.commentWeight );
-    mQuotationFormat.setForeground( newStyle.quoteColor );
-    mQuotationFormat.setFontWeight( newStyle.quoteWeight );
-    mSymbolFormat.setForeground( newStyle.symbolFGColor );
-    mSymbolFormat.setBackground( newStyle.symbolBGColor );
-    mSymbolFormat.setFontWeight( newStyle.symbolWeight );
-    for( HighlightingRule& rule : mHighlightingRules ) {
-        applyFormat( rule );
+    mKeywordFormat.setForeground(newStyle.keywordColor);
+    mKeywordFormat.setFontWeight(newStyle.keywordWeight);
+    mClassFormat.setForeground(newStyle.classColor);
+    mClassFormat.setFontWeight(newStyle.classWeight);
+    mSingleLineCommentFormat.setForeground(newStyle.commentColor);
+    mSingleLineCommentFormat.setFontWeight(newStyle.commentWeight);
+    mMultiLineCommentFormat.setForeground(newStyle.commentColor);
+    mMultiLineCommentFormat.setFontWeight(newStyle.commentWeight);
+    mQuotationFormat.setForeground(newStyle.quoteColor);
+    mQuotationFormat.setFontWeight(newStyle.quoteWeight);
+    mSymbolFormat.setForeground(newStyle.symbolFGColor);
+    mSymbolFormat.setBackground(newStyle.symbolBGColor);
+    mSymbolFormat.setFontWeight(newStyle.symbolWeight);
+    for (HighlightingRule& rule : mHighlightingRules) {
+        applyFormat(rule);
     }
 
-    for( HighlightingRule& rule : mHighlightingRulesWithSymbols ) {
-        applyFormat( rule );
+    for (HighlightingRule& rule : mHighlightingRulesWithSymbols) {
+        applyFormat(rule);
     }
 }
 
@@ -162,46 +162,51 @@ void Highlighter::highlightBlock(const QString &text)
     }
 }
 
-void Highlighter::applyFormat( HighlightingRule &rule )
+void Highlighter::applyFormat(HighlightingRule &rule)
 {
-    switch( rule.ruleRole )
-    {
-        case RuleRole::Keyword:
-            rule.format = mKeywordFormat;
-            break;
-        case RuleRole::Class:
-            rule.format = mClassFormat;
-            break;
-        case RuleRole::Comment:
-            rule.format = mSingleLineCommentFormat;
-            break;
-        case RuleRole::Quote:
-            rule.format = mQuotationFormat;
-            break;
-        case RuleRole::Symbol:
-            rule.format = mSymbolFormat;
-            break;
+    switch (rule.ruleRole) {
+    case RuleRole::Keyword:
+        rule.format = mKeywordFormat;
+        break;
+    case RuleRole::Class:
+        rule.format = mClassFormat;
+        break;
+    case RuleRole::Comment:
+        rule.format = mSingleLineCommentFormat;
+        break;
+    case RuleRole::Quote:
+        rule.format = mQuotationFormat;
+        break;
+    case RuleRole::Symbol:
+        rule.format = mSymbolFormat;
+        break;
     }
 }
 
 CodeEditor::CodeEditor(QWidget *parent) :
     QPlainTextEdit(parent),
-    mWidgetStyle( new CodeEditorStyle( defaultStyleLight ))
+    mWidgetStyle(new CodeEditorStyle(defaultStyleLight))
 {
     mLineNumberArea = new LineNumberArea(this);
-    mHighlighter = new Highlighter( document(), mWidgetStyle );
+    mHighlighter = new Highlighter(document(), mWidgetStyle);
     mErrorPosition = -1;
 
-    QFont font( "Monospace" );
-    font.setStyleHint( QFont::TypeWriter );
-    setFont( font );
+    QFont font("Monospace");
+    font.setStyleHint(QFont::TypeWriter);
+    setFont(font);
+    mLineNumberArea->setFont(font);
 
     // set widget coloring by overriding widget style sheet
     setObjectName("CodeEditor");
-    setStyleSheet( generateStyleString() );
+    setStyleSheet(generateStyleString());
+
+    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
+    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(copyText, SIGNAL(activated()), this, SLOT(copy()));
+    connect(allText, SIGNAL(activated()), this, SLOT(selectAll()));
 
     updateLineNumberAreaWidth(0);
 }
@@ -230,8 +235,8 @@ void CodeEditor::setStyle(const CodeEditorStyle& newStyle)
 {
     *mWidgetStyle = newStyle;
     // apply new styling
-    setStyleSheet( generateStyleString() );
-    mHighlighter->setStyle( newStyle );
+    setStyleSheet(generateStyleString());
+    mHighlighter->setStyle(newStyle);
     mHighlighter->rehighlight();
     highlightErrorLine();
 }
@@ -296,7 +301,7 @@ void CodeEditor::highlightErrorLine()
     selection.format.setBackground(mWidgetStyle->highlightBGColor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = QTextCursor(document());
-    if( mErrorPosition >= 0 ) {
+    if (mErrorPosition >= 0) {
         selection.cursor.setPosition(mErrorPosition);
     } else {
         selection.cursor.setPosition(0);

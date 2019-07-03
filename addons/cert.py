@@ -154,6 +154,15 @@ def exp42(data):
                 token, 'style', "Comparison of struct padding data " +
                 "(fix either by packing the struct using '#pragma pack' or by rewriting the comparison)", 'EXP42-C')
 
+# EXP15-C
+# Do not place a semicolon on the same line as an if, for or while statement
+def exp15(data):
+    for scope in data.scopes:
+        if scope.type in ('If', 'For', 'While'):
+            token = scope.bodyStart.next 
+            if token.str==';' and token.linenr==scope.bodyStart.linenr:
+                reportError(token, 'style', 'Do not place a semicolon on the same line as an IF, FOR or WHILE', 'EXP15-C')
+
 
 # EXP46-C
 # Do not use a bitwise operator with a Boolean-like operand
@@ -295,6 +304,39 @@ def str07(data):
             continue
         reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % (token.str), 'STR07-C')
 
+# STR11-C
+# Do not specify the bound of a character array initialized with a string literal
+def str11(data):
+    for token in data.tokenlist:
+        if not token.isString:
+            continue
+
+        strlen = token.strlen
+        parent = token.astParent
+
+        if parent is None:
+            continue
+        parentOp1 = parent.astOperand1
+        if parentOp1 is None or parentOp1.str!='[':
+            continue
+
+        if not parent.isAssignmentOp:
+            continue
+            
+        varToken = parentOp1.astOperand1
+        if varToken is None or not varToken.isName:
+            continue
+        if varToken.variable is None:
+            continue
+        if varToken != varToken.variable.nameToken:
+            continue
+        valueToken = parentOp1.astOperand2
+        if valueToken is None:
+            continue
+            
+        if valueToken.isNumber and int(valueToken.str)==strlen:
+            reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -319,10 +361,12 @@ for arg in sys.argv[1:]:
         exp05(cfg)
         exp42(cfg)
         exp46(cfg)
+        exp15(cfg)
         int31(cfg, data.platform)
         str03(cfg)
         str05(cfg)
         str07(cfg)
+        str11(cfg)
         msc24(cfg)
         msc30(cfg)
 

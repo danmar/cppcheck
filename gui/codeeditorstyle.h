@@ -23,27 +23,27 @@
 #include <QColor>
 #include <QFont>
 
-const QString SETTINGS_STYLE_GROUP( "EditorStyle" );
-const QString SETTINGS_STYLE_TYPE( "StyleType");
-const QString SETTINGS_STYLE_TYPE_LIGHT( "DefaultLight" );
-const QString SETTINGS_STYLE_TYPE_DARK( "DefaultDark" );
-const QString SETTINGS_STYLE_TYPE_CUSTOM( "Custom" );
-const QString SETTINGS_STYLE_WIDGETFG( "StyleWidgetFG" );
-const QString SETTINGS_STYLE_WIDGETBG( "StyleWidgetBG" );
-const QString SETTINGS_STYLE_HILIFG( "StyleHighlightFG" );
-const QString SETTINGS_STYLE_LINENUMFG( "StyleLineNumFG" );
-const QString SETTINGS_STYLE_LINENUMBG( "StyleLineNumBG" );
-const QString SETTINGS_STYLE_KEYWORDFG( "StyleKeywordFG" );
-const QString SETTINGS_STYLE_KEYWORDWT( "StyleKeywordWeight" );
-const QString SETTINGS_STYLE_CLASSFG( "StyleClassFG" );
-const QString SETTINGS_STYLE_CLASSWT( "StyleClassWeight" );
-const QString SETTINGS_STYLE_QUOTEFG( "StyleQuoteFG" );
-const QString SETTINGS_STYLE_QUOTEWT( "StyleQuoteWeight" );
-const QString SETTINGS_STYLE_COMMENTFG( "StyleCommentFG" );
-const QString SETTINGS_STYLE_COMMENTWT( "StyleCommentWeight" );
-const QString SETTINGS_STYLE_SYMBOLFG( "StyleSymbolFG" );
-const QString SETTINGS_STYLE_SYMBOLBG( "StyleSymbolBG" );
-const QString SETTINGS_STYLE_SYMBOLWT( "StyleSymbolWeight" );
+const QString SETTINGS_STYLE_GROUP("EditorStyle");
+const QString SETTINGS_STYLE_TYPE("StyleType");
+const QString SETTINGS_STYLE_TYPE_LIGHT("DefaultLight");
+const QString SETTINGS_STYLE_TYPE_DARK("DefaultDark");
+const QString SETTINGS_STYLE_TYPE_CUSTOM("Custom");
+const QString SETTINGS_STYLE_WIDGETFG("StyleWidgetFG");
+const QString SETTINGS_STYLE_WIDGETBG("StyleWidgetBG");
+const QString SETTINGS_STYLE_HILIFG("StyleHighlightFG");
+const QString SETTINGS_STYLE_LINENUMFG("StyleLineNumFG");
+const QString SETTINGS_STYLE_LINENUMBG("StyleLineNumBG");
+const QString SETTINGS_STYLE_KEYWORDFG("StyleKeywordFG");
+const QString SETTINGS_STYLE_KEYWORDWT("StyleKeywordWeight");
+const QString SETTINGS_STYLE_CLASSFG("StyleClassFG");
+const QString SETTINGS_STYLE_CLASSWT("StyleClassWeight");
+const QString SETTINGS_STYLE_QUOTEFG("StyleQuoteFG");
+const QString SETTINGS_STYLE_QUOTEWT("StyleQuoteWeight");
+const QString SETTINGS_STYLE_COMMENTFG("StyleCommentFG");
+const QString SETTINGS_STYLE_COMMENTWT("StyleCommentWeight");
+const QString SETTINGS_STYLE_SYMBOLFG("StyleSymbolFG");
+const QString SETTINGS_STYLE_SYMBOLBG("StyleSymbolBG");
+const QString SETTINGS_STYLE_SYMBOLWT("StyleSymbolWeight");
 
 class QSettings;
 
@@ -59,13 +59,13 @@ public:
         const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
         const QColor& SymbFGColor, const QColor& SymbBGColor,
         const QFont::Weight& SymbWeight);
-    ~CodeEditorStyle() {};
+    ~CodeEditorStyle() {}
 
-    bool operator==( const CodeEditorStyle& rhs ) const;
-    bool operator!=( const CodeEditorStyle& rhs ) const;
+    bool operator==(const CodeEditorStyle& rhs) const;
+    bool operator!=(const CodeEditorStyle& rhs) const;
 
-    static CodeEditorStyle loadSettings( QSettings *settings );
-    static void saveSettings( QSettings *settings, const CodeEditorStyle& theStyle );
+    static CodeEditorStyle loadSettings(QSettings *settings);
+    static void saveSettings(QSettings *settings, const CodeEditorStyle& theStyle);
 
 public:
     QColor          widgetFGColor;

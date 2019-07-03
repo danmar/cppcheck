@@ -117,7 +117,7 @@ void ignoreleak(void)
 {
     char *p = (char *)malloc(10);
     memset(&(p[0]), 0, 10);
-    // TODO cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 // null pointer

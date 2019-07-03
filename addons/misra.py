@@ -201,7 +201,7 @@ def isFunctionCall(expr):
 
 
 def hasExternalLinkage(var):
-     return var.isGlobal and not var.isStatic
+    return var.isGlobal and not var.isStatic
 
 
 def countSideEffects(expr):
@@ -924,7 +924,7 @@ class MisraChecker:
             e_token = scope.bodyStart.next
             while e_token != scope.bodyEnd:
                 if e_token.str == '(':
-                    e_token.str == e_token.link
+                    e_token.str = e_token.link
                     continue
                 if not e_token.previous.str in ',{':
                     e_token = e_token.next
@@ -1628,6 +1628,24 @@ class MisraChecker:
                 self.reportError(var.nameToken, 18, 5)
 
 
+    def misra_18_7(self, data):
+        for scope in data.scopes:
+            if scope.type != 'Struct':
+                continue
+
+            token = scope.bodyStart.next
+            while token != scope.bodyEnd and token is not None:
+                # Handle nested structures to not duplicate an error.
+                if token.str == '{':
+                    token = token.link
+
+                if cppcheckdata.simpleMatch(token, "[ ]"):
+                    self.reportError(token, 18, 7)
+                    break
+                token = token.next
+
+
+
     def misra_18_8(self, data):
         for var in data.variables:
             if not var.isArray or not var.isLocal:
@@ -1719,12 +1737,12 @@ class MisraChecker:
                     while exp[pos1] == ' ':
                         pos1 -= 1
                     if exp[pos1] != '(' and exp[pos1] != '[':
-                        self.reportError(directive, 20, 7);
+                        self.reportError(directive, 20, 7)
                         break
                     while exp[pos2] == ' ':
                         pos2 += 1
                     if exp[pos2] != ')' and exp[pos2] != ']':
-                        self.reportError(directive, 20, 7);
+                        self.reportError(directive, 20, 7)
                         break
 
 
@@ -1732,7 +1750,7 @@ class MisraChecker:
         for directive in data.directives:
             d = Define(directive)
             if d.expansionList.find('#') >= 0:
-                self.reportError(directive, 20, 10);
+                self.reportError(directive, 20, 10)
 
     def misra_20_13(self, data):
         dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
@@ -1874,7 +1892,8 @@ class MisraChecker:
         normalized_filename = None
 
         if fileName is not None:
-            normalized_filename = os.path.normpath(fileName)
+            normalized_filename = os.path.expanduser(fileName)
+            normalized_filename = os.path.normpath(normalized_filename)
 
         if lineNumber is not None or symbolName is not None:
             line_symbol = (lineNumber, symbolName)
@@ -2083,13 +2102,12 @@ class MisraChecker:
                 errmsg = self.ruleTexts[ruleNum].text
                 if self.ruleTexts[ruleNum].misra_severity:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
-                    errmsg += ''.join((' (', self.ruleTexts[ruleNum].misra_severity, ')'))
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 return
-            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId)
+            cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
 
             if not misra_severity in self.violations:
                 self.violations[misra_severity] = []
@@ -2287,6 +2305,7 @@ class MisraChecker:
             self.misra_17_7(cfg)
             self.misra_17_8(cfg)
             self.misra_18_5(cfg)
+            self.misra_18_7(cfg)
             self.misra_18_8(cfg)
             self.misra_19_2(cfg)
             self.misra_20_1(cfg)
@@ -2373,7 +2392,8 @@ def main():
         sys.exit(0)
 
     if args.rule_texts:
-        filename = os.path.normpath(args.rule_texts)
+        filename = os.path.expanduser(args.rule_texts)
+        filename = os.path.normpath(filename)
         if not os.path.isfile(filename):
             print('Fatal error: file is not found: ' + filename)
             sys.exit(1)
