@@ -219,7 +219,7 @@ private:
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local, bool inInnerClass);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;
