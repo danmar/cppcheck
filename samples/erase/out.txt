@@ -1,1 +1,1 @@
-[samples\erase\bad.cpp:9] -> [samples\erase\bad.cpp:11]: (error) Iterator 'iter' used after element has been erased.
+[samples\erase\bad.cpp:9] -> [samples\erase\bad.cpp:10] -> [samples\erase\bad.cpp:10] -> [samples\erase\bad.cpp:9] -> [samples\erase\bad.cpp:11] -> [samples\erase\bad.cpp:4] -> [samples\erase\bad.cpp:10]: (error) Using iterator to local container 'items' that may be invalid.\n
