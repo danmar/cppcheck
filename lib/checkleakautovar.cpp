@@ -336,13 +336,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // allocation?
             if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
-                const Library::AllocFunc* f = mSettings->library.alloc(tokRightAstOperand->previous());
+                const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(tokRightAstOperand->previous());
                 if (f && f->arg == -1) {
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
                     varAlloc.type = f->groupId;
                     varAlloc.status = VarInfo::ALLOC;
                 }
-                const Library::AllocFunc* g = mSettings->library.realloc(tokRightAstOperand->previous());
+                const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(tokRightAstOperand->previous());
                 if (g && g->arg == -1) {
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
                     varAlloc.type = g->groupId;
@@ -387,7 +387,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     while (tokRightAstOperand && tokRightAstOperand->isCast())
                         tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
                     if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
-                        const Library::AllocFunc* f = mSettings->library.alloc(tokRightAstOperand->previous());
+                        const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(tokRightAstOperand->previous());
                         if (f && f->arg == -1) {
                             VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = f->groupId;
@@ -396,7 +396,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             // Fixme: warn about leak
                             alloctype.erase(innerTok->varId());
                         }
-                        const Library::AllocFunc* g = mSettings->library.realloc(innerTok->tokAt(2));
+                        const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(innerTok->tokAt(2));
                         if (g && g->arg == -1) {
                             VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = g->groupId;
@@ -575,7 +575,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // Function call..
         else if (isFunctionCall(ftok)) {
             const Token * openingPar = isFunctionCall(ftok);
-            const Library::AllocFunc* af = mSettings->library.dealloc(ftok);
+            const Library::AllocFunc* af = mSettings->library.getDeallocFuncInfo(ftok);
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
@@ -659,7 +659,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 // Check if its a pointer to a function
                 const Token * dtok = Token::findmatch(deleterToken, "& %name%", endDeleterToken);
                 if (dtok) {
-                    af = mSettings->library.dealloc(dtok->tokAt(1));
+                    af = mSettings->library.getDeallocFuncInfo(dtok->tokAt(1));
                 } else {
                     const Token * tscopeStart = nullptr;
                     const Token * tscopeEnd = nullptr;
@@ -681,7 +681,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
                     if (tscopeStart && tscopeEnd) {
                         for (const Token *tok2 = tscopeStart; tok2 != tscopeEnd; tok2 = tok2->next()) {
-                            af = mSettings->library.dealloc(tok2);
+                            af = mSettings->library.getDeallocFuncInfo(tok2);
                             if (af)
                                 break;
                         }
@@ -720,7 +720,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
     // check for function call
     const Token * const openingPar = isFunctionCall(tok);
     if (openingPar) {
-        const Library::AllocFunc* allocFunc = mSettings->library.dealloc(tok);
+        const Library::AllocFunc* allocFunc = mSettings->library.getDeallocFuncInfo(tok);
         VarInfo::AllocInfo alloc(allocFunc ? allocFunc->groupId : 0, VarInfo::DEALLOC);
         if (alloc.type == 0)
             alloc.status = VarInfo::NOALLOC;
@@ -763,7 +763,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     // Ignore function call?
     if (mSettings->library.isLeakIgnore(tokName->str()))
         return;
-    const Library::AllocFunc* g = mSettings->library.realloc(tokName);
+    const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(tokName);
     if (g)
         return;
 
@@ -822,14 +822,14 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                 // Check if its a pointer to a function
                 const Token * dtok = Token::findmatch(deleterToken, "& %name%", endDeleterToken);
                 if (dtok) {
-                    sp_af = mSettings->library.dealloc(dtok->tokAt(1));
+                    sp_af = mSettings->library.getDeallocFuncInfo(dtok->tokAt(1));
                 } else {
                     // If the deleter is a class, check if class calls the dealloc function
                     dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken);
                     if (dtok && dtok->type()) {
                         const Scope * tscope = dtok->type()->classScope;
                         for (const Token *tok2 = tscope->bodyStart; tok2 != tscope->bodyEnd; tok2 = tok2->next()) {
-                            sp_af = mSettings->library.dealloc(tok2);
+                            sp_af = mSettings->library.getDeallocFuncInfo(tok2);
                             if (sp_af)
                                 break;
                         }

@@ -622,11 +622,11 @@ private:
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
 
-        ASSERT(Library::ismemory(library.alloc("CreateX")));
+        ASSERT(Library::ismemory(library.getAllocFuncInfo("CreateX")));
         ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
-        const Library::AllocFunc* af = library.alloc("CreateX");
+        const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
         ASSERT(af && af->arg == -1);
-        const Library::AllocFunc* df = library.dealloc("DeleteX");
+        const Library::AllocFunc* df = library.getDeallocFuncInfo("DeleteX");
         ASSERT(df && df->arg == 1);
     }
     void memory2() const {
@@ -665,9 +665,9 @@ private:
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
 
-        const Library::AllocFunc* af = library.alloc("CreateX");
+        const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
         ASSERT(af && af->arg == 5);
-        const Library::AllocFunc* df = library.dealloc("DeleteX");
+        const Library::AllocFunc* df = library.getDeallocFuncInfo("DeleteX");
         ASSERT(df && df->arg == 2);
 
         ASSERT(library.returnuninitdata.find("CreateX") != library.returnuninitdata.cend());
