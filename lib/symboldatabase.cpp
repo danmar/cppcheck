@@ -668,7 +668,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 const Token *lambdaStartToken = lambdaEndToken->link();
                 const Token * argStart = lambdaStartToken->astParent();
                 const Token * funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
-                const Function* const function = addGlobalFunction(scope, tok, argStart, funcStart);
+                addGlobalFunction(scope, tok, argStart, funcStart);
                 tok = lambdaStartToken;
             } else if (tok->str() == "{") {
                 if (isExecutableScope(tok)) {
