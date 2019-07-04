@@ -347,7 +347,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
                     varAlloc.type = g->groupId;
                     varAlloc.status = VarInfo::ALLOC;
-                    if (0 < g->reallocArg && g->reallocArg <= numberOfArguments(tokRightAstOperand->previous())) {
+                    if (g->reallocArg > 0 && g->reallocArg <= numberOfArguments(tokRightAstOperand->previous())) {
                         const Token* argTok = getArguments(tokRightAstOperand->previous()).at(g->reallocArg - 1);
                         VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
                         argAlloc.status = VarInfo::DEALLOC;
