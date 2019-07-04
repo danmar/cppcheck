@@ -53,12 +53,6 @@ static bool isPtrArg(const Token *tok)
     return (var && var->isArgument() && var->isPointer());
 }
 
-static bool isGlobalPtr(const Token *tok)
-{
-    const Variable *var = tok->variable();
-    return (var && var->isGlobal() && var->isPointer());
-}
-
 static bool isArrayArg(const Token *tok)
 {
     const Variable *var = tok->variable();
@@ -236,17 +230,6 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
-static bool reassignedGlobalPointer(const Token *vartok, unsigned int pointerVarId, const Settings *settings, bool cpp)
-{
-    return isVariableChanged(vartok,
-                             vartok->variable()->scope()->bodyEnd,
-                             pointerVarId,
-                             true,
-                             settings,
-                             cpp);
-}
-
-
 void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = mSettings->inconclusive;
@@ -344,22 +327,6 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     CWE562,
                     true);
     }
-}
-
-void CheckAutoVariables::errorAssignAddressOfLocalArrayToGlobalPointer(const Token *pointer, const Token *array)
-{
-    const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
-    const std::string arrayName   = array ? array->str() : std::string("array");
-    reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "$symbol:" + arrayName + "\nAddress of local array $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
-}
-
-void CheckAutoVariables::errorAssignAddressOfLocalVariableToGlobalPointer(const Token *pointer, const Token *variable)
-{
-    const std::string pointerName = pointer ? pointer->str() : std::string("pointer");
-    const std::string variableName = variable ? variable->str() : std::string("variable");
-    reportError(pointer, Severity::warning, "autoVariablesAssignGlobalPointer",
-                "$symbol:" + variableName + "\nAddress of local variable $symbol is assigned to global pointer " + pointerName +" and not reassigned before $symbol goes out of scope.", CWE562, false);
 }
 
 void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
