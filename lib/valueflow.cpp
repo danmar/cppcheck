@@ -4836,7 +4836,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 &error);
         if (!error) {
             ValueFlow::Value v(result);
-            if (function->isVirtual())
+            if (function->hasVirtualSpecifier())
                 v.setPossible();
             else
                 v.setKnown();

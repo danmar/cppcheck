@@ -317,7 +317,7 @@ private:
     void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage);
 
     /**
-     * @brief gives a list of tokens where pure virtual functions are called directly or indirectly
+     * @brief gives a list of tokens where virtual functions are called directly or indirectly
      * @param function function to be checked
      * @param virtualFunctionCallsMap map of results for already checked functions
      * @return list of tokens where pure virtual functions are called
@@ -327,7 +327,7 @@ private:
         std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap);
 
     /**
-     * @brief looks for the first pure virtual function call stack
+     * @brief looks for the first virtual function call stack
      * @param virtualFunctionCallsMap map of results obtained from getVirtualFunctionCalls
      * @param callToken token where pure virtual function is called directly or indirectly
      * @param[in,out] pureFuncStack list to append the stack
