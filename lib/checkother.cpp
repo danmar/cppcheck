@@ -1293,7 +1293,7 @@ void CheckOther::checkConstVariable()
         if (!scope->function)
             continue;
         Function *function = scope->function;
-        if (var->isArgument() && (function->isVirtual() || function->templateDef))
+        if (var->isArgument() && (function->isImplicitlyVirtual() || function->templateDef))
             continue;
         if (var->isArgument() && isUnusedVariable(var))
             continue;
