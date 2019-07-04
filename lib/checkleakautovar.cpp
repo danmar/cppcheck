@@ -344,15 +344,15 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     varAlloc.status = VarInfo::ALLOC;
                 }
                 const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(fTok);
-                if (g && g->arg == -1) {
+                if (g && g->arg == -1 && g->reallocArg > 0 && g->reallocArg <= numberOfArguments(fTok)) {
+                    const Token* argTok = getArguments(fTok).at(g->reallocArg - 1);
+                    VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
+                    argAlloc.status = VarInfo::DEALLOC;
+                    if (argAlloc.type != 0 && argAlloc.type != g->groupId)
+                        mismatchError(fTok, argTok->str());
                     varAlloc.type = g->groupId;
                     varAlloc.status = VarInfo::ALLOC;
-                    if (g->reallocArg > 0 && g->reallocArg <= numberOfArguments(fTok)) {
-                        const Token* argTok = getArguments(fTok).at(g->reallocArg - 1);
-                        VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
-                        argAlloc.status = VarInfo::DEALLOC;
-                    }
                 }
             } else if (mTokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();

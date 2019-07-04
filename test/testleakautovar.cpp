@@ -1377,6 +1377,29 @@ private:
               "    std::unique_ptr<int[]> x(i);\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n", errout.str());
+
+        check("void f() {\n"
+              "   void* a = malloc(1);\n"
+              "   void* b = freopen(f, p, a);\n"
+              "   free(b);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Mismatching allocation and deallocation: a\n"
+                      "[test.c:4]: (error) Mismatching allocation and deallocation: b\n", errout.str());
+
+        check("void f() {\n"
+              "   void* a;\n"
+              "   void* b = realloc(a, 10);\n"
+              "   free(b);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   int * i = new int;\n"
+              "   int * j = realloc(i, 2 * sizeof(int));\n"
+              "   delete[] j;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Mismatching allocation and deallocation: i\n"
+                      "[test.cpp:4]: (error) Mismatching allocation and deallocation: j\n", errout.str());
     }
 
     void smartPointerDeleter() {
