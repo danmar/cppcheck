@@ -4070,7 +4070,7 @@ private:
         const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 2);
-        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
         ASSERT(f && f->function() && !f->function()->hasOverrideSpecifier());
         ASSERT(f && f->function() && !f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
@@ -4078,7 +4078,7 @@ private:
         f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept override final ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 5);
-        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
         ASSERT(f && f->function() && f->function()->hasOverrideSpecifier());
         ASSERT(f && f->function() && f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
