@@ -763,8 +763,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     // Ignore function call?
     if (mSettings->library.isLeakIgnore(tokName->str()))
         return;
-    const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(tokName);
-    if (g)
+    if (mSettings->library.getReallocFuncInfo(tokName))
         return;
 
     const Token * const tokFirstArg = tokOpeningPar->next();
