@@ -343,17 +343,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     varAlloc.type = f->groupId;
                     varAlloc.status = VarInfo::ALLOC;
                 }
-                const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(fTok);
-                if (g && g->arg == -1 && g->reallocArg > 0 && g->reallocArg <= numberOfArguments(fTok)) {
-                    const Token* argTok = getArguments(fTok).at(g->reallocArg - 1);
-                    VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
-                    VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
-                    argAlloc.status = VarInfo::DEALLOC;
-                    if (argAlloc.type != 0 && argAlloc.type != g->groupId)
-                        mismatchError(fTok, argTok->str());
-                    varAlloc.type = g->groupId;
-                    varAlloc.status = VarInfo::ALLOC;
-                }
+
+                changeAllocStatusIfRealloc(alloctype, fTok, varTok);
             } else if (mTokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
                 const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
@@ -396,17 +387,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             // Fixme: warn about leak
                             alloctype.erase(innerTok->varId());
                         }
-                        const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(innerTok->tokAt(2));
-                        if (g && g->arg == -1) {
-                            VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
-                            varAlloc.type = g->groupId;
-                            varAlloc.status = VarInfo::ALLOC;
-                            if (0 < g->reallocArg && g->reallocArg <= numberOfArguments(innerTok->tokAt(2))) {
-                                const Token* argTok = getArguments(innerTok->tokAt(2)).at(g->reallocArg - 1);
-                                VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
-                                argAlloc.status = VarInfo::DEALLOC;
-                            }
-                        }
+
+                        changeAllocStatusIfRealloc(alloctype, innerTok->tokAt(2), varTok);
                     } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();
                         const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
@@ -729,6 +711,22 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
     }
 
     return nullptr;
+}
+
+
+void CheckLeakAutoVar::changeAllocStatusIfRealloc(std::map<unsigned int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok)
+{
+    const Library::AllocFunc* f = mSettings->library.getReallocFuncInfo(fTok);
+    if (f && f->arg == -1 && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(fTok)) {
+        const Token* argTok = getArguments(fTok).at(f->reallocArg - 1);
+        VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
+        VarInfo::AllocInfo& retAlloc = alloctype[retTok->varId()];
+        if (argAlloc.type != 0 && argAlloc.type != f->groupId)
+            mismatchError(fTok, argTok->str());
+        argAlloc.status = VarInfo::DEALLOC;
+        retAlloc.type = f->groupId;
+        retAlloc.status = VarInfo::ALLOC;
+    }
 }
 
 
