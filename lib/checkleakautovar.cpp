@@ -335,24 +335,24 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             // allocation?
-            if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
-                const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(tokRightAstOperand->previous());
+            const Token *const fTok = tokRightAstOperand->previous();
+            if (tokRightAstOperand && Token::Match(fTok, "%type% (")) {
+                const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(fTok);
                 if (f && f->arg == -1) {
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
                     varAlloc.type = f->groupId;
                     varAlloc.status = VarInfo::ALLOC;
                 }
-                const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(tokRightAstOperand->previous());
+                const Library::AllocFunc* g = mSettings->library.getReallocFuncInfo(fTok);
                 if (g && g->arg == -1) {
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
                     varAlloc.type = g->groupId;
                     varAlloc.status = VarInfo::ALLOC;
-                    if (g->reallocArg > 0 && g->reallocArg <= numberOfArguments(tokRightAstOperand->previous())) {
-                        const Token* argTok = getArguments(tokRightAstOperand->previous()).at(g->reallocArg - 1);
+                    if (g->reallocArg > 0 && g->reallocArg <= numberOfArguments(fTok)) {
+                        const Token* argTok = getArguments(fTok).at(g->reallocArg - 1);
                         VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
                         argAlloc.status = VarInfo::DEALLOC;
                     }
-
                 }
             } else if (mTokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
