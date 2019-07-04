@@ -1,5 +1,5 @@
 
-# python -m pytest test-helloworld.py
+# python -m pytest test-proj2.py
 
 import json
 import os
@@ -25,7 +25,7 @@ def cppcheck_local(args):
 
 def test_local_path():
     create_compile_commands()
-    ret, stdout, stderr = cppcheck_local('--project=compile_commands.json')
+    ret, stdout, stderr = cppcheck_local(['--project=compile_commands.json'])
     cwd = os.getcwd()
     file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
     file2 = os.path.join(cwd, 'proj2', 'b', 'b.c')
@@ -35,7 +35,7 @@ def test_local_path():
 
 def test_relative_path():
     create_compile_commands()
-    ret, stdout, stderr = cppcheck('--project=' + COMPILE_COMMANDS_JSON)
+    ret, stdout, stderr = cppcheck(['--project=' + COMPILE_COMMANDS_JSON])
     cwd = os.getcwd()
     file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
     file2 = os.path.join(cwd, 'proj2', 'b', 'b.c')
@@ -46,7 +46,7 @@ def test_relative_path():
 def test_absolute_path():
     create_compile_commands()
     cwd = os.getcwd()
-    ret, stdout, stderr = cppcheck('--project=' + os.path.join(cwd,COMPILE_COMMANDS_JSON))
+    ret, stdout, stderr = cppcheck(['--project=' + os.path.join(cwd,COMPILE_COMMANDS_JSON)])
     file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
     file2 = os.path.join(cwd, 'proj2', 'b', 'b.c')
     assert ret == 0
@@ -55,7 +55,7 @@ def test_absolute_path():
 
 def test_gui_project_loads_compile_commands_1():
     create_compile_commands()
-    ret, stdout, stderr = cppcheck('--project=proj2/proj2.cppcheck')
+    ret, stdout, stderr = cppcheck(['--project=proj2/proj2.cppcheck'])
     cwd = os.getcwd()
     file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
     file2 = os.path.join(cwd, 'proj2', 'b', 'b.c')
@@ -69,7 +69,7 @@ def test_gui_project_loads_compile_commands_2():
     create_gui_project_file('proj2/test.cppcheck',
                             import_project='compile_commands.json',
                             exclude_paths=[exclude_path_1])
-    ret, stdout, stderr = cppcheck('--project=proj2/test.cppcheck')
+    ret, stdout, stderr = cppcheck(['--project=proj2/test.cppcheck'])
     cwd = os.getcwd()
     file1 = os.path.join(cwd, 'proj2', 'a', 'a.c')
     file2 = os.path.join(cwd, 'proj2', 'b', 'b.c') # Excluded by test.cppcheck
@@ -80,7 +80,7 @@ def test_gui_project_loads_compile_commands_2():
 
 def test_gui_project_loads_relative_vs_solution():
     create_gui_project_file('test.cppcheck', import_project='proj2/proj2.sln')
-    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     file1 = os.path.join('proj2', 'a', 'a.c')
     file2 = os.path.join('proj2', 'b', 'b.c')
     assert ret == 0
@@ -95,7 +95,7 @@ def test_gui_project_loads_relative_vs_solution():
 
 def test_gui_project_loads_absolute_vs_solution():
     create_gui_project_file('test.cppcheck', import_project=os.path.join(os.getcwd(),'proj2', 'proj2.sln').replace('\\', '/'))
-    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     file1 = os.path.join(os.getcwd(), 'proj2', 'a', 'a.c')
     file2 = os.path.join(os.getcwd(), 'proj2', 'b', 'b.c')
     print(stdout)
@@ -111,20 +111,20 @@ def test_gui_project_loads_absolute_vs_solution():
 
 def test_gui_project_loads_relative_vs_solution():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln')
-    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert stderr == ('[a/a.c:1]: (error) Division by zero.\n'
                       '[b/b.c:1]: (error) Division by zero.\n')
 
 def test_gui_project_loads_relative_vs_solution():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])
-    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert stderr == '[a/a.c:1]: (error) Division by zero.\n'
 
 def test_gui_project_loads_absolute_vs_solution():
     create_gui_project_file('test.cppcheck',
                             root_path=os.path.join(os.getcwd(), 'proj2').replace('\\', '/'),
                             import_project=os.path.join(os.getcwd(), 'proj2', 'proj2.sln').replace('\\', '/'))
-    ret, stdout, stderr = cppcheck('--project=test.cppcheck')
+    ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert stderr == ('[a/a.c:1]: (error) Division by zero.\n'
                       '[b/b.c:1]: (error) Division by zero.\n')
 

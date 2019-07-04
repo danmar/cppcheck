@@ -94,7 +94,7 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
  * @param cond1  condition1
  * @param cond2  condition2
  * @param library files data
- * @param pure
+ * @param pure boolean
  */
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
@@ -214,6 +214,8 @@ public:
 
     static bool isNullOperand(const Token *expr);
 private:
+    static bool isEscapedAlias(const Token* expr);
+
     /** Result of forward analysis */
     struct Result {
         enum class Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
@@ -223,7 +225,7 @@ private:
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local, bool inInnerClass);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;

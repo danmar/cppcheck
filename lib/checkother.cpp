@@ -224,7 +224,7 @@ void CheckOther::clarifyStatement()
 
 void CheckOther::clarifyStatementError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "clarifyStatement", "Ineffective statement similar to '*A++;'. Did you intend to write '(*A)++;'?\n"
+    reportError(tok, Severity::warning, "clarifyStatement", "In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n"
                 "A statement like '*A++;' might not do what you intended. Postfix 'operator++' is executed before 'operator*'. "
                 "Thus, the dereference is meaningless. Did you intend to write '(*A)++;'?", CWE783, false);
 }
@@ -1239,7 +1239,7 @@ void CheckOther::checkPassByReference()
         }
 
         // Check if variable could be const
-        if (!var->scope() || var->scope()->function->isVirtual())
+        if (!var->scope() || var->scope()->function->hasVirtualSpecifier())
             continue;
 
         if (canBeConst(var)) {
@@ -2898,6 +2898,16 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, bool shado
     reportError(errorPath, Severity::style, id, message, CWE398, false);
 }
 
+static bool isVariableExpression(const Token* tok)
+{
+    if (Token::Match(tok, "%var%"))
+        return true;
+    if (Token::simpleMatch(tok, "."))
+        return isVariableExpression(tok->astOperand1()) &&
+               isVariableExpression(tok->astOperand2());
+    return false;
+}
+
 void CheckOther::checkConstArgument()
 {
     if (!mSettings->isEnabled(Settings::STYLE))
@@ -2922,7 +2932,7 @@ void CheckOther::checkConstArgument()
             const Token * tok2 = tok;
             if (isCPPCast(tok2))
                 tok2 = tok2->astOperand2();
-            if (Token::Match(tok2, "%var%"))
+            if (isVariableExpression(tok2))
                 continue;
             constArgumentError(tok, tok->astParent()->previous(), &tok->values().front());
         }
@@ -2938,26 +2948,6 @@ void CheckOther::constArgumentError(const Token *tok, const Token *ftok, const V
     const std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue);
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath, Severity::style, "constArgument", errmsg, CWE570, false);
-}
-
-static ValueFlow::Value getLifetimeObjValue(const Token *tok)
-{
-    ValueFlow::Value result;
-    auto pred = [](const ValueFlow::Value &v) {
-        if (!v.isLocalLifetimeValue())
-            return false;
-        if (!v.tokvalue->variable())
-            return false;
-        return true;
-    };
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), pred);
-    if (it == tok->values().end())
-        return result;
-    result = *it;
-    // There should only be one lifetime
-    if (std::find_if(std::next(it), tok->values().end(), pred) != tok->values().end())
-        return result;
-    return result;
 }
 
 void CheckOther::checkComparePointers()

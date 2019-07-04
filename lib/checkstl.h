@@ -62,6 +62,7 @@ public:
         CheckStl checkStl(tokenizer, settings, errorLogger);
         checkStl.erase();
         checkStl.if_find();
+        checkStl.checkFindInsert();
         checkStl.iterators();
         checkStl.mismatchingContainers();
         checkStl.missingComparison();
@@ -132,6 +133,8 @@ public:
     /** if (a.find(x)) - possibly incorrect condition */
     void if_find();
 
+    void checkFindInsert();
+
     /**
      * Suggest using empty() instead of checking size() against zero for containers.
      * Item 4 from Scott Meyers book "Effective STL".
@@ -176,7 +179,7 @@ public:
     void useStlAlgorithm();
 
 private:
-    bool isContainerSize(const Token *container, const Token *expr) const;
+    bool isContainerSize(const Token *containerToken, const Token *expr) const;
     bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
 
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
@@ -202,6 +205,7 @@ private:
     void invalidPointerError(const Token* tok, const std::string& func, const std::string& pointer_name);
     void stlBoundariesError(const Token* tok);
     void if_findError(const Token* tok, bool str);
+    void checkFindInsertError(const Token *tok);
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
 
@@ -217,7 +221,7 @@ private:
 
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
-    bool compareIteratorAgainstDifferentContainer(const Token* tok, const Token* containerToken, const unsigned int iteratorId, const std::map<unsigned int, const Token*>& iteratorScopeBeginInfo);
+    bool compareIteratorAgainstDifferentContainer(const Token* operatorTok, const Token* containerTok, const unsigned int iteratorId, const std::map<unsigned int, const Token*>& iteratorScopeBeginInfo);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckStl c(nullptr, settings, errorLogger);
@@ -239,6 +243,7 @@ private:
         c.stlBoundariesError(nullptr);
         c.if_findError(nullptr, false);
         c.if_findError(nullptr, true);
+        c.checkFindInsertError(nullptr);
         c.string_c_strError(nullptr);
         c.string_c_strReturn(nullptr);
         c.string_c_strParam(nullptr, 0);
@@ -270,6 +275,7 @@ private:
                "- for vectors: using iterator/pointer after push_back has been used\n"
                "- optimisation: use empty() instead of size() to guarantee fast code\n"
                "- suspicious condition when using find\n"
+               "- unnecessary searching in associative containers\n"
                "- redundant condition\n"
                "- common mistakes when using string::c_str()\n"
                "- useless calls of string and STL functions\n"

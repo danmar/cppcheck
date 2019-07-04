@@ -665,7 +665,7 @@ class CPPCHECKLIB Function {
         fHasBody               = (1 << 0),  ///< @brief has implementation
         fIsInline              = (1 << 1),  ///< @brief implementation in class definition
         fIsConst               = (1 << 2),  ///< @brief is const
-        fIsVirtual             = (1 << 3),  ///< @brief is virtual
+        fHasVirtualSpecifier   = (1 << 3),  ///< @brief does declaration contain 'virtual' specifier
         fIsPure                = (1 << 4),  ///< @brief is pure virtual
         fIsStatic              = (1 << 5),  ///< @brief is static
         fIsStaticLocal         = (1 << 6),  ///< @brief is static local
@@ -771,8 +771,8 @@ public:
     bool isConst() const {
         return getFlag(fIsConst);
     }
-    bool isVirtual() const {
-        return getFlag(fIsVirtual);
+    bool hasVirtualSpecifier() const {
+        return getFlag(fHasVirtualSpecifier);
     }
     bool isPure() const {
         return getFlag(fIsPure);
@@ -853,6 +853,14 @@ public:
 
     static bool returnsReference(const Function *function);
 
+    const Token* returnDefEnd() const {
+        if (this->hasTrailingReturnType()) {
+            return Token::findsimplematch(retDef, "{");
+        } else {
+            return tokenDef;
+        }
+    }
+
     /**
      * @return token to ":" if the function is a constructor
      * and it contains member initialization otherwise a nullptr is returned
@@ -871,8 +879,8 @@ private:
     void isConst(bool state) {
         setFlag(fIsConst, state);
     }
-    void isVirtual(bool state) {
-        setFlag(fIsVirtual, state);
+    void hasVirtualSpecifier(bool state) {
+        setFlag(fHasVirtualSpecifier, state);
     }
     void isPure(bool state) {
         setFlag(fIsPure, state);
@@ -1100,7 +1108,7 @@ private:
 class CPPCHECKLIB ValueType {
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
-    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
+    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
     unsigned int bits;                    ///< bitfield bitcount
     unsigned int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     unsigned int constness;               ///< bit 0=data, bit 1=*, bit 2=**

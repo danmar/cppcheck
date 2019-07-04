@@ -431,6 +431,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // -E
             else if (std::strcmp(argv[i], "-E") == 0) {
                 mSettings->preprocessOnly = true;
+                mSettings->quiet = true;
             }
 
             // Include paths
@@ -541,8 +542,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             return false;
                     }
 
-                    for (const std::string &i : mSettings->project.guiProject.excludedPaths)
-                        mIgnoredPaths.emplace_back(i);
+                    for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
+                        mIgnoredPaths.emplace_back(ignorePath);
 
                     const std::string platform(mSettings->project.guiProject.platform);
 
@@ -612,6 +613,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->standards.cpp = Standards::CPP14;
             } else if (std::strcmp(argv[i], "--std=c++17") == 0) {
                 mSettings->standards.cpp = Standards::CPP17;
+            } else if (std::strcmp(argv[i], "--std=c++20") == 0) {
+                mSettings->standards.cpp = Standards::CPP20;
             }
 
             // Output formatter
@@ -1103,7 +1106,9 @@ void CmdLineParser::printHelp()
               "                          * c++14\n"
               "                                 C++ code is C++14 compatible\n"
               "                          * c++17\n"
-              "                                 C++ code is C++17 compatible (default)\n"
+              "                                 C++ code is C++17 compatible\n"
+              "                          * c++20\n"
+              "                                 C++ code is C++20 compatible (default)\n"
               "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
               "                         <spec> is:\n"
               "                         [error id]:[filename]:[line]\n"

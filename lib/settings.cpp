@@ -27,7 +27,7 @@ Settings::Settings()
       checkConfiguration(false),
       checkLibrary(false),
       checkHeaders(true),
-      checkUnusedTemplates(true),
+      checkUnusedTemplates(false),
       debugSimplified(false),
       debugnormal(false),
       debugwarnings(false),

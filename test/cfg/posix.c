@@ -21,6 +21,45 @@
 #include <unistd.h>
 #include <pthread.h>
 
+void memleak_scandir(void)
+{
+    struct dirent **namelist;
+    int n = scandir(".", &namelist, NULL, alphasort);
+    if (n == -1) {
+        return;
+    }
+
+    // http://man7.org/linux/man-pages/man3/scandir.3.html
+    /* The scandir() function scans the directory dirp, calling filter() on
+       each directory entry.  Entries for which filter() returns nonzero are
+       stored in strings allocated via malloc(3), sorted using qsort(3) with
+       the comparison function compar(), and collected in array namelist
+       which is allocated via malloc(3).  If filter is NULL, all entries are
+       selected.*/
+
+    // TODO: cppcheck-suppress memleak
+}
+
+void no_memleak_scandir(void)
+{
+    struct dirent **namelist;
+    int n = scandir(".", &namelist, NULL, alphasort);
+    if (n == -1) {
+        return;
+    }
+    while (n--) {
+        free(namelist[n]);
+    }
+    free(namelist);
+}
+
+void validCode()
+{
+    void *ptr;
+    if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
+        free(ptr);
+}
+
 void bufferAccessOutOfBounds(int fd)
 {
     char a[5];
@@ -125,6 +164,24 @@ void resourceLeak_fdopen(int fd)
     // cppcheck-suppress unreadVariable
     FILE *f = fdopen(fd, "r");
     // cppcheck-suppress resourceLeak
+}
+
+void resourceLeak_mkstemp(char *template)
+{
+    // cppcheck-suppress unreadVariable
+    int fp = mkstemp(template);
+    // cppcheck-suppress resourceLeak
+}
+
+void no_resourceLeak_mkstemp_01(char *template)
+{
+    int fp = mkstemp(template);
+    close(fp);
+}
+
+int no_resourceLeak_mkstemp_02(char *template)
+{
+    return mkstemp(template);
 }
 
 void resourceLeak_fdopendir(int fd)

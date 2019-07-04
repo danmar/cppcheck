@@ -32,6 +32,7 @@
 #include "tokenlist.h"
 #include "version.h"
 
+#define PICOJSON_USE_INT64
 #include <picojson.h>
 #include <simplecpp.h>
 #include <tinyxml2.h>
@@ -63,12 +64,50 @@ namespace {
         std::string scriptFile;
         std::string args;
 
+        static std::string getFullPath(const std::string &fileName, const std::string &exename) {
+            if (Path::fileExists(fileName))
+                return fileName;
+
+            const std::string exepath = Path::getPathFromFilename(exename);
+            if (Path::fileExists(exepath + fileName))
+                return exepath + fileName;
+            if (Path::fileExists(exepath + "addons/" + fileName))
+                return exepath + "addons/" + fileName;
+
+#ifdef CFGDIR
+            if (Path::fileExists(CFGDIR + fileName))
+                return CFGDIR + fileName;
+            if (Path::fileExists(CFGDIR + ("../addons/" + fileName)))
+                return CFGDIR + ("../addons/" + fileName);
+#endif
+            return "";
+        }
+
         std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
-            if (!endsWith(fileName, ".json", 5)) {
-                name = fileName;
-                scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
+            if (fileName.find(".") == std::string::npos)
+                return getAddonInfo(fileName + ".py", exename);
+
+            if (endsWith(fileName, ".py", 3)) {
+                scriptFile = getFullPath(fileName, exename);
+                if (scriptFile.empty())
+                    return "Did not find addon " + fileName;
+
+                std::string::size_type pos1 = scriptFile.rfind("/");
+                if (pos1 == std::string::npos)
+                    pos1 = 0;
+                else
+                    pos1++;
+                std::string::size_type pos2 = scriptFile.rfind(".");
+                if (pos2 < pos1)
+                    pos2 = std::string::npos;
+                name = scriptFile.substr(pos1, pos2 - pos1);
+
                 return "";
             }
+
+            if (!endsWith(fileName, ".json", 5))
+                return "Failed to open addon " + fileName;
+
             std::ifstream fin(fileName);
             if (!fin.is_open())
                 return "Failed to open " + fileName;
@@ -83,16 +122,15 @@ namespace {
                 for (const picojson::value &v : obj["args"].get<picojson::array>())
                     args += " " + v.get<std::string>();
             }
-            name = obj["script"].get<std::string>();
-            scriptFile = Path::getPathFromFilename(exename) + "addons/" + fileName + ".py";
-            return "";
+
+            return getAddonInfo(obj["script"].get<std::string>(), exename);
         }
     };
 }
 
 static std::string executeAddon(const AddonInfo &addonInfo, const std::string &dumpFile)
 {
-    const std::string cmd = "python " + addonInfo.scriptFile + " --cli" + addonInfo.args + " " + dumpFile;
+    const std::string cmd = "python \"" + addonInfo.scriptFile + "\" --cli" + addonInfo.args + " \"" + dumpFile + "\"";
 
 #ifdef _WIN32
     std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
@@ -215,7 +253,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
-    bool internalErrorFound(false);
     try {
         Preprocessor preprocessor(mSettings, this);
         std::set<std::string> configurations;
@@ -474,6 +511,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // dump xml if --dump
                 if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
                     fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
+                    fdump << "  <standards>" << std::endl;
+                    fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
+                    fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
+                    fdump << "  </standards>" << std::endl;
                     preprocessor.dump(fdump);
                     mTokenizer.dump(fdump);
                     fdump << "</dump>" << std::endl;
@@ -538,11 +579,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                                  e.id,
                                                  false);
 
-                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity)) {
+                if (errmsg._severity == Severity::error || mSettings.isEnabled(errmsg._severity))
                     reportErr(errmsg);
-                    if (!mSuppressInternalErrorFound)
-                        internalErrorFound = true;
-                }
             }
         }
 
@@ -575,71 +613,41 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             for (const std::string &addon : mSettings.addons) {
                 struct AddonInfo addonInfo;
-                const std::string errmsg = addonInfo.getAddonInfo(addon, mSettings.exename);
-                if (!errmsg.empty()) {
-                    reportOut(errmsg);
+                const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
+                if (!failedToGetAddonInfo.empty()) {
+                    reportOut(failedToGetAddonInfo);
                     continue;
                 }
-                const std::string &results = executeAddon(addonInfo, dumpFile);
-                for (std::string::size_type pos = 0; pos < results.size();) {
-                    const std::string::size_type pos2 = results.find("\n", pos);
-                    if (pos2 == std::string::npos)
-                        break;
+                const std::string results = executeAddon(addonInfo, dumpFile);
+                std::istringstream istr(results);
+                std::string line;
 
-                    const std::string::size_type pos1 = pos;
-                    pos = pos2 + 1;
-
-                    if (pos1 + 5 > pos2)
-                        continue;
-                    if (results[pos1] != '[')
-                        continue;
-                    if (results[pos2-1] != ']')
+                while (std::getline(istr, line)) {
+                    if (line.compare(0,1,"{") != 0)
                         continue;
 
-                    // Example line:
-                    // [test.cpp:123]: (style) some problem [abc-someProblem]
-                    const std::string line = results.substr(pos1, pos2-pos1);
-
-                    // Line must start with [filename:line:column]: (
-                    const std::string::size_type loc1 = 1;
-                    const std::string::size_type loc4 = line.find("]");
-                    if (loc4 + 5 >= line.size() || line.compare(loc4, 3, "] (", 0, 3) != 0)
-                        continue;
-                    const std::string::size_type loc3 = line.rfind(':', loc4);
-                    if (loc3 == std::string::npos)
-                        continue;
-                    const std::string::size_type loc2 = line.rfind(':', loc3 - 1);
-                    if (loc2 == std::string::npos)
+                    picojson::value res;
+                    std::istringstream istr2(line);
+                    istr2 >> res;
+                    if (!res.is<picojson::object>())
                         continue;
 
-                    // Then there must be a (severity)
-                    const std::string::size_type sev1 = loc4 + 3;
-                    const std::string::size_type sev2 = line.find(")", sev1);
-                    if (sev2 == std::string::npos)
-                        continue;
+                    picojson::object obj = res.get<picojson::object>();
 
-                    // line must end with [addon-x]
-                    const std::string::size_type id1 = line.rfind("[" + addonInfo.name + "-");
-                    if (id1 == std::string::npos || id1 < sev2)
-                        continue;
+                    const std::string filename = obj["file"].get<std::string>();
+                    const int64_t lineNumber = obj["linenr"].get<int64_t>();
+                    const int64_t column = obj["col"].get<int64_t>();
 
                     ErrorLogger::ErrorMessage errmsg;
 
-                    const std::string filename = line.substr(loc1, loc2-loc1);
-                    const int lineNumber = std::atoi(line.c_str() + loc2 + 1);
-                    const int column = std::atoi(line.c_str() + loc3 + 1);
                     errmsg._callStack.emplace_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
                     errmsg._callStack.back().col = column;
 
-                    errmsg._id = line.substr(id1+1, line.size()-id1-2);
-                    std::string text = line.substr(sev2 + 2, id1 - sev2 - 2);
-                    if (text[0] == ' ')
-                        text = text.substr(1);
-                    if (endsWith(text, " ", 1))
-                        text = text.erase(text.size() - 1);
+                    errmsg._id = obj["errorId"].get<std::string>();
+                    const std::string text = obj["message"].get<std::string>();
                     errmsg.setmsg(text);
-                    const std::string sev = line.substr(sev1, sev2-sev1);
-                    errmsg._severity = Severity::fromString(sev);
+                    const std::string severity = obj["severity"].get<std::string>();
+                    errmsg._severity = Severity::fromString(severity);
                     if (errmsg._severity == Severity::SeverityType::none)
                         continue;
                     errmsg.file0 = filename;
@@ -668,9 +676,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     mErrorList.clear();
-    if (internalErrorFound && (mExitCode==0)) {
-        mExitCode = 1;
-    }
 
     return mExitCode;
 }
@@ -1122,8 +1127,9 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         }
     }
 
-    if (!mSettings.nofail.isSuppressed(errorMessage) && (mUseGlobalSuppressions || !mSettings.nomsg.isSuppressed(errorMessage)))
+    if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
+    }
 
     mErrorList.push_back(errmsg);
 

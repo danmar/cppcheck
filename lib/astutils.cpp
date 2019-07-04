@@ -131,7 +131,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (tok->isName() && !tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (!tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }
@@ -231,15 +231,11 @@ static bool isInLoopCondition(const Token * tok)
 /// If tok2 comes after tok1
 bool precedes(const Token * tok1, const Token * tok2)
 {
-    if (!tok2)
-        return tok1;
-    if (tok1 == tok2)
-        return false;
-    while (tok1 && tok1->progressValue() == tok2->progressValue() && tok1 != tok2)
-        tok1 = tok1->next();
     if (!tok1)
         return false;
-    return tok1->progressValue() <= tok2->progressValue();
+    if (!tok2)
+        return false;
+    return tok1->index() < tok2->index();
 }
 
 bool isAliased(const Token *startTok, const Token *endTok, unsigned int varid)
@@ -768,30 +764,22 @@ bool isUniqueExpression(const Token* tok)
         // Iterate over the variables in scope and the parameters of the function if possible
         const Function * fun = scope->function;
         const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
-        if (varType) {
-            for (const std::list<Variable>* vars:setOfVars) {
-                if (!vars)
-                    continue;
-                for (const Variable& v:*vars) {
-                    if (v.type() && v.type()->name() == varType->name() && v.name() != var->name()) {
-                        return false;
-                    }
-                }
-            }
-        } else {
-            for (const std::list<Variable>* vars:setOfVars) {
-                if (!vars)
-                    continue;
-                for (const Variable& v:*vars) {
-                    if (v.isFloatingType() == var->isFloatingType() &&
-                        v.isEnumType() == var->isEnumType() &&
-                        v.isClass() == var->isClass() &&
-                        v.isArray() == var->isArray() &&
-                        v.isPointer() == var->isPointer() &&
-                        v.name() != var->name())
-                        return false;
-                }
-            }
+
+        for (const std::list<Variable>* vars:setOfVars) {
+            if (!vars)
+                continue;
+            bool other = std::any_of(vars->cbegin(), vars->cend(), [=](const Variable &v) {
+                if (varType)
+                    return v.type() && v.type()->name() == varType->name() && v.name() != var->name();
+                return v.isFloatingType() == var->isFloatingType() &&
+                       v.isEnumType() == var->isEnumType() &&
+                       v.isClass() == var->isClass() &&
+                       v.isArray() == var->isArray() &&
+                       v.isPointer() == var->isPointer() &&
+                       v.name() != var->name();
+            });
+            if (other)
+                return false;
         }
     } else if (!isUniqueExpression(tok->astOperand1())) {
         return false;
@@ -1236,7 +1224,7 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
+struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local, bool inInnerClass)
 {
     // Parse the given tokens
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
@@ -1252,13 +1240,21 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::simpleMatch(tok, "goto"))
             return Result(Result::Type::BAILOUT);
 
+        if (!inInnerClass && tok->str() == "{" && tok->scope()->isClassOrStruct()) {
+            // skip returns from local class definition
+            FwdAnalysis::Result result = checkRecursive(expr, tok, tok->link(), exprVarIds, local, true);
+            if (result.type != Result::Type::NONE)
+                return result;
+            tok=tok->link();
+        }
+
         if (tok->str() == "continue")
             // TODO
             return Result(Result::Type::BAILOUT);
 
         if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
             tok = lambdaEndToken;
-            const Result lambdaResult = checkRecursive(expr, lambdaEndToken->link()->next(), lambdaEndToken, exprVarIds, local);
+            const Result lambdaResult = checkRecursive(expr, lambdaEndToken->link()->next(), lambdaEndToken, exprVarIds, local, inInnerClass);
             if (lambdaResult.type == Result::Type::READ || lambdaResult.type == Result::Type::BAILOUT)
                 return lambdaResult;
         }
@@ -1274,10 +1270,13 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     return Result(Result::Type::READ);
             }
 
-            if (!local && mWhat == What::Reassign)
-                return Result(Result::Type::BAILOUT);
+            // #9167: if the return is inside an inner class, it does not tell us anything
+            if (!inInnerClass) {
+                if (!local && mWhat == What::Reassign)
+                    return Result(Result::Type::BAILOUT);
 
-            return Result(Result::Type::RETURN);
+                return Result(Result::Type::RETURN);
+            }
         }
 
         if (tok->str() == "}") {
@@ -1308,7 +1307,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
 
                 // check loop body again..
-                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local);
+                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass);
                 if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
                     return result;
             }
@@ -1373,6 +1372,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
+            } else if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1()) {
+                return Result(Result::Type::READ);
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 continue;
             } else {
@@ -1385,14 +1386,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             if (Token::simpleMatch(tok->link()->previous(), "switch ("))
                 // TODO: parse switch
                 return Result(Result::Type::BAILOUT);
-            const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local);
+            const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local, inInnerClass);
             if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
                 return result1;
             if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
                 mValueFlowKnown = false;
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
-                const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local);
+                const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local, inInnerClass);
                 if (mWhat == What::ValueFlow && result2.type == Result::Type::WRITE)
                     mValueFlowKnown = false;
                 if (result2.type == Result::Type::READ || result2.type == Result::Type::BAILOUT)
@@ -1514,16 +1515,16 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     if (mWhat == What::UnusedValue && isGlobalData(expr))
         return Result(FwdAnalysis::Result::Type::BAILOUT);
 
-    Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
+    Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local, false);
 
     // Break => continue checking in outer scope
-    while (result.type == FwdAnalysis::Result::Type::BREAK) {
+    while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
         const Scope *s = result.token->scope();
         while (s->type == Scope::eIf)
             s = s->nestedIn;
         if (s->type != Scope::eSwitch && s->type != Scope::eWhile && s->type != Scope::eFor)
             break;
-        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local);
+        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local, false);
     }
 
     return result;
@@ -1547,6 +1548,8 @@ const Token *FwdAnalysis::reassign(const Token *expr, const Token *startToken, c
 
 bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const Token *endToken)
 {
+    if (isEscapedAlias(expr))
+        return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
@@ -1601,6 +1604,25 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
             if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
                 return true;
+        }
+    }
+    return false;
+}
+
+bool FwdAnalysis::isEscapedAlias(const Token* expr)
+{
+    for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
+        for (const ValueFlow::Value &val : subexpr->values()) {
+            if (!val.isLocalLifetimeValue())
+                continue;
+            const Variable* var = val.tokvalue->variable();
+            if (!var)
+                continue;
+            if (!var->isLocal())
+                return true;
+            if (var->isArgument())
+                return true;
+
         }
     }
     return false;

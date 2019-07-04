@@ -39,8 +39,8 @@ class ProjectFile : public QObject {
     Q_OBJECT
 
 public:
-    explicit ProjectFile(QObject *parent = 0);
-    ProjectFile(const QString &filename, QObject *parent = 0);
+    explicit ProjectFile(QObject *parent = nullptr);
+    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
 
     /**
      * @brief Read the project file.

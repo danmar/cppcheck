@@ -80,7 +80,7 @@ private:
         if (simplify)
             tokenizer.simplifyTokenList2();
 
-        return tokenizer.tokens()->stringifyList(0, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
     void simplifyUsing1() {
@@ -489,9 +489,7 @@ private:
                            "class c { "
                            "int i ; i = 0 ; "
                            "c ( ) { i -- ; } "
-                           "} ; "
-                           "template < class T > "
-                           "class s { } ;";
+                           "} ;";
 
         ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
     }

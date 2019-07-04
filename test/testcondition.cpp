@@ -57,7 +57,8 @@ private:
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
         TEST_CASE(comparison);         // CheckCondition::comparison test cases
         TEST_CASE(multicompare);       // mismatching comparisons
-        TEST_CASE(duplicateIf);        // duplicate conditions in if and else-if
+        TEST_CASE(overlappingElseIfCondition);  // overlapping conditions in if and else-if
+        TEST_CASE(oppositeElseIfCondition); // opposite conditions in if and else-if
 
         TEST_CASE(checkBadBitmaskCheck);
 
@@ -519,7 +520,7 @@ private:
         checkCondition.runChecks(&tokenizer, &settings1, this);
     }
 
-    void duplicateIf() {
+    void overlappingElseIfCondition() {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
@@ -691,6 +692,28 @@ private:
               "    else if ( value & (int)Value2 ) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void oppositeElseIfCondition() {
+        setMultiline();
+
+        check("void f(int x) {\n"
+              "    if (x) {}\n"
+              "    else if (!x) {}\n"
+              "}");
+        ASSERT_EQUALS("test.cpp:3:style:Expression is always true because 'else if' condition is opposite to previous condition at line 2.\n"
+                      "test.cpp:2:note:first condition\n"
+                      "test.cpp:3:note:else if condition is opposite to first condition\n", errout.str());
+
+        check("void f(int x) {\n"
+              "    int y = x;\n"
+              "    if (x) {}\n"
+              "    else if (!y) {}\n"
+              "}");
+        ASSERT_EQUALS("test.cpp:4:style:Expression is always true because 'else if' condition is opposite to previous condition at line 3.\n"
+                      "test.cpp:2:note:'y' is assigned value 'x' here.\n"
+                      "test.cpp:3:note:first condition\n"
+                      "test.cpp:4:note:else if condition is opposite to first condition\n", errout.str());
     }
 
     void checkBadBitmaskCheck() {
@@ -1778,7 +1801,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(const int &i);\n"
               "void bar(int i) {\n"
@@ -1788,7 +1811,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void foo(int i);\n"
               "void bar() {\n"
@@ -1799,7 +1822,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("class C { void f(int &i) const; };\n" // #7028 - variable is changed by const method
               "void foo(C c, int i) {\n"
@@ -1822,7 +1845,7 @@ private:
               "       }\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
 
         // #5874 - array
@@ -1869,15 +1892,6 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
-
-        // #8938
-        check("void Delete(SS_CELLCOORD upperleft) {\n"
-              "    if ((upperleft.Col == -1) && (upperleft.Row == -1)) {\n"
-              "        GetActiveCell(&(upperleft.Col), &(upperleft.Row));\n"
-              "        if (upperleft.Row == -1) {}\n"
-              "    }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionPointers() {
@@ -1924,7 +1938,7 @@ private:
               "    if (!fred.isValid()) {}\n"
               "  }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("class Fred { public: bool isValid() const; void dostuff() const; };\n"
               "void f() {\n"
@@ -1934,7 +1948,7 @@ private:
               "    if (!fred.isValid()) {}\n"
               "  }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f() {\n"
               "  Fred fred;\n"
@@ -2448,14 +2462,14 @@ private:
               "  if (abc) {}\n"
               "  if (x > 100) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  while (abc) { y = x; }\n"
               "  if (x > 100) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n"  // #8217 - crash for incomplete code
               "  if (x > 100) { return; }\n"
@@ -2470,7 +2484,7 @@ private:
               "  if (!num1tok) { *num1 = *num2; }\n"
               "  if (!i) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition '!i', second condition is always false\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition '!i', second condition is always false\n", errout.str());
 
         check("void C::f(Tree &coreTree) {\n" // daca
               "  if(!coreTree.build())\n"
@@ -2487,7 +2501,7 @@ private:
               "  coreTree.dostuff();\n"
               "  if(!coreTree.build()) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Identical condition '!coreTree.build()', second condition is always false\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Identical condition '!coreTree.build()', second condition is always false\n", errout.str());
 
         check("void f(int x) {\n" // daca: labplot
               "  switch(type) {\n"
@@ -3189,6 +3203,14 @@ private:
               "  if (b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8993
+        check("void f(const std::string& x) {\n"
+              "  auto y = x;\n"
+              "  if (x.empty()) y = \"1\";\n"
+              "  if (y.empty()) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkInvalidTestForOverflow() {
@@ -3288,17 +3310,23 @@ private:
     }
 
     void duplicateConditionalAssign() {
+        setMultiline();
+
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
               "        x = y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Assignment 'x=y' is redundant with condition 'x==y'.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
+                      "test.cpp:2:note:Condition 'x==y'\n"
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"
               "        x = y;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'.\n"
+                      "test.cpp:3:note:Assignment 'x=y'\n"
+                      "test.cpp:2:note:Condition 'x!=y' is redundant\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
@@ -3306,7 +3334,9 @@ private:
               "    else\n"
               "        x = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Assignment 'x=y' is redundant with condition 'x==y'.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
+                      "test.cpp:2:note:Condition 'x==y'\n"
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"

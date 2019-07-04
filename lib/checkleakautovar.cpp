@@ -188,6 +188,8 @@ static bool isVarUsedInTree(const Token *tok, unsigned int varid)
         return false;
     if (tok->varId() == varid)
         return true;
+    if (tok->str() == "(" && Token::simpleMatch(tok->astOperand1(), "sizeof"))
+        return false;
     return isVarUsedInTree(tok->astOperand1(), varid) || isVarUsedInTree(tok->astOperand2(), varid);
 }
 
@@ -299,7 +301,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             // right ast part (after `=` operator)
-            const Token* const tokRightAstOperand = tokAssignOp->astOperand2();
+            const Token* tokRightAstOperand = tokAssignOp->astOperand2();
+            while (tokRightAstOperand && tokRightAstOperand->isCast())
+                tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
 
             // is variable used in rhs?
             if (isVarUsedInTree(tokRightAstOperand, varTok->varId()))
@@ -366,12 +370,19 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
                 if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next()) {
                     // allocation?
-                    if (Token::Match(innerTok->tokAt(2), "%type% (")) {
-                        const Library::AllocFunc* f = mSettings->library.alloc(innerTok->tokAt(2));
+                    // right ast part (after `=` operator)
+                    const Token* tokRightAstOperand = innerTok->next()->astOperand2();
+                    while (tokRightAstOperand && tokRightAstOperand->isCast())
+                        tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
+                    if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
+                        const Library::AllocFunc* f = mSettings->library.alloc(tokRightAstOperand->previous());
                         if (f && f->arg == -1) {
                             VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = f->groupId;
                             varAlloc.status = VarInfo::ALLOC;
+                        } else {
+                            // Fixme: warn about leak
+                            alloctype.erase(innerTok->varId());
                         }
                     } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();

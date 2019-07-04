@@ -15,6 +15,59 @@
 #include <sys/epoll.h>
 #endif
 
+void resourceLeak_mkostemps(char *template, int suffixlen, int flags)
+{
+    // cppcheck-suppress unreadVariable
+    int fp = mkostemps(template, suffixlen, flags);
+    // cppcheck-suppress resourceLeak
+}
+
+void no_resourceLeak_mkostemps_01(char *template, int suffixlen, int flags)
+{
+    int fp = mkostemps(template, suffixlen, flags);
+    close(fp);
+}
+
+int no_resourceLeak_mkostemps_02(char *template, int suffixlen, int flags)
+{
+    return mkostemps(template, suffixlen, flags);
+}
+
+void resourceLeak_mkstemps(char *template, int suffixlen)
+{
+    // cppcheck-suppress unreadVariable
+    int fp = mkstemps(template, suffixlen);
+    // cppcheck-suppress resourceLeak
+}
+
+void no_resourceLeak_mkstemps_01(char *template, int suffixlen)
+{
+    int fp = mkstemps(template, suffixlen);
+    close(fp);
+}
+
+int no_resourceLeak_mkstemps_02(char *template, int suffixlen)
+{
+    return mkstemps(template, suffixlen);
+}
+
+void resourceLeak_mkostemp(char *template, int flags)
+{
+    // cppcheck-suppress unreadVariable
+    int fp = mkostemp(template, flags);
+    // cppcheck-suppress resourceLeak
+}
+
+void no_resourceLeak_mkostemp_01(char *template, int flags)
+{
+    int fp = mkostemp(template, flags);
+    close(fp);
+}
+
+int no_resourceLeak_mkostemp_02(char *template, int flags)
+{
+    return mkostemp(template, flags);
+}
 
 void valid_code(int argInt1)
 {
@@ -26,7 +79,7 @@ void ignoreleak(void)
 {
     char *p = (char *)malloc(10);
     __builtin_memset(&(p[0]), 0, 10);
-    // TODO // cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 void memleak_asprintf(char **ptr, const char *fmt, const int arg)

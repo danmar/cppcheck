@@ -92,6 +92,7 @@ void CheckClass::constructors()
 
     const bool printInconclusive = mSettings->inconclusive;
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
+        const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
 
         bool usedInUnion = false;
         for (const Scope &unionScope : mSymbolDatabase->scopeList) {
@@ -144,6 +145,13 @@ void CheckClass::constructors()
         for (const Function &func : scope->functionList) {
             if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
+
+            // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
+            if (unusedTemplate && func.type == Function::eConstructor) {
+                const Token *initList = func.constructorMemberInitialization();
+                if (Token::Match(initList, ": %name% (") && initList->next()->tokType() == Token::eName)
+                    break;
+            }
 
             // Mark all variables not used
             clearAllVar(usage);
@@ -218,6 +226,9 @@ void CheckClass::constructors()
                     if (classNameUsed)
                         operatorEqVarError(func.token, scope->className, var.name(), inconclusive);
                 } else if (func.access != Private || mSettings->standards.cpp >= Standards::CPP11) {
+                    // If constructor is not in scope then we maybe using a oonstructor from a different template specialization
+                    if (!precedes(scope->bodyStart, func.tokenDef))
+                        continue;
                     const Scope *varType = var.typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
                         if (func.type == Function::eConstructor &&
@@ -1217,7 +1228,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
     // Warn if type is a class that contains any virtual functions
     for (const Function &func : type->functionList) {
-        if (func.isVirtual()) {
+        if (func.hasVirtualSpecifier()) {
             if (allocation)
                 mallocOnClassError(tok, tok->str(), type->classDef, "virtual function");
             else
@@ -1406,6 +1417,13 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
             continue;
 
         foundReturn = true;
+
+        const Token *retExpr = tok->astOperand1();
+        if (retExpr && retExpr->str() == "=")
+            retExpr = retExpr->astOperand1();
+        if (retExpr && retExpr->isUnaryOp("*") && Token::simpleMatch(retExpr->astOperand1(), "this"))
+            continue;
+
         std::string cast("( " + scope->className + " & )");
         if (Token::simpleMatch(tok->next(), cast.c_str()))
             tok = tok->tokAt(4);
@@ -1440,8 +1458,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         }
 
         // check if *this is returned
-        else if (!(Token::Match(tok->next(), "(| * this ;|=") ||
-                   Token::simpleMatch(tok->next(), "operator= (") ||
+        else if (!(Token::simpleMatch(tok->next(), "operator= (") ||
                    Token::simpleMatch(tok->next(), "this . operator= (") ||
                    (Token::Match(tok->next(), "%type% :: operator= (") &&
                     tok->next()->str() == scope->className)))
@@ -1634,9 +1651,9 @@ void CheckClass::virtualDestructor()
         if (scope->definedType->derivedFrom.empty()) {
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
-                if (destructor && !destructor->isVirtual()) {
+                if (destructor && !destructor->hasVirtualSpecifier()) {
                     for (const Function &func : scope->functionList) {
-                        if (func.isVirtual()) {
+                        if (func.hasVirtualSpecifier()) {
                             inconclusiveErrors.push_back(destructor);
                             break;
                         }
@@ -1719,7 +1736,7 @@ void CheckClass::virtualDestructor()
                     if (derivedFrom->derivedFrom.empty()) {
                         virtualDestructorError(derivedFrom->classDef, derivedFrom->name(), derivedClass->str(), false);
                     }
-                } else if (!baseDestructor->isVirtual()) {
+                } else if (!baseDestructor->hasVirtualSpecifier()) {
                     // TODO: This is just a temporary fix, better solution is needed.
                     // Skip situations where base class has base classes of its own, because
                     // some of the base classes might have virtual destructor.
@@ -1810,7 +1827,7 @@ void CheckClass::checkConst()
             if (func.type != Function::eFunction || !func.hasBody())
                 continue;
             // don't warn for friend/static/virtual functions
-            if (func.isFriend() || func.isStatic() || func.isVirtual())
+            if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
             // get last token of return type
             const Token *previous = func.tokenDef->previous();
@@ -2352,7 +2369,7 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
                 continue;
         }
 
-        if (callFunction->isVirtual()) {
+        if (callFunction->isImplicitlyVirtual()) {
             if (!callFunction->isPure() && Token::simpleMatch(tok->previous(), "::"))
                 continue;
             virtualFunctionCalls.push_back(tok);
@@ -2372,7 +2389,7 @@ void CheckClass::getFirstVirtualFunctionCallStack(
     std::list<const Token *> & pureFuncStack)
 {
     const Function *callFunction = callToken->function();
-    if (callFunction->isVirtual() && (!callFunction->isPure() || !callFunction->hasBody())) {
+    if (callFunction->isImplicitlyVirtual() && (!callFunction->isPure() || !callFunction->hasBody())) {
         pureFuncStack.push_back(callFunction->tokenDef);
         return;
     }

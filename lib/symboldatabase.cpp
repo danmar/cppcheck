@@ -58,8 +58,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseNeedInitialization();
     createSymbolDatabaseVariableSymbolTable();
     createSymbolDatabaseSetScopePointers();
-    createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetVariablePointers();
+    createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
     createSymbolDatabaseEnums();
 }
@@ -967,7 +967,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 (tok->next()->str() == "." ||
                  (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
                 const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
-                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == 0) {
+                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == nullptr) {
                     const Variable *var = mVariableList[tok->varId()];
                     if (var && var->typeScope()) {
                         // find the member variable of this variable
@@ -993,7 +993,8 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
             start = const_cast<Token*>(mTokenizer->list.front());
             end = const_cast<Token*>(mTokenizer->list.back());
         }
-        assert(start && end);
+        assert(start);
+        assert(end);
 
         end->scope(&*it);
 
@@ -1242,7 +1243,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
                 // look for possible constant folding expressions
                 // rhs of operator:
-                const Token *rhs = enumerator.start->previous()->astOperand2();
+                Token *rhs = enumerator.start->previous()->astOperand2();
 
                 // constant folding of expression:
                 ValueFlow::valueFlowConstantFoldAST(rhs, mSettings);
@@ -1316,7 +1317,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                     break;
                 };
 
-                if (bits > 0 && bits < 64) {
+                if (bits > 0 && bits <= 62) {
                     if (dimension.tok->valueType()->sign == ValueType::Sign::UNSIGNED)
                         dimension.num = 1LL << bits;
                     else
@@ -1761,7 +1762,7 @@ Function::Function(const Tokenizer *mTokenizer,
 
         // virtual function
         else if (tok1->str() == "virtual") {
-            isVirtual(true);
+            hasVirtualSpecifier(true);
         }
 
         // static function
@@ -2475,7 +2476,7 @@ bool Variable::arrayDimensions(const Settings* settings)
                 while (tok->astParent() && !Token::Match(tok->astParent(), "[,<>]"))
                     tok = tok->astParent();
                 dimension_.tok = tok;
-                ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+                ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
                 if (tok->hasKnownIntValue()) {
                     dimension_.num = tok->getKnownIntValue();
                     dimension_.known = true;
@@ -2506,7 +2507,7 @@ bool Variable::arrayDimensions(const Settings* settings)
         // check for empty array dimension []
         if (dim->next()->str() != "]") {
             dimension_.tok = dim->astOperand2();
-            ValueFlow::valueFlowConstantFoldAST(dimension_.tok, settings);
+            ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
             if (dimension_.tok && dimension_.tok->hasKnownIntValue()) {
                 dimension_.num = dimension_.tok->getKnownIntValue();
                 dimension_.known = true;
@@ -2701,7 +2702,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        hasBody: " << func->hasBody() << std::endl;
             std::cout << "        isInline: " << func->isInline() << std::endl;
             std::cout << "        isConst: " << func->isConst() << std::endl;
-            std::cout << "        isVirtual: " << func->isVirtual() << std::endl;
+            std::cout << "        hasVirtualSpecifier: " << func->hasVirtualSpecifier() << std::endl;
             std::cout << "        isPure: " << func->isPure() << std::endl;
             std::cout << "        isStatic: " << func->isStatic() << std::endl;
             std::cout << "        isStaticLocal: " << func->isStaticLocal() << std::endl;
@@ -2957,8 +2958,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                                           function->type == Function::eFunction ? "Function" :
                                           "Unknown") << '\"';
                     if (function->nestedIn->definedType) {
-                        if (function->isVirtual())
-                            out << " isVirtual=\"true\"";
+                        if (function->hasVirtualSpecifier())
+                            out << " hasVirtualSpecifier=\"true\"";
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
@@ -3150,14 +3151,16 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
 bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
-    if (isVirtual())
+    if (hasVirtualSpecifier()) //If it has the virtual specifier it's definitely virtual
+        return true;
+    if (hasOverrideSpecifier()) //If it has the override specifier then it's either virtual or not going to compile
         return true;
     bool foundAllBaseClasses = true;
-    if (getOverriddenFunction(&foundAllBaseClasses))
+    if (getOverriddenFunction(&foundAllBaseClasses)) //If it overrides a base class's method then it's virtual
         return true;
-    if (foundAllBaseClasses)
+    if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
-    return defaultVal;
+    return defaultVal; //If we can't see all the bases classes then we can't say conclusively
 }
 
 const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
@@ -3186,7 +3189,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         // check if function defined in base class
         for (std::multimap<std::string, const Function *>::const_iterator it = parent->functionMap.find(tokenDef->str()); it != parent->functionMap.end() && it->first == tokenDef->str(); ++it) {
             const Function * func = it->second;
-            if (func->isVirtual()) { // Base is virtual and of same name
+            if (func->hasVirtualSpecifier()) { // Base is virtual and of same name
                 const Token *temp1 = func->tokenDef->previous();
                 const Token *temp2 = tokenDef->previous();
                 bool match = true;
@@ -4013,6 +4016,7 @@ static bool valueTypeMatch(const ValueType * valuetype, const Token * type)
     return ((((type->str() == "bool" && valuetype->type == ValueType::BOOL) ||
               (type->str() == "char" && valuetype->type == ValueType::CHAR) ||
               (type->str() == "short" && valuetype->type == ValueType::SHORT) ||
+              (type->str() == "wchar_t" && valuetype->type == ValueType::WCHAR_T) ||
               (type->str() == "int" && valuetype->type == ValueType::INT) ||
               ((type->str() == "long" && type->isLong()) && valuetype->type == ValueType::LONGLONG) ||
               (type->str() == "long" && valuetype->type == ValueType::LONG) ||
@@ -4061,6 +4065,11 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         bool constFallback = false;
         const Function * func = matches[i];
         size_t same = 0;
+
+        if (requireConst && !func->isConst()) {
+            i++;
+            continue;
+        }
 
         if (!requireConst || !func->isConst()) {
             // get the function this call is in
@@ -4315,7 +4324,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
         // check if all arguments matched
         if (same == hasToBe) {
-            if (constFallback)
+            if (constFallback || (!requireConst && func->isConst()))
                 fallback1Func = func;
             else
                 return func;
@@ -4424,7 +4433,14 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         if (Token::Match(tok1, "%var% .")) {
             const Variable *var = getVariableFromVarId(tok1->varId());
             if (var && var->typeScope())
-                return var->typeScope()->findFunction(tok, var->isConst());
+                return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
+        } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
+            const Token *castTok = tok->previous()->astOperand1();
+            if (castTok->isCast()) {
+                ValueType vt = ValueType::parseDecl(castTok->next(),mSettings);
+                if (vt.typeScope)
+                    return vt.typeScope->findFunction(tok, vt.constness == 1);
+            }
         }
     }
 
@@ -4882,7 +4898,7 @@ static void setAutoTokenProperties(Token * const autoTok)
 void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 {
     tok->setValueType(new ValueType(valuetype));
-    Token *parent = const_cast<Token *>(tok->astParent());
+    Token *parent = tok->astParent();
     if (!parent || parent->valueType())
         return;
     if (!parent->astOperand1())
@@ -4930,6 +4946,8 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                         vt2_.pointer = 1;
                     if ((vt.constness & (1 << vt2->pointer)) != 0)
                         vt2_.constness |= (1 << vt2->pointer);
+                    if (!Token::Match(autoTok->tokAt(1), "*|&"))
+                        vt2_.constness = vt.constness;
                     var->setValueType(vt2_);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
                         var->type(vt2->typeScope->definedType);
@@ -5010,7 +5028,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
-        Token * const autoToken = const_cast<Token *>(parent->astParent()->tokAt(isconst ? 2 : 1));
+        Token * const autoToken = parent->astParent()->tokAt(isconst ? 2 : 1);
         if (vt2->pointer) {
             ValueType autovt(*vt2);
             autovt.pointer--;
@@ -5082,7 +5100,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     if (ternary) {
         if (vt2 && vt1->pointer == vt2->pointer && vt1->type == vt2->type && vt1->sign == vt2->sign)
             setValueType(parent, *vt2);
-        parent = const_cast<Token*>(parent->astParent());
+        parent = parent->astParent();
     }
 
     if (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eIncDecOp) {
@@ -5185,7 +5203,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->type = ValueType::Type::INT;
     } else
         valuetype->type = ValueType::Type::RECORD;
-    while (Token::Match(type, "%name%|*|&|::") && !type->variable() && !type->function()) {
+    while (Token::Match(type, "%name%|*|&|::") && !Token::Match(type, "typename|template") &&
+           !type->variable() && !type->function()) {
         if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())
@@ -5359,7 +5378,7 @@ void SymbolDatabase::setValueTypeInTokenList()
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, 1U, 1U);
             if (tok->isLong()) {
                 valuetype.originalTypeName = "wchar_t";
-                valuetype.type = ValueType::Type::SHORT;
+                valuetype.type = ValueType::Type::WCHAR_T;
             }
             setValueType(tok, valuetype);
         } else if (tok->str() == "(") {
@@ -5445,7 +5464,6 @@ void SymbolDatabase::setValueTypeInTokenList()
                 std::istringstream istr(typestr+";");
                 if (tokenList.createTokens(istr)) {
                     ValueType vt;
-                    assert(tokenList.front());
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &vt, mDefaultSignedness, mSettings)) {
@@ -5537,6 +5555,8 @@ ValueType::Type ValueType::typeFromString(const std::string &typestr, bool longT
         return ValueType::Type::CHAR;
     if (typestr == "short")
         return ValueType::Type::SHORT;
+    if (typestr == "wchar_t")
+        return ValueType::Type::WCHAR_T;
     if (typestr == "int")
         return ValueType::Type::INT;
     if (typestr == "long")
@@ -5574,6 +5594,8 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
             type = ValueType::Type::CHAR;
         else if (platformType->mType == "short")
             type = ValueType::Type::SHORT;
+        else if (platformType->mType == "wchar_t")
+            type = ValueType::Type::WCHAR_T;
         else if (platformType->mType == "int")
             type = platformType->_long ? ValueType::Type::LONG : ValueType::Type::INT;
         else if (platformType->mType == "long")
@@ -5636,6 +5658,9 @@ std::string ValueType::dump() const
     case SHORT:
         ret << "valueType-type=\"short\"";
         break;
+    case WCHAR_T:
+        ret << "valueType-type=\"wchar_t\"";
+        break;
     case INT:
         ret << "valueType-type=\"int\"";
         break;
@@ -5697,6 +5722,8 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform) const
         return 1;
     case ValueType::Type::SHORT:
         return platform.sizeof_short;
+    case ValueType::Type::WCHAR_T:
+        return platform.sizeof_wchar_t;
     case ValueType::Type::INT:
         return platform.sizeof_int;
     case ValueType::Type::LONG:
@@ -5733,6 +5760,8 @@ std::string ValueType::str() const
             ret += " char";
         else if (type == SHORT)
             ret += " short";
+        else if (type == WCHAR_T)
+            ret += " wchar_t";
         else if (type == INT)
             ret += " int";
         else if (type == LONG)

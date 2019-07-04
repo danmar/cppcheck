@@ -76,6 +76,11 @@ struct TokenImpl {
      */
     unsigned int mProgressValue;
 
+    /**
+     * Token index. Position in token list
+     */
+    unsigned int mIndex;
+
     // original name like size_t
     std::string* mOriginalName;
 
@@ -103,6 +108,7 @@ struct TokenImpl {
         , mScope(nullptr)
         , mFunction(nullptr) // Initialize whole union
         , mProgressValue(0)
+        , mIndex(0)
         , mOriginalName(nullptr)
         , mValueType(nullptr)
         , mValues(nullptr)
@@ -806,6 +812,12 @@ public:
         return mTokType == eType ? mImpl->mType : nullptr;
     }
 
+    static const ::Type *typeOf(const Token *tok);
+
+    static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
+
+    static std::string typeStr(const Token* tok);
+
     /**
     * @return a pointer to the Enumerator associated with this token.
     */
@@ -847,7 +859,7 @@ public:
      */
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
-    /** Get progressValue */
+    /** Get progressValue (0 - 100) */
     unsigned int progressValue() const {
         return mImpl->mProgressValue;
     }
@@ -924,11 +936,10 @@ public:
     const ValueFlow::Value * getValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (value.isIntValue() && value.intvalue == val)
-                return &value;
-        }
-        return nullptr;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
+            return value.isIntValue() && value.intvalue == val;
+        });
+        return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
 
     const ValueFlow::Value * getMaxValue(bool condition) const {
@@ -948,11 +959,10 @@ public:
     const ValueFlow::Value * getMovedValue() const {
         if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (value.isMovedValue() && value.moveKind != ValueFlow::Value::NonMovedVariable)
-                return &value;
-        }
-        return nullptr;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
+            return value.isMovedValue() && value.moveKind != ValueFlow::Value::NonMovedVariable;
+        });
+        return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
 
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
@@ -963,11 +973,10 @@ public:
     const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
             return nullptr;
-        for (const ValueFlow::Value &value : *mImpl->mValues) {
-            if (value.isContainerSizeValue() && value.intvalue == val)
-                return &value;
-        }
-        return nullptr;
+        const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value &value) {
+            return value.isContainerSizeValue() && value.intvalue == val;
+        });
+        return it == mImpl->mValues->end() ? nullptr : &*it;
     }
 
     const Token *getValueTokenMaxStrLength() const;
@@ -977,6 +986,18 @@ public:
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
+
+    template<class Predicate>
+    void removeValues(Predicate pred) {
+        if (mImpl->mValues)
+            mImpl->mValues->remove_if(pred);
+    }
+
+    unsigned int index() const {
+        return mImpl->mIndex;
+    }
+
+    void assignIndexes();
 
 private:
 
@@ -1072,19 +1093,38 @@ private:
     /** Update internal property cache about string and char literals */
     void update_property_char_string_literal();
 
+    /** Internal helper function to avoid excessive string allocations */
+    void astStringVerboseRecursive(std::string& ret, const unsigned int indent1 = 0U, const unsigned int indent2 = 0U) const;
+
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
 
+    Token * astOperand1() {
+        return mImpl->mAstOperand1;
+    }
     const Token * astOperand1() const {
         return mImpl->mAstOperand1;
+    }
+    Token * astOperand2() {
+        return mImpl->mAstOperand2;
     }
     const Token * astOperand2() const {
         return mImpl->mAstOperand2;
     }
+    Token * astParent() {
+        return mImpl->mAstParent;
+    }
     const Token * astParent() const {
         return mImpl->mAstParent;
     }
+    Token *astTop() {
+        Token *ret = this;
+        while (ret->mImpl->mAstParent)
+            ret = ret->mImpl->mAstParent;
+        return ret;
+    }
+
     const Token *astTop() const {
         const Token *ret = this;
         while (ret->mImpl->mAstParent)
@@ -1121,7 +1161,7 @@ public:
         return ret + sep + mStr;
     }
 
-    std::string astStringVerbose(const unsigned int indent1, const unsigned int indent2) const;
+    std::string astStringVerbose() const;
 
     std::string expressionString() const;
 

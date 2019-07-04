@@ -25,6 +25,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
+#define PICOJSON_USE_INT64
 #include <picojson.h>
 
 #include <cstring>
@@ -1077,8 +1078,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->userDefines = temp.userDefines;
     settings->userUndefs = temp.userUndefs;
     settings->addons = temp.addons;
-    for (const std::string &path : paths)
-        guiProject.pathNames.push_back(path);
+    for (const std::string &p : paths)
+        guiProject.pathNames.push_back(p);
     for (const std::string &supp : suppressions)
         settings->nomsg.addSuppressionLine(supp);
     settings->checkHeaders = temp.checkHeaders;

@@ -124,6 +124,7 @@ private:
         TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(danglingLifetimeAggegrateConstructor);
         TEST_CASE(danglingLifetimeInitList);
+        TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(invalidLifetime);
     }
 
@@ -1618,6 +1619,14 @@ private:
             "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning iterator to local container 'v' that will be invalid when returning.\n",
             errout.str());
 
+        check("const char * f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   return ba.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'ba' that will be invalid when returning.\n",
+            errout.str());
+
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
               "    void f() {\n"
@@ -1692,6 +1701,16 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(bool b) {\n"
+              "    std::vector<int> v = {1};\n"
+              "    if (b) {\n"
+              "        int a[] = {0};\n"
+              "        v.insert(a, a+1);\n"
+              "    }\n"
+              "    return v.back() == 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("class A {\n"
               "    int f( P p ) {\n"
               "        std::vector< S > maps;\n"
@@ -1701,6 +1720,21 @@ private:
               "    std::map< S, B > m1;\n"
               "    std::map< S, B > m2;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<int*> v;\n"
+              "    int x;\n"
+              "    void f() {\n"
+              "        v.push_back(&x);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t f(const std::string& x) {\n"
+              "    std::string y = \"x\";\n"
+              "    return y.find(x);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1966,6 +2000,13 @@ private:
               "    return A{x, x};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int i; const int& j; };\n"
+              "A f(int& x) {\n"
+              "    int y = 0;\n"
+              "    return A{y, x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeInitList() {
@@ -1999,6 +2040,32 @@ private:
 
         check("std::vector<int*> f(int& x) {\n"
               "    return {&x, &x};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetimeImplicitConversion() {
+        check("struct A { A(const char *a); };\n"
+              "A f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   return ba.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(const char *a); };\n"
+              "A f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   A bp = ba.c_str();\n"
+              "   return bp;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { A(const char *a); };\n"
+              "std::vector<A> f() {\n"
+              "   std::string ba(\"hello\");\n"
+              "   std::vector<A> v;\n"
+              "   v.push_back(ba.c_str());\n"
+              "   return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

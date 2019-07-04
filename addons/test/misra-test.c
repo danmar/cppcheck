@@ -24,6 +24,8 @@ typedef unsigned long long u64;
 
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
+int misra_5_1_var_hides_var________a;
+int misra_5_1_var_hides_var________b; //5.1
 
 extern const uint8_t misra_5_2_var1;
 const uint8_t        misra_5_2_var1 = 3; // no warning
@@ -63,6 +65,8 @@ int misra_5_2_field_hides_field1_31y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
+int c41_3         = '\141t'; // 4.1
+int c41_4         = '\141\t';
 
 extern int misra_5_3_var_hides_var______31x;
 void misra_5_3_var_hides_function_31x (void) {}
@@ -145,6 +149,7 @@ extern int a811[]; // 8.11
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
 enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
 enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
+enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
 
 void misra_8_14(char * restrict str) {} // 8.14
 
@@ -217,7 +222,7 @@ void misra_11_7(int *p, float f) {
 }
 
 char * misra_11_8(const char *str) {
-  misra_11_8(str); // no-warning
+  (void)misra_11_8(str); // no-warning
   return (char *)str; // 11.8
 }
 
@@ -489,6 +494,11 @@ void misra_17_1() {
 
 void misra_17_6(int x[static 20]) {} // 17.6
 
+int calculation(int x) { return x + 1; }
+void misra_17_7(void) {
+  calculation(123); // 17.7
+}
+
 void misra_17_8(int x) {
   x = 3; // 17.8
 }
@@ -496,6 +506,25 @@ void misra_17_8(int x) {
 void misra_18_5() {
   int *** p;  // 18.5
 }
+
+struct {
+  uint16_t len;
+  struct {
+    uint8_t data_1[]; // 18.7
+  } nested_1;
+  struct named {
+    struct {
+      uint8_t len_1;
+      uint32_t data_2[]; // 18.7
+    } nested_2;
+    uint8_t data_3[]; // 18.7
+  } nested_3;
+} _18_7_struct;
+struct {
+  uint16_t len;
+  uint8_t data_1[ 19 ];
+  uint8_t data_2[   ]; // 18.7
+} _18_7_struct;
 
 void misra_18_8(int x) {
   int buf1[10];
@@ -534,20 +563,20 @@ void misra_21_3() {
 }
 
 void misra_21_7() {
-  atof(str); // 21.7
-  atoi(str); // 21.7
-  atol(str); // 21.7
-  atoll(str); // 21.7
+  (void)atof(str); // 21.7
+  (void)atoi(str); // 21.7
+  (void)atol(str); // 21.7
+  (void)atoll(str); // 21.7
 }
 
 void misra_21_8() {
   abort(); // 21.8
-  getenv("foo"); // 21.8
-  system(""); // 21.8
+  (void)getenv("foo"); // 21.8
+  (void)system(""); // 21.8
   exit(-1); // 21.8
 }
 
 void misra_21_9() {
-  bsearch(key,base,num,size,cmp); // 21.9
+  (void)bsearch(key,base,num,size,cmp); // 21.9
   qsort(base,num,size,cmp); // 21.9
 }

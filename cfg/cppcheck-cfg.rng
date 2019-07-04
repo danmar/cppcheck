@@ -337,12 +337,19 @@
         <zeroOrMore>
           <choice>
             <element name="type">
-              <choice>
+              <optional>
                 <attribute name="templateParameter"><data type="integer"/></attribute>
+              </optional>
+              <optional>
                 <attribute name="string">
                   <value>std-like</value>
                 </attribute>
-              </choice>
+              </optional>
+              <optional>
+                <attribute name="associative">
+                  <value>std-like</value>
+                </attribute>
+              </optional>
               <empty/>
             </element>
             <element name="size">
@@ -352,14 +359,16 @@
               <zeroOrMore>
                 <element name="function">
                   <attribute name="name"><ref name="DATA-NAME"/></attribute>
-                  <choice>
+                  <optional>
                     <attribute name="action">
                       <ref name="CONTAINER-ACTION"/>
                     </attribute>
+                  </optional>
+                  <optional>
                     <attribute name="yields">
                       <ref name="CONTAINER-YIELDS"/>
                     </attribute>
-                  </choice>
+                  </optional>
                   <empty/>
                 </element>
               </zeroOrMore>

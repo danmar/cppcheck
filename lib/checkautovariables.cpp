@@ -590,7 +590,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         return;
     bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
-        // Return reference form function
+        // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             ErrorPath errorPath;
             const Variable *var = getLifetimeVariable(tok, errorPath);
@@ -619,8 +619,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (Token::Match(tok->astParent(), "return|throw")) {
                 if (getPointerDepth(tok) < getPointerDepth(val.tokvalue))
                     continue;
-                if (tok->astParent()->str() == "return" && !Token::simpleMatch(tok, "{") && !astIsContainer(tok) &&
-                    astIsContainer(tok->astParent()))
+                if (!isLifetimeBorrowed(tok, mSettings))
                     continue;
                 if (isInScope(val.tokvalue->variable()->nameToken(), scope)) {
                     errorReturnDanglingLifetime(tok, &val);
@@ -631,7 +630,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 break;
             } else if (tok->variable() && tok->variable()->declarationId() == tok->varId() &&
                        !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
-                       isInScope(val.tokvalue, tok->scope())) {
+                       isInScope(val.tokvalue->variable()->nameToken(), tok->scope())) {
                 errorDanglngLifetime(tok, &val);
                 break;
             }
@@ -679,6 +678,7 @@ static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::Object:
+            case ValueFlow::Value::Address:
                 if (type == "pointer")
                     msg += " to local variable";
                 else

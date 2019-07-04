@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iterator> // back_inserter
 #include <utility>
 
 /**
@@ -296,11 +297,10 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
 
 static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
 {
-    for (const std::string &cfg : configs_if) {
-        if (hasDefine(userDefines, cfg))
-            return true;
-    }
-    return false;
+    return std::any_of(configs_if.cbegin(), configs_if.cend(),
+    [=](const std::string &cfg) {
+        return hasDefine(userDefines, cfg);
+    });
 }
 
 static const simplecpp::Token *gotoEndIf(const simplecpp::Token *cmdtok)
@@ -500,8 +500,7 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     const simplecpp::TokenList tokens1(srcCodeStream, files, filename, &outputList);
 
     const std::set<std::string> configs = getConfigs(tokens1);
-    for (const std::string &cfg : configs)
-        resultConfigurations.push_back(cfg);
+    std::copy(configs.cbegin(), configs.cend(), std::back_inserter(resultConfigurations));
 
     processedFile = tokens1.stringify();
 }
@@ -788,13 +787,11 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
                 continue;
             if (mu.macroName != macroName)
                 continue;
-            bool directiveLocation = false;
-            for (const Directive &dir : mDirectives) {
-                if (mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr) {
-                    directiveLocation = true;
-                    break;
-                }
-            }
+            bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
+            [=](const Directive &dir) {
+                return mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr;
+            });
+
             if (!directiveLocation) {
                 if (mSettings.isEnabled(Settings::INFORMATION))
                     validateCfgError(mu.useLocation.file(), mu.useLocation.line, cfg, macroName);

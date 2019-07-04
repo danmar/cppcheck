@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ public:
     static bool sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
 };
 
-Q_DECLARE_METATYPE(ErrorItem);
+Q_DECLARE_METATYPE(ErrorItem)
 
 /**
 * @brief A class containing error data for one shown error line.

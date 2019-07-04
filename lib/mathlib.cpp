@@ -370,7 +370,7 @@ MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
 
     // '\123'
     if (str.size() == 4 && str[0] == '\\' && isoctal(str[1]) && isoctal(str[2]) && isoctal(str[3])) {
-        return (char)std::strtoul(str.substr(1).c_str(), NULL, 8);
+        return (char)std::strtoul(str.substr(1).c_str(), nullptr, 8);
     }
 
     // C99 6.4.4.4
@@ -1335,7 +1335,7 @@ bool MathLib::isLessEqual(const std::string &first, const std::string &second)
  **/
 bool MathLib::isNullValue(const std::string &str)
 {
-    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str.size() < 1 || (str[0] != '.' && str[0] != '-' && str[0] != '+'))))
+    if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str[0] != '.' && str[0] != '-' && str[0] != '+')))
         return false; // Has to be a number
 
     for (size_t i = 0; i < str.size(); i++) {

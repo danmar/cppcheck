@@ -4,12 +4,6 @@
 |:--:|:--:|:--:|
 |[![Linux Build Status](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck)|[![Windows Build Status](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|
 
-## Donations
-
-If you find Cppcheck useful for you, feel free to make a donation.
-
-[![Donate](http://pledgie.com/campaigns/4127.png)](http://pledgie.com/campaigns/4127)
-
 ## About the name
 
 The original name of this program was "C++check", but it was later changed to "Cppcheck".
@@ -36,6 +30,26 @@ There are multiple compilation choices:
 * gnu make
 * g++ 4.6 (or later)
 * clang++
+
+### cmake
+
+Example, compiling Cppcheck with cmake:
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+If you want to compile the GUI you can use the flag
+-DBUILD_GUI=ON
+
+For rules support (requires pcre) use the flag
+-DHAVE_RULES=ON
+
+For release builds it is recommended that you use:
+-DUSE_MATCHCOMPILER=ON
 
 ### qmake
 
@@ -69,18 +83,18 @@ make
 The recommended release build is:
 
 ```shell
-make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 Flags:
 
-1.  `SRCDIR=build`  
-    Python is used to optimise cppcheck
+1.  `MATCHCOMPILER=yes`
+    Python is used to optimise cppcheck. The Token::Match patterns are converted into C++ code at compile time.
 
-2.  `CFGDIR=cfg`  
+2.  `CFGDIR=cfg`
     Specify folder where .cfg files are found
 
-3.  `HAVE_RULES=yes`  
+3.  `HAVE_RULES=yes`
     Enable rules (PCRE is required if this is used)
 
 4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"`
@@ -91,13 +105,13 @@ Flags:
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 ```
 
 If you want to use `--rule` and `--rule-file` then dependencies are needed:
 
 ```shell
-g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
 ```
 
 ### MinGW
@@ -108,7 +122,7 @@ mingw32-make LDFLAGS=-lshlwapi
 
 ### Other Compiler/IDE
 
-1. Create a empty project file / makefile.
+1. Create an empty project file / makefile.
 2. Add all cpp files in the cppcheck cli and lib folders to the project file / makefile.
 3. Add all cpp files in the externals folders to the project file / makefile.
 4. Compile.

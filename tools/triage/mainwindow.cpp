@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <ctime>
+#include <cstdlib>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
@@ -102,7 +103,7 @@ void MainWindow::filter(QString filter)
 {
     QStringList allErrors;
 
-    for (const QString errorItem : mAllErrors) {
+    for (const QString &errorItem : mAllErrors) {
         if (filter.isEmpty()) {
             allErrors << errorItem;
             continue;

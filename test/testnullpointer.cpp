@@ -2332,6 +2332,13 @@ private:
               "  dostuff(p->x);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
+
+        check("struct A {};\n"
+              "void f(int n) {\n"
+              "    std::unique_ptr<const A*[]> p;\n"
+              "    p.reset(new const A*[n]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functioncall() {    // #3443 - function calls

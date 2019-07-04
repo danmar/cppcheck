@@ -1337,6 +1337,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 tempToken->str("char");
             else if (valuetype->type == ValueType::SHORT)
                 tempToken->str("short");
+            else if (valuetype->type == ValueType::WCHAR_T)
+                tempToken->str("wchar_t");
             else if (valuetype->type == ValueType::INT)
                 tempToken->str("int");
             else if (valuetype->type == ValueType::LONG)

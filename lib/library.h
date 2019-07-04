@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -181,6 +181,7 @@ public:
             size_templateArgNo(-1),
             arrayLike_indexOp(false),
             stdStringLike(false),
+            stdAssociativeLike(false),
             opLessAllowed(true) {
         }
 
@@ -202,6 +203,7 @@ public:
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;
+        bool stdAssociativeLike;
         bool opLessAllowed;
 
         Action getAction(const std::string& function) const {

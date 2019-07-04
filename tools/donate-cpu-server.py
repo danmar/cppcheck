@@ -2,6 +2,7 @@
 # Server for 'donate-cpu.py'
 
 import glob
+import json
 import os
 import socket
 import re
@@ -17,9 +18,9 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.1.2"
+SERVER_VERSION = "1.1.3"
 
-OLD_VERSION = '1.87'
+OLD_VERSION = '1.88'
 
 
 # Set up logging
@@ -149,6 +150,13 @@ def crashReport():
         datestr = ''
         for line in open(filename, 'rt'):
             line = line.strip()
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             if not line.startswith('count:'):
@@ -242,36 +250,23 @@ def diffReport(resultsPath):
     outToday = {}
     today = strDateTime()[:10]
 
-    for filename in sorted(glob.glob(resultsPath + '/*')):
+    for filename in sorted(glob.glob(resultsPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
-        uploadedToday = False
-        firstLine = True
-        for line in open(filename, 'rt'):
-            if firstLine:
-                if line.startswith(today):
-                    uploadedToday = True
-                firstLine = False
-                continue
-            line = line.strip()
-            if not line.endswith(']'):
-                continue
-            index = None
-            if line.startswith(OLD_VERSION + ' '):
-                index = 0
-            elif line.startswith('head '):
-                index = 1
-            else:
-                continue
-            messageId = line[line.rfind('[')+1:len(line)-1]
-
+        with open(filename, 'rt') as f:
+            data = json.loads(f.read())
+        uploadedToday = data['date'] == today
+        for messageId in data['sums']:
+            sums = data['sums'][messageId]
             if messageId not in out:
                 out[messageId] = [0, 0]
-            out[messageId][index] += 1
+            out[messageId][0] += sums[OLD_VERSION]
+            out[messageId][1] += sums['head']
             if uploadedToday:
                 if messageId not in outToday:
                     outToday[messageId] = [0, 0]
-                outToday[messageId][index] += 1
+                outToday[messageId][0] += sums[OLD_VERSION]
+                outToday[messageId][1] += sums['head']
 
     html = '<html><head><title>Diff report</title></head><body>\n'
     html += '<h1>Diff report</h1>\n'
@@ -283,15 +278,59 @@ def diffReport(resultsPath):
     return html
 
 
+def generate_package_diff_statistics(filename):
+    is_diff = False
+
+    sums = {}
+
+    for line in open(filename, 'rt'):
+        line = line.strip()
+        if line == 'diff:':
+            is_diff = True
+            continue
+        elif not is_diff:
+            continue
+        if not line.endswith(']'):
+            continue
+
+        version = None
+        if line.startswith(OLD_VERSION + ' '):
+            version = OLD_VERSION
+        elif line.startswith('head '):
+            version = 'head'
+        else:
+            continue
+
+        messageId = line[line.rfind('[')+1:len(line)-1]
+
+        if messageId not in sums:
+            sums[messageId] = { OLD_VERSION: 0, 'head': 0 }
+
+        sums[messageId][version] += 1
+
+    output = { 'date': strDateTime()[:10], 'sums': sums }
+
+    filename_diff = filename + '.diff'
+    if sums:
+        with open(filename_diff, 'wt') as f:
+            f.write(json.dumps(output))
+    elif os.path.isfile(filename_diff):
+        os.remove(filename_diff)
+
+
 def diffMessageIdReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
-    for filename in sorted(glob.glob(resultPath + '/*')):
+    for filename in sorted(glob.glob(resultPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
+        with open(filename, 'rt') as f:
+          diff_stats = f.read()
+        if not messageId in diff_stats:
+          continue
         url = None
         diff = False
-        for line in open(filename, 'rt'):
+        for line in open(filename[:-5], 'rt'):
             if line.startswith('ftp://'):
                 url = line
             elif line == 'diff:\n':
@@ -310,13 +349,19 @@ def diffMessageIdTodayReport(resultPath, messageId):
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
-    for filename in sorted(glob.glob(resultPath + '/*')):
+    for filename in sorted(glob.glob(resultPath + '/*.diff')):
         if not os.path.isfile(filename):
             continue
+        with open(filename, 'rt') as f:
+          diff_stats = f.read()
+        if not messageId in diff_stats:
+          continue
+        if not today in diff_stats:
+          continue
         url = None
         diff = False
         firstLine = True
-        for line in open(filename, 'rt'):
+        for line in open(filename[:-5], 'rt'):
             if firstLine:
                 firstLine = False
                 if not line.startswith(today):
@@ -381,6 +426,13 @@ def headReport(resultsPath):
                 firstLine = False
                 continue
             line = line.strip()
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line.startswith('head results:'):
                 headResults = True
                 continue
@@ -494,11 +546,21 @@ def timeReport(resultPath):
         if not os.path.isfile(filename):
             continue
         for line in open(filename, 'rt'):
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if not line.startswith('elapsed-time:'):
                 continue
             split_line = line.strip().split()
             time_base = float(split_line[2])
             time_head = float(split_line[1])
+            if time_base < 0.0 or time_head < 0.0:
+                # ignore results with crashes / errors for the time report
+                break
             total_time_base += time_base
             total_time_head += time_head
             suspicious_time_difference = False
@@ -558,6 +620,13 @@ def check_library_report(result_path, message_id):
             continue
         info_messages = False
         for line in open(filename, 'rt'):
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line == 'info messages:\n':
                 info_messages = True
             if not info_messages:
@@ -823,7 +892,7 @@ def server(server_address_port, packages, packageIndex, resultPath):
             if old_version_wrong:
                 continue
             print('results added for package ' + res.group(1))
-            filename = resultPath + '/' + res.group(1)
+            filename = os.path.join(resultPath, res.group(1))
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
             # track latest added results..
@@ -832,6 +901,8 @@ def server(server_address_port, packages, packageIndex, resultPath):
             latestResults.append(filename)
             with open('latest.txt', 'wt') as f:
                 f.write(' '.join(latestResults))
+            # generate package.diff..
+            generate_package_diff_statistics(filename)
         elif cmd.startswith('write_info\nftp://'):
             # read data
             data = cmd[11:]

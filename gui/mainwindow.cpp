@@ -210,6 +210,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI.mActionCpp11->setActionGroup(mCppStandardActions);
     mUI.mActionCpp14->setActionGroup(mCppStandardActions);
     mUI.mActionCpp17->setActionGroup(mCppStandardActions);
+    mUI.mActionCpp20->setActionGroup(mCppStandardActions);
 
     mUI.mActionEnforceC->setActionGroup(mSelectLanguageActions);
     mUI.mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
@@ -294,6 +295,7 @@ void MainWindow::loadSettings()
     mUI.mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
     mUI.mActionCpp14->setChecked(standards.cpp == Standards::CPP14);
     mUI.mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
+    mUI.mActionCpp20->setChecked(standards.cpp == Standards::CPP20);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -372,6 +374,8 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_CPP, "C++14");
     if (mUI.mActionCpp17->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++17");
+    if (mUI.mActionCpp20->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "C++20");
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
@@ -996,12 +1000,14 @@ void MainWindow::programSettings()
     SettingsDialog dialog(mApplications, mTranslation, this);
     if (dialog.exec() == QDialog::Accepted) {
         dialog.saveSettingValues();
+        mSettings->sync();
         mUI.mResults->updateSettings(dialog.showFullPath(),
                                      dialog.saveFullPath(),
                                      dialog.saveAllErrors(),
                                      dialog.showNoErrorsMessage(),
                                      dialog.showErrorId(),
                                      dialog.showInconclusive());
+        mUI.mResults->updateStyleSetting(mSettings);
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }

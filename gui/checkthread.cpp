@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2019 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QProcess>
 #include <QSettings>
 #include "checkthread.h"
@@ -173,6 +175,9 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 case Standards::CPP17:
                     args << "-std=c++17";
                     break;
+                case Standards::CPP20:
+                    args << "-std=c++20";
+                    break;
                 };
             }
 
@@ -292,7 +297,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
 
             QStringList args;
-            args << addonFilePath << dumpFile;
+            args << addonFilePath << "--cli" << dumpFile;
             if (addon == "misra" && !mMisraFile.isEmpty() && QFileInfo(mMisraFile).exists()) {
                 if (mMisraFile.endsWith(".pdf", Qt::CaseInsensitive))
                     args << "--misra-pdf=" + mMisraFile;
@@ -309,14 +314,14 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             }
             process.start(python, args);
             process.waitForFinished();
-            const QString errout(process.readAllStandardError());
+            const QString output(process.readAllStandardOutput());
             QFile f(dumpFile + '-' + addon + "-results");
             if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
                 QTextStream out(&f);
-                out << errout;
+                out << output;
                 f.close();
             }
-            parseAddonErrors(errout, addon);
+            parseAddonErrors(output, addon);
         }
     }
 }
@@ -333,17 +338,33 @@ void CheckThread::parseAddonErrors(QString err, const QString &tool)
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QRegExp r1("\\[([a-zA-Z]?:?[^:]+):([0-9]+)\\]:?[ ][(]([a-z]+)[)]:? (.+) \\[([a-zA-Z0-9_\\-\\.]+)\\]");
-        if (!r1.exactMatch(line))
+        if (!line.startsWith("{"))
             continue;
-        const std::string &filename = r1.cap(1).toStdString();
-        const int lineNumber = r1.cap(2).toInt();
-        const std::string severity = r1.cap(3).toStdString();
-        const std::string message = r1.cap(4).toStdString();
-        const std::string id = r1.cap(5).toStdString();
+
+        const QJsonDocument doc = QJsonDocument::fromJson(line.toLocal8Bit());
+        const QJsonObject obj = doc.object();
+
+        /*
+        msg = { 'file': location.file,
+                'linenr': location.linenr,
+                'col': location.col,
+                'severity': severity,
+                'message': message,
+                'addon': addon,
+                'errorId': errorId,
+                'extra': extra}
+        */
+
+        const std::string &filename = obj["file"].toString().toStdString();
+        const int lineNumber = obj["linenr"].toInt();
+        const int column = obj["col"].toInt();
+        const std::string severity = obj["severity"].toString().toStdString();
+        const std::string message = obj["message"].toString().toStdString();
+        const std::string id = obj["errorId"].toString().toStdString();
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
         callstack.push_back(ErrorLogger::ErrorMessage::FileLocation(filename, lineNumber));
+        callstack.back().col = column;
         ErrorLogger::ErrorMessage errmsg(callstack, filename, Severity::fromString(severity), message, id, false);
         mResult.reportErr(errmsg);
     }

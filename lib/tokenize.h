@@ -509,6 +509,8 @@ public:
 
     void simplifyRoundCurlyParentheses();
 
+    void simplifyTypeIntrinsics();
+
     void simplifySQL();
 
     void checkForEnumsWithTypedef();
@@ -597,7 +599,7 @@ private:
 public:
 
     /** Syntax error */
-    void syntaxError(const Token *tok, const std::string code = "") const;
+    void syntaxError(const Token *tok, const std::string &code = "") const;
 
     /** Syntax error. Unmatched character. */
     void unmatchedToken(const Token *tok) const;
