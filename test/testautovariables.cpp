@@ -1444,7 +1444,7 @@ private:
               "        return [&](){ return a; };\n"
               "    };\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'a' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning lambda that captures local variable 'a' that will be invalid when returning.\n", errout.str());
 
         check("auto g(int& a) {\n"
               "    return [&](){ return a; };\n"

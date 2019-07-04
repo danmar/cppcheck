@@ -3045,6 +3045,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 {
     // check for non-empty argument list "( ... )"
     const Token * start = arg ? arg : argDef;
+    if (!Token::simpleMatch(start, "("))
+        return;
     if (!(start && start->link() != start->next() && !Token::simpleMatch(start, "( void )")))
         return;
 
