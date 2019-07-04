@@ -988,8 +988,16 @@ bool isVariableChanged(const Token *start, const Token *end, const unsigned int 
         if (Token::Match(tok2->astParent(), "++|--"))
             return true;
 
-        if (tok2->astParent() && tok2->astParent()->isAssignmentOp() && tok2 == tok2->astParent()->astOperand1())
-            return true;
+        if (tok2->astParent() && tok2->astParent()->isAssignmentOp()) {
+            if (tok2 == tok2->astParent()->astOperand1())
+                return true;
+            // Check if assigning to a non-const lvalue
+            const Variable * var = getLHSVariable(tok2->astParent());
+            if (var && var->isReference() && !var->isConst() && var->nameToken() && var->nameToken()->next() == tok2->astParent()) {
+                if (!var->isLocal() || isVariableChanged(var, settings, cpp))
+                    return true;
+            }
+        }
 
         if (isLikelyStreamRead(cpp, tok->previous()))
             return true;
@@ -1207,6 +1215,35 @@ bool isConstVarExpression(const Token *tok)
     if (tok->variable())
         return tok->variable()->isConst();
     return false;
+}
+
+static const Variable *getLHSVariableRecursive(const Token *tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "*|&|&&|[")) {
+        const Variable *var1 = getLHSVariableRecursive(tok->astOperand1());
+        if (var1 || Token::simpleMatch(tok, "["))
+            return var1;
+        const Variable *var2 = getLHSVariableRecursive(tok->astOperand2());
+        return var2;
+    }
+    if (!tok->variable())
+        return nullptr;
+    if (tok->variable()->nameToken() == tok)
+        return tok->variable();
+    return nullptr;
+}
+
+const Variable *getLHSVariable(const Token *tok)
+{
+    if (!Token::Match(tok, "%assign%"))
+        return nullptr;
+    if (!tok->astOperand1())
+        return nullptr;
+    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
+        return tok->astOperand1()->variable();
+    return getLHSVariableRecursive(tok->astOperand1());
 }
 
 static bool nonLocal(const Variable* var, bool deref)

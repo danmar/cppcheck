@@ -172,6 +172,8 @@ bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token *tok);
 
+const Variable *getLHSVariable(const Token *tok);
+
 /**
  * Forward data flow analysis for checks
  *  - unused value

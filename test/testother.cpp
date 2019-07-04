@@ -1868,6 +1868,24 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
 
+        check("void f(int& i) {\n"
+              "    int& j = i;\n"
+              "    j++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    int& i = v[0];\n"
+              "    i++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::map<unsigned int, std::map<std::string, unsigned int> >& m, unsigned int i) {\n"
+              "    std::map<std::string, unsigned int>& members = m[i];\n"
+              "    members.clear();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"

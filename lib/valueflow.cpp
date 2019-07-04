@@ -2819,35 +2819,6 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
-static const Variable *getLHSVariableRecursive(const Token *tok)
-{
-    if (!tok)
-        return nullptr;
-    if (Token::Match(tok, "*|&|&&|[")) {
-        const Variable *var1 = getLHSVariableRecursive(tok->astOperand1());
-        if (var1 || Token::simpleMatch(tok, "["))
-            return var1;
-        const Variable *var2 = getLHSVariableRecursive(tok->astOperand2());
-        return var2;
-    }
-    if (!tok->variable())
-        return nullptr;
-    if (tok->variable()->nameToken() == tok)
-        return tok->variable();
-    return nullptr;
-}
-
-static const Variable *getLHSVariable(const Token *tok)
-{
-    if (!Token::Match(tok, "%assign%"))
-        return nullptr;
-    if (!tok->astOperand1())
-        return nullptr;
-    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
-        return tok->astOperand1()->variable();
-    return getLHSVariableRecursive(tok->astOperand1());
-}
-
 static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
 {
     if (!vtParent)
