@@ -45,7 +45,7 @@ Here is a minimal windows.cfg file:
       </resource>
     </def>
 
-Functions that reallocate memory can be configured using a `<realloc>` tag. The input argument which points to the memory the be reallocated can also be configured (the default is the first argument). As an example, here is a configuration file for the fopen, freopen and fclose functions from the c standard library:
+Functions that reallocate memory can be configured using a `<realloc>` tag. The input argument which points to the memory that shall be reallocated can also be configured (the default is the first argument). As an example, here is a configuration file for the fopen, freopen and fclose functions from the c standard library:
 
     <?xml version="1.0"?>
     <def>
