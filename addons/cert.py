@@ -236,27 +236,25 @@ def int31(data, platform):
 # Do not use deprecated or obsolescent functions
 def msc24(data):
     for token in data.tokenlist:
-        if not isFunctionCall(token, ('asctime', 'atof', 'atoi', 'atol', 'atoll', 'ctime', 'fopen', 'freopen', 'rewind', 'setbuf') ):
-            continue
-        if token.str == 'asctime':
+        if isFunctionCall(token, ('asctime',), 1):
             reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
-        elif token.str == 'atof':
+        elif isFunctionCall(token, ('atof',), 1):
             reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
-        elif token.str == 'atoi':
+        elif isFunctionCall(token, ('atoi',), 1):
             reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
-        elif token.str == 'atol':
+        elif isFunctionCall(token, ('atol',), 1):
             reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
-        elif token.str == 'atoll':
+        elif isFunctionCall(token, ('atoll',), 1):
             reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
-        elif token.str == 'ctime':
+        elif isFunctionCall(token, ('ctime',), 1):
             reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
-        elif token.str == 'fopen':
+        elif isFunctionCall(token, ('fopen',), 2):
             reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
-        elif token.str == 'freopen':
+        elif isFunctionCall(token, ('freopen',), 3):
             reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
-        elif token.str == 'rewind':
+        elif isFunctionCall(token, ('rewind',), 1):
             reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
-        elif token.str == 'setbuf':
+        elif isFunctionCall(token, ('setbuf',), 2):
             reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
 
 # MSC30-C
