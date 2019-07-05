@@ -4811,7 +4811,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 &error);
         if (!error) {
             ValueFlow::Value v(result);
-            if (function->isVirtual())
+            if (function->hasVirtualSpecifier())
                 v.setPossible();
             else
                 v.setKnown();
@@ -5285,7 +5285,9 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
             if (!Token::Match(rhs->previous(), "%name% ("))
                 continue;
 
-            const Library::AllocFunc *allocFunc = settings->library.alloc(rhs->previous());
+            const Library::AllocFunc *allocFunc = settings->library.getAllocFuncInfo(rhs->previous());
+            if (!allocFunc)
+                allocFunc = settings->library.getReallocFuncInfo(rhs->previous());
             if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
                 continue;
 

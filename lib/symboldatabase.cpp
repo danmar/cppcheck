@@ -666,9 +666,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = tok->linkAt(1);
             } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
                 const Token *lambdaStartToken = lambdaEndToken->link();
-                scopeList.emplace_back(this, tok, scope, Scope::eLambda, lambdaStartToken);
-                scope->nestedList.push_back(&scopeList.back());
-                scope = &scopeList.back();
+                const Token * argStart = lambdaStartToken->astParent();
+                const Token * funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
+                addGlobalFunction(scope, tok, argStart, funcStart);
                 tok = lambdaStartToken;
             } else if (tok->str() == "{") {
                 if (isExecutableScope(tok)) {
@@ -1732,6 +1732,10 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
             type = Function::eOperatorEqual;
     }
 
+    else if (tokenDef->str() == "[") {
+        type = Function::eLambda;
+    }
+
     // class constructor/destructor
     else if (tokenDef->str() == scope->className) {
         // destructor
@@ -1757,7 +1761,7 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
 
         // virtual function
         else if (tok1->str() == "virtual") {
-            isVirtual(true);
+            hasVirtualSpecifier(true);
         }
 
         // static function
@@ -1778,7 +1782,7 @@ Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *s
     }
 
     // find the return type
-    if (!isConstructor() && !isDestructor()) {
+    if (!isConstructor() && !isDestructor() && !isLambda()) {
         // @todo auto type deduction should be checked
         // @todo attributes and exception specification can also precede trailing return type
         if (Token::Match(argDef->link()->next(), "const|volatile| &|&&| .")) { // Trailing return type
@@ -2054,13 +2058,16 @@ const Token * Function::constructorMemberInitialization() const
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
 {
     Function* function = nullptr;
-    for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-        const Function *f = i->second;
-        if (f->hasBody())
-            continue;
-        if (Function::argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
-            function = const_cast<Function *>(i->second);
-            break;
+    // Lambda functions are always unique
+    if (tok->str() != "[") {
+        for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
+            const Function *f = i->second;
+            if (f->hasBody())
+                continue;
+            if (Function::argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
+                function = const_cast<Function *>(i->second);
+                break;
+            }
         }
     }
 
@@ -2695,7 +2702,7 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        hasBody: " << func->hasBody() << std::endl;
             std::cout << "        isInline: " << func->isInline() << std::endl;
             std::cout << "        isConst: " << func->isConst() << std::endl;
-            std::cout << "        isVirtual: " << func->isVirtual() << std::endl;
+            std::cout << "        hasVirtualSpecifier: " << func->hasVirtualSpecifier() << std::endl;
             std::cout << "        isPure: " << func->isPure() << std::endl;
             std::cout << "        isStatic: " << func->isStatic() << std::endl;
             std::cout << "        isStaticLocal: " << func->isStaticLocal() << std::endl;
@@ -2951,8 +2958,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                                           function->type == Function::eFunction ? "Function" :
                                           "Unknown") << '\"';
                     if (function->nestedIn->definedType) {
-                        if (function->isVirtual())
-                            out << " isVirtual=\"true\"";
+                        if (function->hasVirtualSpecifier())
+                            out << " hasVirtualSpecifier=\"true\"";
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
@@ -3038,6 +3045,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 {
     // check for non-empty argument list "( ... )"
     const Token * start = arg ? arg : argDef;
+    if (!Token::simpleMatch(start, "("))
+        return;
     if (!(start && start->link() != start->next() && !Token::simpleMatch(start, "( void )")))
         return;
 
@@ -3144,14 +3153,16 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
 
 bool Function::isImplicitlyVirtual(bool defaultVal) const
 {
-    if (isVirtual())
+    if (hasVirtualSpecifier()) //If it has the virtual specifier it's definitely virtual
+        return true;
+    if (hasOverrideSpecifier()) //If it has the override specifier then it's either virtual or not going to compile
         return true;
     bool foundAllBaseClasses = true;
-    if (getOverriddenFunction(&foundAllBaseClasses))
+    if (getOverriddenFunction(&foundAllBaseClasses)) //If it overrides a base class's method then it's virtual
         return true;
-    if (foundAllBaseClasses)
+    if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
-    return defaultVal;
+    return defaultVal; //If we can't see all the bases classes then we can't say conclusively
 }
 
 const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
@@ -3180,7 +3191,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         // check if function defined in base class
         for (std::multimap<std::string, const Function *>::const_iterator it = parent->functionMap.find(tokenDef->str()); it != parent->functionMap.end() && it->first == tokenDef->str(); ++it) {
             const Function * func = it->second;
-            if (func->isVirtual()) { // Base is virtual and of same name
+            if (func->hasVirtualSpecifier()) { // Base is virtual and of same name
                 const Token *temp1 = func->tokenDef->previous();
                 const Token *temp2 = tokenDef->previous();
                 bool match = true;
@@ -3294,6 +3305,8 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
             enumClass = true;
             nameTok = nameTok->next();
         }
+    } else if (classDef->str() == "[") {
+        type = Scope::eLambda;
     } else {
         type = Scope::eFunction;
     }

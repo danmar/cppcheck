@@ -144,6 +144,7 @@ private:
         TEST_CASE(localvarstring2); // ticket #2929
         TEST_CASE(localvarconst1);
         TEST_CASE(localvarconst2);
+        TEST_CASE(localvarreturn); // ticket #9167
 
         TEST_CASE(localvarthrow); // ticket #3687
 
@@ -4082,6 +4083,21 @@ private:
         functionVariableUsage("void foo() {\n"
                               "    const int N = 10;\n"
                               "    struct X { int x[N]; };\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarreturn() { // ticket #9167
+        functionVariableUsage("void foo() {\n"
+                              "    const int MyInt = 1;\n"
+                              "    class bar {\n"
+                              "      public:\n"
+                              "        bool operator()(const int &uIndexA, const int &uIndexB) const {\n"
+                              "            return true;\n"
+                              "        }\n"
+                              "        bar() {}\n"
+                              "    };\n"
+                              "    return MyInt;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

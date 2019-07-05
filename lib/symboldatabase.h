@@ -665,7 +665,7 @@ class CPPCHECKLIB Function {
         fHasBody               = (1 << 0),  ///< @brief has implementation
         fIsInline              = (1 << 1),  ///< @brief implementation in class definition
         fIsConst               = (1 << 2),  ///< @brief is const
-        fIsVirtual             = (1 << 3),  ///< @brief is virtual
+        fHasVirtualSpecifier   = (1 << 3),  ///< @brief does declaration contain 'virtual' specifier
         fIsPure                = (1 << 4),  ///< @brief is pure virtual
         fIsStatic              = (1 << 5),  ///< @brief is static
         fIsStaticLocal         = (1 << 6),  ///< @brief is static local
@@ -705,7 +705,7 @@ class CPPCHECKLIB Function {
     }
 
 public:
-    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
+    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
 
@@ -730,6 +730,10 @@ public:
 
     /** @brief get function in base class that is overridden */
     const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
+
+    bool isLambda() const {
+        return type==eLambda;
+    }
 
     bool isConstructor() const {
         return type==eConstructor ||
@@ -771,8 +775,8 @@ public:
     bool isConst() const {
         return getFlag(fIsConst);
     }
-    bool isVirtual() const {
-        return getFlag(fIsVirtual);
+    bool hasVirtualSpecifier() const {
+        return getFlag(fHasVirtualSpecifier);
     }
     bool isPure() const {
         return getFlag(fIsPure);
@@ -878,8 +882,8 @@ private:
     void isConst(bool state) {
         setFlag(fIsConst, state);
     }
-    void isVirtual(bool state) {
-        setFlag(fIsVirtual, state);
+    void hasVirtualSpecifier(bool state) {
+        setFlag(fHasVirtualSpecifier, state);
     }
     void isPure(bool state) {
         setFlag(fIsPure, state);

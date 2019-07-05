@@ -3887,6 +3887,20 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 5,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  void* y = malloc(10);\n"
+               "  void* x = realloc(y, 20);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 20,  ValueFlow::Value::BUFFER_SIZE));
+
+        code = "void* f() {\n"
+               "  void* y = calloc(10, 4);\n"
+               "  void* x = reallocarray(y, 20, 5);\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::BUFFER_SIZE));
     }
 };
 

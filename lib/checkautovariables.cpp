@@ -268,7 +268,7 @@ void CheckAutoVariables::autoVariables()
                 errorAutoVariableAssignment(tok->next(), false);
             }
             // Invalid pointer deallocation
-            else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.dealloc(tok)) ||
+            else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isArrayVar(tok))
@@ -281,7 +281,7 @@ void CheckAutoVariables::autoVariables()
                         }
                     }
                 }
-            } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && mSettings->library.dealloc(tok)) ||
+            } else if ((Token::Match(tok, "%name% ( & %var% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
                        (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| & %var% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isAutoVar(tok))

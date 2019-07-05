@@ -146,6 +146,7 @@ public:
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
         eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
         eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparison operators.
+        eLambda, // A function without a name
         eOther,
         eNone
     };
@@ -765,19 +766,13 @@ public:
      * Associate this token with given function
      * @param f Function to be associated
      */
-    void function(const Function *f) {
-        mImpl->mFunction = f;
-        if (f)
-            tokType(eFunction);
-        else if (mTokType == eFunction)
-            tokType(eName);
-    }
+    void function(const Function *f);
 
     /**
      * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return mTokType == eFunction ? mImpl->mFunction : nullptr;
+        return mTokType == eFunction || mTokType == eLambda ? mImpl->mFunction : nullptr;
     }
 
     /**
