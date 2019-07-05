@@ -596,10 +596,6 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                 else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
                     var = tok->variable();
                 }
-                else if (Token::simpleMatch(tok->astParent(), "=") && tok->astParent()->astOperand2() == tok) {
-                    var = getLHSVariable(tok->astParent());
-                    tok2 = tok->astParent()->astOperand1();
-                }
                 if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
                     errorDanglngLifetime(tok2, &val);
                     break;
