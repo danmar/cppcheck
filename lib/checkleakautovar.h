@@ -131,6 +131,9 @@ private:
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
+    /** update allocation status if reallocation function */
+    void changeAllocStatusIfRealloc(std::map<unsigned int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
+
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, const VarInfo &varInfo);
 

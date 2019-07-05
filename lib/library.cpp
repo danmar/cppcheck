@@ -188,7 +188,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             // add alloc/dealloc/use functions..
             for (const tinyxml2::XMLElement *memorynode = node->FirstChildElement(); memorynode; memorynode = memorynode->NextSiblingElement()) {
                 const std::string memorynodename = memorynode->Name();
-                if (memorynodename == "alloc") {
+                if (memorynodename == "alloc" || memorynodename == "realloc") {
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
 
@@ -225,7 +225,18 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             return Error(BAD_ATTRIBUTE_VALUE, bufferSize);
                     }
 
-                    mAlloc[memorynode->GetText()] = temp;
+                    if (memorynodename == "realloc") {
+                        const char *reallocArg =  memorynode->Attribute("realloc-arg");
+                        if (reallocArg)
+                            temp.reallocArg = atoi(reallocArg);
+                        else
+                            temp.reallocArg = 1;
+                    }
+
+                    if (memorynodename != "realloc")
+                        mAlloc[memorynode->GetText()] = temp;
+                    else
+                        mRealloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "dealloc") {
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
@@ -934,30 +945,44 @@ bool Library::isuninitargbad(const Token *ftok, int argnr) const
 
 
 /** get allocation info for function */
-const Library::AllocFunc* Library::alloc(const Token *tok) const
+const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 {
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
 }
 
 /** get deallocation info for function */
-const Library::AllocFunc* Library::dealloc(const Token *tok) const
+const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 {
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
 }
 
-/** get allocation id for function */
-int Library::alloc(const Token *tok, int arg) const
+/** get reallocation info for function */
+const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
 {
-    const Library::AllocFunc* af = alloc(tok);
+    const std::string funcname = getFunctionName(tok);
+    return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mRealloc, funcname);
+}
+
+/** get allocation id for function */
+int Library::getAllocId(const Token *tok, int arg) const
+{
+    const Library::AllocFunc* af = getAllocFuncInfo(tok);
     return (af && af->arg == arg) ? af->groupId : 0;
 }
 
 /** get deallocation id for function */
-int Library::dealloc(const Token *tok, int arg) const
+int Library::getDeallocId(const Token *tok, int arg) const
 {
-    const Library::AllocFunc* af = dealloc(tok);
+    const Library::AllocFunc* af = getDeallocFuncInfo(tok);
+    return (af && af->arg == arg) ? af->groupId : 0;
+}
+
+/** get reallocation id for function */
+int Library::getReallocId(const Token *tok, int arg) const
+{
+    const Library::AllocFunc* af = getReallocFuncInfo(tok);
     return (af && af->arg == arg) ? af->groupId : 0;
 }
 
