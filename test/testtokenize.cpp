@@ -7840,6 +7840,12 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("auto f(int& i) { return [&, i] {}; }"))
         ASSERT_NO_THROW(tokenizeAndStringify("auto f(int& i) { return [&, i = std::move(i)] {}; }"))
         ASSERT_NO_THROW(tokenizeAndStringify("auto f(int& i) { return [=, i = std::move(i)] {}; }"))
+        ASSERT_NO_THROW(tokenizeAndStringify("struct c {\n"
+                                             "  void d() {\n"
+                                             "    int a;\n"
+                                             "    auto b = [this, a] {};\n"
+                                             "  }\n"
+                                             "};\n"))
     }
 
     void noCrash1() {

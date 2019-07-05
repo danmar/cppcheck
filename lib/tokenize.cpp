@@ -6609,7 +6609,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             Token *eq = tok2;
 
             while (tok2) {
-                if (Token::Match(tok2, "{|("))
+                if (Token::Match(tok2, "{|(|["))
                     tok2 = tok2->link();
 
                 else if (!isC() && tok2->str() == "<" && tok2->previous()->isName() && !tok2->previous()->varId())
