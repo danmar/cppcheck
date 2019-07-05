@@ -262,6 +262,7 @@ def scan_package(work_path, cppcheck_path, jobs):
                        'motif': ['<X11/', '<Xm/'],
                        'nspr': ['<prtypes.h>', '"prtypes.h"'],
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
+                       # 'openmp': ['<omp.h>'], <= enable after release of version 1.89
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QString>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/'],
