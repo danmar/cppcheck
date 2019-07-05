@@ -178,6 +178,10 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=sqlite3 ${DIR}sqlite3.c
 
+# openmp.c
+${CC} ${CC_OPT} -fopenmp ${DIR}openmp.c
+${CPPCHECK} ${CPPCHECK_OPT} --library=openmp ${DIR}openmp.c
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version
