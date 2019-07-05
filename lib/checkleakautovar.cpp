@@ -335,8 +335,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             // allocation?
-            const Token *const fTok = tokRightAstOperand->previous();
-            if (tokRightAstOperand && Token::Match(fTok, "%type% (")) {
+            const Token *const fTok = tokRightAstOperand ? tokRightAstOperand->previous() : nullptr;
+            if (Token::Match(fTok, "%type% (")) {
                 const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(fTok);
                 if (f && f->arg == -1) {
                     VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
