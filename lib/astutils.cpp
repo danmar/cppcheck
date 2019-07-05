@@ -1232,7 +1232,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
                 }
             }
         }
-        if (Token::Match(tok, "if|while|for (") && Token::Match(tok->next()->link(), ") {")) {
+        if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
             const Token * endCond = tok->next()->link();
             const Token * endBlock = endCond->next()->link();
             const Token * condTok = getCondTok(tok);
@@ -1256,7 +1256,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
                     return Progress::Break;
             }
             // Traverse else block
-            if (Token::Match(endBlock, "} else {")) {
+            if (Token::simpleMatch(endBlock, "} else {")) {
                 if (checkElse) {
                     i.errorPath.back().second = "Assuming condition is false.";
                     Progress result = ForwardRange(endCond->next(), endBlock, i, f);
@@ -1267,7 +1267,7 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
             } else {
                 tok = endBlock;
             }
-        } else if (Token::Match(tok, "} else {")) {
+        } else if (Token::simpleMatch(tok, "} else {")) {
             tok = tok->linkAt(2);
         } else {
             info.tok = tok;

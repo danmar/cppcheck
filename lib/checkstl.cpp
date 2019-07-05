@@ -850,7 +850,7 @@ void CheckStl::invalidContainer()
 
 void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
 {
-    std::string method = contTok ? contTok->tokAt(2)->str() : "erase";
+    std::string method = contTok ? contTok->strAt(2) : "erase";
     errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
     if (val)
         errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
