@@ -121,6 +121,235 @@ REGISTER_TEST(TestMemleak)
 
 
 
+class TestMemleakInFunction : public TestFixture {
+public:
+    TestMemleakInFunction() : TestFixture("TestMemleakInFunction") {
+    }
+
+private:
+    Settings settings0;
+    Settings settings1;
+    Settings settings2;
+
+    void check(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings *settings = &settings1;
+
+        // Tokenize..
+        Tokenizer tokenizer(settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList2();
+
+        // Check for memory leaks..
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, settings, this);
+        checkMemoryLeak.checkReallocUsage();
+    }
+
+
+    void run() OVERRIDE {
+        LOAD_LIB_2(settings1.library, "std.cfg");
+        LOAD_LIB_2(settings1.library, "posix.cfg");
+        LOAD_LIB_2(settings2.library, "std.cfg");
+
+        TEST_CASE(realloc1);
+        TEST_CASE(realloc2);
+        TEST_CASE(realloc3);
+        TEST_CASE(realloc4);
+        TEST_CASE(realloc5);
+        TEST_CASE(realloc7);
+        TEST_CASE(realloc8);
+        TEST_CASE(realloc9);
+        TEST_CASE(realloc10);
+        TEST_CASE(realloc11);
+        TEST_CASE(realloc12);
+        TEST_CASE(realloc13);
+        TEST_CASE(realloc14);
+        TEST_CASE(realloc15);
+        TEST_CASE(realloc16);
+    }
+
+    void realloc1() {
+        check("void foo()\n"
+              "{\n"
+              "    char *a = (char *)malloc(10);\n"
+              "    a = realloc(a, 100);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc2() {
+        check("void foo()\n"
+              "{\n"
+              "    char *a = (char *)malloc(10);\n"
+              "    a = (char *)realloc(a, 100);\n"
+              "    free(a);\n"
+              "}");
+
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc3() {
+        check("void foo()\n"
+              "{\n"
+              "    char *a = 0;\n"
+              "    if ((a = realloc(a, 100)) == NULL)\n"
+              "        return;\n"
+              "    free(a);\n"
+              "}");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc4() {
+        check("void foo()\n"
+              "{\n"
+              "    static char *a = 0;\n"
+              "    if ((a = realloc(a, 100)) == NULL)\n"
+              "        return;\n"
+              "    free(a);\n"
+              "}");
+
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n",
+                           "[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n",
+                           errout.str());
+    }
+
+    void realloc5() {
+        check("void foo()\n"
+              "{\n"
+              "    char *buf;\n"
+              "    char *new_buf;\n"
+              "    buf = calloc( 10 );\n"
+              "    new_buf = realloc ( buf, 20);\n"
+              "    if ( !new_buf )\n"
+              "        free(buf);\n"
+              "    else\n"
+              "        free(new_buf);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc7() {
+        check("bool foo(size_t nLen, char* pData)\n"
+              "{\n"
+              "    pData = (char*) realloc(pData, sizeof(char) + (nLen + 1)*sizeof(char));\n"
+              "    if ( pData == NULL )\n"
+              "    {\n"
+              "        return false;\n"
+              "    }\n"
+              "    free(pData);\n"
+              "    return true;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc8() {
+        check("void foo()\n"
+              "{\n"
+              "    char *origBuf = m_buf;\n"
+              "    m_buf = (char *) realloc (m_buf, m_capacity + growBy);\n"
+              "    if (!m_buf) {\n"
+              "        m_buf = origBuf;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc9() {
+        check("void foo()\n"
+              "{\n"
+              "    x = realloc(x,100);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc10() {
+        check("void foo() {\n"
+              "    char *pa, *pb;\n"
+              "    pa = pb = malloc(10);\n"
+              "    pa = realloc(pa, 20);"
+              "    exit();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc11() {
+        check("void foo() {\n"
+              "    char *p;\n"
+              "    p = realloc(p, size);\n"
+              "    if (!p)\n"
+              "        error();\n"
+              "    usep(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc12() {
+        check("void foo(int x)\n"
+              "{\n"
+              "    char *a = 0;\n"
+              "    if ((a = realloc(a, x + 100)) == NULL)\n"
+              "        return;\n"
+              "    free(a);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc13() {
+        check("void foo()\n"
+              "{\n"
+              "    char **str;\n"
+              "    *str = realloc(*str,100);\n"
+              "    free (*str);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'str\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc14() {
+        check("void foo() {\n"
+              "    char *p;\n"
+              "    p = realloc(p, size + 1);\n"
+              "    if (!p)\n"
+              "        error();\n"
+              "    usep(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc15() {
+        check("bool foo() {\n"
+              "    char ** m_options;\n"
+              "    m_options = (char**)realloc( m_options, 2 * sizeof(char*));\n"
+              "    if( m_options == NULL )\n"
+              "        return false;\n"
+              "    return true;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Common realloc mistake: \'m_options\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void realloc16() {
+        check("void f(char *zLine) {\n"
+              "  zLine = realloc(zLine, 42);\n"
+              "  if (zLine) {\n"
+              "    free(zLine);\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+};
+
+REGISTER_TEST(TestMemleakInFunction)
+
+
+
+
+
+
+
+
 class TestMemleakInClass : public TestFixture {
 public:
     TestMemleakInClass() : TestFixture("TestMemleakInClass") {

@@ -77,27 +77,34 @@ public:
         BufferSize bufferSize;
         int bufferSizeArg1;
         int bufferSizeArg2;
+        int reallocArg;
     };
 
     /** get allocation info for function */
-    const AllocFunc* alloc(const Token *tok) const;
+    const AllocFunc* getAllocFuncInfo(const Token *tok) const;
 
     /** get deallocation info for function */
-    const AllocFunc* dealloc(const Token *tok) const;
+    const AllocFunc* getDeallocFuncInfo(const Token *tok) const;
+
+    /** get reallocation info for function */
+    const AllocFunc* getReallocFuncInfo(const Token *tok) const;
 
     /** get allocation id for function */
-    int alloc(const Token *tok, int arg) const;
+    int getAllocId(const Token *tok, int arg) const;
 
     /** get deallocation id for function */
-    int dealloc(const Token *tok, int arg) const;
+    int getDeallocId(const Token *tok, int arg) const;
+
+    /** get reallocation id for function */
+    int getReallocId(const Token *tok, int arg) const;
 
     /** get allocation info for function by name (deprecated, use other alloc) */
-    const AllocFunc* alloc(const char name[]) const {
+    const AllocFunc* getAllocFuncInfo(const char name[]) const {
         return getAllocDealloc(mAlloc, name);
     }
 
     /** get deallocation info for function by name (deprecated, use other alloc) */
-    const AllocFunc* dealloc(const char name[]) const {
+    const AllocFunc* getDeallocFuncInfo(const char name[]) const {
         return getAllocDealloc(mDealloc, name);
     }
 
@@ -122,6 +129,12 @@ public:
     void setdealloc(const std::string &functionname, int id, int arg) {
         mDealloc[functionname].groupId = id;
         mDealloc[functionname].arg = arg;
+    }
+
+    void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
+        mRealloc[functionname].groupId = id;
+        mRealloc[functionname].arg = arg;
+        mRealloc[functionname].reallocArg = reallocArg;
     }
 
     /** add noreturn function setting */
@@ -523,6 +536,7 @@ private:
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
+    std::map<std::string, AllocFunc> mRealloc; // reallocation functions
     std::map<std::string, bool> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
