@@ -2043,7 +2043,7 @@ bool Tokenizer::simplifyUsing()
                             tok1->deletePrevious();
                             break;
                         } else {
-                            std::string::size_type idx = fullScope.rfind(" ");
+                            const std::string::size_type idx = fullScope.rfind(" ");
 
                             if (idx == std::string::npos)
                                 break;
