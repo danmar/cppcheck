@@ -459,6 +459,7 @@ private:
         TEST_CASE(checkEnableIf);
         TEST_CASE(checkTemplates);
         TEST_CASE(checkNamespaces);
+        TEST_CASE(checkLambdas);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -7832,6 +7833,13 @@ private:
 
     void checkNamespaces() {
         ASSERT_NO_THROW(tokenizeAndStringify("namespace x { namespace y { namespace z {}}}"))
+    }
+
+    void checkLambdas() {
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f(int& i) { return [=, &i] {}; }"))
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f(int& i) { return [&, i] {}; }"))
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f(int& i) { return [&, i = std::move(i)] {}; }"))
+        ASSERT_NO_THROW(tokenizeAndStringify("auto f(int& i) { return [=, i = std::move(i)] {}; }"))
     }
 
     void noCrash1() {
