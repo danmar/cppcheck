@@ -766,7 +766,7 @@ public:
      * Associate this token with given function
      * @param f Function to be associated
      */
-    void function(const Function *f); 
+    void function(const Function *f);
 
     /**
      * @return a pointer to the Function associated with this token.

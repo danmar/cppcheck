@@ -955,7 +955,8 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
     return nullptr;
 }
 
-void Token::function(const Function *f) {
+void Token::function(const Function *f)
+{
     mImpl->mFunction = f;
     if (f) {
         if (f->isLambda())
