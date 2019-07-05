@@ -2037,14 +2037,13 @@ bool Tokenizer::simplifyUsing()
 
                     // remove the qualification
                     std::string fullScope = scope;
-                    std::string::size_type idx;
                     while (tok1->strAt(-1) == "::") {
                         if (fullScope == tok1->strAt(-2)) {
                             tok1->deletePrevious();
                             tok1->deletePrevious();
                             break;
                         } else {
-                            idx = fullScope.rfind(" ");
+                            std::string::size_type idx = fullScope.rfind(" ");
 
                             if (idx == std::string::npos)
                                 break;
