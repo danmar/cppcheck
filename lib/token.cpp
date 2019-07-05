@@ -955,6 +955,17 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
     return nullptr;
 }
 
+void Token::function(const Function *f) {
+    mImpl->mFunction = f;
+    if (f) {
+        if (f->isLambda())
+            tokType(eLambda);
+        else
+            tokType(eFunction);
+    } else if (mTokType == eFunction)
+        tokType(eName);
+}
+
 void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
 {
     Token *newToken;
