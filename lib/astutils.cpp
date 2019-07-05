@@ -1226,9 +1226,9 @@ PathAnalysis::Progress PathAnalysis::ForwardRange(const Token* startToken, const
                 // Traverse loop a second time
                 if (traverseLoop) {
                     // Traverse condition
-                    ForwardRecursive(condTok, info, f);
-                    if (ForwardRange(tok->link(), tok, info, f) == Progress::Break)
+                    if (ForwardRecursive(condTok, info, f) == Progress::Break)
                         return Progress::Break;
+                    // TODO: Should we traverse the body: ForwardRange(tok->link(), tok, info, f)?
                 }
             }
         }

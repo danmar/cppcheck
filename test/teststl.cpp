@@ -1891,7 +1891,7 @@ private:
               "            v.push_back(10);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:6] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:8]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:6] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1904,7 +1904,7 @@ private:
               "            v.push_back(10);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:6] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:8]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:6] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
     }
 
     void pushback7() {
@@ -2074,7 +2074,7 @@ private:
               "        i = bars.insert(i, bar);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:2]: (error) Using iterator to local container 'bars' that may be invalid.\n", errout.str());
 
         check("void* f(const std::vector<Bar>& bars) {\n"
               "    std::vector<Bar>::iterator i = bars.begin();\n"
@@ -3855,6 +3855,18 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
+
+        check("std::string e();\n"
+              "void a() {\n"
+              "  std::vector<std::string> b;\n"
+              "  for (std::vector<std::string>::const_iterator c; c != b.end(); ++c) {\n"
+              "    std::string f = e();\n"
+              "    std::string::const_iterator d = f.begin();\n"
+              "    if (d != f.end()) {}\n"
+              "  }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void findInsert() {
