@@ -117,7 +117,7 @@ void ignoreleak(void)
 {
     char *p = (char *)malloc(10);
     memset(&(p[0]), 0, 10);
-    // TODO cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 // null pointer
@@ -1434,7 +1434,7 @@ void uninitvar_freopen(void)
     FILE *stream;
     // cppcheck-suppress uninitvar
     FILE * p = freopen(filename,mode,stream);
-    free(p);
+    fclose(p);
 }
 
 void uninitvar_frexp(void)

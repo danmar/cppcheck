@@ -204,7 +204,6 @@ private:
 
         TEST_CASE(functionArgs1);
         TEST_CASE(functionArgs2);
-        TEST_CASE(functionArgs3);
         TEST_CASE(functionArgs4);
         TEST_CASE(functionArgs5); // #7650
         TEST_CASE(functionArgs6); // #7651
@@ -298,6 +297,7 @@ private:
         TEST_CASE(symboldatabase75);
         TEST_CASE(symboldatabase76); // #9056
         TEST_CASE(symboldatabase77); // #8663
+        TEST_CASE(symboldatabase78); // #9147
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -1915,12 +1915,6 @@ private:
         ASSERT_EQUALS(false, a->dimensions()[0].known);
         ASSERT_EQUALS(4UL, a->dimension(1));
         ASSERT_EQUALS(true, a->dimensions()[1].known);
-    }
-
-    void functionArgs3() {
-        GET_SYMBOL_DB("void f(int i,) { }"); // Don't crash
-        const Variable *a = db->getVariableFromVarId(1);
-        ASSERT_EQUALS("i", a->nameToken()->str());
     }
 
     void functionArgs4() {
@@ -4076,7 +4070,7 @@ private:
         const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 2);
-        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
         ASSERT(f && f->function() && !f->function()->hasOverrideSpecifier());
         ASSERT(f && f->function() && !f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
@@ -4084,7 +4078,7 @@ private:
         f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept override final ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 5);
-        ASSERT(f && f->function() && f->function()->isVirtual());
+        ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
         ASSERT(f && f->function() && f->function()->hasOverrideSpecifier());
         ASSERT(f && f->function() && f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
@@ -4227,6 +4221,18 @@ private:
                       "  T3 t;\n"
                       "}");
         ASSERT_EQUALS(2, db->mVariableList.size());
+    }
+
+    void symboldatabase78() { // #9147
+        GET_SYMBOL_DB("template <class...> struct a;\n"
+                      "namespace {\n"
+                      "template <class, class> struct b;\n"
+                      "template <template <class> class c, class... f, template <class...> class d>\n"
+                      "struct b<c<f...>, d<>>;\n"
+                      "}\n"
+                      "void e() { using c = a<>; }");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
