@@ -492,6 +492,33 @@ void misra_17_1() {
   va_copy(); // 17.1
 }
 
+void misra_17_2_ok_1(void) { ; }
+void misra_17_2_ok_2(void) {
+    misra_17_2_ok_1();
+}
+void misra_17_2_1(void) {
+  misra_17_2_ok_1();
+  misra_17_2_1(); // 17.2
+  misra_17_2_ok_2();
+  misra_17_2_1(); // 17.2
+}
+void misra_17_2_2(void) {
+  misra_17_2_3(); // 17.2
+}
+void misra_17_2_3(void) {
+  misra_17_2_4(); // 17.2
+}
+void misra_17_2_4(void) {
+  misra_17_2_2(); // 17.2
+  misra_17_2_3(); // 17.2
+}
+
+void misra_17_2_5(void) {
+  misra_17_2_ok_1();
+  misra_17_2_5(); // 17.2
+  misra_17_2_1();
+}
+
 void misra_17_6(int x[static 20]) {} // 17.6
 
 int calculation(int x) { return x + 1; }

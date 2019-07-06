@@ -21,6 +21,7 @@ import re
 import os
 import argparse
 import codecs
+import copy
 
 
 typeBits = {
@@ -1579,6 +1580,47 @@ class MisraChecker:
             elif token.str == 'va_list':
                 self.reportError(token, 17, 1)
 
+    def misra_17_2(self, data):
+        def find_indirect_calls(func_id, calls_map, found_calls, visited):
+            if len(calls_map) == 0:
+                return found_calls
+            for tok in calls_map.get(func_id, []):
+                call_id = tok.function.Id
+                if call_id in visited:
+                    found_calls.add(tok)
+                calls_map.get(func_id).remove(tok)
+                visited.add(func_id)
+                found_calls.update(find_indirect_calls(call_id, calls_map, found_calls, visited))
+            return found_calls
+
+        # function id : list of tokens with its calls
+        function_calls = {f.Id: [] for f in data.functions}
+        for token in data.tokenlist:
+            if token.scope.type != 'Function':
+                continue
+
+            scope = token.scope
+            in_token = scope.bodyStart.next
+            while in_token != scope.bodyEnd and in_token is not None:
+                name_token = in_token.astOperand1
+                if isFunctionCall(in_token) and name_token.function:
+                    if name_token not in function_calls[scope.function.Id]:
+                        function_calls[scope.function.Id].append(name_token)
+                in_token = in_token.next
+
+        # Direct recursion
+        for func_id in function_calls:
+            for tok in function_calls.get(func_id):
+                if tok.function.Id == func_id:
+                    self.reportError(tok, 17, 2)
+
+        # Indirect recursion
+        for func_id in function_calls:
+            found_calls = find_indirect_calls(func_id, copy.deepcopy(function_calls), set(), set())
+            if found_calls:
+                for call_token in found_calls:
+                    self.reportError(call_token, 17, 2)
+
 
     def misra_17_6(self, rawTokens):
         for token in rawTokens:
@@ -2300,6 +2342,7 @@ class MisraChecker:
             self.misra_16_6(cfg)
             self.misra_16_7(cfg)
             self.misra_17_1(cfg)
+            self.misra_17_2(cfg)
             if cfgNumber == 1:
                 self.misra_17_6(data.rawTokens)
             self.misra_17_7(cfg)
