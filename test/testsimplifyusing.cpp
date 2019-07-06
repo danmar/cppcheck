@@ -64,6 +64,7 @@ private:
         TEST_CASE(simplifyUsing8976);
         TEST_CASE(simplifyUsing9040);
         TEST_CASE(simplifyUsing9042);
+        TEST_CASE(simplifyUsing9191);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -492,6 +493,35 @@ private:
                            "} ;";
 
         ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
+    }
+
+    void simplifyUsing9191() {
+        const char code[] = "namespace NS1 {\n"
+                            "  namespace NS2 {\n"
+                            "    using _LONG = signed long long;\n"
+                            "  }\n"
+                            "}\n"
+                            "void f1() {\n"
+                            "  using namespace NS1;\n"
+                            "  NS2::_LONG A;\n"
+                            "}\n"
+                            "void f2() {\n"
+                            "  using namespace NS1::NS2;\n"
+                            "  _LONG A;\n"
+                            "}";
+
+        const char exp[] = "namespace NS1 { "
+                           "} "
+                           "void f1 ( ) { "
+                           "using namespace NS1 ; "
+                           "signed long long A ; "
+                           "} "
+                           "void f2 ( ) { "
+                           "using namespace NS1 :: NS2 ; "
+                           "signed long long A ; "
+                           "}";
+
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 
 };
