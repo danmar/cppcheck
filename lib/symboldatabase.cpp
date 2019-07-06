@@ -668,7 +668,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 const Token *lambdaStartToken = lambdaEndToken->link();
                 const Token * argStart = lambdaStartToken->astParent();
                 const Token * funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
-                addGlobalFunction(scope, tok, argStart, funcStart);
+                const Function * function = addGlobalFunction(scope, tok, argStart, funcStart);
+                if (!function)
+                    mTokenizer->syntaxError(tok);
                 tok = lambdaStartToken;
             } else if (tok->str() == "{") {
                 if (isExecutableScope(tok)) {
@@ -679,6 +681,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok = tok->link();
                 }
             }
+            // syntax error?
+            if (!scope)
+                mTokenizer->syntaxError(tok);
         }
     }
 }
