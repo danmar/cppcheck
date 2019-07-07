@@ -221,8 +221,9 @@ void misra_11_7(int *p, float f) {
   y = ( int * ) f; //11.7
 }
 
+char * misra_11_8_const(const char *str) {  }
 char * misra_11_8(const char *str) {
-  (void)misra_11_8(str); // no-warning
+  (void)misra_11_8_const(str); // no-warning
   return (char *)str; // 11.8
 }
 
@@ -494,12 +495,12 @@ void misra_17_1() {
 
 void misra_17_2_ok_1(void) { ; }
 void misra_17_2_ok_2(void) {
-    misra_17_2_ok_1();
+    misra_17_2_ok_1(); // no-warning
 }
 void misra_17_2_1(void) {
-  misra_17_2_ok_1();
+  misra_17_2_ok_1(); // no-warning
   misra_17_2_1(); // 17.2
-  misra_17_2_ok_2();
+  misra_17_2_ok_2(); // no-warning
   misra_17_2_1(); // 17.2
 }
 void misra_17_2_2(void) {
@@ -514,9 +515,9 @@ void misra_17_2_4(void) {
 }
 
 void misra_17_2_5(void) {
-  misra_17_2_ok_1();
+  misra_17_2_ok_1(); // no-warning
   misra_17_2_5(); // 17.2
-  misra_17_2_1();
+  misra_17_2_1(); // no-warning
 }
 
 void misra_17_6(int x[static 20]) {} // 17.6
