@@ -1599,14 +1599,14 @@ class MisraChecker:
             if scope.type != 'Function':
                 continue
 
-            in_token = scope.bodyStart.next
-            while in_token != scope.bodyEnd and in_token is not None:
-                name_token = in_token.astOperand1
-                if isFunctionCall(in_token) and name_token.function:
+            tok = scope.bodyStart.next
+            while tok != scope.bodyEnd and tok is not None:
+                name_token = tok.astOperand1
+                if isFunctionCall(tok) and name_token.function:
                     if name_token not in function_calls[scope.function.Id]:
                         function_calls[scope.function.Id].append(name_token.Id)
                         call_tokens_map[name_token.Id] = name_token
-                in_token = in_token.next
+                tok = tok.next
 
         # Direct recursion
         for func_id in function_calls:
