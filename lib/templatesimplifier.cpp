@@ -545,6 +545,43 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
     return 0;
 }
 
+const Token *TemplateSimplifier::findTemplateDeclarationEnd(const Token *tok)
+{
+    return const_cast<const Token *>(findTemplateDeclarationEnd(const_cast<Token *>(tok)));
+}
+
+Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
+{
+    if (Token::Match(tok, "template <")) {
+        tok = tok->next()->findClosingBracket();
+        if (tok)
+            tok = tok->next();
+    }
+
+    if (!tok)
+        return nullptr;
+
+    Token * tok2 = tok;
+    while (tok2 && !Token::Match(tok2, ";|{")) {
+        if (tok2->str() == "<")
+            tok2 = tok2->findClosingBracket();
+        else if (Token::Match(tok2, "(|[") && tok2->link())
+            tok2 = tok2->link();
+        if (tok2)
+            tok2 = tok2->next();
+    }
+    if (tok2 && tok2->str() == "{") {
+        tok = tok2->link();
+        if (tok && tok->strAt(1) == ";")
+            tok = tok->next();
+    } else if (tok2 && tok2->str() == ";")
+        tok = tok2;
+    else
+        tok = nullptr;
+
+    return tok;
+}
+
 void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
 {
     if (!begin || begin == end)
@@ -829,18 +866,9 @@ void TemplateSimplifier::getTemplateInstantiations()
                 // #7914
                 // Ignore template instantiations within template definitions: they will only be
                 // handled if the definition is actually instantiated
-                Token * tok2 = tok->next();
-                while (tok2 && !Token::Match(tok2, ";|{")) {
-                    if (tok2->str() == "<")
-                        tok2 = tok2->findClosingBracket();
-                    else if (Token::Match(tok2, "(|[") && tok2->link())
-                        tok2 = tok2->link();
-                    if (tok2)
-                        tok2 = tok2->next();
-                }
-                if (tok2 && tok2->str() == "{")
-                    tok = tok2->link();
-                else if (tok2 && tok2->str() == ";")
+
+                Token * tok2 = findTemplateDeclarationEnd(tok->next());
+                if (tok2)
                     tok = tok2;
             }
         } else if (Token::Match(tok, "template using %name% <")) {

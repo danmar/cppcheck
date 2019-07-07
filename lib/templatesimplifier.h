@@ -223,6 +223,14 @@ public:
     };
 
     /**
+     * Find last token of a template declaration.
+     * @param tok start token of declaration "template" or token after "template < ... >"
+     * @return last token of declaration or nullptr if syntax error
+     */
+    static Token *findTemplateDeclarationEnd(Token *tok);
+    static const Token *findTemplateDeclarationEnd(const Token *tok);
+
+    /**
      * Match template declaration/instantiation
      * @param instance template instantiation
      * @param numberOfArguments number of template arguments
