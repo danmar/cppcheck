@@ -69,13 +69,13 @@ make
 推奨するリリースビルド方法:
 
 ```shell
-make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 フラグ:
 
-1. `SRCDIR=build`
-cppcheckの最適化にPythonを使用します。
+1. `MATCHCOMPILER=yes`
+cppcheckの最適化にPythonを使用します。Token::Match パターンはコンパイル時にlC++コードに変換されます。
 
 2. `CFGDIR=cfg`
 cppcheckの設定ファイル(.cfg)を置くディレクトリを指定します。
