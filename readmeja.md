@@ -4,12 +4,6 @@
 |:--:|:--:|:--:|
 | [![Linux ビルド状態](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck) | [![Windows ビルド状態](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master) | [![Coverity Scan Build 状態](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512) |
 
-## 寄付
-
-Cppcheckが有用であると感じた場合、寄付を検討してください。
-
-[![寄付](http://pledgie.com/campaigns/4127.png)](http://pledgie.com/campaigns/4127)
-
 ## 名前について
 
 このプログラムは元々、"C++check"という名前でしたが後に"Cppcheck"に変更されました。
