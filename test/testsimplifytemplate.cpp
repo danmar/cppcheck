@@ -190,6 +190,8 @@ private:
 
         TEST_CASE(templateNamePosition);
 
+        TEST_CASE(findTemplateDeclarationEnd);
+
         TEST_CASE(expandSpecialized1);
         TEST_CASE(expandSpecialized2);
         TEST_CASE(expandSpecialized3); // #8671
@@ -3711,6 +3713,35 @@ private:
                           "template<class T, class U> unsigned A<T, U>::foo() { return 0; }", 25));
         ASSERT_EQUALS(12, templateNamePositionHelper(
                           "template<> unsigned A<int, v<char> >::foo() { return 0; }", 2));
+    }
+
+    // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
+    bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.createTokens(istr, "test.cpp");
+        tokenizer.createLinks();
+        tokenizer.mTemplateSimplifier->fixAngleBrackets();
+
+        const Token *_tok = tokenizer.tokens();
+        for (unsigned i = 0 ; i < offset ; ++i)
+            _tok = _tok->next();
+
+        const Token *tok1 = tokenizer.mTemplateSimplifier->findTemplateDeclarationEnd(_tok);
+
+        return (tok1 == Token::findsimplematch(tokenizer.list.front(), pattern));
+    }
+
+    void findTemplateDeclarationEnd() {
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> class Fred { }; int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> void Fred() { } int x;", "} int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> int Fred = 0; int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> constexpr auto func = [](auto x){ return T(x);}; int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>); int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){} int x;", "} int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(); int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(){} int x;", "} int x ;"));
     }
 
     void expandSpecialized1() {

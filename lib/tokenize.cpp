@@ -1878,8 +1878,6 @@ bool Tokenizer::simplifyUsing()
 {
     bool substitute = false;
     std::list<ScopeInfo3> scopeList;
-    bool inTemplateDefinition = false;
-    const Token *endOfTemplateDefinition = nullptr;
     struct Using {
         Using(Token *start, Token *end) : startTok(start), endTok(end) { }
         Token *startTok;
@@ -1901,301 +1899,274 @@ bool Tokenizer::simplifyUsing()
             setScopeInfo(tok, &scopeList);
         }
 
-        if (inTemplateDefinition) {
-            if (!endOfTemplateDefinition) {
-                if (tok->str() == "{")
-                    endOfTemplateDefinition = tok->link();
-                else if (tok->str() == ";")
-                    endOfTemplateDefinition = tok;
+        // skip template declarations
+        if (Token::Match(tok, "template < !!>")) {
+            Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
+            if (endToken)
+                tok = endToken;
+            continue;
+        }
+
+        // look for non-template type aliases
+        if (!(tok->strAt(-1) != ">" &&
+              (Token::Match(tok, "using %name% = ::| %name%") ||
+               (Token::Match(tok, "using %name% [ [") &&
+                Token::Match(tok->linkAt(2), "] ] = ::| %name%")))))
+            continue;
+
+        std::list<ScopeInfo3> scopeList1;
+        scopeList1.emplace_back("", nullptr);
+        std::string name = tok->strAt(1);
+        const Token *nameToken = tok->next();
+        std::string scope = getScopeName(scopeList);
+        Token *usingStart = tok;
+        Token *start;
+        if (tok->strAt(2) == "=")
+            start = tok->tokAt(3);
+        else
+            start = tok->linkAt(2)->tokAt(3);
+        Token *usingEnd = findSemicolon(start);
+        if (!usingEnd)
+            continue;
+
+        // Move struct defined in using out of using.
+        // using T = struct t { }; => struct t { }; using T = struct t;
+        // fixme: this doesn't handle attributes
+        if (Token::Match(start, "struct|union|enum %name%| {")) {
+            if (start->strAt(1) != "{") {
+                Token *structEnd = start->linkAt(2);
+                structEnd->insertToken(";", "");
+                list.copyTokens(structEnd->next(), tok, start->next());
+                usingStart = structEnd->tokAt(2);
+                nameToken = usingStart->next();
+                if (usingStart->strAt(2) == "=")
+                    start = usingStart->tokAt(3);
+                else
+                    start = usingStart->linkAt(2)->tokAt(3);
+                usingEnd = findSemicolon(start);
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteThis();
+                tok = usingStart;
+            } else {
+                Token *structEnd = start->linkAt(1);
+                structEnd->insertToken(";", "");
+                std::string newName;
+                if (structEnd->strAt(2) == ";")
+                    newName = name;
+                else
+                    newName = "Unnamed" + MathLib::toString(mUnnamedCount++);
+                list.copyTokens(structEnd->next(), tok, start);
+                structEnd->tokAt(5)->insertToken(newName, "");
+                start->insertToken(newName, "");
+
+                usingStart = structEnd->tokAt(2);
+                nameToken = usingStart->next();
+                if (usingStart->strAt(2) == "=")
+                    start = usingStart->tokAt(3);
+                else
+                    start = usingStart->linkAt(2)->tokAt(3);
+                usingEnd = findSemicolon(start);
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteThis();
+                tok = usingStart;
             }
-            if (tok == endOfTemplateDefinition) {
-                inTemplateDefinition = false;
-                endOfTemplateDefinition = nullptr;
+        }
+
+        // remove 'typename' and 'template'
+        else if (start->str() == "typename") {
+            start->deleteThis();
+            Token *temp = start;
+            while (Token::Match(temp, "%name% ::"))
+                temp = temp->tokAt(2);
+            if (Token::Match(temp, "template %name%"))
+                temp->deleteThis();
+        }
+
+        // Unfortunately we have to start searching from the beginning
+        // of the token stream because templates are instantiated at
+        // the end of the token stream and it may be used before then.
+        std::string scope1;
+        bool skip = false; // don't erase type aliases we can't parse
+        for (Token* tok1 = list.front(); tok1; tok1 = tok1->next()) {
+            if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
+                Token::Match(tok1, "using namespace %name% ;|::")) {
+                setScopeInfo(tok1, &scopeList1, true);
+                scope1 = getScopeName(scopeList1);
                 continue;
             }
-        }
 
-        if (tok->str()=="template") {
-            if (Token::Match(tok->next(), "< !!>"))
-                inTemplateDefinition = true;
-            else
-                inTemplateDefinition = false;
-        }
-
-        if (!inTemplateDefinition) {
-            // look for non-template type aliases
-            if (tok->strAt(-1) != ">" &&
-                (Token::Match(tok, "using %name% = ::| %name%") ||
-                 (Token::Match(tok, "using %name% [ [") &&
-                  Token::Match(tok->linkAt(2), "] ] = ::| %name%")))) {
-                std::list<ScopeInfo3> scopeList1;
-                scopeList1.emplace_back("", nullptr);
-                std::string name = tok->strAt(1);
-                const Token *nameToken = tok->next();
-                std::string scope = getScopeName(scopeList);
-                Token *usingStart = tok;
-                Token *start;
-                if (tok->strAt(2) == "=")
-                    start = tok->tokAt(3);
-                else
-                    start = tok->linkAt(2)->tokAt(3);
-                Token *usingEnd = findSemicolon(start);
-                if (!usingEnd)
-                    continue;
-
-                // Move struct defined in using out of using.
-                // using T = struct t { }; => struct t { }; using T = struct t;
-                // fixme: this doesn't handle attributes
-                if (Token::Match(start, "struct|union|enum %name%| {")) {
-                    if (start->strAt(1) != "{") {
-                        Token *structEnd = start->linkAt(2);
-                        structEnd->insertToken(";", "");
-                        list.copyTokens(structEnd->next(), tok, start->next());
-                        usingStart = structEnd->tokAt(2);
-                        nameToken = usingStart->next();
-                        if (usingStart->strAt(2) == "=")
-                            start = usingStart->tokAt(3);
-                        else
-                            start = usingStart->linkAt(2)->tokAt(3);
-                        usingEnd = findSemicolon(start);
-                        tok->deleteThis();
-                        tok->deleteThis();
-                        tok->deleteThis();
-                        tok = usingStart;
-                    } else {
-                        Token *structEnd = start->linkAt(1);
-                        structEnd->insertToken(";", "");
-                        std::string newName;
-                        if (structEnd->strAt(2) == ";")
-                            newName = name;
-                        else
-                            newName = "Unnamed" + MathLib::toString(mUnnamedCount++);
-                        list.copyTokens(structEnd->next(), tok, start);
-                        structEnd->tokAt(5)->insertToken(newName, "");
-                        start->insertToken(newName, "");
-
-                        usingStart = structEnd->tokAt(2);
-                        nameToken = usingStart->next();
-                        if (usingStart->strAt(2) == "=")
-                            start = usingStart->tokAt(3);
-                        else
-                            start = usingStart->linkAt(2)->tokAt(3);
-                        usingEnd = findSemicolon(start);
-                        tok->deleteThis();
-                        tok->deleteThis();
-                        tok->deleteThis();
-                        tok = usingStart;
-                    }
-                }
-
-                // remove 'typename' and 'template'
-                else if (start->str() == "typename") {
-                    start->deleteThis();
-                    Token *temp = start;
-                    while (Token::Match(temp, "%name% ::"))
-                        temp = temp->tokAt(2);
-                    if (Token::Match(temp, "template %name%"))
-                        temp->deleteThis();
-                }
-
-                // Unfortunately we have to start searching from the beginning
-                // of the token stream because templates are instantiated at
-                // the end of the token stream and it may be used before then.
-                std::string scope1;
-                bool skip = false; // don't erase type aliases we can't parse
-                for (Token* tok1 = list.front(); tok1; tok1 = tok1->next()) {
-                    if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
-                        Token::Match(tok1, "using namespace %name% ;|::")) {
-                        setScopeInfo(tok1, &scopeList1, true);
-                        scope1 = getScopeName(scopeList1);
-                        continue;
-                    }
-
-                    // skip template definitions
-                    if (Token::Match(tok1, "template < !!>")) {
-                        tok1 = tok1->next()->findClosingBracket();
-                        if (tok1) {
-                            Token * tok2 = tok1->next();
-                            while (tok2 && !Token::Match(tok2, ";|{")) {
-                                if (tok2->str() == "<")
-                                    tok2 = tok2->findClosingBracket();
-                                else if (Token::Match(tok2, "(|[") && tok2->link())
-                                    tok2 = tok2->link();
-                                if (tok2)
-                                    tok2 = tok2->next();
-                            }
-                            if (tok2 && tok2->str() == "{")
-                                tok1 = tok2->link();
-                            else if (tok2 && tok2->str() == ";")
-                                tok1 = tok2;
-                        }
-                        continue;
-                    }
-
-                    if (!usingMatch(nameToken, scope, &tok1, scope1, scopeList1))
-                        continue;
-
-                    // remove the qualification
-                    std::string fullScope = scope;
-                    while (tok1->strAt(-1) == "::") {
-                        if (fullScope == tok1->strAt(-2)) {
-                            tok1->deletePrevious();
-                            tok1->deletePrevious();
-                            break;
-                        } else {
-                            const std::string::size_type idx = fullScope.rfind(" ");
-
-                            if (idx == std::string::npos)
-                                break;
-
-                            if (tok1->strAt(-2) == fullScope.substr(idx + 1)) {
-                                tok1->deletePrevious();
-                                tok1->deletePrevious();
-                                fullScope.resize(idx - 3);
-                            } else
-                                break;
-                        }
-                    }
-
-                    Token * arrayStart = nullptr;
-
-                    // parse the type
-                    Token *type = start;
-                    if (type->str() == "::") {
-                        type = type->next();
-                        while (Token::Match(type, "%type% ::"))
-                            type = type->tokAt(2);
-                        if (Token::Match(type, "%type%"))
-                            type = type->next();
-                    } else if (Token::Match(type, "%type% ::")) {
-                        do {
-                            type = type->tokAt(2);
-                        } while (Token::Match(type, "%type% ::"));
-                        if (Token::Match(type, "%type%"))
-                            type = type->next();
-                    } else if (Token::Match(type, "%type%")) {
-                        while (Token::Match(type, "const|struct|union|enum %type%") ||
-                               (type->next() && type->next()->isStandardType()))
-                            type = type->next();
-
-                        type = type->next();
-
-                        while (Token::Match(type, "%type%") &&
-                               (type->isStandardType() || Token::Match(type, "unsigned|signed"))) {
-                            type = type->next();
-                        }
-
-                        bool atEnd = false;
-                        while (!atEnd) {
-                            if (type && type->str() == "::") {
-                                type = type->next();
-                            }
-
-                            if (Token::Match(type, "%type%") &&
-                                type->next() && !Token::Match(type->next(), "[|;|,|(")) {
-                                type = type->next();
-                            } else if (Token::simpleMatch(type, "const (")) {
-                                type = type->next();
-                                atEnd = true;
-                            } else
-                                atEnd = true;
-                        }
-                    } else
-                        syntaxError(type);
-
-                    // check for invalid input
-                    if (!type)
-                        syntaxError(tok1);
-
-                    // check for template
-                    if (type->str() == "<") {
-                        type = type->findClosingBracket();
-
-                        while (type && Token::Match(type->next(), ":: %type%"))
-                            type = type->tokAt(2);
-
-                        if (!type) {
-                            syntaxError(tok1);
-                        }
-
-                        while (Token::Match(type->next(), "const|volatile"))
-                            type = type->next();
-
-                        type = type->next();
-                    }
-
-                    // check for pointers and references
-                    std::list<std::string> pointers;
-                    while (Token::Match(type, "*|&|&&|const")) {
-                        pointers.push_back(type->str());
-                        type = type->next();
-                    }
-
-                    // check for array
-                    if (type && type->str() == "[") {
-                        do {
-                            if (!arrayStart)
-                                arrayStart = type;
-
-                            bool atEnd = false;
-                            while (!atEnd) {
-                                while (type->next() && !Token::Match(type->next(), ";|,")) {
-                                    type = type->next();
-                                }
-
-                                if (!type->next())
-                                    syntaxError(type); // invalid input
-                                else if (type->next()->str() == ";")
-                                    atEnd = true;
-                                else if (type->str() == "]")
-                                    atEnd = true;
-                                else
-                                    type = type->next();
-                            }
-
-                            type = type->next();
-                        } while (type && type->str() == "[");
-                    }
-
-                    Token* after = tok1->next();
-                    // check if type was parsed
-                    if (type && type == usingEnd) {
-                        // check for array syntax and add type around variable
-                        if (arrayStart) {
-                            if (Token::Match(tok1->next(), "%name%")) {
-                                list.copyTokens(tok1->next(), arrayStart, usingEnd->previous());
-                                list.copyTokens(tok1, start, arrayStart->previous());
-                                tok1->deleteThis();
-                                substitute = true;
-                            }
-                        } else {
-                            // just replace simple type aliases
-                            list.copyTokens(tok1, start, usingEnd->previous());
-                            tok1->deleteThis();
-                            substitute = true;
-                        }
-                    } else {
-                        skip = true;
-                        if (mSettings->debugwarnings && mErrorLogger) {
-                            std::string str;
-                            for (Token *tok3 = usingStart; tok3 && tok3 != usingEnd; tok3 = tok3->next()) {
-                                if (!str.empty())
-                                    str += ' ';
-                                str += tok3->str();
-                            }
-                            str += " ;";
-                            std::list<const Token *> callstack(1, usingStart);
-                            mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &list, Severity::debug, "debug",
-                                                    "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
-                        }
-                    }
-                    tok1 = after;
-                }
-
-                if (!skip)
-                    usingList.emplace_back(usingStart, usingEnd);
+            // skip template definitions
+            if (Token::Match(tok1, "template < !!>")) {
+                Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
+                if (endToken)
+                    tok1 = endToken;
+                continue;
             }
+
+            if (!usingMatch(nameToken, scope, &tok1, scope1, scopeList1))
+                continue;
+
+            // remove the qualification
+            std::string fullScope = scope;
+            while (tok1->strAt(-1) == "::") {
+                if (fullScope == tok1->strAt(-2)) {
+                    tok1->deletePrevious();
+                    tok1->deletePrevious();
+                    break;
+                } else {
+                    const std::string::size_type idx = fullScope.rfind(" ");
+
+                    if (idx == std::string::npos)
+                        break;
+
+                    if (tok1->strAt(-2) == fullScope.substr(idx + 1)) {
+                        tok1->deletePrevious();
+                        tok1->deletePrevious();
+                        fullScope.resize(idx - 3);
+                    } else
+                        break;
+                }
+            }
+
+            Token * arrayStart = nullptr;
+
+            // parse the type
+            Token *type = start;
+            if (type->str() == "::") {
+                type = type->next();
+                while (Token::Match(type, "%type% ::"))
+                    type = type->tokAt(2);
+                if (Token::Match(type, "%type%"))
+                    type = type->next();
+            } else if (Token::Match(type, "%type% ::")) {
+                do {
+                    type = type->tokAt(2);
+                } while (Token::Match(type, "%type% ::"));
+                if (Token::Match(type, "%type%"))
+                    type = type->next();
+            } else if (Token::Match(type, "%type%")) {
+                while (Token::Match(type, "const|struct|union|enum %type%") ||
+                       (type->next() && type->next()->isStandardType()))
+                    type = type->next();
+
+                type = type->next();
+
+                while (Token::Match(type, "%type%") &&
+                       (type->isStandardType() || Token::Match(type, "unsigned|signed"))) {
+                    type = type->next();
+                }
+
+                bool atEnd = false;
+                while (!atEnd) {
+                    if (type && type->str() == "::") {
+                        type = type->next();
+                    }
+
+                    if (Token::Match(type, "%type%") &&
+                        type->next() && !Token::Match(type->next(), "[|;|,|(")) {
+                        type = type->next();
+                    } else if (Token::simpleMatch(type, "const (")) {
+                        type = type->next();
+                        atEnd = true;
+                    } else
+                        atEnd = true;
+                }
+            } else
+                syntaxError(type);
+
+            // check for invalid input
+            if (!type)
+                syntaxError(tok1);
+
+            // check for template
+            if (type->str() == "<") {
+                type = type->findClosingBracket();
+
+                while (type && Token::Match(type->next(), ":: %type%"))
+                    type = type->tokAt(2);
+
+                if (!type) {
+                    syntaxError(tok1);
+                }
+
+                while (Token::Match(type->next(), "const|volatile"))
+                    type = type->next();
+
+                type = type->next();
+            }
+
+            // check for pointers and references
+            std::list<std::string> pointers;
+            while (Token::Match(type, "*|&|&&|const")) {
+                pointers.push_back(type->str());
+                type = type->next();
+            }
+
+            // check for array
+            if (type && type->str() == "[") {
+                do {
+                    if (!arrayStart)
+                        arrayStart = type;
+
+                    bool atEnd = false;
+                    while (!atEnd) {
+                        while (type->next() && !Token::Match(type->next(), ";|,")) {
+                            type = type->next();
+                        }
+
+                        if (!type->next())
+                            syntaxError(type); // invalid input
+                        else if (type->next()->str() == ";")
+                            atEnd = true;
+                        else if (type->str() == "]")
+                            atEnd = true;
+                        else
+                            type = type->next();
+                    }
+
+                    type = type->next();
+                } while (type && type->str() == "[");
+            }
+
+            Token* after = tok1->next();
+            // check if type was parsed
+            if (type && type == usingEnd) {
+                // check for array syntax and add type around variable
+                if (arrayStart) {
+                    if (Token::Match(tok1->next(), "%name%")) {
+                        list.copyTokens(tok1->next(), arrayStart, usingEnd->previous());
+                        list.copyTokens(tok1, start, arrayStart->previous());
+                        tok1->deleteThis();
+                        substitute = true;
+                    }
+                } else {
+                    // just replace simple type aliases
+                    list.copyTokens(tok1, start, usingEnd->previous());
+                    tok1->deleteThis();
+                    substitute = true;
+                }
+            } else {
+                skip = true;
+                if (mSettings->debugwarnings && mErrorLogger) {
+                    std::string str;
+                    for (Token *tok3 = usingStart; tok3 && tok3 != usingEnd; tok3 = tok3->next()) {
+                        if (!str.empty())
+                            str += ' ';
+                        str += tok3->str();
+                    }
+                    str += " ;";
+                    std::list<const Token *> callstack(1, usingStart);
+                    mErrorLogger->reportErr(ErrorLogger::ErrorMessage(callstack, &list, Severity::debug, "debug",
+                                            "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
+                }
+            }
+            tok1 = after;
         }
+
+        if (!skip)
+            usingList.emplace_back(usingStart, usingEnd);
     }
 
     // delete all used type alias definitions
