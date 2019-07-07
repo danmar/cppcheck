@@ -552,7 +552,7 @@ const Token *TemplateSimplifier::findTemplateDeclarationEnd(const Token *tok)
 
 Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
 {
-    if (Token::Match(tok, "template <")) {
+    if (Token::simpleMatch(tok, "template <")) {
         tok = tok->next()->findClosingBracket();
         if (tok)
             tok = tok->next();
