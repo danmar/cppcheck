@@ -510,6 +510,7 @@ void misra_18_4()
   bp += 1; // 18.4
   bp -= 2; // 18.4
   int *p = bp - 2; // 18.4
+  int *ab = &b + 1; // 18.4
   p = bp + p; // 18.4
   bp = 1 + p + 1; // 18.4
   b += 19; // no-warning

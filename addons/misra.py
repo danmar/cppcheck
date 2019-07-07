@@ -1621,7 +1621,7 @@ class MisraChecker:
             vt2 = token.astOperand2.valueType
             if vt1 and vt1.pointer > 0:
                 self.reportError(token, 18, 4)
-            if vt2 and vt2.pointer > 0:
+            elif vt2 and vt2.pointer > 0:
                 self.reportError(token, 18, 4)
 
     def misra_18_5(self, data):
