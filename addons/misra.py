@@ -1613,11 +1613,15 @@ class MisraChecker:
 
     def misra_18_4(self, data):
         for token in data.tokenlist:
-            if not token.str in {'+', '-', '+=', '-='}:
+            if not token.str in ('+', '-', '+=', '-='):
                 continue
-            var1 = token.astOperand1.variable
-            var2 = token.astOperand2.variable
-            if (var1 and var1.isPointer) or (var2 and var2.isPointer):
+            if token.astOperand1 is None or token.astOperand2 is None:
+                continue
+            vt1 = token.astOperand1.valueType
+            vt2 = token.astOperand2.valueType
+            if vt1 and vt1.pointer > 0:
+                self.reportError(token, 18, 4)
+            if vt2 and vt2.pointer > 0:
                 self.reportError(token, 18, 4)
 
     def misra_18_5(self, data):
