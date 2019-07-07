@@ -2917,7 +2917,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
             return;
 
         const Token * endOfVarScope = nullptr;
-        if (var->isGlobal() || !var->isLocal())
+        if (!var->isLocal())
             endOfVarScope = tok->scope()->bodyEnd;
         else
             endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
