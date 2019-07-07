@@ -503,6 +503,19 @@ void misra_17_8(int x) {
   x = 3; // 17.8
 }
 
+void misra_18_4()
+{
+  int b = 42;
+  int *bp = &b;
+  bp += 1; // 18.4
+  bp -= 2; // 18.4
+  int *p = bp - 2; // 18.4
+  p = bp + p; // 18.4
+  bp = 1 + p + 1; // 18.4
+  b += 19; // no-warning
+  b = b + 9; // no-warning
+}
+
 void misra_18_5() {
   int *** p;  // 18.5
 }
