@@ -1136,16 +1136,13 @@ static const Variable *getLHSVariableRecursive(const Token *tok)
     if (!tok)
         return nullptr;
     if (Token::Match(tok, "*|&|&&|[")) {
-        const Variable *var1 = getLHSVariableRecursive(tok->astOperand1());
-        if (var1 || Token::simpleMatch(tok, "["))
-            return var1;
-        const Variable *var2 = getLHSVariableRecursive(tok->astOperand2());
-        return var2;
+        const Variable *var = getLHSVariableRecursive(tok->astOperand1());
+        if (var || Token::simpleMatch(tok, "["))
+            return var;
+        return getLHSVariableRecursive(tok->astOperand2());
     }
     if (Token::Match(tok->previous(), "this . %var%"))
-        return getLHSVariableRecursive(tok->next());
-    if (!tok->variable())
-        return nullptr;
+        return tok->next()->variable();
     return tok->variable();
 }
 
