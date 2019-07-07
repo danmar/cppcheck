@@ -36,10 +36,10 @@ GUIも利用する場合、Qtライブラリが必要です。
 cmakeでCppcheckをコンパイルする例
 
 ```shell
-mkdir b
-cd b
+mkdir build
+cd build
 cmake ..
-make
+cmake --build .
 ```
 
 C++標準を指定する必要がある場合次のオプションを指定します。
