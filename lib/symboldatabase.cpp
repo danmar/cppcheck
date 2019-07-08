@@ -4455,10 +4455,10 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         const Token *tok1 = tok->tokAt(-2);
         if (Token::Match(tok1, "%var% .")) {
             const Variable *var = getVariableFromVarId(tok1->varId());
-            if (var && var->smartPointerType() && tok1->next()->originalName() == "->")
-                return var->smartPointerType()->classScope->findFunction(tok, var->valueType()->constness == 1);
             if (var && var->typeScope())
                 return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
+            if (var && var->smartPointerType() && var->smartPointerType()->classScope && tok1->next()->originalName() == "->")
+                return var->smartPointerType()->classScope->findFunction(tok, var->valueType()->constness == 1);
         } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
             const Token *castTok = tok->previous()->astOperand1();
             if (castTok->isCast()) {
