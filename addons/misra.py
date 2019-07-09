@@ -1612,6 +1612,18 @@ class MisraChecker:
             if var and var.isArgument:
                 self.reportError(token, 17, 8)
 
+    def misra_18_4(self, data):
+        for token in data.tokenlist:
+            if not token.str in ('+', '-', '+=', '-='):
+                continue
+            if token.astOperand1 is None or token.astOperand2 is None:
+                continue
+            vt1 = token.astOperand1.valueType
+            vt2 = token.astOperand2.valueType
+            if vt1 and vt1.pointer > 0:
+                self.reportError(token, 18, 4)
+            elif vt2 and vt2.pointer > 0:
+                self.reportError(token, 18, 4)
 
     def misra_18_5(self, data):
         for var in data.variables:
@@ -2305,6 +2317,7 @@ class MisraChecker:
                 self.misra_17_6(data.rawTokens)
             self.misra_17_7(cfg)
             self.misra_17_8(cfg)
+            self.misra_18_4(cfg)
             self.misra_18_5(cfg)
             self.misra_18_7(cfg)
             self.misra_18_8(cfg)
