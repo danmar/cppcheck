@@ -355,7 +355,7 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* func, std::list<const Function*> *callstack) const
 {
-    if (!func || !func->hasBody())
+    if (!func || !func->hasBody() || !func->functionScope)
         return No;
 
     // Get return pointer..
