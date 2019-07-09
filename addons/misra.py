@@ -716,9 +716,8 @@ class MisraChecker:
                 if c != '"' and c != '\\':
                     self.reportError(token, 4, 1)
 
-
     def misra_5_1(self, data):
-        varnames = []
+        long_vars = {}
         for var in data.variables:
             if var.nameToken is None:
                 continue
@@ -726,11 +725,13 @@ class MisraChecker:
                 continue
             if not hasExternalLinkage(var):
                 continue
-            if var.nameToken.str[:31] in varnames:
-                self.reportError(var.nameToken, 5, 1)
-            else:
-                varnames.append(var.nameToken.str[:31])
-
+            long_vars.setdefault(var.nameToken.str[:31], []).append(var.nameToken)
+        for name_prefix in long_vars:
+            tokens = long_vars[name_prefix]
+            if len(tokens) < 2:
+                continue
+            for tok in sorted(tokens, key=lambda t: (t.linenr, t.col))[1:]:
+                self.reportError(tok, 5, 1)
 
     def misra_5_2(self, data):
         scopeVars = {}
