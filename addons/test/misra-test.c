@@ -25,7 +25,10 @@ typedef unsigned long long u64;
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
 int misra_5_1_var_hides_var________a;
-int misra_5_1_var_hides_var________b; //5.1
+int misra_5_1_var_hides_var________b; int misra_5_1_var_hides_var________b1; int misra_5_1_var_hides_var________b2; //5.1
+int misra_5_1_var_hides_var________c; //5.1
+int misra_5_1_var_hides_var________d; //5.1
+int misra_5_1_var_hides_var________e; //5.1
 
 extern const uint8_t misra_5_2_var1;
 const uint8_t        misra_5_2_var1 = 3; // no warning
