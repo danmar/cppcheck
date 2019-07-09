@@ -1710,12 +1710,17 @@ void Variable::setValueType(const ValueType &valueType)
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
     setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
+    if (mValueType->smartPointerType)
+        setFlag(fIsSmartPointer, true);
 }
 
 const Type *Variable::smartPointerType() const
 {
     if (!isSmartPointer())
         return nullptr;
+
+    if (mValueType->smartPointerType)
+        return mValueType->smartPointerType;
 
     // TODO: Cache result
     const Token *ptrType = typeStartToken();
@@ -4939,6 +4944,13 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
+    if (vt1 && vt1->smartPointerType && Token::Match(parent, ". %name% (") && parent->originalName() == "->" && !parent->next()->function()) {
+        const Scope *scope = valuetype.smartPointerType->classScope;
+        const Function *f = scope ? scope->findFunction(parent->next(), false) : nullptr;
+        if (f)
+            parent->next()->function(f);
+    }
+
     if (parent->isAssignmentOp()) {
         if (vt1)
             setValueType(parent, *vt1);
@@ -5085,24 +5097,47 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                 else
                     break;
             }
+
+            const Token *containerElementType = typeStart;
+            while (Token::Match(containerElementType, "%name%|::"))
+                containerElementType = containerElementType->next();
+
+            // Try to determine type of "auto" token.
             // TODO: Get type better
-            if (Token::Match(typeStart, "std :: %type% < %type% *| *| >")) {
-                ValueType autovt;
-                if (parsedecl(typeStart->tokAt(4), &autovt, mDefaultSignedness, mSettings)) {
-                    setValueType(autoToken, autovt);
-                    setAutoTokenProperties(autoToken);
-                    ValueType varvt(autovt);
-                    if (isconst)
-                        varvt.constness |= 1;
-                    setValueType(parent->previous(), varvt);
-                    Variable * var = const_cast<Variable *>(parent->previous()->variable());
-                    if (var) {
-                        var->setValueType(varvt);
-                        const Type * type = typeStart->tokAt(4)->type();
-                        if (type && type->classScope && type->classScope->definedType) {
-                            autoToken->type(type->classScope->definedType);
-                            var->type(type->classScope->definedType);
-                        }
+            bool setType = false;
+            ValueType autovt;
+            const Type *templateArgType = nullptr; // container element type / smart pointer type
+            if (Token::Match(containerElementType, "< %type% *| *| >")) {
+                if (parsedecl(containerElementType->next(), &autovt, mDefaultSignedness, mSettings)) {
+                    setType = true;
+                    templateArgType = containerElementType->next()->type();
+                }
+            } else if (mSettings->library.isSmartPointer(containerElementType->next())) {
+                const Token *smartPointerTypeTok = containerElementType->next();
+                while (Token::Match(smartPointerTypeTok, "%name%|::"))
+                    smartPointerTypeTok = smartPointerTypeTok->next();
+                if (Token::Match(smartPointerTypeTok, "< %name% > >") && smartPointerTypeTok->next()->type()) {
+                    setType = true;
+                    templateArgType = smartPointerTypeTok->next()->type();
+                    autovt.smartPointerType = templateArgType;
+                    autovt.type = ValueType::Type::NONSTD;
+                }
+            }
+
+            if (setType) {
+                // Type of "auto" has been determined.. set type information for "auto" and variable tokens
+                setValueType(autoToken, autovt);
+                setAutoTokenProperties(autoToken);
+                ValueType varvt(autovt);
+                if (isconst)
+                    varvt.constness |= 1;
+                setValueType(parent->previous(), varvt);
+                Variable * var = const_cast<Variable *>(parent->previous()->variable());
+                if (var) {
+                    var->setValueType(varvt);
+                    if (templateArgType && templateArgType->classScope && templateArgType->classScope->definedType) {
+                        autoToken->type(templateArgType->classScope->definedType);
+                        var->type(templateArgType->classScope->definedType);
                     }
                 }
             }
