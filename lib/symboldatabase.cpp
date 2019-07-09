@@ -1712,6 +1712,20 @@ void Variable::setValueType(const ValueType &valueType)
     setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
 }
 
+const Type *Variable::smartPointerType() const
+{
+    if (!isSmartPointer())
+        return nullptr;
+
+    // TODO: Cache result
+    const Token *ptrType = typeStartToken();
+    while (Token::Match(ptrType, "%name%|::"))
+        ptrType = ptrType->next();
+    if (Token::Match(ptrType, "< %name% >"))
+        return ptrType->next()->type();
+    return nullptr;
+}
+
 Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef)
     : tokenDef(tokDef),
       argDef(tokArgDef),
@@ -4443,6 +4457,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
             const Variable *var = getVariableFromVarId(tok1->varId());
             if (var && var->typeScope())
                 return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
+            if (var && var->smartPointerType() && var->smartPointerType()->classScope && tok1->next()->originalName() == "->")
+                return var->smartPointerType()->classScope->findFunction(tok, var->valueType()->constness == 1);
         } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
             const Token *castTok = tok->previous()->astOperand1();
             if (castTok->isCast()) {
@@ -4858,6 +4874,7 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;
     }
+    valuetype.smartPointerType = var.smartPointerType();
     if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
         if (tok->str() == "." && tok->astOperand1()) {
             const ValueType * const vt = tok->astOperand1()->valueType();
@@ -5192,8 +5209,10 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     while (Token::Match(type->previous(), "%name%"))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
-    if (!valuetype->typeScope)
+    if (!valuetype->typeScope && !valuetype->smartPointerType)
         valuetype->type = ValueType::Type::UNKNOWN_TYPE;
+    else if (valuetype->smartPointerType)
+        valuetype->type = ValueType::Type::NONSTD;
     else if (valuetype->typeScope->type == Scope::eEnum) {
         const Token * enum_type = valuetype->typeScope->enumType;
         if (enum_type) {
@@ -5798,6 +5817,8 @@ std::string ValueType::str() const
         ret += " container(" + container->startPattern + ')';
     } else if (type == ValueType::Type::ITERATOR && container) {
         ret += " iterator(" + container->startPattern + ')';
+    } else if (smartPointerType) {
+        ret += " smart-pointer<" + smartPointerType->name() + ">";
     }
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
