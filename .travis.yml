@@ -112,6 +112,7 @@ matrix:
         - python3 ../misra.py --rule-texts=misra2012_rules_dummy_utf8.txt -verify misra-test.cpp.dump
         - python ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
         - python3 ../misra.py --rule-texts=misra2012_rules_dummy_windows1250.txt -verify misra-test.cpp.dump
+        - ${CPPCHECK} --suppressions-list=suppressions.txt --dump misra-suppressions*-test.c && python3 ../misra.py misra-suppressions*-test.c.dump
         - cd ../../
 # check addons/naming.py
         - cd addons/test
