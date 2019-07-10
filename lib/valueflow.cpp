@@ -5461,7 +5461,7 @@ static void valueFlowSafeFunctionReturn(TokenList *tokenlist, const Settings *se
         if (!getMinMaxValues(typestr, settings, &minvalue, &maxvalue))
             continue;
 
-        auto value = [](int64_t v, int64_t minvalue, int64_t maxvalue) {
+        auto value = [](MathLib::bigint v, MathLib::bigint minvalue, MathLib::bigint maxvalue) {
             if (v < minvalue)
                 return ValueFlow::Value(minvalue);
             if (v > maxvalue)
