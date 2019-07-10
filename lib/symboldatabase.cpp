@@ -2721,6 +2721,7 @@ void SymbolDatabase::printOut(const char *title) const
                                               func->type == Function::eOperatorEqual ? "OperatorEqual" :
                                               func->type == Function::eDestructor ? "Destructor" :
                                               func->type == Function::eFunction ? "Function" :
+                                              func->type == Function::eLambda ? "Lambda" :
                                               "Unknown") << std::endl;
             std::cout << "        access: " << accessControlToString(func->access) << std::endl;
             std::cout << "        hasBody: " << func->hasBody() << std::endl;
@@ -2980,6 +2981,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                                           function->type == Function::eOperatorEqual ? "OperatorEqual" :
                                           function->type == Function::eDestructor ? "Destructor" :
                                           function->type == Function::eFunction ? "Function" :
+                                          function->type == Function::eLambda ? "Lambda" :
                                           "Unknown") << '\"';
                     if (function->nestedIn->definedType) {
                         if (function->hasVirtualSpecifier())
