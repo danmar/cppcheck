@@ -146,6 +146,9 @@ public:
     /** @brief Inconclusive checks */
     bool inconclusive;
 
+    /** @brief Experimental flag that says all functions are "safe" */
+    bool allFunctionsAreSafe;
+
     /** @brief Is --inline-suppr given? */
     bool inlineSuppressions;
 

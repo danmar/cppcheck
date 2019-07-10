@@ -119,6 +119,8 @@ private:
         TEST_CASE(valueFlowContainerSize);
 
         TEST_CASE(valueFlowDynamicBufferSize);
+
+        TEST_CASE(valueFlowSafeFunctions);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -295,8 +297,8 @@ private:
         settings.debugwarnings = false;
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[]) {
-        Tokenizer tokenizer(&settings, this);
+    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+        Tokenizer tokenizer(s ? s : &settings, this);
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
@@ -3901,6 +3903,21 @@ private:
                "  return x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::BUFFER_SIZE));
+    }
+
+    void valueFlowSafeFunctions() {
+        const char *code;
+        std::list<ValueFlow::Value> values;
+        Settings s;
+        s.allFunctionsAreSafe = true;
+
+        code = "void f(short x) {\n"
+               "  return x + 0;\n"
+               "}";
+        values = tokenValues(code, "+", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(-0x8000, values.front().intvalue);
+        ASSERT_EQUALS(0x7fff, values.back().intvalue);
     }
 };
 
