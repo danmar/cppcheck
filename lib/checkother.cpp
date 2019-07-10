@@ -2583,7 +2583,7 @@ void CheckOther::checkAccessOfMovedVariable()
         }
         for (const Token* tok = scopeStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             const ValueFlow::Value * movedValue = tok->getMovedValue();
-            if (!movedValue || movedValue->moveKind == ValueFlow::Value::NonMovedVariable)
+            if (!movedValue || movedValue->moveKind == ValueFlow::Value::MoveKind::NonMovedVariable)
                 continue;
             if (movedValue->isInconclusive() && !reportInconclusive)
                 continue;
@@ -2634,11 +2634,11 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
     const char * errorId = nullptr;
     std::string kindString;
     switch (value->moveKind) {
-    case ValueFlow::Value::MovedVariable:
+    case ValueFlow::Value::MoveKind::MovedVariable:
         errorId = "accessMoved";
         kindString = "moved";
         break;
-    case ValueFlow::Value::ForwardedVariable:
+    case ValueFlow::Value::MoveKind::ForwardedVariable:
         errorId = "accessForwarded";
         kindString = "forwarded";
         break;

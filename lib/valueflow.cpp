@@ -3400,17 +3400,17 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
 {
     if (tok->str() != "std")
         return false;
-    ValueFlow::Value::MoveKind kind = ValueFlow::Value::NonMovedVariable;
+    ValueFlow::Value::MoveKind kind = ValueFlow::Value::MoveKind::NonMovedVariable;
     Token * variableToken = nullptr;
     if (Token::Match(tok, "std :: move ( %var% )")) {
         variableToken = tok->tokAt(4);
-        kind = ValueFlow::Value::MovedVariable;
+        kind = ValueFlow::Value::MoveKind::MovedVariable;
     } else if (Token::simpleMatch(tok, "std :: forward <")) {
         const Token * const leftAngle = tok->tokAt(3);
         Token * rightAngle = leftAngle->link();
         if (Token::Match(rightAngle, "> ( %var% )")) {
             variableToken = rightAngle->tokAt(2);
-            kind = ValueFlow::Value::ForwardedVariable;
+            kind = ValueFlow::Value::MoveKind::ForwardedVariable;
         }
     }
     if (!variableToken)
@@ -3471,8 +3471,8 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName() == emptyString) {
                 varTok = tok;
                 ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::MOVED;
-                value.moveKind = ValueFlow::Value::NonMovedVariable;
+                value.valueType = ValueFlow::Value::ValueType::MOVED;
+                value.moveKind = ValueFlow::Value::MoveKind::NonMovedVariable;
                 value.errorPath.emplace_back(tok, "Calling " + tok->next()->expressionString() + " makes " + tok->str() + " 'non-moved'");
                 value.setKnown();
                 std::list<ValueFlow::Value> values;
@@ -3508,9 +3508,9 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
             ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::MOVED;
+            value.valueType = ValueFlow::Value::ValueType::MOVED;
             value.moveKind = moveKind;
-            if (moveKind == ValueFlow::Value::MovedVariable)
+            if (moveKind == ValueFlow::Value::MoveKind::MovedVariable)
                 value.errorPath.emplace_back(tok, "Calling std::move(" + varTok->str() + ")");
             else // if (moveKind == ValueFlow::Value::ForwardedVariable)
                 value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
@@ -5343,7 +5343,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       intvalue(val),
       tokvalue(nullptr),
       floatValue(0.0),
-      moveKind(NonMovedVariable),
+      moveKind(MoveKind::NonMovedVariable),
       varvalue(val),
       condition(c),
       varId(0U),
