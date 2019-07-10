@@ -458,28 +458,28 @@ private:
                "   g(std::move(x));\n"
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
                "   g(std::forward<X>(x));\n"
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::ForwardedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::ForwardedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
                "   g(std::move(x).getA());\n"   // Only parts of x might be moved out
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
                "   g(std::forward<X>(x).getA());\n" // Only parts of x might be moved out
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::ForwardedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::ForwardedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
@@ -487,7 +487,7 @@ private:
                "   x.clear();\n"
                "   y=x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f() {\n"
                "   X x;\n"
@@ -495,28 +495,28 @@ private:
                "   y=x->y;\n"
                "   z=x->z;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f(int i) {\n"
                "    X x;\n"
                "    z = g(std::move(x));\n"
                "    y = x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f(int i) {\n"
                "    X x;\n"
                "    y = g(std::move(x), \n"
                "          x.size());\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "void f(int i) {\n"
                "    X x;\n"
                "    x = g(std::move(x));\n"
                "    y = x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "A f(int i) {\n"
                "    X x;\n"
@@ -524,7 +524,7 @@ private:
                "        return g(std::move(x));\n"
                "    return h(std::move(x));\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "struct X {\n"
                "};\n"
@@ -538,7 +538,7 @@ private:
                "   g(std::move(x)).foo([=](int value) mutable {;});\n"
                "   X y=x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 11U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, ValueFlow::Value::MoveKind::MovedVariable));
     }
 
     void valueFlowCalculations() {
@@ -2901,7 +2901,7 @@ private:
                "    g(x);\n"
                "    return 0;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MovedVariable));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
 
         code = "class A\n"
                "{\n"

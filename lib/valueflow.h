@@ -45,7 +45,7 @@ namespace ValueFlow {
               intvalue(val),
               tokvalue(nullptr),
               floatValue(0.0),
-              moveKind(NonMovedVariable),
+              moveKind(MoveKind::NonMovedVariable),
               varvalue(val),
               condition(nullptr),
               varId(0U),
@@ -147,7 +147,7 @@ namespace ValueFlow {
         double floatValue;
 
         /** kind of moved  */
-        enum MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
+        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
 
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
@@ -172,11 +172,11 @@ namespace ValueFlow {
 
         static const char * toString(MoveKind moveKind) {
             switch (moveKind) {
-            case NonMovedVariable:
+            case MoveKind::NonMovedVariable:
                 return "NonMovedVariable";
-            case MovedVariable:
+            case MoveKind::MovedVariable:
                 return "MovedVariable";
-            case ForwardedVariable:
+            case MoveKind::ForwardedVariable:
                 return "ForwardedVariable";
             }
             return "";

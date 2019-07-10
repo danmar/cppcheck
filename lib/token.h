@@ -955,7 +955,7 @@ public:
         if (!mImpl->mValues)
             return nullptr;
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
-            return value.isMovedValue() && value.moveKind != ValueFlow::Value::NonMovedVariable;
+            return value.isMovedValue() && value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
     }
