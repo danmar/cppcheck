@@ -39,6 +39,7 @@ Settings::Settings()
       experimental(false),
       force(false),
       inconclusive(false),
+      allFunctionsAreSafe(false),
       inlineSuppressions(false),
       jobs(1),
       jointSuppressionReport(false),

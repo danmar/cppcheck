@@ -2079,6 +2079,11 @@ const Token * Function::constructorMemberInitialization() const
     return nullptr;
 }
 
+bool Function::isSafe(const Settings *settings) const
+{
+    return settings->allFunctionsAreSafe;
+}
+
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
 {
     Function* function = nullptr;

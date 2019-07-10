@@ -5338,6 +5338,98 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
     }
 }
 
+static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, int64_t *minValue, int64_t *maxValue)
+{
+    if (!vt || !vt->isIntegral() || vt->pointer)
+        return false;
+
+    int bits;
+    switch (vt->type) {
+    case ValueType::Type::BOOL:
+        bits = 1;
+        break;
+    case ValueType::Type::CHAR:
+        bits = platform.char_bit;
+        break;
+    case ValueType::Type::SHORT:
+        bits = platform.short_bit;
+        break;
+    case ValueType::Type::INT:
+        bits = platform.int_bit;
+        break;
+    case ValueType::Type::LONG:
+        bits = platform.long_bit;
+        break;
+    case ValueType::Type::LONGLONG:
+        bits = platform.long_long_bit;
+        break;
+    default:
+        return false;
+    };
+
+    if (bits == 1) {
+        *minValue = 0;
+        *maxValue = 1;
+    } else if (bits < 62) {
+        if (vt->sign == ValueType::Sign::UNSIGNED) {
+            *minValue = 0;
+            *maxValue = (1LL << bits) - 1;
+        } else {
+            *minValue = -(1LL << (bits - 1));
+            *maxValue = (1LL << (bits - 1)) - 1;
+        }
+    } else if (bits == 64) {
+        if (vt->sign == ValueType::Sign::UNSIGNED) {
+            *minValue = 0;
+            *maxValue = LLONG_MAX; // todo max unsigned value
+        } else {
+            *minValue = LLONG_MIN;
+            *maxValue = LLONG_MAX;
+        }
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    if (settings->platformType == cppcheck::Platform::PlatformType::Unspecified)
+        return;
+    for (const Scope *functionScope : symboldatabase->functionScopes) {
+        if (!functionScope->bodyStart)
+            continue;
+        const Function *function = functionScope->function;
+        if (!function)
+            continue;
+
+        if (!function->isSafe(settings))
+            continue;
+
+        for (const Variable &arg : function->argumentList) {
+            int64_t minValue, maxValue;
+            if (!getMinMaxValues(arg.valueType(), *settings, &minValue, &maxValue))
+                continue;
+
+            std::list<ValueFlow::Value> argValues;
+            argValues.emplace_back(minValue);
+            argValues.emplace_back(maxValue);
+
+            valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
+                             functionScope->bodyEnd,
+                             &arg,
+                             arg.declarationId(),
+                             argValues,
+                             false,
+                             false,
+                             tokenlist,
+                             errorLogger,
+                             settings);
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token *c, long long val)
     : valueType(INT),
       intvalue(val),
@@ -5436,6 +5528,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }
+        valueFlowSafeFunctions(tokenlist, symboldatabase, errorLogger, settings);
     }
 
     valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings);
