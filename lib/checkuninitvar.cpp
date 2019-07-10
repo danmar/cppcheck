@@ -1292,7 +1292,7 @@ void CheckUninitVar::valueFlowUninit()
             if (!tok->variable() || tok->values().size() != 1U)
                 continue;
             const ValueFlow::Value &v = tok->values().front();
-            if (v.valueType != ValueFlow::Value::UNINIT || v.isInconclusive())
+            if (v.valueType != ValueFlow::Value::ValueType::UNINIT || v.isInconclusive())
                 continue;
             if (!isVariableUsage(tok, tok->variable()->isPointer(), NO_ALLOC))
                 continue;

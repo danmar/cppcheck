@@ -93,7 +93,7 @@ private:
         c.longCastAssignError(nullptr);
         c.longCastReturnError(nullptr);
         ValueFlow::Value f;
-        f.valueType = ValueFlow::Value::FLOAT;
+        f.valueType = ValueFlow::Value::ValueType::FLOAT;
         f.floatValue = 1E100;
         c.floatToIntegerOverflowError(nullptr, f);
     }
