@@ -64,6 +64,7 @@ private:
         TEST_CASE(assign16);
         TEST_CASE(assign17); // #9047
         TEST_CASE(assign18);
+        TEST_CASE(assign19);
 
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
@@ -356,6 +357,14 @@ private:
               "    if (x && (p = (char*)(int*)malloc(10))) { }"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void assign19() {
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    free((void*)p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc1() {
@@ -1342,6 +1351,12 @@ private:
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
               "    free(f);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    free((void*)f);\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
