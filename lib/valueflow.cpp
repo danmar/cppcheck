@@ -5456,7 +5456,7 @@ static void valueFlowSafeFunctionReturn(TokenList *tokenlist, const Settings *se
             continue;
 
         // Get min/max values for return type
-        const std::string typestr = settings->library.returnValueType(tok->previous());
+        const std::string &typestr = settings->library.returnValueType(tok->previous());
         MathLib::bigint minvalue, maxvalue;
         if (!getMinMaxValues(typestr, settings, &minvalue, &maxvalue))
             continue;
