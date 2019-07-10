@@ -413,7 +413,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
         QString message,id;
         if (r2.exactMatch(r1.cap(5))) {
-            message = r2.cap(1);
+            message = "[clang] " + r2.cap(1) + "["+r2.cap(2)+"]";
             const QString id1(r2.cap(2));
             if (id1.startsWith("clang"))
                 id = id1;
