@@ -5338,7 +5338,7 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
     }
 }
 
-static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, int64_t *minValue, int64_t *maxValue)
+static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
 {
     if (!vt || !vt->isIntegral() || vt->pointer)
         return false;
@@ -5393,7 +5393,7 @@ static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platf
     return true;
 }
 
-static bool getMinMaxValues(const std::string &typestr, const Settings *settings, int64_t *minvalue, int64_t *maxvalue)
+static bool getMinMaxValues(const std::string &typestr, const Settings *settings, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
 {
     TokenList typeTokens(settings);
     std::istringstream istr(typestr+";");
@@ -5420,7 +5420,7 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
             continue;
 
         for (const Variable &arg : function->argumentList) {
-            int64_t minValue, maxValue;
+            MathLib::bigint minValue, maxValue;
             if (!getMinMaxValues(arg.valueType(), *settings, &minValue, &maxValue))
                 continue;
 
@@ -5451,13 +5451,13 @@ static void valueFlowSafeFunctionReturn(TokenList *tokenlist, const Settings *se
             continue;
         if (!Token::Match(tok->previous(), "%name%"))
             continue;
-        int64_t v1,v2;
+        MathLib::bigint v1,v2;
         if (!settings->library.returnValueSafeValues(tok->previous(), &v1, &v2))
             continue;
 
         // Get min/max values for return type
         const std::string typestr = settings->library.returnValueType(tok->previous());
-        int64_t minvalue, maxvalue;
+        MathLib::bigint minvalue, maxvalue;
         if (!getMinMaxValues(typestr, settings, &minvalue, &maxvalue))
             continue;
 

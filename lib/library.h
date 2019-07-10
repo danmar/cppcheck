@@ -181,7 +181,7 @@ public:
     const std::string& returnValue(const Token *ftok) const;
     const std::string& returnValueType(const Token *ftok) const;
     int returnValueContainer(const Token *ftok) const;
-    bool returnValueSafeValues(const Token *ftok, int64_t *v1, int64_t *v2) const;
+    bool returnValueSafeValues(const Token *ftok, MathLib::bigint *v1, MathLib::bigint *v2) const;
 
     bool isnoreturn(const Token *ftok) const;
     bool isnotnoreturn(const Token *ftok) const;
@@ -543,8 +543,8 @@ private:
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;
     struct SafeValues {
-        int64_t minValue;
-        int64_t maxValue;
+        MathLib::bigint minValue;
+        MathLib::bigint maxValue;
     };
     std::map<std::string, SafeValues> mReturnSafeValues;
     std::map<std::string, bool> mReportErrors;

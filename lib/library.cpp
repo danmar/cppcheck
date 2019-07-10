@@ -1200,7 +1200,7 @@ int Library::returnValueContainer(const Token *ftok) const
     return it != mReturnValueContainer.end() ? it->second : -1;
 }
 
-bool Library::returnValueSafeValues(const Token *ftok, int64_t *v1, int64_t *v2) const
+bool Library::returnValueSafeValues(const Token *ftok, MathLib::bigint *v1, MathLib::bigint *v2) const
 {
     if (isNotLibraryFunction(ftok))
         return false;
