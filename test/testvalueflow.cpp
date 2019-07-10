@@ -3919,6 +3919,20 @@ private:
         ASSERT_EQUALS(-0x8000, values.front().intvalue);
         ASSERT_EQUALS(0x7fff, values.back().intvalue);
     }
+
+
+    void valueFlowSafeFunctionReturn() {
+        const char *code;
+        std::list<ValueFlow::Value> values;
+        Settings s;
+        s.checkAllSafeFunctionReturnValues = true;
+
+        code = "x = rand();";
+        values = tokenValues(code, "(", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(INT_MIN, values.front().intvalue);
+        ASSERT_EQUALS(INT_MAX, values.back().intvalue);
+    }
 };
 
 REGISTER_TEST(TestValueFlow)

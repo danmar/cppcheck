@@ -5393,6 +5393,18 @@ static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platf
     return true;
 }
 
+static bool getMinMaxValues(const std::string &typestr, const Settings *settings, int64_t *minvalue, int64_t *maxvalue)
+{
+    TokenList typeTokens(settings);
+    std::istringstream istr(typestr+";");
+    if (!typeTokens.createTokens(istr))
+        return false;
+    typeTokens.simplifyPlatformTypes();
+    typeTokens.simplifyStdType();
+    const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings);
+    return getMinMaxValues(&vt, *settings, minvalue, maxvalue);
+}
+
 static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     if (settings->platformType == cppcheck::Platform::PlatformType::Unspecified)
@@ -5427,6 +5439,38 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
                              errorLogger,
                              settings);
         }
+    }
+}
+
+static void valueFlowSafeFunctionReturn(TokenList *tokenlist, const Settings *settings)
+{
+    if (!settings->checkAllSafeFunctionReturnValues)
+        return;
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (!tok->astParent() || tok->str() != "(")
+            continue;
+        if (!Token::Match(tok->previous(), "%name%"))
+            continue;
+        int64_t v1,v2;
+        if (!settings->library.returnValueSafeValues(tok->previous(), &v1, &v2))
+            continue;
+
+        // Get min/max values for return type
+        const std::string typestr = settings->library.returnValueType(tok->previous());
+        int64_t minvalue, maxvalue;
+        if (!getMinMaxValues(typestr, settings, &minvalue, &maxvalue))
+            continue;
+
+        auto value = [](int64_t v, int64_t minvalue, int64_t maxvalue) {
+            if (v < minvalue)
+                return ValueFlow::Value(minvalue);
+            if (v > maxvalue)
+                return ValueFlow::Value(maxvalue);
+            return ValueFlow::Value(v);
+        };
+
+        setTokenValue(const_cast<Token *>(tok), value(v1, minvalue, maxvalue), settings);
+        setTokenValue(const_cast<Token *>(tok), value(v2, minvalue, maxvalue), settings);
     }
 }
 
@@ -5496,6 +5540,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
+    valueFlowSafeFunctionReturn(tokenlist, settings);
     valueFlowGlobalConstVar(tokenlist, settings);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);

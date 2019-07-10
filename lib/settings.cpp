@@ -40,6 +40,7 @@ Settings::Settings()
       force(false),
       inconclusive(false),
       allFunctionsAreSafe(false),
+      checkAllSafeFunctionReturnValues(false),
       inlineSuppressions(false),
       jobs(1),
       jointSuppressionReport(false),
