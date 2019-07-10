@@ -235,6 +235,7 @@ private:
         TEST_CASE(garbageCode202); // #8907
         TEST_CASE(garbageCode203); // #8972
         TEST_CASE(garbageCode204);
+        TEST_CASE(garbageCode205);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1596,6 +1597,25 @@ private:
 
     void garbageCode204() {
         ASSERT_THROW(checkCode("template <a, = b<>()> c; template <a> a as() {} as<c<>>();"), InternalError);
+    }
+
+    void garbageCode205() {
+        checkCode("class CodeSnippetsEvent : public wxCommandEvent {\n"
+                  "public :\n"
+                  "    CodeSnippetsEvent ( wxEventType commandType =  wxEventType , int id = 0 ) ;\n"
+                  "    CodeSnippetsEvent ( const CodeSnippetsEvent & event ) ;\n"
+                  "virtual wxEvent * Clone ( ) const { return new CodeSnippetsEvent ( * this ) ; }\n"
+                  "private :\n"
+                  "    int m_SnippetID ;\n"
+                  "} ;\n"
+                  "const  wxEventType wxEVT_CODESNIPPETS_GETFILELINKS  =  wxNewEventType  (  )\n"
+                  "CodeSnippetsEvent :: CodeSnippetsEvent ( wxEventType commandType , int id )\n"
+                  ": wxCommandEvent ( commandType , id ) {\n"
+                  "}\n"
+                  "CodeSnippetsEvent :: CodeSnippetsEvent ( const CodeSnippetsEvent & Event )\n"
+                  ": wxCommandEvent ( Event )\n"
+                  ", m_SnippetID ( 0 ) {\n"
+                  "}"); // don't crash
     }
 
     void syntaxErrorFirstToken() {
