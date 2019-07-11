@@ -66,6 +66,9 @@ static const char TagElementName[] = "tag";
 static const char CheckHeadersElementName[] = "check-headers";
 static const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
 static const char MaxCtuDepthElementName[] = "max-ctu-depth";
+static const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+static const char CheckAllFunctionParameterValues[] = "check-all-function-parameter-values";
+static const char Name[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -101,6 +104,8 @@ void ProjectFile::clear()
     mCheckHeaders = true;
     mCheckUnusedTemplates = false;
     mMaxCtuDepth = 10;
+    mCheckAllFunctionParameterValues = false;
+    mCheckUnknownFunctionReturn.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -179,6 +184,14 @@ bool ProjectFile::read(const QString &filename)
             // Find suppressions list from inside project element
             if (insideProject && xmlReader.name() == SuppressionsElementName)
                 readSuppressions(xmlReader);
+
+            // Unknown function return values
+            if (insideProject && xmlReader.name() == CheckUnknownFunctionReturn)
+                readStringList(mCheckUnknownFunctionReturn, xmlReader, Name);
+
+            // check all function parameter values
+            if (insideProject && xmlReader.name() == CheckAllFunctionParameterValues)
+                mCheckAllFunctionParameterValues = true;
 
             // Addons
             if (insideProject && xmlReader.name() == AddonsElementName)
@@ -775,6 +788,16 @@ bool ProjectFile::write(const QString &filename)
                 xmlWriter.writeCharacters(QString::fromStdString(suppression.errorId));
             xmlWriter.writeEndElement();
         }
+        xmlWriter.writeEndElement();
+    }
+
+    writeStringList(xmlWriter,
+                    mCheckUnknownFunctionReturn,
+                    CheckUnknownFunctionReturn,
+                    Name);
+
+    if (mCheckAllFunctionParameterValues) {
+        xmlWriter.writeStartElement(CheckAllFunctionParameterValues);
         xmlWriter.writeEndElement();
     }
 

@@ -481,28 +481,14 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>TODO: Configure possible values of function parameters</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>Note: It must be possible to define parameter values in the code using annotations in the code (SAL , code contracts, etc)</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="checkBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>All classes must have a &quot;safe&quot; public interface</string>
          </property>

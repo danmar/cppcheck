@@ -178,15 +178,6 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     const QRegExp undefRegExp("\\s*([a-zA-Z_][a-zA-Z0-9_]*[; ]*)*");
     mUI.mEditUndefines->setValidator(new QRegExpValidator(undefRegExp, this));
 
-    // Human knowledge..
-    mUI.mListUnknownFunctionReturn->clear();
-    mUI.mListUnknownFunctionReturn->addItem("rand()");
-    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
-        QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
-        item->setCheckState(item->text() == "rand()" ? Qt::Checked : Qt::Unchecked); // AND initialize check state
-    }
-
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::ok);
     connect(mUI.mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
     connect(mUI.mBtnClearImportProject, &QPushButton::clicked, this, &ProjectFileDialog::clearImportProject);
@@ -283,6 +274,18 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mComboBoxPlatform->setCurrentText(projectFile->getPlatform());
     setSuppressions(projectFile->getSuppressions());
 
+    // Human knowledge..
+    mUI.mListUnknownFunctionReturn->clear();
+    mUI.mListUnknownFunctionReturn->addItem("rand()");
+    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+        QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
+        const bool unknownValues = projectFile->getCheckUnknownFunctionReturn().contains(item->text());
+        item->setCheckState(unknownValues ? Qt::Checked : Qt::Unchecked); // AND initialize check state
+    }
+    mUI.mAllFunctionsAreSafe->setChecked(projectFile->getCheckAllFunctionParameterValues());
+
+    // Addons..
     QSettings settings;
     const QString dataDir = settings.value("DATADIR", QString()).toString();
     updateAddonCheckBox(mUI.mAddonThreadSafety, projectFile, dataDir, "threadsafety");
@@ -335,6 +338,16 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
             projectFile->setPlatform(QString());
     }
     projectFile->setSuppressions(getSuppressions());
+    // Human knowledge
+    QStringList unknownReturnValues;
+    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+        QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
+        if (item->checkState() == Qt::Checked)
+            unknownReturnValues << item->text();
+    }
+    projectFile->setCheckUnknownFunctionReturn(unknownReturnValues);
+    projectFile->setCheckAllFunctionParameterValues(mUI.mAllFunctionsAreSafe->isChecked());
+    // Addons
     QStringList list;
     if (mUI.mAddonThreadSafety->isChecked())
         list << "threadsafety";
