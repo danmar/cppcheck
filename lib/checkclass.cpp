@@ -61,6 +61,8 @@ static const char * getFunctionTypeName(Function::Type type)
         return "function";
     case Function::eOperatorEqual:
         return "operator=";
+    case Function::eLambda:
+        return "lambda";
     }
     return "";
 }
