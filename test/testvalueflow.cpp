@@ -120,7 +120,8 @@ private:
 
         TEST_CASE(valueFlowDynamicBufferSize);
 
-        TEST_CASE(valueFlowSafeFunctions);
+        TEST_CASE(valueFlowAllFunctionParameterValues);
+        TEST_CASE(valueFlowUnknownFunctionReturn);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -3905,7 +3906,7 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::BUFFER_SIZE));
     }
 
-    void valueFlowSafeFunctions() {
+    void valueFlowAllFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
         Settings s;
@@ -3921,11 +3922,12 @@ private:
     }
 
 
-    void valueFlowSafeFunctionReturn() {
+    void valueFlowUnknownFunctionReturn() {
         const char *code;
         std::list<ValueFlow::Value> values;
         Settings s;
-        s.checkAllSafeFunctionReturnValues = true;
+        LOAD_LIB_2(s.library, "std.cfg");
+        s.checkUnknownFunctionReturn.insert("rand");
 
         code = "x = rand();";
         values = tokenValues(code, "(", &s);
