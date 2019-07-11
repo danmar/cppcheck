@@ -882,6 +882,9 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
+        result.allFunctionsAreSafe = mProjectFile->getCheckAllFunctionParameterValues();
+        foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
+            result.checkUnknownFunctionReturn.insert(s.toStdString());
     }
 
     // Include directories (and files) are searched in listed order.
