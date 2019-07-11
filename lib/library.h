@@ -181,7 +181,7 @@ public:
     const std::string& returnValue(const Token *ftok) const;
     const std::string& returnValueType(const Token *ftok) const;
     int returnValueContainer(const Token *ftok) const;
-    bool returnValueSafeValues(const Token *ftok, MathLib::bigint *v1, MathLib::bigint *v2) const;
+    std::vector<MathLib::bigint> unknownReturnValues(const Token *ftok) const;
 
     bool isnoreturn(const Token *ftok) const;
     bool isnotnoreturn(const Token *ftok) const;
@@ -542,11 +542,7 @@ private:
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;
-    struct SafeValues {
-        MathLib::bigint minValue;
-        MathLib::bigint maxValue;
-    };
-    std::map<std::string, SafeValues> mReturnSafeValues;
+    std::map<std::string, std::vector<MathLib::bigint>> mUnknownReturnValues;
     std::map<std::string, bool> mReportErrors;
     std::map<std::string, bool> mProcessAfterCode;
     std::set<std::string> mMarkupExtensions; // file extensions of markup files

@@ -186,11 +186,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--all-functions-are-safe") == 0)
                 mSettings->allFunctionsAreSafe = true;
 
-            // Experimental: this flag says that all "safe output values" from functions should be checked.
-            // todo: add proper configuration options
-            else if (std::strcmp(argv[i], "--check-all-safe-return-values") == 0)
-                mSettings->checkAllSafeFunctionReturnValues = true;
-
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
                 std::string str;

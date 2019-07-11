@@ -149,8 +149,8 @@ public:
     /** @brief Experimental flag that says all functions are "safe" */
     bool allFunctionsAreSafe;
 
-    /** @brief Experimental flag to safety check function output */
-    bool checkAllSafeFunctionReturnValues;
+    /** @brief check unknown function return values */
+    std::set<std::string> checkUnknownFunctionReturn;
 
     /** @brief Is --inline-suppr given? */
     bool inlineSuppressions;
