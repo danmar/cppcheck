@@ -178,6 +178,15 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     const QRegExp undefRegExp("\\s*([a-zA-Z_][a-zA-Z0-9_]*[; ]*)*");
     mUI.mEditUndefines->setValidator(new QRegExpValidator(undefRegExp, this));
 
+    // Human knowledge..
+    mUI.mListUnknownFunctionReturn->clear();
+    mUI.mListUnknownFunctionReturn->addItem("rand()");
+    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+        QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
+        item->setCheckState(item->text() == "rand()" ? Qt::Checked : Qt::Unchecked); // AND initialize check state
+    }
+
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::ok);
     connect(mUI.mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
     connect(mUI.mBtnClearImportProject, &QPushButton::clicked, this, &ProjectFileDialog::clearImportProject);
