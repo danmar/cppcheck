@@ -338,26 +338,21 @@ def str11(data):
 # API01-C
 # Avoid laying out strings in memory directly before sensitive data
 def api01(data):
-        for scope in data.scopes:
-            if scope.type!='Struct':
-                continue
-            token = scope.bodyStart
-            arrayFound=False
-            valueFound=False
-            # loop through the complete struct
-            while token != scope.bodyEnd:
-                if token.isName and token.variable:
-                    if token.variable.isArray:
-                        arrayFound=True
-                    elif arrayFound and not token.variable.isArray and not token.variable.isConst:
-                        valueFound=True
-
-                    if valueFound:
-                        reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
-                        # reset flags to report other positions in the same struct
-                        arrayFound=False
-                        valueFound=False
-                token = token.next
+    for scope in data.scopes:
+        if scope.type!='Struct':
+            continue
+        token = scope.bodyStart
+        arrayFound=False
+        # loop through the complete struct
+        while token != scope.bodyEnd:
+            if token.isName and token.variable:
+                if token.variable.isArray:
+                    arrayFound=True
+                elif arrayFound and not token.variable.isArray and not token.variable.isConst:
+                    reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
+                    # reset flags to report other positions in the same struct
+                    arrayFound=False
+            token = token.next
 
 for arg in sys.argv[1:]:
     if arg == '-verify':
