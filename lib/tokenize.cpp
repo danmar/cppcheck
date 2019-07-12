@@ -4207,6 +4207,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // remove __attribute__((?))
     simplifyAttribute();
 
+    // simplify cppcheck attributes __cppcheck_?__(?)
+    simplifyCppcheckAttribute();
+
     // Combine tokens..
     combineOperators();
 
@@ -9785,6 +9788,36 @@ void Tokenizer::simplifyAttribute()
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
         }
+    }
+}
+
+void Tokenizer::simplifyCppcheckAttribute()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() != "(")
+            continue;
+        if (!tok->previous())
+            continue;
+        const std::string &attr = tok->previous()->str();
+        if (attr.compare(0, 11, "__cppcheck_") != 0) // TODO: starts_with("__cppcheck_")
+            continue;
+        if (attr.compare(attr.size()-2, 2, "__") != 0) // TODO: ends_with("__")
+            continue;
+
+        if (attr == "__cppcheck_in_range__") {
+            Token *vartok = tok->link();
+            while (Token::Match(vartok->next(), "%name%|*|&|::"))
+                vartok = vartok->next();
+            if (vartok->isName() && Token::Match(tok, "( %num% , %num% )")) {
+                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(tok->next()->str()));
+                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(tok->strAt(3)));
+            }
+        }
+
+        // Delete cppcheck attribute..
+        tok = tok->previous();
+        Token::eraseTokens(tok, tok->linkAt(1)->next());
+        tok->deleteThis();
     }
 }
 

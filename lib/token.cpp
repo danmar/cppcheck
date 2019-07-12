@@ -1867,4 +1867,36 @@ TokenImpl::~TokenImpl()
     for (auto templateSimplifierPointer : mTemplateSimplifierPointers) {
         templateSimplifierPointer->token = nullptr;
     }
+
+    while (mCppcheckAttributes) {
+        struct CppcheckAttributes *c = mCppcheckAttributes;
+        mCppcheckAttributes = mCppcheckAttributes->next;
+        delete c;
+    }
+}
+
+void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
+{
+    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    while (attr && attr->type != type)
+        attr = attr->next;
+    if (attr)
+        attr->value = value;
+    else {
+        attr = new CppcheckAttributes;
+        attr->type = type;
+        attr->value = value;
+        attr->next = mCppcheckAttributes;
+        mCppcheckAttributes = attr;
+    }
+}
+
+bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const
+{
+    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    while (attr && attr->type != type)
+        attr = attr->next;
+    if (attr)
+        *value = attr->value;
+    return attr != nullptr;
 }

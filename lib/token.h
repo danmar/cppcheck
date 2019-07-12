@@ -97,6 +97,17 @@ struct TokenImpl {
     // Pointer to a template in the template simplifier
     std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
 
+    // __cppcheck_in_range__
+    struct CppcheckAttributes {
+        enum Type {LOW,HIGH} type;
+        MathLib::bigint value;
+        struct CppcheckAttributes *next;
+    };
+    struct CppcheckAttributes *mCppcheckAttributes;
+
+    void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
+    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
+
     TokenImpl()
         : mVarId(0)
         , mFileIndex(0)
@@ -114,6 +125,7 @@ struct TokenImpl {
         , mValues(nullptr)
         , mBits(0)
         , mTemplateSimplifierPointers()
+        , mCppcheckAttributes(nullptr)
     {}
 
     ~TokenImpl();
@@ -497,6 +509,12 @@ public:
     }
     void isAttributeNodiscard(const bool value) {
         setFlag(fIsAttributeNodiscard, value);
+    }
+    void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
+        mImpl->setCppcheckAttribute(type, value);
+    }
+    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
+        return mImpl->getCppcheckAttribute(type, value);
     }
     bool isControlFlowKeyword() const {
         return getFlag(fIsControlFlowKeyword);
