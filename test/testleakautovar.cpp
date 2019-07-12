@@ -81,6 +81,7 @@ private:
         // TODO TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
         TEST_CASE(deallocuse7); // #6467, #6469, #6473
+        TEST_CASE(deallocuse8); // #1765
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -559,6 +560,15 @@ private:
               "  (*conv)(&ptr);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse8() {  // #1765
+        check("void f() {\n"
+              "    int *ptr = new int;\n"
+              "    delete(ptr);\n"
+              "    *ptr = 0;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
     }
 
     void doublefree1() {  // #3895
