@@ -93,7 +93,7 @@ void LibraryDialog::openCfg()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        tr("Can not open file %1.").arg(selectedFile),
+                        tr("Cannot open file %1.").arg(selectedFile),
                         QMessageBox::Ok,
                         this);
         msg.exec();
@@ -142,7 +142,7 @@ void LibraryDialog::saveCfg()
     } else {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        tr("Can not save file %1.").arg(mFileName),
+                        tr("Cannot save file %1.").arg(mFileName),
                         QMessageBox::Ok,
                         this);
         msg.exec();
@@ -313,15 +313,13 @@ void LibraryDialog::editArg()
         return;
     CppcheckLibraryData::Function::Arg &arg = function->args[mUi->arguments->row(mUi->arguments->selectedItems().first())];
 
-    LibraryEditArgDialog *d = new LibraryEditArgDialog(0, arg);
-    if (d->exec() == QDialog::Accepted) {
+    LibraryEditArgDialog d(nullptr, arg);
+    if (d.exec() == QDialog::Accepted) {
         unsigned number = arg.nr;
-        arg = d->getArg();
+        arg = d.getArg();
         arg.nr = number;
         mUi->arguments->selectedItems().first()->setText(getArgText(arg));
     }
-
-    delete d;
     mUi->buttonSave->setEnabled(true);
 }
 

@@ -4,12 +4,6 @@
 |:--:|:--:|:--:|
 | [![Linux ビルド状態](https://img.shields.io/travis/danmar/cppcheck/master.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck) | [![Windows ビルド状態](https://img.shields.io/appveyor/ci/danmar/cppcheck/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/master) | [![Coverity Scan Build 状態](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512) |
 
-## 寄付
-
-Cppcheckが有用であると感じた場合、寄付を検討してください。
-
-[![寄付](http://pledgie.com/campaigns/4127.png)](http://pledgie.com/campaigns/4127)
-
 ## 名前について
 
 このプログラムは元々、"C++check"という名前でしたが後に"Cppcheck"に変更されました。
@@ -36,6 +30,26 @@ GUIも利用する場合、Qtライブラリが必要です。
 * gnu make
 * g++ 4.6 (またはそれ以上)
 * clang++
+
+### cmake
+
+cmakeでCppcheckをコンパイルする例
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+C++標準を指定する必要がある場合次のオプションを指定します。
+-DCMAKE_CXX_STANDARD=11
+
+CppcheckのGUIが必要な場合次のフラグを指定します。
+-DBUILD_GUI=ON
+
+pcreが必要になりますが、正規表現のルールサポートが必要な場合次のフラグを指定します。
+-DHAVE_RULES=ON
 
 ### qmake
 
@@ -69,13 +83,13 @@ make
 推奨するリリースビルド方法:
 
 ```shell
-make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes CFGDIR=cfg HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
 ```
 
 フラグ:
 
-1. `SRCDIR=build`
-cppcheckの最適化にPythonを使用します。
+1. `MATCHCOMPILER=yes`
+cppcheckの最適化にPythonを使用します。Token::Match パターンはコンパイル時にlC++コードに変換されます。
 
 2. `CFGDIR=cfg`
 cppcheckの設定ファイル(.cfg)を置くディレクトリを指定します。

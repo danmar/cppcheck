@@ -97,6 +97,17 @@ struct TokenImpl {
     // Pointer to a template in the template simplifier
     std::set<TemplateSimplifier::TokenAndName*> mTemplateSimplifierPointers;
 
+    // __cppcheck_in_range__
+    struct CppcheckAttributes {
+        enum Type {LOW,HIGH} type;
+        MathLib::bigint value;
+        struct CppcheckAttributes *next;
+    };
+    struct CppcheckAttributes *mCppcheckAttributes;
+
+    void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
+    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
+
     TokenImpl()
         : mVarId(0)
         , mFileIndex(0)
@@ -114,6 +125,7 @@ struct TokenImpl {
         , mValues(nullptr)
         , mBits(0)
         , mTemplateSimplifierPointers()
+        , mCppcheckAttributes(nullptr)
     {}
 
     ~TokenImpl();
@@ -146,6 +158,7 @@ public:
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
         eArithmeticalOp, eComparisonOp, eAssignmentOp, eLogicalOp, eBitOp, eIncDecOp, eExtendedOp, // Operators: Arithmetical, Comparison, Assignment, Logical, Bitwise, ++/--, Extended
         eBracket, // {, }, <, >: < and > only if link() is set. Otherwise they are comparison operators.
+        eLambda, // A function without a name
         eOther,
         eNone
     };
@@ -497,6 +510,12 @@ public:
     void isAttributeNodiscard(const bool value) {
         setFlag(fIsAttributeNodiscard, value);
     }
+    void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
+        mImpl->setCppcheckAttribute(type, value);
+    }
+    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
+        return mImpl->getCppcheckAttribute(type, value);
+    }
     bool isControlFlowKeyword() const {
         return getFlag(fIsControlFlowKeyword);
     }
@@ -765,19 +784,13 @@ public:
      * Associate this token with given function
      * @param f Function to be associated
      */
-    void function(const Function *f) {
-        mImpl->mFunction = f;
-        if (f)
-            tokType(eFunction);
-        else if (mTokType == eFunction)
-            tokType(eName);
-    }
+    void function(const Function *f);
 
     /**
      * @return a pointer to the Function associated with this token.
      */
     const Function *function() const {
-        return mTokType == eFunction ? mImpl->mFunction : nullptr;
+        return mTokType == eFunction || mTokType == eLambda ? mImpl->mFunction : nullptr;
     }
 
     /**
@@ -960,7 +973,7 @@ public:
         if (!mImpl->mValues)
             return nullptr;
         const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value &value) {
-            return value.isMovedValue() && value.moveKind != ValueFlow::Value::NonMovedVariable;
+            return value.isMovedValue() && value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
         });
         return it == mImpl->mValues->end() ? nullptr : &*it;;
     }

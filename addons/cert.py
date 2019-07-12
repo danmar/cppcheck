@@ -231,7 +231,31 @@ def int31(data, platform):
                     'style',
                     'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
-                break
+                break                
+# MSC24-C
+# Do not use deprecated or obsolescent functions
+def msc24(data):
+    for token in data.tokenlist:
+        if isFunctionCall(token, ('asctime',), 1):
+            reportError(token,'style','Do no use asctime() better use asctime_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('atof',), 1):
+            reportError(token,'style','Do no use atof() better use strtod()', 'MSC24-C')
+        elif isFunctionCall(token, ('atoi',), 1):
+            reportError(token,'style','Do no use atoi() better use strtol()', 'MSC24-C')
+        elif isFunctionCall(token, ('atol',), 1):
+            reportError(token,'style','Do no use atol() better use strtol()', 'MSC24-C')
+        elif isFunctionCall(token, ('atoll',), 1):
+            reportError(token,'style','Do no use atoll() better use strtoll()', 'MSC24-C')
+        elif isFunctionCall(token, ('ctime',), 1):
+            reportError(token,'style','Do no use ctime() better use ctime_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('fopen',), 2):
+            reportError(token,'style','Do no use fopen() better use fopen_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('freopen',), 3):
+            reportError(token,'style','Do no use freopen() better use freopen_s()', 'MSC24-C')
+        elif isFunctionCall(token, ('rewind',), 1):
+            reportError(token,'style','Do no use rewind() better use fseek()', 'MSC24-C')
+        elif isFunctionCall(token, ('setbuf',), 2):
+            reportError(token,'style','Do no use setbuf() better use setvbuf()', 'MSC24-C')
 
 # MSC30-C
 # Do not use the rand() function for generating pseudorandom numbers
@@ -278,6 +302,39 @@ def str07(data):
             continue
         reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % (token.str), 'STR07-C')
 
+# STR11-C
+# Do not specify the bound of a character array initialized with a string literal
+def str11(data):
+    for token in data.tokenlist:
+        if not token.isString:
+            continue
+
+        strlen = token.strlen
+        parent = token.astParent
+
+        if parent is None:
+            continue
+        parentOp1 = parent.astOperand1
+        if parentOp1 is None or parentOp1.str!='[':
+            continue
+
+        if not parent.isAssignmentOp:
+            continue
+            
+        varToken = parentOp1.astOperand1
+        if varToken is None or not varToken.isName:
+            continue
+        if varToken.variable is None:
+            continue
+        if varToken != varToken.variable.nameToken:
+            continue
+        valueToken = parentOp1.astOperand2
+        if valueToken is None:
+            continue
+            
+        if valueToken.isNumber and int(valueToken.str)==strlen:
+            reportError(valueToken, 'style', 'Do not specify the bound of a character array initialized with a string literal', 'STR11-C')
+
 for arg in sys.argv[1:]:
     if arg == '-verify':
         VERIFY = True
@@ -307,6 +364,8 @@ for arg in sys.argv[1:]:
         str03(cfg)
         str05(cfg)
         str07(cfg)
+        str11(cfg)
+        msc24(cfg)
         msc30(cfg)
 
     if VERIFY:

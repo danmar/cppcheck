@@ -95,12 +95,12 @@ public:
 class CPPCHECKLIB CheckLeakAutoVar : public Check {
 public:
     /** This constructor is used when registering the CheckLeakAutoVar */
-    CheckLeakAutoVar() : Check(myName()) {
+    CheckLeakAutoVar() : Check(myName()), recursiveCount(0) {
     }
 
     /** This constructor is used when running checks. */
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
+        : Check(myName(), tokenizer, settings, errorLogger), recursiveCount(0) {
     }
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
@@ -131,6 +131,9 @@ private:
     /** parse changes in allocation status */
     void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
+    /** update allocation status if reallocation function */
+    void changeAllocStatusIfRealloc(std::map<unsigned int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
+
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, const VarInfo &varInfo);
 
@@ -160,6 +163,8 @@ private:
     std::string classInfo() const OVERRIDE {
         return "Detect when a auto variable is allocated but not deallocated or deallocated twice.\n";
     }
+
+    unsigned int recursiveCount;
 };
 /// @}
 //---------------------------------------------------------------------------

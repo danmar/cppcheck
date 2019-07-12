@@ -1131,6 +1131,32 @@ bool isConstVarExpression(const Token *tok)
     return false;
 }
 
+static const Variable *getLHSVariableRecursive(const Token *tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "*|&|&&|[")) {
+        const Variable *var = getLHSVariableRecursive(tok->astOperand1());
+        if (var || Token::simpleMatch(tok, "["))
+            return var;
+        return getLHSVariableRecursive(tok->astOperand2());
+    }
+    if (Token::Match(tok->previous(), "this . %var%"))
+        return tok->next()->variable();
+    return tok->variable();
+}
+
+const Variable *getLHSVariable(const Token *tok)
+{
+    if (!Token::Match(tok, "%assign%"))
+        return nullptr;
+    if (!tok->astOperand1())
+        return nullptr;
+    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
+        return tok->astOperand1()->variable();
+    return getLHSVariableRecursive(tok->astOperand1());
+}
+
 static bool nonLocal(const Variable* var, bool deref)
 {
     return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
@@ -1146,7 +1172,7 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local)
+struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local, bool inInnerClass)
 {
     // Parse the given tokens
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
@@ -1162,13 +1188,21 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (Token::simpleMatch(tok, "goto"))
             return Result(Result::Type::BAILOUT);
 
+        if (!inInnerClass && tok->str() == "{" && tok->scope()->isClassOrStruct()) {
+            // skip returns from local class definition
+            FwdAnalysis::Result result = checkRecursive(expr, tok, tok->link(), exprVarIds, local, true);
+            if (result.type != Result::Type::NONE)
+                return result;
+            tok=tok->link();
+        }
+
         if (tok->str() == "continue")
             // TODO
             return Result(Result::Type::BAILOUT);
 
         if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
             tok = lambdaEndToken;
-            const Result lambdaResult = checkRecursive(expr, lambdaEndToken->link()->next(), lambdaEndToken, exprVarIds, local);
+            const Result lambdaResult = checkRecursive(expr, lambdaEndToken->link()->next(), lambdaEndToken, exprVarIds, local, inInnerClass);
             if (lambdaResult.type == Result::Type::READ || lambdaResult.type == Result::Type::BAILOUT)
                 return lambdaResult;
         }
@@ -1184,10 +1218,13 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     return Result(Result::Type::READ);
             }
 
-            if (!local && mWhat == What::Reassign)
-                return Result(Result::Type::BAILOUT);
+            // #9167: if the return is inside an inner class, it does not tell us anything
+            if (!inInnerClass) {
+                if (!local && mWhat == What::Reassign)
+                    return Result(Result::Type::BAILOUT);
 
-            return Result(Result::Type::RETURN);
+                return Result(Result::Type::RETURN);
+            }
         }
 
         if (tok->str() == "}") {
@@ -1218,7 +1255,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
 
                 // check loop body again..
-                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local);
+                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass);
                 if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
                     return result;
             }
@@ -1297,14 +1334,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             if (Token::simpleMatch(tok->link()->previous(), "switch ("))
                 // TODO: parse switch
                 return Result(Result::Type::BAILOUT);
-            const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local);
+            const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local, inInnerClass);
             if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
                 return result1;
             if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
                 mValueFlowKnown = false;
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
-                const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local);
+                const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local, inInnerClass);
                 if (mWhat == What::ValueFlow && result2.type == Result::Type::WRITE)
                     mValueFlowKnown = false;
                 if (result2.type == Result::Type::READ || result2.type == Result::Type::BAILOUT)
@@ -1426,7 +1463,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
     if (mWhat == What::UnusedValue && isGlobalData(expr))
         return Result(FwdAnalysis::Result::Type::BAILOUT);
 
-    Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local);
+    Result result = checkRecursive(expr, startToken, endToken, exprVarIds, local, false);
 
     // Break => continue checking in outer scope
     while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
@@ -1435,7 +1472,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToke
             s = s->nestedIn;
         if (s->type != Scope::eSwitch && s->type != Scope::eWhile && s->type != Scope::eFor)
             break;
-        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local);
+        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local, false);
     }
 
     return result;

@@ -61,6 +61,8 @@ static const char * getFunctionTypeName(Function::Type type)
         return "function";
     case Function::eOperatorEqual:
         return "operator=";
+    case Function::eLambda:
+        return "lambda";
     }
     return "";
 }
@@ -331,7 +333,7 @@ void CheckClass::copyconstructors()
             const Token* tok = func.token->linkAt(1);
             for (const Token* const end = func.functionScope->bodyStart; tok != end; tok = tok->next()) {
                 if (Token::Match(tok, "%var% ( new") ||
-                    (Token::Match(tok, "%var% ( %name% (") && mSettings->library.alloc(tok->tokAt(2)))) {
+                    (Token::Match(tok, "%var% ( %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
                     const Variable* var = tok->variable();
                     if (var && var->isPointer() && var->scope() == scope)
                         allocatedVars[tok->varId()] = tok;
@@ -339,7 +341,7 @@ void CheckClass::copyconstructors()
             }
             for (const Token* const end = func.functionScope->bodyEnd; tok != end; tok = tok->next()) {
                 if (Token::Match(tok, "%var% = new") ||
-                    (Token::Match(tok, "%var% = %name% (") && mSettings->library.alloc(tok->tokAt(2)))) {
+                    (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
                     const Variable* var = tok->variable();
                     if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
                         allocatedVars[tok->varId()] = tok;
@@ -1228,7 +1230,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
 
     // Warn if type is a class that contains any virtual functions
     for (const Function &func : type->functionList) {
-        if (func.isVirtual()) {
+        if (func.hasVirtualSpecifier()) {
             if (allocation)
                 mallocOnClassError(tok, tok->str(), type->classDef, "virtual function");
             else
@@ -1651,9 +1653,9 @@ void CheckClass::virtualDestructor()
         if (scope->definedType->derivedFrom.empty()) {
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
-                if (destructor && !destructor->isVirtual()) {
+                if (destructor && !destructor->hasVirtualSpecifier()) {
                     for (const Function &func : scope->functionList) {
-                        if (func.isVirtual()) {
+                        if (func.hasVirtualSpecifier()) {
                             inconclusiveErrors.push_back(destructor);
                             break;
                         }
@@ -1736,7 +1738,7 @@ void CheckClass::virtualDestructor()
                     if (derivedFrom->derivedFrom.empty()) {
                         virtualDestructorError(derivedFrom->classDef, derivedFrom->name(), derivedClass->str(), false);
                     }
-                } else if (!baseDestructor->isVirtual()) {
+                } else if (!baseDestructor->hasVirtualSpecifier()) {
                     // TODO: This is just a temporary fix, better solution is needed.
                     // Skip situations where base class has base classes of its own, because
                     // some of the base classes might have virtual destructor.
@@ -1827,7 +1829,7 @@ void CheckClass::checkConst()
             if (func.type != Function::eFunction || !func.hasBody())
                 continue;
             // don't warn for friend/static/virtual functions
-            if (func.isFriend() || func.isStatic() || func.isVirtual())
+            if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
             // get last token of return type
             const Token *previous = func.tokenDef->previous();
@@ -2369,7 +2371,7 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
                 continue;
         }
 
-        if (callFunction->isVirtual()) {
+        if (callFunction->isImplicitlyVirtual()) {
             if (!callFunction->isPure() && Token::simpleMatch(tok->previous(), "::"))
                 continue;
             virtualFunctionCalls.push_back(tok);
@@ -2389,7 +2391,7 @@ void CheckClass::getFirstVirtualFunctionCallStack(
     std::list<const Token *> & pureFuncStack)
 {
     const Function *callFunction = callToken->function();
-    if (callFunction->isVirtual() && (!callFunction->isPure() || !callFunction->hasBody())) {
+    if (callFunction->isImplicitlyVirtual() && (!callFunction->isPure() || !callFunction->hasBody())) {
         pureFuncStack.push_back(callFunction->tokenDef);
         return;
     }

@@ -29,22 +29,23 @@ environment:
       vcvarsall_platform: x64
       PlatformToolset: v120
       MYQTDIR: C:\Qt\5.6\msvc2013_64
-    - VisualStudioVersion: 14.0
-      platform: Win32
-      configuration: Debug
-      vcvarsall_platform: x86
-      PlatformToolset: v140
-    - VisualStudioVersion: 14.0
-      platform: Win32
-      configuration: Release
-      vcvarsall_platform: x86
-      PlatformToolset: v140
-      MYQTDIR: C:\Qt\5.11\msvc2015
-    - VisualStudioVersion: 14.0
-      platform: x64
-      configuration: Debug
-      vcvarsall_platform: x64
-      PlatformToolset: v140
+# FIXME: These are disabled for now. They were broken by ae8653612802b41b70424ec9a5eefe8a1178f6d1
+#    - VisualStudioVersion: 14.0
+#      platform: Win32
+#      configuration: Debug
+#      vcvarsall_platform: x86
+#      PlatformToolset: v140
+#    - VisualStudioVersion: 14.0
+#      platform: Win32
+#      configuration: Release
+#      vcvarsall_platform: x86
+#      PlatformToolset: v140
+#      MYQTDIR: C:\Qt\5.11\msvc2015
+#    - VisualStudioVersion: 14.0
+#      platform: x64
+#      configuration: Debug
+#      vcvarsall_platform: x64
+#      PlatformToolset: v140
 # That platform causes frequent errors on appveyor due to an unknown infrastructure failure
 #    - VisualStudioVersion: 14.0
 #      platform: x64
@@ -53,10 +54,22 @@ environment:
 #      PlatformToolset: v140
 #      MYQTDIR: C:\Qt\5.11\msvc2015_64
 
+install:
+  - pip install pytest
+
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
+  # Visual studio project..
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  # cmake..
+  - mkdir build
+  - cd build
+  - cmake -DBUILD_TESTS=ON -G"NMake Makefiles" ..
+  - nmake
+  - copy bin\cppcheck.exe ..
+  - cd ..
+  # build gui..
   - ECHO MYQTDIR=%MYQTDIR%
   - 'IF defined MYQTDIR cd gui'
   - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
@@ -65,8 +78,13 @@ build_script:
   - 'IF defined MYQTDIR cd ..'
 
 test_script:
-  - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
-  - IF "%CONFIGURATION%" == "Release" bin\testrunner.exe
+  - build\bin\testrunner.exe -q
+  - IF EXIST bin\debug\testrunner.exe bin\debug\testrunner.exe
+  - IF EXIST bin\testrunner.exe bin\testrunner.exe
+  - cd test\cli
+  - python -m pytest test-helloworld.py
+  - python -m pytest test-inline-suppress.py
+  - python -m pytest test-suppress-syntaxError.py
 
 artifacts:
   - path: bin

@@ -622,11 +622,11 @@ private:
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
 
-        ASSERT(Library::ismemory(library.alloc("CreateX")));
+        ASSERT(Library::ismemory(library.getAllocFuncInfo("CreateX")));
         ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
-        const Library::AllocFunc* af = library.alloc("CreateX");
+        const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
         ASSERT(af && af->arg == -1);
-        const Library::AllocFunc* df = library.dealloc("DeleteX");
+        const Library::AllocFunc* df = library.getDeallocFuncInfo("DeleteX");
         ASSERT(df && df->arg == 1);
     }
     void memory2() const {
@@ -665,9 +665,9 @@ private:
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
         ASSERT(library.functions.empty());
 
-        const Library::AllocFunc* af = library.alloc("CreateX");
+        const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
         ASSERT(af && af->arg == 5);
-        const Library::AllocFunc* df = library.dealloc("DeleteX");
+        const Library::AllocFunc* df = library.getDeallocFuncInfo("DeleteX");
         ASSERT(df && df->arg == 2);
 
         ASSERT(library.returnuninitdata.find("CreateX") != library.returnuninitdata.cend());
@@ -704,7 +704,7 @@ private:
             // s8
             {
                 const struct Library::PodType * const type = library.podtype("s8");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
                     ASSERT_EQUALS('s', type->sign);
@@ -713,7 +713,7 @@ private:
             // u8
             {
                 const struct Library::PodType * const type = library.podtype("u8");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
                     ASSERT_EQUALS('u', type->sign);
@@ -722,7 +722,7 @@ private:
             // u16
             {
                 const struct Library::PodType * const type = library.podtype("u16");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
                     ASSERT_EQUALS('u', type->sign);
@@ -731,7 +731,7 @@ private:
             // s16
             {
                 const struct Library::PodType * const type = library.podtype("s16");
-                ASSERT_EQUALS(true, type != 0);
+                ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
                     ASSERT_EQUALS('s', type->sign);
@@ -740,7 +740,7 @@ private:
             // robustness test: provide cfg without PodType
             {
                 const struct Library::PodType * const type = library.podtype("nonExistingPodType");
-                ASSERT_EQUALS(true, type == 0);
+                ASSERT_EQUALS(true, type == nullptr);
             }
         }
     }

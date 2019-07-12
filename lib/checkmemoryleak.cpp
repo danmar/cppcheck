@@ -172,7 +172,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         }
 
         // Does tok2 point on a Library allocation function?
-        const int alloctype = mSettings_->library.alloc(tok2, -1);
+        const int alloctype = mSettings_->library.getAllocId(tok2, -1);
         if (alloctype > 0) {
             if (alloctype == mSettings_->library.deallocId("free"))
                 return Malloc;
@@ -263,7 +263,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
                 }
 
                 // Does tok point on a Library deallocation function?
-                const int dealloctype = mSettings_->library.dealloc(tok, argNr);
+                const int dealloctype = mSettings_->library.getDeallocId(tok, argNr);
                 if (dealloctype > 0) {
                     if (dealloctype == mSettings_->library.deallocId("free"))
                         return Malloc;
@@ -355,7 +355,7 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* func, std::list<const Function*> *callstack) const
 {
-    if (!func || !func->hasBody())
+    if (!func || !func->hasBody() || !func->functionScope)
         return No;
 
     // Get return pointer..

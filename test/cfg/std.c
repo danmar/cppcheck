@@ -102,6 +102,35 @@ void arrayIndexOutOfBounds()
     // cppcheck-suppress arrayIndexOutOfBounds
     pAlloc1[16] = '1';
     free(pAlloc1);
+
+    char * pAlloc2 = malloc(9);
+    pAlloc2[8] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc2[9] = 'a';
+
+    // #1379
+    // cppcheck-suppress memleakOnRealloc
+    pAlloc2 = realloc(pAlloc2, 8);
+    pAlloc2[7] = 'b';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc2[8] = 0;
+    // cppcheck-suppress memleakOnRealloc
+    pAlloc2 = realloc(pAlloc2, 20);
+    pAlloc2[19] = 'b';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc2[20] = 0;
+    free(pAlloc2);
+
+    char * pAlloc3 = calloc(2,3);
+    pAlloc3[5] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc3[6] = 1;
+    // TODO cppcheck-suppress memleakOnRealloc
+    pAlloc3 = reallocarray(pAlloc3, 3,3);
+    pAlloc3[8] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc3[9] = 1;
+    free(pAlloc3);
 }
 
 void resourceLeak_tmpfile(void)
@@ -117,7 +146,7 @@ void ignoreleak(void)
 {
     char *p = (char *)malloc(10);
     memset(&(p[0]), 0, 10);
-    // TODO cppcheck-suppress memleak
+    // cppcheck-suppress memleak
 }
 
 // null pointer
@@ -1434,7 +1463,7 @@ void uninitvar_freopen(void)
     FILE *stream;
     // cppcheck-suppress uninitvar
     FILE * p = freopen(filename,mode,stream);
-    free(p);
+    fclose(p);
 }
 
 void uninitvar_frexp(void)

@@ -955,6 +955,18 @@ const Token *Token::findmatch(const Token * const startTok, const char pattern[]
     return nullptr;
 }
 
+void Token::function(const Function *f)
+{
+    mImpl->mFunction = f;
+    if (f) {
+        if (f->isLambda())
+            tokType(eLambda);
+        else
+            tokType(eFunction);
+    } else if (mTokType == eFunction)
+        tokType(eName);
+}
+
 void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
 {
     Token *newToken;
@@ -1855,4 +1867,36 @@ TokenImpl::~TokenImpl()
     for (auto templateSimplifierPointer : mTemplateSimplifierPointers) {
         templateSimplifierPointer->token = nullptr;
     }
+
+    while (mCppcheckAttributes) {
+        struct CppcheckAttributes *c = mCppcheckAttributes;
+        mCppcheckAttributes = mCppcheckAttributes->next;
+        delete c;
+    }
+}
+
+void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
+{
+    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    while (attr && attr->type != type)
+        attr = attr->next;
+    if (attr)
+        attr->value = value;
+    else {
+        attr = new CppcheckAttributes;
+        attr->type = type;
+        attr->value = value;
+        attr->next = mCppcheckAttributes;
+        mCppcheckAttributes = attr;
+    }
+}
+
+bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const
+{
+    struct CppcheckAttributes *attr = mCppcheckAttributes;
+    while (attr && attr->type != type)
+        attr = attr->next;
+    if (attr)
+        *value = attr->value;
+    return attr != nullptr;
 }

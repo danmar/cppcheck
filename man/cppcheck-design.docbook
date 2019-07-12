@@ -182,7 +182,7 @@ void f2()
   <section>
     <title>Final thoughts</title>
 
-    <para>You can not trust that Cppcheck will detect all bugs.</para>
+    <para>You cannot trust that Cppcheck will detect all bugs.</para>
 
     <para>Cppcheck will just find some bugs. It is likely that you won't find
     these bugs unless you use Cppcheck.</para>

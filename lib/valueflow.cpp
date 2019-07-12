@@ -2819,35 +2819,6 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
-static const Variable *getLHSVariableRecursive(const Token *tok)
-{
-    if (!tok)
-        return nullptr;
-    if (Token::Match(tok, "*|&|&&|[")) {
-        const Variable *var1 = getLHSVariableRecursive(tok->astOperand1());
-        if (var1 || Token::simpleMatch(tok, "["))
-            return var1;
-        const Variable *var2 = getLHSVariableRecursive(tok->astOperand2());
-        return var2;
-    }
-    if (!tok->variable())
-        return nullptr;
-    if (tok->variable()->nameToken() == tok)
-        return tok->variable();
-    return nullptr;
-}
-
-static const Variable *getLHSVariable(const Token *tok)
-{
-    if (!Token::Match(tok, "%assign%"))
-        return nullptr;
-    if (!tok->astOperand1())
-        return nullptr;
-    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
-        return tok->astOperand1()->variable();
-    return getLHSVariableRecursive(tok->astOperand1());
-}
-
 static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
 {
     if (!vtParent)
@@ -2942,10 +2913,14 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     // Assignment
     if (parent->str() == "=" && (!parent->astParent() || Token::simpleMatch(parent->astParent(), ";"))) {
         const Variable *var = getLHSVariable(parent);
-        if (!var || (!var->isLocal() && !var->isGlobal() && !var->isArgument()))
+        if (!var)
             return;
 
-        const Token *const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
+        const Token * endOfVarScope = nullptr;
+        if (!var->isLocal())
+            endOfVarScope = tok->scope()->bodyEnd;
+        else
+            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
         // Rhs values..
         if (!parent->astOperand2() || parent->astOperand2()->values().empty())
@@ -3425,17 +3400,17 @@ static bool isStdMoveOrStdForwarded(Token * tok, ValueFlow::Value::MoveKind * mo
 {
     if (tok->str() != "std")
         return false;
-    ValueFlow::Value::MoveKind kind = ValueFlow::Value::NonMovedVariable;
+    ValueFlow::Value::MoveKind kind = ValueFlow::Value::MoveKind::NonMovedVariable;
     Token * variableToken = nullptr;
     if (Token::Match(tok, "std :: move ( %var% )")) {
         variableToken = tok->tokAt(4);
-        kind = ValueFlow::Value::MovedVariable;
+        kind = ValueFlow::Value::MoveKind::MovedVariable;
     } else if (Token::simpleMatch(tok, "std :: forward <")) {
         const Token * const leftAngle = tok->tokAt(3);
         Token * rightAngle = leftAngle->link();
         if (Token::Match(rightAngle, "> ( %var% )")) {
             variableToken = rightAngle->tokAt(2);
-            kind = ValueFlow::Value::ForwardedVariable;
+            kind = ValueFlow::Value::MoveKind::ForwardedVariable;
         }
     }
     if (!variableToken)
@@ -3496,8 +3471,8 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName() == emptyString) {
                 varTok = tok;
                 ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::MOVED;
-                value.moveKind = ValueFlow::Value::NonMovedVariable;
+                value.valueType = ValueFlow::Value::ValueType::MOVED;
+                value.moveKind = ValueFlow::Value::MoveKind::NonMovedVariable;
                 value.errorPath.emplace_back(tok, "Calling " + tok->next()->expressionString() + " makes " + tok->str() + " 'non-moved'");
                 value.setKnown();
                 std::list<ValueFlow::Value> values;
@@ -3533,9 +3508,9 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             const Token * const endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
 
             ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::MOVED;
+            value.valueType = ValueFlow::Value::ValueType::MOVED;
             value.moveKind = moveKind;
-            if (moveKind == ValueFlow::Value::MovedVariable)
+            if (moveKind == ValueFlow::Value::MoveKind::MovedVariable)
                 value.errorPath.emplace_back(tok, "Calling std::move(" + varTok->str() + ")");
             else // if (moveKind == ValueFlow::Value::ForwardedVariable)
                 value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
@@ -4836,7 +4811,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 &error);
         if (!error) {
             ValueFlow::Value v(result);
-            if (function->isVirtual())
+            if (function->hasVirtualSpecifier())
                 v.setPossible();
             else
                 v.setKnown();
@@ -5310,7 +5285,9 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
             if (!Token::Match(rhs->previous(), "%name% ("))
                 continue;
 
-            const Library::AllocFunc *allocFunc = settings->library.alloc(rhs->previous());
+            const Library::AllocFunc *allocFunc = settings->library.getAllocFuncInfo(rhs->previous());
+            if (!allocFunc)
+                allocFunc = settings->library.getReallocFuncInfo(rhs->previous());
             if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
                 continue;
 
@@ -5361,12 +5338,164 @@ static void valueFlowDynamicBufferSize(TokenList *tokenlist, SymbolDatabase *sym
     }
 }
 
+static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
+{
+    if (!vt || !vt->isIntegral() || vt->pointer)
+        return false;
+
+    int bits;
+    switch (vt->type) {
+    case ValueType::Type::BOOL:
+        bits = 1;
+        break;
+    case ValueType::Type::CHAR:
+        bits = platform.char_bit;
+        break;
+    case ValueType::Type::SHORT:
+        bits = platform.short_bit;
+        break;
+    case ValueType::Type::INT:
+        bits = platform.int_bit;
+        break;
+    case ValueType::Type::LONG:
+        bits = platform.long_bit;
+        break;
+    case ValueType::Type::LONGLONG:
+        bits = platform.long_long_bit;
+        break;
+    default:
+        return false;
+    };
+
+    if (bits == 1) {
+        *minValue = 0;
+        *maxValue = 1;
+    } else if (bits < 62) {
+        if (vt->sign == ValueType::Sign::UNSIGNED) {
+            *minValue = 0;
+            *maxValue = (1LL << bits) - 1;
+        } else {
+            *minValue = -(1LL << (bits - 1));
+            *maxValue = (1LL << (bits - 1)) - 1;
+        }
+    } else if (bits == 64) {
+        if (vt->sign == ValueType::Sign::UNSIGNED) {
+            *minValue = 0;
+            *maxValue = LLONG_MAX; // todo max unsigned value
+        } else {
+            *minValue = LLONG_MIN;
+            *maxValue = LLONG_MAX;
+        }
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+static bool getMinMaxValues(const std::string &typestr, const Settings *settings, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
+{
+    TokenList typeTokens(settings);
+    std::istringstream istr(typestr+";");
+    if (!typeTokens.createTokens(istr))
+        return false;
+    typeTokens.simplifyPlatformTypes();
+    typeTokens.simplifyStdType();
+    const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings);
+    return getMinMaxValues(&vt, *settings, minvalue, maxvalue);
+}
+
+static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (const Scope *functionScope : symboldatabase->functionScopes) {
+        if (!functionScope->bodyStart)
+            continue;
+        const Function *function = functionScope->function;
+        if (!function)
+            continue;
+
+        const bool all = function->isSafe(settings) && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
+
+        for (const Variable &arg : function->argumentList) {
+            if (!arg.nameToken())
+                continue;
+
+            MathLib::bigint low, high;
+            bool isLow = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low);
+            bool isHigh = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high);
+
+            if (!isLow && !isHigh && !all)
+                continue;
+
+            if ((!isLow || !isHigh) && all) {
+                MathLib::bigint minValue, maxValue;
+                if (getMinMaxValues(arg.valueType(), *settings, &minValue, &maxValue)) {
+                    if (!isLow)
+                        low = minValue;
+                    if (!isHigh)
+                        high = maxValue;
+                    isLow = isHigh = true;
+                }
+            }
+
+            std::list<ValueFlow::Value> argValues;
+            if (isLow)
+                argValues.emplace_back(low);
+            if (isHigh)
+                argValues.emplace_back(high);
+
+            if (!argValues.empty())
+                valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
+                                 functionScope->bodyEnd,
+                                 &arg,
+                                 arg.declarationId(),
+                                 argValues,
+                                 false,
+                                 false,
+                                 tokenlist,
+                                 errorLogger,
+                                 settings);
+        }
+    }
+}
+
+static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings *settings)
+{
+    if (settings->checkUnknownFunctionReturn.empty())
+        return;
+    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (!tok->astParent() || tok->str() != "(")
+            continue;
+        if (!Token::Match(tok->previous(), "%name%"))
+            continue;
+        if (settings->checkUnknownFunctionReturn.find(tok->previous()->str()) == settings->checkUnknownFunctionReturn.end())
+            continue;
+        std::vector<MathLib::bigint> unknownValues = settings->library.unknownReturnValues(tok->astOperand1());
+        if (unknownValues.empty())
+            continue;
+
+        // Get min/max values for return type
+        const std::string &typestr = settings->library.returnValueType(tok->previous());
+        MathLib::bigint minvalue, maxvalue;
+        if (!getMinMaxValues(typestr, settings, &minvalue, &maxvalue))
+            continue;
+
+        for (MathLib::bigint value : unknownValues) {
+            if (value < minvalue)
+                value = minvalue;
+            else if (value > maxvalue)
+                value = maxvalue;
+            setTokenValue(const_cast<Token *>(tok), ValueFlow::Value(value), settings);
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token *c, long long val)
     : valueType(INT),
       intvalue(val),
       tokvalue(nullptr),
       floatValue(0.0),
-      moveKind(NonMovedVariable),
+      moveKind(MoveKind::NonMovedVariable),
       varvalue(val),
       condition(c),
       varId(0U),
@@ -5427,6 +5556,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
+    valueFlowUnknownFunctionReturn(tokenlist, settings);
     valueFlowGlobalConstVar(tokenlist, settings);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
@@ -5459,6 +5589,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
             valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
         }
+        valueFlowSafeFunctions(tokenlist, symboldatabase, errorLogger, settings);
     }
 
     valueFlowDynamicBufferSize(tokenlist, symboldatabase, errorLogger, settings);

@@ -560,6 +560,8 @@ public:
         return getFlag(fIsSmartPointer);
     }
 
+    const Type *smartPointerType() const;
+
     /**
      * Checks if the variable is of any of the STL types passed as arguments ('std::')
      * E.g.:
@@ -665,7 +667,7 @@ class CPPCHECKLIB Function {
         fHasBody               = (1 << 0),  ///< @brief has implementation
         fIsInline              = (1 << 1),  ///< @brief implementation in class definition
         fIsConst               = (1 << 2),  ///< @brief is const
-        fIsVirtual             = (1 << 3),  ///< @brief is virtual
+        fHasVirtualSpecifier   = (1 << 3),  ///< @brief does declaration contain 'virtual' specifier
         fIsPure                = (1 << 4),  ///< @brief is pure virtual
         fIsStatic              = (1 << 5),  ///< @brief is static
         fIsStaticLocal         = (1 << 6),  ///< @brief is static local
@@ -705,7 +707,7 @@ class CPPCHECKLIB Function {
     }
 
 public:
-    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction };
+    enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
 
@@ -730,6 +732,10 @@ public:
 
     /** @brief get function in base class that is overridden */
     const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
+
+    bool isLambda() const {
+        return type==eLambda;
+    }
 
     bool isConstructor() const {
         return type==eConstructor ||
@@ -771,8 +777,8 @@ public:
     bool isConst() const {
         return getFlag(fIsConst);
     }
-    bool isVirtual() const {
-        return getFlag(fIsVirtual);
+    bool hasVirtualSpecifier() const {
+        return getFlag(fHasVirtualSpecifier);
     }
     bool isPure() const {
         return getFlag(fIsPure);
@@ -833,6 +839,8 @@ public:
         setFlag(fHasBody, state);
     }
 
+    bool isSafe(const Settings *settings) const;
+
     const Token *tokenDef;            ///< function name token in class definition
     const Token *argDef;              ///< function argument start '(' in class definition
     const Token *token;               ///< function name token in implementation
@@ -878,8 +886,8 @@ private:
     void isConst(bool state) {
         setFlag(fIsConst, state);
     }
-    void isVirtual(bool state) {
-        setFlag(fIsVirtual, state);
+    void hasVirtualSpecifier(bool state) {
+        setFlag(fHasVirtualSpecifier, state);
     }
     void isPure(bool state) {
         setFlag(fIsPure, state);
@@ -1112,15 +1120,16 @@ public:
     unsigned int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     unsigned int constness;               ///< bit 0=data, bit 1=*, bit 2=**
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
+    const ::Type *smartPointerType;       ///< Smart pointer type
     const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
     const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
     std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
 
-    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr) {}
-    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
+    ValueType() : sign(UNKNOWN_SIGN), type(UNKNOWN_TYPE), bits(0), pointer(0U), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(const ValueType &vt) : sign(vt.sign), type(vt.type), bits(vt.bits), pointer(vt.pointer), constness(vt.constness), typeScope(vt.typeScope), smartPointerType(vt.smartPointerType), container(vt.container), containerTypeToken(vt.containerTypeToken), originalTypeName(vt.originalTypeName) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p) : sign(s), type(t), bits(0), pointer(p), constness(0U), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr) {}
+    ValueType(enum Sign s, enum Type t, unsigned int p, unsigned int c, const std::string &otn) : sign(s), type(t), bits(0), pointer(p), constness(c), typeScope(nullptr), smartPointerType(nullptr), container(nullptr), containerTypeToken(nullptr), originalTypeName(otn) {}
     ValueType &operator=(const ValueType &other) = delete;
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
