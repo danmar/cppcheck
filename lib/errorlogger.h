@@ -193,12 +193,21 @@ public:
                 : fileIndex(0), line(0), col(0) {
             }
 
-            FileLocation(const std::string &file, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file) {
+            FileLocation(const std::string &file, unsigned int aline):
+                fileIndex(0),
+                line(static_cast<int>(aline)),
+                col(0),
+                mOrigFileName(file),
+                mFileName(file) {
             }
 
-            FileLocation(const std::string &file, const std::string &info, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file), mInfo(info) {
+            FileLocation(const std::string &file, const std::string &info, unsigned int aline):
+                fileIndex(0),
+                line(static_cast<int>(aline)),
+                col(0),
+                mOrigFileName(file),
+                mFileName(file),
+                mInfo(info) {
             }
 
             FileLocation(const Token* tok, const TokenList* tokenList);
