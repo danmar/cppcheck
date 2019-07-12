@@ -561,6 +561,24 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             varInfo->clear();
         }
 
+        // delete
+        else if (mTokenizer->isCPP() && tok->str() == "delete") {
+            const bool arrayDelete = Token::simpleMatch(tok->next(), "[ ]");
+            if (arrayDelete)
+                tok = tok->tokAt(3);
+            else
+                tok = tok->next();
+            if (tok->str() == "(")
+                tok = tok->next();
+            while (Token::Match(tok, "%name% ::|."))
+                tok = tok->tokAt(2);
+            const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
+            if (!isnull && tok->varId() && tok->strAt(1) != "[") {
+                const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC);
+                changeAllocStatus(varInfo, allocation, tok, tok);
+            }
+        }
+
         // Function call..
         else if (isFunctionCall(ftok)) {
             const Token * openingPar = isFunctionCall(ftok);
@@ -585,22 +603,6 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             continue;
-        }
-
-        // delete
-        else if (mTokenizer->isCPP() && tok->str() == "delete") {
-            const bool arrayDelete = (tok->strAt(1) == "[");
-            if (arrayDelete)
-                tok = tok->tokAt(3);
-            else
-                tok = tok->next();
-            while (Token::Match(tok, "%name% ::|."))
-                tok = tok->tokAt(2);
-            const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
-            if (!isnull && tok->varId() && tok->strAt(1) != "[") {
-                const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC);
-                changeAllocStatus(varInfo, allocation, tok, tok);
-            }
         }
 
         // goto => weird execution path
