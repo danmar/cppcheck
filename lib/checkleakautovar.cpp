@@ -162,7 +162,7 @@ void CheckLeakAutoVar::check()
         // Empty variable info
         VarInfo varInfo;
 
-        checkScope(scope->bodyStart, &varInfo, notzero, 0);
+        checkScope(scope->bodyStart, &varInfo, notzero);
 
         varInfo.conditionalAlloc.clear();
 
@@ -234,12 +234,11 @@ static const Token * isFunctionCall(const Token * nameToken)
 
 void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
-                                  std::set<unsigned int> notzero,
-                                  unsigned int recursiveCount)
+                                  std::set<unsigned int> notzero)
 {
     // The C++ standard suggests a minimum of 256 nested control statements
     // but MSVC has a limit of 100.
-    if (++recursiveCount > 256)
+    if (++mRecursiveCount > 256)
         throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 256 reached.", InternalError::LIMIT);
 
     std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
@@ -470,10 +469,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
                 }
 
-                checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount);
+                checkScope(closingParenthesis->next(), &varInfo1, notzero);
                 closingParenthesis = closingParenthesis->linkAt(1);
                 if (Token::simpleMatch(closingParenthesis, "} else {")) {
-                    checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero, recursiveCount);
+                    checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero);
                     tok = closingParenthesis->linkAt(2)->previous();
                 } else {
                     tok = closingParenthesis->previous();
@@ -682,6 +681,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             changeAllocStatus(varInfo, allocation, vtok, vtok);
         }
     }
+
+    --mRecursiveCount;
 }
 
 
