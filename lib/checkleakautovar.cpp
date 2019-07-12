@@ -159,6 +159,8 @@ void CheckLeakAutoVar::check()
         if (scope->hasInlineOrLambdaFunction())
             continue;
 
+        mRecursiveCount = 0;
+
         // Empty variable info
         VarInfo varInfo;
 
