@@ -9839,6 +9839,28 @@ void Tokenizer::simplifyCPPAttribute()
                 else
                     head->previous()->isAttributeNodiscard(true);
             }
+        } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
+            const Token *vartok = tok->tokAt(4);
+            if (vartok->str() == ":")
+                vartok = vartok->next();
+            Token *argtok = tok->tokAt(-2);
+            while (argtok && argtok->str() != "(") {
+                if (argtok->str() == vartok->str())
+                    break;
+                if (argtok->str() == ")")
+                    argtok = argtok->link();
+                argtok = argtok->previous();
+            }
+            if (argtok && argtok->str() == vartok->str()) {
+                if (vartok->next()->str() == ">=")
+                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2)));
+                else if (vartok->next()->str() == ">")
+                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2))+1);
+                else if (vartok->next()->str() == "<=")
+                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2)));
+                else if (vartok->next()->str() == "<")
+                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2))-1);
+            }
         }
         Token::eraseTokens(tok, tok->link()->next());
         tok->deleteThis();

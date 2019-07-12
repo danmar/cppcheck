@@ -3927,6 +3927,14 @@ private:
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(100, values.back().intvalue);
+
+        code = "void f(unsigned short x) [[expects: x <= 100]] {\n"
+               "  return x + 0;\n"
+               "}";
+        values = tokenValues(code, "+", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(100, values.back().intvalue);
     }
 
 
