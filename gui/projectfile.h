@@ -312,7 +312,7 @@ public:
     QStringList getCheckUnknownFunctionReturn() const {
         return mCheckUnknownFunctionReturn;
     }
-    void setCheckUnknownFunctionReturn(QStringList s) {
+    void setCheckUnknownFunctionReturn(const QStringList &s) {
         mCheckUnknownFunctionReturn = s;
     }
 
