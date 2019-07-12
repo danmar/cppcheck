@@ -23,6 +23,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <simplecpp.h>
+#include <vector>
 
 class TestLeakAutoVar : public TestFixture {
 public:
@@ -163,6 +165,8 @@ private:
         TEST_CASE(inlineFunction); // #3989
 
         TEST_CASE(smartPtrInContainer); // #8262
+
+        TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
     }
 
     void check(const char code[], bool cpp = false) {
@@ -173,6 +177,32 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, cpp?"test.cpp":"test.c");
+
+        // Check for leaks..
+        CheckLeakAutoVar c;
+        settings.checkLibrary = true;
+        settings.addEnabled("information");
+        c.runChecks(&tokenizer, &settings, this);
+    }
+
+    void checkP(const char code[], bool cpp = false) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Raw tokens..
+        std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokens1("");
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -1774,6 +1804,17 @@ private:
               true
              );
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void recursiveCountLimit() { // #5872 #6157 #9097
+        ASSERT_THROW(checkP("#define ONE     else if (0) { }\n"
+                            "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
+                            "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
+                            "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
+                            "void foo() {\n"
+                            "  if (0) { }\n"
+                            "  THOU\n"
+                            "}"), InternalError);
     }
 
 };
