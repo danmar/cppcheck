@@ -87,7 +87,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     flEditControls->addRow(QObject::tr("Keyword Font Weight"),
                            mCBKeywordWeight);
     mBtnClassFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Class ForegroundColor"),
+    flEditControls->addRow(QObject::tr("Class Foreground Color"),
                            mBtnClassFG);
     mCBClassWeight = new SelectFontWeightCombo(this);
     flEditControls->addRow(QObject::tr("Class Font Weight"),

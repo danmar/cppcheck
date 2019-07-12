@@ -93,7 +93,7 @@ void LibraryDialog::openCfg()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        tr("Can not open file %1.").arg(selectedFile),
+                        tr("Cannot open file %1.").arg(selectedFile),
                         QMessageBox::Ok,
                         this);
         msg.exec();
@@ -142,7 +142,7 @@ void LibraryDialog::saveCfg()
     } else {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        tr("Can not save file %1.").arg(mFileName),
+                        tr("Cannot save file %1.").arg(mFileName),
                         QMessageBox::Ok,
                         this);
         msg.exec();
