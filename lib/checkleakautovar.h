@@ -95,12 +95,12 @@ public:
 class CPPCHECKLIB CheckLeakAutoVar : public Check {
 public:
     /** This constructor is used when registering the CheckLeakAutoVar */
-    CheckLeakAutoVar() : Check(myName()), recursiveCount(0) {
+    CheckLeakAutoVar() : Check(myName()) {
     }
 
     /** This constructor is used when running checks. */
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), recursiveCount(0) {
+        : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
@@ -116,7 +116,8 @@ private:
     /** check for leaks in a function scope */
     void checkScope(const Token * const startToken,
                     VarInfo *varInfo,
-                    std::set<unsigned int> notzero);
+                    std::set<unsigned int> notzero,
+                    unsigned int recursiveCount);
 
     /** Check token inside expression.
     * @param tok token inside expression.
@@ -163,8 +164,6 @@ private:
     std::string classInfo() const OVERRIDE {
         return "Detect when a auto variable is allocated but not deallocated or deallocated twice.\n";
     }
-
-    unsigned int recursiveCount;
 };
 /// @}
 //---------------------------------------------------------------------------
