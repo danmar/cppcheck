@@ -652,6 +652,11 @@ private:
     void simplifyAttribute();
 
     /**
+     * Remove \__cppcheck\__ ((?))
+     */
+    void simplifyCppcheckAttribute();
+
+    /**
      * Remove keywords "volatile", "inline", "register", and "restrict"
      */
     void simplifyKeyword();

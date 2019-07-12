@@ -5407,8 +5407,6 @@ static bool getMinMaxValues(const std::string &typestr, const Settings *settings
 
 static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
-    if (settings->platformType == cppcheck::Platform::PlatformType::Unspecified)
-        return;
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         if (!functionScope->bodyStart)
             continue;
@@ -5416,28 +5414,47 @@ static void valueFlowSafeFunctions(TokenList *tokenlist, SymbolDatabase *symbold
         if (!function)
             continue;
 
-        if (!function->isSafe(settings))
-            continue;
+        const bool all = function->isSafe(settings) && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
 
         for (const Variable &arg : function->argumentList) {
-            MathLib::bigint minValue, maxValue;
-            if (!getMinMaxValues(arg.valueType(), *settings, &minValue, &maxValue))
+            if (!arg.nameToken())
                 continue;
 
-            std::list<ValueFlow::Value> argValues;
-            argValues.emplace_back(minValue);
-            argValues.emplace_back(maxValue);
+            MathLib::bigint low, high;
+            bool isLow = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low);
+            bool isHigh = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high);
 
-            valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
-                             functionScope->bodyEnd,
-                             &arg,
-                             arg.declarationId(),
-                             argValues,
-                             false,
-                             false,
-                             tokenlist,
-                             errorLogger,
-                             settings);
+            if (!isLow && !isHigh && !all)
+                continue;
+
+            if ((!isLow || !isHigh) && all) {
+                MathLib::bigint minValue, maxValue;
+                if (getMinMaxValues(arg.valueType(), *settings, &minValue, &maxValue)) {
+                    if (!isLow)
+                        low = minValue;
+                    if (!isHigh)
+                        high = maxValue;
+                    isLow = isHigh = true;
+                }
+            }
+
+            std::list<ValueFlow::Value> argValues;
+            if (isLow)
+                argValues.emplace_back(low);
+            if (isHigh)
+                argValues.emplace_back(high);
+
+            if (!argValues.empty())
+                valueFlowForward(const_cast<Token *>(functionScope->bodyStart->next()),
+                                 functionScope->bodyEnd,
+                                 &arg,
+                                 arg.declarationId(),
+                                 argValues,
+                                 false,
+                                 false,
+                                 tokenlist,
+                                 errorLogger,
+                                 settings);
         }
     }
 }

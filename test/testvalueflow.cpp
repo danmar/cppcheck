@@ -3919,6 +3919,14 @@ private:
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(-0x8000, values.front().intvalue);
         ASSERT_EQUALS(0x7fff, values.back().intvalue);
+
+        code = "void f(__cppcheck_in_range__(0,100) short x) {\n"
+               "  return x + 0;\n"
+               "}";
+        values = tokenValues(code, "+", &s);
+        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(100, values.back().intvalue);
     }
 
 
