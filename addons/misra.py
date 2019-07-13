@@ -1585,7 +1585,7 @@ class MisraChecker:
         def find_recursive_call(search_for_function, direct_call, calls_map, visited=set()):
             if direct_call == search_for_function:
                 return True
-            for indirect_call in calls_map[direct_call]:
+            for indirect_call in calls_map.get(direct_call, []):
                 if indirect_call == search_for_function:
                     return True
                 if indirect_call in visited:
