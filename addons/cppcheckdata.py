@@ -88,7 +88,6 @@ class ValueType:
         return self.typeScope and self.typeScope.type == "Enum"
 
 
-
 class Token:
     """
     Token class. Contains information about each token in the source code.
@@ -288,6 +287,8 @@ class Scope:
         className      Name of this scope.
                        For a function scope, this is the function name;
                        For a class scope, this is the class name.
+        function       If this scope belongs at a function call, this attribute
+                       has the Function information. See the Function class.
         type           Type of scope: Global, Function, Class, If, While
     """
 
@@ -297,6 +298,8 @@ class Scope:
     bodyEndId = None
     bodyEnd = None
     className = None
+    functionId = None
+    function = None
     nestedInId = None
     nestedIn = None
     type = None
@@ -305,6 +308,8 @@ class Scope:
     def __init__(self, element):
         self.Id = element.get('id')
         self.className = element.get('className')
+        self.functionId = element.get('function')
+        self.function = None
         self.bodyStartId = element.get('bodyStart')
         self.bodyStart = None
         self.bodyEndId = element.get('bodyEnd')
@@ -318,6 +323,7 @@ class Scope:
         self.bodyStart = IdMap[self.bodyStartId]
         self.bodyEnd = IdMap[self.bodyEndId]
         self.nestedIn = IdMap[self.nestedInId]
+        self.function = IdMap[self.functionId]
 
 
 class Function:
@@ -325,6 +331,12 @@ class Function:
     Information about a function
     C++ class:
     http://cppcheck.net/devinfo/doxyoutput/classFunction.html
+
+    Attributes
+        argument                Argument list
+        tokenDef                Token in function definition
+        isVirtual               Is this function is virtual
+        isImplicitlyVirtual     Is this function is virtual this in the base classes
     """
 
     Id = None
