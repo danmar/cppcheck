@@ -40,7 +40,7 @@ import platform
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.1.24"
+CLIENT_VERSION = "1.1.25"
 
 
 def check_requirements():
@@ -282,7 +282,7 @@ def scan_package(work_path, cppcheck_path, jobs):
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
     print('cppcheck finished with ' + str(returncode))
-    if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0:
+    if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0 or returncode == -6 or stderr.find('Internal error: Child process crashed with signal 6 [cppcheckError]') > 0:
         print('Crash!')
         stacktrace = ''
         if cppcheck_path == 'cppcheck':
@@ -296,7 +296,7 @@ def scan_package(work_path, cppcheck_path, jobs):
                     stacktrace = stdout[gdb_pos:]
                 else:
                     stacktrace = stdout[last_check_pos:]
-        return -11, stacktrace, '', -11, options
+        return returncode, stacktrace, '', returncode, options
     if returncode != 0:
         print('Error!')
         if returncode > 0:
