@@ -3912,7 +3912,7 @@ private:
         Settings s;
         s.allFunctionsAreSafe = true;
 
-        code = "void f(short x) {\n"
+        code = "short f(short x) {\n"
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
@@ -3920,7 +3920,7 @@ private:
         ASSERT_EQUALS(-0x8000, values.front().intvalue);
         ASSERT_EQUALS(0x7fff, values.back().intvalue);
 
-        code = "void f(__cppcheck_in_range__(0,100) short x) {\n"
+        code = "short f(__cppcheck_in_range__(0,100) short x) {\n"
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
@@ -3928,7 +3928,7 @@ private:
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(100, values.back().intvalue);
 
-        code = "void f(unsigned short x) [[expects: x <= 100]] {\n"
+        code = "unsigned short f(unsigned short x) [[expects: x <= 100]] {\n"
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
