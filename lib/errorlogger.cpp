@@ -60,7 +60,12 @@ ErrorLogger::ErrorMessage::ErrorMessage()
 {
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack,
+                                        const std::string& file1,
+                                        Severity::SeverityType severity,
+                                        const std::string &msg,
+                                        const std::string &id,
+                                        bool inconclusive) :
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
     file0(file1),
@@ -72,9 +77,13 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     setmsg(msg);
 }
 
-
-
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack,
+                                        const std::string& file1,
+                                        Severity::SeverityType severity,
+                                        const std::string &msg,
+                                        const std::string &id,
+                                        const CWE &cwe,
+                                        bool inconclusive) :
     _callStack(callStack), // locations for this error message
     _id(id),               // set the message id
     file0(file1),
@@ -86,8 +95,16 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack
     setmsg(msg);
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : _id(id), _severity(severity), _cwe(0U), _inconclusive(inconclusive)
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack,
+                                        const TokenList* list,
+                                        Severity::SeverityType severity,
+                                        const std::string& id,
+                                        const std::string& msg,
+                                        bool inconclusive):
+    _id(id),
+    _severity(severity),
+    _cwe(0U),
+    _inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -104,9 +121,17 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
     setmsg(msg);
 }
 
-
-ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive)
-    : _id(id), _severity(severity), _cwe(cwe.id), _inconclusive(inconclusive)
+ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack,
+                                        const TokenList* list,
+                                        Severity::SeverityType severity,
+                                        const std::string& id,
+                                        const std::string& msg,
+                                        const CWE &cwe,
+                                        bool inconclusive):
+    _id(id),
+    _severity(severity),
+    _cwe(cwe.id),
+    _inconclusive(inconclusive)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -123,8 +148,17 @@ ErrorLogger::ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack
     setmsg(msg);
 }
 
-ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
-    : _id(id), _severity(severity), _cwe(cwe.id), _inconclusive(inconclusive)
+ErrorLogger::ErrorMessage::ErrorMessage(const ErrorPath &errorPath,
+                                        const TokenList *tokenList,
+                                        Severity::SeverityType severity,
+                                        const char id[],
+                                        const std::string &msg,
+                                        const CWE &cwe,
+                                        bool inconclusive):
+    _id(id),
+    _severity(severity),
+    _cwe(cwe.id),
+    _inconclusive(inconclusive)
 {
     // Format callstack
     for (ErrorPath::const_iterator it = errorPath.begin(); it != errorPath.end(); ++it) {
@@ -219,7 +253,6 @@ Suppressions::ErrorMessage ErrorLogger::ErrorMessage::toSuppressionsErrorMessage
     ret.symbolNames = mSymbolNames;
     return ret;
 }
-
 
 std::string ErrorLogger::ErrorMessage::serialize() const
 {
@@ -334,7 +367,6 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 std::string ErrorLogger::ErrorMessage::getXMLHeader()
 {
     // xml_version 1 is the default xml format
-
     tinyxml2::XMLPrinter printer;
 
     // standard xml header
@@ -420,7 +452,9 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     return printer.CStr();
 }
 
-void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
+void ErrorLogger::ErrorMessage::findAndReplace(std::string &source,
+        const std::string &searchFor,
+        const std::string &replaceWith)
 {
     std::string::size_type index = 0;
     while ((index = source.find(searchFor, index)) != std::string::npos) {
@@ -446,7 +480,9 @@ static std::string readCode(const std::string &file, unsigned int linenr, unsign
     return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
 }
 
-std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
+std::string ErrorLogger::ErrorMessage::toString(bool verbose,
+        const std::string &templateFormat,
+        const std::string &templateLocation) const
 {
     // Save this ErrorMessage in plain text.
 
@@ -467,7 +503,8 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
-    // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
+    // Support a few special characters to allow to specific formatting, see
+    // http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
     // Substitution should be done first so messages from cppcheck never get translated.
     findAndReplace(result, "\\b", "\b");
     findAndReplace(result, "\\n", "\n");
@@ -499,7 +536,9 @@ std::string ErrorLogger::ErrorMessage::toString(bool verbose, const std::string 
                 endl = "\r\n";
             else
                 endl = "\r";
-            findAndReplace(result, "{code}", readCode(_callStack.back().getOrigFile(), _callStack.back().line, _callStack.back().col, endl));
+            findAndReplace(result,
+                           "{code}",
+                           readCode(_callStack.back().getOrigFile(), _callStack.back().line, _callStack.back().col, endl));
         }
     } else {
         findAndReplace(result, "{file}", "nofile");
@@ -566,7 +605,12 @@ bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         std::list<ErrorLogger::ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty())
             callStack.emplace_back(s.fileName, s.lineNumber);
-        reportErr(ErrorLogger::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", false));
+        reportErr(ErrorLogger::ErrorMessage(callStack,
+                                            emptyString,
+                                            Severity::information,
+                                            "Unmatched suppression: " + s.errorId,
+                                            "unmatchedSuppression",
+                                            false));
         err = true;
     }
     return err;
@@ -582,13 +626,22 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 }
 
 
-ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
+ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList):
+    fileIndex(tok->fileIndex()),
+    line(tok->linenr()),
+    col(tok->col()),
+    mOrigFileName(tokenList->getOrigFile(tok)),
+    mFileName(tokenList->file(tok))
 {
 }
 
-ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), col(tok->col()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
+ErrorLogger::ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList):
+    fileIndex(tok->fileIndex()),
+    line(tok->linenr()),
+    col(tok->col()),
+    mOrigFileName(tokenList->getOrigFile(tok)),
+    mFileName(tokenList->file(tok)),
+    mInfo(info)
 {
 }
 
