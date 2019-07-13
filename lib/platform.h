@@ -63,24 +63,24 @@ namespace cppcheck {
             return value >= min_value(long_bit) && value <= max_value(long_bit);
         }
 
-        unsigned int char_bit;       /// bits in char
-        unsigned int short_bit;      /// bits in short
-        unsigned int int_bit;        /// bits in int
-        unsigned int long_bit;       /// bits in long
-        unsigned int long_long_bit;  /// bits in long long
+        int char_bit;       /// bits in char
+        int short_bit;      /// bits in short
+        int int_bit;        /// bits in int
+        int long_bit;       /// bits in long
+        int long_long_bit;  /// bits in long long
 
         /** size of standard types */
-        unsigned int sizeof_bool;
-        unsigned int sizeof_short;
-        unsigned int sizeof_int;
-        unsigned int sizeof_long;
-        unsigned int sizeof_long_long;
-        unsigned int sizeof_float;
-        unsigned int sizeof_double;
-        unsigned int sizeof_long_double;
-        unsigned int sizeof_wchar_t;
-        unsigned int sizeof_size_t;
-        unsigned int sizeof_pointer;
+        int sizeof_bool;
+        int sizeof_short;
+        int sizeof_int;
+        int sizeof_long;
+        int sizeof_long_long;
+        int sizeof_float;
+        int sizeof_double;
+        int sizeof_long_double;
+        int sizeof_wchar_t;
+        int sizeof_size_t;
+        int sizeof_pointer;
 
         char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
