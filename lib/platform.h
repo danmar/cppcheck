@@ -85,14 +85,16 @@ namespace cppcheck {
         char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
         enum PlatformType {
-            Unspecified, // No platform specified
+            MIN_PLATFORM_TYPE,  //used for 'if' condition checks
+            Unspecified = MIN_PLATFORM_TYPE, // No platform specified
             Native, // whatever system this code was compiled on
             Win32A,
             Win32W,
             Win64,
             Unix32,
             Unix64,
-            PlatformFile
+            PlatformFile,
+            MAX_PLATFORM_TYPE = PlatformFile
         };
 
         /** platform type */
@@ -127,6 +129,8 @@ namespace cppcheck {
         }
 
         static const char *platformString(PlatformType pt) {
+            if ((pt < MIN_PLATFORM_TYPE) || (pt > MAX_PLATFORM_TYPE))
+                return "unknown";
             switch (pt) {
             case Unspecified:
                 return "Unspecified";
@@ -144,8 +148,6 @@ namespace cppcheck {
                 return "unix64";
             case PlatformFile:
                 return "platformFile";
-            default:
-                return "unknown";
             }
         }
 

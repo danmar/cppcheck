@@ -70,9 +70,14 @@ public:
      */
     enum SeverityType {
         /**
+         * Comparison Value for 'if' condtions
+         * Same value as SeverityTYpe::none
+         */
+        MIN_SEVERITY_TYPE,
+        /**
          * No severity (default value).
          */
-        none,
+        none = MIN_SEVERITY_TYPE,
         /**
          * Programming error.
          * This indicates severe error like memory leak etc.
@@ -117,7 +122,12 @@ public:
          * Debug message.
          * Debug-mode message useful for the developers.
          */
-        debug
+        debug,
+        /**
+         * Comparison Value for 'if' condtions
+         * Same value as SeverityTYpe::debug
+         */
+        MAX_SEVERITY_TYPE = debug
     };
 
     static std::string toString(SeverityType severity) {

@@ -219,19 +219,19 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation type="unfinished">Cppcheck</translation>
     </message>
     <message>
-        <source>Can not open file %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Can not save file %1.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Save the library as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Failed to load %1. %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot open file %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cannot save file %1.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -782,12 +782,6 @@ Do you want to remove the file from the recently used projects -list?</source>
 최근 프로젝트 목록에서 파일을 제거하시겠습니까?</translation>
     </message>
     <message>
-        <source>Current results will be cleared.
-
-Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Select files to check</source>
         <translation type="obsolete">검사할 파일 선택</translation>
     </message>
@@ -1082,6 +1076,29 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>C++20</source>
         <translation type="unfinished">C++20</translation>
     </message>
+    <message>
+        <source>C/C++ Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Borland C++ Builder 6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current results will be cleared.
+
+Opening a new XML file will clear current results.
+Do you want to proceed?</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NewSuppressionDialog</name>
@@ -1358,6 +1375,38 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <source>Exclude source files in paths</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Human knowledge</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Input from file/network/user/...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If the return value from a function below is always completely unknown, then click on its checkbox</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>rand()</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add..</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Possible values of function parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Experimental: All function parameters can have arbitrary values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All classes must have a &quot;safe&quot; public interface</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ProjectFileDialog</name>
@@ -1399,6 +1448,18 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Misra rule texts file (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Visual Studio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compile database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1508,10 +1569,6 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Class ForegroundColor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Class Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1549,6 +1606,10 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>Set to Default Dark</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Class Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1599,31 +1660,31 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     </message>
     <message>
         <source>style</source>
-        <translation>스타일</translation>
+        <translation type="vanished">스타일</translation>
     </message>
     <message>
         <source>error</source>
-        <translation>에러</translation>
+        <translation type="vanished">에러</translation>
     </message>
     <message>
         <source>warning</source>
-        <translation>경고</translation>
+        <translation type="vanished">경고</translation>
     </message>
     <message>
         <source>performance</source>
-        <translation>성능</translation>
+        <translation type="vanished">성능</translation>
     </message>
     <message>
         <source>portability</source>
-        <translation>이식성</translation>
+        <translation type="vanished">이식성</translation>
     </message>
     <message>
         <source>information</source>
-        <translation>정보</translation>
+        <translation type="vanished">정보</translation>
     </message>
     <message>
         <source>debug</source>
-        <translation>디버그</translation>
+        <translation type="vanished">디버그</translation>
     </message>
     <message>
         <source>Copy filename</source>

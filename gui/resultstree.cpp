@@ -289,32 +289,10 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
 
 QString ResultsTree::severityToTranslatedString(Severity::SeverityType severity)
 {
-    switch (severity) {
-    case Severity::style:
-        return tr("style");
-
-    case Severity::error:
-        return tr("error");
-
-    case Severity::warning:
-        return tr("warning");
-
-    case Severity::performance:
-        return tr("performance");
-
-    case Severity::portability:
-        return tr("portability");
-
-    case Severity::information:
-        return tr("information");
-
-    case Severity::debug:
-        return tr("debug");
-
-    case Severity::none:
-    default:
+    if (severity == Severity::none)
         return QString();
-    }
+    else
+        return tr(Severity::toString(severity).c_str());
 }
 
 QStandardItem *ResultsTree::findFileItem(const QString &name) const
@@ -1086,6 +1064,8 @@ QString ResultsTree::severityToIcon(Severity::SeverityType severity) const
         return ":images/utilities-system-monitor.png";
     case Severity::information:
         return ":images/dialog-information.png";
+    case Severity::none:
+    case Severity::debug:
     default:
         return QString();
     }
