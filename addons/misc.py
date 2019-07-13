@@ -10,8 +10,6 @@ import cppcheckdata
 import sys
 import re
 
-from cppcheckdata import getArguments
-
 DEBUG = ('-debug' in sys.argv)
 VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
@@ -31,6 +29,21 @@ def simpleMatch(token, pattern):
             return False
         token = token.next
     return True
+
+# Get function arguments
+def getArgumentsRecursive(tok, arguments):
+    if tok is None:
+        return
+    if tok.str == ',':
+        getArgumentsRecursive(tok.astOperand1, arguments)
+        getArgumentsRecursive(tok.astOperand2, arguments)
+    else:
+        arguments.append(tok)
+
+def getArguments(ftok):
+    arguments = []
+    getArgumentsRecursive(ftok.astOperand2, arguments)
+    return arguments
 
 def isStringLiteral(tokenString):
     return tokenString.startswith('"')
