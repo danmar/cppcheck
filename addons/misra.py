@@ -1580,6 +1580,54 @@ class MisraChecker:
             elif token.str == 'va_list':
                 self.reportError(token, 17, 1)
 
+    def misra_17_2(self, data):
+        # find recursions..
+        def find_recursive_call(search_for_function, direct_call, calls_map, visited=set()):
+            if direct_call == search_for_function:
+                return True
+            for indirect_call in calls_map[direct_call]:
+                if indirect_call == search_for_function:
+                    return True
+                if indirect_call in visited:
+                    # This has already been handled
+                    continue
+                visited.add(indirect_call)
+                if find_recursive_call(search_for_function, indirect_call, calls_map, visited):
+                    return True
+            return False
+
+        # List functions called in each function
+        function_calls = {}
+        for scope in data.scopes:
+            if scope.type != 'Function':
+                continue
+            calls = []
+            tok = scope.bodyStart
+            while tok != scope.bodyEnd:
+                tok = tok.next
+                if not isFunctionCall(tok):
+                    continue
+                f = tok.astOperand1.function
+                if f is not None and f not in calls:
+                    calls.append(f)
+            function_calls[scope.function] = calls
+
+        # Report warnings for all recursions..
+        for func in function_calls:
+            for call in function_calls[func]:
+                if not find_recursive_call(func, call, function_calls):
+                    # Function call is not recursive
+                    continue
+                # Warn about all functions calls..
+                for scope in data.scopes:
+                    if scope.type != 'Function' or scope.function != func:
+                        continue
+                    tok = scope.bodyStart
+                    while tok != scope.bodyEnd:
+                        if tok.function and tok.function == call:
+                            self.reportError(tok, 17, 2)
+                        tok = tok.next
+
 
     def misra_17_6(self, rawTokens):
         for token in rawTokens:
@@ -2313,6 +2361,7 @@ class MisraChecker:
             self.misra_16_6(cfg)
             self.misra_16_7(cfg)
             self.misra_17_1(cfg)
+            self.misra_17_2(cfg)
             if cfgNumber == 1:
                 self.misra_17_6(data.rawTokens)
             self.misra_17_7(cfg)
