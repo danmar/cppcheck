@@ -1816,12 +1816,8 @@ void CheckOther::checkDuplicateExpression()
     std::list<const Function*> constFunctions;
     getConstFunctions(symbolDatabase, constFunctions);
 
-    for (const Scope &scope : symbolDatabase->scopeList) {
-        // only check functions
-        if (scope.type != Scope::eFunction)
-            continue;
-
-        for (const Token *tok = scope.bodyStart; tok && tok != scope.bodyEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "=" && Token::Match(tok->astOperand1(), "%var%")) {
                 const Token * endStatement = Token::findsimplematch(tok, ";");
                 if (Token::Match(endStatement, "; %type% %var% ;")) {
@@ -1848,7 +1844,7 @@ void CheckOther::checkDuplicateExpression()
                         isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), mSettings->library, true, false) &&
                         tok->astOperand2()->expressionString() == nextAssign->astOperand2()->expressionString()) {
                         bool assigned = false;
-                        const Scope * varScope = var1->scope() ? var1->scope() : &scope;
+                        const Scope * varScope = var1->scope() ? var1->scope() : scope;
                         for (const Token *assignTok = Token::findsimplematch(var2, ";"); assignTok && assignTok != varScope->bodyEnd; assignTok = assignTok->next()) {
                             if (Token::Match(assignTok, "%varid% = %var%", var1->varId()) && Token::Match(assignTok, "%var% = %varid%", var2->varId())) {
                                 assigned = true;
@@ -1885,6 +1881,10 @@ void CheckOther::checkDuplicateExpression()
                             }
                             duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                         }
+                    }
+                } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") && isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok->astOperand2()->astOperand1(), mSettings->library, true, false)) {
+                    if (warningEnabled && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1())) {
+                        selfAssignmentError(tok, tok->astOperand1()->expressionString());
                     }
                 } else if (styleEnabled &&
                            isOppositeExpression(mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath) &&
