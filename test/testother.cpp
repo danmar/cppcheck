@@ -2971,6 +2971,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant assignment of 'a1->b' to itself.\n", errout.str());
 
+        check("int x;\n"
+              "void f()\n"
+              "{\n"
+              "    x = x = 3;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'x' to itself.\n", errout.str());
+
         // #4073 (segmentation fault)
         check("void Foo::myFunc( int a )\n"
               "{\n"
