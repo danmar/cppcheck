@@ -68,6 +68,10 @@ bool CodeEditorStyle::operator==(const CodeEditorStyle& rhs) const
     return true;
 }
 
+CodeEditorStyle::~CodeEditorStyle()
+{
+}
+
 bool CodeEditorStyle::operator!=(const CodeEditorStyle& rhs) const
 {
     return !(*this == rhs);

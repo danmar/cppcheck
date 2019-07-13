@@ -36,7 +36,7 @@
 class CsvReport : public Report {
 public:
     explicit CsvReport(const QString &filename);
-    virtual ~CsvReport();
+    virtual ~CsvReport() override;
 
     /**
     * @brief Create the report (file).

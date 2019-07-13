@@ -47,7 +47,7 @@ public:
     explicit ResultsView(QWidget * parent = nullptr);
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     ResultsView(const ResultsView &) = delete;
-    virtual ~ResultsView();
+    virtual ~ResultsView() override;
     ResultsView &operator=(const ResultsView &) = delete;
 
     void setTags(const QStringList &tags) {

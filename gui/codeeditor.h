@@ -68,7 +68,7 @@ public:
     explicit CodeEditor(QWidget *parent);
     CodeEditor(const CodeEditor &) = delete;
     CodeEditor &operator=(const CodeEditor &) = delete;
-    ~CodeEditor();
+    virtual ~CodeEditor() override;
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();

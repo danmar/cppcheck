@@ -59,7 +59,7 @@ public:
         const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
         const QColor& SymbFGColor, const QColor& SymbBGColor,
         const QFont::Weight& SymbWeight);
-    ~CodeEditorStyle() {}
+    ~CodeEditorStyle();
 
     bool operator==(const CodeEditorStyle& rhs) const;
     bool operator!=(const CodeEditorStyle& rhs) const;

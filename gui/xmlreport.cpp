@@ -31,6 +31,10 @@ XmlReport::XmlReport(const QString &filename) :
 {
 }
 
+XmlReport::~XmlReport()
+{
+}
+
 QString XmlReport::quoteMessage(const QString &message)
 {
     QString quotedMessage(message);

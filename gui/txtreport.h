@@ -36,7 +36,7 @@ class TxtReport : public Report {
 
 public:
     explicit TxtReport(const QString &filename);
-    virtual ~TxtReport();
+    virtual ~TxtReport() override;
 
     /**
     * @brief Create the report (file).

@@ -36,6 +36,7 @@ class QObject;
 class XmlReport : public Report {
 public:
     explicit XmlReport(const QString &filename);
+    virtual ~XmlReport() override;
 
     /**
      * @brief Read contents of the report file.
