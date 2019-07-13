@@ -159,12 +159,10 @@ void CheckLeakAutoVar::check()
         if (scope->hasInlineOrLambdaFunction())
             continue;
 
-        recursiveCount = 0;
-
         // Empty variable info
         VarInfo varInfo;
 
-        checkScope(scope->bodyStart, &varInfo, notzero);
+        checkScope(scope->bodyStart, &varInfo, notzero, 0);
 
         varInfo.conditionalAlloc.clear();
 
@@ -236,12 +234,13 @@ static const Token * isFunctionCall(const Token * nameToken)
 
 void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
-                                  std::set<unsigned int> notzero)
+                                  std::set<unsigned int> notzero,
+                                  unsigned int recursiveCount)
 {
     // The C++ standard suggests a minimum of 256 nested control statements
-    // but MSVC has a limit of 100. Cppcheck is hitting 256 when checking itself.
-    if (++recursiveCount > 384)
-        throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 384 reached.", InternalError::LIMIT);
+    // but MSVC has a limit of 100.
+    if (++recursiveCount > 100)
+        throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 100 reached.", InternalError::LIMIT);
 
     std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
@@ -471,10 +470,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
                 }
 
-                checkScope(closingParenthesis->next(), &varInfo1, notzero);
+                checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount);
                 closingParenthesis = closingParenthesis->linkAt(1);
                 if (Token::simpleMatch(closingParenthesis, "} else {")) {
-                    checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero);
+                    checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero, recursiveCount);
                     tok = closingParenthesis->linkAt(2)->previous();
                 } else {
                     tok = closingParenthesis->previous();
