@@ -167,6 +167,8 @@ bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token *tok);
 
+const Variable *getLHSVariable(const Token *tok);
+
 struct PathAnalysis
 {
     enum Progress {

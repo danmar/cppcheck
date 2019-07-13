@@ -716,9 +716,8 @@ class MisraChecker:
                 if c != '"' and c != '\\':
                     self.reportError(token, 4, 1)
 
-
     def misra_5_1(self, data):
-        varnames = []
+        long_vars = {}
         for var in data.variables:
             if var.nameToken is None:
                 continue
@@ -726,11 +725,13 @@ class MisraChecker:
                 continue
             if not hasExternalLinkage(var):
                 continue
-            if var.nameToken.str[:31] in varnames:
-                self.reportError(var.nameToken, 5, 1)
-            else:
-                varnames.append(var.nameToken.str[:31])
-
+            long_vars.setdefault(var.nameToken.str[:31], []).append(var.nameToken)
+        for name_prefix in long_vars:
+            tokens = long_vars[name_prefix]
+            if len(tokens) < 2:
+                continue
+            for tok in sorted(tokens, key=lambda t: (t.linenr, t.col))[1:]:
+                self.reportError(tok, 5, 1)
 
     def misra_5_2(self, data):
         scopeVars = {}
@@ -1611,6 +1612,18 @@ class MisraChecker:
             if var and var.isArgument:
                 self.reportError(token, 17, 8)
 
+    def misra_18_4(self, data):
+        for token in data.tokenlist:
+            if not token.str in ('+', '-', '+=', '-='):
+                continue
+            if token.astOperand1 is None or token.astOperand2 is None:
+                continue
+            vt1 = token.astOperand1.valueType
+            vt2 = token.astOperand2.valueType
+            if vt1 and vt1.pointer > 0:
+                self.reportError(token, 18, 4)
+            elif vt2 and vt2.pointer > 0:
+                self.reportError(token, 18, 4)
 
     def misra_18_5(self, data):
         for var in data.variables:
@@ -2304,6 +2317,7 @@ class MisraChecker:
                 self.misra_17_6(data.rawTokens)
             self.misra_17_7(cfg)
             self.misra_17_8(cfg)
+            self.misra_18_4(cfg)
             self.misra_18_5(cfg)
             self.misra_18_7(cfg)
             self.misra_18_8(cfg)

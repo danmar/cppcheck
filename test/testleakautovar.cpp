@@ -23,6 +23,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <simplecpp.h>
+#include <vector>
 
 class TestLeakAutoVar : public TestFixture {
 public:
@@ -64,6 +66,7 @@ private:
         TEST_CASE(assign16);
         TEST_CASE(assign17); // #9047
         TEST_CASE(assign18);
+        TEST_CASE(assign19);
 
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
@@ -78,6 +81,7 @@ private:
         // TODO TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
         TEST_CASE(deallocuse7); // #6467, #6469, #6473
+        TEST_CASE(deallocuse8); // #1765
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -162,6 +166,8 @@ private:
         TEST_CASE(inlineFunction); // #3989
 
         TEST_CASE(smartPtrInContainer); // #8262
+
+        TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
     }
 
     void check(const char code[], bool cpp = false) {
@@ -172,6 +178,32 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, cpp?"test.cpp":"test.c");
+
+        // Check for leaks..
+        CheckLeakAutoVar c;
+        settings.checkLibrary = true;
+        settings.addEnabled("information");
+        c.runChecks(&tokenizer, &settings, this);
+    }
+
+    void checkP(const char code[], bool cpp = false) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Raw tokens..
+        std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(&tokens2);
+        tokenizer.simplifyTokens1("");
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -358,6 +390,14 @@ private:
         ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
     }
 
+    void assign19() {
+        check("void f() {\n"
+              "    char *p = malloc(10);\n"
+              "    free((void*)p);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void realloc1() {
         check("void f() {\n"
               "    void *p = malloc(10);\n"
@@ -520,6 +560,15 @@ private:
               "  (*conv)(&ptr);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse8() {  // #1765
+        check("void f() {\n"
+              "    int *ptr = new int;\n"
+              "    delete(ptr);\n"
+              "    *ptr = 0;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
     }
 
     void doublefree1() {  // #3895
@@ -1346,6 +1395,12 @@ private:
         ASSERT_EQUALS("[test.c:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
         check("void f() {\n"
+              "    FILE*f=fopen(fname,a);\n"
+              "    free((void*)f);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+
+        check("void f() {\n"
               "    char *cPtr = new char[100];\n"
               "    delete[] cPtr;\n"
               "    cPtr = new char[100]('x');\n"
@@ -1759,6 +1814,17 @@ private:
               true
              );
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void recursiveCountLimit() { // #5872 #6157 #9097
+        ASSERT_THROW(checkP("#define ONE     else if (0) { }\n"
+                            "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
+                            "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
+                            "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
+                            "void foo() {\n"
+                            "  if (0) { }\n"
+                            "  THOU\n"
+                            "}"), InternalError);
     }
 
 };

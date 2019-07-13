@@ -426,7 +426,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
 
         // Skip variadic types (Ticket #5774, #6059, #6172)
         if (Token::simpleMatch(tok, ". . .")) {
-            if ((tok->previous()->isName() && !Token::Match(tok->tokAt(-2), "<|,")) ||
+            if ((tok->previous()->isName() && !Token::Match(tok->tokAt(-2), "<|,|::")) ||
                 (!tok->previous()->isName() && tok->strAt(-1) != ">"))
                 return 0; // syntax error
             tok = tok->tokAt(3);
@@ -439,6 +439,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             } else if (tok->str() == ">>") {
                 if (level == 1)
                     return numberOfParameters;
+                level -= 2;
             } else if (tok->str() == "," && level == 0) {
                 ++numberOfParameters;
                 tok = tok->next();
@@ -542,6 +543,43 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         tok = tok->next();
     }
     return 0;
+}
+
+const Token *TemplateSimplifier::findTemplateDeclarationEnd(const Token *tok)
+{
+    return const_cast<const Token *>(findTemplateDeclarationEnd(const_cast<Token *>(tok)));
+}
+
+Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
+{
+    if (Token::simpleMatch(tok, "template <")) {
+        tok = tok->next()->findClosingBracket();
+        if (tok)
+            tok = tok->next();
+    }
+
+    if (!tok)
+        return nullptr;
+
+    Token * tok2 = tok;
+    while (tok2 && !Token::Match(tok2, ";|{")) {
+        if (tok2->str() == "<")
+            tok2 = tok2->findClosingBracket();
+        else if (Token::Match(tok2, "(|[") && tok2->link())
+            tok2 = tok2->link();
+        if (tok2)
+            tok2 = tok2->next();
+    }
+    if (tok2 && tok2->str() == "{") {
+        tok = tok2->link();
+        if (tok && tok->strAt(1) == ";")
+            tok = tok->next();
+    } else if (tok2 && tok2->str() == ";")
+        tok = tok2;
+    else
+        tok = nullptr;
+
+    return tok;
 }
 
 void TemplateSimplifier::eraseTokens(Token *begin, const Token *end)
@@ -828,18 +866,9 @@ void TemplateSimplifier::getTemplateInstantiations()
                 // #7914
                 // Ignore template instantiations within template definitions: they will only be
                 // handled if the definition is actually instantiated
-                Token * tok2 = tok->next();
-                while (tok2 && !Token::Match(tok2, ";|{")) {
-                    if (tok2->str() == "<")
-                        tok2 = tok2->findClosingBracket();
-                    else if (Token::Match(tok2, "(|[") && tok2->link())
-                        tok2 = tok2->link();
-                    if (tok2)
-                        tok2 = tok2->next();
-                }
-                if (tok2 && tok2->str() == "{")
-                    tok = tok2->link();
-                else if (tok2 && tok2->str() == ";")
+
+                Token * tok2 = findTemplateDeclarationEnd(tok->next());
+                if (tok2)
                     tok = tok2;
             }
         } else if (Token::Match(tok, "template using %name% <")) {

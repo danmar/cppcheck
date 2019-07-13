@@ -54,7 +54,7 @@ namespace tinyxml2 {
 
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
-    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL};
+    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT};
     InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
     const Token *token;
     std::string errorMessage;
@@ -193,12 +193,12 @@ public:
                 : fileIndex(0), line(0), col(0) {
             }
 
-            FileLocation(const std::string &file, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file) {
+            FileLocation(const std::string &file, int line)
+                : fileIndex(0), line(line), col(0), mOrigFileName(file), mFileName(file) {
             }
 
-            FileLocation(const std::string &file, const std::string &info, unsigned int aline)
-                : fileIndex(0), line(aline), col(0), mOrigFileName(file), mFileName(file), mInfo(info) {
+            FileLocation(const std::string &file, const std::string &info, int line)
+                : fileIndex(0), line(line), col(0), mOrigFileName(file), mFileName(file), mInfo(info) {
             }
 
             FileLocation(const Token* tok, const TokenList* tokenList);

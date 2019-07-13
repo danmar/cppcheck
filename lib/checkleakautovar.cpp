@@ -159,6 +159,8 @@ void CheckLeakAutoVar::check()
         if (scope->hasInlineOrLambdaFunction())
             continue;
 
+        recursiveCount = 0;
+
         // Empty variable info
         VarInfo varInfo;
 
@@ -236,6 +238,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
                                   std::set<unsigned int> notzero)
 {
+    // The C++ standard suggests a minimum of 256 nested control statements
+    // but MSVC has a limit of 100. Cppcheck is hitting 256 when checking itself.
+    if (++recursiveCount > 384)
+        throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 384 reached.", InternalError::LIMIT);
+
     std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;
     const std::set<unsigned int> conditionalAlloc(varInfo->conditionalAlloc);
@@ -554,6 +561,24 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             varInfo->clear();
         }
 
+        // delete
+        else if (mTokenizer->isCPP() && tok->str() == "delete") {
+            const bool arrayDelete = Token::simpleMatch(tok->next(), "[ ]");
+            if (arrayDelete)
+                tok = tok->tokAt(3);
+            else
+                tok = tok->next();
+            if (tok->str() == "(")
+                tok = tok->next();
+            while (Token::Match(tok, "%name% ::|."))
+                tok = tok->tokAt(2);
+            const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
+            if (!isnull && tok->varId() && tok->strAt(1) != "[") {
+                const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC);
+                changeAllocStatus(varInfo, allocation, tok, tok);
+            }
+        }
+
         // Function call..
         else if (isFunctionCall(ftok)) {
             const Token * openingPar = isFunctionCall(ftok);
@@ -578,22 +603,6 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
 
             continue;
-        }
-
-        // delete
-        else if (mTokenizer->isCPP() && tok->str() == "delete") {
-            const bool arrayDelete = (tok->strAt(1) == "[");
-            if (arrayDelete)
-                tok = tok->tokAt(3);
-            else
-                tok = tok->next();
-            while (Token::Match(tok, "%name% ::|."))
-                tok = tok->tokAt(2);
-            const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
-            if (!isnull && tok->varId() && tok->strAt(1) != "[") {
-                const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC);
-                changeAllocStatus(varInfo, allocation, tok, tok);
-            }
         }
 
         // goto => weird execution path
@@ -778,6 +787,9 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
                 arg = arg->tokAt(5);
         }
 
+        // Skip casts
+        while (arg && arg->isCast())
+            arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();
         const Token * const argTypeStartTok = arg;
 
         while (Token::Match(arg, "%name% .|:: %name%"))

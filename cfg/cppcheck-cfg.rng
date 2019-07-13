@@ -132,6 +132,13 @@
                   <data type="positiveInteger"/>
                 </attribute>
               </optional>
+              <optional>
+                <attribute name="unknownValues">
+                  <data type="string">
+                    <param name="pattern">all|([0-9]*:[0-9]*)</param>
+                  </data>
+                </attribute>
+              </optional>
               <text/>
             </element>
           </optional>
