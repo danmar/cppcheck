@@ -43,24 +43,24 @@ namespace cppcheck {
         static long long min_value(int bit) {
             if (bit >= 64)
                 return LLONG_MIN;
-            return -(1LL << (bit-1));
+            return -(1LL << (static_cast<long long>(bit - 1)));
         }
 
         static long long max_value(int bit) {
             if (bit >= 64)
                 return (~0ULL) >> 1;
-            return (1LL << (bit-1)) - 1LL;
+            return (1LL << (static_cast<long long>(bit - 1))) - 1LL;
         }
     public:
         Platform();
         virtual ~Platform() {}
 
         bool isIntValue(long long value) const {
-            return value >= min_value(int_bit) && value <= max_value(int_bit);
+            return value >= min_value(static_cast<int>(int_bit)) && value <= max_value(static_cast<int>(int_bit));
         }
 
         bool isLongValue(long long value) const {
-            return value >= min_value(long_bit) && value <= max_value(long_bit);
+            return value >= min_value(static_cast<int>(long_bit)) && value <= max_value(static_cast<int>(long_bit));
         }
 
         unsigned int char_bit;       /// bits in char
@@ -150,15 +150,15 @@ namespace cppcheck {
         }
 
         long long unsignedCharMax() const {
-            return max_value(char_bit + 1);
+            return max_value(static_cast<int>(char_bit + 1));
         }
 
         long long signedCharMax() const {
-            return max_value(char_bit);
+            return max_value(static_cast<int>(char_bit));
         }
 
         long long signedCharMin() const {
-            return min_value(char_bit);
+            return min_value(static_cast<int>(char_bit));
         }
     };
 
