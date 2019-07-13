@@ -185,14 +185,14 @@ public:
     }
 
     /**
-     * Unlink and delete the next 'index' tokens.
+     * Unlink and delete the next 'count' tokens.
      */
-    void deleteNext(unsigned long index = 1);
+    void deleteNext(int count = 1);
 
     /**
-    * Unlink and delete the previous 'index' tokens.
+    * Unlink and delete the previous 'count' tokens.
     */
-    void deletePrevious(unsigned long index = 1);
+    void deletePrevious(int count = 1);
 
     /**
      * Swap the contents of this token with the next token.

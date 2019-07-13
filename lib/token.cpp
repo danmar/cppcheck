@@ -220,9 +220,9 @@ std::string Token::strValue() const
     return ret;
 }
 
-void Token::deleteNext(unsigned long index)
+void Token::deleteNext(int count)
 {
-    while (mNext && index) {
+    while (mNext && count > 0) {
         Token *n = mNext;
 
         // #8154 we are about to be unknown -> destroy the link to us
@@ -231,7 +231,7 @@ void Token::deleteNext(unsigned long index)
 
         mNext = n->next();
         delete n;
-        --index;
+        --count;
     }
 
     if (mNext)
@@ -240,9 +240,9 @@ void Token::deleteNext(unsigned long index)
         mTokensFrontBack->back = this;
 }
 
-void Token::deletePrevious(unsigned long index)
+void Token::deletePrevious(int count)
 {
-    while (mPrevious && index) {
+    while (mPrevious && count > 0) {
         Token *p = mPrevious;
 
         // #8154 we are about to be unknown -> destroy the link to us
@@ -251,7 +251,7 @@ void Token::deletePrevious(unsigned long index)
 
         mPrevious = p->previous();
         delete p;
-        --index;
+        --count;
     }
 
     if (mPrevious)
