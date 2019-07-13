@@ -1825,6 +1825,14 @@ private:
                             "  if (0) { }\n"
                             "  THOU\n"
                             "}"), InternalError);
+        ASSERT_NO_THROW(checkP("#define ONE     if (0) { }\n"
+                               "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
+                               "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
+                               "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
+                               "void foo() {\n"
+                               "  if (0) { }\n"
+                               "  THOU\n"
+                               "}"));
     }
 
 };
