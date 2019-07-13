@@ -2179,10 +2179,8 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok)
             break;
 
         // Don't simplify "%num% / 0"
-        if (Token::Match(op, "[/%] 0")) {
+        if (Token::Match(op, "[/%] 0"))
             throw InternalError(op, "Instantiation error: Divide by zero in template instantiation.", InternalError::INSTANTIATION);
-            break;
-        }
 
         // Integer operations
         if (Token::Match(op, ">>|<<|&|^|%or%")) {
