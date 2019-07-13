@@ -225,7 +225,7 @@ private:
  * @param dest The path destination
  * @param errorPath Adds the path traversal to the errorPath
  */
-bool Reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath);
+bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath);
 
 /**
  * Forward data flow analysis for checks

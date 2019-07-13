@@ -1161,8 +1161,10 @@ static const Token* getCondTok(const Token* tok)
         return nullptr;
     if (Token::simpleMatch(tok, "("))
         return getCondTok(tok->previous());
-    if (Token::simpleMatch(tok, "for") && tok->next()->astOperand2() && tok->next()->astOperand2()->astOperand2())
+    if (Token::simpleMatch(tok, "for") && Token::simpleMatch(tok->next()->astOperand2(), ";") && tok->next()->astOperand2()->astOperand2())
         return tok->next()->astOperand2()->astOperand2()->astOperand1();
+    if (Token::simpleMatch(tok->next()->astOperand2(), ";"))
+        return tok->next()->astOperand2()->astOperand1();
     return tok->next()->astOperand2();
 }
 
@@ -1291,7 +1293,7 @@ void PathAnalysis::Forward(const std::function<Progress(const Info&)>& f) const
     ForwardRange(start, endToken, info, f);
 }
 
-bool Reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
+bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
 {
     PathAnalysis::Info info = PathAnalysis{start, library}.ForwardFind([&](const PathAnalysis::Info& i) {
         return (i.tok == dest);
