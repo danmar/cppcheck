@@ -25,6 +25,7 @@
 #include "mathlib.h"
 #include "valueflow.h"
 #include "templatesimplifier.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -51,10 +52,10 @@ struct TokensFrontBack {
 };
 
 struct TokenImpl {
-    int mVarId;
-    int mFileIndex;
-    int mLineNumber;
-    int mColumn;
+    nonneg int mVarId;
+    nonneg int mFileIndex;
+    nonneg int mLineNumber;
+    nonneg int mColumn;
 
     // AST..
     Token *mAstOperand1;
@@ -74,12 +75,12 @@ struct TokenImpl {
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
      */
-    int mProgressValue;
+    nonneg int mProgressValue;
 
     /**
      * Token index. Position in token list
      */
-    int mIndex;
+    nonneg int mIndex;
 
     // original name like size_t
     std::string* mOriginalName;
@@ -187,12 +188,12 @@ public:
     /**
      * Unlink and delete the next 'count' tokens.
      */
-    void deleteNext(int count = 1);
+    void deleteNext(nonneg int count = 1);
 
     /**
     * Unlink and delete the previous 'count' tokens.
     */
-    void deletePrevious(int count = 1);
+    void deletePrevious(nonneg int count = 1);
 
     /**
      * Swap the contents of this token with the next token.
@@ -288,7 +289,7 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const Token *tok, const char pattern[], int varid = 0);
+    static bool Match(const Token *tok, const char pattern[], nonneg int varid = 0);
 
     /**
      * @return length of C-string.
@@ -297,7 +298,7 @@ public:
      *
      * @param tok token with C-string
      **/
-    static int getStrLength(const Token *tok);
+    static nonneg int getStrLength(const Token *tok);
 
     /**
      * @return sizeof of C-string.
@@ -306,7 +307,7 @@ public:
      *
      * @param tok token with C-string
      **/
-    static int getStrSize(const Token *tok);
+    static nonneg int getStrSize(const Token *tok);
 
     /**
      * @return char of C-string at index (possible escaped "\\n")
@@ -586,18 +587,18 @@ public:
 
     static const Token *findsimplematch(const Token * const startTok, const char pattern[]);
     static const Token *findsimplematch(const Token * const startTok, const char pattern[], const Token * const end);
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const int varId = 0);
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const int varId = 0);
+    static const Token *findmatch(const Token * const startTok, const char pattern[], const nonneg int varId = 0);
+    static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
     static Token *findsimplematch(Token * const startTok, const char pattern[]) {
         return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern));
     }
     static Token *findsimplematch(Token * const startTok, const char pattern[], const Token * const end) {
         return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, end));
     }
-    static Token *findmatch(Token * const startTok, const char pattern[], const int varId = 0) {
+    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0) {
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
     }
-    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const int varId = 0) {
+    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0) {
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
     }
 
@@ -615,26 +616,26 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const Token *tok, const char *haystack, int varid);
+    static nonneg int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
 
-    int fileIndex() const {
+    nonneg int fileIndex() const {
         return mImpl->mFileIndex;
     }
-    void fileIndex(int indexOfFile) {
+    void fileIndex(nonneg int indexOfFile) {
         mImpl->mFileIndex = indexOfFile;
     }
 
-    int linenr() const {
+    nonneg int linenr() const {
         return mImpl->mLineNumber;
     }
-    void linenr(int lineNumber) {
+    void linenr(nonneg int lineNumber) {
         mImpl->mLineNumber = lineNumber;
     }
 
-    int col() const {
+    nonneg int col() const {
         return mImpl->mColumn;
     }
-    void col(int c) {
+    void col(nonneg int c) {
         mImpl->mColumn = c;
     }
 
@@ -667,10 +668,10 @@ public:
     }
 
 
-    int varId() const {
+    nonneg int varId() const {
         return mImpl->mVarId;
     }
-    void varId(int id) {
+    void varId(nonneg int id) {
         mImpl->mVarId = id;
         if (id != 0) {
             tokType(eVariable);
@@ -873,7 +874,7 @@ public:
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
     /** Get progressValue (0 - 100) */
-    int progressValue() const {
+    nonneg int progressValue() const {
         return mImpl->mProgressValue;
     }
 
@@ -981,7 +982,7 @@ public:
     const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
     const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
 
-    const ValueFlow::Value * getInvalidValue(const Token *ftok, int argnr, const Settings *settings) const;
+    const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const;
 
     const ValueFlow::Value * getContainerSizeValue(const MathLib::bigint val) const {
         if (!mImpl->mValues)
@@ -1006,7 +1007,7 @@ public:
             mImpl->mValues->remove_if(pred);
     }
 
-    int index() const {
+    nonneg int index() const {
         return mImpl->mIndex;
     }
 
@@ -1107,7 +1108,7 @@ private:
     void update_property_char_string_literal();
 
     /** Internal helper function to avoid excessive string allocations */
-    void astStringVerboseRecursive(std::string& ret, const int indent1 = 0, const int indent2 = 0) const;
+    void astStringVerboseRecursive(std::string& ret, const nonneg int indent1 = 0, const nonneg int indent2 = 0) const;
 
 public:
     void astOperand1(Token *tok);

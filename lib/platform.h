@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "utils.h"
 
 #include <climits>
 #include <string>
@@ -63,24 +64,24 @@ namespace cppcheck {
             return value >= min_value(long_bit) && value <= max_value(long_bit);
         }
 
-        int char_bit;       /// bits in char
-        int short_bit;      /// bits in short
-        int int_bit;        /// bits in int
-        int long_bit;       /// bits in long
-        int long_long_bit;  /// bits in long long
+        nonneg int char_bit;       /// bits in char
+        nonneg int short_bit;      /// bits in short
+        nonneg int int_bit;        /// bits in int
+        nonneg int long_bit;       /// bits in long
+        nonneg int long_long_bit;  /// bits in long long
 
         /** size of standard types */
-        int sizeof_bool;
-        int sizeof_short;
-        int sizeof_int;
-        int sizeof_long;
-        int sizeof_long_long;
-        int sizeof_float;
-        int sizeof_double;
-        int sizeof_long_double;
-        int sizeof_wchar_t;
-        int sizeof_size_t;
-        int sizeof_pointer;
+        nonneg int sizeof_bool;
+        nonneg int sizeof_short;
+        nonneg int sizeof_int;
+        nonneg int sizeof_long;
+        nonneg int sizeof_long_long;
+        nonneg int sizeof_float;
+        nonneg int sizeof_double;
+        nonneg int sizeof_long_double;
+        nonneg int sizeof_wchar_t;
+        nonneg int sizeof_size_t;
+        nonneg int sizeof_pointer;
 
         char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 

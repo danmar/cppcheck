@@ -227,7 +227,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->index() < tok2->index();
 }
 
-static bool isAliased(const Token * startTok, const Token * endTok, int varid)
+static bool isAliased(const Token * startTok, const Token * endTok, nonneg int varid)
 {
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
@@ -248,7 +248,7 @@ static bool isAliased(const Token * startTok, const Token * endTok, int varid)
     return false;
 }
 
-static bool exprDependsOnThis(const Token *expr, int depth)
+static bool exprDependsOnThis(const Token *expr, nonneg int depth)
 {
     if (!expr)
         return false;
@@ -804,7 +804,7 @@ bool isReturnScope(const Token * const endToken)
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token *tok, int varid, const Settings *settings, bool *inconclusive)
+bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
         return false;
@@ -930,7 +930,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const int varid, bool globalvar, const Settings *settings, bool cpp)
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
@@ -1017,7 +1017,7 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, int depth)
+static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, nonneg int depth)
 {
     ++depth;
     if (!tok || depth >= 100)

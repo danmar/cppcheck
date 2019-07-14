@@ -40,16 +40,16 @@ namespace CTU {
         struct Location {
             Location() = default;
             Location(const Tokenizer *tokenizer, const Token *tok);
-            Location(const std::string &fileName, int linenr) : fileName(fileName), linenr(linenr) {}
+            Location(const std::string &fileName, nonneg int linenr) : fileName(fileName), linenr(linenr) {}
             std::string fileName;
-            int linenr;
+            nonneg int linenr;
         };
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(const std::string &myId, int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
+            UnsafeUsage(const std::string &myId, nonneg int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
             std::string myId;
-            int myArgNr;
+            nonneg int myArgNr;
             std::string myArgumentName;
             Location location;
             MathLib::bigint value;
@@ -89,7 +89,7 @@ namespace CTU {
         public:
             NestedCall() = default;
 
-            NestedCall(const std::string &myId, int myArgNr, const std::string &callId, int callArgnr, const std::string &callFunctionName, const Location &location)
+            NestedCall(const std::string &myId, nonneg int myArgNr, const std::string &callId, nonneg int callArgnr, const std::string &callFunctionName, const Location &location)
                 : CallBase(callId, callArgnr, callFunctionName, location),
                   myId(myId),
                   myArgNr(myArgNr) {
@@ -101,7 +101,7 @@ namespace CTU {
             bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
 
             std::string myId;
-            int myArgNr;
+            nonneg int myArgNr;
         };
 
         std::list<FunctionCall> functionCalls;
