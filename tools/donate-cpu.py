@@ -281,8 +281,15 @@ def scan_package(work_path, cppcheck_path, jobs):
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
-    print('cppcheck finished with ' + str(returncode))
-    if returncode == -11 or stderr.find('Internal error: Child process crashed with signal 11 [cppcheckError]') > 0 or returncode == -6 or stderr.find('Internal error: Child process crashed with signal 6 [cppcheckError]') > 0:
+    sig_num = -1
+    sig_msg = 'Internal error: Child process crashed with signal '
+    sig_pos = stderr.find(sig_msg)
+    if not sig_pos == -1:
+        sig_start_pos = sig_pos + len(sig_msg)
+        sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
+    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+    # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
+    if returncode in (-11,-6,-4,-8,-7) or sig_num in (11,6,4,8,7):
         print('Crash!')
         stacktrace = ''
         if cppcheck_path == 'cppcheck':
