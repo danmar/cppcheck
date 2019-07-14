@@ -1139,15 +1139,15 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (FwdAnalysis::isNullOperand(tok->astOperand2()))
                 continue;
 
-            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() != tok->astOperand1())
+            if (tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() != tok->astOperand1())
                 // todo: check references
                 continue;
 
-            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
+            if (tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->isStatic())
                 // todo: check static variables
                 continue;
 
-            if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->nameToken()->isAttributeUnused())
+            if (tok->astOperand1() && tok->astOperand1()->variable() && tok->astOperand1()->variable()->nameToken()->isAttributeUnused())
                 continue;
 
             // Is there a redundant assignment?
@@ -1156,7 +1156,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Token *expr = varDecl ? varDecl : tok->astOperand1();
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))
+            if (expr && fwdAnalysis.unusedValue(expr, start, scope->bodyEnd))
                 // warn
                 unreadVariableError(tok, expr->expressionString(), false);
         }
