@@ -103,42 +103,42 @@ bool TranslationHandler::setLanguage(const QString &code)
     if (index == -1) {
         error = QObject::tr("Unknown language specified!");
         failure = true;
-    }
+    } else {
+        // Make sure there is a translator
+        if (!mTranslator && !failure)
+            mTranslator = new QTranslator(this);
 
-    // Make sure there is a translator
-    if (!mTranslator && !failure)
-        mTranslator = new QTranslator(this);
+        //Load the new language
+        const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
 
-    //Load the new language
-    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+        QSettings settings;
+        QString datadir = settings.value("DATADIR").toString();
+        if (datadir.isEmpty())
+            datadir = appPath;
 
-    QSettings settings;
-    QString datadir = settings.value("DATADIR").toString();
-    if (datadir.isEmpty())
-        datadir = appPath;
+        QString translationFile;
+        if (QFile::exists(datadir + "/lang/" + mTranslations[index].mFilename + ".qm"))
+            translationFile = datadir + "/lang/" + mTranslations[index].mFilename + ".qm";
 
-    QString translationFile;
-    if (QFile::exists(datadir + "/lang/" + mTranslations[index].mFilename + ".qm"))
-        translationFile = datadir + "/lang/" + mTranslations[index].mFilename + ".qm";
+        else if (QFile::exists(datadir + "/" + mTranslations[index].mFilename + ".qm"))
+            translationFile = datadir + "/" + mTranslations[index].mFilename + ".qm";
 
-    else if (QFile::exists(datadir + "/" + mTranslations[index].mFilename + ".qm"))
-        translationFile = datadir + "/" + mTranslations[index].mFilename + ".qm";
+        else
+            translationFile = appPath + "/" + mTranslations[index].mFilename + ".qm";
 
-    else
-        translationFile = appPath + "/" + mTranslations[index].mFilename + ".qm";
+        if (!mTranslator->load(translationFile) && !failure) {
+            //If it failed, lets check if the default file exists
+            if (!QFile::exists(translationFile)) {
+                error = QObject::tr("Language file %1 not found!");
+                error = error.arg(translationFile);
+                failure = true;
+            }
 
-    if (!mTranslator->load(translationFile) && !failure) {
-        //If it failed, lets check if the default file exists
-        if (!QFile::exists(translationFile)) {
-            error = QObject::tr("Language file %1 not found!");
+            //If file exists, there's something wrong with it
+            error = QObject::tr("Failed to load translation for language %1 from file %2");
+            error = error.arg(mTranslations[index].mName);
             error = error.arg(translationFile);
-            failure = true;
         }
-
-        //If file exists, there's something wrong with it
-        error = QObject::tr("Failed to load translation for language %1 from file %2");
-        error = error.arg(mTranslations[index].mName);
-        error = error.arg(translationFile);
     }
 
     if (failure) {
