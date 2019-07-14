@@ -882,6 +882,9 @@ Settings MainWindow::getCppcheckSettings()
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
+        result.allFunctionsAreSafe = mProjectFile->getCheckAllFunctionParameterValues();
+        foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
+            result.checkUnknownFunctionReturn.insert(s.toStdString());
     }
 
     // Include directories (and files) are searched in listed order.
@@ -1104,7 +1107,7 @@ void MainWindow::openResults()
         QMessageBox msgBox(this);
         msgBox.setWindowTitle(tr("Cppcheck"));
         const QString msg(tr("Current results will be cleared.\n\n"
-                             "Opening a new XML file will clear current results."
+                             "Opening a new XML file will clear current results.\n"
                              "Do you want to proceed?"));
         msgBox.setText(msg);
         msgBox.setIcon(QMessageBox::Warning);

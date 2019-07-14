@@ -340,6 +340,8 @@ private:
         TEST_CASE(findFunction21);
         TEST_CASE(findFunction22);
         TEST_CASE(findFunction23);
+        TEST_CASE(findFunction24); // smart pointer
+        TEST_CASE(findFunction25); // std::vector<std::shared_ptr<Fred>>
 
         TEST_CASE(noexceptFunction1);
         TEST_CASE(noexceptFunction2);
@@ -5482,6 +5484,36 @@ private:
         const Function *f = tok1 ? tok1->function() : nullptr;
         ASSERT(f != nullptr);
         ASSERT_EQUALS(true, f && f->isConst());
+    }
+
+    void findFunction24() { // smart pointers
+        GET_SYMBOL_DB("struct foo {\n"
+                      "  void dostuff();\n"
+                      "}\n"
+                      "\n"
+                      "void f(std::shared_ptr<foo> p) {\n"
+                      "  p->dostuff();\n"
+                      "}");
+        ASSERT(db != nullptr);
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), ". dostuff ( ) ;")->next();
+        ASSERT(tok1->function());
+    }
+
+    void findFunction25() { // std::vector<std::shared_ptr<Fred>>
+        GET_SYMBOL_DB("struct foo {\n"
+                      "  void dostuff();\n"
+                      "}\n"
+                      "\n"
+                      "void f1(std::vector<std::shared_ptr<foo>> v)\n"
+                      "{\n"
+                      "    for (auto p : v)\n"
+                      "    {\n"
+                      "        p->dostuff();\n"
+                      "    }\n"
+                      "}");
+        ASSERT(db != nullptr);
+        const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), ". dostuff ( ) ;")->next();
+        ASSERT(tok1->function());
     }
 
 #define FUNC(x) const Function *x = findFunctionByName(#x, &db->scopeList.front()); \

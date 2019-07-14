@@ -1886,7 +1886,7 @@ Checking unusedvar.cpp...
 
     <para>You can define custom rules using regular expressions.</para>
 
-    <para>These rules can not perform sophisticated analysis of the code. But
+    <para>These rules cannot perform sophisticated analysis of the code. But
     they give you an easy way to check for various simple patterns in the
     code.</para>
 

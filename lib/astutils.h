@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "errorlogger.h"
+#include "utils.h"
 
 class Library;
 class Settings;
@@ -118,7 +119,7 @@ bool isReturnScope(const Token *endToken);
  * @param settings      program settings
  * @param inconclusive  pointer to output variable which indicates that the answer of the question is inconclusive
  */
-bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const Settings *settings, bool *inconclusive);
+bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
@@ -131,7 +132,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp);
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp);
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
 
@@ -165,6 +166,8 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token *tok);
+
+const Variable *getLHSVariable(const Token *tok);
 
 /**
  * Forward data flow analysis for checks
@@ -219,7 +222,7 @@ private:
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local, bool inInnerClass);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;

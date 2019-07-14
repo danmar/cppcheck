@@ -161,6 +161,7 @@ private:
         TEST_CASE(template121); // #9193
         TEST_CASE(template122); // #9147
         TEST_CASE(template123); // #9183
+        TEST_CASE(template124); // #9197
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -188,6 +189,8 @@ private:
         TEST_CASE(templateParameters);
 
         TEST_CASE(templateNamePosition);
+
+        TEST_CASE(findTemplateDeclarationEnd);
 
         TEST_CASE(expandSpecialized1);
         TEST_CASE(expandSpecialized2);
@@ -2904,6 +2907,22 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template124() { // #9197
+        const char code[] = "template <bool> struct a;\n"
+                            "template <bool b> using c = typename a<b>::d;\n"
+                            "template <typename> struct e;\n"
+                            "template <typename> struct h {\n"
+                            "  template <typename... f, c<h<e<typename f::d...>>::g>> void i();\n"
+                            "};";
+        const char exp[] = "template < bool > struct a ; "
+                           "template < bool b > using c = typename a < b > :: d ; "
+                           "template < typename > struct e ; "
+                           "template < typename > struct h { "
+                           "template < typename . . . f , c < h < e < typename f :: d . . . > > :: g > > void i ( ) ; "
+                           "} ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -3694,6 +3713,35 @@ private:
                           "template<class T, class U> unsigned A<T, U>::foo() { return 0; }", 25));
         ASSERT_EQUALS(12, templateNamePositionHelper(
                           "template<> unsigned A<int, v<char> >::foo() { return 0; }", 2));
+    }
+
+    // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
+    bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.createTokens(istr, "test.cpp");
+        tokenizer.createLinks();
+        tokenizer.mTemplateSimplifier->fixAngleBrackets();
+
+        const Token *_tok = tokenizer.tokens();
+        for (unsigned i = 0 ; i < offset ; ++i)
+            _tok = _tok->next();
+
+        const Token *tok1 = tokenizer.mTemplateSimplifier->findTemplateDeclarationEnd(_tok);
+
+        return (tok1 == Token::findsimplematch(tokenizer.list.front(), pattern));
+    }
+
+    void findTemplateDeclarationEnd() {
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> class Fred { }; int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> void Fred() { } int x;", "} int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> int Fred = 0; int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename T> constexpr auto func = [](auto x){ return T(x);}; int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>); int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){} int x;", "} int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(); int x;", "; int x ;"));
+        ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(){} int x;", "} int x ;"));
     }
 
     void expandSpecialized1() {

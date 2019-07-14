@@ -116,7 +116,8 @@ private:
     /** check for leaks in a function scope */
     void checkScope(const Token * const startToken,
                     VarInfo *varInfo,
-                    std::set<unsigned int> notzero);
+                    std::set<unsigned int> notzero,
+                    unsigned int recursiveCount);
 
     /** Check token inside expression.
     * @param tok token inside expression.

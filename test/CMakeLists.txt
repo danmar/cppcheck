@@ -19,6 +19,10 @@ if (BUILD_TESTS)
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/cfg")
 
+    if (WIN32 AND NOT BORLAND)
+        target_link_libraries(testrunner Shlwapi.lib)
+    endif()
+
     add_dependencies(testrunner copy_cfg)
 
     add_test(NAME testrunner COMMAND testrunner WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

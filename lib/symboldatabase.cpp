@@ -1710,6 +1710,25 @@ void Variable::setValueType(const ValueType &valueType)
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
         setFlag(fIsPointer, true);
     setFlag(fIsConst, mValueType->constness & (1U << mValueType->pointer));
+    if (mValueType->smartPointerType)
+        setFlag(fIsSmartPointer, true);
+}
+
+const Type *Variable::smartPointerType() const
+{
+    if (!isSmartPointer())
+        return nullptr;
+
+    if (mValueType->smartPointerType)
+        return mValueType->smartPointerType;
+
+    // TODO: Cache result
+    const Token *ptrType = typeStartToken();
+    while (Token::Match(ptrType, "%name%|::"))
+        ptrType = ptrType->next();
+    if (Token::Match(ptrType, "< %name% >"))
+        return ptrType->next()->type();
+    return nullptr;
 }
 
 Function::Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef)
@@ -2058,6 +2077,11 @@ const Token * Function::constructorMemberInitialization() const
     if (Token::Match(token, "%name% (") && Token::simpleMatch(token->linkAt(1), ") :"))
         return token->linkAt(1)->next();
     return nullptr;
+}
+
+bool Function::isSafe(const Settings *settings) const
+{
+    return settings->allFunctionsAreSafe;
 }
 
 Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
@@ -2702,6 +2726,7 @@ void SymbolDatabase::printOut(const char *title) const
                                               func->type == Function::eOperatorEqual ? "OperatorEqual" :
                                               func->type == Function::eDestructor ? "Destructor" :
                                               func->type == Function::eFunction ? "Function" :
+                                              func->type == Function::eLambda ? "Lambda" :
                                               "Unknown") << std::endl;
             std::cout << "        access: " << accessControlToString(func->access) << std::endl;
             std::cout << "        hasBody: " << func->hasBody() << std::endl;
@@ -2961,6 +2986,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                                           function->type == Function::eOperatorEqual ? "OperatorEqual" :
                                           function->type == Function::eDestructor ? "Destructor" :
                                           function->type == Function::eFunction ? "Function" :
+                                          function->type == Function::eLambda ? "Lambda" :
                                           "Unknown") << '\"';
                     if (function->nestedIn->definedType) {
                         if (function->hasVirtualSpecifier())
@@ -4443,6 +4469,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
             const Variable *var = getVariableFromVarId(tok1->varId());
             if (var && var->typeScope())
                 return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
+            if (var && var->smartPointerType() && var->smartPointerType()->classScope && tok1->next()->originalName() == "->")
+                return var->smartPointerType()->classScope->findFunction(tok, var->valueType()->constness == 1);
         } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
             const Token *castTok = tok->previous()->astOperand1();
             if (castTok->isCast()) {
@@ -4858,6 +4886,7 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;
     }
+    valuetype.smartPointerType = var.smartPointerType();
     if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
         if (tok->str() == "." && tok->astOperand1()) {
             const ValueType * const vt = tok->astOperand1()->valueType();
@@ -4920,6 +4949,13 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         if (!mIsCpp || (vt2 && vt2->isIntegral()))
             setValueType(parent, *vt1);
         return;
+    }
+
+    if (vt1 && vt1->smartPointerType && Token::Match(parent, ". %name% (") && parent->originalName() == "->" && !parent->next()->function()) {
+        const Scope *scope = vt1->smartPointerType->classScope;
+        const Function *f = scope ? scope->findFunction(parent->next(), false) : nullptr;
+        if (f)
+            parent->next()->function(f);
     }
 
     if (parent->isAssignmentOp()) {
@@ -5068,24 +5104,47 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                 else
                     break;
             }
+
+            const Token *containerElementType = typeStart;
+            while (Token::Match(containerElementType, "%name%|::"))
+                containerElementType = containerElementType->next();
+
+            // Try to determine type of "auto" token.
             // TODO: Get type better
-            if (Token::Match(typeStart, "std :: %type% < %type% *| *| >")) {
-                ValueType autovt;
-                if (parsedecl(typeStart->tokAt(4), &autovt, mDefaultSignedness, mSettings)) {
-                    setValueType(autoToken, autovt);
-                    setAutoTokenProperties(autoToken);
-                    ValueType varvt(autovt);
-                    if (isconst)
-                        varvt.constness |= 1;
-                    setValueType(parent->previous(), varvt);
-                    Variable * var = const_cast<Variable *>(parent->previous()->variable());
-                    if (var) {
-                        var->setValueType(varvt);
-                        const Type * type = typeStart->tokAt(4)->type();
-                        if (type && type->classScope && type->classScope->definedType) {
-                            autoToken->type(type->classScope->definedType);
-                            var->type(type->classScope->definedType);
-                        }
+            bool setType = false;
+            ValueType autovt;
+            const Type *templateArgType = nullptr; // container element type / smart pointer type
+            if (Token::Match(containerElementType, "< %type% *| *| >")) {
+                if (parsedecl(containerElementType->next(), &autovt, mDefaultSignedness, mSettings)) {
+                    setType = true;
+                    templateArgType = containerElementType->next()->type();
+                }
+            } else if (mSettings->library.isSmartPointer(containerElementType->next())) {
+                const Token *smartPointerTypeTok = containerElementType->next();
+                while (Token::Match(smartPointerTypeTok, "%name%|::"))
+                    smartPointerTypeTok = smartPointerTypeTok->next();
+                if (Token::Match(smartPointerTypeTok, "< %name% > >") && smartPointerTypeTok->next()->type()) {
+                    setType = true;
+                    templateArgType = smartPointerTypeTok->next()->type();
+                    autovt.smartPointerType = templateArgType;
+                    autovt.type = ValueType::Type::NONSTD;
+                }
+            }
+
+            if (setType) {
+                // Type of "auto" has been determined.. set type information for "auto" and variable tokens
+                setValueType(autoToken, autovt);
+                setAutoTokenProperties(autoToken);
+                ValueType varvt(autovt);
+                if (isconst)
+                    varvt.constness |= 1;
+                setValueType(parent->previous(), varvt);
+                Variable * var = const_cast<Variable *>(parent->previous()->variable());
+                if (var) {
+                    var->setValueType(varvt);
+                    if (templateArgType && templateArgType->classScope && templateArgType->classScope->definedType) {
+                        autoToken->type(templateArgType->classScope->definedType);
+                        var->type(templateArgType->classScope->definedType);
                     }
                 }
             }
@@ -5192,8 +5251,10 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     while (Token::Match(type->previous(), "%name%"))
         type = type->previous();
     valuetype->sign = ValueType::Sign::UNKNOWN_SIGN;
-    if (!valuetype->typeScope)
+    if (!valuetype->typeScope && !valuetype->smartPointerType)
         valuetype->type = ValueType::Type::UNKNOWN_TYPE;
+    else if (valuetype->smartPointerType)
+        valuetype->type = ValueType::Type::NONSTD;
     else if (valuetype->typeScope->type == Scope::eEnum) {
         const Token * enum_type = valuetype->typeScope->enumType;
         if (enum_type) {
@@ -5798,6 +5859,8 @@ std::string ValueType::str() const
         ret += " container(" + container->startPattern + ')';
     } else if (type == ValueType::Type::ITERATOR && container) {
         ret += " iterator(" + container->startPattern + ')';
+    } else if (smartPointerType) {
+        ret += " smart-pointer<" + smartPointerType->name() + ">";
     }
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";

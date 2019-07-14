@@ -300,6 +300,22 @@ public:
         mFilename = filename;
     }
 
+    /** Experimental: checking all function parameter values */
+    bool getCheckAllFunctionParameterValues() const {
+        return mCheckAllFunctionParameterValues;
+    }
+    void setCheckAllFunctionParameterValues(bool b) {
+        mCheckAllFunctionParameterValues = b;
+    }
+
+    /** Check unknown function return values */
+    QStringList getCheckUnknownFunctionReturn() const {
+        return mCheckUnknownFunctionReturn;
+    }
+    void setCheckUnknownFunctionReturn(const QStringList &s) {
+        mCheckUnknownFunctionReturn = s;
+    }
+
 protected:
 
     /**
@@ -472,6 +488,11 @@ private:
 
     /** Max CTU depth */
     int mMaxCtuDepth;
+
+    bool mCheckAllFunctionParameterValues;
+
+    QStringList mCheckUnknownFunctionReturn;
+
 };
 /// @}
 #endif  // PROJECT_FILE_H

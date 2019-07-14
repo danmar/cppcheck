@@ -227,7 +227,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     return tok1->index() < tok2->index();
 }
 
-static bool isAliased(const Token * startTok, const Token * endTok, unsigned int varid)
+static bool isAliased(const Token * startTok, const Token * endTok, nonneg int varid)
 {
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
@@ -248,7 +248,7 @@ static bool isAliased(const Token * startTok, const Token * endTok, unsigned int
     return false;
 }
 
-static bool exprDependsOnThis(const Token *expr, unsigned int depth)
+static bool exprDependsOnThis(const Token *expr, nonneg int depth)
 {
     if (!expr)
         return false;
@@ -804,7 +804,7 @@ bool isReturnScope(const Token * const endToken)
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token *tok, unsigned int varid, const Settings *settings, bool *inconclusive)
+bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
         return false;
@@ -846,7 +846,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     }
 
     // goto start of function call and get argnr
-    unsigned int argnr = 0;
+    int argnr = 0;
     while (tok && !Token::Match(tok, "[;{}]")) {
         if (tok->str() == ",")
             ++argnr;
@@ -870,7 +870,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     // Constructor call
     if (tok->variable() && tok->variable()->nameToken() == tok) {
         // Find constructor..
-        const unsigned int argCount = numberOfArguments(tok);
+        const int argCount = numberOfArguments(tok);
         const Scope *typeScope = tok->variable()->typeScope();
         if (typeScope) {
             for (const Function &function : typeScope->functionList) {
@@ -930,7 +930,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings,
     return arg && !arg->isConst() && arg->isReference();
 }
 
-bool isVariableChanged(const Token *start, const Token *end, const unsigned int varid, bool globalvar, const Settings *settings, bool cpp)
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varid) {
@@ -1017,7 +1017,7 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, unsigned int depth)
+static void getArgumentsRecursive(const Token *tok, std::vector<const Token *> *arguments, nonneg int depth)
 {
     ++depth;
     if (!tok || depth >= 100)
@@ -1131,6 +1131,32 @@ bool isConstVarExpression(const Token *tok)
     return false;
 }
 
+static const Variable *getLHSVariableRecursive(const Token *tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "*|&|&&|[")) {
+        const Variable *var = getLHSVariableRecursive(tok->astOperand1());
+        if (var || Token::simpleMatch(tok, "["))
+            return var;
+        return getLHSVariableRecursive(tok->astOperand2());
+    }
+    if (Token::Match(tok->previous(), "this . %var%"))
+        return tok->next()->variable();
+    return tok->variable();
+}
+
+const Variable *getLHSVariable(const Token *tok)
+{
+    if (!Token::Match(tok, "%assign%"))
+        return nullptr;
+    if (!tok->astOperand1())
+        return nullptr;
+    if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
+        return tok->astOperand1()->variable();
+    return getLHSVariableRecursive(tok->astOperand1());
+}
+
 static bool nonLocal(const Variable* var, bool deref)
 {
     return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
@@ -1146,7 +1172,7 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<unsigned int> &exprVarIds, bool local, bool inInnerClass)
+struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass)
 {
     // Parse the given tokens
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
@@ -1403,7 +1429,7 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
 FwdAnalysis::Result FwdAnalysis::check(const Token *expr, const Token *startToken, const Token *endToken)
 {
     // all variable ids in expr.
-    std::set<unsigned int> exprVarIds;
+    std::set<int> exprVarIds;
     bool local = true;
     bool unknownVarId = false;
     visitAstNodes(expr,
@@ -1500,7 +1526,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
         if (Token::Match(tok, "%name% (") && !Token::Match(tok, "if|while|for")) {
             // Is argument passed by reference?
             const std::vector<const Token*> args = getArguments(tok);
-            for (unsigned int argnr = 0; argnr < args.size(); ++argnr) {
+            for (int argnr = 0; argnr < args.size(); ++argnr) {
                 if (!Token::Match(args[argnr], "%name%|.|::"))
                     continue;
                 if (tok->function() && tok->function()->getArgumentVar(argnr) && !tok->function()->getArgumentVar(argnr)->isReference() && !tok->function()->isConst())
