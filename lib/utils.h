@@ -62,4 +62,14 @@ inline static int caseInsensitiveStringCompare(const std::string &lhs, const std
 
 #define UNUSED(x) (void)(x)
 
+// Use the nonneg macro when you want to assert that a variable/argument is not negative
+#ifdef NONNEG
+// Enable non-negative values checking
+// TODO : investigate using annotations/contracts for stronger value checking
+#define nonneg   unsigned
+#else
+// Disable non-negative values checking
+#define nonneg
+#endif
+
 #endif
