@@ -149,6 +149,7 @@ private:
         TEST_CASE(localvarthrow); // ticket #3687
 
         TEST_CASE(localVarStd);
+        TEST_CASE(localVarClass);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -4144,6 +4145,25 @@ private:
         functionVariableUsage("void f() {\n"
                               "    std::mutex m;\n"
                               "    std::unique_lock<std::mutex> lock(m);\n" // #4624
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localVarClass() {
+        functionVariableUsage("void f() {\n"
+                              "    Fred f;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("class C { int x; };\n"
+                              "void f() {\n"
+                              "    C c;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: c\n", errout.str());
+
+        functionVariableUsage("class C { public: C(int); ~C(); };\n"
+                              "void f() {\n"
+                              "    C c(12);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
