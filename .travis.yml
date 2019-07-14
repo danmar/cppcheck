@@ -208,10 +208,8 @@ script:
   - echo $CXXFLAGS
   - make -s test -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
-# compile cppcheck with -DNONNEG
-  - echo $CXXFLAGS
-  - make -s CPPFLAGS=-DNONNEG -j2
-  - make clean
+# syntax checking of cppcheck source code with -DNONNEG
+  - g++ -fsyntax-only -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -DNONNEG lib/*.cpp cli/*.cpp
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s test -j2

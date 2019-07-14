@@ -7221,7 +7221,7 @@ bool Tokenizer::simplifyKnownVariables()
                 const Token * const valueToken = tok2->tokAt(2);
 
                 std::string value;
-                int valueVarId = 0;
+                nonneg int valueVarId = 0;
 
                 Token *tok3 = nullptr;
                 bool valueIsPointer = false;
