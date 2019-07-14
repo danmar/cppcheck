@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "errorlogger.h"
+#include "utils.h"
 
 class Library;
 class Settings;
@@ -118,7 +119,7 @@ bool isReturnScope(const Token *endToken);
  * @param settings      program settings
  * @param inconclusive  pointer to output variable which indicates that the answer of the question is inconclusive
  */
-bool isVariableChangedByFunctionCall(const Token *tok, int varid, const Settings *settings, bool *inconclusive);
+bool isVariableChangedByFunctionCall(const Token *tok, nonneg int varid, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
@@ -131,7 +132,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int varid, const Settings
 bool isVariableChangedByFunctionCall(const Token *tok, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const int varid, bool globalvar, const Settings *settings, bool cpp);
+bool isVariableChanged(const Token *start, const Token *end, const nonneg int varid, bool globalvar, const Settings *settings, bool cpp);
 
 bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp);
 
