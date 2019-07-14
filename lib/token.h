@@ -616,7 +616,7 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static nonneg int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
+    static int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
 
     nonneg int fileIndex() const {
         return mImpl->mFileIndex;
