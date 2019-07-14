@@ -4124,17 +4124,12 @@ private:
         functionVariableUsage("void f() {\n"
                               "    std::vector<int> x(100);\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void f() {\n"
                               "    std::vector<MyClass> x;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: x\n", errout.str());
-
-        functionVariableUsage("void f() {\n"
-                              "    std::vector<MyClass> x(100);\n" // Might have a side-effect
-                              "}");
-        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("void f() {\n"
                               "    std::lock_guard<MyClass> lock(mutex_);\n" // Has a side-effect #4385
