@@ -2090,8 +2090,10 @@ class MisraChecker:
             if res:
                 num1 = int(res.group(2)) * 100
                 ruleNum = num1 + int(res.group(3))
-                self.addSuppressedRule(ruleNum, each.fileName,
-                                       each.lineNumber, each.symbolName)
+                linenr = None
+                if each.lineNumber:
+                    linenr = int(each.lineNumber)
+                self.addSuppressedRule(ruleNum, each.fileName, linenr, each.symbolName)
 
 
     def showSuppressedRules(self):
