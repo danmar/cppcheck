@@ -1127,7 +1127,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     if (!tok->valueType())
                         continue;
                     bool check = false;
-                    switch(tok->valueType()->type) {
+                    switch (tok->valueType()->type) {
                     case ValueType::Type::UNKNOWN_TYPE:
                     case ValueType::Type::NONSTD:
                     case ValueType::Type::RECORD:
