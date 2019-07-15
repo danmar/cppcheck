@@ -2821,7 +2821,11 @@ void Tokenizer::simplifyCaseRange()
                 tok->next()->str("case");
                 for (char i = end - 1; i > start; i--) {
                     tok->insertToken(":");
-                    tok->insertToken(std::string(1, '\'') + i + '\'');
+                    if (i == '\\') {
+                        tok->insertToken(std::string("\'\\") + i + '\'');
+                    } else {
+                        tok->insertToken(std::string(1, '\'') + i + '\'');
+                    }
                     tok->insertToken("case");
                 }
             }
@@ -7221,7 +7225,7 @@ bool Tokenizer::simplifyKnownVariables()
                 const Token * const valueToken = tok2->tokAt(2);
 
                 std::string value;
-                int valueVarId = 0;
+                nonneg int valueVarId = 0;
 
                 Token *tok3 = nullptr;
                 bool valueIsPointer = false;

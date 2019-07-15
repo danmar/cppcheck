@@ -237,10 +237,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   std::set<unsigned int> notzero,
                                   unsigned int recursiveCount)
 {
-    // The C++ standard suggests a minimum of 256 nested control statements
-    // but MSVC has a limit of 100.
-    if (++recursiveCount > 100)
-        throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 100 reached.", InternalError::LIMIT);
+    if (++recursiveCount > 1000)    // maximum number of "else if ()"
+        throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 1000 reached.", InternalError::LIMIT);
 
     std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
     std::map<unsigned int, std::string> &possibleUsage = varInfo->possibleUsage;

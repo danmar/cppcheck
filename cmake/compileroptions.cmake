@@ -121,6 +121,10 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" AND
     set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -U_GLIBCXX_DEBUG")
 endif()
 
+if (MSVC)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8000000")
+endif()
+
 include(cmake/dynamic_analyzer_options.cmake    REQUIRED)
 
 # Add user supplied extra options (optimization, etc...)
