@@ -130,7 +130,7 @@ class MatchCompiler:
         else:
             arg2 = ''
             if varid:
-                arg2 = ', const unsigned int varid'
+                arg2 = ', const int varid'
 
             ret = '// pattern: ' + pattern + '\n'
             ret += 'static bool match' + \
@@ -214,7 +214,7 @@ class MatchCompiler:
             more_args += ', const Token * end'
             endCondition = ' && start_tok != end'
         if varId:
-            more_args += ', unsigned int varid'
+            more_args += ', int varid'
 
         ret = '// pattern: ' + pattern + '\n'
         ret += 'template<class T> static T * findmatch' + \
@@ -298,7 +298,7 @@ class MatchCompiler:
             is_simplematch, verifyNumber, pattern, patternNumber, varId):
         more_args = ''
         if varId:
-            more_args = ', const unsigned int varid'
+            more_args = ', const int varid'
 
         ret = 'static bool match_verify' + \
             str(verifyNumber) + '(const Token *tok' + more_args + ') {\n'
@@ -428,7 +428,7 @@ class MatchCompiler:
         if endToken:
             more_args += ', const Token * endToken'
         if varId:
-            more_args += ', const unsigned int varid'
+            more_args += ', const int varid'
 
         ret = 'template < class T > static T * findmatch_verify' + \
             str(verifyNumber) + '(T * tok' + more_args + ') {\n'
@@ -547,9 +547,9 @@ class MatchCompiler:
             # Function prototypes:
             #     Token *findsimplematch(const Token *tok, const char pattern[]);
             #     Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
-            #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
+            #     Token *findmatch(const Token *tok, const char pattern[], int varId = 0);
             # Token *findmatch(const Token *tok, const char pattern[], const
-            # Token *end, unsigned int varId = 0);
+            # Token *end, int varId = 0);
             endToken = None
             if ((is_findsimplematch and len(res) == 4) or
                (not is_findsimplematch and varId and (len(res) == 5)) or
