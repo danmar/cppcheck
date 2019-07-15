@@ -284,7 +284,7 @@ def scan_package(work_path, cppcheck_path, jobs):
     sig_num = -1
     sig_msg = 'Internal error: Child process crashed with signal '
     sig_pos = stderr.find(sig_msg)
-    if not sig_pos == -1:
+    if sig_pos != -1:
         sig_start_pos = sig_pos + len(sig_msg)
         sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
