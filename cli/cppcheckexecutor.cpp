@@ -79,7 +79,7 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), latestProgressOutputTime(0), mErrorOutput(nullptr), errorlist(false)
+    : mSettings(nullptr), latestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
 {
 }
 
@@ -105,7 +105,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         }
 
         if (parser.getShowErrorMessages()) {
-            errorlist = true;
+            mShowAllErrors = true;
             std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
             cppcheck->getErrorMessages();
             std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
@@ -1054,7 +1054,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
 
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (errorlist) {
+    if (mShowAllErrors) {
         reportOut(msg.toXML());
     } else if (mSettings->xml) {
         reportErr(msg.toXML());
