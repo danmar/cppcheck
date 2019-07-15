@@ -849,8 +849,10 @@ void ResultsTree::copy()
     QString text;
     foreach (QModelIndex index, selectedRows) {
         QStandardItem *item = mModel.itemFromIndex(index);
-        if (!item->parent())
+        if (!item->parent()) {
+            text += item->text() + '\n';
             continue;
+        }
         if (item->parent()->parent())
             item = item->parent();
         QVariantMap data = item->data().toMap();
