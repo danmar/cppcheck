@@ -237,7 +237,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   std::set<unsigned int> notzero,
                                   unsigned int recursiveCount)
 {
-    if (++recursiveCount > 1000)	// maximum number of "else if ()"
+    if (++recursiveCount > 1000)    // maximum number of "else if ()"
         throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 1000 reached.", InternalError::LIMIT);
 
     std::map<unsigned int, VarInfo::AllocInfo> &alloctype = varInfo->alloctype;
