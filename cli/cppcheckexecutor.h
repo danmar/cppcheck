@@ -170,7 +170,7 @@ private:
     /**
      * Filename associated with size of file
      */
-    std::map<std::string, std::size_t> _files;
+    std::map<std::string, std::size_t> mFiles;
 
     /**
      * Report progress time
