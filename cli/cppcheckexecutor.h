@@ -94,7 +94,7 @@ public:
     /**
      * @param exception_output Output file
      */
-    static void setExceptionOutput(FILE* exception_output);
+    static void setExceptionOutput(FILE* exceptionOutput);
     /**
     * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
     */
@@ -180,7 +180,7 @@ private:
     /**
      * Output file name for exception handler
      */
-    static FILE* exceptionOutput;
+    static FILE* mExceptionOutput;
 
     /**
      * Error output
