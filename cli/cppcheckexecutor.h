@@ -165,7 +165,7 @@ private:
     /**
      * Used to filter out duplicate error messages.
      */
-    std::set<std::string> _errorList;
+    std::set<std::string> mShownErrors;
 
     /**
      * Filename associated with size of file
