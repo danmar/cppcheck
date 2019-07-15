@@ -76,7 +76,7 @@
 #endif
 
 
-/*static*/ FILE* CppCheckExecutor::exceptionOutput = stdout;
+/*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
     : _settings(nullptr), latestProgressOutputTime(0), errorOutput(nullptr), errorlist(false)
@@ -1063,14 +1063,14 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
     }
 }
 
-void CppCheckExecutor::setExceptionOutput(FILE* exception_output)
+void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
 {
-    exceptionOutput=exception_output;
+    mExceptionOutput = exceptionOutput;
 }
 
 FILE* CppCheckExecutor::getExceptionOutput()
 {
-    return exceptionOutput;
+    return mExceptionOutput;
 }
 
 bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath, const char* filename)
