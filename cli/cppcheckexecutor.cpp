@@ -79,7 +79,7 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : _settings(nullptr), latestProgressOutputTime(0), mErrorOutput(nullptr), errorlist(false)
+    : mSettings(nullptr), latestProgressOutputTime(0), mErrorOutput(nullptr), errorlist(false)
 {
 }
 
@@ -162,7 +162,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnames)
-            FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), _settings->library.markupExtensions(), matcher);
+            FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
     }
 
     if (mFiles.empty() && settings.project.fileSettings.empty()) {
@@ -184,7 +184,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     CppCheck cppCheck(*this, true);
 
     const Settings& settings = cppCheck.settings();
-    _settings = &settings;
+    mSettings = &settings;
 
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         return EXIT_FAILURE;
@@ -200,7 +200,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
 void CppCheckExecutor::setSettings(const Settings &settings)
 {
-    _settings = &settings;
+    mSettings = &settings;
 }
 
 /**
@@ -809,7 +809,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
 int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const char* const argv[])
 {
     Settings& settings = cppcheck.settings();
-    _settings = &settings;
+    mSettings = &settings;
     const bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
 
     for (const std::string &lib : settings.libraries) {
@@ -879,8 +879,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         unsigned int c = 0;
         if (settings.project.fileSettings.empty()) {
             for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-                if (!_settings->library.markupFile(i->first)
-                    || !_settings->library.processMarkupAfterCode(i->first)) {
+                if (!mSettings->library.markupFile(i->first)
+                    || !mSettings->library.processMarkupAfterCode(i->first)) {
                     returnValue += cppcheck.check(i->first);
                     processedsize += i->second;
                     if (!settings.quiet)
@@ -903,7 +903,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-            if (_settings->library.markupFile(i->first) && _settings->library.processMarkupAfterCode(i->first)) {
+            if (mSettings->library.markupFile(i->first) && mSettings->library.processMarkupAfterCode(i->first)) {
                 returnValue += cppcheck.check(i->first);
                 processedsize += i->second;
                 if (!settings.quiet)
@@ -921,7 +921,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         returnValue = executor.check();
     }
 
-    cppcheck.analyseWholeProgram(_settings->buildDir, mFiles);
+    cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
     if (settings.isEnabled(Settings::INFORMATION) || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
@@ -963,7 +963,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
     }
 
-    _settings = nullptr;
+    mSettings = nullptr;
     if (returnValue)
         return settings.exitCode;
     return 0;
@@ -1003,7 +1003,7 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
-        std::cerr << ansiToOEM(errmsg, (_settings == nullptr) ? true : !_settings->xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, (mSettings == nullptr) ? true : !mSettings->xml) << std::endl;
     }
 }
 
@@ -1056,10 +1056,10 @@ void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     if (errorlist) {
         reportOut(msg.toXML());
-    } else if (_settings->xml) {
+    } else if (mSettings->xml) {
         reportErr(msg.toXML());
     } else {
-        reportErr(msg.toString(_settings->verbose, _settings->templateFormat, _settings->templateLocation));
+        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
     }
 }
 
