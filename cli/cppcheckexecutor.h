@@ -190,7 +190,7 @@ private:
     /**
      * Has --errorlist been given?
      */
-    bool errorlist;
+    bool mShowAllErrors;
 };
 
 #endif // CPPCHECKEXECUTOR_H
