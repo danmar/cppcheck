@@ -184,7 +184,7 @@ static bool isAddressOfLocalVariable(const Token *expr)
     return false;
 }
 
-static bool variableIsUsedInScope(const Token* start, unsigned int varId, const Scope *scope)
+static bool variableIsUsedInScope(const Token* start, nonneg int varId, const Scope *scope)
 {
     if (!start) // Ticket #5024
         return false;
