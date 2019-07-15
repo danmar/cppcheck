@@ -295,7 +295,7 @@ def scan_package(work_path, cppcheck_path, jobs):
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
             cmd = 'gdb --batch --eval-command=run --eval-command=bt --return-child-result --args ' + cppcheck_cmd + " -j1"
-            returncode, stdout, stderr, elapsed_time = run_command(cmd)
+            dummy, stdout, stderr, elapsed_time = run_command(cmd)
             gdb_pos = stdout.find(" received signal")
             if not gdb_pos == -1:
                 last_check_pos = stdout.rfind('Checking ', 0, gdb_pos)
