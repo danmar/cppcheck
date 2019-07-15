@@ -175,7 +175,7 @@ private:
     /**
      * Report progress time
      */
-    std::time_t latestProgressOutputTime;
+    std::time_t mLatestProgressOutputTime;
 
     /**
      * Output file name for exception handler
