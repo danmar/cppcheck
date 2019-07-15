@@ -215,7 +215,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     if (! tok2)
         return No;
 
-    if (!Token::Match(tok2, "%name% ( "))
+    if (!Token::Match(tok2, "%name% ("))
         return No;
 
     const Library::AllocFunc *f = mSettings_->library.getReallocFuncInfo(tok2);
