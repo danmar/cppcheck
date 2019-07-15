@@ -996,10 +996,10 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 void CppCheckExecutor::reportErr(const std::string &errmsg)
 {
     // Alert only about unique errors
-    if (_errorList.find(errmsg) != _errorList.end())
+    if (mShownErrors.find(errmsg) != mShownErrors.end())
         return;
 
-    _errorList.insert(errmsg);
+    mShownErrors.insert(errmsg);
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
