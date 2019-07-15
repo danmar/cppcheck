@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "utils.h"
 
 #include <list>
 #include <string>
@@ -158,7 +159,7 @@ namespace ValueFlow {
         ErrorPath errorPath;
 
         /** For calculated values - varId that calculated value depends on */
-        unsigned int varId;
+        nonneg int varId;
 
         /** Conditional value */
         bool conditional;
