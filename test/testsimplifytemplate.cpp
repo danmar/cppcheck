@@ -162,6 +162,7 @@ private:
         TEST_CASE(template122); // #9147
         TEST_CASE(template123); // #9183
         TEST_CASE(template124); // #9197
+        TEST_CASE(template125);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -2921,6 +2922,17 @@ private:
                            "template < typename . . . f , c < h < e < typename f :: d . . . > > :: g > > void i ( ) ; "
                            "} ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template125() {
+        ASSERT_THROW(tok("template<int M, int N>\n"
+                         "class GCD {\n"
+                         "public:\n"
+                         "  enum { val = (N == 0) ? M : GCD<N, M % N>::val };\n"
+                         "};\n"
+                         "int main() {\n"
+                         "  GCD< 1, 0 >::val;\n"
+                         "}"), InternalError);
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
