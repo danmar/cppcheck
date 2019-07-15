@@ -42,7 +42,12 @@ of the GNU General Public License version 3</source>
 &lt;li&gt;picojson&lt;/li&gt;
 &lt;li&gt;pcre&lt;/li&gt;
 &lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;私達は以下のライブラリを使用しています。ここで感謝の意を表明します。&lt;/p&gt;&lt;ul&gt;
+&lt;li&gt;tinyxml2&lt;/li&gt;
+&lt;li&gt;picojson&lt;/li&gt;
+&lt;li&gt;pcre&lt;/li&gt;
+&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -1018,12 +1023,12 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="820"/>
         <source>C++17</source>
-        <translation type="unfinished">C++17</translation>
+        <translation>C++17</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="831"/>
         <source>C++20</source>
-        <translation type="unfinished">C++20</translation>
+        <translation>C++20</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="323"/>
@@ -1603,27 +1608,27 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="331"/>
         <source>Analysis</source>
-        <translation type="unfinished"></translation>
+        <translation>チェック</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="337"/>
         <source>Check code in headers  (slower analysis, more results)</source>
-        <translation type="unfinished"></translation>
+        <translation>ヘッダファイルのコードもチェック(解析に時間がかかりますが結果は増えます)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="347"/>
         <source>Check code in unused templates  (slower and less accurate analysis)</source>
-        <translation type="unfinished"></translation>
+        <translation>未使用テンプレートのコードもチェック (解析に時間がかかり、また正確性は低い)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="356"/>
         <source>Max CTU depth</source>
-        <translation type="unfinished"></translation>
+        <translation>CTUの最大深さ</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="450"/>
         <source>Exclude source files in paths</source>
-        <translation type="unfinished"></translation>
+        <translation>除外するソースファイルのPATH</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="632"/>
@@ -1885,137 +1890,137 @@ Options:
     <message>
         <location filename="codeeditstylecontrols.cpp" line="69"/>
         <source>Thin</source>
-        <translation type="unfinished"></translation>
+        <translation>シン(細)</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="71"/>
         <source>ExtraLight</source>
-        <translation type="unfinished"></translation>
+        <translation>エクストラライト</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="73"/>
         <source>Light</source>
-        <translation type="unfinished"></translation>
+        <translation>ライト</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="75"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>ノーマル</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="77"/>
         <source>Medium</source>
-        <translation type="unfinished"></translation>
+        <translation>メディウム</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="79"/>
         <source>DemiBold</source>
-        <translation type="unfinished"></translation>
+        <translation>デミボールト</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="81"/>
         <source>Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>ボールド</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="83"/>
         <source>ExtraBold</source>
-        <translation type="unfinished"></translation>
+        <translation>エクストラボールド</translation>
     </message>
     <message>
         <location filename="codeeditstylecontrols.cpp" line="85"/>
         <source>Black</source>
-        <translation type="unfinished"></translation>
+        <translation>黒</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="69"/>
         <source>Editor Foreground Color</source>
-        <translation type="unfinished"></translation>
+        <translation>エディタの前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="72"/>
         <source>Editor Background Color</source>
-        <translation type="unfinished"></translation>
+        <translation>エディタの背景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="75"/>
         <source>Highlight Background Color</source>
-        <translation type="unfinished"></translation>
+        <translation>ハイライトの背景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="78"/>
         <source>Line Number Foreground Color</source>
-        <translation type="unfinished"></translation>
+        <translation>行番号の前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="81"/>
         <source>Line Number Background Color</source>
-        <translation type="unfinished"></translation>
+        <translation>行番号の背景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="84"/>
         <source>Keyword Foreground Color</source>
-        <translation type="unfinished"></translation>
+        <translation>キーワードの前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="87"/>
         <source>Keyword Font Weight</source>
-        <translation type="unfinished"></translation>
+        <translation>キーワードのフォントのウェイト</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="90"/>
         <source>Class ForegroundColor</source>
-        <translation type="unfinished"></translation>
+        <translation>クラスは前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="93"/>
         <source>Class Font Weight</source>
-        <translation type="unfinished"></translation>
+        <translation>クラスフォントのウェイト</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="96"/>
         <source>Quote Foreground Color</source>
-        <translation type="unfinished"></translation>
+        <translation>クォートの前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="99"/>
         <source>Quote Font Weight</source>
-        <translation type="unfinished"></translation>
+        <translation>クォートのフォントウェイト</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="102"/>
         <source>Comment Foreground Color</source>
-        <translation type="unfinished"></translation>
+        <translation>コメントの前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="105"/>
         <source>Comment Font Weight</source>
-        <translation type="unfinished"></translation>
+        <translation>コメントフォントのウェイト</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="108"/>
         <source>Symbol Foreground Color</source>
-        <translation type="unfinished"></translation>
+        <translation>シンボルの前景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="111"/>
         <source>Symbol Background Color</source>
-        <translation type="unfinished"></translation>
+        <translation>シンボルの背景色</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="114"/>
         <source>Symbol Font Weight</source>
-        <translation type="unfinished"></translation>
+        <translation>シンボルのフォントウェイト</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="130"/>
         <source>Set to Default Light</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルトをライトに設定</translation>
     </message>
     <message>
         <location filename="codeeditstyledialog.cpp" line="132"/>
         <source>Set to Default Dark</source>
-        <translation type="unfinished"></translation>
+        <translation>デフォルトをダークに設定</translation>
     </message>
 </context>
 <context>
@@ -2517,27 +2522,27 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="425"/>
         <source>Code Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>コードエディタ</translation>
     </message>
     <message>
         <location filename="settings.ui" line="431"/>
         <source>Code Editor Style</source>
-        <translation type="unfinished"></translation>
+        <translation>コードエディタスタイル</translation>
     </message>
     <message>
         <location filename="settings.ui" line="437"/>
         <source>Default Light Style</source>
-        <translation type="unfinished"></translation>
+        <translation>ライトスタイルをデフォルトに</translation>
     </message>
     <message>
         <location filename="settings.ui" line="444"/>
         <source>Default Dark Style</source>
-        <translation type="unfinished"></translation>
+        <translation>ダークスタイルをデフォルトに</translation>
     </message>
     <message>
         <location filename="settings.ui" line="453"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>カスタム</translation>
     </message>
     <message>
         <source>Paths</source>
