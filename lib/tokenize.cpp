@@ -2822,9 +2822,9 @@ void Tokenizer::simplifyCaseRange()
                 for (char i = end - 1; i > start; i--) {
                     tok->insertToken(":");
                     if (i == '\\') {
-                      tok->insertToken(std::string("\'\\") + i + '\'');
+                        tok->insertToken(std::string("\'\\") + i + '\'');
                     } else {
-                      tok->insertToken(std::string(1, '\'') + i + '\'');
+                        tok->insertToken(std::string(1, '\'') + i + '\'');
                     }
                     tok->insertToken("case");
                 }
