@@ -1823,7 +1823,7 @@ private:
                             "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
                             "void foo() {\n"
                             "  if (0) { }\n"
-                            "  THOU\n"
+                            "  THOU THOU\n"
                             "}"), InternalError);
         ASSERT_NO_THROW(checkP("#define ONE     if (0) { }\n"
                                "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
@@ -1831,7 +1831,7 @@ private:
                                "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
                                "void foo() {\n"
                                "  if (0) { }\n"
-                               "  THOU\n"
+                               "  THOU THOU\n"
                                "}"));
     }
 

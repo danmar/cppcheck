@@ -295,6 +295,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
@@ -323,6 +325,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
@@ -349,6 +353,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
@@ -376,6 +382,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <AdditionalLibraryDirectories>../externals;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
@@ -414,6 +422,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
@@ -453,6 +463,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
       <LargeAddressAware>true</LargeAddressAware>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
@@ -490,6 +502,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
@@ -528,6 +542,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
+      <StackReserveSize>8000000</StackReserveSize>
+      <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
