@@ -185,7 +185,7 @@ private:
     /**
      * Error output
      */
-    std::ofstream *errorOutput;
+    std::ofstream *mErrorOutput;
 
     /**
      * Has --errorlist been given?

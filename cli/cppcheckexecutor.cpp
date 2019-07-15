@@ -79,13 +79,13 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : _settings(nullptr), latestProgressOutputTime(0), errorOutput(nullptr), errorlist(false)
+    : _settings(nullptr), latestProgressOutputTime(0), mErrorOutput(nullptr), errorlist(false)
 {
 }
 
 CppCheckExecutor::~CppCheckExecutor()
 {
-    delete errorOutput;
+    delete mErrorOutput;
 }
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
@@ -851,7 +851,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         latestProgressOutputTime = std::time(nullptr);
 
     if (!settings.outputFile.empty()) {
-        errorOutput = new std::ofstream(settings.outputFile);
+        mErrorOutput = new std::ofstream(settings.outputFile);
     }
 
     if (settings.xml) {
@@ -1000,8 +1000,8 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
         return;
 
     _errorList.insert(errmsg);
-    if (errorOutput)
-        *errorOutput << errmsg << std::endl;
+    if (mErrorOutput)
+        *mErrorOutput << errmsg << std::endl;
     else {
         std::cerr << ansiToOEM(errmsg, (_settings == nullptr) ? true : !_settings->xml) << std::endl;
     }
