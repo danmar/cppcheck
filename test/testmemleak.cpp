@@ -169,6 +169,8 @@ private:
         TEST_CASE(realloc14);
         TEST_CASE(realloc15);
         TEST_CASE(realloc16);
+        TEST_CASE(realloc17);
+        TEST_CASE(reallocarray1);
     }
 
     void realloc1() {
@@ -338,6 +340,24 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void realloc17() {
+        check("void foo()\n"
+              "{\n"
+              "    void ***a = malloc(sizeof(a));\n"
+              "    ***a = realloc(***a, sizeof(a) * 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+    }
+
+    void reallocarray1() {
+        check("void foo()\n"
+              "{\n"
+              "    char *a = (char *)malloc(10);\n"
+              "    a = reallocarray(a, 100, 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Common reallocarray mistake: \'a\' nulled but not freed upon failure\n", errout.str());
     }
 };
 
@@ -2113,6 +2133,12 @@ private:
 
         check("void x()\n"
               "{\n"
+              "    reallocarray(NULL, 10, 10);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'reallocarray' is not stored.\n", errout.str());
+
+        check("void x()\n"
+              "{\n"
               "    (char*) malloc(10);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
@@ -2267,6 +2293,12 @@ private:
               "  fopen(\"file.txt\", \"r\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'fopen' is not stored.\n", errout.str());
+
+        check("void foo() {\n"
+              "  FILE f* = fopen(\"file.txt\", \"r\");\n"
+              "  freopen(\"file.txt\", \"r\", f);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'freopen' is not stored.\n", errout.str());
 
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"
