@@ -160,7 +160,7 @@ private:
     /**
      * Pointer to current settings; set while check() is running.
      */
-    const Settings* _settings;
+    const Settings* mSettings;
 
     /**
      * Used to filter out duplicate error messages.
