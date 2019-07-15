@@ -162,10 +162,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnames)
-            FileLister::recursiveAddFiles(_files, Path::toNativeSeparators(pathname), _settings->library.markupExtensions(), matcher);
+            FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), _settings->library.markupExtensions(), matcher);
     }
 
-    if (_files.empty() && settings.project.fileSettings.empty()) {
+    if (mFiles.empty() && settings.project.fileSettings.empty()) {
         std::cout << "cppcheck: error: could not find or open any of the paths given." << std::endl;
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
@@ -860,7 +860,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
-        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i)
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
             fileNames.push_back(i->first);
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.project.fileSettings);
     }
@@ -871,20 +871,20 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         settings.jointSuppressionReport = true;
 
         std::size_t totalfilesize = 0;
-        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
             totalfilesize += i->second;
         }
 
         std::size_t processedsize = 0;
         unsigned int c = 0;
         if (settings.project.fileSettings.empty()) {
-            for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+            for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
                 if (!_settings->library.markupFile(i->first)
                     || !_settings->library.processMarkupAfterCode(i->first)) {
                     returnValue += cppcheck.check(i->first);
                     processedsize += i->second;
                     if (!settings.quiet)
-                        reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                        reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
                     c++;
                 }
             }
@@ -902,12 +902,12 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
         // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
-        for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
             if (_settings->library.markupFile(i->first) && _settings->library.processMarkupAfterCode(i->first)) {
                 returnValue += cppcheck.check(i->first);
                 processedsize += i->second;
                 if (!settings.quiet)
-                    reportStatus(c + 1, _files.size(), processedsize, totalfilesize);
+                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
                 c++;
             }
         }
@@ -917,17 +917,17 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {
         // Multiple processes
-        ThreadExecutor executor(_files, settings, *this);
+        ThreadExecutor executor(mFiles, settings, *this);
         returnValue = executor.check();
     }
 
-    cppcheck.analyseWholeProgram(_settings->buildDir, _files);
+    cppcheck.analyseWholeProgram(_settings->buildDir, mFiles);
 
     if (settings.isEnabled(Settings::INFORMATION) || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
 
         if (settings.jointSuppressionReport) {
-            for (std::map<std::string, std::size_t>::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+            for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
                 const bool err = reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
                 if (err && returnValue == 0)
                     returnValue = settings.exitCode;
