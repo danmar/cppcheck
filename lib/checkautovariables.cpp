@@ -643,17 +643,17 @@ static std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val
         const Variable * var = vartok->variable();
         if (var) {
             switch (val->lifetimeKind) {
-            case ValueFlow::Value::Object:
-            case ValueFlow::Value::Address:
+            case ValueFlow::Value::LifetimeKind::Object:
+            case ValueFlow::Value::LifetimeKind::Address:
                 if (type == "pointer")
                     msg += " to local variable";
                 else
                     msg += " that points to local variable";
                 break;
-            case ValueFlow::Value::Lambda:
+            case ValueFlow::Value::LifetimeKind::Lambda:
                 msg += " that captures local variable";
                 break;
-            case ValueFlow::Value::Iterator:
+            case ValueFlow::Value::LifetimeKind::Iterator:
                 msg += " to local container";
                 break;
             }

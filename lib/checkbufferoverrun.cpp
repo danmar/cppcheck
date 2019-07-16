@@ -894,7 +894,7 @@ void CheckBufferOverrun::objectIndex()
             ValueFlow::Value v = getLifetimeObjValue(obj);
             if (!v.isLocalLifetimeValue())
                 continue;
-            if (v.lifetimeKind != ValueFlow::Value::Address)
+            if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
                 continue;
             const Variable *var = v.tokvalue->variable();
             if (var->isReference())
