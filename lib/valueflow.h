@@ -53,7 +53,7 @@ namespace ValueFlow {
               conditional(false),
               defaultArg(false),
               lifetimeKind(LifetimeKind::Object),
-              lifetimeScope(Local),
+              lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
         {}
         Value(const Token *c, long long val);
@@ -131,11 +131,11 @@ namespace ValueFlow {
         }
 
         bool isLocalLifetimeValue() const {
-            return valueType == ValueType::LIFETIME && lifetimeScope == Local;
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Local;
         }
 
         bool isArgumentLifetimeValue() const {
-            return valueType == ValueType::LIFETIME && lifetimeScope == Argument;
+            return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Argument;
         }
 
         /** int value */
@@ -169,7 +169,7 @@ namespace ValueFlow {
 
         enum class LifetimeKind {Object, Lambda, Iterator, Address} lifetimeKind;
 
-        enum LifetimeScope { Local, Argument } lifetimeScope;
+        enum class LifetimeScope { Local, Argument } lifetimeScope;
 
         static const char * toString(MoveKind moveKind) {
             switch (moveKind) {
