@@ -74,7 +74,7 @@ public:
     /** parse scopes recursively */
     bool assignIfParseScope(const Token * const assignTok,
                             const Token * const startTok,
-                            const unsigned int varid,
+                            const nonneg int varid,
                             const bool islocal,
                             const char bitop,
                             const MathLib::bigint num);
@@ -122,7 +122,7 @@ private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
     bool diag(const Token* tok, bool insert=true);
-    bool isAliased(const std::set<unsigned int> &vars) const;
+    bool isAliased(const std::set<int> &vars) const;
     bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
     void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
@@ -134,7 +134,7 @@ private:
                          MathLib::bigint value2,
                          bool result);
     void duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath);
-    void overlappingElseIfConditionError(const Token *tok, unsigned int line1);
+    void overlappingElseIfConditionError(const Token *tok, nonneg int line1);
     void oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath);
 
     void oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
