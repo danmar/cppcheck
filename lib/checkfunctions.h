@@ -105,9 +105,9 @@ public:
 private:
     void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr);
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
-    void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, unsigned int argnr);
+    void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
-    void mathfunctionCallWarning(const Token *tok, const unsigned int numParam = 1);
+    void mathfunctionCallWarning(const Token *tok, const nonneg int numParam = 1);
     void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
     void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);
