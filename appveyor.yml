@@ -77,7 +77,6 @@ build_script:
   - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
   - 'IF defined MYQTDIR nmake'
   - 'IF defined MYQTDIR cd ..'
-  - 'IF defined cygwin_build C:\cygwin64\bin\bash -e -l -c "cd /cygdrive/c/projects/cppcheck && make clean && make -j 2 && make test && make checkcfg"'
 
 test_script:
   - build\bin\testrunner.exe -q
@@ -87,6 +86,7 @@ test_script:
   - python -m pytest test-helloworld.py
   - python -m pytest test-inline-suppress.py
   - python -m pytest test-suppress-syntaxError.py
+  - 'IF defined cygwin_build C:\cygwin64\bin\bash -e -l -c "cd /cygdrive/c/projects/cppcheck && make clean && make -j 2 && make test && make checkcfg"'
 
 artifacts:
   - path: bin
