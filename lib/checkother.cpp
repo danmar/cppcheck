@@ -85,7 +85,7 @@ void CheckOther::checkCastIntToCharAndBack()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        std::map<unsigned int, std::string> vars;
+        std::map<int, std::string> vars;
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // Quick check to see if any of the matches below have any chances
             if (!Token::Match(tok, "%var%|EOF %comp%|="))
@@ -582,8 +582,8 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             continue;
 
         // Check the contents of the switch statement
-        std::map<unsigned int, const Token*> varsWithBitsSet;
-        std::map<unsigned int, std::string> bitOperations;
+        std::map<int, const Token*> varsWithBitsSet;
+        std::map<int, std::string> bitOperations;
 
         for (const Token *tok2 = switchScope.bodyStart->next(); tok2 != switchScope.bodyEnd; tok2 = tok2->next()) {
             if (tok2->str() == "{") {
@@ -621,7 +621,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                      (tok2->strAt(1) == "|=" || tok2->strAt(1) == "&=") &&
                      Token::Match(tok2->next()->astOperand2(), "%num%")) {
                 const std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
-                const std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const std::map<int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -646,7 +646,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
                 const std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
-                const std::map<unsigned int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const std::map<int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -978,7 +978,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
 
         if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;
-            unsigned int indent = 0;
+            int indent = 0;
             for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) { // Ensure that variable isn't used on right side of =, too
                 if (tok2->str() == "(")
                     indent++;
@@ -1095,14 +1095,14 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
 //---------------------------------------------------------------------------
 // Check for function parameters that should be passed by const reference
 //---------------------------------------------------------------------------
-static std::size_t estimateSize(const Type* type, const Settings* settings, const SymbolDatabase* symbolDatabase, std::size_t recursionDepth = 0)
+static int estimateSize(const Type* type, const Settings* settings, const SymbolDatabase* symbolDatabase, int recursionDepth = 0)
 {
     if (recursionDepth > 20)
         return 0;
 
-    std::size_t cumulatedSize = 0;
+    int cumulatedSize = 0;
     for (const Variable&var : type->classScope->varlist) {
-        std::size_t size = 0;
+        int size = 0;
         if (var.isStatic())
             continue;
         if (var.isPointer() || var.isReference())
@@ -1158,7 +1158,7 @@ static bool canBeConst(const Variable *var)
                 return false;
         } else if (parent->str() == "," || parent->str() == "(") { // function argument
             const Token* tok3 = tok2->previous();
-            unsigned int argNr = 0;
+            int argNr = 0;
             while (tok3 && tok3->str() != "(") {
                 if (tok3->link() && Token::Match(tok3, ")|]|}|>"))
                     tok3 = tok3->link();
@@ -1516,7 +1516,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
 
     std::ostringstream errmsg;
     if (value->condition) {
-        const unsigned int line = tok ? tok->linenr() : 0;
+        const int line = tok ? tok->linenr() : 0;
         errmsg << ValueFlow::eitherTheConditionIsRedundant(value->condition)
                << " or there is division by zero at line " << line << ".";
     } else
@@ -1690,8 +1690,8 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2, Erro
 //-----------------------------------------------------------------------------
 void CheckOther::checkInvalidFree()
 {
-    std::map<unsigned int, bool> inconclusive;
-    std::map<unsigned int, std::string> allocation;
+    std::map<int, bool> inconclusive;
+    std::map<int, std::string> allocation;
 
     const bool printInconclusive = mSettings->inconclusive;
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1733,10 +1733,10 @@ void CheckOther::checkInvalidFree()
 
                 const int varIndex = tok->strAt(1) == "(" ? 2 :
                                      tok->strAt(3) == "(" ? 4 : 1;
-                const unsigned int var1 = tok->tokAt(varIndex)->varId();
-                const unsigned int var2 = tok->tokAt(varIndex + 2)->varId();
-                const std::map<unsigned int, bool>::const_iterator alloc1 = inconclusive.find(var1);
-                const std::map<unsigned int, bool>::const_iterator alloc2 = inconclusive.find(var2);
+                const int var1 = tok->tokAt(varIndex)->varId();
+                const int var2 = tok->tokAt(varIndex + 2)->varId();
+                const std::map<int, bool>::const_iterator alloc1 = inconclusive.find(var1);
+                const std::map<int, bool>::const_iterator alloc2 = inconclusive.find(var2);
                 if (alloc1 != inconclusive.end()) {
                     invalidFreeError(tok, allocation[var1], alloc1->second);
                 } else if (alloc2 != inconclusive.end()) {
@@ -2010,8 +2010,8 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isName() && Token::Match(tok, "isgreater|isless|islessgreater|isgreaterequal|islessequal ( %var% , %var% )")) {
-                const unsigned int varidLeft = tok->tokAt(2)->varId();// get the left varid
-                const unsigned int varidRight = tok->tokAt(4)->varId();// get the right varid
+                const int varidLeft = tok->tokAt(2)->varId();// get the left varid
+                const int varidRight = tok->tokAt(4)->varId();// get the right varid
                 // compare varids: if they are not zero but equal
                 // --> the comparison function is called with the same variables
                 if (varidLeft == varidRight) {
@@ -2122,7 +2122,7 @@ static bool constructorTakesReference(const Scope * const classScope)
 {
     for (const Function &constructor : classScope->functionList) {
         if (constructor.isConstructor()) {
-            for (std::size_t argnr = 0U; argnr < constructor.argCount(); argnr++) {
+            for (int argnr = 0U; argnr < constructor.argCount(); argnr++) {
                 const Variable * const argVar = constructor.getArgumentVar(argnr);
                 if (argVar && argVar->isReference()) {
                     return true;
@@ -2263,7 +2263,7 @@ void CheckOther::checkIncompleteArrayFill()
                     continue;
 
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
-                    unsigned int size = mTokenizer->sizeOfType(var->typeStartToken());
+                    int size = mTokenizer->sizeOfType(var->typeStartToken());
                     if (size == 0 && var->valueType()->pointer)
                         size = mSettings->sizeof_pointer;
                     if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
@@ -2309,7 +2309,7 @@ void CheckOther::checkVarFuncNullUB()
             if (Token::Match(tok,"[(,] NULL [,)]")) {
                 // Locate function name in this function call.
                 const Token *ftok = tok;
-                std::size_t argnr = 1;
+                int argnr = 1;
                 while (ftok && ftok->str() != "(") {
                     if (ftok->str() == ")")
                         ftok = ftok->link();
@@ -2677,7 +2677,7 @@ void CheckOther::checkFuncArgNamesDifferent()
         std::vector<const Token *>  declarations(function->argCount());
         std::vector<const Token *>  definitions(function->argCount());
         const Token * decl = function->argDef->next();
-        for (std::size_t j = 0; j < function->argCount(); ++j) {
+        for (int j = 0; j < function->argCount(); ++j) {
             declarations[j] = nullptr;
             definitions[j] = nullptr;
             // get the definition
@@ -2707,11 +2707,11 @@ void CheckOther::checkFuncArgNamesDifferent()
         // check for different argument order
         if (warning) {
             bool order_different = false;
-            for (std::size_t j = 0; j < function->argCount(); ++j) {
+            for (int j = 0; j < function->argCount(); ++j) {
                 if (!declarations[j] || !definitions[j] || declarations[j]->str() == definitions[j]->str())
                     continue;
 
-                for (std::size_t k = 0; k < function->argCount(); ++k) {
+                for (int k = 0; k < function->argCount(); ++k) {
                     if (j != k && definitions[k] && declarations[j]->str() == definitions[k]->str()) {
                         order_different = true;
                         break;
@@ -2725,7 +2725,7 @@ void CheckOther::checkFuncArgNamesDifferent()
         }
         // check for different argument names
         if (style && inconclusive) {
-            for (std::size_t j = 0; j < function->argCount(); ++j) {
+            for (int j = 0; j < function->argCount(); ++j) {
                 if (declarations[j] && definitions[j] && declarations[j]->str() != definitions[j]->str())
                     funcArgNamesDifferent(function->name(), j, declarations[j], definitions[j]);
             }
@@ -2733,7 +2733,7 @@ void CheckOther::checkFuncArgNamesDifferent()
     }
 }
 
-void CheckOther::funcArgNamesDifferent(const std::string & functionName, size_t index,
+void CheckOther::funcArgNamesDifferent(const std::string & functionName, nonneg int index,
                                        const Token* declaration, const Token* definition)
 {
     std::list<const Token *> tokens = { declaration,definition };
@@ -2754,14 +2754,14 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
         definitions.size() ? definitions[0] ? definitions[0] : definition : nullptr
     };
     std::string msg = "$symbol:" + functionName + "\nFunction '$symbol' argument order different: declaration '";
-    for (std::size_t i = 0; i < declarations.size(); ++i) {
+    for (int i = 0; i < declarations.size(); ++i) {
         if (i != 0)
             msg += ", ";
         if (declarations[i])
             msg += declarations[i]->str();
     }
     msg += "' definition '";
-    for (std::size_t i = 0; i < definitions.size(); ++i) {
+    for (int i = 0; i < definitions.size(); ++i) {
         if (i != 0)
             msg += ", ";
         if (definitions[i])
