@@ -86,6 +86,15 @@ ifndef CXXFLAGS
     CXXFLAGS=-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
 
+# Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.
+ifdef COMSPEC
+    uname_S := $(shell uname -s)
+
+    ifneq (,$(findstring CYGWIN,$(uname_S)))
+        CXXFLAGS+=-Wl,--stack,8388608
+    endif # CYGWIN
+endif # COMSPEC
+
 ifeq (g++, $(findstring g++,$(CXX)))
     override CXXFLAGS += -std=c++0x
 else ifeq (clang++, $(findstring clang++,$(CXX)))
