@@ -69,21 +69,21 @@ static const ValueFlow::Value *getBufferSizeValue(const Token *tok)
     return it == tokenValues.end() ? nullptr : &*it;
 }
 
-static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, unsigned int formatStringArgNr)
+static int getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, nonneg int formatStringArgNr)
 {
-    if (formatStringArgNr == 0 || formatStringArgNr > parameters.size())
+    if (formatStringArgNr <= 0 || formatStringArgNr > parameters.size())
         return 0;
     if (parameters[formatStringArgNr - 1]->tokType() != Token::eString)
         return 0;
     const std::string &formatString = parameters[formatStringArgNr - 1]->str();
     bool percentCharFound = false;
-    std::size_t outputStringSize = 0;
+    int outputStringSize = 0;
     bool handleNextParameter = false;
     std::string digits_string;
     bool i_d_x_f_found = false;
-    std::size_t parameterLength = 0;
-    unsigned int inputArgNr = formatStringArgNr;
-    for (std::string::size_type i = 1; i + 1 < formatString.length(); ++i) {
+    int parameterLength = 0;
+    int inputArgNr = formatStringArgNr;
+    for (int i = 1; i + 1 < formatString.length(); ++i) {
         if (formatString[i] == '\\') {
             if (i < formatString.length() - 1 && formatString[i + 1] == '0')
                 break;
@@ -142,13 +142,13 @@ static size_t getMinFormatStringOutputLength(const std::vector<const Token*> &pa
             outputStringSize++;
 
         if (handleNextParameter) {
-            unsigned int tempDigits = static_cast<unsigned int>(std::abs(std::atoi(digits_string.c_str())));
+            int tempDigits = std::abs(std::atoi(digits_string.c_str()));
             if (i_d_x_f_found)
-                tempDigits = std::max(static_cast<unsigned int>(tempDigits), 1U);
+                tempDigits = std::max(tempDigits, 1);
 
             if (digits_string.find('.') != std::string::npos) {
                 const std::string endStr = digits_string.substr(digits_string.find('.') + 1);
-                const unsigned int maxLen = std::max(static_cast<unsigned int>(std::abs(std::atoi(endStr.c_str()))), 1U);
+                const int maxLen = std::max(std::abs(std::atoi(endStr.c_str())), 1);
 
                 if (formatString[i] == 's') {
                     // For strings, the length after the dot "%.2s" will limit
@@ -234,7 +234,7 @@ static std::vector<const ValueFlow::Value *> getOverrunIndexValues(const Token *
         bool overflow = false;
         bool allKnown = true;
         std::vector<const ValueFlow::Value *> indexValues;
-        for (size_t i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
+        for (int i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
             const ValueFlow::Value *value = indexTokens[i]->getMaxValue(cond == 1);
             indexValues.push_back(value);
             if (!value)
@@ -313,7 +313,7 @@ void CheckBufferOverrun::arrayIndex()
         // Negative index
         bool neg = false;
         std::vector<const ValueFlow::Value *> negativeIndexes;
-        for (size_t i = 0; i < indexTokens.size(); ++i) {
+        for (int i = 0; i < indexTokens.size(); ++i) {
             const ValueFlow::Value *negativeValue = indexTokens[i]->getValueLE(-1, mSettings);
             negativeIndexes.emplace_back(negativeValue);
             if (negativeValue)
@@ -574,7 +574,7 @@ void CheckBufferOverrun::bufferOverflow()
             if (!mSettings->library.hasminsize(tok))
                 continue;
             const std::vector<const Token *> args = getArguments(tok);
-            for (unsigned int argnr = 0; argnr < args.size(); ++argnr) {
+            for (int argnr = 0; argnr < args.size(); ++argnr) {
                 if (!args[argnr]->valueType() || args[argnr]->valueType()->pointer == 0)
                     continue;
                 const std::vector<Library::ArgumentChecks::MinSize> *minsizes = mSettings->library.argminsizes(tok, argnr + 1);
@@ -625,7 +625,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
             if (Token::Match(tok, "%name% [ %var% ]")) {
                 tok = tok->next();
 
-                const unsigned int indexID = tok->next()->varId();
+                const int indexID = tok->next()->varId();
                 const std::string& indexName(tok->strAt(1));
 
                 // Iterate AST upwards
