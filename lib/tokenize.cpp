@@ -9127,6 +9127,12 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok->linkAt(1)->previous());
     }
 
+    // UNKNOWN_MACRO(return)
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "%name% throw|return") && std::isupper(tok->str()[0]))
+            unknownMacroError(tok);
+    }
+
     // Assign/increment/decrement literal
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
