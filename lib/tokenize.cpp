@@ -6623,7 +6623,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
                 else if (std::strchr(";,", tok2->str()[0])) {
                     // "type var ="   =>   "type var; var ="
-                    const Token *varTok = type0->tokAt((int)typelen);
+                    const Token *varTok = type0->tokAt(typelen);
                     while (Token::Match(varTok, "*|&|const"))
                         varTok = varTok->next();
                     if (!varTok)
