@@ -490,7 +490,7 @@ private:
         preprocess(filedata, actual);
 
         // Expected configurations: "" and "ABC"
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
         ASSERT_EQUALS("\n\n\nint main ( ) { }", actual[""]);
         ASSERT_EQUALS("\n#line 1 \"abc.h\"\nclass A { } ;\n#line 4 \"file.c\"\n int main ( ) { }", actual["ABC"]);
     }
@@ -1145,7 +1145,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("int main ( ) { const char * a = \"#define A\" ; }", actual[""]);
     }
 
@@ -1248,7 +1248,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("int main ( )\n{\nconst char * a = \"#include <string>\" ;\nreturn 0 ;\n}", actual[""]);
     }
 
@@ -1312,7 +1312,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nint main ( )\n{\nif ( $'ABCD' == 0 ) ;\nreturn 0 ;\n}", actual[""]);
     }
 
@@ -1376,7 +1376,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nvoid f ( )\n{\n}", actual[""]);
     }
 
@@ -1395,7 +1395,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("asm ( )\n;\n\naaa\nasm ( ) ;\n\n\nbbb", actual[""]);
     }
 
@@ -1410,7 +1410,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("asm ( )\n;\n\nbbb", actual[""]);
     }
 
@@ -1425,7 +1425,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
         const std::string expected("void f ( ) {\n\n\n}");
         ASSERT_EQUALS(expected, actual[""]);
         ASSERT_EQUALS(expected, actual["A"]);
@@ -1536,7 +1536,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nvoid f ( ) {\n$g $( ) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1554,7 +1554,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
         ASSERT_EQUALS("\n\n\n\n\n$20", actual[""]);
         ASSERT_EQUALS("\n\n\n\n\n$10", actual["A"]);
         ASSERT_EQUALS("", errout.str());
@@ -1575,7 +1575,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("[file.c:6]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'.\n", errout.str());
     }
@@ -1592,7 +1592,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nvoid f ( )\n{\n$printf $( \"\\n\" $) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1612,7 +1612,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("\nA\n\n\nA", actual["ABC"]);
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(2, actual.size());
     }
 
     void define_if1() {
