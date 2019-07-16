@@ -79,7 +79,7 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), latestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
+    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
 {
 }
 
@@ -848,7 +848,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (settings.reportProgress)
-        latestProgressOutputTime = std::time(nullptr);
+        mLatestProgressOutputTime = std::time(nullptr);
 
     if (!settings.outputFile.empty()) {
         mErrorOutput = new std::ofstream(settings.outputFile);
@@ -1016,13 +1016,13 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 {
     (void)filename;
 
-    if (!latestProgressOutputTime)
+    if (!mLatestProgressOutputTime)
         return;
 
     // Report progress messages every 10 seconds
     const std::time_t currentTime = std::time(nullptr);
-    if (currentTime >= (latestProgressOutputTime + 10)) {
-        latestProgressOutputTime = currentTime;
+    if (currentTime >= (mLatestProgressOutputTime + 10)) {
+        mLatestProgressOutputTime = currentTime;
 
         // format a progress message
         std::ostringstream ostr;
