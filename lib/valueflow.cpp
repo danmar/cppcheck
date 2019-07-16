@@ -3019,7 +3019,7 @@ struct LifetimeStore {
 
         ValueFlow::Value value;
         value.valueType = ValueFlow::Value::LIFETIME;
-        value.lifetimeScope = ValueFlow::Value::Local;
+        value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
         value.tokvalue = lifeTok;
         value.errorPath = er;
         value.lifetimeKind = type;
@@ -3045,7 +3045,7 @@ struct LifetimeStore {
             if (var && var->isArgument()) {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::LIFETIME;
-                value.lifetimeScope = ValueFlow::Value::Argument;
+                value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
                 value.tokvalue = var->nameToken();
                 value.errorPath = er;
                 value.lifetimeKind = type;
@@ -3328,8 +3328,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             errorPath.emplace_back(tok, "Address of variable taken here.");
 
             ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::LIFETIME;
-            value.lifetimeScope = ValueFlow::Value::Local;
+            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
             value.tokvalue = lifeTok;
             value.errorPath = errorPath;
             if (astIsPointer(lifeTok) || !Token::Match(lifeTok->astParent(), ".|["))
@@ -3354,8 +3354,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 errorPath.emplace_back(tok, "Pointer to container is created here.");
 
             ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::LIFETIME;
-            value.lifetimeScope = ValueFlow::Value::Local;
+            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
             value.tokvalue = tok;
             value.errorPath = errorPath;
             value.lifetimeKind = isIterator ? ValueFlow::Value::LifetimeKind::Iterator : ValueFlow::Value::LifetimeKind::Object;
@@ -3384,8 +3384,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 errorPath.emplace_back(tok, "Array decayed to pointer here.");
 
                 ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::LIFETIME;
-                value.lifetimeScope = ValueFlow::Value::Local;
+                value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+                value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
                 value.tokvalue = var->nameToken();
                 value.errorPath = errorPath;
                 setTokenValue(tok, value, tokenlist->getSettings());
@@ -5502,7 +5502,7 @@ ValueFlow::Value::Value(const Token *c, long long val)
       conditional(false),
       defaultArg(false),
       lifetimeKind(LifetimeKind::Object),
-      lifetimeScope(Local),
+      lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)
 {
     errorPath.emplace_back(c, "Assuming that condition '" + c->expressionString() + "' is not redundant");
