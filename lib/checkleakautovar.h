@@ -46,7 +46,8 @@ public:
          * checkleakautovar allocation type.
          */
         int type;
-        AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC) : status(status_), type(type_) {}
+        const Token * allocTok;
+        AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC, const Token* allocTok_ = nullptr) : status(status_), type(type_), allocTok(allocTok_) {}
 
         bool managed() const {
             return status < 0;
@@ -142,19 +143,19 @@ private:
     void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);
 
     void leakError(const Token* tok, const std::string &varname, int type);
-    void mismatchError(const Token* tok, const std::string &varname);
+    void mismatchError(const Token* deallocTok, const Token* allocTok, const std::string &varname);
     void deallocUseError(const Token *tok, const std::string &varname);
-    void deallocReturnError(const Token *tok, const std::string &varname);
-    void doubleFreeError(const Token *tok, const std::string &varname, int type);
+    void deallocReturnError(const Token *tok, const Token *deallocTok, const std::string &varname);
+    void doubleFreeError(const Token *tok, const Token *prevFreeTok, const std::string &varname, int type);
 
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::string &functionName);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
-        c.deallocReturnError(nullptr, "p");
+        c.deallocReturnError(nullptr, nullptr, "p");
         c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
-        c.doubleFreeError(nullptr, "varname", 0);
+        c.doubleFreeError(nullptr, nullptr, "varname", 0);
     }
 
     static std::string myName() {
